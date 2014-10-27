@@ -55,6 +55,10 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 
+   bool is_field_default( int field ) const;
+   bool is_field_default( field_id id ) const;
+   bool is_field_default( const std::string& field ) const;
+
    bool has_field_changed( const std::string& field ) const;
 
    bool is_field_transient( int field ) const;

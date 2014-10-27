@@ -1154,6 +1154,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -6286,7 +6288,7 @@ string Meta_Model::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -6373,8 +6375,97 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Model::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_Add_Packages == g_default_Add_Packages );
+      break;
+
+      case 2:
+      retval = ( v_Allow_Anonymous_Access == g_default_Allow_Anonymous_Access );
+      break;
+
+      case 3:
+      retval = ( v_Commands_File == g_default_Commands_File );
+      break;
+
+      case 4:
+      retval = ( v_Created == g_default_Created );
+      break;
+
+      case 5:
+      retval = ( v_Home_Title == g_default_Home_Title );
+      break;
+
+      case 6:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 7:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 8:
+      retval = ( v_Next_Class_Id == g_default_Next_Class_Id );
+      break;
+
+      case 9:
+      retval = ( v_Next_List_Id == g_default_Next_List_Id );
+      break;
+
+      case 10:
+      retval = ( v_Next_Specification_Id == g_default_Next_Specification_Id );
+      break;
+
+      case 11:
+      retval = ( v_Next_View_Id == g_default_Next_View_Id );
+      break;
+
+      case 12:
+      retval = ( v_Permission == g_default_Permission );
+      break;
+
+      case 13:
+      retval = ( v_Source_File == g_default_Source_File );
+      break;
+
+      case 14:
+      retval = ( v_Status == g_default_Status );
+      break;
+
+      case 15:
+      retval = ( v_Use_Package_Demo_Data == g_default_Use_Package_Demo_Data );
+      break;
+
+      case 16:
+      retval = ( v_Version == g_default_Version );
+      break;
+
+      case 17:
+      retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      case 18:
+      retval = ( v_Year_Created == g_default_Year_Created );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Model::impl::get_state( ) const
@@ -7394,6 +7485,21 @@ string Meta_Model::get_field_value( int field ) const
 void Meta_Model::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Model::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Model::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Model::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Model::is_field_transient( int field ) const

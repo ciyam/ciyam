@@ -584,6 +584,8 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -689,7 +691,7 @@ string Meta_Workgroup::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -728,8 +730,49 @@ void Meta_Workgroup::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Workgroup::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 1:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 2:
+      retval = ( v_Next_Enum_Id == g_default_Next_Enum_Id );
+      break;
+
+      case 3:
+      retval = ( v_Next_Model_Id == g_default_Next_Model_Id );
+      break;
+
+      case 4:
+      retval = ( v_Next_Permission_Id == g_default_Next_Permission_Id );
+      break;
+
+      case 5:
+      retval = ( v_Next_Type_Id == g_default_Next_Type_Id );
+      break;
+
+      case 6:
+      retval = ( v_Standard_Package == g_default_Standard_Package );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Workgroup::impl::get_state( ) const
@@ -1334,6 +1377,21 @@ string Meta_Workgroup::get_field_value( int field ) const
 void Meta_Workgroup::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Workgroup::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Workgroup::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Workgroup::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Workgroup::is_field_transient( int field ) const

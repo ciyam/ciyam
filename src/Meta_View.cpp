@@ -1079,6 +1079,8 @@ struct Meta_View::impl : public Meta_View_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -1751,7 +1753,7 @@ string Meta_View::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1842,8 +1844,101 @@ void Meta_View::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_View::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Permission == g_default_Access_Permission );
+      break;
+
+      case 1:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 2:
+      retval = ( v_Allow_Copy_Action == g_default_Allow_Copy_Action );
+      break;
+
+      case 3:
+      retval = ( v_Allow_Printable_Version == g_default_Allow_Printable_Version );
+      break;
+
+      case 4:
+      retval = ( v_Auto_Back_After_Save == g_default_Auto_Back_After_Save );
+      break;
+
+      case 5:
+      retval = ( v_Change_Permission == g_default_Change_Permission );
+      break;
+
+      case 6:
+      retval = ( v_Change_Restriction == g_default_Change_Restriction );
+      break;
+
+      case 7:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 8:
+      retval = ( v_File_Links_Always_As_Single == g_default_File_Links_Always_As_Single );
+      break;
+
+      case 9:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 10:
+      retval = ( v_Ignore_Unactionable_Records == g_default_Ignore_Unactionable_Records );
+      break;
+
+      case 11:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 12:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 13:
+      retval = ( v_PDF_Font_Type == g_default_PDF_Font_Type );
+      break;
+
+      case 14:
+      retval = ( v_PDF_View_Type == g_default_PDF_View_Type );
+      break;
+
+      case 15:
+      retval = ( v_Print_Without_Highlight == g_default_Print_Without_Highlight );
+      break;
+
+      case 16:
+      retval = ( v_Title == g_default_Title );
+      break;
+
+      case 17:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      case 18:
+      retval = ( v_Type_Key == g_default_Type_Key );
+      break;
+
+      case 19:
+      retval = ( v_Use_First_Row_As_Header == g_default_Use_First_Row_As_Header );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_View::impl::get_state( ) const
@@ -2673,6 +2768,21 @@ string Meta_View::get_field_value( int field ) const
 void Meta_View::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_View::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_View::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_View::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_View::is_field_transient( int field ) const

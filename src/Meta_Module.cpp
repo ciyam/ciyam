@@ -400,6 +400,8 @@ struct Meta_Module::impl : public Meta_Module_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -612,7 +614,7 @@ string Meta_Module::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -635,8 +637,33 @@ void Meta_Module::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Module::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Application == g_default_Application );
+      break;
+
+      case 1:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 2:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Module::impl::get_state( ) const
@@ -1006,6 +1033,21 @@ string Meta_Module::get_field_value( int field ) const
 void Meta_Module::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Module::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Module::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Module::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Module::is_field_transient( int field ) const

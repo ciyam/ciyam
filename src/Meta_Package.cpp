@@ -693,6 +693,8 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -1637,7 +1639,7 @@ string Meta_Package::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1688,8 +1690,61 @@ void Meta_Package::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Package::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_Install_Details == g_default_Install_Details );
+      break;
+
+      case 2:
+      retval = ( v_Installed == g_default_Installed );
+      break;
+
+      case 3:
+      retval = ( v_Key == g_default_Key );
+      break;
+
+      case 4:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 5:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 6:
+      retval = ( v_Package_Type == g_default_Package_Type );
+      break;
+
+      case 7:
+      retval = ( v_Plural == g_default_Plural );
+      break;
+
+      case 8:
+      retval = ( v_Type_Name == g_default_Type_Name );
+      break;
+
+      case 9:
+      retval = ( v_Usage_Count == g_default_Usage_Count );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Package::impl::get_state( ) const
@@ -2707,6 +2762,21 @@ string Meta_Package::get_field_value( int field ) const
 void Meta_Package::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Package::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Package::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Package::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package::is_field_transient( int field ) const

@@ -1064,6 +1064,8 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -1234,7 +1236,7 @@ string Meta_Type::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1329,8 +1331,105 @@ void Meta_Type::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Type::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Auto_Round == g_default_Auto_Round );
+      break;
+
+      case 1:
+      retval = ( v_Date_Precision == g_default_Date_Precision );
+      break;
+
+      case 2:
+      retval = ( v_Default_UOM == g_default_Default_UOM );
+      break;
+
+      case 3:
+      retval = ( v_Fraction_Limit == g_default_Fraction_Limit );
+      break;
+
+      case 4:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 5:
+      retval = ( v_Int_Type == g_default_Int_Type );
+      break;
+
+      case 6:
+      retval = ( v_Internal == g_default_Internal );
+      break;
+
+      case 7:
+      retval = ( v_Max_Size == g_default_Max_Size );
+      break;
+
+      case 8:
+      retval = ( v_Max_Value == g_default_Max_Value );
+      break;
+
+      case 9:
+      retval = ( v_Min_Value == g_default_Min_Value );
+      break;
+
+      case 10:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 11:
+      retval = ( v_Numeric_Decimals == g_default_Numeric_Decimals );
+      break;
+
+      case 12:
+      retval = ( v_Numeric_Digits == g_default_Numeric_Digits );
+      break;
+
+      case 13:
+      retval = ( v_Numeric_Type == g_default_Numeric_Type );
+      break;
+
+      case 14:
+      retval = ( v_Primitive == g_default_Primitive );
+      break;
+
+      case 15:
+      retval = ( v_Rounding_Method == g_default_Rounding_Method );
+      break;
+
+      case 16:
+      retval = ( v_Show_Plus_Sign == g_default_Show_Plus_Sign );
+      break;
+
+      case 17:
+      retval = ( v_String_Domain == g_default_String_Domain );
+      break;
+
+      case 18:
+      retval = ( v_Time_Precision == g_default_Time_Precision );
+      break;
+
+      case 19:
+      retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      case 20:
+      retval = ( v_Zero_Padding == g_default_Zero_Padding );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Type::impl::get_state( ) const
@@ -2255,6 +2354,21 @@ string Meta_Type::get_field_value( int field ) const
 void Meta_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Type::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Type::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Type::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Type::is_field_transient( int field ) const

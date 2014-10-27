@@ -1429,6 +1429,8 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -2377,7 +2379,7 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -2524,8 +2526,157 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Application::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_Add_Modules_Automatically == g_default_Add_Modules_Automatically );
+      break;
+
+      case 2:
+      retval = ( v_Allow_Duplicate_Logins == g_default_Allow_Duplicate_Logins );
+      break;
+
+      case 3:
+      retval = ( v_Allow_Module_Switching == g_default_Allow_Module_Switching );
+      break;
+
+      case 4:
+      retval = ( v_Auto_Login_Days == g_default_Auto_Login_Days );
+      break;
+
+      case 5:
+      retval = ( v_Create_Database == g_default_Create_Database );
+      break;
+
+      case 6:
+      retval = ( v_Created_Database == g_default_Created_Database );
+      break;
+
+      case 7:
+      retval = ( v_Default_Image_Height == g_default_Default_Image_Height );
+      break;
+
+      case 8:
+      retval = ( v_Default_Image_Width == g_default_Default_Image_Width );
+      break;
+
+      case 9:
+      retval = ( v_Default_List_Print_Row_Limit == g_default_Default_List_Print_Row_Limit );
+      break;
+
+      case 10:
+      retval = ( v_Default_List_Row_Limit == g_default_Default_List_Row_Limit );
+      break;
+
+      case 11:
+      retval = ( v_Default_Max_Attached_File_Size == g_default_Default_Max_Attached_File_Size );
+      break;
+
+      case 12:
+      retval = ( v_Default_Multiline_Max_Rows == g_default_Default_Multiline_Max_Rows );
+      break;
+
+      case 13:
+      retval = ( v_Default_Multiline_Min_Rows == g_default_Default_Multiline_Min_Rows );
+      break;
+
+      case 14:
+      retval = ( v_Default_Multiline_Text_Limit == g_default_Default_Multiline_Text_Limit );
+      break;
+
+      case 15:
+      retval = ( v_Default_Multiline_Text_Trunc == g_default_Default_Multiline_Text_Trunc );
+      break;
+
+      case 16:
+      retval = ( v_Encrypt_Dynamic_Content == g_default_Encrypt_Dynamic_Content );
+      break;
+
+      case 17:
+      retval = ( v_Generate_Details == g_default_Generate_Details );
+      break;
+
+      case 18:
+      retval = ( v_Generate_Status == g_default_Generate_Status );
+      break;
+
+      case 19:
+      retval = ( v_Generate_Type == g_default_Generate_Type );
+      break;
+
+      case 20:
+      retval = ( v_Keep_Existing_Data == g_default_Keep_Existing_Data );
+      break;
+
+      case 21:
+      retval = ( v_Module_Prefix == g_default_Module_Prefix );
+      break;
+
+      case 22:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 23:
+      retval = ( v_Print_Lists_With_Check_Boxes == g_default_Print_Lists_With_Check_Boxes );
+      break;
+
+      case 24:
+      retval = ( v_Print_Lists_With_Row_Numbers == g_default_Print_Lists_With_Row_Numbers );
+      break;
+
+      case 25:
+      retval = ( v_Registration_Key == g_default_Registration_Key );
+      break;
+
+      case 26:
+      retval = ( v_Show_Inaccessible_Modules == g_default_Show_Inaccessible_Modules );
+      break;
+
+      case 27:
+      retval = ( v_Use_Check_Boxes_for_Bools == g_default_Use_Check_Boxes_for_Bools );
+      break;
+
+      case 28:
+      retval = ( v_Use_Embedded_Images == g_default_Use_Embedded_Images );
+      break;
+
+      case 29:
+      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
+      break;
+
+      case 30:
+      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
+      break;
+
+      case 31:
+      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
+      break;
+
+      case 32:
+      retval = ( v_Version == g_default_Version );
+      break;
+
+      case 33:
+      retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Application::impl::get_state( ) const
@@ -3495,6 +3646,21 @@ string Meta_Application::get_field_value( int field ) const
 void Meta_Application::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Application::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Application::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Application::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Application::is_field_transient( int field ) const

@@ -2173,6 +2173,8 @@ struct Meta_List::impl : public Meta_List_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -3478,7 +3480,7 @@ string Meta_List::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -3697,8 +3699,229 @@ void Meta_List::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_List::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Parent_Modifier == g_default_Access_Parent_Modifier );
+      break;
+
+      case 1:
+      retval = ( v_Access_Permission == g_default_Access_Permission );
+      break;
+
+      case 2:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 3:
+      retval = ( v_Allow_Anonymous_Access == g_default_Allow_Anonymous_Access );
+      break;
+
+      case 4:
+      retval = ( v_Allow_Quick_Link == g_default_Allow_Quick_Link );
+      break;
+
+      case 5:
+      retval = ( v_Allow_Text_Search == g_default_Allow_Text_Search );
+      break;
+
+      case 6:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 7:
+      retval = ( v_Create_Only_If_Default_Other == g_default_Create_Only_If_Default_Other );
+      break;
+
+      case 8:
+      retval = ( v_Create_Parent_Modifier == g_default_Create_Parent_Modifier );
+      break;
+
+      case 9:
+      retval = ( v_Create_Permission == g_default_Create_Permission );
+      break;
+
+      case 10:
+      retval = ( v_Create_Restriction == g_default_Create_Restriction );
+      break;
+
+      case 11:
+      retval = ( v_Delete_Direction == g_default_Delete_Direction );
+      break;
+
+      case 12:
+      retval = ( v_Destroy_Only_If_Default_Other == g_default_Destroy_Only_If_Default_Other );
+      break;
+
+      case 13:
+      retval = ( v_Destroy_Parent_Modifier == g_default_Destroy_Parent_Modifier );
+      break;
+
+      case 14:
+      retval = ( v_Destroy_Permission == g_default_Destroy_Permission );
+      break;
+
+      case 15:
+      retval = ( v_Destroy_Restriction == g_default_Destroy_Restriction );
+      break;
+
+      case 16:
+      retval = ( v_Direction == g_default_Direction );
+      break;
+
+      case 17:
+      retval = ( v_Display_Only_If_Default_Other == g_default_Display_Only_If_Default_Other );
+      break;
+
+      case 18:
+      retval = ( v_Display_Row_Limit == g_default_Display_Row_Limit );
+      break;
+
+      case 19:
+      retval = ( v_Display_Security_Level == g_default_Display_Security_Level );
+      break;
+
+      case 20:
+      retval = ( v_Display_Sub_Totals == g_default_Display_Sub_Totals );
+      break;
+
+      case 21:
+      retval = ( v_Display_Totals == g_default_Display_Totals );
+      break;
+
+      case 22:
+      retval = ( v_File_Links_Always_As_Single == g_default_File_Links_Always_As_Single );
+      break;
+
+      case 23:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 24:
+      retval = ( v_Ignore_Implicit_Ordering == g_default_Ignore_Implicit_Ordering );
+      break;
+
+      case 25:
+      retval = ( v_Ignore_State_For_Display == g_default_Ignore_State_For_Display );
+      break;
+
+      case 26:
+      retval = ( v_Ignore_Unactionable_Records == g_default_Ignore_Unactionable_Records );
+      break;
+
+      case 27:
+      retval = ( v_Ignore_Uneditable_Parent == g_default_Ignore_Uneditable_Parent );
+      break;
+
+      case 28:
+      retval = ( v_Ignore_User_Id_Filter == g_default_Ignore_User_Id_Filter );
+      break;
+
+      case 29:
+      retval = ( v_Is_Admin == g_default_Is_Admin );
+      break;
+
+      case 30:
+      retval = ( v_Is_Child == g_default_Is_Child );
+      break;
+
+      case 31:
+      retval = ( v_Is_Home == g_default_Is_Home );
+      break;
+
+      case 32:
+      retval = ( v_Is_Not_Anonymous == g_default_Is_Not_Anonymous );
+      break;
+
+      case 33:
+      retval = ( v_Is_Variation == g_default_Is_Variation );
+      break;
+
+      case 34:
+      retval = ( v_Limit_Scroll_And_New == g_default_Limit_Scroll_And_New );
+      break;
+
+      case 35:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 36:
+      retval = ( v_Multiline_Truncate_For_Print == g_default_Multiline_Truncate_For_Print );
+      break;
+
+      case 37:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 38:
+      retval = ( v_Number_Multiple_Pages == g_default_Number_Multiple_Pages );
+      break;
+
+      case 39:
+      retval = ( v_PDF_Font_Type == g_default_PDF_Font_Type );
+      break;
+
+      case 40:
+      retval = ( v_PDF_List_Type == g_default_PDF_List_Type );
+      break;
+
+      case 41:
+      retval = ( v_Parent_Class == g_default_Parent_Class );
+      break;
+
+      case 42:
+      retval = ( v_Parent_Field == g_default_Parent_Field );
+      break;
+
+      case 43:
+      retval = ( v_Print_Restriction == g_default_Print_Restriction );
+      break;
+
+      case 44:
+      retval = ( v_Print_Without_Highlight == g_default_Print_Without_Highlight );
+      break;
+
+      case 45:
+      retval = ( v_Search_Option_Limit == g_default_Search_Option_Limit );
+      break;
+
+      case 46:
+      retval = ( v_Sort_Rows_In_UI == g_default_Sort_Rows_In_UI );
+      break;
+
+      case 47:
+      retval = ( v_Style == g_default_Style );
+      break;
+
+      case 48:
+      retval = ( v_Text_Match_Highlight == g_default_Text_Match_Highlight );
+      break;
+
+      case 49:
+      retval = ( v_Title == g_default_Title );
+      break;
+
+      case 50:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      case 51:
+      retval = ( v_Variation_Name == g_default_Variation_Name );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_List::impl::get_state( ) const
@@ -5122,6 +5345,21 @@ string Meta_List::get_field_value( int field ) const
 void Meta_List::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_List::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_List::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_List::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_List::is_field_transient( int field ) const

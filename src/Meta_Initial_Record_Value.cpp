@@ -379,6 +379,8 @@ struct Meta_Initial_Record_Value::impl : public Meta_Initial_Record_Value_comman
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -459,7 +461,7 @@ string Meta_Initial_Record_Value::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -482,8 +484,33 @@ void Meta_Initial_Record_Value::impl::set_field_value( int field, const string& 
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Initial_Record_Value::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Field == g_default_Field );
+      break;
+
+      case 1:
+      retval = ( v_Initial_Record == g_default_Initial_Record );
+      break;
+
+      case 2:
+      retval = ( v_Value == g_default_Value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Initial_Record_Value::impl::get_state( ) const
@@ -840,6 +867,21 @@ string Meta_Initial_Record_Value::get_field_value( int field ) const
 void Meta_Initial_Record_Value::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Initial_Record_Value::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Initial_Record_Value::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Initial_Record_Value::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Initial_Record_Value::is_field_transient( int field ) const

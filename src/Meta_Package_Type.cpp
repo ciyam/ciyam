@@ -474,6 +474,8 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -734,7 +736,7 @@ string Meta_Package_Type::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -781,8 +783,57 @@ void Meta_Package_Type::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Package_Type::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_Dependencies == g_default_Dependencies );
+      break;
+
+      case 2:
+      retval = ( v_File == g_default_File );
+      break;
+
+      case 3:
+      retval = ( v_Installed == g_default_Installed );
+      break;
+
+      case 4:
+      retval = ( v_Multi == g_default_Multi );
+      break;
+
+      case 5:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 6:
+      retval = ( v_Plural == g_default_Plural );
+      break;
+
+      case 7:
+      retval = ( v_Single == g_default_Single );
+      break;
+
+      case 8:
+      retval = ( v_Version == g_default_Version );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Package_Type::impl::get_state( ) const
@@ -1273,6 +1324,21 @@ string Meta_Package_Type::get_field_value( int field ) const
 void Meta_Package_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Package_Type::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Package_Type::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Package_Type::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package_Type::is_field_transient( int field ) const

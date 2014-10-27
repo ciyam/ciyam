@@ -366,6 +366,9 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual bool has_field_changed( const std::string& field ) const = 0;
 
+   virtual bool is_field_default( int field ) const = 0;
+   virtual bool is_field_default( const std::string& field ) const = 0;
+
    virtual bool is_field_transient( int field ) const = 0;
    virtual std::string get_field_name( int field ) const = 0;
 

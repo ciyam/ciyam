@@ -2556,6 +2556,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -2862,7 +2864,7 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -2997,8 +2999,145 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Field::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Permission == g_default_Access_Permission );
+      break;
+
+      case 1:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 2:
+      retval = ( v_Access_Scope == g_default_Access_Scope );
+      break;
+
+      case 3:
+      retval = ( v_Change_Permission == g_default_Change_Permission );
+      break;
+
+      case 4:
+      retval = ( v_Change_Restriction == g_default_Change_Restriction );
+      break;
+
+      case 5:
+      retval = ( v_Change_Scope == g_default_Change_Scope );
+      break;
+
+      case 6:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 7:
+      retval = ( v_Create_List_Field == g_default_Create_List_Field );
+      break;
+
+      case 8:
+      retval = ( v_Create_View_Field == g_default_Create_View_Field );
+      break;
+
+      case 9:
+      retval = ( v_Def_Value == g_default_Def_Value );
+      break;
+
+      case 10:
+      retval = ( v_Default == g_default_Default );
+      break;
+
+      case 11:
+      retval = ( v_Dummy_1 == g_default_Dummy_1 );
+      break;
+
+      case 12:
+      retval = ( v_Enum == g_default_Enum );
+      break;
+
+      case 13:
+      retval = ( v_Extra == g_default_Extra );
+      break;
+
+      case 14:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 15:
+      retval = ( v_Internal == g_default_Internal );
+      break;
+
+      case 16:
+      retval = ( v_Is_Foreign_Key == g_default_Is_Foreign_Key );
+      break;
+
+      case 17:
+      retval = ( v_Is_Text_Type == g_default_Is_Text_Type );
+      break;
+
+      case 18:
+      retval = ( v_Mandatory == g_default_Mandatory );
+      break;
+
+      case 19:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 20:
+      retval = ( v_Numeric_Decimals == g_default_Numeric_Decimals );
+      break;
+
+      case 21:
+      retval = ( v_Parent_Class == g_default_Parent_Class );
+      break;
+
+      case 22:
+      retval = ( v_Parent_Class_Name == g_default_Parent_Class_Name );
+      break;
+
+      case 23:
+      retval = ( v_Primitive == g_default_Primitive );
+      break;
+
+      case 24:
+      retval = ( v_Source_Field == g_default_Source_Field );
+      break;
+
+      case 25:
+      retval = ( v_Transient == g_default_Transient );
+      break;
+
+      case 26:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      case 27:
+      retval = ( v_UOM == g_default_UOM );
+      break;
+
+      case 28:
+      retval = ( v_UOM_Name == g_default_UOM_Name );
+      break;
+
+      case 29:
+      retval = ( v_UOM_Symbol == g_default_UOM_Symbol );
+      break;
+
+      case 30:
+      retval = ( v_Use_In_Text_Search == g_default_Use_In_Text_Search );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Field::impl::get_state( ) const
@@ -4915,6 +5054,21 @@ string Meta_Field::get_field_value( int field ) const
 void Meta_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Field::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Field::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Field::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Field::is_field_transient( int field ) const

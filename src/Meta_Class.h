@@ -293,6 +293,10 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 
+   bool is_field_default( int field ) const;
+   bool is_field_default( field_id id ) const;
+   bool is_field_default( const std::string& field ) const;
+
    bool has_field_changed( const std::string& field ) const;
 
    bool is_field_transient( int field ) const;

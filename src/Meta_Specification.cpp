@@ -3730,6 +3730,8 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -4675,7 +4677,7 @@ string Meta_Specification::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -4990,8 +4992,325 @@ void Meta_Specification::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Specification::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_All_Strings == g_default_All_Strings );
+      break;
+
+      case 2:
+      retval = ( v_All_Vars == g_default_All_Vars );
+      break;
+
+      case 3:
+      retval = ( v_Child_Rel_Child_Class == g_default_Child_Rel_Child_Class );
+      break;
+
+      case 4:
+      retval = ( v_Child_Rel_Field_Key == g_default_Child_Rel_Field_Key );
+      break;
+
+      case 5:
+      retval = ( v_Child_Relationship == g_default_Child_Relationship );
+      break;
+
+      case 6:
+      retval = ( v_Child_Specification_Type == g_default_Child_Specification_Type );
+      break;
+
+      case 7:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 8:
+      retval = ( v_Comments == g_default_Comments );
+      break;
+
+      case 9:
+      retval = ( v_Enum == g_default_Enum );
+      break;
+
+      case 10:
+      retval = ( v_Enum_Item == g_default_Enum_Item );
+      break;
+
+      case 11:
+      retval = ( v_Enum_Item_2 == g_default_Enum_Item_2 );
+      break;
+
+      case 12:
+      retval = ( v_Enum_Item_3 == g_default_Enum_Item_3 );
+      break;
+
+      case 13:
+      retval = ( v_Enum_Item_4 == g_default_Enum_Item_4 );
+      break;
+
+      case 14:
+      retval = ( v_Enum_Item_5 == g_default_Enum_Item_5 );
+      break;
+
+      case 15:
+      retval = ( v_Field == g_default_Field );
+      break;
+
+      case 16:
+      retval = ( v_Field_Class == g_default_Field_Class );
+      break;
+
+      case 17:
+      retval = ( v_Field_Pairs == g_default_Field_Pairs );
+      break;
+
+      case 18:
+      retval = ( v_Field_Values == g_default_Field_Values );
+      break;
+
+      case 19:
+      retval = ( v_Fields == g_default_Fields );
+      break;
+
+      case 20:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 21:
+      retval = ( v_Is_Required_For_UI_Gen == g_default_Is_Required_For_UI_Gen );
+      break;
+
+      case 22:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 23:
+      retval = ( v_Modifier == g_default_Modifier );
+      break;
+
+      case 24:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 25:
+      retval = ( v_Options == g_default_Options );
+      break;
+
+      case 26:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      case 27:
+      retval = ( v_Other_Class == g_default_Other_Class );
+      break;
+
+      case 28:
+      retval = ( v_Other_Class_Field == g_default_Other_Class_Field );
+      break;
+
+      case 29:
+      retval = ( v_Other_Field == g_default_Other_Field );
+      break;
+
+      case 30:
+      retval = ( v_Other_Field_2 == g_default_Other_Field_2 );
+      break;
+
+      case 31:
+      retval = ( v_Other_Modifier == g_default_Other_Modifier );
+      break;
+
+      case 32:
+      retval = ( v_Other_Modifier_2 == g_default_Other_Modifier_2 );
+      break;
+
+      case 33:
+      retval = ( v_Other_Permission == g_default_Other_Permission );
+      break;
+
+      case 34:
+      retval = ( v_Other_Permission_2 == g_default_Other_Permission_2 );
+      break;
+
+      case 35:
+      retval = ( v_Other_Procedure == g_default_Other_Procedure );
+      break;
+
+      case 36:
+      retval = ( v_Other_Procedure_2 == g_default_Other_Procedure_2 );
+      break;
+
+      case 37:
+      retval = ( v_Other_Source_Child == g_default_Other_Source_Child );
+      break;
+
+      case 38:
+      retval = ( v_Other_Source_Child_2 == g_default_Other_Source_Child_2 );
+      break;
+
+      case 39:
+      retval = ( v_Parent_Specification == g_default_Parent_Specification );
+      break;
+
+      case 40:
+      retval = ( v_Permission == g_default_Permission );
+      break;
+
+      case 41:
+      retval = ( v_Procedure == g_default_Procedure );
+      break;
+
+      case 42:
+      retval = ( v_Procedure_Arg == g_default_Procedure_Arg );
+      break;
+
+      case 43:
+      retval = ( v_Procedure_Arg_2 == g_default_Procedure_Arg_2 );
+      break;
+
+      case 44:
+      retval = ( v_Procedure_Arg_3 == g_default_Procedure_Arg_3 );
+      break;
+
+      case 45:
+      retval = ( v_Protect_Child_Rel == g_default_Protect_Child_Rel );
+      break;
+
+      case 46:
+      retval = ( v_Protect_Procedure == g_default_Protect_Procedure );
+      break;
+
+      case 47:
+      retval = ( v_Protect_Source_Parent == g_default_Protect_Source_Parent );
+      break;
+
+      case 48:
+      retval = ( v_Restrict_Values == g_default_Restrict_Values );
+      break;
+
+      case 49:
+      retval = ( v_Source_Child == g_default_Source_Child );
+      break;
+
+      case 50:
+      retval = ( v_Source_Child_Class == g_default_Source_Child_Class );
+      break;
+
+      case 51:
+      retval = ( v_Source_Class == g_default_Source_Class );
+      break;
+
+      case 52:
+      retval = ( v_Source_Field == g_default_Source_Field );
+      break;
+
+      case 53:
+      retval = ( v_Source_Field_Class == g_default_Source_Field_Class );
+      break;
+
+      case 54:
+      retval = ( v_Source_Grandchild == g_default_Source_Grandchild );
+      break;
+
+      case 55:
+      retval = ( v_Source_Parent == g_default_Source_Parent );
+      break;
+
+      case 56:
+      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
+      break;
+
+      case 57:
+      retval = ( v_Specification_Type == g_default_Specification_Type );
+      break;
+
+      case 58:
+      retval = ( v_Strings == g_default_Strings );
+      break;
+
+      case 59:
+      retval = ( v_Test_Child == g_default_Test_Child );
+      break;
+
+      case 60:
+      retval = ( v_Test_Field == g_default_Test_Field );
+      break;
+
+      case 61:
+      retval = ( v_Test_Field_Class == g_default_Test_Field_Class );
+      break;
+
+      case 62:
+      retval = ( v_Test_Parent == g_default_Test_Parent );
+      break;
+
+      case 63:
+      retval = ( v_Test_Parent_Class == g_default_Test_Parent_Class );
+      break;
+
+      case 64:
+      retval = ( v_Test_Value == g_default_Test_Value );
+      break;
+
+      case 65:
+      retval = ( v_Test_Value_Label == g_default_Test_Value_Label );
+      break;
+
+      case 66:
+      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      break;
+
+      case 67:
+      retval = ( v_Use_Test_Parent_Child == g_default_Use_Test_Parent_Child );
+      break;
+
+      case 68:
+      retval = ( v_Value == g_default_Value );
+      break;
+
+      case 69:
+      retval = ( v_Value_Label == g_default_Value_Label );
+      break;
+
+      case 70:
+      retval = ( v_Value_Left_Part == g_default_Value_Left_Part );
+      break;
+
+      case 71:
+      retval = ( v_Value_Literal == g_default_Value_Literal );
+      break;
+
+      case 72:
+      retval = ( v_Value_Numeric_String == g_default_Value_Numeric_String );
+      break;
+
+      case 73:
+      retval = ( v_Value_Right_Part == g_default_Value_Right_Part );
+      break;
+
+      case 74:
+      retval = ( v_Value_String == g_default_Value_String );
+      break;
+
+      case 75:
+      retval = ( v_Vars == g_default_Vars );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Specification::impl::get_state( ) const
@@ -8948,6 +9267,21 @@ string Meta_Specification::get_field_value( int field ) const
 void Meta_Specification::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Specification::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Specification::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Specification::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Specification::is_field_transient( int field ) const

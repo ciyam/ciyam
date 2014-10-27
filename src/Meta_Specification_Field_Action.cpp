@@ -845,6 +845,8 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -1012,7 +1014,7 @@ string Meta_Specification_Field_Action::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1051,8 +1053,49 @@ void Meta_Specification_Field_Action::impl::set_field_value( int field, const st
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Specification_Field_Action::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 1:
+      retval = ( v_Clone_Key == g_default_Clone_Key );
+      break;
+
+      case 2:
+      retval = ( v_Create_Type == g_default_Create_Type );
+      break;
+
+      case 3:
+      retval = ( v_New_Record_Class == g_default_New_Record_Class );
+      break;
+
+      case 4:
+      retval = ( v_New_Record_FK_Field == g_default_New_Record_FK_Field );
+      break;
+
+      case 5:
+      retval = ( v_New_Record_FK_Value == g_default_New_Record_FK_Value );
+      break;
+
+      case 6:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Specification_Field_Action::impl::get_state( ) const
@@ -1530,6 +1573,26 @@ void Meta_Specification_Field_Action::set_field_value( int field, const string& 
       parent_class_type::set_field_value( field, value );
    else
       p_impl->set_field_value( field - num_parent_fields, value );
+}
+
+bool Meta_Specification_Field_Action::is_field_default( int field ) const
+{
+   int num_parent_fields( parent_class_type::get_num_fields( ) );
+
+   if( field < num_parent_fields )
+      return parent_class_type::is_field_default( field );
+   else
+      return is_field_default( ( field_id )( field - num_parent_fields + 1 ) );
+}
+
+bool Meta_Specification_Field_Action::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Specification_Field_Action::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Specification_Field_Action::is_field_transient( int field ) const
