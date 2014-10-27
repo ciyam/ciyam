@@ -429,6 +429,8 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -527,7 +529,7 @@ string Meta_List_Type::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -566,8 +568,49 @@ void Meta_List_Type::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_List_Type::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Dummy_0 == g_default_Dummy_0 );
+      break;
+
+      case 1:
+      retval = ( v_Is_Admin == g_default_Is_Admin );
+      break;
+
+      case 2:
+      retval = ( v_Is_Child == g_default_Is_Child );
+      break;
+
+      case 3:
+      retval = ( v_Is_Home == g_default_Is_Home );
+      break;
+
+      case 4:
+      retval = ( v_Is_Not_Anonymous == g_default_Is_Not_Anonymous );
+      break;
+
+      case 5:
+      retval = ( v_List_Name == g_default_List_Name );
+      break;
+
+      case 6:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_List_Type::impl::get_state( ) const
@@ -965,6 +1008,21 @@ string Meta_List_Type::get_field_value( int field ) const
 void Meta_List_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_List_Type::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_List_Type::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_List_Type::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Type::is_field_transient( int field ) const

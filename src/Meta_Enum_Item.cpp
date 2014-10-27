@@ -522,6 +522,8 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -748,7 +750,7 @@ string Meta_Enum_Item::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -779,8 +781,41 @@ void Meta_Enum_Item::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Enum_Item::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Enum == g_default_Enum );
+      break;
+
+      case 1:
+      retval = ( v_Internal == g_default_Internal );
+      break;
+
+      case 2:
+      retval = ( v_Label == g_default_Label );
+      break;
+
+      case 3:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      case 4:
+      retval = ( v_Value == g_default_Value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Enum_Item::impl::get_state( ) const
@@ -1268,6 +1303,21 @@ string Meta_Enum_Item::get_field_value( int field ) const
 void Meta_Enum_Item::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Enum_Item::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Enum_Item::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Enum_Item::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Enum_Item::is_field_transient( int field ) const

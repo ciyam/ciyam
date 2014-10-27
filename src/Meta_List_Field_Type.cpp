@@ -741,6 +741,8 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -914,7 +916,7 @@ string Meta_List_Field_Type::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1013,8 +1015,109 @@ void Meta_List_Field_Type::impl::set_field_value( int field, const string& value
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_List_Field_Type::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Allow_Child_Rel_Select_Specifics == g_default_Allow_Child_Rel_Select_Specifics );
+      break;
+
+      case 1:
+      retval = ( v_Allow_Exclude_In_Use_FK == g_default_Allow_Exclude_In_Use_FK );
+      break;
+
+      case 2:
+      retval = ( v_Allow_Link_Empty_Restriction == g_default_Allow_Link_Empty_Restriction );
+      break;
+
+      case 3:
+      retval = ( v_Allow_Link_Permission == g_default_Allow_Link_Permission );
+      break;
+
+      case 4:
+      retval = ( v_Allow_Link_Specifics == g_default_Allow_Link_Specifics );
+      break;
+
+      case 5:
+      retval = ( v_Allow_Link_Type == g_default_Allow_Link_Type );
+      break;
+
+      case 6:
+      retval = ( v_Allow_Procedure == g_default_Allow_Procedure );
+      break;
+
+      case 7:
+      retval = ( v_Allow_Restriction_Field == g_default_Allow_Restriction_Field );
+      break;
+
+      case 8:
+      retval = ( v_Allow_Restriction_Spec == g_default_Allow_Restriction_Spec );
+      break;
+
+      case 9:
+      retval = ( v_Allow_Restriction_Value == g_default_Allow_Restriction_Value );
+      break;
+
+      case 10:
+      retval = ( v_Allow_Search_Option_Limit == g_default_Allow_Search_Option_Limit );
+      break;
+
+      case 11:
+      retval = ( v_Allow_Select_Specifics == g_default_Allow_Select_Specifics );
+      break;
+
+      case 12:
+      retval = ( v_Allow_Sort_Manually == g_default_Allow_Sort_Manually );
+      break;
+
+      case 13:
+      retval = ( v_Allow_View_Parent_Extra == g_default_Allow_View_Parent_Extra );
+      break;
+
+      case 14:
+      retval = ( v_Is_Restrict_Search == g_default_Is_Restrict_Search );
+      break;
+
+      case 15:
+      retval = ( v_List_Field_Name == g_default_List_Field_Name );
+      break;
+
+      case 16:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 17:
+      retval = ( v_Needs_Restriction_Field == g_default_Needs_Restriction_Field );
+      break;
+
+      case 18:
+      retval = ( v_Needs_Source == g_default_Needs_Source );
+      break;
+
+      case 19:
+      retval = ( v_Needs_Switch_Type == g_default_Needs_Switch_Type );
+      break;
+
+      case 20:
+      retval = ( v_Non_Simple_Field == g_default_Non_Simple_Field );
+      break;
+
+      case 21:
+      retval = ( v_Trivial_Field_Only == g_default_Trivial_Field_Only );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_List_Field_Type::impl::get_state( ) const
@@ -1577,6 +1680,21 @@ string Meta_List_Field_Type::get_field_value( int field ) const
 void Meta_List_Field_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_List_Field_Type::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_List_Field_Type::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_List_Field_Type::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Field_Type::is_field_transient( int field ) const

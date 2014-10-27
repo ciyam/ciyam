@@ -1904,6 +1904,8 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -2267,7 +2269,7 @@ string Meta_Package_Option::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -2478,8 +2480,221 @@ void Meta_Package_Option::impl::set_field_value( int field, const string& value 
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_Package_Option::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Actions == g_default_Actions );
+      break;
+
+      case 1:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 2:
+      retval = ( v_Date == g_default_Date );
+      break;
+
+      case 3:
+      retval = ( v_Datetime == g_default_Datetime );
+      break;
+
+      case 4:
+      retval = ( v_Field == g_default_Field );
+      break;
+
+      case 5:
+      retval = ( v_Has_Field == g_default_Has_Field );
+      break;
+
+      case 6:
+      retval = ( v_Has_List == g_default_Has_List );
+      break;
+
+      case 7:
+      retval = ( v_Has_Modifier == g_default_Has_Modifier );
+      break;
+
+      case 8:
+      retval = ( v_Has_Other_Field == g_default_Has_Other_Field );
+      break;
+
+      case 9:
+      retval = ( v_Has_Other_Field_2 == g_default_Has_Other_Field_2 );
+      break;
+
+      case 10:
+      retval = ( v_Has_Other_Source_Field == g_default_Has_Other_Source_Field );
+      break;
+
+      case 11:
+      retval = ( v_Has_Procedure == g_default_Has_Procedure );
+      break;
+
+      case 12:
+      retval = ( v_Has_Source_Field == g_default_Has_Source_Field );
+      break;
+
+      case 13:
+      retval = ( v_Has_View == g_default_Has_View );
+      break;
+
+      case 14:
+      retval = ( v_Id == g_default_Id );
+      break;
+
+      case 15:
+      retval = ( v_Installed == g_default_Installed );
+      break;
+
+      case 16:
+      retval = ( v_Integer == g_default_Integer );
+      break;
+
+      case 17:
+      retval = ( v_Is_Class == g_default_Is_Class );
+      break;
+
+      case 18:
+      retval = ( v_Is_Mandatory_Class == g_default_Is_Mandatory_Class );
+      break;
+
+      case 19:
+      retval = ( v_Is_Mandatory_Field == g_default_Is_Mandatory_Field );
+      break;
+
+      case 20:
+      retval = ( v_Is_Mandatory_List == g_default_Is_Mandatory_List );
+      break;
+
+      case 21:
+      retval = ( v_Is_Mandatory_Modifier == g_default_Is_Mandatory_Modifier );
+      break;
+
+      case 22:
+      retval = ( v_Is_Mandatory_Other_Field == g_default_Is_Mandatory_Other_Field );
+      break;
+
+      case 23:
+      retval = ( v_Is_Mandatory_Other_Field_2 == g_default_Is_Mandatory_Other_Field_2 );
+      break;
+
+      case 24:
+      retval = ( v_Is_Mandatory_Other_Source_Field == g_default_Is_Mandatory_Other_Source_Field );
+      break;
+
+      case 25:
+      retval = ( v_Is_Mandatory_Procedure == g_default_Is_Mandatory_Procedure );
+      break;
+
+      case 26:
+      retval = ( v_Is_Mandatory_Source_Field == g_default_Is_Mandatory_Source_Field );
+      break;
+
+      case 27:
+      retval = ( v_Is_Mandatory_View == g_default_Is_Mandatory_View );
+      break;
+
+      case 28:
+      retval = ( v_Is_Other_Package == g_default_Is_Other_Package );
+      break;
+
+      case 29:
+      retval = ( v_List == g_default_List );
+      break;
+
+      case 30:
+      retval = ( v_Model == g_default_Model );
+      break;
+
+      case 31:
+      retval = ( v_Modifier == g_default_Modifier );
+      break;
+
+      case 32:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 33:
+      retval = ( v_Notes == g_default_Notes );
+      break;
+
+      case 34:
+      retval = ( v_Numeric == g_default_Numeric );
+      break;
+
+      case 35:
+      retval = ( v_Other_Field == g_default_Other_Field );
+      break;
+
+      case 36:
+      retval = ( v_Other_Field_2 == g_default_Other_Field_2 );
+      break;
+
+      case 37:
+      retval = ( v_Other_Package == g_default_Other_Package );
+      break;
+
+      case 38:
+      retval = ( v_Other_Package_Required == g_default_Other_Package_Required );
+      break;
+
+      case 39:
+      retval = ( v_Other_Package_Type == g_default_Other_Package_Type );
+      break;
+
+      case 40:
+      retval = ( v_Other_Source_Field == g_default_Other_Source_Field );
+      break;
+
+      case 41:
+      retval = ( v_Package == g_default_Package );
+      break;
+
+      case 42:
+      retval = ( v_Primitive == g_default_Primitive );
+      break;
+
+      case 43:
+      retval = ( v_Procedure == g_default_Procedure );
+      break;
+
+      case 44:
+      retval = ( v_Source_Field == g_default_Source_Field );
+      break;
+
+      case 45:
+      retval = ( v_String == g_default_String );
+      break;
+
+      case 46:
+      retval = ( v_Time == g_default_Time );
+      break;
+
+      case 47:
+      retval = ( v_Use_Option == g_default_Use_Option );
+      break;
+
+      case 48:
+      retval = ( v_Value == g_default_Value );
+      break;
+
+      case 49:
+      retval = ( v_View == g_default_View );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_Package_Option::impl::get_state( ) const
@@ -3777,6 +3992,21 @@ string Meta_Package_Option::get_field_value( int field ) const
 void Meta_Package_Option::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_Package_Option::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_Package_Option::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_Package_Option::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package_Option::is_field_transient( int field ) const

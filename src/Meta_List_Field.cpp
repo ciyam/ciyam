@@ -2692,6 +2692,8 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -3206,7 +3208,7 @@ string Meta_List_Field::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -3437,8 +3439,241 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_List_Field::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Parent_Modifier == g_default_Access_Parent_Modifier );
+      break;
+
+      case 1:
+      retval = ( v_Access_Permission == g_default_Access_Permission );
+      break;
+
+      case 2:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 3:
+      retval = ( v_Alignment == g_default_Alignment );
+      break;
+
+      case 4:
+      retval = ( v_Allow_Anonymous_Access == g_default_Allow_Anonymous_Access );
+      break;
+
+      case 5:
+      retval = ( v_Child_Rel_Child_Class == g_default_Child_Rel_Child_Class );
+      break;
+
+      case 6:
+      retval = ( v_Child_Rel_Source_Child == g_default_Child_Rel_Source_Child );
+      break;
+
+      case 7:
+      retval = ( v_Child_Rel_Source_Field == g_default_Child_Rel_Source_Field );
+      break;
+
+      case 8:
+      retval = ( v_Child_Rel_Source_Parent == g_default_Child_Rel_Source_Parent );
+      break;
+
+      case 9:
+      retval = ( v_Child_Rel_Source_Parent_Class == g_default_Child_Rel_Source_Parent_Class );
+      break;
+
+      case 10:
+      retval = ( v_Child_Relationship == g_default_Child_Relationship );
+      break;
+
+      case 11:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 12:
+      retval = ( v_Exact_Match_Only == g_default_Exact_Match_Only );
+      break;
+
+      case 13:
+      retval = ( v_Exclude_In_Use_FK == g_default_Exclude_In_Use_FK );
+      break;
+
+      case 14:
+      retval = ( v_Font_Size == g_default_Font_Size );
+      break;
+
+      case 15:
+      retval = ( v_Include_Key_Additions == g_default_Include_Key_Additions );
+      break;
+
+      case 16:
+      retval = ( v_Label_Class == g_default_Label_Class );
+      break;
+
+      case 17:
+      retval = ( v_Label_Source == g_default_Label_Source );
+      break;
+
+      case 18:
+      retval = ( v_Label_Without_Prefix == g_default_Label_Without_Prefix );
+      break;
+
+      case 19:
+      retval = ( v_Link_Empty_Restriction == g_default_Link_Empty_Restriction );
+      break;
+
+      case 20:
+      retval = ( v_Link_Permission == g_default_Link_Permission );
+      break;
+
+      case 21:
+      retval = ( v_Link_Restriction == g_default_Link_Restriction );
+      break;
+
+      case 22:
+      retval = ( v_Link_Type == g_default_Link_Type );
+      break;
+
+      case 23:
+      retval = ( v_List == g_default_List );
+      break;
+
+      case 24:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 25:
+      retval = ( v_Non_Instance_Procedure == g_default_Non_Instance_Procedure );
+      break;
+
+      case 26:
+      retval = ( v_Notes_Truncation == g_default_Notes_Truncation );
+      break;
+
+      case 27:
+      retval = ( v_Omit_Versions == g_default_Omit_Versions );
+      break;
+
+      case 28:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      case 29:
+      retval = ( v_Parent_Class == g_default_Parent_Class );
+      break;
+
+      case 30:
+      retval = ( v_Print_Type == g_default_Print_Type );
+      break;
+
+      case 31:
+      retval = ( v_Procedure == g_default_Procedure );
+      break;
+
+      case 32:
+      retval = ( v_Procedure_Args == g_default_Procedure_Args );
+      break;
+
+      case 33:
+      retval = ( v_Restriction_Field == g_default_Restriction_Field );
+      break;
+
+      case 34:
+      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
+      break;
+
+      case 35:
+      retval = ( v_Restriction_Value == g_default_Restriction_Value );
+      break;
+
+      case 36:
+      retval = ( v_Retain_Selected_Rows == g_default_Retain_Selected_Rows );
+      break;
+
+      case 37:
+      retval = ( v_Reverse_Order == g_default_Reverse_Order );
+      break;
+
+      case 38:
+      retval = ( v_Search_Option_Limit == g_default_Search_Option_Limit );
+      break;
+
+      case 39:
+      retval = ( v_Select_Key_Exclusions == g_default_Select_Key_Exclusions );
+      break;
+
+      case 40:
+      retval = ( v_Sort_Manually == g_default_Sort_Manually );
+      break;
+
+      case 41:
+      retval = ( v_Source_Child == g_default_Source_Child );
+      break;
+
+      case 42:
+      retval = ( v_Source_Child_Class == g_default_Source_Child_Class );
+      break;
+
+      case 43:
+      retval = ( v_Source_Field == g_default_Source_Field );
+      break;
+
+      case 44:
+      retval = ( v_Source_Grandchild == g_default_Source_Grandchild );
+      break;
+
+      case 45:
+      retval = ( v_Source_Parent == g_default_Source_Parent );
+      break;
+
+      case 46:
+      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
+      break;
+
+      case 47:
+      retval = ( v_Switch_Type == g_default_Switch_Type );
+      break;
+
+      case 48:
+      retval = ( v_Trigger_Option == g_default_Trigger_Option );
+      break;
+
+      case 49:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      case 50:
+      retval = ( v_Use_Child_Rel_Source_Parent == g_default_Use_Child_Rel_Source_Parent );
+      break;
+
+      case 51:
+      retval = ( v_Use_In_Text_Search_Title == g_default_Use_In_Text_Search_Title );
+      break;
+
+      case 52:
+      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      break;
+
+      case 53:
+      retval = ( v_Use_Type_Field == g_default_Use_Type_Field );
+      break;
+
+      case 54:
+      retval = ( v_View_Parent_Extra == g_default_View_Parent_Extra );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_List_Field::impl::get_state( ) const
@@ -5248,6 +5483,21 @@ string Meta_List_Field::get_field_value( int field ) const
 void Meta_List_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_List_Field::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_List_Field::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_List_Field::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Field::is_field_transient( int field ) const

@@ -2153,6 +2153,8 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -2580,7 +2582,7 @@ string Meta_View_Field::impl::get_field_value( int field ) const
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -2759,8 +2761,189 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
       break;
 
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool Meta_View_Field::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+      case 0:
+      retval = ( v_Access_Permission == g_default_Access_Permission );
+      break;
+
+      case 1:
+      retval = ( v_Access_Restriction == g_default_Access_Restriction );
+      break;
+
+      case 2:
+      retval = ( v_Access_Scope == g_default_Access_Scope );
+      break;
+
+      case 3:
+      retval = ( v_Alignment == g_default_Alignment );
+      break;
+
+      case 4:
+      retval = ( v_Allow_Anonymous_Access == g_default_Allow_Anonymous_Access );
+      break;
+
+      case 5:
+      retval = ( v_Change_Permission == g_default_Change_Permission );
+      break;
+
+      case 6:
+      retval = ( v_Change_Restriction == g_default_Change_Restriction );
+      break;
+
+      case 7:
+      retval = ( v_Change_Scope == g_default_Change_Scope );
+      break;
+
+      case 8:
+      retval = ( v_Child_List_Extra_Option == g_default_Child_List_Extra_Option );
+      break;
+
+      case 9:
+      retval = ( v_Class == g_default_Class );
+      break;
+
+      case 10:
+      retval = ( v_Date_Precision_Option == g_default_Date_Precision_Option );
+      break;
+
+      case 11:
+      retval = ( v_Enum_Finishes_At == g_default_Enum_Finishes_At );
+      break;
+
+      case 12:
+      retval = ( v_Enum_Starts_At == g_default_Enum_Starts_At );
+      break;
+
+      case 13:
+      retval = ( v_FK_Trigger_Behaviour == g_default_FK_Trigger_Behaviour );
+      break;
+
+      case 14:
+      retval = ( v_FK_Trigger_Option == g_default_FK_Trigger_Option );
+      break;
+
+      case 15:
+      retval = ( v_Font_Size == g_default_Font_Size );
+      break;
+
+      case 16:
+      retval = ( v_Ignore_Manual_Links == g_default_Ignore_Manual_Links );
+      break;
+
+      case 17:
+      retval = ( v_Label_Without_Prefix == g_default_Label_Without_Prefix );
+      break;
+
+      case 18:
+      retval = ( v_Link_Permission == g_default_Link_Permission );
+      break;
+
+      case 19:
+      retval = ( v_Link_Restriction == g_default_Link_Restriction );
+      break;
+
+      case 20:
+      retval = ( v_Mandatory_Option == g_default_Mandatory_Option );
+      break;
+
+      case 21:
+      retval = ( v_Name == g_default_Name );
+      break;
+
+      case 22:
+      retval = ( v_New_Source == g_default_New_Source );
+      break;
+
+      case 23:
+      retval = ( v_New_Value == g_default_New_Value );
+      break;
+
+      case 24:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      case 25:
+      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
+      break;
+
+      case 26:
+      retval = ( v_Show_Hide_Start_Point == g_default_Show_Hide_Start_Point );
+      break;
+
+      case 27:
+      retval = ( v_Sort_Manually == g_default_Sort_Manually );
+      break;
+
+      case 28:
+      retval = ( v_Source_Child == g_default_Source_Child );
+      break;
+
+      case 29:
+      retval = ( v_Source_Edit_Child == g_default_Source_Edit_Child );
+      break;
+
+      case 30:
+      retval = ( v_Source_Field == g_default_Source_Field );
+      break;
+
+      case 31:
+      retval = ( v_Source_Parent == g_default_Source_Parent );
+      break;
+
+      case 32:
+      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
+      break;
+
+      case 33:
+      retval = ( v_Tab_Name == g_default_Tab_Name );
+      break;
+
+      case 34:
+      retval = ( v_Trigger_Behaviour == g_default_Trigger_Behaviour );
+      break;
+
+      case 35:
+      retval = ( v_Trigger_For_State == g_default_Trigger_For_State );
+      break;
+
+      case 36:
+      retval = ( v_Trigger_Option == g_default_Trigger_Option );
+      break;
+
+      case 37:
+      retval = ( v_Type == g_default_Type );
+      break;
+
+      case 38:
+      retval = ( v_Use_Full_Height == g_default_Use_Full_Height );
+      break;
+
+      case 39:
+      retval = ( v_Use_Full_Width == g_default_Use_Full_Width );
+      break;
+
+      case 40:
+      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      break;
+
+      case 41:
+      retval = ( v_View == g_default_View );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t Meta_View_Field::impl::get_state( ) const
@@ -4067,6 +4250,21 @@ string Meta_View_Field::get_field_value( int field ) const
 void Meta_View_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+bool Meta_View_Field::is_field_default( int field ) const
+{
+   return is_field_default( ( field_id )( field + 1 ) );
+}
+
+bool Meta_View_Field::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool Meta_View_Field::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool Meta_View_Field::is_field_transient( int field ) const

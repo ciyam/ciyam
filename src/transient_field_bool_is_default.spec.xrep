@@ -1,6 +1,12 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_bool_is_default)] `{`$arg_id`}
+`{`!`@eq`(`$arg_pfield`,`'`'`)\
+   get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( ); // KLUDGE: To ensure a fetch has been forced for the FK.
+
+   if( `{`@eq`(`$arg_is_neq`,`'true`'`)!`}get_obj( ).`{`$arg_pfield`}( ).is_field_default( "`{`$arg_sfield`}" ) )
+`,\
    if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
+`}\
       get_obj( ).`{`$arg_field`}( true );
    else
       get_obj( ).`{`$arg_field`}( false );

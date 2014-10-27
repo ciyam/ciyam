@@ -736,6 +736,8 @@ struct \$::impl : public \$_command_handler
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
+   bool is_field_default( int field ) const;
+
    uint64_t get_state( ) const;
 
    const string& execute( const string& cmd_and_args );
@@ -1016,7 +1018,7 @@ string `{`$full_class_name`}::impl::get_field_value( int field ) const
       break;
 `+\n`]`}
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in get field value" );
    }
 
    return retval;
@@ -1032,8 +1034,26 @@ void `{`$full_class_name`}::impl::set_field_value( int field, const string& valu
       break;
 `+\n`]`}
       default:
-      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
+}
+
+bool `{`$full_class_name`}::impl::is_field_default( int field ) const
+{
+   bool retval = false;
+
+   switch( field )
+   {
+`{`?`$all_fields`[`$all_fields`%,`,\
+      case \#:
+      retval = ( v_\0 == g_default_\0 );
+      break;
+`+\n`]`}
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in is_field_default" );
+   }
+
+   return retval;
 }
 
 uint64_t `{`$full_class_name`}::impl::get_state( ) const
@@ -1659,7 +1679,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_bool_is_default`'`)
 `{`#transient_field_bool_is_default.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_is_neq=$specification_\0_is_neq`}\
+ arg_pfield=$specification_\0_pfield arg_is_neq=$specification_\0_is_neq`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_uid`'`)
 `{`#transient_field_bool_uid.spec.xrep section=after_fetch class_name=$class_name\
@@ -1835,7 +1855,7 @@ void `{`$full_class_name`}::impl::post_init( )
 `@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_bool_is_default.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}
+ arg_pfield=$specification_\0_pfield arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}
 `,\
 `@eq`(`'\1`'`,`'field_bool_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_bool_uid.spec.xrep section=post_init class_name=$class_name\
@@ -1984,7 +2004,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}\
+ arg_pfield=$specification_\0_pfield arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_uid.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2307,7 +2327,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}\
+ arg_pfield=$specification_\0_pfield arg_is_neq=$specification_\0_is_neq arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_matched_clone`'`)
 `{`#field_bool_matched_clone.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
@@ -2515,7 +2535,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
  arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`'\$`'`,`$specification_\0_oprocedure`)
+`@eq`(`'\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`'`'`,`$specification_\0_oprocedure`)
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
@@ -2647,7 +2667,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_dchild=$specification_\0_dchild arg_fk_back_to_self=$specification_\0_fk_back_to_self\
  arg_fk_src_child_branch=$specification_\0_fk_src_child_branch arg_create_or_update=$specification_\0_create_or_update`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)`&`@eq`(`'\$`'`,`$specification_\0_oprocedure`)
+`@eq`(`'\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)`&`@eq`(`'`'`,`$specification_\0_oprocedure`)
 `{`#trigger_execute.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
@@ -2972,6 +2992,30 @@ void `{`$full_class_name`}::set_field_value( int field, const string& value )
    else
       p_impl->set_field_value( field - num_parent_fields, value );\
 `}
+}
+
+bool `{`$full_class_name`}::is_field_default( int field ) const
+{
+`{`!`(`?`$parent_class`)\
+   return is_field_default( ( field_id )( field + 1 ) );\
+`,\
+   int num_parent_fields( parent_class_type::get_num_fields( ) );
+
+   if( field < num_parent_fields )
+      return parent_class_type::is_field_default( field );
+   else
+      return is_field_default( ( field_id )( field - num_parent_fields + 1 ) );\
+`}
+}
+
+bool `{`$full_class_name`}::is_field_default( field_id id ) const
+{
+   return p_impl->is_field_default( ( int )id - 1 );
+}
+
+bool `{`$full_class_name`}::is_field_default( const string& field ) const
+{
+   return p_impl->is_field_default( get_field_num( field ) );
 }
 
 bool `{`$full_class_name`}::is_field_transient( int field ) const
