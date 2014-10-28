@@ -2814,9 +2814,10 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `{`?`$all_is_filtered_specifications`[`$all_is_filtered_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'filter_field_value`'`)\
 `{`#filter_field_value.spec.xrep section=is_filtered arg_name=\0\
- arg_id=$specification_\0_id arg_field=$specification_\0_field\
- arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield\
- arg_spfield=$specification_\0_spfield arg_perm=$specification_\0_perm`}
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
+ arg_tfield=$specification_\0_tfield arg_spfield=$specification_\0_spfield\
+ arg_modifier=$specification_\0_modifier arg_perm=$specification_\0_perm\
+ arg_print_only=$specification_\0_print_only`}
 `,\
 `@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)\
 `{`#filter_fk_in_uid_set.spec.xrep section=is_filtered arg_name=\0\

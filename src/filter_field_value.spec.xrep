@@ -1,23 +1,16 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start filter_field_value)] `{`$arg_id`}
-`{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_perm`,`'`'`)\
-   if( get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
-`,\
-   if( !get_perms( ).count( "`{`$arg_perm`}" )
-    && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
-`}`,\
-   if( get_obj( ).`{`$arg_tfield`}( )
-`{`!`@eq`(`$arg_perm`,`'`'`)\
-    && !get_perms( ).count( "`{`$arg_perm`}" )
-`}\
-    && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
-`}\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_perm`,`'`'`)!get_perms( ).count( "`{`$arg_perm`}" )
+    && `}`{`@eq`(`$arg_print_only`,`'true`'`)!get_obj( ).get_variable( get_special_var_name( e_special_var_print ) ).empty( )
+    && `}get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
-`{`@eq`(`$arg_spfield`,`'`'`)
-      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`} )
+`{`@eq`(`$arg_spfield`,`'`'`)\
+      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+       && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
-      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`} && ( !get_obj( ).get_graph_parent( )
+      if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+       && ( state & c_modifier_`{`$arg_modifier`} )`} && ( !get_obj( ).get_graph_parent( )
        || ( get_obj( ).get_graph_parent( )->get_class_id( ) == get_obj( ).`{`$arg_spfield`}( ).get_class_id( ) ) ) )
 `}\
          return true;
