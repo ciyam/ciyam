@@ -57,6 +57,7 @@ enum special_var
    e_special_var_async,
    e_special_var_class,
    e_special_var_embed,
+   e_special_var_print,
    e_special_var_quiet,
    e_special_var_title,
    e_special_var_cloned,

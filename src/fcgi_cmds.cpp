@@ -675,8 +675,8 @@ bool fetch_list_info( const string& module,
  const string& filters, const string& search_text, const string& search_query,
  const string& set_field_values, data_container& rows, const string& exclude_key_info,
  bool* p_prev, string* p_perms, const string* p_security_info, const string* p_extra_debug,
- const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
- const string* p_pdf_link_filename, string* p_pdf_view_file_name, bool* p_can_delete_any )
+ const set< string >* p_exclude_keys, const string* p_pdf_spec_name, const string* p_pdf_link_filename,
+ string* p_pdf_view_file_name, bool* p_can_delete_any, bool is_printable )
 {
    bool okay = true;
 
@@ -726,8 +726,15 @@ bool fetch_list_info( const string& module,
    if( !search_query.empty( ) )
       fetch_cmd += " \"-q=" + search_query + "\"";
 
-   if( get_storage_info( ).embed_images )
-      fetch_cmd += " -x=@embed=1";
+   if( ( is_printable || p_pdf_spec_name ) || get_storage_info( ).embed_images )
+   {
+      if( ( is_printable || p_pdf_spec_name ) && get_storage_info( ).embed_images )
+         fetch_cmd += " -x=@print=1,@embed=1";
+      else if( is_printable || p_pdf_spec_name )
+         fetch_cmd += " -x=@print=1";
+      else
+         fetch_cmd += " -x=@embed=1";
+   }
 
    fetch_cmd += " \"" + key_info + "\"";
 
@@ -1707,7 +1714,7 @@ bool populate_list_info( list_source& list,
    if( !fetch_list_info( list.module_id, mod_info, class_info, sess_info,
     is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
     set_field_values, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
-    p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name, &list.can_delete_any ) )
+    p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name, &list.can_delete_any, is_printable ) )
       okay = false;
    else if( is_printable )
    {

@@ -74,7 +74,7 @@ body
    float: center;
    position: absolute;
    text-align: center;
-   width 100%;
+   width: 100%;
    left: 50%;
    top: 225px;
 }
@@ -84,7 +84,7 @@ body
    float: centre;
    position: absolute;
    text-align: center;
-   width 100%;
+   width: 100%;
    left: 45%;
    top: 40px;
 }

@@ -175,6 +175,7 @@ const char* const c_special_variable_none = "@none";
 const char* const c_special_variable_async = "@async";
 const char* const c_special_variable_class = "@class";
 const char* const c_special_variable_embed = "@embed";
+const char* const c_special_variable_print = "@print";
 const char* const c_special_variable_quiet = "@quiet";
 const char* const c_special_variable_title = "@title";
 const char* const c_special_variable_cloned = "@cloned";
@@ -5040,6 +5041,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_embed:
       s = string( c_special_variable_embed );
+      break;
+
+      case e_special_var_print:
+      s = string( c_special_variable_print );
       break;
 
       case e_special_var_quiet:
