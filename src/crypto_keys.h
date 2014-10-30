@@ -77,6 +77,12 @@ class private_key : public public_key
    private_key& operator =( const private_key& );
 };
 
+std::string create_secret_for_address_prefix_with_leading_hash160_bytes( const std::string& prefix, const std::string& bytes );
+
+void generate_secrets_for_leading_byte_encoded_message( const std::string& message, std::vector< std::string >& secrets );
+
+std::string decode_message_from_leading_byte_encoded_addresses( const std::vector< std::string >& addresses );
+
 struct utxo_information
 {
    utxo_information( ) : index ( 0 ) { }

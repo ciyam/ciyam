@@ -537,18 +537,22 @@ struct private_key::impl
 
 private_key::private_key( )
 {
+   p_impl = new impl( public_key::p_impl );
+
    unsigned char buf[ c_num_secret_bytes ];
+
    do
    {
       RAND_bytes( buf, c_num_secret_bytes );
    } while( !check_secret( buf ) );
 
-   p_impl = new impl( public_key::p_impl );
    p_impl->set_secret_bytes( buf );
 }
 
 private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_compressed )
 {
+   p_impl = new impl( public_key::p_impl );
+
    unsigned char buf[ c_num_secret_bytes ];
 
    if( !is_wif_format )
@@ -586,7 +590,6 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
    if( !check_secret( buf ) )
       throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
-   p_impl = new impl( public_key::p_impl );
    p_impl->set_secret_bytes( buf );
 }
 
@@ -701,6 +704,53 @@ string private_key::construct_signature( const string& msg, bool use_base64 ) co
    p_impl->sign_message( buf, signature );
 
    return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
+}
+
+string create_secret_for_address_prefix_with_leading_hash160_bytes( const string& prefix, const string& bytes )
+{
+   string secret;
+
+   while( true )
+   {
+      private_key priv_key;
+
+      if( priv_key.get_address( ).find( prefix ) == 0 )
+      {
+         if( priv_key.get_hash160( ).substr( 0, bytes.length( ) ) == bytes )
+         {
+            secret = priv_key.get_secret( );
+            break;
+         }
+      }
+   }
+
+   return secret;
+}
+
+void generate_secrets_for_leading_byte_encoded_message( const string& message, vector< string >& secrets )
+{
+   for( size_t i = 0; i < message.size( ); i++ )
+   {
+      string bytes( hex_encode( ( const unsigned char* )&message[ i ], 1 ) );
+      string hash160( bytes + "00000000000000000000000000000000000000" );
+
+      string address( public_key::hash160_to_address( hash160 ) );
+
+      string prefix( address.substr( 0, 2 ) );
+      secrets.push_back( create_secret_for_address_prefix_with_leading_hash160_bytes( prefix, bytes ) );
+   }
+}
+
+string decode_message_from_leading_byte_encoded_addresses( const vector< string >& addresses )
+{
+   string encoded;
+   for( size_t i = 0; i < addresses.size( ); i++ )
+   {
+      string hash160( public_key::address_to_hash160( addresses[ i ] ) );
+      encoded += hash160.substr( 0, 2 );
+   }
+
+   return hex_decode( encoded );
 }
 
 string construct_raw_transaction(
