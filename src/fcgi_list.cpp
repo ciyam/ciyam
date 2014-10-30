@@ -3594,11 +3594,14 @@ void output_list_form( ostream& os,
 
    if( !is_printable )
    {
-      os << "<table class=\"list\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n";
-      if( row % 2 == 0 )
-         os << "<tr>\n";
-      else
-         os << "<tr class=\"odd\">\n";
+      if( get_storage_info( ).storage_name != "Sample" )
+      {
+         os << "<table class=\"list\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n";
+         if( row % 2 == 0 )
+            os << "<tr>\n";
+         else
+            os << "<tr class=\"odd\">\n";
+      }
 
       bool allow_scroll = !( ( source.lici->second )->extras.count( c_list_type_extra_no_limit )
        || ( source.lici->second )->extras.count( c_list_type_extra_sort_no_limit ) );
@@ -3624,11 +3627,26 @@ void output_list_form( ostream& os,
             allow_new_record = sess_info.is_default_other( );
       }
 
+      if( get_storage_info( ).storage_name == "Sample" )
+      {
+         os << "</tr>\n";
+         os << "</table>\n";
+
+         if( row % 2 == 0 )
+            os << "<div class=\"width-fix firstrow lastring stylebottom\">\n";
+         else
+            os << "<div class=\"width-fix firstrow lastring stylebottom odd-row\">\n";
+      }
+
       if( !allow_new_record )
-         os << "  <td>&nbsp;</td>\n";
+      {
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "  <td>&nbsp;</td>\n";
+      }
       else
       {
-         os << "  <td>";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "  <td>";
 
          if( !( source.lici->second )->dfield.empty( ) && ( source.lici->second )->dvalue.empty( ) )
          {
@@ -3698,6 +3716,7 @@ void output_list_form( ostream& os,
 
                os << "\">" << columns[ 0 ] << "</option>\n";
             }
+
             os << "</select>";
          }
          else
@@ -3738,7 +3757,9 @@ void output_list_form( ostream& os,
 
             os << "\">[" << GDS( c_display_new_record ) << "]</a>";
          }
-         os << "</td>\n";
+
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>\n";
       }
 
       if( allow_scroll )
@@ -3757,7 +3778,11 @@ void output_list_form( ostream& os,
             new_checksum_value = get_checksum( sess_info, checksum_values );
          }
 
-         os << "  <td class=\"right\">";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "  <td class=\"right\">";
+         else
+            os << "<div class=\"navigation borderview\">\n";
+
          if( !source.prev_key_info.empty( ) )
          {
             os << "&laquo; <a href=\"javascript:";
@@ -3800,11 +3825,19 @@ void output_list_form( ostream& os,
          else
             os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>";
 
-         os << "</td>\n";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>\n";
+         else
+            os << "</div>\n";
       }
 
-      os << "</tr>\n";
-      os << "</table>\n";
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n";
+      else
+      {
+         os << "</tr>\n";
+         os << "</table>\n";
+      }
    }
 
    os << "</form>";

@@ -66,8 +66,8 @@ class private_key : public public_key
 
    std::string construct_shared( const public_key& pub ) const;
 
-   std::string construct_signature( const unsigned char* p_data ) const;
-   std::string construct_signature( const std::string& msg ) const;
+   std::string construct_signature( const std::string& msg, bool use_base64 = false ) const;
+   std::string construct_signature( const unsigned char* p_data, bool use_base64 = false ) const;
 
    private:
    struct impl;

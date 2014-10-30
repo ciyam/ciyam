@@ -43,13 +43,12 @@ int main( )
       cout << "\nskey.get_wif_secret( true ) = " << skey.get_wif_secret( true ) << endl;
       cout << "skey.get_wif_secret( false ) = " << skey.get_wif_secret( false ) << endl;
 
-      string signature( skey.construct_signature( "This is a test." ) );
+      string signature( skey.construct_signature( "This is a test.", true ) );
 #ifndef DEBUG
       cout << "\nskey.construct_signature( \"This is a test.\" )" << endl;
 #else
       cout << "\nskey.construct_signature( \"This is a test.\" )\n" << signature << endl;
 #endif
-
       cout << "\nskey.verify_signature( \"This is a test\", signature ) = " << skey.verify_signature( "This is a test", signature ) << endl;
       cout << "skey.verify_signature( \"This is a test.\", signature ) = " << skey.verify_signature( "This is a test.", signature ) << endl;
 

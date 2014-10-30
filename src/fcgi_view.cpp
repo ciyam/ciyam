@@ -647,8 +647,13 @@ bool output_view_form( ostream& os, const string& act,
       if( is_in_edit || !source.has_file_attachments )
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
-      os << "<table class=\"full_width_header\">\n";
-      os << "<tr><td>";
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "<div class=\"topnav\">\n";
+      else
+      {
+         os << "<table class=\"full_width_header\">\n";
+         os << "<tr><td>";
+      }
 
       if( !is_in_edit )
       {
@@ -764,7 +769,8 @@ bool output_view_form( ostream& os, const string& act,
          if( !had_any )
             os << c_nbsp;
 
-         os << "</td>";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>";
       }
       else
       {
@@ -884,7 +890,8 @@ bool output_view_form( ostream& os, const string& act,
             os << ">" << GDS( c_display_create_multiple_records ) << "</input>";
          }
 #endif
-         os << "</td>";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>";
       }
 
       if( !error_message.empty( ) )
@@ -892,13 +899,21 @@ bool output_view_form( ostream& os, const string& act,
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
-            os << "<td>" << error_message << "</td>";
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << error_message;
+            else
+               os << "<td>" << error_message << "</td>";
+
             extra_content_func += "had_act_error = false;\n";
          }
          else
          {
             extra_content_func += "had_act_error = true;\n";
-            os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
+
+            if( get_storage_info( ).storage_name != "Sample" )
+               os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
+            else
+               os << "<span class=\"error\">&nbsp;&nbsp;" << remove_key( error_message ) << "</span>";
          }
       }
       else
@@ -930,7 +945,11 @@ bool output_view_form( ostream& os, const string& act,
          if( !is_quick_link_view && ( sess_info.quick_link_data.size( ) < sess_info.quick_link_limit ) )
          {
             has_started_right = true;
-            os << "<td class=\"right\">";
+
+            if( get_storage_info( ).storage_name != "Sample" )
+               os << "<td class=\"right\">";
+            else
+               os << "<span class=\"print\">";
 
             string qlink_title( source.field_values.find( source.quick_link_value_id )->second );
 
@@ -971,7 +990,11 @@ bool output_view_form( ostream& os, const string& act,
                else
                {
                   has_started_right = true;
-                  os << "<td class=\"right\">";
+
+                  if( get_storage_info( ).storage_name != "Sample" )
+                     os << "<td class=\"right\">";
+                  else
+                     os << "<span class=\"print\">";
                }
 
                os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1003,7 +1026,11 @@ bool output_view_form( ostream& os, const string& act,
             else
             {
                has_started_right = true;
-               os << "<td class=\"right\">";
+
+               if( get_storage_info( ).storage_name != "Sample" )
+                  os << "<td class=\"right\">";
+               else
+                  os << "<span class=\"print\">";
             }
 
             os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1028,10 +1055,21 @@ bool output_view_form( ostream& os, const string& act,
       }
 
       if( has_started_right )
-         os << "</td>";
+      {
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>";
+         else
+            os << "</span>";
+      }
 
-      os << "</tr></table>\n";
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n";
+      else
+         os << "</tr></table>\n";
    }
+
+   if( get_storage_info( ).storage_name == "Sample" )
+      os << "<div class=\"menu width-fix\">\n";
 
    os << "<table class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
 
@@ -2945,6 +2983,9 @@ bool output_view_form( ostream& os, const string& act,
 
    os << "</tbody>\n";
    os << "</table>\n";
+
+   if( get_storage_info( ).storage_name == "Sample" )
+      os << "</div>\n";
 
    if( is_in_edit || !source.has_file_attachments )
       os << "</form>\n";
