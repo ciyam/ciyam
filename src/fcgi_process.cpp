@@ -2672,8 +2672,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( !is_new_record && view.type != c_view_type_print && view.type != c_view_type_admin_print )
             {
                extra_content << "<br/><br/>\n";
-               extra_content << "<table width=\"100%\">\n";
-               extra_content << "<tr><td>\n";
+
+               if( get_storage_info( ).storage_name != "Sample" )
+               {
+                  extra_content << "<table width=\"100%\">\n";
+                  extra_content << "<tr><td>\n";
+               }
+               else
+                  extra_content << "<div class=\"topnav\"><br/>\n";
 
                extra_content << "<table id=\"vtabc\" class=\"vtab\">\n";
 
@@ -2781,6 +2787,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                extra_content << "</table>\n";
 
+               if( get_storage_info( ).storage_name == "Sample" )
+                  extra_content << "</div>\n";
+
                n = 0;
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                {
@@ -2797,7 +2806,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    findinfo + listsrch, selected_records, embed_images, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                }
 
-               extra_content << "</td></tr></table>\n";
+               if( get_storage_info( ).storage_name == "Sample" )
+                  extra_content << "</td></tr></table>\n";
             }
 
             // FUTURE: The height should be grown dynamically via Javascript rather than hard-coded here.
@@ -2835,9 +2845,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // NOTE: For non-print lists display links to any "display variations" (if found).
             if( cmd != c_cmd_plist )
             {
-               extra_content << "<table width=\"100%\">\n";
-               extra_content << "<tr><td>\n";
-
                vector< string >* p_var_ids = &olist.lici->second->var_ids;
                if( !p_var_ids->empty( ) )
                {
@@ -2909,9 +2916,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
              list_search_text, list_search_values, 0, false, "", keep_checks, "", oident,
              *p_session_info, extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch,
              selected_records, embed_images, !hashval.empty( ), false, has_any_changing_records, back_count, &pdf_list_file_name );
-
-            if( cmd != c_cmd_plist )
-               extra_content << "</td></tr></table>\n";
          }
       }
       else if( !server_command.empty( ) )

@@ -681,15 +681,16 @@ string private_key::construct_shared( const public_key& pub ) const
    return hex_encode( buf, sizeof( buf ) );
 }
 
-string private_key::construct_signature( const unsigned char* p_digest ) const
+string private_key::construct_signature( const unsigned char* p_digest, bool use_base64 ) const
 {
    vector< unsigned char > signature;
+
    p_impl->sign_message( p_digest, signature );
 
-   return hex_encode( &signature[ 0 ], signature.size( ) );
+   return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
 }
 
-string private_key::construct_signature( const string& msg ) const
+string private_key::construct_signature( const string& msg, bool use_base64 ) const
 {
    unsigned char buf[ c_num_hash_bytes ];
 
@@ -699,7 +700,7 @@ string private_key::construct_signature( const string& msg ) const
    vector< unsigned char > signature;
    p_impl->sign_message( buf, signature );
 
-   return base64::encode( &signature[ 0 ], signature.size( ) );
+   return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
 }
 
 string construct_raw_transaction(
