@@ -1140,6 +1140,41 @@ table table th
    margin-right: 2px !important;
 }
 
+.tabs-hz
+{
+   float: right;
+   list-style-type: none;
+   max-width: 100% !important:
+}
+
+.tab-alloc
+{
+   margin-bottom: -16px;
+   margin-right: 2px;
+   max-height: 100px;
+}
+
+.tabs-hz li
+{
+   padding: 15px;
+   float: left;
+   font-weight: 600;
+   font-size: 14px;
+   border: 1px solid #bbb;
+   border-left: 0px;
+}
+
+.tabs-hz li.first
+{
+   border-left: 1px solid #bbb;
+}
+
+.tabs-hz li.active
+{
+   background-color: #888 !important;
+   color: #fff;
+}
+
 @media screen
 {
    .odd-heading-row
