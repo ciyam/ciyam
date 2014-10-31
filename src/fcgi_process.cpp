@@ -2678,16 +2678,24 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "<table width=\"100%\">\n";
                   extra_content << "<tr><td>\n";
                }
+
+               if( get_storage_info( ).storage_name == "Sample" )
+               {
+                  extra_content << "<div class=\"width-fix vtab tab-alloc\" style=\"\"><br/>\n";
+                  extra_content << "<ul class=\"tabs-hz\">\n";
+               }
                else
-                  extra_content << "<div class=\"topnav\"><br/>\n";
+               {
+                  extra_content << "<table id=\"vtabc\" class=\"vtab\">\n";
 
-               extra_content << "<table id=\"vtabc\" class=\"vtab\">\n";
-
-               extra_content << "<thead>\n";
-               extra_content << "<tr>\n";
+                  extra_content << "<thead>\n";
+                  extra_content << "<tr>\n";
+               }
 
                int n = 0, x = 0;
+               bool is_first = true;
                set< string > children_not_permitted;
+
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                {
                   ++x;
@@ -2745,11 +2753,31 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                   string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
 
+                  string li_class;
+                  if( is_first )
+                  {
+                     is_first = false;
+                     li_class = "first";
+                  }
+
                   if( ++n == vtabc_num )
-                     extra_content << "<th class=\"selected_tab\" align=\"center\">" << name << "</th>\n";
+                  {
+                     if( !li_class.empty( ) )
+                        li_class += " ";
+
+                     li_class += "active";
+
+                     if( get_storage_info( ).storage_name == "Sample" )
+                        extra_content << "<li class=\"" << li_class << "\">" << name << "</li>\n";
+                     else
+                        extra_content << "<th class=\"selected_tab\" align=\"center\">" << name << "</th>\n";
+                  }
                   else
                   {
-                     extra_content << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
+                     if( get_storage_info( ).storage_name == "Sample" )
+                        extra_content << "<li class=\"" << li_class << "\"><a href=\"javascript:";
+                     else
+                        extra_content << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
 
                      if( use_url_checksum )
                      {
@@ -2761,7 +2789,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      }
 
                      extra_content << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-                     extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a></td>\n";
+                     extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a>";
+
+                     if( get_storage_info( ).storage_name == "Sample" )
+                        extra_content << "</li>\n";
+                     else
+                        extra_content << "</td>\n";
                   }
 
                   // NOTE: Only fetch data from the application server for the active child tab.
@@ -2782,13 +2815,18 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
                }
 
-               extra_content << "</tr>\n";
-               extra_content << "</thead>\n";
-
-               extra_content << "</table>\n";
-
                if( get_storage_info( ).storage_name == "Sample" )
+               {
+                  extra_content << "</ul>\n";
                   extra_content << "</div>\n";
+               }
+               else
+               {
+                  extra_content << "</tr>\n";
+                  extra_content << "</thead>\n";
+
+                  extra_content << "</table>\n";
+               }
 
                n = 0;
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
