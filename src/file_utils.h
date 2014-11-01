@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+bool files_are_identical( const std::string& path1, const std::string& path2 );
+
 bool delete_directory_files( const std::string& path, bool include_directory = false );
 
 #endif

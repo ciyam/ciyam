@@ -120,6 +120,7 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_username( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_password( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
+
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
@@ -156,7 +157,7 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_arg
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
-size_t CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler );
+size_t CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler, bool is_peer_session = false );
 void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
@@ -164,6 +165,9 @@ size_t CIYAM_BASE_DECL_SPEC session_id( );
 void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true );
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
+
+void CIYAM_BASE_DECL_SPEC increment_peer_files_uploaded( int64_t bytes );
+void CIYAM_BASE_DECL_SPEC increment_peer_files_downloaded( int64_t bytes );
 
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd_and_hash( const std::string& cmd, const std::string& parameter_info );
 

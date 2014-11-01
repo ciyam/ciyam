@@ -11,6 +11,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <deque>
+#  include <fstream>
 #  include <stdexcept>
 #endif
 
@@ -33,6 +34,8 @@ using namespace std;
 
 namespace
 {
+
+const int c_buf_size = 65536;
 
 #ifdef _WIN32
 bool delete_files( const char* p_dir, bool recycle )
@@ -66,6 +69,35 @@ bool delete_files( const char* p_dir, bool recycle )
 }
 #endif
 
+}
+
+bool files_are_identical( const string& path1, const string& path2 )
+{
+   ifstream inpf1( path1.c_str( ), ios::in | ios::binary );
+   ifstream inpf2( path2.c_str( ), ios::in | ios::binary );
+
+   if( !inpf1 || !inpf2 )
+      return false;
+
+   char buf1[ c_buf_size ];
+   char buf2[ c_buf_size ];
+
+   do
+   {
+      inpf1.read( buf1, c_buf_size );
+      inpf2.read( buf2, c_buf_size );
+
+      if( inpf1.gcount( ) != inpf2.gcount( ) )
+         return false;
+
+      int bytes_read = inpf1.gcount( );
+
+      if( memcmp( buf1, buf2, bytes_read ) != 0 )
+         return false;
+
+    } while( inpf1.good( ) || inpf2.good( ) );
+
+    return true;
 }
 
 bool delete_directory_files( const string& path, bool include_directory )

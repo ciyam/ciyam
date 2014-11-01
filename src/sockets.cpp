@@ -509,6 +509,9 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
    
    if( d == e_ft_direction_send )
    {
+      if( !file_exists( name ) )
+         throw runtime_error( "file not found" );
+
       ifstream inpf( name.c_str( ), ios::binary );
       if( !inpf )
          throw runtime_error( "file '" + name + "' could not be opened for input" );
