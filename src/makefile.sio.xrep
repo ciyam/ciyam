@@ -225,10 +225,12 @@
     <dlink_libs>ciyam_base
     <cpp_files/>
      <filename>auto_script.cpp
+     <filename>peer_session.cpp
      <filename>ciyam_server.cpp
      <filename>ciyam_session.cpp
     </cpp_files>
     <cms_files/>
+     <filename>peer_session.cms
      <filename>ciyam_session.cms
     </cms_files>
    </executable>

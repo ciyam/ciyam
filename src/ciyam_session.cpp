@@ -92,6 +92,11 @@ const char* const c_log_transformation_op_change_field_value = "change_field_val
 const char* const c_log_transformation_op_map_first_arg_field_ids = "map_first_arg_field_ids";
 const char* const c_log_transformation_op_instance_change_field_value = "instance_change_field_value";
 
+inline string sha1_hash( const string& str )
+{
+   return lower( sha1( str ).get_digest_as_string( ) );
+}
+
 inline void issue_error( const string& message )
 {
 #ifdef DEBUG
@@ -1168,20 +1173,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_filename ) );
 
-         fetch_file( lower( sha1( filename ).get_digest_as_string( ) ), socket );
+         fetch_file( sha1_hash( filename ), socket );
       }
       else if( command == c_cmd_ciyam_session_file_put )
       {
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_filename ) );
 
-         store_file( lower( sha1( filename ).get_digest_as_string( ) ), socket );
+         store_file( sha1_hash( filename ), socket );
       }
       else if( command == c_cmd_ciyam_session_file_init )
       {
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_filename ) );
          string initial_data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_data ) );
 
-         init_file( lower( sha1( filename ).get_digest_as_string( ) ), initial_data );
+         init_file( sha1_hash( filename ), initial_data );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );

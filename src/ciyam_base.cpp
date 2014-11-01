@@ -282,7 +282,9 @@ struct global_storage_name_lock
 
 struct session
 {
-   session( size_t id, size_t slot, command_handler& cmd_handler, storage_handler* p_storage_handler )
+   session( size_t id,
+    size_t slot, command_handler& cmd_handler,
+    storage_handler* p_storage_handler, bool is_peer_session )
     :
     id( id ),
     slot( slot ),
@@ -293,8 +295,13 @@ struct session
     running_script( false ),
     skip_fk_fetches( false ),
     skip_validation( false ),
-    skip_is_constrained( false ),
+    peer_bytes_uploaded( 0 ),
+    peer_files_uploaded( 0 ),
+    peer_bytes_downloaded( 0 ),
+    peer_files_downloaded( 0 ),
     cmd_handler( cmd_handler ),
+    skip_is_constrained( false ),
+    is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler )
    {
       dtm_created = date_time::local( );
@@ -326,12 +333,20 @@ struct session
    bool is_captured;
    bool running_script;
 
+   bool is_peer_session;
+
    bool skip_fk_fetches;
    bool skip_validation;
    bool skip_is_constrained;
 
    date_time dtm_created;
    date_time dtm_last_cmd;
+
+   size_t peer_files_uploaded;
+   int64_t peer_bytes_uploaded;
+
+   size_t peer_files_downloaded;
+   int64_t peer_bytes_downloaded;
 
    module_container modules_by_id;
    module_container modules_by_name;
@@ -4011,7 +4026,7 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
    string s( g_reg_key );
 
    if( prepend_sid )
-      s = sid_hash( ) + "-" + s;
+      s = sid_hash( ) + ( s.empty( ) ? string( ) : "-" + s );
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );
@@ -4463,7 +4478,7 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-size_t init_session( command_handler& cmd_handler )
+size_t init_session( command_handler& cmd_handler, bool is_peer_session )
 {
    guard g( g_mutex );
 
@@ -4473,7 +4488,7 @@ size_t init_session( command_handler& cmd_handler )
    {
       if( !g_sessions[ i ] )
       {
-         g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ] );
+         g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session );
          gtp_session = g_sessions[ i ];
          ods::instance( 0, true );
          sess_id = i;
@@ -4549,7 +4564,7 @@ void list_sessions( ostream& os, bool inc_dtms )
 
          os << ' ' << g_sessions[ i ]->last_cmd;
 
-         os << ' ' << g_sessions[ i ]->p_storage_handler->get_name( );
+         os << ' ' << ( g_sessions[ i ]->is_peer_session ? string( "(peer)" ) : g_sessions[ i ]->p_storage_handler->get_name( ) );
          if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
             os << '*';
 
@@ -4573,9 +4588,15 @@ void list_sessions( ostream& os, bool inc_dtms )
 
          os << ' ' << uid;
 
-         os << ' ' << g_sessions[ i ]->instance_registry.size( ) << ':' << g_sessions[ i ]->next_handle;
+         if( !g_sessions[ i ]->is_peer_session )
+            os << ' ' << g_sessions[ i ]->instance_registry.size( ) << ':' << g_sessions[ i ]->next_handle;
+         else
+            os << ' ' << g_sessions[ i ]->peer_files_uploaded << ':' << g_sessions[ i ]->peer_bytes_uploaded;
 
-         os << ' ' << g_sessions[ i ]->sql_count << ':' << g_sessions[ i ]->cache_count;
+         if( !g_sessions[ i ]->is_peer_session )
+            os << ' ' << g_sessions[ i ]->sql_count << ':' << g_sessions[ i ]->cache_count;
+         else
+            os << ' ' << g_sessions[ i ]->peer_files_downloaded << ':' << g_sessions[ i ]->peer_bytes_downloaded;
 
          if( g_sessions[ i ]->is_captured )
             os << '*';
@@ -4591,6 +4612,28 @@ command_handler& get_session_command_handler( )
       throw runtime_error( "no session to return command handler for" );
 
    return gtp_session->cmd_handler;
+}
+
+void increment_peer_files_uploaded( int64_t bytes )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+   {
+      ++gtp_session->peer_files_uploaded;
+      gtp_session->peer_bytes_uploaded += bytes;
+   }
+}
+
+void increment_peer_files_downloaded( int64_t bytes )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+   {
+      ++gtp_session->peer_files_downloaded;
+      gtp_session->peer_bytes_downloaded += bytes;
+   }
 }
 
 void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_info )

@@ -54,6 +54,7 @@
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
+#include "peer_session.h"
 #include "ciyam_session.h"
 #include "console_commands.h"
 
@@ -523,6 +524,9 @@ int main( int argc, char* argv[ ] )
                autoscript_session* p_autoscript_session = new autoscript_session;
                p_autoscript_session->start( );
             }
+
+            peer_listener* p_peer_litener = new peer_listener;
+            p_peer_litener->start( );
 
             bool reported_shutdown = false;
             while( s && ( !g_server_shutdown || g_active_sessions ) )

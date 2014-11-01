@@ -181,6 +181,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             }
 
             string response;
+            bool had_not_found = false;
             bool is_in_progress = false;
             while( response.empty( ) || response[ 0 ] != '(' )
             {
@@ -192,6 +193,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      // NOTE: Ignore timeouts if last received a progress message.
                      if( is_in_progress )
                         continue;
+                     else if( had_not_found )
+                        break;
                      else
                         throw runtime_error( "timeout occurred awaiting server response" );
                   }
@@ -199,10 +202,42 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      throw runtime_error( "server has terminated this connection" );
                }
 
+               // NOTE: If connected as a peer and *not found* is returned for a "file_chk" then it is
+               // expected next that a file will be be sent and then fetched to check that the peer is
+               // able to store and fetch back the same file content.
+               if( had_not_found )
+               {
+                  string::size_type pos = response.find( ' ' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected response: " + response );
+
+                  if( response.substr( 0, pos ) == "file_put" )
+                  {
+                     file_transfer( response.substr( pos + 1 ), socket,
+                      e_ft_direction_fetch, c_max_file_transfer_size,
+                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+
+                     file_transfer( response.substr( pos + 1 ), socket,
+                      e_ft_direction_send, c_max_file_transfer_size,
+                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  }
+               }
+
+               had_not_found = false;
                is_in_progress = false;
 
                if( response == string( c_response_okay_more ) )
                {
+#ifdef DEBUG
+                  cout << response;
+#endif
+                  response.erase( );
+                  continue;
+               }
+               else if( response == string( c_response_not_found ) )
+               {
+                  had_not_found = true;
 #ifdef DEBUG
                   cout << response;
 #endif

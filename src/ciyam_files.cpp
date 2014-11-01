@@ -25,14 +25,18 @@
 #include "config.h"
 #include "format.h"
 #include "sockets.h"
+#include "threads.h"
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "file_utils.h"
 #include "fs_iterator.h"
 
 using namespace std;
 
 namespace
 {
+
+mutex g_mutex;
 
 #include "ciyam_constants.h"
 
@@ -45,16 +49,22 @@ const char* const c_files_directory = "files";
 
 size_t get_total_files( )
 {
+   guard g( g_mutex );
+
    return g_total_files;
 }
 
 int64_t get_total_bytes( )
 {
+   guard g( g_mutex );
+
    return g_total_bytes;
 }
 
 string get_file_stats( )
 {
+   guard g( g_mutex );
+
    string s;
 
    size_t max_num = get_files_area_item_max_num( );
@@ -110,6 +120,8 @@ void init_files_area( )
 
 void init_file( const string& name, const string& data )
 {
+   guard g( g_mutex );
+
    string filename( string( c_files_directory ) + "/" + name );
 
    if( file_exists( filename ) )
@@ -150,6 +162,20 @@ void init_file( const string& name, const string& data )
    g_total_bytes += data.size( );
 }
 
+bool has_file( const string& name )
+{
+   string filename( string( c_files_directory ) + "/" + name );
+
+   return file_exists( filename );
+}
+
+int64_t file_bytes( const string& name )
+{
+   string filename( string( c_files_directory ) + "/" + name );
+
+   return file_size( filename );
+}
+
 void fetch_file( const string& name, tcp_socket& socket )
 {
    string filename( string( c_files_directory ) + "/" + name );
@@ -182,6 +208,8 @@ void store_file( const string& name, tcp_socket& socket )
 #ifndef _WIN32
       umask( um );
 #endif
+      guard g( g_mutex );
+
       g_total_bytes -= existing_bytes;
       g_total_bytes += file_size( filename );
    }
@@ -190,6 +218,8 @@ void store_file( const string& name, tcp_socket& socket )
 #ifndef _WIN32
       umask( um );
 #endif
+      guard g( g_mutex );
+
       if( existing && !file_exists( filename ) )
       {
          --g_total_files;
@@ -200,5 +230,41 @@ void store_file( const string& name, tcp_socket& socket )
 
    if( !existing )
       ++g_total_files;
+}
+
+void fetch_temp_file( const string& name, tcp_socket& socket )
+{
+   file_transfer( name, socket, e_ft_direction_send, get_files_area_item_max_size( ),
+    c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+}
+
+void store_temp_file( const string& name, tcp_socket& socket )
+{
+#ifndef _WIN32
+   int um = umask( 077 );
+#endif
+   try
+   {
+      file_transfer( name, socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
+       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+
+#ifndef _WIN32
+      umask( um );
+#endif
+   }
+   catch( ... )
+   {
+#ifndef _WIN32
+      umask( um );
+#endif
+      throw;
+   }
+}
+
+bool temp_file_is_identical( const string& temp_name, const string& name )
+{
+   string filename( string( c_files_directory ) + "/" + name );
+
+   return files_are_identical( temp_name, filename );
 }
 
