@@ -155,7 +155,8 @@ SERVICE_TABLE_ENTRY DispatchTable[ ] = { { lpServiceName, ServiceMain }, { 0, 0 
 namespace
 {
 
-bool start_autoscript = true;
+bool g_start_autoscript = true;
+bool g_start_peer_listener = true;
 
 #ifdef _WIN32
 BOOL CtrlHandler( DWORD fdwCtrlType )
@@ -196,6 +197,7 @@ const char* const c_cmd_parm_trace_flags = "flags";
 const char* const c_cmd_quiet = "quiet";
 
 const char* const c_cmd_no_auto = "no_auto";
+const char* const c_cmd_no_peers = "no_peers";
 
 #ifdef USE_MAC_LICENSE
 const char* const c_cmd_register = "register";
@@ -298,9 +300,9 @@ class ciyam_server_startup_functor : public command_functor
       else if( command == c_cmd_quiet )
          g_is_quiet = true;
       else if( command == c_cmd_no_auto )
-      {
-         start_autoscript = false;
-      }
+         g_start_autoscript = false;
+      else if( command == c_cmd_no_peers )
+         g_start_peer_listener = false;
 #ifdef USE_MAC_LICENSE
       else if( command == c_cmd_register )
       {
@@ -393,7 +395,10 @@ int main( int argc, char* argv[ ] )
           "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_auto, 1,
-          "", "switch off autoscript support", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "don't start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_no_peers, 1,
+          "", "don't start the peer listener thread", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
          cmd_handler.add_command( c_cmd_svcins, 2,
@@ -519,14 +524,17 @@ int main( int argc, char* argv[ ] )
 
             file_remove( c_shutdown_signal_file );
 
-            if( start_autoscript )
+            if( g_start_autoscript )
             {
                autoscript_session* p_autoscript_session = new autoscript_session;
                p_autoscript_session->start( );
             }
 
-            peer_listener* p_peer_litener = new peer_listener;
-            p_peer_litener->start( );
+            if( g_start_peer_listener )
+            {
+               peer_listener* p_peer_litener = new peer_listener;
+               p_peer_litener->start( );
+            }
 
             bool reported_shutdown = false;
             while( s && ( !g_server_shutdown || g_active_sessions ) )
@@ -544,7 +552,7 @@ int main( int argc, char* argv[ ] )
                // NOTE: If there are no active sessions (apart from the autoscript session) and is not
                // shutting down then check and update the timezone information if it has been changed.
                if( !g_server_shutdown
-                && ( !g_active_sessions || ( start_autoscript && g_active_sessions == 1 ) ) )
+                && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
                   check_timezone_info( );
 
                // NOTE: Check for accepts and create new sessions.
