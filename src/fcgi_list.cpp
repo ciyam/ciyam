@@ -627,7 +627,7 @@ void output_list_form( ostream& os,
       os << "\"><i>" << GDS( c_display_show_search_criteria ) << "</i></a></p>\n";
    }
 
-   if( is_child_list )
+   if( is_child_list && get_storage_info( ).storage_name != "Sample" )
    {
       os << "<table width=\"100%\">\n";
       os << "<tr><td class=\"selected_panel\">\n";
@@ -3842,7 +3842,7 @@ void output_list_form( ostream& os,
 
    os << "</form>";
 
-   if( is_child_list )
+   if( is_child_list && get_storage_info( ).storage_name != "Sample" )
       os << "</td></tr></table>\n";
 
    os << "\n";

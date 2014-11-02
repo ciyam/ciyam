@@ -1939,7 +1939,7 @@ specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Nam
 specification_add -id=601510 {Model}_view view "? standard Model\
  Name,Id;no_edit+non_new,Status;view_only,Version,Home_Title,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
 ,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File,Commands_File,Actions"
-specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
+specification_add -id=601520 {Package}_child_list0 list "@601520_* child:no_limit Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
 ,{Package_Type}:Name;new_edit+force,Install_Details;no_edit+full_height,Actions,Key;hidden"
