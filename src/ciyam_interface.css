@@ -1122,7 +1122,8 @@ table table th
 
 .stylebottom
 {
-   margin-left: 1px !important;
+   margin-left: 0px !important;
+   background-color: #eee !important;
    border-top: 1px solid #e5e5e5;
 }
 
@@ -1149,8 +1150,8 @@ table table th
 
 .tab-alloc
 {
-   margin-bottom: -16px;
-   margin-right: 2px;
+   margin-bottom: -14px;
+   margin-right: -1px;
    max-height: 100px;
 }
 
@@ -1173,6 +1174,18 @@ table table th
 {
    background-color: #888 !important;
    color: #fff;
+}
+
+.specialborder
+{
+   background-color: #ddd;
+   padding: 18px 10px 10px 10px;
+   border: 1px solid #bbb;
+}
+
+.width-fix-view
+{
+   max-width: 97.8%;
 }
 
 @media screen

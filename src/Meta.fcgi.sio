@@ -8714,7 +8714,7 @@
    <cid>136100
    <name>601520_name
    <type>child
-   <extra>
+   <extra>no_limit
    <actions>
    <modifiers>100:lowlight1,200:lowlight
    <view>601530

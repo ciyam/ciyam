@@ -2828,6 +2828,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "</table>\n";
                }
 
+               if( get_storage_info( ).storage_name == "Sample" )
+                  extra_content << "<div class=\"menu width-fix width-fix-view specialborder\">\n";
+
                n = 0;
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                {
@@ -2845,7 +2848,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
 
                if( get_storage_info( ).storage_name == "Sample" )
-                  extra_content << "</td></tr></table>\n";
+                  extra_content << "</div>\n";
             }
 
             // FUTURE: The height should be grown dynamically via Javascript rather than hard-coded here.
