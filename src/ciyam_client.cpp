@@ -26,8 +26,10 @@
 #  define _putenv putenv
 #endif
 
+#include "regex.h"
 #include "config.h"
 #include "macros.h"
+#include "sha256.h"
 #include "sockets.h"
 #include "console.h"
 #include "utilities.h"
@@ -129,6 +131,22 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
       if( !str.empty( ) )
       {
+         string::size_type pos = str.find( ' ' );
+
+         if( str.substr( 0, pos ) == "file_chk" || str.substr( 0, pos ) == "file_get" )
+         {
+            string data( str.substr( pos + 1 ) );
+            regex expr( c_regex_hash_256 );
+
+            if( expr.search( data ) == string::npos )
+            {
+               str.erase( pos + 1 );
+               str += lower( sha256( data ).get_digest_as_string( ) );
+            }
+
+            cout << str << endl;
+         }
+
          if( str == "encrypt" )
             str += " " + get_password( "Password: " );
 #ifdef DEBUG

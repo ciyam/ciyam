@@ -30,6 +30,8 @@ using namespace std;
 namespace
 {
 
+const int c_file_buflen = 8192;
+
 /*
 Test Vectors
 ""
@@ -245,9 +247,28 @@ void sha256::init( )
    sha256_init( &p_impl->context );
 }
 
-void sha256::update( const std::string& str )
+void sha256::update( const std::string& str, bool is_filename )
 {
-   update( ( const unsigned char* )&str[ 0 ], str.length( ) );
+   if( !is_filename )
+      update( ( const unsigned char* )&str[ 0 ], str.length( ) );
+   else
+   {
+      FILE* fp = fopen( str.c_str( ), "rb" );
+
+      if( !fp )
+         throw runtime_error( "unable to open file '" + str + "' for input" );
+
+      unsigned int len;
+      unsigned char buf[ c_file_buflen ];
+
+      while( !feof( fp ) )
+      {
+         len = fread( buf, 1, c_file_buflen, fp );
+         update( buf, len );
+      }
+
+      fclose( fp );
+   }
 }
 
 void sha256::update( const unsigned char* p_data, unsigned int length )
@@ -409,10 +430,10 @@ int main( int argc, char* argv[ ] )
       }
 
       unsigned int len;
-      unsigned char buf[ 8192 ];
+      unsigned char buf[ c_file_buflen ];
       while( !feof( fp ) )
       {
-         len = fread( buf, 1, 8192, fp );
+         len = fread( buf, 1, c_file_buflen, fp );
          hash.update( buf, len );
       }
       fclose( fp );

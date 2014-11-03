@@ -72,10 +72,68 @@ bool delete_files( const char* p_dir, bool recycle )
 
 }
 
-bool files_are_identical( const string& path1, const string& path2 )
+void create_directories( const string& file_path, int perm )
 {
-   ifstream inpf1( path1.c_str( ), ios::in | ios::binary );
-   ifstream inpf2( path2.c_str( ), ios::in | ios::binary );
+   string::size_type pos = file_path.find_last_of( "/\\" );
+
+   // NOTE: It is not recommended to use this function with relative paths.
+   if( pos != string::npos && !file_exists( file_path ) )
+   {
+      vector< string > sub_directories;
+      string directories( file_path.substr( 0, pos ) );
+
+#ifdef _WIN32
+      string::size_type dpos = directories.find( ':' );
+      if( dpos != string::npos || directories[ 0 ] == '/' || directories[ 0 ] == '\\' )
+      {
+         pos = directories.find_first_of( "/\\" );
+         sub_directories.push_back( directories.substr( 0, pos + 1 ) );
+         directories.erase( 0, pos + 1 );
+      }
+#else
+      if( directories[ 0 ] == '/' )
+      {
+         directories.erase( 0, 1 );
+         sub_directories.push_back( "/" );
+      }
+#endif
+
+      while( true )
+      {
+         pos = directories.find_first_of( "/\\" );
+         if( pos == string::npos )
+            break;
+
+         sub_directories.push_back( directories.substr( 0, pos ) );
+         directories.erase( 0, pos + 1 );
+      }
+
+      if( !directories.empty( ) )
+         sub_directories.push_back( directories );
+
+      string cwd( get_cwd( ) );
+
+      for( size_t i = 0; i < sub_directories.size( ); i++ )
+      {
+         bool rc;
+         set_cwd( sub_directories[ i ], &rc );
+
+         if( !rc )
+         {
+            create_dir( sub_directories[ i ], &rc, ( dir_perms )perm );
+            set_cwd( sub_directories[ i ] );
+         }
+      }
+
+      // NOTE: Restore the original working directory.
+      set_cwd( cwd );
+   }
+}
+
+bool files_are_identical( const string& file_path1, const string& file_path2 )
+{
+   ifstream inpf1( file_path1.c_str( ), ios::in | ios::binary );
+   ifstream inpf2( file_path2.c_str( ), ios::in | ios::binary );
 
    if( !inpf1 || !inpf2 )
       return false;
@@ -101,7 +159,7 @@ bool files_are_identical( const string& path1, const string& path2 )
     return true;
 }
 
-bool delete_directory_files( const string& path, bool include_directory )
+bool delete_directory_files( const string& path, bool include_directory_itself )
 {
    bool okay = true;
 #ifdef _WIN32
@@ -144,7 +202,7 @@ bool delete_directory_files( const string& path, bool include_directory )
    }
 #endif
 
-   if( okay && include_directory )
+   if( okay && include_directory_itself )
       okay = ( _rmdir( path.c_str( ) ) == 0 );
 
    return okay;

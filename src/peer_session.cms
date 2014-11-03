@@ -1,4 +1,3 @@
-version "display protocol version"
 file_chk "check if peer has a file" <val//filename>
 file_get "fetch a file from the files area" <val//filename>
 file_put "stores a file to the files area" <val//filename>

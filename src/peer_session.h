@@ -21,9 +21,9 @@ class peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
-   peer_session( bool acceptor, std::auto_ptr< ssl_socket >& ap_socket );
+   peer_session( bool acceptor, std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr );
 #  else
-   peer_session( bool acceptor, std::auto_ptr< tcp_socket >& ap_socket );
+   peer_session( bool acceptor, std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr );
 #  endif
 
    ~peer_session( );
@@ -35,6 +35,7 @@ class peer_session : public thread
 
    private:
    bool acceptor;
+   bool is_local;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;

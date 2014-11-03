@@ -2595,60 +2595,7 @@ void delete_directory_tree( const string& path )
 
 void create_directories_for_file_name( const string& file_name )
 {
-   string::size_type pos = file_name.find_last_of( "/\\" );
-
-   // NOTE: It is not recommended to use this function with relative paths.
-   if( pos != string::npos )
-   {
-      vector< string > sub_directories;
-      string directories( file_name.substr( 0, pos ) );
-
-#ifdef _WIN32
-      string::size_type dpos = directories.find( ':' );
-      if( dpos != string::npos || directories[ 0 ] == '/' || directories[ 0 ] == '\\' )
-      {
-         pos = directories.find_first_of( "/\\" );
-         sub_directories.push_back( directories.substr( 0, pos + 1 ) );
-         directories.erase( 0, pos + 1 );
-      }
-#else
-      if( directories[ 0 ] == '/' )
-      {
-         directories.erase( 0, 1 );
-         sub_directories.push_back( "/" );
-      }
-#endif
-
-      while( true )
-      {
-         pos = directories.find_first_of( "/\\" );
-         if( pos == string::npos )
-            break;
-
-         sub_directories.push_back( directories.substr( 0, pos ) );
-         directories.erase( 0, pos + 1 );
-      }
-
-      if( !directories.empty( ) )
-         sub_directories.push_back( directories );
-
-      string cwd( get_cwd( ) );
-
-      for( size_t i = 0; i < sub_directories.size( ); i++ )
-      {
-         bool rc;
-         set_cwd( sub_directories[ i ], &rc );
-
-         if( !rc )
-         {
-            create_dir( sub_directories[ i ], &rc, ( dir_perms )c_directory_perm_val );
-            set_cwd( sub_directories[ i ] );
-         }
-      }
-
-      // NOTE: Restore the original working directory.
-      set_cwd( cwd );
-   }
+   create_directories( file_name, c_directory_perm_val );
 }
 
 string get_directory_for_file_name( const string& file_name )

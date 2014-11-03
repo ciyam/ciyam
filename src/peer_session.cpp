@@ -23,8 +23,8 @@
 
 #include "peer_session.h"
 
-#include "sha1.h"
 #include "config.h"
+#include "sha256.h"
 #include "threads.h"
 #include "utilities.h"
 #include "date_time.h"
@@ -58,14 +58,13 @@ const char* const c_hello = "hello";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 100;
 
-const size_t c_request_timeout = 500;
+const size_t c_request_timeout = 30000;
 
 enum peer_state
 {
    e_peer_state_invalid,
    e_peer_state_listener,
    e_peer_state_initiator,
-   e_peer_state_version_check,
    e_peer_state_waiting_for_get,
    e_peer_state_waiting_for_put,
    e_peer_state_waiting_for_get_or_put
@@ -77,11 +76,6 @@ enum peer_trust_level
    e_peer_trust_level_weak,
    e_peer_trust_level_normal
 };
-
-inline string sha1_hash( const string& str )
-{
-   return lower( sha1( str ).get_digest_as_string( ) );
-}
 
 inline void issue_error( const string& message )
 {
@@ -143,6 +137,14 @@ class socket_command_handler : public command_handler
    peer_state& state( ) { return session_state; }
    peer_trust_level& trust_level( ) { return session_trust_level; }
 
+   void kill_session( )
+   {
+      if( !is_captured_session( ) )
+         set_finished( );
+      else if( !is_condemned_session( ) )
+         condemn_this_session( );
+   }
+
    private:
    string preprocess_command_and_args( const string& cmd_and_args );
 
@@ -151,11 +153,13 @@ class socket_command_handler : public command_handler
    void handle_unknown_command( const string& command )
    {
       socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'" );
+      kill_session( );
    }
 
    void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
    {
       socket.write_line( string( c_response_error_prefix ) + "invalid command usage '" + cmd_and_args + "'" );
+      kill_session( );
    }
 
    void handle_command_response( const string& response, bool is_special );
@@ -179,6 +183,9 @@ class socket_command_handler : public command_handler
 string socket_command_handler::preprocess_command_and_args( const string& cmd_and_args )
 {
    string str( cmd_and_args );
+
+   if( session_state == e_peer_state_invalid )
+      str.erase( );
 
    if( !str.empty( ) )
    {
@@ -278,25 +285,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    {
       ostringstream osstr;
 
-      if( command == c_cmd_peer_session_version )
-      {
-         if( socket_handler.state( ) == e_peer_state_listener
-          || socket_handler.state( ) == e_peer_state_initiator )
-         {
-            response = c_protocol_version;
-            socket_handler.state( ) = e_peer_state_version_check;
-         }
-         else
-            throw runtime_error( "invalid state for version request" );
-      }
-      else if( command == c_cmd_peer_session_file_chk )
+      if( command == c_cmd_peer_session_file_chk )
       {
          string filename( get_parm_val( parameters, c_cmd_parm_peer_session_file_chk_filename ) );
 
-         if( socket_handler.state( ) != e_peer_state_version_check )
+         if( socket_handler.state( ) != e_peer_state_listener )
             throw runtime_error( "invalid state for file_chk" );
 
-         bool has = has_file( sha1_hash( filename ) );
+         bool has = has_file( filename );
 
          if( !has )
          {
@@ -306,7 +302,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             // NOTE: For the initial file transfer just a dummy "hello" file.
             string name( c_hello );
-            string hash( sha1_hash( name ) );
+            string hash( lower( sha256( name ).get_digest_as_string( ) ) );
 
             if( !has_file( hash ) )
                init_file( hash, c_hello );
@@ -343,8 +339,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for file_get" );
 
-         fetch_file( sha1_hash( filename ), socket );
-         increment_peer_files_downloaded( file_bytes( sha1_hash( filename ) ) );
+         fetch_file( filename, socket );
+         increment_peer_files_downloaded( file_bytes( filename ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
       }
@@ -356,14 +352,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for file_put" );
 
-         store_file( sha1_hash( filename ), socket );
-         increment_peer_files_uploaded( file_bytes( sha1_hash( filename ) ) );
+         store_file( filename, socket );
+         increment_peer_files_uploaded( file_bytes( filename ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
       }
       else if( command == c_cmd_peer_session_starttls )
       {
-         if( socket_handler.state( ) != e_peer_state_version_check )
+         if( socket_handler.state( ) != e_peer_state_listener )
             throw runtime_error( "invalid state for starttls" );
 
 #ifdef SSL_SUPPORT
@@ -423,10 +419,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 class socket_command_processor : public command_processor
 {
    public:
-   socket_command_processor( tcp_socket& socket, command_handler& handler )
+   socket_command_processor( tcp_socket& socket, command_handler& handler, bool is_local )
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
+    is_local( is_local ),
     is_first_command( true )
    {
    }
@@ -435,6 +432,7 @@ class socket_command_processor : public command_processor
    tcp_socket& socket;
    command_handler& handler;
 
+   bool is_local;
    bool is_first_command;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
@@ -474,6 +472,13 @@ string socket_command_processor::get_cmd_and_args( )
             msleep( c_request_timeout );
             continue;
          }
+
+         if( !is_local && socket.had_timeout( ) )
+         {
+            // NOTE: Don't allow zombies to hang around unless they are local.
+            request = "quit";
+            break;
+         }
       }
       else
          break;
@@ -507,16 +512,20 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-peer_session::peer_session( bool acceptor, auto_ptr< ssl_socket >& ap_socket )
+peer_session::peer_session( bool acceptor, auto_ptr< ssl_socket >& ap_socket, const string& ip_addr )
 #else
-peer_session::peer_session( bool acceptor, auto_ptr< tcp_socket >& ap_socket )
+peer_session::peer_session( bool acceptor, auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
 #endif
  :
+ is_local( false ),
  acceptor( acceptor ),
  ap_socket( ap_socket )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "invalid socket..." );
+
+   if( ip_addr == "127.0.0.1" )
+      is_local = true;
 
    increment_session_count( );
 }
@@ -542,7 +551,7 @@ void peer_session::on_start( )
 
       ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
 
-      socket_command_processor processor( *ap_socket, cmd_handler );
+      socket_command_processor processor( *ap_socket, cmd_handler, is_local );
       processor.process_commands( );
 
       ap_socket->close( );
@@ -612,7 +621,7 @@ void peer_listener::on_start( )
 #endif
             if( !g_server_shutdown && *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
             {
-               peer_session* p_session = new peer_session( true, ap_socket );
+               peer_session* p_session = new peer_session( true, ap_socket, address.get_addr_string( ) );
                p_session->start( );
             }
          }
