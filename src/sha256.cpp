@@ -17,6 +17,7 @@
 #  include <iomanip>
 #  include <iostream>
 #  include <algorithm>
+#  include <stdexcept>
 #endif
 
 #include "sha256.h"
