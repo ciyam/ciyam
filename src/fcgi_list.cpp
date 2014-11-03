@@ -3647,10 +3647,16 @@ void output_list_form( ostream& os,
       {
          if( get_storage_info( ).storage_name != "Sample" )
             os << "  <td>";
+         else
+            os << "<div id=\"newrecord-view\">\n";
 
          if( !( source.lici->second )->dfield.empty( ) && ( source.lici->second )->dvalue.empty( ) )
          {
-            os << "<select name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+            if( get_storage_info( ).storage_name != "Sample" )
+               os << "<select name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+            else
+               os << "<select class=\"newrecord_select\" name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
+
             os << "<option>" << GDS( c_display_new_record ) << "</option>\n";
 
             for( size_t i = 0; i < source.new_record_list.size( ); i++ )
@@ -3721,7 +3727,7 @@ void output_list_form( ostream& os,
          }
          else
          {
-            os << "<a href=\"" << get_module_page_name( source.module_ref ) << "?cmd=" << c_cmd_view << "&data= ";
+            os << "<a class=\"newrecord\" href=\"" << get_module_page_name( source.module_ref ) << "?cmd=" << c_cmd_view << "&data= ";
 
             if( !source.new_pfield.empty( ) )
                os << "&extra=" << source.new_pkey << "&field=" << source.new_pfield;
@@ -3760,6 +3766,8 @@ void output_list_form( ostream& os,
 
          if( get_storage_info( ).storage_name != "Sample" )
             os << "</td>\n";
+         else
+            os << "</div>\n";
       }
 
       if( allow_scroll )
@@ -3781,7 +3789,7 @@ void output_list_form( ostream& os,
          if( get_storage_info( ).storage_name != "Sample" )
             os << "  <td class=\"right\">";
          else
-            os << "<div class=\"navigation borderview\">\n";
+            os << "<div class=\"navigation\">\n";
 
          if( !source.prev_key_info.empty( ) )
          {
@@ -3818,12 +3826,12 @@ void output_list_form( ostream& os,
             }
 
             os << "query_update( '" << source.id << c_info_suffix
-             << "', 'N" << source.next_key_info << "' );\">" << GDS( c_display_next ) << "</a>";
+             << "', 'N" << source.next_key_info << "' );\">" << GDS( c_display_next ) << "</a>\n";
 
             os << " &raquo;";
          }
          else
-            os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>";
+            os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>\n";
 
          if( get_storage_info( ).storage_name != "Sample" )
             os << "</td>\n";
