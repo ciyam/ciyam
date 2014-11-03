@@ -27,18 +27,18 @@ std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
 void CLASS_BASE_DECL_SPEC init_files_area( );
 
-void CLASS_BASE_DECL_SPEC init_file( const std::string& name, const std::string& data );
+void CLASS_BASE_DECL_SPEC init_file( const std::string& hash, const std::string& data );
 
-bool CLASS_BASE_DECL_SPEC has_file( const std::string& name );
+bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash );
 
-int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& name );
+int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& hash );
 
-void CLASS_BASE_DECL_SPEC fetch_file( const std::string& name, tcp_socket& socket );
-void CLASS_BASE_DECL_SPEC store_file( const std::string& name, tcp_socket& socket );
+void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket );
+void CLASS_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socket );
 
 void CLASS_BASE_DECL_SPEC fetch_temp_file( const std::string& name, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& socket );
 
-bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& name );
+bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 
 #endif
