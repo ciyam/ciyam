@@ -116,6 +116,7 @@ const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_reg_key = "license";
 const char* const c_attribute_identity = "identity";
 const char* const c_attribute_ip_addrs = "ip_addrs";
+const char* const c_attribute_na_addrs = "na_addrs";
 const char* const c_attribute_password = "password";
 const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
@@ -3065,6 +3066,7 @@ int g_session_timeout = 0;
 bool g_script_reconfig = false;
 
 set< string > g_accepted_ip_addrs;
+set< string > g_rejected_ip_addrs;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -3173,6 +3175,10 @@ void read_server_configuration( )
       string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
       if( !ip_addrs.empty( ) )
          split( ip_addrs, g_accepted_ip_addrs );
+
+      string na_addrs( reader.read_opt_attribute( c_attribute_na_addrs ) );
+      if( !na_addrs.empty( ) )
+         split( na_addrs, g_rejected_ip_addrs );
 
       g_reg_key = upper( reader.read_opt_attribute( c_attribute_reg_key ) );
 
@@ -4082,7 +4088,8 @@ string get_web_root( )
 
 bool get_is_accepted_ip_addr( const string& ip_addr )
 {
-   return g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 );
+   return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
+    && ( g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 ) );
 }
 
 bool get_using_ssl( )

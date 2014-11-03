@@ -1097,7 +1097,7 @@ table table th
    min-height: 50px;
    float:left;
    margin: 0px;
-   padding:0;
+   padding: 0px;
    color: #808080;
    font-size: 14px;
    font-weight: 600;
@@ -1114,10 +1114,10 @@ table table th
 
 .lastring
 {
+   padding-top: 6px;
    margin-left: 0px !important;
    background-color: #fafafa !important;
    font-weight: 500;
-   border-bottom: 1px solid #ccc !important;
 }
 
 .stylebottom
@@ -1125,11 +1125,7 @@ table table th
    margin-left: 0px !important;
    background-color: #eee !important;
    border-top: 1px solid #e5e5e5;
-}
-
-.borderview
-{
-   border-bottom: 1px solid #bdbdbd;
+   border-bottom: 1px solid #e5e5e5;
 }
 
 .print
@@ -1186,6 +1182,38 @@ table table th
 .width-fix-view
 {
    max-width: 97.8%;
+}
+
+#editdetails-view
+{
+   padding-top: 15px;
+   padding-left: 3px;
+}
+
+#print-view
+{
+   margin-top: -22px !important;
+}
+
+#newrecord-view
+{
+   position: relative;
+   max-height: 0px;
+   top: 15px;
+   left: 15px;
+}
+
+.newrecord
+{
+   text-decoration: none;
+   font-weight: 600;
+   color: #222;
+}
+
+.newrecord_select
+{
+   text-decoration: none;
+   font-weight: 600;
 }
 
 @media screen

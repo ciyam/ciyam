@@ -648,7 +648,10 @@ bool output_view_form( ostream& os, const string& act,
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
       if( get_storage_info( ).storage_name == "Sample" )
+      {
          os << "<div class=\"topnav\">\n";
+         os << "<div id=\"editdetails-view\">\n";
+      }
       else
       {
          os << "<table class=\"full_width_header\">\n";
@@ -949,7 +952,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"right\">";
             else
-               os << "<span class=\"print\">";
+               os << "<span id=\"print-view\" class=\"print\">";
 
             string qlink_title( source.field_values.find( source.quick_link_value_id )->second );
 
@@ -974,6 +977,9 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n";
+
       // NOTE: If is "standard" or "admin" and a specific "printable" version exists then provide a
       // link to it. If no specific "printable" version exists then the default "printview" version
       // will be linked to instead.
@@ -994,7 +1000,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( get_storage_info( ).storage_name != "Sample" )
                      os << "<td class=\"right\">";
                   else
-                     os << "<span class=\"print\">";
+                     os << "<span id=\"print-view\" class=\"print\">";
                }
 
                os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1030,7 +1036,7 @@ bool output_view_form( ostream& os, const string& act,
                if( get_storage_info( ).storage_name != "Sample" )
                   os << "<td class=\"right\">";
                else
-                  os << "<span class=\"print\">";
+                  os << "<span id=\"print-view\" class=\"print\">";
             }
 
             os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1059,7 +1065,7 @@ bool output_view_form( ostream& os, const string& act,
          if( get_storage_info( ).storage_name != "Sample" )
             os << "</td>";
          else
-            os << "</span>";
+            os << "</span>\n";
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
