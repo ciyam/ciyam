@@ -171,14 +171,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                if( str.substr( 0, pos ) == "file_get" )
                {
                   file_transfer( str.substr( pos + 1 ), socket,
-                   e_ft_direction_fetch, c_max_file_transfer_size,
-                   c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                   e_ft_direction_fetch, c_max_file_transfer_size, c_response_okay_more,
+                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                }
                else if( str.substr( 0, pos ) == "file_put" )
                {
                   file_transfer( str.substr( pos + 1 ), socket,
-                   e_ft_direction_send, c_max_file_transfer_size,
-                   c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                   e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
+                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                }
             }
             catch( exception& x )

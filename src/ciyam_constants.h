@@ -7,7 +7,9 @@
 #  define CIYAM_CONSTANTS_H
 
 const size_t c_max_file_transfer_size = 102400;
-const size_t c_file_transfer_line_timeout = 1000;
+
+const size_t c_file_transfer_line_timeout = 5000;
+const size_t c_file_transfer_initial_timeout = 10000;
 
 const int c_file_transfer_max_line_size = 500;
 

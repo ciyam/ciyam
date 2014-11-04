@@ -980,9 +980,6 @@ class socket_command_handler : public command_handler
    {
    }
 
-   size_t get_sess_id( ) const { return sess_id; }
-   void set_sess_id( size_t new_sess_id ) { sess_id = new_sess_id; }
-
 #ifdef SSL_SUPPORT
    ssl_socket& get_socket( ) { return socket; }
 #else
@@ -1022,7 +1019,6 @@ class socket_command_handler : public command_handler
 
    void handle_command_response( const string& response, bool is_special );
 
-   size_t sess_id;
 #ifdef SSL_SUPPORT
    ssl_socket& socket;
 #else
@@ -4016,7 +4012,7 @@ void ciyam_session::on_start( )
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
 
-      cmd_handler.set_sess_id( init_session( cmd_handler ) );
+      init_session( cmd_handler );
 
       ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
 

@@ -71,6 +71,8 @@ const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
 
+const int c_default_max_peers = 100;
+
 // NOTE: This limit is supplied (along with the identity information) to
 // client interfaces and is not the max # of concurrent server sessions.
 const int c_default_max_user_limit = 1000;
@@ -123,6 +125,7 @@ const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_web_type = "web_type";
+const char* const c_attribute_mas_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_gpg_password = "gpg_password";
@@ -130,6 +133,9 @@ const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_default_storage = "default_storage";
+const char* const c_attribute_peer_ips_inital = "peer_ips_inital";
+const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
+const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
 const char* const c_attribute_session_timeout = "session_timeout";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
@@ -3053,6 +3059,7 @@ string g_set_trace;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
+int g_max_peers = c_default_max_peers;
 int g_max_user_limit = c_default_max_user_limit;
 
 string g_gpg_password;
@@ -3067,6 +3074,9 @@ bool g_script_reconfig = false;
 
 set< string > g_accepted_ip_addrs;
 set< string > g_rejected_ip_addrs;
+set< string > g_initial_peer_ip_addrs;
+set< string > g_accepted_peer_ip_addrs;
+set< string > g_rejected_peer_ip_addrs;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -3202,6 +3212,8 @@ void read_server_configuration( )
 #endif
       }
 
+      g_max_peers = atoi( reader.read_opt_attribute( c_attribute_mas_peers, to_string( c_default_max_peers ) ).c_str( ) );
+
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
       if( !g_set_trace.empty( ) )
       {
@@ -3223,6 +3235,18 @@ void read_server_configuration( )
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
       g_variables.insert( make_pair( c_special_variable_storage, g_default_storage ) );
+
+      string peer_ips_inital( reader.read_opt_attribute( c_attribute_peer_ips_inital ) );
+      if( !peer_ips_inital.empty( ) )
+         split( peer_ips_inital, g_initial_peer_ip_addrs );
+
+      string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
+      if( !peer_ips_permit.empty( ) )
+         split( peer_ips_permit, g_accepted_peer_ip_addrs );
+
+      string peer_ips_reject( reader.read_opt_attribute( c_attribute_peer_ips_reject ) );
+      if( !peer_ips_reject.empty( ) )
+         split( peer_ips_reject, g_rejected_peer_ip_addrs );
 
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
@@ -3985,6 +4009,11 @@ string get_string_message( const string& string_message,
    return message;
 }
 
+int get_max_peers( )
+{
+   return g_max_peers;
+}
+
 int get_max_user_limit( )
 {
    guard g( g_mutex );
@@ -4090,6 +4119,12 @@ bool get_is_accepted_ip_addr( const string& ip_addr )
 {
    return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 ) );
+}
+
+bool get_is_accepted_peer_id_addr( const string& ip_addr )
+{
+   return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
+    && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
 }
 
 bool get_using_ssl( )
@@ -4485,11 +4520,10 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-size_t init_session( command_handler& cmd_handler, bool is_peer_session )
+void init_session( command_handler& cmd_handler, bool is_peer_session )
 {
    guard g( g_mutex );
 
-   size_t sess_id;
    gtp_session = 0;
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -4498,7 +4532,6 @@ size_t init_session( command_handler& cmd_handler, bool is_peer_session )
          g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session );
          gtp_session = g_sessions[ i ];
          ods::instance( 0, true );
-         sess_id = i;
          break;
       }
    }
@@ -4507,8 +4540,6 @@ size_t init_session( command_handler& cmd_handler, bool is_peer_session )
       throw runtime_error( "max. permitted concurrent sessions already active" );
 
    set_default_session_variables( );
-
-   return sess_id;
 }
 
 void term_session( )
@@ -4562,6 +4593,9 @@ void list_sessions( ostream& os, bool inc_dtms )
 
          if( gtp_session && gtp_session->id == g_sessions[ i ]->id )
             os << '*';
+         else if( g_condemned_sessions.count( g_sessions[ i ]->id )
+          || gtp_session->condemned_sessions.count( g_sessions[ i ]->id ) )
+            os << '~';
 
          if( inc_dtms )
          {

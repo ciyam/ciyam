@@ -498,7 +498,7 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 }
 
 void file_transfer( const string& name, tcp_socket& s, ft_direction d,
- size_t max_size, const char* p_ack_message, size_t line_timeout, int max_line_size )
+ size_t max_size, const char* p_ack_message, size_t initial_timeout, size_t line_timeout, int max_line_size )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -517,6 +517,8 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
          throw runtime_error( "file '" + name + "' could not be opened for input" );
 
       char buf[ c_buf_size ];
+      bool is_first = true;
+
       while( true )
       {
          size_t count = c_buf_size;
@@ -528,16 +530,18 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
 
          string next( base64::encode( string( buf, count ) ) );
 
-         s.write_line( next, line_timeout );
+         s.write_line( next, is_first ? initial_timeout : line_timeout );
 
          next.erase( );
-         s.read_line( next, line_timeout, max_line_size );
+         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
 
          if( next != string( p_ack_message ) )
             throw runtime_error( next );
 
          if( inpf.eof( ) || count == 0 )
             break;
+
+         is_first = false;
       }
 
       s.write_line( p_ack_message );
@@ -550,10 +554,12 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
 
       string next;
       size_t written = 0;
+      bool is_first = true;
+
       while( true )
       {
          next.erase( );
-         s.read_line( next, line_timeout, max_line_size );
+         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
 
          if( next.empty( ) || next == string( p_ack_message ) )
             break;
