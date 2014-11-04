@@ -1469,11 +1469,23 @@ void output_list_form( ostream& os,
    if( !is_printable && list_type != c_list_type_home )
    {
       if( is_child_list )
-         os << "<table><tr>";
+      {
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "<table><tr>";
+         else
+            os << "<div class=\"childlist-actions\">";
+      }
       else
-         os << "<table class=\"full_width_header\"><tr>";
+      {
+         if( get_storage_info( ).storage_name == "Sample" )
+            os << "<div class=\"topnav\">\n";
+         else
+            os << "<table class=\"full_width_header\"><tr>";
+      }
 
-      os << "<td>";
+      if( get_storage_info( ).storage_name != "Sample" )
+         os << "<td>";
+
       if( allow_list_actions )
       {
          // NOTE: Deleting and other operations that change data are not permitted for the
@@ -2285,22 +2297,41 @@ void output_list_form( ostream& os,
              << " " << GDS( c_display_only ) << "</input>";
          }
       }
-      os << "</td>";
+
+      if( get_storage_info( ).storage_name != "Sample" )
+         os << "</td>";
 
       if( !error_message.empty( ) )
       {
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
-            os << "<td>" << error_message << "</td>";
+         {
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << "<p>" << error_message << "</p>";
+            else
+               os << "<td>" << error_message << "</td>";
+         }
          else
-            os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
+         {
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << "<p class=\"error\">" << remove_key( error_message ) << "</p>";
+            else
+               os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
+         }
       }
+
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "<div class=\"right\">\n";
 
       if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
        && ( sess_info.is_admin_user || !extras.count( c_list_type_extra_admin_print ) ) )
       {
-         os << "<td class=\"right\">";
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "<td class=\"right\">";
+         else
+            os << "<div id=\"print-list\" class=\"print\">";
+
          os << "<a href=\"javascript:";
 
          if( use_url_checksum )
@@ -2321,10 +2352,17 @@ void output_list_form( ostream& os,
          }
 
          os << "query_update( 'cmd', 'plist' );\">" << GDS( c_display_print ) << "</a>";
-         os << "</td>\n";
+
+         if( get_storage_info( ).storage_name != "Sample" )
+            os << "</td>\n";
+         else
+            os << "</div>\n";
       }
 
-      os << "</tr></table>\n";
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n</div>\n";
+      else
+         os << "</tr></table>\n";
    }
 
    os << "<table name=\"" << source.id << "_table\" id=\"" << source.id
@@ -3761,7 +3799,7 @@ void output_list_form( ostream& os,
 
             os << "&chksum=" << get_checksum( sess_info, checksum_values );
 
-            os << "\">[" << GDS( c_display_new_record ) << "]</a>";
+            os << "\">" << GDS( c_display_new_record ) << "</a>";
          }
 
          if( get_storage_info( ).storage_name != "Sample" )

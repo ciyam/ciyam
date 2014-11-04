@@ -2669,7 +2669,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // FUTURE: For "printable" views it makes sense to be able to have child lists although
             // they should be identified differently (perhaps as "printchild") as the normal sublists
             // may not be applicable to the printed version.
-            if( !is_new_record && view.type != c_view_type_print && view.type != c_view_type_admin_print )
+            if( !is_new_record && cmd != c_cmd_pview )
             {
                extra_content << "<br/><br/>\n";
 
@@ -2829,7 +2829,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
 
                if( get_storage_info( ).storage_name == "Sample" )
-                  extra_content << "<div class=\"menu width-fix width-fix-view specialborder\">\n";
+                  extra_content << "<div class=\"menu width-fix width-fix-view childlistborder\">\n";
 
                n = 0;
                for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )

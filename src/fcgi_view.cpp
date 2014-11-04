@@ -650,7 +650,7 @@ bool output_view_form( ostream& os, const string& act,
       if( get_storage_info( ).storage_name == "Sample" )
       {
          os << "<div class=\"topnav\">\n";
-         os << "<div id=\"editdetails-view\">\n";
+         os << "<div id=\"view-actions\">\n";
       }
       else
       {
@@ -769,11 +769,17 @@ bool output_view_form( ostream& os, const string& act,
             }
          }
 
-         if( !had_any )
-            os << c_nbsp;
-
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( get_storage_info( ).storage_name == "Sample" )
+         {
+            if( had_any )
+               os << "\n";
+         }
+         else
+         {
+            if( !had_any )
+               os << c_nbsp;
             os << "</td>";
+         }
       }
       else
       {
@@ -893,7 +899,9 @@ bool output_view_form( ostream& os, const string& act,
             os << ">" << GDS( c_display_create_multiple_records ) << "</input>";
          }
 #endif
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( get_storage_info( ).storage_name == "Sample" )
+            os << "\n";
+         else
             os << "</td>";
       }
 
@@ -903,7 +911,7 @@ bool output_view_form( ostream& os, const string& act,
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
             if( get_storage_info( ).storage_name == "Sample" )
-               os << error_message;
+               os << error_message << "\n";
             else
                os << "<td>" << error_message << "</td>";
 
@@ -916,7 +924,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
-               os << "<span class=\"error\">&nbsp;&nbsp;" << remove_key( error_message ) << "</span>";
+               os << "<span class=\"error\">&nbsp;&nbsp;" << remove_key( error_message ) << "</span>\n";
          }
       }
       else
@@ -940,6 +948,9 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "<div class=\"right-relative\">\n";
+
       // NOTE: If this view supports "quick linking" (and it is being used) then create an "add quick link" action.
       if( !is_in_edit && !has_quick_link && !mod_info.user_qlink_class_id.empty( )
        && source.has_quick_link && using_session_cookie && !sess_info.user_id.empty( )
@@ -952,7 +963,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"right\">";
             else
-               os << "<span id=\"print-view\" class=\"print\">";
+               os << "<span id=\"link-view\" class=\"link\">";
 
             string qlink_title( source.field_values.find( source.quick_link_value_id )->second );
 
@@ -974,11 +985,11 @@ bool output_view_form( ostream& os, const string& act,
 
             os << "dyn_load( document." << source.id << ", 'act="
              << c_act_qlink << "&extra=" << escape_specials( qlink_title ) << "', false );\" style=\"cursor:pointer\">";
+
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << "</span>\n";
          }
       }
-
-      if( get_storage_info( ).storage_name == "Sample" )
-         os << "</div>\n";
 
       // NOTE: If is "standard" or "admin" and a specific "printable" version exists then provide a
       // link to it. If no specific "printable" version exists then the default "printview" version
@@ -991,16 +1002,17 @@ bool output_view_form( ostream& os, const string& act,
             if( vci->vlink == source.vici->second->id
              && ( vci->type == c_view_type_print || vci->type == c_view_type_admin_print ) )
             {
-               if( has_started_right )
-                  os << "&nbsp;&nbsp;";
+               if( get_storage_info( ).storage_name == "Sample" )
+                  os << "<span id=\"print-view\" class=\"print\">";
                else
                {
-                  has_started_right = true;
-
-                  if( get_storage_info( ).storage_name != "Sample" )
-                     os << "<td class=\"right\">";
+                  if( has_started_right )
+                     os << "&nbsp;&nbsp;";
                   else
-                     os << "<span id=\"print-view\" class=\"print\">";
+                  {
+                     has_started_right = true;
+                     os << "<td class=\"right\">";
+                  }
                }
 
                os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1020,6 +1032,9 @@ bool output_view_form( ostream& os, const string& act,
 
                os << "\">" << GDS( c_display_print ) << "</a>";
 
+               if( get_storage_info( ).storage_name == "Sample" )
+                  os << "</span>\n";
+
                found_print_version = true;
                break;
             }
@@ -1027,16 +1042,17 @@ bool output_view_form( ostream& os, const string& act,
 
          if( !found_print_version )
          {
-            if( has_started_right )
-               os << "&nbsp;&nbsp;";
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << "<span id=\"print-view\" class=\"print\">";
             else
             {
-               has_started_right = true;
-
-               if( get_storage_info( ).storage_name != "Sample" )
-                  os << "<td class=\"right\">";
+               if( has_started_right )
+                  os << "&nbsp;&nbsp;";
                else
-                  os << "<span id=\"print-view\" class=\"print\">";
+               {
+                  has_started_right = true;
+                  os << "<td class=\"right\">";
+               }
             }
 
             os << "<a href=\"" << get_module_page_name( source.module_ref )
@@ -1057,19 +1073,17 @@ bool output_view_form( ostream& os, const string& act,
             }
 
             os << "\">" << GDS( c_display_print ) << "</a>";
+
+            if( get_storage_info( ).storage_name == "Sample" )
+               os << "</span>\n";
          }
       }
 
-      if( has_started_right )
-      {
-         if( get_storage_info( ).storage_name != "Sample" )
-            os << "</td>";
-         else
-            os << "</span>\n";
-      }
+      if( get_storage_info( ).storage_name != "Sample" && has_started_right )
+         os << "</td>";
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "</div>\n";
+         os << "</div>\n</div>\n</div>\n";
       else
          os << "</tr></table>\n";
    }
