@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 #
 # <domain>server.com
- <ip_addrs>127.0.0.1
+# <ip_addrs>127.0.0.1
 # <na_addrs>
  <timezone>UTC
  <web_root>$WEBDIR

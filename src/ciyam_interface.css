@@ -978,6 +978,12 @@ td.larger
    padding-right: 20pt;
 }
 
+.right-relative
+{
+   float: right;
+   position: relative;
+}
+
 .selected_panel
 {
    background-color: #ddd;
@@ -1128,11 +1134,18 @@ table table th
    border-bottom: 1px solid #e5e5e5;
 }
 
+.link
+{
+   font-weight: 600;
+   color: #222;
+   margin-top: 15px !important;
+   margin-right: 2px !important;
+}
+
 .print
 {
    font-weight: 600;
    color: #222;
-   float: right;
    margin-top: 15px !important;
    margin-right: 2px !important;
 }
@@ -1172,11 +1185,16 @@ table table th
    color: #fff;
 }
 
-.specialborder
+.childlistborder
 {
    background-color: #ddd;
-   padding: 18px 10px 10px 10px;
+   padding: 0px 10px 10px 10px;
    border: 1px solid #bbb;
+}
+
+.childlist-actions
+{
+   padding: 10px 10px 10px 10px;
 }
 
 .width-fix-view
@@ -1184,15 +1202,25 @@ table table th
    max-width: 97.8%;
 }
 
-#editdetails-view
+#view-actions
 {
    padding-top: 15px;
    padding-left: 3px;
 }
 
+#link-view
+{
+   margin-top: -16px !important;
+}
+
 #print-view
 {
    margin-top: -22px !important;
+}
+
+#print-list
+{
+   margin-top: 18px !important;
 }
 
 #newrecord-view
