@@ -5,16 +5,20 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 #
 # <domain>server.com
-# <ip_addrs>127.0.0.1
-# <na_addrs>100.100.100.100
+ <ip_addrs>127.0.0.1
+# <na_addrs>
  <timezone>UTC
  <web_root>$WEBDIR
+# <max_peers>100
  <set_trace>1000
 # <use_https>false
-# <gpg_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
-# <pem_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
-# <sql_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
+# <gpg_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <pem_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <sql_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <default_storage>test
+# <peer_ips_inital>
+# <peer_ips_permit>
+# <peer_ips_reject>
  <script_reconfig>true
  <session_timeout>0
 # <max_storage_handlers>10
@@ -25,7 +29,7 @@
 #   <server>mail.server.com:995
 #   <suffix>server.com
 #   <username>user
-#   <password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
+#   <password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 #   <security>SSL
 #  </pop3>
 #  <smtp/>
@@ -33,7 +37,7 @@
 #   <sender>"Company Name" <user@server.com>
 #   <suffix>server.com
 #   <username>user
-#   <password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
+#   <password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 #   <security>SSL LOGIN
 #   <max_send_attempts>3
 #   <max_attached_data>100K

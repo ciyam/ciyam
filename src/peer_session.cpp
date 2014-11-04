@@ -45,11 +45,11 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
-mutex g_mutex;
-
 #include "ciyam_constants.h"
 
 #include "peer_session.cmh"
+
+mutex g_mutex;
 
 int g_port = c_default_ciyam_port + 1;
 
@@ -58,7 +58,9 @@ const char* const c_hello = "hello";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 100;
 
-const size_t c_request_timeout = 30000;
+const size_t c_request_timeout = 500;
+
+const size_t c_request_throttle_sleep_time = 500;
 
 enum peer_state
 {
@@ -76,6 +78,15 @@ enum peer_trust_level
    e_peer_trust_level_weak,
    e_peer_trust_level_normal
 };
+
+size_t g_num_peers = 0;
+
+bool has_max_peers( )
+{
+   guard g( g_mutex );
+
+   return g_num_peers >= get_max_peers( );
+}
 
 inline void issue_error( const string& message )
 {
@@ -121,9 +132,6 @@ class socket_command_handler : public command_handler
       is_listener = ( session_state == e_peer_state_listener );
    }
 
-   size_t get_sess_id( ) const { return sess_id; }
-   void set_sess_id( size_t new_sess_id ) { sess_id = new_sess_id; }
-
 #ifdef SSL_SUPPORT
    ssl_socket& get_socket( ) { return socket; }
 #else
@@ -164,7 +172,6 @@ class socket_command_handler : public command_handler
 
    void handle_command_response( const string& response, bool is_special );
 
-   size_t sess_id;
 #ifdef SSL_SUPPORT
    ssl_socket& socket;
 #else
@@ -481,7 +488,11 @@ string socket_command_processor::get_cmd_and_args( )
          }
       }
       else
+      {
+         if( request != "quit" )
+            msleep( c_request_throttle_sleep_time );
          break;
+      }
    }
 
 #ifdef DEBUG
@@ -547,7 +558,7 @@ void peer_session::on_start( )
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
-      cmd_handler.set_sess_id( init_session( cmd_handler, true ) );
+      init_session( cmd_handler, true );
 
       ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
 
@@ -582,12 +593,16 @@ void peer_session::on_start( )
 void peer_session::increment_session_count( )
 {
    guard g( g_mutex );
+
+   ++g_num_peers;
    ++g_active_sessions;
 }
 
 void peer_session::decrement_session_count( )
 {
    guard g( g_mutex );
+
+   --g_num_peers;
    --g_active_sessions;
 }
 
@@ -619,7 +634,8 @@ void peer_listener::on_start( )
 #else
             auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-            if( !g_server_shutdown && *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
+            if( !g_server_shutdown && *ap_socket
+             && !has_max_peers( ) && get_is_accepted_peer_id_addr( address.get_addr_string( ) ) )
             {
                peer_session* p_session = new peer_session( true, ap_socket, address.get_addr_string( ) );
                p_session->start( );

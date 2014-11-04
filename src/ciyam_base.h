@@ -82,6 +82,8 @@ std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_m
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2,
  const std::pair< std::string, std::string >& parm3, const std::pair< std::string, std::string >& parm4 );
 
+int CIYAM_BASE_DECL_SPEC get_max_peers( );
+
 int CIYAM_BASE_DECL_SPEC get_max_user_limit( );
 void CIYAM_BASE_DECL_SPEC set_max_user_limit( int new_limit );
 
@@ -99,6 +101,7 @@ std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );
 
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
+bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_id_addr( const std::string& ip_addr );
 
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
@@ -157,7 +160,7 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_arg
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
-size_t CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler, bool is_peer_session = false );
+void CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler, bool is_peer_session = false );
 void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
