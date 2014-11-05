@@ -31,6 +31,7 @@ int main( )
       string key( skey.get_public( ) );
       string secret( skey.get_secret( ) );
       cout << "skey.get_public( ) = " << key << endl;
+      cout << "skey.get_public( true, true ) = " << skey.get_public( true, true ) << endl;
 
       cout << "\nskey.get_hash160( true ) = " << skey.get_hash160( true ) << endl;
       cout << "skey.get_hash160( false ) = " << skey.get_hash160( false ) << endl;

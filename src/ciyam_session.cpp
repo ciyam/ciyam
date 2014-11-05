@@ -1159,24 +1159,58 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = get_identity( true, true );
       }
+      else if( command == c_cmd_ciyam_session_file_chk )
+      {
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_chk_hash ) );
+
+         if( !has_file( hash ) )
+            throw runtime_error( "file not found" );
+      }
       else if( command == c_cmd_ciyam_session_file_get )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_filename ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_hash ) );
 
-         fetch_file( filename, socket );
+         fetch_file( hash, socket );
       }
       else if( command == c_cmd_ciyam_session_file_put )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_filename ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_hash ) );
+         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_tag ) );
 
-         store_file( filename, socket );
+         store_file( hash, socket, tag.empty( ) ? 0 : tag.c_str( ) );
       }
-      else if( command == c_cmd_ciyam_session_file_init )
+      else if( command == c_cmd_ciyam_session_file_raw )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_filename ) );
-         string initial_data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_data ) );
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
 
-         init_file( filename, initial_data );
+         raw_file( data );
+      }
+      else if( command == c_cmd_ciyam_session_file_hash )
+      {
+         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_hash_tag ) );
+
+         response = tag_file_hash( tag );
+      }
+      else if( command == c_cmd_ciyam_session_file_tag )
+      {
+         bool del( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_del ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_hash ) );
+         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_name ) );
+
+         if( del )
+            tag_del( name );
+         else
+            tag_file( name, hash );
+      }
+      else if( command == c_cmd_ciyam_session_file_tags )
+      {
+         string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_hash ) );
+
+         if( pat.empty( ) )
+            response = get_hash_tags( hash );
+         else
+            response = list_file_tags( pat );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );

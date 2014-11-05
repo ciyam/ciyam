@@ -133,18 +133,46 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
       {
          string::size_type pos = str.find( ' ' );
 
-         if( str.substr( 0, pos ) == "file_chk" || str.substr( 0, pos ) == "file_get" )
+         string get_dest_file, put_source_file;
+
+         if( str.substr( 0, pos ) == "chk"
+          || str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put"
+          || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put"  )
          {
             string data( str.substr( pos + 1 ) );
-            regex expr( c_regex_hash_256 );
+            string extra;
 
+            if( str.substr( 0, pos ) == "get"
+             || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
+            {
+               string::size_type spos = data.find( ' ' );
+               if( spos != string::npos )
+               {
+                  if( str.substr( 0, pos ) == "file_put" )
+                     extra = data.substr( spos );
+                  else
+                     get_dest_file = data.substr( spos + 1 );
+
+                  data.erase( spos );
+               }
+            }
+
+            regex expr( c_regex_hash_256 );
             if( expr.search( data ) == string::npos )
             {
                str.erase( pos + 1 );
-               str += lower( sha256( data ).get_digest_as_string( ) );
-            }
 
-            cout << str << endl;
+               if( str.substr( 0, pos ) == "chk" || str.substr( 0, pos ) == "get"
+                || str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
+               {
+                  put_source_file = data;
+                  data = buffer_file( put_source_file );
+               }
+
+               str += lower( sha256( "B" + data ).get_digest_as_string( ) ) + extra;
+
+               cout << str << endl;
+            }
          }
 
          if( str == "encrypt" )
@@ -158,7 +186,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          if( str == "starttls" && !socket.is_secure( ) )
             socket.ssl_connect( );
 #endif
-         if( str == "quit" )
+         if( str == "bye" || str == "quit" )
          {
             str.erase( );
             set_finished( );
@@ -168,17 +196,25 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             try
             {
                string::size_type pos = str.find( ' ' );
-               if( str.substr( 0, pos ) == "file_get" )
+               if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "file_get" )
                {
-                  file_transfer( str.substr( pos + 1 ), socket,
-                   e_ft_direction_fetch, c_max_file_transfer_size, c_response_okay_more,
-                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
+
+                  file_transfer( filename,
+                   socket, e_ft_direction_fetch,
+                   c_max_file_transfer_size, c_response_okay_more,
+                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+                   c_file_transfer_max_line_size, !get_dest_file.empty( ) ? '\1' : '\0' );
                }
-               else if( str.substr( 0, pos ) == "file_put" )
+               else if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
                {
-                  file_transfer( str.substr( pos + 1 ), socket,
-                   e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
-                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  string filename( !put_source_file.empty( ) ? put_source_file : str.substr( pos + 1 ) );
+
+                  file_transfer( filename,
+                   socket, e_ft_direction_send,
+                   c_max_file_transfer_size, c_response_okay_more,
+                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+                   c_file_transfer_max_line_size, !put_source_file.empty( ) ? 'B' : '\0' );
                }
             }
             catch( exception& x )
@@ -220,9 +256,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      throw runtime_error( "server has terminated this connection" );
                }
 
-               // NOTE: If connected as a peer and *not found* is returned for a "file_chk" then it is
-               // expected next that a file will be be sent and then fetched to check that the peer is
-               // able to store and fetch back the same file content.
+               // NOTE: If connected as a peer and *not found* is returned for a "chk" then it is next
+               // expected that a file will be be sent and then fetched to check that the peer is able
+               // to store and fetch back the same file content.
                if( had_not_found )
                {
                   string::size_type pos = response.find( ' ' );
@@ -230,15 +266,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( pos == string::npos )
                      throw runtime_error( "unexpected response: " + response );
 
-                  if( response.substr( 0, pos ) == "file_put" )
+                  if( response.substr( 0, pos ) == "put" )
                   {
-                     file_transfer( response.substr( pos + 1 ), socket,
+                     string temp_file_name( "~" + uuid( ).as_string( ) );
+
+                     file_transfer( temp_file_name, socket,
                       e_ft_direction_fetch, c_max_file_transfer_size,
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 
-                     file_transfer( response.substr( pos + 1 ), socket,
+                     file_transfer( temp_file_name, socket,
                       e_ft_direction_send, c_max_file_transfer_size,
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+
+                     file_remove( temp_file_name );
                   }
                }
 

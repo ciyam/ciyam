@@ -1,5 +1,5 @@
-file_chk "check if peer has a file" <val//filename>
-file_get "fetch a file from the files area" <val//filename>
-file_put "stores a file to the files area" <val//filename>
-starttls
-quit "terminate session"
+chk "check if peer has a file" <val//hash>
+get "fetch a file from the files area" <val//hash>[<val//name>]
+put "stores a file to the files area" <val//hash>
+tls
+bye "terminate session"
