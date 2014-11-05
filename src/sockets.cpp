@@ -497,8 +497,8 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
    return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
 }
 
-void file_transfer( const string& name, tcp_socket& s, ft_direction d,
- size_t max_size, const char* p_ack_message, size_t initial_timeout, size_t line_timeout, int max_line_size )
+void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t max_size,
+ const char* p_ack_message, size_t initial_timeout, size_t line_timeout, int max_line_size, char prefix )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -522,13 +522,19 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
       while( true )
       {
          size_t count = c_buf_size;
+
          if( !inpf.read( buf, c_buf_size ) )
             count = inpf.gcount( );
 
          if( !count )
             break;
 
-         string next( base64::encode( string( buf, count ) ) );
+         string next( string( buf, count ) );
+
+         if( is_first && prefix != '\0' )
+            next = prefix + next;
+
+         next = base64::encode( next );
 
          s.write_line( next, is_first ? initial_timeout : line_timeout );
 
@@ -573,6 +579,10 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
          }
 
          string decoded( base64::decode( next ) );
+
+         if( is_first && prefix != '\0' )
+            decoded.erase( 0, 1 );
+
          if( !outf.write( &decoded[ 0 ], decoded.length( ) ) )
             throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
@@ -584,6 +594,8 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
          }
 
          s.write_line( p_ack_message );
+
+         is_first = false;
       }
 
       outf.close( );

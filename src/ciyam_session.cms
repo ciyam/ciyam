@@ -1,8 +1,12 @@
 version "display protocol version"
 identity "get/set identity information" [<val//info>]
-file_get "fetch a file from the files area" <val//filename>
-file_put "stores a file to the files area" <val//filename>
-file_init "create a new file with initial data" <val//filename>[<val//data>]
+file_chk "check if a file exists in the files area" <val//hash>
+file_get "fetch a file from the files area" <val//hash>[<val//filename>]
+file_put "stores a file to the files area" <val//hash>[<val//tag>]
+file_raw "create a new file with raw data" <val//data>
+file_tag "set/delete a tag for a file in the files area" <opt/-d/del>|<val//hash><val//name>
+file_hash "get the hash for a tag in the files area" <val//tag>
+file_tags "get file tags for a hash or wildcard pattern" <val/-p=/pat>|<val//hash>
 file_stats "get file area stats"
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>

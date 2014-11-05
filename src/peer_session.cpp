@@ -53,10 +53,10 @@ mutex g_mutex;
 
 int g_port = c_default_ciyam_port + 1;
 
-const char* const c_hello = "hello";
+const char* const c_blob_hello = "Bhello";
 
 const int c_accept_timeout = 250;
-const int c_max_line_length = 100;
+const int c_max_line_length = 500;
 
 const size_t c_request_timeout = 500;
 
@@ -118,12 +118,13 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket, peer_state session_state )
+   socket_command_handler( ssl_socket& socket, peer_state session_state, bool is_local )
 #else
-   socket_command_handler( tcp_socket& socket, peer_state session_state )
+   socket_command_handler( tcp_socket& socket, peer_state session_state, bool is_local )
 #endif
     :
     socket( socket ),
+    is_local( is_local ),
     session_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
    {
@@ -140,6 +141,7 @@ class socket_command_handler : public command_handler
 
    const string& get_next_command( ) { return next_command; }
 
+   bool get_is_local( ) const { return is_local; }
    bool get_is_listener( ) const { return is_listener; }
 
    peer_state& state( ) { return session_state; }
@@ -178,6 +180,7 @@ class socket_command_handler : public command_handler
    tcp_socket& socket;
 #endif
 
+   bool is_local;
    bool had_usage;
    bool is_listener;
 
@@ -216,7 +219,7 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
             str.erase( );
          }
          else
-            str = c_cmd_peer_session_quit;
+            str = c_cmd_peer_session_bye;
       }
    }
 
@@ -283,7 +286,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
-   if( command != c_cmd_peer_session_quit && !socket.set_delay( ) )
+   if( command != c_cmd_peer_session_bye && !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
@@ -292,14 +295,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    {
       ostringstream osstr;
 
-      if( command == c_cmd_peer_session_file_chk )
+      if( command == c_cmd_peer_session_chk )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_peer_session_file_chk_filename ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_listener )
-            throw runtime_error( "invalid state for file_chk" );
+            throw runtime_error( "invalid state for chk" );
 
-         bool has = has_file( filename );
+         bool has = has_file( hash );
 
          if( !has )
          {
@@ -307,22 +310,22 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             handler.issue_command_reponse( response, true );
 
-            // NOTE: For the initial file transfer just a dummy "hello" file.
-            string name( c_hello );
-            string hash( lower( sha256( name ).get_digest_as_string( ) ) );
+            // NOTE: For the initial file transfer just a dummy "hello" blob.
+            string name( c_blob_hello );
+            string temp_hash( lower( sha256( name ).get_digest_as_string( ) ) );
 
-            if( !has_file( hash ) )
-               init_file( hash, c_hello );
+            if( !has_file( temp_hash ) )
+               raw_file( c_blob_hello );
 
-            handler.issue_command_reponse( "file_put " + hash, true );
-            fetch_file( hash, socket );
+            handler.issue_command_reponse( "put " + temp_hash, true );
+            fetch_file( temp_hash, socket );
 
             string temp_file_name( "~" + uuid( ).as_string( ) );
             store_temp_file( temp_file_name, socket );
 
             response.erase( );
 
-            if( !temp_file_is_identical( temp_file_name, hash ) )
+            if( !temp_file_is_identical( temp_file_name, temp_hash ) )
                socket_handler.state( ) = e_peer_state_invalid;
             else
             {
@@ -338,36 +341,36 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else
             socket_handler.state( ) = e_peer_state_waiting_for_get;
       }
-      else if( command == c_cmd_peer_session_file_get )
+      else if( command == c_cmd_peer_session_get )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_peer_session_file_get_filename ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_get_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
-            throw runtime_error( "invalid state for file_get" );
+            throw runtime_error( "invalid state for get" );
 
-         fetch_file( filename, socket );
-         increment_peer_files_downloaded( file_bytes( filename ) );
+         fetch_file( hash, socket );
+         increment_peer_files_downloaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
       }
-      else if( command == c_cmd_peer_session_file_put )
+      else if( command == c_cmd_peer_session_put )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_peer_session_file_put_filename ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_put_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_put
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
-            throw runtime_error( "invalid state for file_put" );
+            throw runtime_error( "invalid state for put" );
 
-         store_file( filename, socket );
-         increment_peer_files_uploaded( file_bytes( filename ) );
+         store_file( hash, socket );
+         increment_peer_files_uploaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
       }
-      else if( command == c_cmd_peer_session_starttls )
+      else if( command == c_cmd_peer_session_tls )
       {
          if( socket_handler.state( ) != e_peer_state_listener )
-            throw runtime_error( "invalid state for starttls" );
+            throw runtime_error( "invalid state for tls" );
 
 #ifdef SSL_SUPPORT
          if( socket.is_secure( ) )
@@ -383,7 +386,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
       }
-      else if( command == c_cmd_peer_session_quit )
+      else if( command == c_cmd_peer_session_bye )
       {
          if( !is_captured_session( ) )
             handler.set_finished( );
@@ -467,8 +470,8 @@ string socket_command_processor::get_cmd_and_args( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
             // NOTE: If the session is not captured and it has either been condemned or
-            // the server is shutting down, or its socket has died then force a "quit".
-            request = "quit";
+            // the server is shutting down, or its socket has died then force a "bye".
+            request = "bye";
             break;
          }
 
@@ -483,13 +486,13 @@ string socket_command_processor::get_cmd_and_args( )
          if( !is_local && socket.had_timeout( ) )
          {
             // NOTE: Don't allow zombies to hang around unless they are local.
-            request = "quit";
+            request = "bye";
             break;
          }
       }
       else
       {
-         if( request != "quit" )
+         if( request != "bye" )
             msleep( c_request_throttle_sleep_time );
          break;
       }
@@ -553,7 +556,8 @@ void peer_session::on_start( )
 #endif
    try
    {
-      socket_command_handler cmd_handler( *ap_socket, acceptor ? e_peer_state_listener : e_peer_state_initiator );
+      socket_command_handler cmd_handler( *ap_socket,
+       acceptor ? e_peer_state_listener : e_peer_state_initiator, is_local );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );

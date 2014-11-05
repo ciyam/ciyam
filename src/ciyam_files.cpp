@@ -9,6 +9,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
 #  include <vector>
 #  include <fstream>
 #  include <stdexcept>
@@ -40,6 +41,9 @@ namespace
 
 mutex g_mutex;
 
+map< string, string > g_tag_hashes;
+multimap< string, string > g_hash_tags;
+
 #include "ciyam_constants.h"
 
 size_t g_total_files = 0;
@@ -64,12 +68,16 @@ void create_directory_if_not_exists( const string& dir_name )
       set_cwd( cwd );
 }
 
-string construct_file_name_from_hash( const string& hash, bool create_directory = false )
+string construct_file_name_from_hash( const string& hash,
+ bool create_directory = false, bool check_hash_pattern = true )
 {
-   regex expr( c_regex_hash_256 );
+   if( check_hash_pattern )
+   {
+      regex expr( c_regex_hash_256 );
 
-   if( expr.search( hash ) == string::npos )
-      throw runtime_error( "unexpected hash '" + hash + "'" );
+      if( expr.search( hash ) == string::npos )
+         throw runtime_error( "unexpected hash '" + hash + "'" );
+   }
 
    string filename( c_files_directory );
 
@@ -115,6 +123,10 @@ string get_file_stats( )
    s = '[' + to_string( g_total_files ) + '/' + to_string( max_num )
     + ']' + format_bytes( g_total_bytes ) + '/' + format_bytes( max_bytes );
 
+   s += " ";
+   s += to_string( g_hash_tags.size( ) );
+   s += " tag(s)";
+
    return s;
 }
 
@@ -122,63 +134,93 @@ void init_files_area( )
 {
    string cwd( get_cwd( ) );
 
-   bool rc;
-   set_cwd( c_files_directory, &rc );
-
-   if( !rc )
-      create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
-   else
+   try
    {
-      directory_filter df;
-      fs_iterator dfsi( ".", &df );
+      bool rc;
+      set_cwd( c_files_directory, &rc );
 
-      do
+      if( !rc )
+         create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
+      else
       {
-         size_t max_num = get_files_area_item_max_num( );
-         size_t max_size = get_files_area_item_max_size( );
+         directory_filter df;
+         fs_iterator dfsi( ".", &df );
 
-         file_filter ff;
-         fs_iterator fs( dfsi.get_path_name( ), &ff );
-
-         vector< string > files_to_delete;
-
-         while( fs.has_next( ) )
+         bool is_first = true;
+         do
          {
-            string file_path( fs.get_full_name( ) );
+            size_t max_num = get_files_area_item_max_num( );
+            size_t max_size = get_files_area_item_max_size( );
 
-            sha256 test_hash;
-            test_hash.update( file_path, true );
+            file_filter ff;
+            fs_iterator fs( dfsi.get_path_name( ), &ff );
 
-            string hash( dfsi.get_name( ) + fs.get_name( ) );
+            vector< string > files_to_delete;
 
-            if( hash != lower( test_hash.get_digest_as_string( ) ) )
-               files_to_delete.push_back( file_path );
-            else if( file_size( file_path ) > max_size )
-               files_to_delete.push_back( file_path );
-            else if( g_total_files >= max_num )
-               files_to_delete.push_back( file_path );
-            else
+            while( fs.has_next( ) )
             {
-               ++g_total_files;
-               g_total_bytes += file_size( file_path );
+               if( is_first )
+               {
+                  string data( buffer_file( fs.get_full_name( ) ) );
+                  string filename( construct_file_name_from_hash( data, false, false ) );
+
+                  if( !file_exists( "../" + filename ) )
+                     file_remove( fs.get_full_name( ) );
+
+                  g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
+                  g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
+               }
+               else
+               {
+                  string file_path( fs.get_full_name( ) );
+
+                  sha256 test_hash;
+                  test_hash.update( file_path, true );
+
+                  string hash( dfsi.get_name( ) + fs.get_name( ) );
+
+                  if( hash != lower( test_hash.get_digest_as_string( ) ) )
+                     files_to_delete.push_back( file_path );
+                  else if( file_size( file_path ) > max_size )
+                     files_to_delete.push_back( file_path );
+                  else if( g_total_files >= max_num )
+                     files_to_delete.push_back( file_path );
+                  else
+                  {
+                     ++g_total_files;
+                     g_total_bytes += file_size( file_path );
+                  }
+               }
             }
-         }
 
-         for( size_t i = 0; i < files_to_delete.size( ); i++ )
-            file_remove( files_to_delete[ i ] );
+            is_first = false;
 
-      } while( dfsi.has_next( ) );
+            for( size_t i = 0; i < files_to_delete.size( ); i++ )
+               file_remove( files_to_delete[ i ] );
+
+         } while( dfsi.has_next( ) );
+      }
+
+      set_cwd( cwd );
    }
-
-   set_cwd( cwd );
+   catch( ... )
+   {
+      set_cwd( cwd );
+      throw;
+   }
 }
 
-void init_file( const string& hash, const string& data )
+void raw_file( const string& data )
 {
    guard g( g_mutex );
 
-   if( hash != lower( sha256( data ).get_digest_as_string( ) ) )
-      throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+   if( data.empty( ) )
+      throw runtime_error( "cannot init_file without data" );
+
+   if( data[ 0 ] != 'B' && data[ 0 ] != 'L' )
+      throw runtime_error( "invalid prefix '" + data.substr( 0, 1 ) + "' for init_file (must be 'B' or 'L'" );
+
+   string hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
    string filename( construct_file_name_from_hash( hash, true ) );
 
@@ -229,6 +271,117 @@ int64_t file_bytes( const string& hash )
    return file_size( filename );
 }
 
+void tag_del( const string& name )
+{
+   guard g( g_mutex );
+
+   string tag_filename( c_files_directory );
+
+   tag_filename += "/" + name;
+
+   if( file_exists( tag_filename ) )
+      file_remove( tag_filename );
+
+   if( g_tag_hashes.count( name ) )
+   {
+      string hash = g_tag_hashes[ name ];
+      g_tag_hashes.erase( name );
+
+      multimap< string, string >::iterator i;
+      for( i = g_hash_tags.lower_bound( hash ); i != g_hash_tags.end( ); ++i )
+      {
+         if( i->first != hash )
+            break;
+
+         if( i->second == name )
+         {
+            g_hash_tags.erase( i );
+            break;
+         }
+      }
+   }
+}
+
+void tag_file( const string& name, const string& hash )
+{
+   guard g( g_mutex );
+
+   string filename( construct_file_name_from_hash( hash ) );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( hash + " was not found" );
+
+   tag_del( name );
+
+   string tag_filename( c_files_directory );
+
+   tag_filename += "/" + name;
+
+   ofstream outf( tag_filename.c_str( ) );
+   if( !outf )
+      throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
+
+   outf << hash;
+
+   outf.flush( );
+   if( !outf.good( ) )
+      throw runtime_error( "unexpected bad output stream" );
+
+   g_hash_tags.insert( make_pair( hash, name ) );
+   g_tag_hashes.insert( make_pair( name, hash ) );
+}
+
+string get_hash_tags( const string& hash )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   multimap< string, string >::iterator i;
+   for( i = g_hash_tags.lower_bound( hash ); i != g_hash_tags.end( ); ++i )
+   {
+      if( i->first != hash )
+         break;
+
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      retval += i->second;
+   }
+
+   return retval;
+}
+
+string tag_file_hash( const string& name )
+{
+   string tag_filename( c_files_directory );
+   tag_filename += "/" + name;
+
+   if( !file_exists( tag_filename ) )
+      throw runtime_error( "link '" + name + "' not found" );
+
+   return buffer_file( tag_filename );
+}
+
+string list_file_tags( const string& pat )
+{
+   string retval;
+
+   file_filter ff;
+   fs_iterator fs( c_files_directory, &ff );
+
+   while( fs.has_next( ) )
+   {
+      if( !retval.empty( ) )
+         retval += "\n";
+
+      if( wildcard_match( pat, fs.get_name( ) ) )
+         retval += fs.get_name( );
+   }
+
+   return retval;
+}
+
 void fetch_file( const string& hash, tcp_socket& socket )
 {
    string filename( construct_file_name_from_hash( hash ) );
@@ -237,7 +390,7 @@ void fetch_file( const string& hash, tcp_socket& socket )
     c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 }
 
-void store_file( const string& hash, tcp_socket& socket )
+void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 {
    string filename( construct_file_name_from_hash( hash, true ) );
 
@@ -292,6 +445,13 @@ void store_file( const string& hash, tcp_socket& socket )
 
    if( !existing )
       ++g_total_files;
+
+   string tag_name;
+   if( p_tag )
+      tag_name = string( p_tag );
+
+   if( !tag_name.empty( ) )
+      tag_file( tag_name, hash );
 }
 
 void fetch_temp_file( const string& name, tcp_socket& socket )

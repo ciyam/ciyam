@@ -1806,9 +1806,14 @@ void request_handler::process_request( )
          // encrypt and store it in the application server "files area" for later usage.
          if( p_session_info->logged_in && !newhash.empty( ) )
          {
-            string cmd( "file_init " );
-            cmd += p_session_info->user_key;
-            cmd += " " + password_encrypt( newhash, get_server_id( ) );
+            string data( "B" + password_encrypt( newhash, get_server_id( ) ) );
+
+            string cmd( "file_raw " + data );
+            simple_command( *p_session_info, cmd );
+
+            cmd = "file_link " + p_session_info->user_key
+             + ' ' + lower( sha256( data ).get_digest_as_string( ) );
+
             simple_command( *p_session_info, cmd );
          }
 

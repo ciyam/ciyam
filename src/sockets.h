@@ -143,7 +143,7 @@ enum ft_direction
 
 void file_transfer( const std::string& name, tcp_socket& s,
  ft_direction d, size_t max_size, const char* p_ack_message,
- size_t initial_timeout = 0, size_t line_timeout = 0, int max_line_size = 0 );
+ size_t initial_timeout = 0, size_t line_timeout = 0, int max_line_size = 0, char prefix = '\0' );
 
 #endif
 
