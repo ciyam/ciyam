@@ -1440,25 +1440,51 @@ void output_list_form( ostream& os,
          }
       }
 
-      if( allow_quick_links )
-         os << "<tr><td colspan=\"2\" class=\"center\">";
-      else
-         os << "<tr><td colspan=\"3\" class=\"center\">";
-
-      os << "<input id=\"search\" name=\"search\" type=\"submit\""
-       " class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input></td>";
-
-      if( allow_quick_links )
+      if( get_storage_info( ).storage_name != "Sample" )
       {
-         os << "<td class=\"center\"><label>"
-          << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+         if( allow_quick_links )
+            os << "<tr><td colspan=\"2\" class=\"center\">";
+         else
+            os << "<tr><td colspan=\"3\" class=\"center\">";
 
-         os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
-          << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input></td>";
+         os << "<input id=\"search\" name=\"search\" type=\"submit\""
+          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input></td>";
+
+         if( allow_quick_links )
+         {
+            os << "<td class=\"center\"><label>"
+             << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+
+            os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
+             << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input></td>";
+         }
+
+         os << "</tr>\n";
       }
 
-      os << "</tr>\n</tbody>\n";
+      os << "</tbody>\n";
       os << "</table>\n<br/><br/>\n";
+
+      if( get_storage_info( ).storage_name == "Sample" )
+      {
+         os << "<div class=\"list-search-row center\">\n";
+         os << "<div class=\"list-search-align\">\n";
+
+         os << "<input id=\"search\" name=\"search\" type=\"submit\""
+          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
+
+         if( allow_quick_links )
+         {
+            // KLUDGE: Should instead use some CSS for the "spacing".
+            os << "&nbsp;&nbsp;<label>" << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+
+            os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
+             << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input>";
+         }
+
+         os << "</div>\n";
+         os << "</div>\n";
+      }
    }
 
    bool had_data = false;

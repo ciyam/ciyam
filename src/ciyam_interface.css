@@ -1244,6 +1244,19 @@ table table th
    font-weight: 600;
 }
 
+.list-search-row
+{
+   background-color: white !important;
+   margin-top: -30px;
+   margin-bottom: 50px;
+}
+
+.list-search-align
+{
+   padding-top: 15px;
+   padding-bottom: 15px;
+}
+
 @media screen
 {
    .odd-heading-row
