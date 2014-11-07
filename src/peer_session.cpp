@@ -53,7 +53,7 @@ mutex g_mutex;
 
 int g_port = c_default_ciyam_port + 1;
 
-const char* const c_blob_hello = "Bhello";
+const char* const c_hello = "hello";
 
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
@@ -311,11 +311,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_reponse( response, true );
 
             // NOTE: For the initial file transfer just a dummy "hello" blob.
-            string name( c_blob_hello );
-            string temp_hash( lower( sha256( name ).get_digest_as_string( ) ) );
+            string data( c_file_type_str_blob );
+            data += string( c_hello );
+
+            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
             if( !has_file( temp_hash ) )
-               raw_file( c_blob_hello );
+               create_raw_file( data );
 
             handler.issue_command_reponse( "put " + temp_hash, true );
             fetch_file( temp_hash, socket );
@@ -333,8 +335,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                socket_handler.trust_level( ) = e_peer_trust_level_weak;
             }
 
-            increment_peer_files_uploaded( name.length( ) );
-            increment_peer_files_downloaded( name.length( ) );
+            increment_peer_files_uploaded( data.length( ) );
+            increment_peer_files_downloaded( data.length( ) );
 
             file_remove( temp_file_name );
          }

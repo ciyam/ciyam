@@ -86,6 +86,8 @@ const int c_lock_attempt_sleep_time = 100;
 
 const int c_loop_variable_digits = 8;
 
+const int c_max_file_buffer_expansion = 10;
+
 const char* const c_true = "true";
 const char* const c_false = "false";
 
@@ -304,6 +306,7 @@ struct session
     skip_validation( false ),
     peer_bytes_uploaded( 0 ),
     peer_files_uploaded( 0 ),
+    buffer_is_locked( false ),
     peer_bytes_downloaded( 0 ),
     peer_files_downloaded( 0 ),
     cmd_handler( cmd_handler ),
@@ -359,6 +362,9 @@ struct session
    module_container modules_by_name;
 
    auto_ptr< sql_db > ap_db;
+
+   bool buffer_is_locked;
+   auto_ptr< unsigned char > ap_buffer;
 
    auto_ptr< global_storage_name_lock > ap_storage_name_lock;
 
@@ -4653,6 +4659,34 @@ command_handler& get_session_command_handler( )
       throw runtime_error( "no session to return command handler for" );
 
    return gtp_session->cmd_handler;
+}
+
+session_file_buffer_access::session_file_buffer_access( )
+ :
+ size( 0 ),
+ p_buffer( 0 )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session || gtp_session->buffer_is_locked )
+      throw runtime_error( "unable to access session buffer" );
+
+   unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
+
+   if( !gtp_session->ap_buffer.get( ) )
+      gtp_session->ap_buffer.reset( new unsigned char[ bufsize ] );
+
+   gtp_session->buffer_is_locked = true;
+
+   size = bufsize;
+   p_buffer = gtp_session->ap_buffer.get( );
+}
+
+session_file_buffer_access::~session_file_buffer_access( )
+{
+   guard g( g_mutex );
+
+   gtp_session->buffer_is_locked = false;
 }
 
 void increment_peer_files_uploaded( int64_t bytes )

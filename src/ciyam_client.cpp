@@ -61,6 +61,8 @@ const char* const c_env_var_error = "ERROR";
 const size_t c_command_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
 
+const int64_t c_max_size_to_buffer = INT64_C( 1073741824 );
+
 string application_title( app_info_request request )
 {
    if( request == e_app_info_request_title )
@@ -157,6 +159,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                }
             }
 
+            string prefix( c_file_type_str_blob );
+
             regex expr( c_regex_hash_256 );
             if( expr.search( data ) == string::npos )
             {
@@ -166,10 +170,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                 || str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
                {
                   put_source_file = data;
+
+                  if( file_size( put_source_file ) > c_max_size_to_buffer )
+                     throw runtime_error( "file exceeds max. length restriction of " + to_string( c_max_size_to_buffer ) + " bytes" );
+
                   data = buffer_file( put_source_file );
                }
 
-               str += lower( sha256( "B" + data ).get_digest_as_string( ) ) + extra;
+               str += lower( sha256( prefix + data ).get_digest_as_string( ) ) + extra;
 
                cout << str << endl;
             }
@@ -214,7 +222,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                    socket, e_ft_direction_send,
                    c_max_file_transfer_size, c_response_okay_more,
                    c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-                   c_file_transfer_max_line_size, !put_source_file.empty( ) ? 'B' : '\0' );
+                   c_file_transfer_max_line_size, !put_source_file.empty( ) ? c_file_type_char_blob : '\0' );
                }
             }
             catch( exception& x )

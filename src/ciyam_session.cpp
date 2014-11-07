@@ -1183,7 +1183,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
 
-         raw_file( data );
+         create_raw_file( data );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {

@@ -13,10 +13,9 @@
 #  include <vector>
 #  include <fstream>
 #  include <stdexcept>
-#endif
-
-#ifdef __GNUG__
-#  include <unistd.h>
+#  ifdef __GNUG__
+#     include <unistd.h>
+#  endif
 #endif
 
 #define CIYAM_BASE_IMPL
@@ -33,6 +32,10 @@
 #include "ciyam_base.h"
 #include "file_utils.h"
 #include "fs_iterator.h"
+
+#ifdef ZLIB_SUPPORT
+#  include <zlib.h>
+#endif
 
 using namespace std;
 
@@ -210,15 +213,32 @@ void init_files_area( )
    }
 }
 
-void raw_file( const string& data )
+bool has_file( const string& hash )
+{
+   string filename( construct_file_name_from_hash( hash ) );
+
+   return file_exists( filename );
+}
+
+int64_t file_bytes( const string& hash )
+{
+   string filename( construct_file_name_from_hash( hash ) );
+
+   return file_size( filename );
+}
+
+void create_raw_file( const string& data )
 {
    guard g( g_mutex );
 
    if( data.empty( ) )
-      throw runtime_error( "cannot init_file without data" );
+      throw runtime_error( "cannot create a raw file empty data" );
 
-   if( data[ 0 ] != 'B' && data[ 0 ] != 'L' )
-      throw runtime_error( "invalid prefix '" + data.substr( 0, 1 ) + "' for init_file (must be 'B' or 'L'" );
+   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+
+   if( file_type != c_file_type_val_blob
+    && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
+      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    string hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
@@ -255,20 +275,6 @@ void raw_file( const string& data )
       ++g_total_files;
       g_total_bytes += data.size( );
    }
-}
-
-bool has_file( const string& hash )
-{
-   string filename( construct_file_name_from_hash( hash ) );
-
-   return file_exists( filename );
-}
-
-int64_t file_bytes( const string& hash )
-{
-   string filename( construct_file_name_from_hash( hash ) );
-
-   return file_size( filename );
 }
 
 void tag_del( const string& name )
@@ -408,8 +414,26 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 #endif
    try
    {
-      file_transfer( filename, socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
-       c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+      session_file_buffer_access file_buffer;
+
+      file_transfer( filename,
+       socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
+       c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+       c_file_transfer_max_line_size, '\0', file_buffer.get_buffer( ), file_buffer.get_size( ) );
+
+#ifdef ZLIB_SUPPORT
+      bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
+
+      if( is_compressed )
+      {
+         unsigned long size = file_size( filename );
+         unsigned long usize = file_buffer.get_size( ) - size;
+
+         if( uncompress( ( Bytef * )file_buffer.get_buffer( )[ size ],
+          &usize, ( Bytef * )file_buffer.get_buffer( ), size ) != Z_OK )
+            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+      }
+#endif
 
 #ifndef _WIN32
       umask( um );
