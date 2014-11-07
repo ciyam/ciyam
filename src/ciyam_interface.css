@@ -1218,11 +1218,6 @@ table table th
    margin-top: -22px !important;
 }
 
-#print-list
-{
-   margin-top: 18px !important;
-}
-
 #newrecord-view
 {
    position: relative;
@@ -1246,15 +1241,27 @@ table table th
 
 .list-search-row
 {
-   background-color: white !important;
-   margin-top: -30px;
+   background-color: #FFF !important;
+   margin-top: -40px;
    margin-bottom: 50px;
+   border-top: 1px solid #DDD;
 }
 
 .list-search-align
 {
    padding-top: 15px;
    padding-bottom: 15px;
+}
+
+#list-actions
+{
+   padding-top: 15px;
+   padding-left: 3px;
+}
+
+#print-list
+{
+   margin-top: 5px !important;
 }
 
 @media screen

@@ -777,7 +777,8 @@ void output_list_form( ostream& os,
             text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
             os << " value=\"" << escape_markup( text_search_value ) << "\"";
          }
-         os << "></input>";
+         os << "/>";
+
          os << "</td></tr>\n";
       }
 
@@ -1340,7 +1341,7 @@ void output_list_form( ostream& os,
                   os << "<input type=\"text\" " << extra
                    << "size=\"" << input_size << "\" maxlength=\"" << max_length
                    << "\" id=\"search_" << svname << "\" name=\"search_" << svname << "\" value=\""
-                   << value << "\" onkeypress=\"className = 'text'; return form_keys( event, search );\"></input>";
+                   << value << "\" onkeypress=\"className = 'text'; return form_keys( event, search );\"/>";
 
                   if( is_datetime )
                   {
@@ -1418,7 +1419,7 @@ void output_list_form( ostream& os,
                      os << "<input type=\"text\" " << extra
                       << "size=\"" << input_size << "\" maxlength=\"" << max_length
                       << "\" id=\"search_" << svname << "\" name=\"search_" << svname << "\" value=\""
-                      << value << "\" onkeypress=\"className = 'text'; return form_keys( event, search );\"></input>";
+                      << value << "\" onkeypress=\"className = 'text'; return form_keys( event, search );\"/>";
 
                      if( is_datetime )
                      {
@@ -1448,7 +1449,7 @@ void output_list_form( ostream& os,
             os << "<tr><td colspan=\"3\" class=\"center\">";
 
          os << "<input id=\"search\" name=\"search\" type=\"submit\""
-          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input></td>";
+          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"/></td>";
 
          if( allow_quick_links )
          {
@@ -1456,7 +1457,7 @@ void output_list_form( ostream& os,
              << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
 
             os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
-             << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input></td>";
+             << " id=\"quick_link\" name=\"quick_link\" value=\"\"/></td>";
          }
 
          os << "</tr>\n";
@@ -1471,7 +1472,7 @@ void output_list_form( ostream& os,
          os << "<div class=\"list-search-align\">\n";
 
          os << "<input id=\"search\" name=\"search\" type=\"submit\""
-          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
+          " class=\"button\" value=\"" << GDS( c_display_search ) << "\"/>";
 
          if( allow_quick_links )
          {
@@ -1479,7 +1480,7 @@ void output_list_form( ostream& os,
             os << "&nbsp;&nbsp;<label>" << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
 
             os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
-             << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input>";
+             << " id=\"quick_link\" name=\"quick_link\" value=\"\"/>";
          }
 
          os << "</div>\n";
@@ -1504,7 +1505,10 @@ void output_list_form( ostream& os,
       else
       {
          if( get_storage_info( ).storage_name == "Sample" )
+         {
             os << "<div class=\"topnav\">\n";
+            os << "<div id=\"list-actions\">\n";
+         }
          else
             os << "<table class=\"full_width_header\"><tr>";
       }
@@ -1571,7 +1575,7 @@ void output_list_form( ostream& os,
                if( use_url_checksum )
                   os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
-               os << "' );\" style=\"cursor:pointer\"></input>";
+               os << "' );\" style=\"cursor:pointer\"/>";
             }
 
             if( sess_info.is_admin_user || ( list_type != c_list_type_admin && list_type != c_list_type_child_admin ) )
@@ -1707,7 +1711,7 @@ void output_list_form( ostream& os,
                   if( use_url_checksum )
                      os << "', '" << c_param_chksum << "', '" << new_checksum_value;
 
-                  os << "', " << ( ignore_selections ? "true" : "false" ) << " );\" style=\"cursor:pointer\"></input>";
+                  os << "', " << ( ignore_selections ? "true" : "false" ) << " );\" style=\"cursor:pointer\"/>";
                }
             }
 
@@ -1934,7 +1938,7 @@ void output_list_form( ostream& os,
             text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
             os << " value=\"" << escape_markup( text_search_value ) << "\"";
          }
-         os << "></input>";
+         os << "/>";
          os << "&nbsp;<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
       }
 
@@ -2332,22 +2336,22 @@ void output_list_form( ostream& os,
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
-            if( get_storage_info( ).storage_name == "Sample" )
-               os << "<p>" << error_message << "</p>";
-            else
+            if( get_storage_info( ).storage_name != "Sample" )
                os << "<td>" << error_message << "</td>";
+            else
+               os << "<p align=\"center\">" << error_message << "</p>";
          }
          else
          {
-            if( get_storage_info( ).storage_name == "Sample" )
-               os << "<p class=\"error\">" << remove_key( error_message ) << "</p>";
-            else
+            if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
+            else
+               os << "<p class=\"error center\">" << remove_key( error_message ) << "</p>";
          }
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "<div class=\"right\">\n";
+         os << "\n<div class=\"right-relative\">\n";
 
       if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
@@ -2386,7 +2390,11 @@ void output_list_form( ostream& os,
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
+      {
+         if( !is_child_list )
+            os << "</div>\n";
          os << "</div>\n</div>\n";
+      }
       else
          os << "</tr></table>\n";
    }
@@ -2416,7 +2424,7 @@ void output_list_form( ostream& os,
          if( !display_list_checks )
             os << "&nbsp;";
          else
-            os << "<input type=\"checkbox\" name=\"all\" onclick=\"check_or_uncheck_all( document." << source.id << ", this );\"></input>";
+            os << "<input type=\"checkbox\" name=\"all\" onclick=\"check_or_uncheck_all( document." << source.id << ", this );\"/>";
 
          os << "</th>\n";
 
@@ -2933,7 +2941,7 @@ void output_list_form( ostream& os,
                      os << " list_id=\"" << source.id << "_table\" list_error=\""
                       << row << "\" onclick=\"remove_table_row_from_checkbox( this );\"";
 
-                  os << "></input>";
+                  os << "/>";
                }
                os << "</td>\n";
             }
