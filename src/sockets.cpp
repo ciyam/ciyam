@@ -497,8 +497,10 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
    return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
 }
 
-void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t max_size,
- const char* p_ack_message, size_t initial_timeout, size_t line_timeout, int max_line_size, char prefix )
+void file_transfer( const string& name,
+ tcp_socket& s, ft_direction d, size_t max_size,
+ const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
+ int max_line_size, char prefix, unsigned char* p_buffer, unsigned int buffer_size )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -506,6 +508,8 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t ma
    string unexpected_data;
 
    s.set_no_delay( );
+
+   bool use_recv_buffer = ( p_buffer && buffer_size );
    
    if( d == e_ft_direction_send )
    {
@@ -554,6 +558,9 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t ma
    }
    else
    {
+      if( use_recv_buffer && buffer_size < max_size )
+         throw runtime_error( "buffer_size < max_size for file_transfer" );
+
       ofstream outf( name.c_str( ), ios::binary );
       if( !outf )
          throw runtime_error( "file '" + name + "' could not be opened for output" );
@@ -561,6 +568,8 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t ma
       string next;
       size_t written = 0;
       bool is_first = true;
+
+      unsigned char* p_buf = p_buffer;
 
       while( true )
       {
@@ -591,6 +600,12 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d, size_t ma
          {
             max_size_exceeded = true;
             break;
+         }
+
+         if( use_recv_buffer )
+         {
+            memcpy( p_buf, &decoded[ 0 ], decoded.size( ) );
+            p_buf += decoded.size( );
          }
 
          s.write_line( p_ack_message );

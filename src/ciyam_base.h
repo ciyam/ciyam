@@ -169,6 +169,20 @@ void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true 
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
 
+class CIYAM_BASE_DECL_SPEC session_file_buffer_access
+{
+   public:
+   session_file_buffer_access( );
+   ~session_file_buffer_access( );
+
+   unsigned int get_size( ) { return size; }
+   unsigned char* get_buffer( ) { return p_buffer; }
+
+   private:
+   unsigned int size;
+   unsigned char* p_buffer;
+};
+
 void CIYAM_BASE_DECL_SPEC increment_peer_files_uploaded( int64_t bytes );
 void CIYAM_BASE_DECL_SPEC increment_peer_files_downloaded( int64_t bytes );
 

@@ -27,11 +27,11 @@ std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
 void CLASS_BASE_DECL_SPEC init_files_area( );
 
-void CLASS_BASE_DECL_SPEC raw_file( const std::string& data );
-
 bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash );
 
 int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& hash );
+
+void CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data );
 
 void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );

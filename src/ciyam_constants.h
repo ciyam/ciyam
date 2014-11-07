@@ -13,6 +13,33 @@ const size_t c_file_transfer_initial_timeout = 10000;
 
 const int c_file_transfer_max_line_size = 500;
 
+const int c_file_type_val_blob = 0x01;
+const int c_file_type_val_item = 0x02;
+const int c_file_type_val_tree = 0x03;
+
+const int c_file_type_val_mask = 0x07;
+
+const int c_file_type_val_compressed = 0x08;
+
+const int c_file_type_val_extra_core = 0x10;
+const int c_file_type_val_extra_mime = 0x20;
+const int c_file_type_val_extra_other_1 = 0x40;
+const int c_file_type_val_extra_other_2 = 0x80;
+
+const int c_file_type_val_extra_mask = 0xf0;
+
+const char c_file_type_char_blob = '\x01';
+const char c_file_type_char_item = '\x02';
+const char c_file_type_char_tree = '\x03';
+
+const char c_file_type_char_blob_compressed = '\x09';
+const char c_file_type_char_item_compressed = '\x0a';
+const char c_file_type_char_tree_compressed = '\x0b';
+
+const char* const c_file_type_str_blob = "\x01";
+const char* const c_file_type_str_item = "\x02";
+const char* const c_file_type_str_tree = "\x03";
+
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";
 const char* const c_init = "init";
