@@ -2028,7 +2028,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       else
          extra_content << "<div id=\"print_remainder\">\n";
 
-      extra_content << "\n<div id=\"main\" class=\"menubar_width clearfix\">\n";
+      extra_content << "<div id=\"main\" class=\"menubar_width clearfix\">\n";
 
       if( module_access_denied )
       {
@@ -2828,7 +2828,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "</table>\n";
                }
 
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( n && get_storage_info( ).storage_name == "Sample" )
                   extra_content << "<div class=\"menu width-fix width-fix-view childlistborder\">\n";
 
                n = 0;
@@ -2847,7 +2847,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    findinfo + listsrch, selected_records, embed_images, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                }
 
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( n && get_storage_info( ).storage_name == "Sample" )
                   extra_content << "</div>\n";
             }
 

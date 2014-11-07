@@ -699,7 +699,7 @@ bool output_view_form( ostream& os, const string& act,
 
                os << " dyn_load( null, 'act="
                 << c_act_edit << "&app=' + get_all_field_values( document." << source.id
-                << " ) + '" << "&chk=" << source.key_info << "', false );\" style=\"cursor:pointer\">";
+                << " ) + '" << "&chk=" << source.key_info << "', false );\" style=\"cursor:pointer\"/>";
             }
             else
                is_editable = false;
@@ -858,7 +858,7 @@ bool output_view_form( ostream& os, const string& act,
          if( go_back_after_save )
             os << " if( !had_act_error ) jump_back = true;";
 
-         os << "\" style=\"cursor:pointer\">";
+         os << "\" style=\"cursor:pointer\"/>";
 
          os << c_nbsp;
          os << "<input id=\"undo\" name=\"undo\" type=\"button\" class=\"button\"";
@@ -886,7 +886,7 @@ bool output_view_form( ostream& os, const string& act,
          if( use_url_checksum )
             os << " query_update( '" << c_param_chksum << "', query_value( '" << c_param_ochksum << "' ), true ); ";
 
-         os << "\" style=\"cursor:pointer\">";
+         os << "\" style=\"cursor:pointer\"/>";
 
 #ifdef ALLOW_MULTIPLE_RECORD_ENTRY
          // KLUDGE: Only show the "Create Multiple Records" if specially built to allow it.
@@ -910,10 +910,10 @@ bool output_view_form( ostream& os, const string& act,
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
-            if( get_storage_info( ).storage_name == "Sample" )
-               os << error_message << "\n";
-            else
+            if( get_storage_info( ).storage_name != "Sample" )
                os << "<td>" << error_message << "</td>";
+            else
+               os << "<p align=\"center\">" << error_message << "</p>\n";
 
             extra_content_func += "had_act_error = false;\n";
          }
@@ -924,7 +924,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
-               os << "<span class=\"error\">&nbsp;&nbsp;" << remove_key( error_message ) << "</span>\n";
+               os << "<p class=\"error center\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
          }
       }
       else
@@ -984,7 +984,7 @@ bool output_view_form( ostream& os, const string& act,
              << to_string( sess_info.quick_link_data.size( ) ) << "', true ); ";
 
             os << "dyn_load( document." << source.id << ", 'act="
-             << c_act_qlink << "&extra=" << escape_specials( qlink_title ) << "', false );\" style=\"cursor:pointer\">";
+             << c_act_qlink << "&extra=" << escape_specials( qlink_title ) << "', false );\" style=\"cursor:pointer\"/>";
 
             if( get_storage_info( ).storage_name == "Sample" )
                os << "</span>\n";
@@ -1816,7 +1816,7 @@ bool output_view_form( ostream& os, const string& act,
             }
 
             os << "\" onkeypress=\"" << extra_keys
-             << "return form_keys( event, " << enter_action << ", " << cancel_action << " );\"></input>";
+             << "return form_keys( event, " << enter_action << ", " << cancel_action << " );\"/>";
 
             if( is_datetime )
             {
