@@ -429,7 +429,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
          unsigned long size = file_size( filename );
          unsigned long usize = file_buffer.get_size( ) - size;
 
-         if( uncompress( ( Bytef * )file_buffer.get_buffer( )[ size ],
+         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size ],
           &usize, ( Bytef * )file_buffer.get_buffer( ), size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
       }
