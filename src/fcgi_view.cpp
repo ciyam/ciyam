@@ -913,7 +913,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td>" << error_message << "</td>";
             else
-               os << "<p align=\"center\">" << error_message << "</p>\n";
+               os << "<p class=\"center view-message\">" << error_message << "</p>\n";
 
             extra_content_func += "had_act_error = false;\n";
          }
@@ -924,7 +924,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
-               os << "<p class=\"error center\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
+               os << "<p class=\"error center view-message\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
          }
       }
       else

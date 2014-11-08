@@ -1264,6 +1264,26 @@ table table th
    margin-top: 5px !important;
 }
 
+.list-message
+{
+   margin-top: -25px;
+}
+
+#print-list-message
+{
+   margin-top: -38px !important;
+}
+
+.view-message
+{
+   margin-top: -25px;
+}
+
+#print-view-message
+{
+   margin-top: -38px !important;
+}
+
 @media screen
 {
    .odd-heading-row

@@ -2339,14 +2339,14 @@ void output_list_form( ostream& os,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td>" << error_message << "</td>";
             else
-               os << "<p align=\"center\">" << error_message << "</p>";
+               os << "<p class=\"center list-message\">" << error_message << "</p>";
          }
          else
          {
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
-               os << "<p class=\"error center\">" << remove_key( error_message ) << "</p>";
+               os << "<p class=\"error center list-message\">" << remove_key( error_message ) << "</p>";
          }
       }
 
@@ -2360,7 +2360,12 @@ void output_list_form( ostream& os,
          if( get_storage_info( ).storage_name != "Sample" )
             os << "<td class=\"right\">";
          else
-            os << "<div id=\"print-list\" class=\"print\">";
+         {
+            if( error_message.empty( ) )
+               os << "<div id=\"print-list\" class=\"print\">";
+            else
+               os << "<div id=\"print-list-message\" class=\"print\">";
+         }
 
          os << "<a href=\"javascript:";
 
