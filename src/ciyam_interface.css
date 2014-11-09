@@ -1284,6 +1284,50 @@ table table th
    margin-top: -38px !important;
 }
 
+.spacer-ten-percent
+{
+   margin-left: 10%;
+}
+
+.table-row
+{
+   display: table-row;
+}
+
+.table-cell
+{
+   display: table-cell;
+}
+
+.table-row #list-actions
+{
+   padding-bottom: 15px;
+   white-space: nowrap;
+   vertical-align: middle;
+}
+
+.table-row .list-message
+{
+   padding-top: 2px;
+   vertical-align: middle;
+}
+
+.table-row .message
+{
+   padding-left: 25px;
+   padding-right: 25px;
+   margin: auto;
+   line-height: 100%;
+   width: 100%;
+   vertical-align: middle;
+   height: 50px;
+}
+
+.table-row .right-relative
+{
+   padding-top: 58px;
+}
+
 @media screen
 {
    .odd-heading-row

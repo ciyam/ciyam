@@ -392,8 +392,10 @@ void fetch_file( const string& hash, tcp_socket& socket )
 {
    string filename( construct_file_name_from_hash( hash ) );
 
-   file_transfer( filename, socket, e_ft_direction_send, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+   file_transfer( filename,
+    socket, e_ft_direction_send, get_files_area_item_max_size( ),
+    c_response_okay_more, c_file_transfer_initial_timeout,
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 }
 
 void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
@@ -417,7 +419,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       session_file_buffer_access file_buffer;
 
       file_transfer( filename,
-       socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
+       socket, e_ft_direction_receive, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, '\0', file_buffer.get_buffer( ), file_buffer.get_size( ) );
 
@@ -480,8 +482,10 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 
 void fetch_temp_file( const string& name, tcp_socket& socket )
 {
-   file_transfer( name, socket, e_ft_direction_send, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+   file_transfer( name, socket,
+    e_ft_direction_send, get_files_area_item_max_size( ),
+    c_response_okay_more, c_file_transfer_initial_timeout,
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 }
 
 void store_temp_file( const string& name, tcp_socket& socket )
@@ -491,8 +495,10 @@ void store_temp_file( const string& name, tcp_socket& socket )
 #endif
    try
    {
-      file_transfer( name, socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
-       c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+      file_transfer( name, socket,
+       e_ft_direction_receive, get_files_area_item_max_size( ),
+       c_response_okay_more, c_file_transfer_initial_timeout,
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 
 #ifndef _WIN32
       umask( um );

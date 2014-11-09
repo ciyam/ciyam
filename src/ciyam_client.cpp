@@ -201,15 +201,21 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          }
          else
          {
+            bool was_get_put = false;
+
             try
             {
                string::size_type pos = str.find( ' ' );
+
+               if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
+                  was_get_put = true;
+
                if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "file_get" )
                {
                   string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
 
                   file_transfer( filename,
-                   socket, e_ft_direction_fetch,
+                   socket, e_ft_direction_receive,
                    c_max_file_transfer_size, c_response_okay_more,
                    c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
                    c_file_transfer_max_line_size, !get_dest_file.empty( ) ? '\1' : '\0' );
@@ -276,17 +282,35 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   if( response.substr( 0, pos ) == "put" )
                   {
-                     string temp_file_name( "~" + uuid( ).as_string( ) );
-
-                     file_transfer( temp_file_name, socket,
-                      e_ft_direction_fetch, c_max_file_transfer_size,
+                     file_transfer( response.substr( pos + 1 ), socket,
+                      e_ft_direction_receive, c_max_file_transfer_size,
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 
-                     file_transfer( temp_file_name, socket,
+                     file_transfer( response.substr( pos + 1 ), socket,
                       e_ft_direction_send, c_max_file_transfer_size,
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  }
+               }
+               else if( was_get_put )
+               {
+                  string::size_type pos = response.find( ' ' );
 
-                     file_remove( temp_file_name );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected response: " + response );
+
+                  was_get_put = false;
+
+                  if( response.substr( 0, pos ) == "get" )
+                  {
+                     file_transfer( response.substr( pos + 1 ), socket,
+                      e_ft_direction_send, c_max_file_transfer_size,
+                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  }
+                  else if( response.substr( 0, pos ) == "put" )
+                  {
+                     file_transfer( response.substr( pos + 1 ), socket,
+                      e_ft_direction_receive, c_max_file_transfer_size,
+                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                   }
                }
 
