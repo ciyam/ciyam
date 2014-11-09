@@ -907,7 +907,7 @@ bool output_view_form( ostream& os, const string& act,
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "</div>\n<div class=\"table-cell message\" align=\"center\">";
+         os << "</div>\n<div class=\"table-cell message center\">";
 
       if( !error_message.empty( ) )
       {

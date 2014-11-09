@@ -2335,7 +2335,7 @@ void output_list_form( ostream& os,
       if( get_storage_info( ).storage_name != "Sample" )
          os << "</td>";
       else
-         os << "</div>\n<div class=\"table-cell message\" align=\"center\">";
+         os << "</div>\n<div class=\"table-cell message center\">";
 
       if( !error_message.empty( ) )
       {
@@ -2357,7 +2357,7 @@ void output_list_form( ostream& os,
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "\n<div class=\"table-cell right-relative\">\n";
+         os << "</div>\n<div class=\"table-cell right-relative\">\n";
 
       if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
@@ -2404,7 +2404,7 @@ void output_list_form( ostream& os,
       {
          if( !is_child_list )
             os << "</div>\n";
-         os << "</div>\n</div>\n</div>\n";
+         os << "</div>\n</div>\n";
       }
       else
          os << "</tr></table>\n";
