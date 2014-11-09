@@ -139,6 +139,7 @@ class socket_command_handler : public command_handler
    tcp_socket& get_socket( ) { return socket; }
 #endif
 
+   const string& get_last_command( ) { return last_command; }
    const string& get_next_command( ) { return next_command; }
 
    bool get_is_local( ) const { return is_local; }
@@ -184,6 +185,7 @@ class socket_command_handler : public command_handler
    bool had_usage;
    bool is_listener;
 
+   string last_command;
    string next_command;
 
    peer_state session_state;
@@ -231,6 +233,9 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
 
 void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
 {
+   string::size_type pos = cmd_and_args.find( ' ' );
+   last_command = cmd_and_args.substr( 0, pos );
+
    if( has_finished( ) )
       TRACE_LOG( TRACE_SESSIONS, "finished session" );
 }
@@ -328,7 +333,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             response.erase( );
 
             if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+            {
+               send_okay_response = false;
                socket_handler.state( ) = e_peer_state_invalid;
+            }
             else
             {
                socket_handler.state( ) = e_peer_state_waiting_for_put;
@@ -355,6 +363,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          increment_peer_files_downloaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
+
+         // KLUDGE: For now also send back "hello" as the handshake file.
+         if( socket_handler.get_is_listener( ) )
+         {
+            string data( c_file_type_str_blob );
+            data += string( c_hello );
+
+            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+
+            handler.issue_command_reponse( "put " + temp_hash, true );
+            fetch_file( temp_hash, socket );
+         }
       }
       else if( command == c_cmd_peer_session_put )
       {
@@ -368,6 +388,47 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          increment_peer_files_uploaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
+
+         // KLUDGE: For now also fetch back "hello" as the handshake file.
+         if( socket_handler.get_is_listener( ) )
+         {
+            string data( c_file_type_str_blob );
+            data += string( c_hello );
+
+            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+
+            string temp_file_name( "~" + uuid( ).as_string( ) );
+
+            handler.issue_command_reponse( "get " + temp_hash, true );
+            store_temp_file( temp_file_name, socket );
+
+            if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+            {
+               send_okay_response = false;
+               socket_handler.state( ) = e_peer_state_invalid;
+            }
+
+            file_remove( temp_file_name );
+         }
+      }
+      else if( command == c_cmd_peer_session_pip )
+      {
+         string addr( get_parm_val( parameters, c_cmd_parm_peer_session_pip_addr ) );
+
+         if( socket_handler.get_last_command( ) == c_cmd_peer_session_pip )
+            throw runtime_error( "invalid state for pip" );
+         else
+            response = "127.0.0.1"; // KLUDGE: This should return an actual peer IP address.
+
+         if( socket_handler.state( ) != e_peer_state_waiting_for_get
+          && socket_handler.state( ) != e_peer_state_waiting_for_put
+          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
+            throw runtime_error( "invalid state for pip" );
+
+         if( socket_handler.state( ) == e_peer_state_waiting_for_put )
+            socket_handler.state( ) = e_peer_state_waiting_for_get;
+         else if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+            socket_handler.state( ) = e_peer_state_waiting_for_put;
       }
       else if( command == c_cmd_peer_session_tls )
       {

@@ -138,7 +138,7 @@ class tcp_socket
 enum ft_direction
 {
    e_ft_direction_send,
-   e_ft_direction_fetch
+   e_ft_direction_receive
 };
 
 void file_transfer( const std::string& name, tcp_socket& s,

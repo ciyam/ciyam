@@ -1476,8 +1476,8 @@ void output_list_form( ostream& os,
 
          if( allow_quick_links )
          {
-            // KLUDGE: Should instead use some CSS for the "spacing".
-            os << "&nbsp;&nbsp;<label>" << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
+            os << "<span class=\"spacer-ten-percent\"/><label>"
+             << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
 
             os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
              << " id=\"quick_link\" name=\"quick_link\" value=\"\"/>";
@@ -1500,14 +1500,18 @@ void output_list_form( ostream& os,
          if( get_storage_info( ).storage_name != "Sample" )
             os << "<table><tr>";
          else
+         {
+            os << "<div class=\"table-row\">\n";
             os << "<div class=\"childlist-actions\">";
+         }
       }
       else
       {
          if( get_storage_info( ).storage_name == "Sample" )
          {
             os << "<div class=\"topnav\">\n";
-            os << "<div id=\"list-actions\">\n";
+            os << "<div class=\"table-row\">\n";
+            os << "<div class=\"table-cell\" id=\"list-actions\">\n";
          }
          else
             os << "<table class=\"full_width_header\"><tr>";
@@ -2330,6 +2334,8 @@ void output_list_form( ostream& os,
 
       if( get_storage_info( ).storage_name != "Sample" )
          os << "</td>";
+      else
+         os << "</div>\n<div class=\"table-cell message\" align=\"center\">";
 
       if( !error_message.empty( ) )
       {
@@ -2351,7 +2357,7 @@ void output_list_form( ostream& os,
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "\n<div class=\"right-relative\">\n";
+         os << "\n<div class=\"table-cell right-relative\">\n";
 
       if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
@@ -2398,7 +2404,7 @@ void output_list_form( ostream& os,
       {
          if( !is_child_list )
             os << "</div>\n";
-         os << "</div>\n</div>\n";
+         os << "</div>\n</div>\n</div>\n";
       }
       else
          os << "</tr></table>\n";

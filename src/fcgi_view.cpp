@@ -650,7 +650,8 @@ bool output_view_form( ostream& os, const string& act,
       if( get_storage_info( ).storage_name == "Sample" )
       {
          os << "<div class=\"topnav\">\n";
-         os << "<div id=\"view-actions\">\n";
+         os << "<div class=\"table-row\">\n";
+         os << "<div class=\"table-cell\" id=\"view-actions\">\n";
       }
       else
       {
@@ -905,6 +906,9 @@ bool output_view_form( ostream& os, const string& act,
             os << "</td>";
       }
 
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n<div class=\"table-cell message\" align=\"center\">";
+
       if( !error_message.empty( ) )
       {
          // NOTE: Don't display as an error unless was actually received that way from the server.
@@ -913,7 +917,7 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td>" << error_message << "</td>";
             else
-               os << "<p class=\"center view-message\">" << error_message << "</p>\n";
+               os << "<p class=\"table-cell center view-message\">" << error_message << "</p>\n";
 
             extra_content_func += "had_act_error = false;\n";
          }
@@ -924,11 +928,14 @@ bool output_view_form( ostream& os, const string& act,
             if( get_storage_info( ).storage_name != "Sample" )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
-               os << "<p class=\"error center view-message\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
+               os << "<p class=\"error table-cell center view-message\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
          }
       }
       else
          extra_content_func += "had_act_error = false;\n";
+
+      if( get_storage_info( ).storage_name == "Sample" )
+         os << "</div>\n";
 
       bool has_started_right = false;
 
@@ -949,7 +956,7 @@ bool output_view_form( ostream& os, const string& act,
       }
 
       if( get_storage_info( ).storage_name == "Sample" )
-         os << "<div class=\"right-relative\">\n";
+         os << "<div class=\"table-cell right-relative\">\n";
 
       // NOTE: If this view supports "quick linking" (and it is being used) then create an "add quick link" action.
       if( !is_in_edit && !has_quick_link && !mod_info.user_qlink_class_id.empty( )
