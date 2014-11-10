@@ -2,5 +2,5 @@ chk "check if peer has a file" <val//hash>
 get "fetch a file from the files area" <val//hash>[<val//name>]
 put "stores a file to the files area" <val//hash>
 pip "exchange a random peer's ip address" <val//addr>
-tls
+tls "start TLS session"
 bye "terminate session"

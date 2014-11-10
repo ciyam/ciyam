@@ -1086,6 +1086,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
    {
       if( is_special && !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
+
       socket.write_line( response );
    }
 
@@ -1093,6 +1094,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
    {
       if( !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
+
       socket.write_line( c_response_okay );
    }
 }
@@ -4010,6 +4012,7 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
    if( !socket.set_no_delay( ) )
       issue_warning( "socket set_no_delay failure" );
+
    socket.write_line( c_response_okay );
 }
 
@@ -4046,9 +4049,9 @@ void ciyam_session::on_start( )
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
 
-      init_session( cmd_handler );
-
       ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
+
+      init_session( cmd_handler );
 
       socket_command_processor processor( *ap_socket, cmd_handler );
       processor.process_commands( );

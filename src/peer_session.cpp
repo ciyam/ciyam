@@ -58,7 +58,8 @@ const char* const c_hello = "hello";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
-const size_t c_request_timeout = 500;
+const size_t c_request_timeout = 5000;
+const size_t c_greeting_timeout = 10000;
 
 const size_t c_request_throttle_sleep_time = 500;
 
@@ -68,14 +69,12 @@ enum peer_state
    e_peer_state_listener,
    e_peer_state_initiator,
    e_peer_state_waiting_for_get,
-   e_peer_state_waiting_for_put,
-   e_peer_state_waiting_for_get_or_put
+   e_peer_state_waiting_for_put
 };
 
 enum peer_trust_level
 {
    e_peer_trust_level_none,
-   e_peer_trust_level_weak,
    e_peer_trust_level_normal
 };
 
@@ -246,13 +245,15 @@ void socket_command_handler::handle_command_response( const string& response, bo
    {
       if( is_special && !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
+
       socket.write_line( response );
    }
 
-   if( !is_special )
+   if( !is_special && is_listener )
    {
       if( !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
+
       socket.write_line( c_response_okay );
    }
 }
@@ -340,7 +341,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             else
             {
                socket_handler.state( ) = e_peer_state_waiting_for_put;
-               socket_handler.trust_level( ) = e_peer_trust_level_weak;
+               socket_handler.trust_level( ) = e_peer_trust_level_normal;
             }
 
             increment_peer_files_uploaded( data.length( ) );
@@ -355,8 +356,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string hash( get_parm_val( parameters, c_cmd_parm_peer_session_get_hash ) );
 
-         if( socket_handler.state( ) != e_peer_state_waiting_for_get
-          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
+         if( socket_handler.state( ) != e_peer_state_waiting_for_get )
             throw runtime_error( "invalid state for get" );
 
          fetch_file( hash, socket );
@@ -380,12 +380,20 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string hash( get_parm_val( parameters, c_cmd_parm_peer_session_put_hash ) );
 
-         if( socket_handler.state( ) != e_peer_state_waiting_for_put
-          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
+         if( socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for put" );
 
-         store_file( hash, socket );
-         increment_peer_files_uploaded( file_bytes( hash ) );
+         if( !has_file( hash ) )
+         {
+            store_file( hash, socket );
+            increment_peer_files_uploaded( file_bytes( hash ) );
+         }
+         else
+         {
+            string temp_file_name( "~" + uuid( ).as_string( ) );
+            store_temp_file( temp_file_name, socket );
+            file_remove( temp_file_name );
+         }
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
 
@@ -421,8 +429,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             response = "127.0.0.1"; // KLUDGE: This should return an actual peer IP address.
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
-          && socket_handler.state( ) != e_peer_state_waiting_for_put
-          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
+          && socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for pip" );
 
          if( socket_handler.state( ) == e_peer_state_waiting_for_put )
@@ -487,16 +494,48 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       else if( !is_condemned_session( ) )
          condemn_this_session( );
    }
+   else if( !socket_handler.get_is_listener( )
+    && !g_server_shutdown && !is_condemned_session( )
+    && socket_handler.state( ) == e_peer_state_waiting_for_get )
+   {
+      string response;
+      if( socket.read_line( response, c_request_timeout ) <= 0 )
+      {
+         string error;
+         if( socket.had_timeout( ) )
+            error = "timeout occurred getting peer response";
+         else
+            error = "server has terminated this connection";
+
+         socket.close( );
+         throw runtime_error( error );
+      }
+
+      if( response != string( c_response_okay ) )
+      {
+         socket.close( );
+         throw runtime_error( "unexpected non-okay response from peer" );
+      }
+
+      string data( c_file_type_str_blob );
+      data += string( c_hello );
+
+      string hash( lower( sha256( data ).get_digest_as_string( ) ) );
+      socket.write_line( string( c_cmd_peer_session_put ) + " " + hash );
+
+      fetch_file( hash, socket );
+   }
 }
 
 class socket_command_processor : public command_processor
 {
    public:
-   socket_command_processor( tcp_socket& socket, command_handler& handler, bool is_local )
+   socket_command_processor( tcp_socket& socket, command_handler& handler, bool is_local, bool is_listener )
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
     is_local( is_local ),
+    is_listener( is_listener ),
     is_first_command( true )
    {
    }
@@ -506,6 +545,7 @@ class socket_command_processor : public command_processor
    command_handler& handler;
 
    bool is_local;
+   bool is_listener;
    bool is_first_command;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
@@ -525,8 +565,39 @@ string socket_command_processor::get_cmd_and_args( )
       TRACE_LOG( TRACE_SESSIONS, "started session" );
    }
 
+   socket_command_handler& socket_handler = dynamic_cast< socket_command_handler& >( handler );
+
    while( true )
    {
+      if( !is_listener && !g_server_shutdown && !is_condemned_session( ) )
+      {
+         if( socket_handler.state( ) == e_peer_state_waiting_for_put )
+         {
+            string response;
+            if( socket.read_line( response, c_request_timeout ) <= 0 )
+            {
+               request = "bye";
+               break;
+            }
+
+            if( response != string( c_response_okay ) )
+            {
+               request = "bye";
+               break;
+            }
+
+            string data( c_file_type_str_blob );
+            data += string( c_hello );
+
+            string hash( lower( sha256( data ).get_digest_as_string( ) ) );
+            socket.write_line( string( c_cmd_peer_session_get ) + " " + hash );
+
+            string temp_file_name( "~" + uuid( ).as_string( ) );
+            store_temp_file( temp_file_name, socket );
+            file_remove( temp_file_name );
+         }
+      }
+
       if( socket.read_line( request, c_request_timeout, c_max_line_length ) <= 0 )
       {
          if( !is_captured_session( )
@@ -557,6 +628,10 @@ string socket_command_processor::get_cmd_and_args( )
       {
          if( request != "bye" )
             msleep( c_request_throttle_sleep_time );
+
+         if( request == c_response_okay || request == c_response_okay_more )
+            request = "bye";
+
          break;
       }
    }
@@ -583,6 +658,7 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
    if( !socket.set_no_delay( ) )
       issue_warning( "socket set_no_delay failure" );
+
    socket.write_line( c_response_okay );
 }
 
@@ -625,11 +701,50 @@ void peer_session::on_start( )
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
+      if( acceptor )
+         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
+      else
+      {
+         string greeting;
+         if( ap_socket->read_line( greeting, c_greeting_timeout ) <= 0 )
+         {
+            string error;
+            if( ap_socket->had_timeout( ) )
+               error = "timeout occurred trying to connect to server";
+            else
+               error = "server has terminated this connection";
+
+            ap_socket->close( );
+            throw runtime_error( error );
+         }
+
+         version_info ver_info;
+         if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
+         {
+            ap_socket->close( );
+            throw runtime_error( greeting );
+         }
+
+         if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
+         {
+            ap_socket->close( );
+            throw runtime_error( "incompatible protocol version "
+             + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
+         }
+
+         string data( c_file_type_str_blob );
+         data += string( c_hello );
+
+         string hash( lower( sha256( data ).get_digest_as_string( ) ) );
+
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash );
+
+         cmd_handler.state( ) = e_peer_state_waiting_for_put;
+      }
+
       init_session( cmd_handler, true );
 
-      ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
-
-      socket_command_processor processor( *ap_socket, cmd_handler, is_local );
+      socket_command_processor processor( *ap_socket, cmd_handler, is_local, acceptor );
       processor.process_commands( );
 
       ap_socket->close( );
@@ -719,5 +834,36 @@ void peer_listener::on_start( )
    cout << "finished peer_listener..." << endl;
 #endif
    delete this;
+}
+
+void create_initial_peer_sessions( )
+{
+   set< string > initial_ips;
+   get_initial_peer_ips( initial_ips );
+
+   for( set< string >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
+   {
+      string ip( *i );
+
+      if( !get_is_accepted_peer_id_addr( ip ) )
+         continue;
+
+#ifdef SSL_SUPPORT
+      auto_ptr< ssl_socket > ap_socket( new ssl_socket );
+#else
+      auto_ptr< tcp_socket > ap_socket( new tcp_socket );
+#endif
+
+      if( ap_socket->open( ) )
+      {
+         ip_address address( ip.c_str( ), g_port );
+
+         if( ap_socket->connect( address ) )
+         {
+            peer_session* p_session = new peer_session( false, ap_socket, address.get_addr_string( ) );
+            p_session->start( );
+         }
+      }
+   }
 }
 

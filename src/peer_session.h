@@ -49,5 +49,7 @@ class peer_listener : public thread
    void on_start( );
 };
 
+void create_initial_peer_sessions( );
+
 #endif
 
