@@ -135,7 +135,7 @@ const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_default_storage = "default_storage";
-const char* const c_attribute_peer_ips_inital = "peer_ips_inital";
+const char* const c_attribute_peer_ips_direct = "peer_ips_direct";
 const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
 const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
@@ -3242,9 +3242,9 @@ void read_server_configuration( )
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
       g_variables.insert( make_pair( c_special_variable_storage, g_default_storage ) );
 
-      string peer_ips_inital( reader.read_opt_attribute( c_attribute_peer_ips_inital ) );
-      if( !peer_ips_inital.empty( ) )
-         split( peer_ips_inital, g_initial_peer_ip_addrs );
+      string peer_ips_direct( reader.read_opt_attribute( c_attribute_peer_ips_direct ) );
+      if( !peer_ips_direct.empty( ) )
+         split( peer_ips_direct, g_initial_peer_ip_addrs );
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
       if( !peer_ips_permit.empty( ) )
@@ -4119,6 +4119,11 @@ string get_timezone( )
 string get_web_root( )
 {
    return g_web_root;
+}
+
+void get_initial_peer_ips( set< string >& ips )
+{
+   ips = g_initial_peer_ip_addrs;
 }
 
 bool get_is_accepted_ip_addr( const string& ip_addr )

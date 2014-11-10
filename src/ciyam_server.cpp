@@ -536,6 +536,8 @@ int main( int argc, char* argv[ ] )
                p_peer_litener->start( );
             }
 
+            create_initial_peer_sessions( );
+
             bool reported_shutdown = false;
             while( s && ( !g_server_shutdown || g_active_sessions ) )
             {
