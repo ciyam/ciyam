@@ -162,10 +162,14 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_arg
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
-void CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler, bool is_peer_session = false );
+void CIYAM_BASE_DECL_SPEC init_session(
+ command_handler& cmd_handler, bool is_peer_session = false, const std::string* p_ip_addr = 0 );
+
 void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
+
+bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr );
 
 void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true );
 

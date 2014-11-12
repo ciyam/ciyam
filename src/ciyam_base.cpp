@@ -293,7 +293,7 @@ struct session
 {
    session( size_t id,
     size_t slot, command_handler& cmd_handler,
-    storage_handler* p_storage_handler, bool is_peer_session )
+    storage_handler* p_storage_handler, bool is_peer_session, const string* p_ip_addr )
     :
     id( id ),
     slot( slot ),
@@ -314,6 +314,9 @@ struct session
     is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler )
    {
+      if( p_ip_addr )
+         ip_addr = *p_ip_addr;
+
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
 
@@ -328,6 +331,7 @@ struct session
    string uid;
    string sec;
 
+   string ip_addr;
    string tz_name;
 
    string last_cmd;
@@ -4531,7 +4535,7 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-void init_session( command_handler& cmd_handler, bool is_peer_session )
+void init_session( command_handler& cmd_handler, bool is_peer_session, const string* p_ip_addr )
 {
    guard g( g_mutex );
 
@@ -4540,9 +4544,12 @@ void init_session( command_handler& cmd_handler, bool is_peer_session )
    {
       if( !g_sessions[ i ] )
       {
-         g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session );
+         g_sessions[ i ] = new session(
+          ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session, p_ip_addr );
+
          gtp_session = g_sessions[ i ];
          ods::instance( 0, true );
+
          break;
       }
    }
@@ -4592,6 +4599,19 @@ size_t session_id( )
    return rc;
 }
 
+bool has_session_with_ip_addr( const string& ip_addr )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && g_sessions[ i ]->ip_addr == ip_addr )
+         return true;
+   }
+
+   return false;
+}
+
 void list_sessions( ostream& os, bool inc_dtms )
 {
    guard g( g_mutex );
@@ -4623,7 +4643,7 @@ void list_sessions( ostream& os, bool inc_dtms )
          string uid( g_sessions[ i ]->uid );
 
          if( uid.empty( ) )
-            uid = c_uid_unknown;
+            uid = g_sessions[ i ]->ip_addr.empty( ) ? c_uid_unknown : g_sessions[ i ]->ip_addr;
          else
          {
             // NOTE: If the session's "uid" is in the form <key>:<uid> then strip off the key

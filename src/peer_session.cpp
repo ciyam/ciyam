@@ -304,11 +304,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       if( command == c_cmd_peer_session_chk )
       {
          string hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash ) );
+         string hash2( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash2 ) );
+         string token( get_parm_val( parameters, c_cmd_parm_peer_session_chk_token ) );
 
-         if( socket_handler.state( ) != e_peer_state_listener )
+         if( ( hash2.empty( ) && socket_handler.state( ) != e_peer_state_listener )
+          || ( !hash2.empty( ) && socket_handler.state( ) != e_peer_state_waiting_for_get ) )
             throw runtime_error( "invalid state for chk" );
 
          bool has = has_file( hash );
+
+         bool has_both = false;
+         if( has && !hash2.empty( ) )
+            has_both = has_file( hash2 );
 
          if( !has )
          {
@@ -316,41 +323,52 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             handler.issue_command_reponse( response, true );
 
-            // NOTE: For the initial file transfer just a dummy "hello" blob.
-            string data( c_file_type_str_blob );
-            data += string( c_hello );
-
-            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
-
-            if( !has_file( temp_hash ) )
-               create_raw_file( data );
-
-            handler.issue_command_reponse( "put " + temp_hash, true );
-            fetch_file( temp_hash, socket );
-
-            string temp_file_name( "~" + uuid( ).as_string( ) );
-            store_temp_file( temp_file_name, socket );
-
-            response.erase( );
-
-            if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+            if( socket_handler.state( ) == e_peer_state_listener )
             {
-               send_okay_response = false;
-               socket_handler.state( ) = e_peer_state_invalid;
-            }
-            else
-            {
-               socket_handler.state( ) = e_peer_state_waiting_for_put;
-               socket_handler.trust_level( ) = e_peer_trust_level_normal;
-            }
+               // NOTE: For the initial file transfer just a dummy "hello" blob.
+               string data( c_file_type_str_blob );
+               data += string( c_hello );
 
-            increment_peer_files_uploaded( data.length( ) );
-            increment_peer_files_downloaded( data.length( ) );
+               string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
-            file_remove( temp_file_name );
+               if( !has_file( temp_hash ) )
+                  create_raw_file( data );
+
+               handler.issue_command_reponse( "put " + temp_hash, true );
+               fetch_file( temp_hash, socket );
+
+               string temp_file_name( "~" + uuid( ).as_string( ) );
+               store_temp_file( temp_file_name, socket );
+
+               response.erase( );
+
+               if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+               {
+                  send_okay_response = false;
+                  socket_handler.state( ) = e_peer_state_invalid;
+               }
+               else
+               {
+                  socket_handler.state( ) = e_peer_state_waiting_for_put;
+                  socket_handler.trust_level( ) = e_peer_trust_level_normal;
+               }
+
+               increment_peer_files_uploaded( data.length( ) );
+               increment_peer_files_downloaded( data.length( ) );
+
+               file_remove( temp_file_name );
+            }
          }
          else
-            socket_handler.state( ) = e_peer_state_waiting_for_get;
+         {
+            if( has_both )
+               response = hash_two_with_token_separator( hash, hash2, token );
+
+            if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+               socket_handler.state( ) = e_peer_state_waiting_for_put;
+            else
+               socket_handler.state( ) = e_peer_state_waiting_for_get;
+         }
       }
       else if( command == c_cmd_peer_session_get )
       {
@@ -662,6 +680,21 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
    socket.write_line( c_response_okay );
 }
 
+#ifdef SSL_SUPPORT
+peer_session* construct_session( bool acceptor, auto_ptr< ssl_socket >& ap_socket, const string& ip_addr )
+#else
+peer_session* construct_session( bool acceptor, auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
+#endif
+{
+   guard g( g_mutex );
+   peer_session* p_session = 0;
+
+   if( ip_addr == "127.0.0.1" || !has_session_with_ip_addr( ip_addr ) )
+      p_session = new peer_session( acceptor, ap_socket, ip_addr );
+
+   return p_session;
+}
+
 }
 
 #ifdef SSL_SUPPORT
@@ -671,6 +704,7 @@ peer_session::peer_session( bool acceptor, auto_ptr< tcp_socket >& ap_socket, co
 #endif
  :
  is_local( false ),
+ ip_addr( ip_addr ),
  acceptor( acceptor ),
  ap_socket( ap_socket )
 {
@@ -742,7 +776,7 @@ void peer_session::on_start( )
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
       }
 
-      init_session( cmd_handler, true );
+      init_session( cmd_handler, true, &ip_addr );
 
       socket_command_processor processor( *ap_socket, cmd_handler, is_local, acceptor );
       processor.process_commands( );
@@ -819,8 +853,10 @@ void peer_listener::on_start( )
             if( !g_server_shutdown && *ap_socket
              && !has_max_peers( ) && get_is_accepted_peer_id_addr( address.get_addr_string( ) ) )
             {
-               peer_session* p_session = new peer_session( true, ap_socket, address.get_addr_string( ) );
-               p_session->start( );
+               peer_session* p_session = construct_session( true, ap_socket, address.get_addr_string( ) );
+
+               if( p_session )
+                  p_session->start( );
             }
          }
 
@@ -848,6 +884,9 @@ void create_initial_peer_sessions( )
       if( !get_is_accepted_peer_id_addr( ip ) )
          continue;
 
+      if( g_server_shutdown || has_max_peers( ) )
+         break;
+
 #ifdef SSL_SUPPORT
       auto_ptr< ssl_socket > ap_socket( new ssl_socket );
 #else
@@ -860,8 +899,10 @@ void create_initial_peer_sessions( )
 
          if( ap_socket->connect( address ) )
          {
-            peer_session* p_session = new peer_session( false, ap_socket, address.get_addr_string( ) );
-            p_session->start( );
+            peer_session* p_session = construct_session( false, ap_socket, address.get_addr_string( ) );
+
+            if( p_session )
+               p_session->start( );
          }
       }
    }

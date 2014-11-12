@@ -388,6 +388,22 @@ string list_file_tags( const string& pat )
    return retval;
 }
 
+string hash_two_with_token_separator( const string& hash1, const string& hash2, const string& separator )
+{
+   string filename1( construct_file_name_from_hash( hash1 ) );
+   string filename2( construct_file_name_from_hash( hash2 ) );
+
+   sha256 hash;
+   hash.update( filename1, true );
+
+   if( !separator.empty( ) )
+      hash.update( separator );
+
+   hash.update( filename2, true );
+
+   return lower( hash.get_digest_as_string( ) );
+}
+
 void fetch_file( const string& hash, tcp_socket& socket )
 {
    string filename( construct_file_name_from_hash( hash ) );
