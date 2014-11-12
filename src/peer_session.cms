@@ -1,4 +1,4 @@
-chk "check if peer has a file" <val//hash>
+chk "check if peer has a file or hash the content of two files with a token" <val//hash>[<val//hash2><val//token>]
 get "fetch a file from the files area" <val//hash>[<val//name>]
 put "stores a file to the files area" <val//hash>
 pip "exchange a random peer's ip address" <val//addr>

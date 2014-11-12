@@ -144,6 +144,13 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string data( str.substr( pos + 1 ) );
             string extra;
 
+            bool is_chk_two = false;
+            if( str.substr( 0, pos ) == "chk" )
+            {
+               if( data.find( ' ' ) != string::npos )
+                  is_chk_two = true;
+            }
+
             if( str.substr( 0, pos ) == "get"
              || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
             {
@@ -162,7 +169,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string prefix( c_file_type_str_blob );
 
             regex expr( c_regex_hash_256 );
-            if( expr.search( data ) == string::npos )
+            if( !is_chk_two && expr.search( data ) == string::npos )
             {
                str.erase( pos + 1 );
 

@@ -42,6 +42,9 @@ std::string CLASS_BASE_DECL_SPEC tag_file_hash( const std::string& name );
 
 std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat );
 
+std::string CLASS_BASE_DECL_SPEC hash_two_with_token_separator(
+ const std::string& hash1, const std::string& hash2, const std::string& separator );
+
 void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socket, const char* p_tag = 0 );
 

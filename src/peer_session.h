@@ -36,6 +36,7 @@ class peer_session : public thread
    private:
    bool acceptor;
    bool is_local;
+   std::string ip_addr;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
