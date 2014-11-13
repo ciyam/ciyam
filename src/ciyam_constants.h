@@ -32,6 +32,8 @@ const char c_file_type_char_blob = '\x01';
 const char c_file_type_char_item = '\x02';
 const char c_file_type_char_tree = '\x03';
 
+const char c_file_type_char_compressed = '0x08';
+
 const char c_file_type_char_blob_compressed = '\x09';
 const char c_file_type_char_item_compressed = '\x0a';
 const char c_file_type_char_tree_compressed = '\x0b';

@@ -31,7 +31,17 @@ bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash );
 
 int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& hash );
 
-void CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data );
+enum file_expansion
+{
+   e_file_expansion_none,
+   e_file_expansion_content,
+   e_file_expansion_recursive
+};
+
+std::string CLASS_BASE_DECL_SPEC file_type_info(
+ const std::string& hash, file_expansion expansion = e_file_expansion_none, int indent = 0 );
+
+std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data );
 
 void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );

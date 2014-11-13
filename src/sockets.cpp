@@ -500,7 +500,7 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 void file_transfer( const string& name,
  tcp_socket& s, ft_direction d, size_t max_size,
  const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
- int max_line_size, char prefix, unsigned char* p_buffer, unsigned int buffer_size )
+ int max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -535,8 +535,8 @@ void file_transfer( const string& name,
 
          string next( string( buf, count ) );
 
-         if( is_first && prefix != '\0' )
-            next = prefix + next;
+         if( is_first && p_prefix_char && *p_prefix_char )
+            next = ( char )*p_prefix_char + next;
 
          next = base64::encode( next );
 
@@ -589,8 +589,11 @@ void file_transfer( const string& name,
 
          string decoded( base64::decode( next ) );
 
-         if( is_first && prefix != '\0' )
+         if( is_first && p_prefix_char && *p_prefix_char )
+         {
+            *p_prefix_char = decoded[ 0 ];
             decoded.erase( 0, 1 );
+         }
 
          if( !outf.write( &decoded[ 0 ], decoded.length( ) ) )
             throw runtime_error( "unexpected error writing to file '" + name + "'" );

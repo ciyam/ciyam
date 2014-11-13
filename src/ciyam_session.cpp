@@ -1183,9 +1183,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_raw )
       {
+         bool is_blob( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_blob ) );
+         bool is_item( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_item ) );
+         bool is_tree( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tree ) );
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
 
-         create_raw_file( data );
+         if( is_blob )
+            data = c_file_type_str_blob + data;
+         else if( is_item )
+            data = c_file_type_str_item + data;
+         else if( is_tree )
+            data = c_file_type_str_tree + data;
+
+         response = create_raw_file( data );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
@@ -1195,14 +1205,30 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tag )
       {
-         bool del( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_del ) );
+         bool is_del( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_del ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_hash ) );
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_name ) );
 
-         if( del )
+         if( is_del )
             tag_del( name );
          else
             tag_file( name, hash );
+      }
+      else if( command == c_cmd_ciyam_session_file_info )
+      {
+         bool type( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_type ) );
+         bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
+         bool recursive( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recursive ) );
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_hash ) );
+
+         file_expansion expansion = e_file_expansion_none;
+
+         if( content )
+            expansion = e_file_expansion_content;
+         else if( recursive )
+            expansion = e_file_expansion_recursive;
+
+         response = file_type_info( hash, expansion );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {

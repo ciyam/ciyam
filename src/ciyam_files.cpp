@@ -23,6 +23,7 @@
 #include "ciyam_files.h"
 
 #include "regex.h"
+#include "base64.h"
 #include "config.h"
 #include "format.h"
 #include "sha256.h"
@@ -94,6 +95,59 @@ string construct_file_name_from_hash( const string& hash,
    filename += hash.substr( 2 );
 
    return filename;
+}
+
+void validate_item_or_tree( int type, const string& data, bool* p_rc = 0 )
+{
+   if( type == c_file_type_val_item )
+   {
+      string::size_type pos = data.find( '\n' );
+      if( pos == string::npos )
+      {
+         if( p_rc )
+         {
+            *p_rc = false;
+            return;
+         }
+         else
+            throw runtime_error( "item missing expected line-feed" );
+      }
+
+      valid_file_name( data.substr( 0, pos ) );
+
+      if( !has_file( data.substr( pos + 1 ) ) )
+      {
+         if( p_rc )
+         {
+            *p_rc = false;
+            return;
+         }
+         else
+            throw runtime_error( "file '" + data.substr( pos + 1 ) + "' does not exist" );
+      }
+   }
+   else if( type == c_file_type_val_tree )
+   {
+      vector< string > tree_items;
+      split( data, tree_items, '\n' );
+
+      for( size_t i = 0; i < tree_items.size( ); i++ )
+      {
+         if( !has_file( tree_items[ i ] ) )
+         {
+            if( p_rc )
+            {
+               *p_rc = false;
+               return;
+            }
+            else
+               throw runtime_error( "file '" + tree_items[ i ] + "' does not exist" );
+         }
+      }
+   }
+
+   if( p_rc )
+      *p_rc = true;
 }
 
 }
@@ -215,6 +269,8 @@ void init_files_area( )
 
 bool has_file( const string& hash )
 {
+   guard g( g_mutex );
+
    string filename( construct_file_name_from_hash( hash ) );
 
    return file_exists( filename );
@@ -222,12 +278,111 @@ bool has_file( const string& hash )
 
 int64_t file_bytes( const string& hash )
 {
+   guard g( g_mutex );
+
    string filename( construct_file_name_from_hash( hash ) );
 
    return file_size( filename );
 }
 
-void create_raw_file( const string& data )
+string file_type_info( const string& hash, file_expansion expansion, int indent )
+{
+   guard g( g_mutex );
+
+   string filename( construct_file_name_from_hash( hash ) );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( hash + " was not found" );
+
+   string data( buffer_file( filename ) );
+
+   if( data.empty( ) )
+      throw runtime_error( "unexpected empty file" );
+
+   sha256 test_hash( data );
+
+   if( hash != lower( test_hash.get_digest_as_string( ) ) )
+      throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+
+   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
+
+   if( file_type != c_file_type_val_blob
+    && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
+      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
+
+   string final_data( data );
+
+#ifdef ZLIB_SUPPORT
+   session_file_buffer_access file_buffer;
+
+   unsigned long size = data.size( ) - 1;
+   unsigned long usize = file_buffer.get_size( ) - size;
+
+   if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
+    &usize, ( Bytef * )&data[ 1 ], size ) != Z_OK )
+      throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+
+   final_data.erase( 1 );
+   final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+#endif
+
+   string retval( indent, ' ' );
+
+   if( file_type == c_file_type_val_blob )
+      retval += "[blob]";
+   else if( file_type == c_file_type_val_item )
+      retval += "[item]";
+   else if( file_type == c_file_type_val_tree )
+      retval += "[tree]";
+
+   if( expansion != e_file_expansion_none )
+   {
+      if( file_type == c_file_type_val_blob )
+      {
+         string blob_info( final_data.substr( 1 ) );
+
+         if( is_valid_utf8( blob_info ) )
+            retval += " utf8\n" + utf8_replace( blob_info, "\r", "" );
+         else
+            retval += " base64\n" + base64::encode( blob_info );
+      }
+      else if( file_type == c_file_type_val_item )
+      {
+         string item_info( final_data.substr( 1 ) );
+         string::size_type pos = item_info.find( '\n' );
+
+         if( pos == string::npos )
+            throw runtime_error( "invalid 'item' info for '" + hash + "'" );
+
+         retval += ' ' + item_info.substr( 0, pos );
+
+         if( expansion == e_file_expansion_content )
+            retval += "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
+         else
+            retval += "\n" + file_type_info( item_info.substr( pos + 1 ), expansion, indent + 1 );
+      }
+      else if( file_type == c_file_type_val_tree )
+      {
+         string tree_info( final_data.substr( 1 ) );
+
+         vector< string > tree_items;
+         split( tree_info, tree_items, '\n' );
+
+         for( size_t i = 0; i < tree_items.size( ); i++ )
+         {
+            if( expansion == e_file_expansion_content )
+               retval += "\n" + string( indent, ' ' ) + tree_items[ i ];
+            else
+               retval += "\n" + file_type_info( tree_items[ i ], expansion, indent + 1 );
+         }
+      }
+   }
+
+   return retval;
+}
+
+string create_raw_file( const string& data )
 {
    guard g( g_mutex );
 
@@ -235,12 +390,39 @@ void create_raw_file( const string& data )
       throw runtime_error( "cannot create a raw file empty data" );
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
    if( file_type != c_file_type_val_blob
     && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
-   string hash( lower( sha256( data ).get_digest_as_string( ) ) );
+   string final_data( data );
+
+#ifdef ZLIB_SUPPORT
+   session_file_buffer_access file_buffer;
+
+   if( !is_compressed && data.size( ) > 32 ) // i.e. don't even bother trying to compress tiny files
+   {
+      unsigned long size = data.size( ) - 1;
+      unsigned long csize = file_buffer.get_size( );
+
+      if( compress2( ( Bytef * )file_buffer.get_buffer( ),
+       &csize, ( Bytef * )&data[ 1 ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
+         throw runtime_error( "invalid content in create_raw_file (bad compress or buffer too small)" );
+
+      if( csize + 1 < data.size( ) )
+      {
+         final_data[ 0 ] |= c_file_type_val_compressed;
+
+         final_data.erase( 1 );
+         final_data += string( ( const char* )file_buffer.get_buffer( ), csize );
+
+         is_compressed = true;
+      }
+   }
+#endif
+
+   string hash( lower( sha256( final_data ).get_digest_as_string( ) ) );
 
    string filename( construct_file_name_from_hash( hash, true ) );
 
@@ -252,13 +434,31 @@ void create_raw_file( const string& data )
       size_t max_num = get_files_area_item_max_num( );
       size_t max_size = get_files_area_item_max_size( );
 
-      if( data.size( ) > max_size )
+      if( final_data.size( ) > max_size )
          throw runtime_error( "maximum file area item size limit cannot be exceeded" );
 
       int64_t max_bytes = ( int64_t )max_num * ( int64_t )max_size;
 
-      if( g_total_bytes + data.size( ) > max_bytes )
+      if( g_total_bytes + final_data.size( ) > max_bytes )
          throw runtime_error( "maximum file area size limit cannot be exceeded" );
+
+#ifdef ZLIB_SUPPORT
+      if( is_compressed )
+      {
+         unsigned long size = final_data.size( ) - 1;
+         unsigned long usize = file_buffer.get_size( ) - size;
+
+         if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
+          &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
+            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+
+         if( file_type != c_file_type_val_blob )
+            validate_item_or_tree( file_type, ( const char* )file_buffer.get_buffer( ) );
+      }
+#endif
+
+      if( !is_compressed && file_type != c_file_type_val_blob )
+         validate_item_or_tree( file_type, final_data.substr( 1 ) );
 
 #ifndef _WIN32
       int um = umask( 077 );
@@ -270,11 +470,13 @@ void create_raw_file( const string& data )
       if( !outf )
          throw runtime_error( "unable to create output file '" + filename + "'" );
 
-      outf << data;
+      outf << final_data;
 
       ++g_total_files;
-      g_total_bytes += data.size( );
+      g_total_bytes += final_data.size( );
    }
+
+   return hash;
 }
 
 void tag_del( const string& name )
@@ -360,6 +562,8 @@ string get_hash_tags( const string& hash )
 
 string tag_file_hash( const string& name )
 {
+   guard g( g_mutex );
+
    string tag_filename( c_files_directory );
    tag_filename += "/" + name;
 
@@ -371,6 +575,8 @@ string tag_file_hash( const string& name )
 
 string list_file_tags( const string& pat )
 {
+   guard g( g_mutex );
+
    string retval;
 
    file_filter ff;
@@ -406,6 +612,8 @@ string hash_two_with_token_separator( const string& hash1, const string& hash2, 
 
 void fetch_file( const string& hash, tcp_socket& socket )
 {
+   guard g( g_mutex );
+
    string filename( construct_file_name_from_hash( hash ) );
 
    file_transfer( filename,
@@ -416,6 +624,8 @@ void fetch_file( const string& hash, tcp_socket& socket )
 
 void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 {
+   guard g( g_mutex );
+
    string filename( construct_file_name_from_hash( hash, true ) );
 
    bool existing = file_exists( filename );
@@ -437,21 +647,44 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       file_transfer( filename,
        socket, e_ft_direction_receive, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-       c_file_transfer_max_line_size, '\0', file_buffer.get_buffer( ), file_buffer.get_size( ) );
+       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ) );
 
-#ifdef ZLIB_SUPPORT
+      unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
       bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
 
+#ifdef ZLIB_SUPPORT
       if( is_compressed )
       {
-         unsigned long size = file_size( filename );
+         unsigned long size = file_size( filename ) - 1;
          unsigned long usize = file_buffer.get_size( ) - size;
 
-         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size ],
-          &usize, ( Bytef * )file_buffer.get_buffer( ), size ) != Z_OK )
+         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+          &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+
+         bool rc = true;
+
+         if( file_type != c_file_type_val_blob )
+            validate_item_or_tree( file_type, ( const char* )&file_buffer.get_buffer( )[ size ], &rc );
+
+         if( !rc )
+         {
+            file_remove( filename );
+            throw runtime_error( "invalid 'item' or 'tree' file" );
+         }
       }
 #endif
+
+      bool rc = true;
+
+      if( !is_compressed && file_type != c_file_type_val_blob )
+         validate_item_or_tree( file_type, ( const char* )file_buffer.get_buffer( ), &rc );
+
+      if( !rc )
+      {
+         file_remove( filename );
+         throw runtime_error( "invalid 'item' or 'tree' file" );
+      }
 
 #ifndef _WIN32
       umask( um );
@@ -464,8 +697,6 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
          file_remove( filename );
          throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
       }
-
-      guard g( g_mutex );
 
       g_total_bytes -= existing_bytes;
       g_total_bytes += file_size( filename );
