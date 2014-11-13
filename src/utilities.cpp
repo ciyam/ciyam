@@ -997,6 +997,39 @@ size_t find_end_of_escaped_sequence( const string& s, size_t p, char eos, char e
    return pos;
 }
 
+bool is_valid_utf8( const string& utf8 )
+{
+   size_t pos = 0;
+
+   while( true )
+   {
+      int c = utf8[ pos ];
+
+      if( c < 0 )
+         c += 256;
+
+      if( c < 127 )
+         ++pos;
+      else if( c >= 192 && c <= 223 )
+         pos += 2;
+      else if( c >= 224 && c <= 239 )
+         pos += 3;
+      else if( c >= 240 && c <= 247 )
+         pos += 4;
+      else if( c >= 248 && c <= 251 )
+         pos += 5;
+      else if( c >= 252 && c <= 253 )
+         pos += 6;
+      else
+         return false;
+
+      if( pos >= utf8.size( ) )
+         break;
+   }
+
+   return true;
+}
+
 string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr )
 {
    if( !utf8.empty( ) )

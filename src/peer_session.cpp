@@ -307,8 +307,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string hash2( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash2 ) );
          string token( get_parm_val( parameters, c_cmd_parm_peer_session_chk_token ) );
 
-         if( ( hash2.empty( ) && socket_handler.state( ) != e_peer_state_listener )
-          || ( !hash2.empty( ) && socket_handler.state( ) != e_peer_state_waiting_for_get ) )
+         if( socket_handler.state( ) != e_peer_state_listener
+          && socket_handler.state( ) != e_peer_state_waiting_for_get )
             throw runtime_error( "invalid state for chk" );
 
          bool has = has_file( hash );

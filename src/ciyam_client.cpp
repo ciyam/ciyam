@@ -42,6 +42,10 @@
 #include "command_parser.h"
 #include "console_commands.h"
 
+#ifdef ZLIB_SUPPORT
+#  include <zlib.h>
+#endif
+
 //#define DEBUG
 
 #define USE_NO_DELAY
@@ -60,6 +64,8 @@ const char* const c_env_var_error = "ERROR";
 
 const size_t c_command_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
+
+const unsigned long c_max_uncompressed_bytes = 100000;
 
 const int64_t c_max_size_to_buffer = INT64_C( 1073741824 );
 
@@ -221,21 +227,40 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                {
                   string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
 
-                  file_transfer( filename,
-                   socket, e_ft_direction_receive,
-                   c_max_file_transfer_size, c_response_okay_more,
-                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-                   c_file_transfer_max_line_size, !get_dest_file.empty( ) ? '\1' : '\0' );
+                  unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
+
+                  file_transfer( filename, socket,
+                   e_ft_direction_receive, c_max_file_transfer_size,
+                   c_response_okay_more, c_file_transfer_initial_timeout,
+                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+
+#ifdef ZLIB_SUPPORT
+                  if( prefix & c_file_type_char_compressed )
+                  {
+                     string data( buffer_file( filename ) );
+                     string expanded_data( c_max_uncompressed_bytes, '\0' );
+
+                     unsigned long usize = c_max_uncompressed_bytes;
+
+                     if( uncompress( ( Bytef* )&expanded_data[ 0 ], &usize, ( Bytef* )&data[ 0 ], data.size( ) ) != Z_OK )
+                        throw runtime_error( "bad compressed file or buffer not big enough" );
+
+                     expanded_data.erase( usize );
+
+                     write_file( filename, expanded_data );
+                  }
+#endif
                }
                else if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
                {
                   string filename( !put_source_file.empty( ) ? put_source_file : str.substr( pos + 1 ) );
 
-                  file_transfer( filename,
-                   socket, e_ft_direction_send,
-                   c_max_file_transfer_size, c_response_okay_more,
-                   c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-                   c_file_transfer_max_line_size, !put_source_file.empty( ) ? c_file_type_char_blob : '\0' );
+                  unsigned char prefix( !put_source_file.empty( ) ? c_file_type_char_blob : '\0' );
+
+                  file_transfer( filename, socket,
+                   e_ft_direction_send, c_max_file_transfer_size,
+                   c_response_okay_more, c_file_transfer_initial_timeout,
+                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
                }
             }
             catch( exception& x )

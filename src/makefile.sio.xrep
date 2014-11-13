@@ -169,7 +169,7 @@
     <libharu>false
     <libicnv>false
     <mysqldb>false
-    <zlibuse>false
+    <zlibuse>true
     <dynamic>false
     <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
