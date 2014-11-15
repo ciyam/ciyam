@@ -545,10 +545,13 @@ void file_transfer( const string& name,
          next.erase( );
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
 
-         if( next != string( p_ack_message ) )
-            throw runtime_error( next );
+         if( s.had_timeout( ) )
+            throw runtime_error( "timeout occurred reading send response for file transfer" );
 
-         if( inpf.eof( ) || count == 0 )
+         if( next != string( p_ack_message ) )
+            throw runtime_error( "was expecting '" + string( p_ack_message ) + "' but found '" + next + "'" );
+
+         if( inpf.eof( ) )
             break;
 
          is_first = false;
@@ -575,6 +578,9 @@ void file_transfer( const string& name,
       {
          next.erase( );
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
+
+         if( s.had_timeout( ) )
+            throw runtime_error( "timeout occurred reading next line for file transfer" );
 
          if( next.empty( ) || next == string( p_ack_message ) )
             break;
@@ -624,7 +630,11 @@ void file_transfer( const string& name,
       file_remove( name.c_str( ) );
 
       if( not_base64 )
+      {
+         if( unexpected_data.empty( ) )
+            unexpected_data = "unexpected empty data";
          throw runtime_error( unexpected_data );
+      }
       else
          throw runtime_error( "maximum file length exceeded" );
    }
