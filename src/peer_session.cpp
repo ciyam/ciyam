@@ -580,7 +580,7 @@ string socket_command_processor::get_cmd_and_args( )
    if( is_first_command )
    {
       is_first_command = false;
-      TRACE_LOG( TRACE_SESSIONS, "started session" );
+      TRACE_LOG( TRACE_SESSIONS, ( !is_listener ? "started session (as peer)" : "started session (as listener)" ) );
    }
 
    socket_command_handler& socket_handler = dynamic_cast< socket_command_handler& >( handler );

@@ -612,8 +612,6 @@ string hash_two_with_token_separator( const string& hash1, const string& hash2, 
 
 void fetch_file( const string& hash, tcp_socket& socket )
 {
-   guard g( g_mutex );
-
    string filename( construct_file_name_from_hash( hash ) );
 
    file_transfer( filename,
