@@ -43,6 +43,7 @@ class command_handler;
 #  define TRACE_SESSIONS   0x0100
 #  define TRACE_MAIL_OPS   0x0200
 #  define TRACE_PDF_VALS   0x0400
+#  define TRACE_SOCK_OPS   0x0800
 #  define TRACE_ANYTHING   0xffff
 
 #  define IF_IS_TRACING( flags )\

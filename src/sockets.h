@@ -18,6 +18,8 @@
 #     endif
 #  endif
 
+struct progress;
+
 #ifdef _WIN32
 class winsock_init
 {
@@ -87,8 +89,8 @@ class tcp_socket
    int recv_n( unsigned char* buf, int buflen, size_t timeout = 0 );
    int send_n( const unsigned char* buf, int buflen, size_t timeout = 0 );
 
-   int read_line( std::string& str, size_t timeout = 0, int max_chars = 0 );
-   int write_line( const std::string& str, size_t timeout = 0 );
+   int read_line( std::string& str, size_t timeout = 0, int max_chars = 0, progress* p_progress = 0 );
+   int write_line( const std::string& str, size_t timeout = 0, progress* p_progress = 0 );
 
    bool get_option( int type, int opt, char* p_buffer, socklen_t& buflen );
    bool set_option( int type, int opt, const char* p_buffer, socklen_t buflen );
