@@ -49,6 +49,8 @@ namespace
 
 #include "peer_session.cmh"
 
+#include "trace_progress.cpp"
+
 mutex g_mutex;
 
 int g_port = c_default_ciyam_port + 1;
@@ -105,14 +107,6 @@ inline void issue_warning( const string& message )
 #endif
 }
 
-void output_response_lines( tcp_socket& socket, const string& response )
-{
-   vector< string > lines;
-   split( response, lines, '\n' );
-   for( size_t i = 0; i < lines.size( ); i++ )
-      socket.write_line( lines[ i ] );
-}
-
 class socket_command_handler : public command_handler
 {
    public:
@@ -144,6 +138,16 @@ class socket_command_handler : public command_handler
    bool get_is_local( ) const { return is_local; }
    bool get_is_listener( ) const { return is_listener; }
 
+   string& prior_put_1( ) { return prior_put_1_hash; }
+   string& prior_put_2( ) { return prior_put_2_hash; }
+
+   void get_hello( );
+   void put_hello( );
+
+   void pip_peer( const string& ip_address );
+
+   void chk_files( const string& hash1, const string& hash2 );
+
    peer_state& state( ) { return session_state; }
    peer_trust_level& trust_level( ) { return session_trust_level; }
 
@@ -162,13 +166,13 @@ class socket_command_handler : public command_handler
 
    void handle_unknown_command( const string& command )
    {
-      socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'" );
+      socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'", c_request_timeout );
       kill_session( );
    }
 
    void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
    {
-      socket.write_line( string( c_response_error_prefix ) + "invalid command usage '" + cmd_and_args + "'" );
+      socket.write_line( string( c_response_error_prefix ) + "invalid command usage '" + cmd_and_args + "'", c_request_timeout );
       kill_session( );
    }
 
@@ -187,9 +191,118 @@ class socket_command_handler : public command_handler
    string last_command;
    string next_command;
 
+   string prior_put_1_hash;
+   string prior_put_2_hash;
+
    peer_state session_state;
    peer_trust_level session_trust_level;
 };
+
+void socket_command_handler::get_hello( )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   string data( c_file_type_str_blob );
+   data += string( c_hello );
+
+   string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+
+   if( !has_file( temp_hash ) )
+      create_raw_file( data );
+
+   string temp_file_name( "~" + uuid( ).as_string( ) );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + temp_hash, c_request_timeout, p_progress );
+
+   store_temp_file( temp_file_name, socket );
+
+   if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+   {
+      file_remove( temp_file_name );
+      throw runtime_error( "invalid get_hello" );
+   }
+
+   file_remove( temp_file_name );
+}
+
+void socket_command_handler::put_hello( )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   string data( c_file_type_str_blob );
+   data += string( c_hello );
+
+   string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+
+   if( !has_file( temp_hash ) )
+      create_raw_file( data );
+
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
+
+   fetch_file( temp_hash, socket );
+}
+
+void socket_command_handler::pip_peer( const string& ip_address )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_progress );
+
+   string response;
+   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+   {
+      string error;
+      if( socket.had_timeout( ) )
+         error = "timeout occurred getting peer response";
+      else
+         error = "server has terminated this connection";
+
+      socket.close( );
+      throw runtime_error( error );
+   }
+}
+
+void socket_command_handler::chk_files( const string& hash1, const string& hash2 )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   string token( uuid( ).as_string( ) );
+
+   string expected( hash_two_with_token_separator( hash1, hash2, token ) );
+
+   socket.write_line( string( c_cmd_peer_session_chk ) + " " + hash1 + " " + hash2 + " " + token, c_request_timeout, p_progress );
+
+   string response;
+   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+   {
+      string error;
+      if( socket.had_timeout( ) )
+         error = "timeout occurred getting peer response";
+      else
+         error = "server has terminated this connection";
+
+      socket.close( );
+      throw runtime_error( error );
+   }
+
+   if( response != expected )
+      throw runtime_error( "unexpected invalid chk response: " + response );
+}
 
 string socket_command_handler::preprocess_command_and_args( const string& cmd_and_args )
 {
@@ -241,12 +354,18 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
    if( !response.empty( ) )
    {
       if( is_special && !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
 
-      socket.write_line( response );
+      socket.write_line( response, c_request_timeout, p_progress );
    }
 
    if( !is_special && is_listener )
@@ -254,7 +373,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
       if( !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
 
-      socket.write_line( c_response_okay );
+      socket.write_line( c_response_okay, c_request_timeout, p_progress );
    }
 }
 
@@ -292,6 +411,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
    if( command != c_cmd_peer_session_bye && !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
@@ -317,13 +442,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has && !hash2.empty( ) )
             has_both = has_file( hash2 );
 
+         bool was_initial_state = ( socket_handler.state( ) == e_peer_state_listener );
+
          if( !has )
          {
             response = c_response_not_found;
 
             handler.issue_command_reponse( response, true );
 
-            if( socket_handler.state( ) == e_peer_state_listener )
+            if( was_initial_state )
             {
                // NOTE: For the initial file transfer just a dummy "hello" blob.
                string data( c_file_type_str_blob );
@@ -368,6 +495,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                socket_handler.state( ) = e_peer_state_waiting_for_put;
             else
                socket_handler.state( ) = e_peer_state_waiting_for_get;
+
+            if( !was_initial_state && socket_handler.get_is_listener( ) )
+            {
+               handler.issue_command_reponse( response, true );
+               response.erase( );
+
+               // KLUDGE: For now just use "hello" as the file.
+               if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+                  socket_handler.get_hello( );
+               else
+                  socket_handler.put_hello( );
+            }
          }
       }
       else if( command == c_cmd_peer_session_get )
@@ -382,17 +521,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
 
-         // KLUDGE: For now also send back "hello" as the handshake file.
+         // KLUDGE: For now just use "hello" as the file to put.
          if( socket_handler.get_is_listener( ) )
-         {
-            string data( c_file_type_str_blob );
-            data += string( c_hello );
-
-            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
-
-            handler.issue_command_reponse( "put " + temp_hash, true );
-            fetch_file( temp_hash, socket );
-         }
+            socket_handler.put_hello( );
       }
       else if( command == c_cmd_peer_session_put )
       {
@@ -413,28 +544,25 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             file_remove( temp_file_name );
          }
 
+         if( socket_handler.prior_put_1( ).empty( ) || ( rand( ) % 100 < 5 ) )
+            socket_handler.prior_put_1( ) = hash;
+
+         if( socket_handler.prior_put_2( ).empty( ) || ( rand( ) % 100 < 5 ) )
+            socket_handler.prior_put_2( ) = hash;
+
          socket_handler.state( ) = e_peer_state_waiting_for_get;
 
-         // KLUDGE: For now also fetch back "hello" as the handshake file.
          if( socket_handler.get_is_listener( ) )
          {
-            string data( c_file_type_str_blob );
-            data += string( c_hello );
-
-            string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
-
-            string temp_file_name( "~" + uuid( ).as_string( ) );
-
-            handler.issue_command_reponse( "get " + temp_hash, true );
-            store_temp_file( temp_file_name, socket );
-
-            if( !temp_file_is_identical( temp_file_name, temp_hash ) )
-            {
-               send_okay_response = false;
-               socket_handler.state( ) = e_peer_state_invalid;
-            }
-
-            file_remove( temp_file_name );
+            // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
+            // based upon the actual needs of the peer).
+            if( rand( ) % 5 == 0 )
+               socket_handler.chk_files( socket_handler.prior_put_1( ), socket_handler.prior_put_2( ) );
+            else if( rand( ) % 5 == 0 )
+               socket_handler.pip_peer( "127.0.0.1" );
+            else
+               // KLUDGE: For now just use "hello" as the file to get.
+               socket_handler.get_hello( );
          }
       }
       else if( command == c_cmd_peer_session_pip )
@@ -454,6 +582,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             socket_handler.state( ) = e_peer_state_waiting_for_get;
          else if( socket_handler.state( ) == e_peer_state_waiting_for_get )
             socket_handler.state( ) = e_peer_state_waiting_for_put;
+
+         if( socket_handler.get_is_listener( ) )
+         {
+            handler.issue_command_reponse( response, true );
+            response.erase( );
+
+            // KLUDGE: For now just use "hello" as the file.
+            if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+               socket_handler.get_hello( );
+            else
+               socket_handler.put_hello( );
+         }
       }
       else if( command == c_cmd_peer_session_tls )
       {
@@ -517,7 +657,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
     && socket_handler.state( ) == e_peer_state_waiting_for_get )
    {
       string response;
-      if( socket.read_line( response, c_request_timeout ) <= 0 )
+      if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
       {
          string error;
          if( socket.had_timeout( ) )
@@ -535,13 +675,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          throw runtime_error( "unexpected non-okay response from peer" );
       }
 
-      string data( c_file_type_str_blob );
-      data += string( c_hello );
-
-      string hash( lower( sha256( data ).get_digest_as_string( ) ) );
-      socket.write_line( string( c_cmd_peer_session_put ) + " " + hash );
-
-      fetch_file( hash, socket );
+      // KLUDGE: For now just use "hello" as the file to put.
+      socket_handler.put_hello( );
    }
 }
 
@@ -587,12 +722,18 @@ string socket_command_processor::get_cmd_and_args( )
 
    while( true )
    {
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_progress = &progress;
+
       if( !is_listener && !g_server_shutdown && !is_condemned_session( ) )
       {
          if( socket_handler.state( ) == e_peer_state_waiting_for_put )
          {
             string response;
-            if( socket.read_line( response, c_request_timeout ) <= 0 )
+            if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
             {
                request = "bye";
                break;
@@ -604,19 +745,19 @@ string socket_command_processor::get_cmd_and_args( )
                break;
             }
 
-            string data( c_file_type_str_blob );
-            data += string( c_hello );
-
-            string hash( lower( sha256( data ).get_digest_as_string( ) ) );
-            socket.write_line( string( c_cmd_peer_session_get ) + " " + hash );
-
-            string temp_file_name( "~" + uuid( ).as_string( ) );
-            store_temp_file( temp_file_name, socket );
-            file_remove( temp_file_name );
+            // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
+            // based upon the actual needs of the peer).
+            if( rand( ) % 5 == 0 && !socket_handler.prior_put_1( ).empty( ) )
+               socket_handler.chk_files( socket_handler.prior_put_1( ), socket_handler.prior_put_2( ) );
+            else if( rand( ) % 5 == 0 )
+               socket_handler.pip_peer( "127.0.0.1" );
+            else
+               // KLUDGE: For now just use "hello" as the file to get.
+               socket_handler.get_hello( );
          }
       }
 
-      if( socket.read_line( request, c_request_timeout, c_max_line_length ) <= 0 )
+      if( socket.read_line( request, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
@@ -669,15 +810,15 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
    if( !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
-   socket.write_line( "commands:" );
-   socket.write_line( "=========" );
+   socket.write_line( "commands:", c_request_timeout );
+   socket.write_line( "=========", c_request_timeout );
 
-   socket.write_line( get_usage_for_commands( wildcard_match_expr ) );
+   socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
    if( !socket.set_no_delay( ) )
       issue_warning( "socket set_no_delay failure" );
 
-   socket.write_line( c_response_okay );
+   socket.write_line( c_response_okay, c_request_timeout );
 }
 
 #ifdef SSL_SUPPORT
@@ -736,7 +877,7 @@ void peer_session::on_start( )
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
       if( acceptor )
-         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
+         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_greeting_timeout );
       else
       {
          string greeting;
@@ -771,7 +912,7 @@ void peer_session::on_start( )
 
          string hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash );
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash, c_request_timeout );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
       }
@@ -789,14 +930,14 @@ void peer_session::on_start( )
    {
       issue_error( x.what( ) );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ) );
+      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
    }
    catch( ... )
    {
       issue_error( "unexpected unknown exception occurred" );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred" );
+      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
       ap_socket->close( );
    }
 

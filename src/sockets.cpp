@@ -29,6 +29,7 @@
 #include "sockets.h"
 
 #include "base64.h"
+#include "progress.h"
 #include "utilities.h"
 
 using namespace std;
@@ -406,7 +407,7 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
    return sent;
 }
 
-int tcp_socket::read_line( string& str, size_t timeout, int max_chars )
+int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress* p_progress )
 {
    int n = 0;
    unsigned char b, lb = '\0';
@@ -439,10 +440,13 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars )
       lb = b;
    }
 
+   if( p_progress && !str.empty( ) )
+      p_progress->output_progress( "==> " + str );
+
    return n;
 }
 
-int tcp_socket::write_line( const string& str, size_t timeout )
+int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progress )
 {
    int n;
    bool truncate = false;
@@ -482,7 +486,11 @@ int tcp_socket::write_line( const string& str, size_t timeout )
    }
 
    if( p_data )
+   {
+      if( p_progress )
+         p_progress->output_progress( "<== " + str );
       n = send_n( ( const unsigned char* )p_data, len, timeout );
+   }
 
    return n;
 }

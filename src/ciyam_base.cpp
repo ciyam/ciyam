@@ -3802,6 +3802,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "sessions" ); // TRACE_SESSIONS
    flag_names.push_back( "mail_ops" ); // TRACE_MAIL_OPS
    flag_names.push_back( "pdf_vals" ); // TRACE_PDF_VALS
+   flag_names.push_back( "sock_ops" ); // TRACE_SOCK_OPS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -3853,6 +3854,10 @@ void log_trace_message( int flag, const string& message )
 
       case TRACE_PDF_VALS:
       type = "pdf_val";
+      break;
+
+      case TRACE_SOCK_OPS:
+      type = "sock_op";
       break;
 
       case TRACE_ANYTHING:
