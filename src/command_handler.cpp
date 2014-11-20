@@ -207,6 +207,7 @@ string command_handler::get_usage_for_command( const string& name ) const
 string command_handler::get_usage_for_all_commands( const string& wildcard_match_expr, char cmd_arg_separator ) const
 {
    ostringstream osstr;
+   bool is_first = true;
    size_t last_group_num;
    for( vector< command_item >::size_type i = 0; i < command_items.size( ); i++ )
    {
@@ -220,8 +221,11 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
 
       string usage( ci->second.p_parser->get_usage( ) );
 
-      if( i == 0 )
+      if( is_first )
+      {
+         is_first = false;
          last_group_num = command_items[ i ].group_num;
+      }   
       else
       {
          if( last_group_num != command_items[ i ].group_num )

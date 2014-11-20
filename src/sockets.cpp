@@ -441,7 +441,7 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress*
    }
 
    if( p_progress && !str.empty( ) )
-      p_progress->output_progress( "==> " + str );
+      p_progress->output_progress( ">R> " + str );
 
    return n;
 }
@@ -488,7 +488,7 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
    if( p_data )
    {
       if( p_progress )
-         p_progress->output_progress( "<== " + str );
+         p_progress->output_progress( "<W< " + str );
       n = send_n( ( const unsigned char* )p_data, len, timeout );
    }
 

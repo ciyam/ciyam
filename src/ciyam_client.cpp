@@ -134,14 +134,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
    if( !str.empty( ) )
    {
-      if( str[ 0 ] != '?' )
+      string::size_type pos = str.find( ' ' );
+
+      if( str[ 0 ] != '?' && str.substr( 0, pos ) != "help" )
          str = console_command_handler::preprocess_command_and_args( str );
 
       if( !str.empty( ) )
       {
-         string::size_type pos = str.find( ' ' );
-
+         bool was_pip = false;
+         bool was_chk_token = false;
          string get_dest_file, put_source_file;
+
+         if( str.substr( 0, pos ) == "pip" )
+            was_pip = true;
 
          if( str.substr( 0, pos ) == "chk"
           || str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put"
@@ -150,11 +155,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string data( str.substr( pos + 1 ) );
             string extra;
 
-            bool is_chk_two = false;
             if( str.substr( 0, pos ) == "chk" )
             {
                if( data.find( ' ' ) != string::npos )
-                  is_chk_two = true;
+                  was_chk_token = true;
             }
 
             if( str.substr( 0, pos ) == "get"
@@ -175,7 +179,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string prefix( c_file_type_str_blob );
 
             regex expr( c_regex_hash_256 );
-            if( !is_chk_two && expr.search( data ) == string::npos )
+            if( !was_chk_token && expr.search( data ) == string::npos )
             {
                str.erase( pos + 1 );
 
@@ -214,14 +218,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          }
          else
          {
-            bool was_get_put = false;
+            bool was_get_or_put = false;
 
             try
             {
                string::size_type pos = str.find( ' ' );
 
                if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put" )
-                  was_get_put = true;
+                  was_get_or_put = true;
 
                if( str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "file_get" )
                {
@@ -323,14 +327,25 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                   }
                }
-               else if( was_get_put )
+               else if( was_pip || was_chk_token || was_get_or_put )
                {
+                  // FUTURE: Verify the hash if "was_chk_two".
+                  if( was_pip || was_chk_token )
+                  {
+                     cout << response << endl;
+
+                     response.erase( );
+                     socket.read_line( response );
+                  }
+
                   string::size_type pos = response.find( ' ' );
 
                   if( pos == string::npos )
                      throw runtime_error( "unexpected response: " + response );
 
-                  was_get_put = false;
+                  was_pip = false;
+                  was_chk_token = false;
+                  was_get_or_put = false;
 
                   if( response.substr( 0, pos ) == "get" )
                   {
@@ -343,6 +358,35 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      file_transfer( response.substr( pos + 1 ), socket,
                       e_ft_direction_receive, c_max_file_transfer_size,
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                  }
+                  else if( response.substr( 0, pos ) == "chk" )
+                  {
+                     response.erase( 0, pos + 1 );
+                     pos = response.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected chk args '" + response + "'" );
+
+                     string hash( response.substr( 0, pos ) );
+                     string token( response.substr( pos + 1 ) );
+
+                     sha256 temp_hash;
+                     temp_hash.update( token );
+                     temp_hash.update( hash, true );
+
+                     string hash_val( lower( temp_hash.get_digest_as_string( ) ) );
+                     cout << hash_val << endl;
+
+                     socket.write_line( hash_val );
+                     response.erase( );
+                     socket.read_line( response );
+                  }
+                  else if( response.substr( 0, pos ) == "pip" )
+                  {
+                     cout << response.substr( pos + 1 ) << endl;
+
+                     socket.write_line( "127.0.0.1" );
+                     response.erase( );
+                     socket.read_line( response );
                   }
                }
 

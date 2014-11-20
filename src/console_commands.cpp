@@ -49,7 +49,13 @@ const int c_max_history = 1000;
 
 const char c_startup_prefix = '-';
 
+const char* const c_help_command = "help";
+
+#ifdef _WIN32
 const char* const c_startup_alt_help = "/?";
+#else
+const char* const c_startup_alt_help = "--help";
+#endif
 
 const char c_read_input_prefix = '<';
 const char c_write_history_prefix = '>';
@@ -259,7 +265,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
          if( !str.empty( ) )
          {
-            if( str[ 0 ] == c_output_command_usage || str == string( c_startup_alt_help ) )
+            if( str[ 0 ] == c_output_command_usage
+             || str == string( c_help_command ) || str == string( c_startup_alt_help ) )
             {
                if( get_command_processor( ) )
                   get_command_processor( )->output_command_usage( "" );
@@ -303,6 +310,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
       if( !str.empty( ) )
       {
+         string::size_type pos = str.find( ' ' );
+
          str = replace_input_arg_values( args, str );
          str = replace_environment_variables( str.c_str( ), c_environment_variable_marker );
 
@@ -420,11 +429,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
             str.erase( );
          }
-         else if( str[ 0 ] == c_output_command_usage )
+         else if( str[ 0 ] == c_output_command_usage || str.substr( 0, pos ) == c_help_command )
          {
             string wildcard_match_expr;
-
-            string::size_type pos = str.find( ' ' );
             if( pos != string::npos )
                wildcard_match_expr = str.substr( pos + 1 );
 
@@ -678,8 +685,12 @@ string console_command_processor::get_cmd_and_args( )
 void console_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
    cout << '\n';
-   cout << "commands:\n";
-   cout << "=========\n";
+   cout << "commands:";
+
+   if( !wildcard_match_expr.empty( ) )
+      cout << " " << wildcard_match_expr;
+
+   cout << "\n=========\n";
 
    cout << get_usage_for_commands( wildcard_match_expr );
 }
