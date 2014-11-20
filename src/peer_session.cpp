@@ -138,15 +138,14 @@ class socket_command_handler : public command_handler
    bool get_is_local( ) const { return is_local; }
    bool get_is_listener( ) const { return is_listener; }
 
-   string& prior_put_1( ) { return prior_put_1_hash; }
-   string& prior_put_2( ) { return prior_put_2_hash; }
+   string& prior_put( ) { return prior_put_hash; }
 
    void get_hello( );
    void put_hello( );
 
    void pip_peer( const string& ip_address );
 
-   void chk_files( const string& hash1, const string& hash2 );
+   void chk_file( const string& hash );
 
    peer_state& state( ) { return session_state; }
    peer_trust_level& trust_level( ) { return session_trust_level; }
@@ -191,8 +190,7 @@ class socket_command_handler : public command_handler
    string last_command;
    string next_command;
 
-   string prior_put_1_hash;
-   string prior_put_2_hash;
+   string prior_put_hash;
 
    peer_state session_state;
    peer_trust_level session_trust_level;
@@ -273,7 +271,7 @@ void socket_command_handler::pip_peer( const string& ip_address )
    }
 }
 
-void socket_command_handler::chk_files( const string& hash1, const string& hash2 )
+void socket_command_handler::chk_file( const string& hash )
 {
    progress* p_progress = 0;
    trace_progress progress( TRACE_SOCK_OPS );
@@ -283,9 +281,10 @@ void socket_command_handler::chk_files( const string& hash1, const string& hash2
 
    string token( uuid( ).as_string( ) );
 
-   string expected( hash_two_with_token_separator( hash1, hash2, token ) );
+   string expected( hash_with_nonce( hash, token ) );
 
-   socket.write_line( string( c_cmd_peer_session_chk ) + " " + hash1 + " " + hash2 + " " + token, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_chk )
+    + " " + hash + " " + token, c_request_timeout, p_progress );
 
    string response;
    if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
@@ -315,15 +314,15 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
    {
       TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
 
-      if( str[ 0 ] == '?' )
+      string::size_type pos = str.find( ' ' );
+
+      if( str[ 0 ] == '?' || str.substr( 0, pos ) == "help" )
       {
          if( !had_usage )
          {
             had_usage = true;
 
             string wildcard_match_expr;
-
-            string::size_type pos = str.find( ' ' );
             if( pos != string::npos )
                wildcard_match_expr = str.substr( pos + 1 );
 
@@ -429,19 +428,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       if( command == c_cmd_peer_session_chk )
       {
          string hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash ) );
-         string hash2( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash2 ) );
-         string token( get_parm_val( parameters, c_cmd_parm_peer_session_chk_token ) );
+         string nonce( get_parm_val( parameters, c_cmd_parm_peer_session_chk_nonce ) );
 
          if( socket_handler.state( ) != e_peer_state_listener
-          && socket_handler.state( ) != e_peer_state_waiting_for_get )
+          && socket_handler.state( ) != e_peer_state_waiting_for_get
+          && socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for chk" );
 
          bool has = has_file( hash );
-
-         bool has_both = false;
-         if( has && !hash2.empty( ) )
-            has_both = has_file( hash2 );
-
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_listener );
 
          if( !has )
@@ -488,8 +482,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
          else
          {
-            if( has_both )
-               response = hash_two_with_token_separator( hash, hash2, token );
+            if( !nonce.empty( ) )
+               response = hash_with_nonce( hash, nonce );
 
             if( socket_handler.state( ) == e_peer_state_waiting_for_get )
                socket_handler.state( ) = e_peer_state_waiting_for_put;
@@ -544,11 +538,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             file_remove( temp_file_name );
          }
 
-         if( socket_handler.prior_put_1( ).empty( ) || ( rand( ) % 100 < 5 ) )
-            socket_handler.prior_put_1( ) = hash;
-
-         if( socket_handler.prior_put_2( ).empty( ) || ( rand( ) % 100 < 5 ) )
-            socket_handler.prior_put_2( ) = hash;
+         if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
+            socket_handler.prior_put( ) = hash;
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
 
@@ -557,7 +548,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
             // based upon the actual needs of the peer).
             if( rand( ) % 5 == 0 )
-               socket_handler.chk_files( socket_handler.prior_put_1( ), socket_handler.prior_put_2( ) );
+               socket_handler.chk_file( socket_handler.prior_put( ) );
             else if( rand( ) % 5 == 0 )
                socket_handler.pip_peer( "127.0.0.1" );
             else
@@ -747,8 +738,8 @@ string socket_command_processor::get_cmd_and_args( )
 
             // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
             // based upon the actual needs of the peer).
-            if( rand( ) % 5 == 0 && !socket_handler.prior_put_1( ).empty( ) )
-               socket_handler.chk_files( socket_handler.prior_put_1( ), socket_handler.prior_put_2( ) );
+            if( rand( ) % 5 == 0 && !socket_handler.prior_put( ).empty( ) )
+               socket_handler.chk_file( socket_handler.prior_put( ) );
             else if( rand( ) % 5 == 0 )
                socket_handler.pip_peer( "127.0.0.1" );
             else
@@ -810,7 +801,11 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
    if( !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
-   socket.write_line( "commands:", c_request_timeout );
+   string cmds( "commands:" );
+   if( !wildcard_match_expr.empty( ) )
+      cmds += ' ' + wildcard_match_expr;
+
+   socket.write_line( cmds, c_request_timeout );
    socket.write_line( "=========", c_request_timeout );
 
    socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
@@ -907,12 +902,18 @@ void peer_session::on_start( )
              + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
          }
 
+         progress* p_progress = 0;
+         trace_progress progress( TRACE_SOCK_OPS );
+
+         if( get_trace_flags( ) & TRACE_SOCK_OPS )
+            p_progress = &progress;
+
          string data( c_file_type_str_blob );
          data += string( c_hello );
 
          string hash( lower( sha256( data ).get_digest_as_string( ) ) );
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash, c_request_timeout );
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash, c_request_timeout, p_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
       }

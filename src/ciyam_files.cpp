@@ -594,20 +594,17 @@ string list_file_tags( const string& pat )
    return retval;
 }
 
-string hash_two_with_token_separator( const string& hash1, const string& hash2, const string& separator )
+string hash_with_nonce( const string& hash, const string& nonce )
 {
-   string filename1( construct_file_name_from_hash( hash1 ) );
-   string filename2( construct_file_name_from_hash( hash2 ) );
+   string filename( construct_file_name_from_hash( hash ) );
 
-   sha256 hash;
-   hash.update( filename1, true );
+   sha256 temp_hash;
 
-   if( !separator.empty( ) )
-      hash.update( separator );
+   if( !nonce.empty( ) )
+      temp_hash.update( nonce );
+   temp_hash.update( filename, true );
 
-   hash.update( filename2, true );
-
-   return lower( hash.get_digest_as_string( ) );
+   return lower( temp_hash.get_digest_as_string( ) );
 }
 
 void fetch_file( const string& hash, tcp_socket& socket )

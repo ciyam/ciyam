@@ -37,6 +37,7 @@
 #  include "pdf_gen.h"
 #endif
 #include "threads.h"
+#include "progress.h"
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
@@ -741,10 +742,16 @@ void perform_field_value_transformations(
 
 void output_response_lines( tcp_socket& socket, const string& response )
 {
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
    vector< string > lines;
    split( response, lines, '\n' );
    for( size_t i = 0; i < lines.size( ); i++ )
-      socket.write_line( lines[ i ] );
+      socket.write_line( lines[ i ], c_request_timeout, p_progress );
 }
 
 struct query_data
@@ -994,7 +1001,13 @@ class socket_command_handler : public command_handler
 
    void output_progress( const string& message )
    {
-      socket.write_line( string( c_response_message_prefix ) + message );
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_progress = &progress;
+
+      socket.write_line( string( c_response_message_prefix ) + message, c_request_timeout, p_progress );
    }
 
    const string& get_restore_error( ) const { return restore_error; }
@@ -1009,12 +1022,12 @@ class socket_command_handler : public command_handler
 
    void handle_unknown_command( const string& command )
    {
-      socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'" );
+      socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'", c_request_timeout );
    }
 
    void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
    {
-      socket.write_line( string( c_response_error_prefix ) + "invalid command usage '" + cmd_and_args + "'" );
+      socket.write_line( string( c_response_error_prefix ) + "invalid command usage '" + cmd_and_args + "'", c_request_timeout );
    }
 
    void handle_command_response( const string& response, bool is_special );
@@ -1041,11 +1054,11 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
    {
       TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
 
-      if( str[ 0 ] == '?' )
+      string::size_type pos = str.find( ' ' );
+
+      if( str[ 0 ] == '?' || str.substr( 0, pos ) == "help" )
       {
          string wildcard_match_expr;
-
-         string::size_type pos = str.find( ' ' );
          if( pos != string::npos )
             wildcard_match_expr = str.substr( pos + 1 );
 
@@ -1082,12 +1095,18 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
 {
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
    if( !response.empty( ) )
    {
       if( is_special && !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
 
-      socket.write_line( response );
+      socket.write_line( response, c_request_timeout, p_progress );
    }
 
    if( !is_special )
@@ -1095,7 +1114,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
       if( !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
 
-      socket.write_line( c_response_okay );
+      socket.write_line( c_response_okay, c_request_timeout, p_progress );
    }
 }
 
@@ -1145,6 +1164,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    clear_perms( );
 
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
+
+   progress* p_progress = 0;
+#ifdef HPDF_SUPPORT
+   progress* p_pdf_progress = 0;
+#endif
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+#ifdef HPDF_SUPPORT
+   trace_progress pdf_progress( TRACE_PDF_VALS );
+
+   if( get_trace_flags( ) & TRACE_PDF_VALS )
+      p_pdf_progress = &pdf_progress;
+#endif
 
    try
    {
@@ -1733,7 +1768,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !field_output.empty( ) )
                   output += " " + field_output;
 
-               socket.write_line( output );
+               socket.write_line( output, c_request_timeout, p_progress );
             }
             else
             {
@@ -1831,7 +1866,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
 
                         if( summaries.empty( ) )
-                           socket.write_line( output );
+                           socket.write_line( output, c_request_timeout, p_progress );
                         else
                         {
                            string prefix;
@@ -1863,20 +1898,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                       field_list, summaries, pdf_gen_variables, tz_name, num_limit == 1, 0, false );
                   }
 
-                  progress* p_progress = 0;
-                  trace_progress progress( TRACE_PDF_VALS );
-
-                  if( get_trace_flags( ) & TRACE_PDF_VALS )
-                     p_progress = &progress;
-
                   if( summaries.empty( ) )
-                     generate_pdf_doc( format_file, output_file, pdf_gen_variables, p_progress );
+                     generate_pdf_doc( format_file, output_file, pdf_gen_variables, p_pdf_progress );
                   else
                   {
                      map< string, string > pdf_final_variables;
                      add_final_pdf_variables( pdf_gen_variables, summaries, pdf_final_variables );
 
-                     generate_pdf_doc( format_file, output_file, pdf_final_variables, p_progress );
+                     generate_pdf_doc( format_file, output_file, pdf_final_variables, p_pdf_progress );
                   }
 #endif
                }
@@ -1884,7 +1913,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   for( multimap< string, string >::iterator
                    i = summary_sorted_values.begin( ); i != summary_sorted_values.end( ); ++i )
-                     socket.write_line( i->second );
+                     socket.write_line( i->second, c_request_timeout, p_progress );
                }
             }
 
@@ -2774,7 +2803,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      return_response = c_response_okay_more;
 
                   if( !socket_handler.is_restoring( ) && !return_response.empty( ) )
-                     socket.write_line( return_response );
+                     socket.write_line( return_response, c_request_timeout, p_progress );
                }
 
                if( !is_first && !skip_transaction )
@@ -2798,7 +2827,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: As the client is expecting a response for each key provided when an
                   // an exception is thrown fill out any remaining responses with "okay more".
                   for( size_t i = num_responses; i < all_keys.size( ) - 1; i++ )
-                     socket.write_line( c_response_okay_more );
+                     socket.write_line( c_response_okay_more, c_request_timeout, p_progress );
                }
 
                if( !is_first && !skip_transaction )
@@ -2821,7 +2850,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: As the client is expecting a response for each key provided when an
                   // an exception is thrown fill out any remaining responses with "okay more".
                   for( size_t i = num_responses; i < all_keys.size( ) - 1; i++ )
-                     socket.write_line( c_response_okay_more );
+                     socket.write_line( c_response_okay_more, c_request_timeout, p_progress );
                }
 
                if( !is_first && !skip_transaction )
@@ -3993,7 +4022,13 @@ string socket_command_processor::get_cmd_and_args( )
 
    while( true )
    {
-      if( socket.read_line( request, c_request_timeout ) <= 0 )
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_progress = &progress;
+
+      if( socket.read_line( request, c_request_timeout, 0, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
@@ -4031,15 +4066,19 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
    if( !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
-   socket.write_line( "commands:" );
-   socket.write_line( "=========" );
+   string cmds( "commands:" );
+   if( !wildcard_match_expr.empty( ) )
+      cmds += ' ' + wildcard_match_expr;
 
-   socket.write_line( get_usage_for_commands( wildcard_match_expr ) );
+   socket.write_line( cmds, c_request_timeout );
+   socket.write_line( "=========", c_request_timeout );
+
+   socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
    if( !socket.set_no_delay( ) )
       issue_warning( "socket set_no_delay failure" );
 
-   socket.write_line( c_response_okay );
+   socket.write_line( c_response_okay, c_request_timeout );
 }
 
 }
@@ -4075,7 +4114,7 @@ void ciyam_session::on_start( )
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
 
-      ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
+      ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_request_timeout );
 
       init_session( cmd_handler );
 
@@ -4093,14 +4132,14 @@ void ciyam_session::on_start( )
    {
       issue_error( x.what( ) );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ) );
+      ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
    }
    catch( ... )
    {
       issue_error( "unexpected unknown exception occurred" );
 
-      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred" );
+      ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
       ap_socket->close( );
    }
 
