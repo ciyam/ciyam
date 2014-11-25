@@ -130,6 +130,7 @@ const char* const c_attribute_web_type = "web_type";
 const char* const c_attribute_mas_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_blockchains = "blockchains";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
@@ -3082,6 +3083,8 @@ int g_session_timeout = 0;
 
 bool g_script_reconfig = false;
 
+set< string > g_blockchains;
+
 set< string > g_accepted_ip_addrs;
 set< string > g_rejected_ip_addrs;
 set< string > g_initial_peer_ip_addrs;
@@ -3235,6 +3238,10 @@ void read_server_configuration( )
       }
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
+
+      string blockchains( reader.read_opt_attribute( c_attribute_blockchains ) );
+      if( !blockchains.empty( ) )
+         split( blockchains, g_blockchains );
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -4145,6 +4152,11 @@ bool get_is_accepted_peer_id_addr( const string& ip_addr )
 {
    return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
+}
+
+bool get_is_known_blockchain( const string& blockchain )
+{
+   return g_blockchains.count( blockchain );
 }
 
 bool get_using_ssl( )

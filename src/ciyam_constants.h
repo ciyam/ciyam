@@ -23,14 +23,18 @@ const int c_file_type_val_compressed = 0x08;
 
 const int c_file_type_val_extra_core = 0x10;
 const int c_file_type_val_extra_mime = 0x20;
-const int c_file_type_val_extra_other_1 = 0x40;
-const int c_file_type_val_extra_other_2 = 0x80;
 
-const int c_file_type_val_extra_mask = 0xf0;
+const int c_file_type_val_extra_mask = 0x30;
 
 const char c_file_type_char_blob = '\x01';
 const char c_file_type_char_item = '\x02';
 const char c_file_type_char_tree = '\x03';
+
+const char c_file_type_char_core_blob = '\x11';
+const char c_file_type_char_core_item = '\x12';
+const char c_file_type_char_core_tree = '\x13';
+
+const char c_file_type_char_mime_blob = '\x21';
 
 const char c_file_type_char_compressed = '\x08';
 
@@ -38,9 +42,41 @@ const char c_file_type_char_blob_compressed = '\x09';
 const char c_file_type_char_item_compressed = '\x0a';
 const char c_file_type_char_tree_compressed = '\x0b';
 
+const char c_file_type_char_core_blob_compressed = '\x91';
+const char c_file_type_char_core_item_compressed = '\x92';
+const char c_file_type_char_core_tree_compressed = '\x93';
+
+const char c_file_type_char_mime_blob_compressed = '\xa1';
+
 const char* const c_file_type_str_blob = "\x01";
 const char* const c_file_type_str_item = "\x02";
 const char* const c_file_type_str_tree = "\x03";
+
+const char* const c_file_type_str_core_blob = "\x11";
+const char* const c_file_type_str_core_item = "\x12";
+const char* const c_file_type_str_core_tree = "\x13";
+
+const char* const c_file_type_core_block_object = "blk";
+const char* const c_file_type_core_message_object = "msg";
+const char* const c_file_type_core_transaction_object = "txn";
+
+const char* const c_file_type_core_block_header_height_prefix = "h=";
+const char* const c_file_type_core_block_header_weight_prefix = "w=";
+const char* const c_file_type_core_block_header_account_prefix = "a=";
+const char* const c_file_type_core_block_header_chain_meta_prefix = "cm=";
+const char* const c_file_type_core_block_header_public_key_prefix = "pk=";
+const char* const c_file_type_core_block_header_total_weight_prefix = "tw=";
+const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
+
+const char* const c_file_type_core_block_detail_account_prefix = "a:";
+const char* const c_file_type_core_block_detail_signature_prefix = "s:";
+
+const char* const c_file_type_core_block_header_chain_meta_reward_prefix = "r:";
+const char* const c_file_type_core_block_header_chain_meta_supply_prefix = "s:";
+
+const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
+const char* const c_file_type_core_block_detail_account_hash_address_prefix = "ha=";
+const char* const c_file_type_core_block_detail_account_next_address_prefix = "na=";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";

@@ -1,5 +1,5 @@
-chk "check if peer has a file or hash the content of a file with a nonce" <val//hash>[<val//nonce>]
-get "fetch a file from the files area" <val//hash>[<val//name>]
+chk "check if peer has a file or hash the content of a file with a nonce" <val//tag_or_hash>[<val//nonce>]
+get "fetch a file from the files area" <val//tag_or_hash>[<val//name>]
 put "stores a file to the files area" <val//hash>
 pip "exchange a random peer's ip address" <val//addr>
 tls "start TLS session"

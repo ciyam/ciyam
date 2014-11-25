@@ -427,13 +427,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
       if( command == c_cmd_peer_session_chk )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_tag_or_hash ) );
          string nonce( get_parm_val( parameters, c_cmd_parm_peer_session_chk_nonce ) );
 
          if( socket_handler.state( ) != e_peer_state_listener
           && socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for chk" );
+
+         string hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            response = hash = tag_file_hash( tag_or_hash );
 
          bool has = has_file( hash );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_listener );
@@ -505,10 +510,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_get )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_get_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_peer_session_get_tag_or_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get )
             throw runtime_error( "invalid state for get" );
+
+         string hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            hash = tag_file_hash( tag_or_hash );
 
          fetch_file( hash, socket );
          increment_peer_files_downloaded( file_bytes( hash ) );

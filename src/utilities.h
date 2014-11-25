@@ -717,7 +717,13 @@ void setup_arguments( int argc, const char* argv[ ],
  std::vector< std::string >& arguments, char esc = '\0', const char* p_specials = 0 );
 
 std::string buffer_file( const std::string& file_name );
-void write_file( const std::string& file_name, const std::string& file_buffer );
+
+void write_file( const std::string& file_name, unsigned char* p_data, size_t length );
+
+inline void write_file( const std::string& file_name, const std::string& file_buffer )
+{
+   write_file( file_name, ( unsigned char* )file_buffer.data( ), file_buffer.length( ) );
+}
 
 void buffer_file_lines( const std::string& file_name,
  std::vector< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );

@@ -142,6 +142,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
       if( !str.empty( ) )
       {
          bool was_pip = false;
+         bool was_chk_tag = false;
          bool was_chk_token = false;
          string get_dest_file, put_source_file;
 
@@ -179,20 +180,20 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string prefix( c_file_type_str_blob );
 
             regex expr( c_regex_hash_256 );
-            if( !was_chk_token && expr.search( data ) == string::npos )
+            if( !was_chk_token && expr.search( data ) == string::npos && str.substr( 0, pos ) == "chk" )
+               was_chk_tag = true;
+
+            if( expr.search( data ) == string::npos
+             && str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
             {
                str.erase( pos + 1 );
 
-               if( str.substr( 0, pos ) == "chk" || str.substr( 0, pos ) == "get"
-                || str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
-               {
-                  put_source_file = data;
+               put_source_file = data;
 
-                  if( file_size( put_source_file ) > c_max_size_to_buffer )
-                     throw runtime_error( "file exceeds max. length restriction of " + to_string( c_max_size_to_buffer ) + " bytes" );
+               if( file_size( put_source_file ) > c_max_size_to_buffer )
+                  throw runtime_error( "file exceeds max. length restriction of " + to_string( c_max_size_to_buffer ) + " bytes" );
 
-                  data = buffer_file( put_source_file );
-               }
+               data = buffer_file( put_source_file );
 
                str += lower( sha256( prefix + data ).get_digest_as_string( ) ) + extra;
 
@@ -327,10 +328,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                       c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                   }
                }
-               else if( was_pip || was_chk_token || was_get_or_put )
+               else if( was_pip || was_chk_tag || was_chk_token || was_get_or_put )
                {
-                  // FUTURE: Verify the hash if "was_chk_two".
-                  if( was_pip || was_chk_token )
+                  // FUTURE: Verify the hash if "was_chk_token".
+                  if( was_pip || was_chk_tag || was_chk_token )
                   {
                      cout << response << endl;
 
@@ -344,6 +345,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      throw runtime_error( "unexpected response: " + response );
 
                   was_pip = false;
+                  was_chk_tag = false;
                   was_chk_token = false;
                   was_get_or_put = false;
 

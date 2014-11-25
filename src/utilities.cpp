@@ -1605,13 +1605,13 @@ string buffer_file( const string& file_name )
    return str;
 }
 
-void write_file( const string& file_name, const string& file_buffer )
+void write_file( const string& file_name, unsigned char* p_data, size_t length )
 {
    FILE* fp = fopen( file_name.c_str( ), "wb" );
    if( !fp )
       throw runtime_error( "unable to open file '" + file_name + "' for output" );
 
-   if( fwrite( file_buffer.data( ), 1, file_buffer.size( ), fp ) != file_buffer.size( ) )
+   if( fwrite( p_data, 1, length, fp ) != length )
       throw runtime_error( "writing to output file '" + file_name + "'" );
 
    fclose( fp );
