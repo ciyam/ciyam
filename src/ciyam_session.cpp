@@ -48,6 +48,7 @@
 #include "ciyam_strings.h"
 #include "command_parser.h"
 #include "command_handler.h"
+#include "ciyam_core_files.h"
 #include "module_interface.h"
 #include "command_processor.h"
 #include "module_management.h"
@@ -1198,14 +1199,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_chk_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_chk_tag_or_hash ) );
+
+         string hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            response = hash = tag_file_hash( tag_or_hash );
 
          if( !has_file( hash ) )
             throw runtime_error( "file not found" );
       }
       else if( command == c_cmd_ciyam_session_file_get )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_tag_or_hash ) );
+
+         string hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            hash = tag_file_hash( tag_or_hash );
 
          fetch_file( hash, socket );
       }
@@ -1218,19 +1229,99 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_raw )
       {
+         bool is_core( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_core ) );
+         bool is_mime( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_mime ) );
          bool is_blob( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_blob ) );
          bool is_item( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_item ) );
          bool is_tree( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tree ) );
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
+         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tag ) );
 
-         if( is_blob )
-            data = c_file_type_str_blob + data;
-         else if( is_item )
-            data = c_file_type_str_item + data;
-         else if( is_tree )
-            data = c_file_type_str_tree + data;
+         vector< pair< string, string > > extras;
 
-         response = create_raw_file( data );
+         if( !is_core && !is_mime )
+         {
+            if( is_blob )
+               data = c_file_type_str_blob + data;
+            else if( is_item )
+               data = c_file_type_str_item + data;
+            else if( is_tree )
+               data = c_file_type_str_tree + data;
+            else
+               throw runtime_error( "unexpected unknown type" );
+         }
+         else if( is_core )
+         {
+            if( is_blob )
+               data = c_file_type_char_core_blob + data;
+            else if( is_item )
+               data = c_file_type_char_core_item + data;
+            else if( is_tree )
+               data = c_file_type_char_core_tree + data;
+            else
+               throw runtime_error( "unexpected unknown core type" );
+
+            verify_core_file( data, true, &extras );
+         }
+         else if( is_mime )
+         {
+            if( is_blob )
+               data = c_file_type_char_mime_blob + data;
+            else
+               throw runtime_error( "only blob type is supported for MIME" );
+         }
+
+         vector< string > all_hashes;
+
+         response = create_raw_file( data, tag.c_str( ) );
+         all_hashes.push_back( response );
+
+         for( size_t i = 0; i < extras.size( ); i++ )
+         {
+            if( extras[ i ].first.empty( ) )
+               throw runtime_error( "unexpected empty extra file data" );
+
+            if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+            {
+               string tree_info( extras[ i ].first.substr( 1 ) );
+
+               for( size_t j = all_hashes.size( ) - 1; ; j-- )
+               {
+                  string str( "@" );
+                  str += to_string( j );
+
+                  replace( tree_info, str, all_hashes[ j ] );
+
+                  if( j == 0 )
+                     break;
+               }
+
+               extras[ i ].first.erase( 1 );
+               extras[ i ].first += tree_info;
+            }
+
+            string tag( extras[ i ].second );
+            string secondary_tags;
+
+            string::size_type pos = tag.find( '\n' );
+            if( pos != string::npos )
+            {
+               secondary_tags = tag.substr( pos + 1 );
+               tag.erase( pos );
+            }
+
+            string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
+            all_hashes.push_back( next_hash );
+
+            if( !secondary_tags.empty( ) )
+            {
+               vector< string > all_secondary_tags;
+               split( secondary_tags, all_secondary_tags, '\n' );
+
+               for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
+                  tag_file( all_secondary_tags[ i ], next_hash );
+            }
+         }
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
@@ -1253,30 +1344,45 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool type( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_type ) );
          bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
-         bool recursive( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recursive ) );
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_hash ) );
+         bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recurse ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_tag_or_hash ) );
 
          file_expansion expansion = e_file_expansion_none;
 
          if( content )
             expansion = e_file_expansion_content;
-         else if( recursive )
+         else if( recurse )
             expansion = e_file_expansion_recursive;
 
-         response = file_type_info( hash, expansion );
+         response = file_type_info( tag_or_hash, expansion );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
          string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_hash ) );
 
-         if( pat.empty( ) )
+         if( !hash.empty( ) )
             response = get_hash_tags( hash );
          else
             response = list_file_tags( pat );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );
+      else if( command == c_cmd_ciyam_session_crypto_sign )
+      {
+         string secret( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_secret ) );
+         string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_message ) );
+
+         response = crypto_sign( secret, message );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_verify )
+      {
+         string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_pubkey ) );
+         string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_message ) );
+         string signature( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_signature ) );
+
+         crypto_verify( pubkey, message, signature );
+      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

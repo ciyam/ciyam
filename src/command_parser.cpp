@@ -911,11 +911,7 @@ void command_parser::impl::do_dump_nodes( node* p_node, ostream& ostr, int inden
 void command_parser::impl::do_output_usage( node* p_node, ostream& ostr, bool after_match ) const
 {
    if( p_node->is_alt )
-   {
       ostr << c_alternative_separator;
-      if( after_match )
-         ostr << ' ';
-   }
 
    bool had_output_branch = false;
    for( vector< node* >::size_type i = 0; i < p_node->opt_branch_nodes.size( ); i++ )
@@ -977,7 +973,7 @@ void command_parser::impl::do_output_usage( node* p_node, ostream& ostr, bool af
 
    if( p_node->p_next_node )
    {
-      if( p_node->p_match_node || ( !p_node->expression.empty( ) && !p_node->p_next_node->is_alt ) )
+      if( !p_node->expression.empty( ) && !p_node->p_next_node->is_alt )
          ostr << ' ';
       do_output_usage( p_node->p_next_node, ostr, p_node->p_match_node != 0 );
    }

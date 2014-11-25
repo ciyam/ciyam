@@ -27,6 +27,8 @@ std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
 void CLASS_BASE_DECL_SPEC init_files_area( );
 
+bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
+
 bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash );
 
 int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& hash );
@@ -39,9 +41,9 @@ enum file_expansion
 };
 
 std::string CLASS_BASE_DECL_SPEC file_type_info(
- const std::string& hash, file_expansion expansion = e_file_expansion_none, int indent = 0 );
+ const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none, int indent = 0 );
 
-std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data );
+std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data, const char* p_tag = 0 );
 
 void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
@@ -62,4 +64,7 @@ void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& 
 
 bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 
+std::string CLASS_BASE_DECL_SPEC extract_file( const std::string& hash, const std::string& dest_filename );
+
 #endif
+

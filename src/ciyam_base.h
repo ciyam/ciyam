@@ -106,6 +106,8 @@ void CIYAM_BASE_DECL_SPEC get_initial_peer_ips( std::set< std::string >& ips );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_id_addr( const std::string& ip_addr );
 
+bool CIYAM_BASE_DECL_SPEC get_is_known_blockchain( const std::string& blockchain );
+
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );

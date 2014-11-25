@@ -1286,6 +1286,11 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
+std::string CLASS_BASE_DECL_SPEC crypto_sign( const std::string& secret, const std::string& message );
+
+void CLASS_BASE_DECL_SPEC crypto_verify(
+ const std::string& pubkey, const std::string& message, const std::string& signature );
+
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key );
 

@@ -4274,6 +4274,29 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
+string crypto_sign( const string& secret, const string& message )
+{
+#ifdef SSL_SUPPORT
+   private_key priv( secret, secret.length( ) == 64 ? false : true );
+
+   return priv.construct_signature( message, true );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_sign" );
+#endif
+}
+
+void crypto_verify( const string& pubkey, const string& message, const string& signature )
+{
+#ifdef SSL_SUPPORT
+   public_key pub( pubkey, pubkey.length( ) < 64 ? true : false );
+
+   if( !pub.verify_signature( message, signature ) )
+      throw runtime_error( "invalid signature" );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_verify" );
+#endif
+}
+
 string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key )
 {
 #ifdef SSL_SUPPORT
