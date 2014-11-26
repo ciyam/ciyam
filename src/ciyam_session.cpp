@@ -1354,7 +1354,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_depth ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_tag_or_hash ) );
 
-         int depth_val = 1;
+         int depth_val = 0;
          if( !depth.empty( ) )
             depth_val = atoi( depth.c_str( ) );
 

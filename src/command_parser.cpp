@@ -16,6 +16,7 @@
 #  include <stack>
 #  include <sstream>
 #  include <iostream>
+#  include <algorithm>
 #  include <stdexcept>
 #endif
 
@@ -53,6 +54,7 @@ const char* const c_expr_type_olist = "olist";
 const char c_exp_type_opt_value_separator = '#';
 const char c_exp_type_list_default_separator = ',';
 const char c_exp_type_list_default_terminator = ' ';
+const char c_exp_type_prefix_default_separator = '=';
 
 struct node
 {
@@ -76,6 +78,7 @@ struct node
    string type;
    string prefix;
    string parameter;
+   string default_val;
    string description;
 
    char separator;
@@ -216,7 +219,7 @@ class command_parser::impl
     const string& pat, const string& input, string::size_type& length, vector< string >& refs );
 
    bool parse_command_expression( node* p_node, size_t& argnum );
-   bool parse_space_separator_list_items( node* p_node, size_t& argnum, string& value );
+   bool parse_separated_list_items( node* p_node, size_t& argnum, string& value );
 
    bool is_invalid;
    bool end_of_input;
@@ -951,6 +954,10 @@ void command_parser::impl::do_output_usage( node* p_node, ostream& ostr, bool af
 
          if( p_node->separator && ( p_node->type == c_expr_type_list || p_node->type == c_expr_type_olist ) )
             ostr << p_node->separator;
+
+         if( p_node->type == c_expr_type_val && !p_node->default_val.empty( ) )
+            ostr << ':' << p_node->default_val;
+
          ostr << c_token_finish;
 
          if( p_node->separator && ( p_node->type == c_expr_type_val || p_node->type == c_expr_type_oval ) )
@@ -1031,7 +1038,11 @@ void command_parser::impl::parse_syntax_expression( node* p_node )
    bool had_terminator = false;
 
    string expression( p_node->expression );
+
+   size_t num_subs = count( expression.begin( ), expression.end( ), c_sub_expression_divider );
+
    p_node->type = get_next_sub_expression( expression, c_sub_expression_divider );
+
    if( expression.empty( ) )
       found_error = true;
    else
@@ -1041,60 +1052,73 @@ void command_parser::impl::parse_syntax_expression( node* p_node )
        && p_node->type != c_expr_type_list && p_node->type != c_expr_type_olist )
          found_error = true;
 
-      p_node->prefix = get_next_sub_expression( expression, c_sub_expression_divider );
-
-      if( p_node->type == c_expr_type_pat )
+      if( !found_error )
       {
-         // NOTE: Construct a regex object here in order to test that its syntax is valid.
-         try
-         {
-            regex expr( p_node->prefix );
-         }
-         catch( exception& )
-         {
-            found_error = true;
-         }
-      }
+         p_node->prefix = get_next_sub_expression( expression, c_sub_expression_divider );
 
-      if( !expression.empty( ) )
-      {
-         p_node->parameter = get_next_sub_expression( expression, c_sub_expression_divider );
+         if( p_node->type == c_expr_type_pat )
+         {
+            // NOTE: Construct a regex object here in order to test that its syntax is valid.
+            try
+            {
+               regex expr( p_node->prefix );
+            }
+            catch( exception& )
+            {
+               found_error = true;
+            }
+         }
+         else if( !p_node->prefix.empty( )
+          && ( p_node->type == c_expr_type_val || p_node->type == c_expr_type_oval ) )
+         {
+            string::size_type pos = p_node->prefix.find( c_exp_type_prefix_default_separator );
+            if( pos != string::npos )
+            {
+               p_node->default_val = p_node->prefix.substr( pos + 1 );
+               p_node->prefix.erase( pos + 1 );
+            }
+         }
 
          if( !expression.empty( ) )
          {
-            p_node->description = get_next_sub_expression( expression, c_sub_expression_divider );
+            p_node->parameter = get_next_sub_expression( expression, c_sub_expression_divider );
 
             if( !expression.empty( ) )
             {
-               string separator = get_next_sub_expression( expression, c_sub_expression_divider );
-               if( separator.size( ) != 1 )
-                  found_error = true;
-               else
-               {
-                  had_separator = true;
-                  p_node->separator = separator[ 0 ];
-                  if( p_node->separator == c_exp_type_list_default_terminator )
-                     p_node->terminator = '\0';
+               p_node->description = get_next_sub_expression( expression, c_sub_expression_divider );
 
-                  if( !expression.empty( ) )
+               if( !expression.empty( ) )
+               {
+                  string separator = get_next_sub_expression( expression, c_sub_expression_divider );
+                  if( separator.size( ) != 1 )
+                     found_error = true;
+                  else
                   {
-                     string terminator = get_next_sub_expression( expression, c_sub_expression_divider );
-                     if( terminator.size( ) != 1 )
-                        found_error = true;
-                     else
+                     had_separator = true;
+                     p_node->separator = separator[ 0 ];
+                     if( p_node->separator == c_exp_type_list_default_terminator )
+                        p_node->terminator = '\0';
+
+                     if( !expression.empty( ) )
                      {
-                        had_terminator = true;
-                        p_node->terminator = terminator[ 0 ];
+                        string terminator = get_next_sub_expression( expression, c_sub_expression_divider );
+                        if( terminator.size( ) != 1 )
+                           found_error = true;
+                        else
+                        {
+                           had_terminator = true;
+                           p_node->terminator = terminator[ 0 ];
+                        }
                      }
                   }
                }
             }
+            else
+               p_node->description = p_node->parameter;
          }
          else
-            p_node->description = p_node->parameter;
+            p_node->description = p_node->parameter = p_node->prefix;
       }
-      else
-         p_node->description = p_node->parameter = p_node->prefix;
    }
 
    if( !found_error && !expression.empty( ) )
@@ -1268,6 +1292,11 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
                }
             }
          }
+         else if( !prefix_separator_is_whitespace && !p_node->default_val.empty( ) )
+         {
+            retval = true;
+            p_parameters->insert( parameter_value_type( p_node->parameter, p_node->default_val ) );
+         }
       }
       else if( p_node->type == c_expr_type_list || p_node->type == c_expr_type_olist )
       {
@@ -1312,7 +1341,7 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
             if( isspace( static_cast< unsigned char >( p_node->separator ) ) )
                escape( value, separator_buffer );
 
-            if( !parse_space_separator_list_items( p_node, argnum, value ) )
+            if( !parse_separated_list_items( p_node, argnum, value ) )
                retval = false;
             else
             {
@@ -1355,7 +1384,7 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
                escape( value, separator_buffer );
 
             if( p_node->type == c_expr_type_list || p_node->type == c_expr_type_olist )
-               retval = parse_space_separator_list_items( p_node, argnum, value );
+               retval = parse_separated_list_items( p_node, argnum, value );
             else if( p_node->separator != '\0' )
             {
                if( value.empty( ) || value[ value.size( ) - 1 ] != p_node->separator )
@@ -1365,6 +1394,12 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
                }
                else
                   value = value.substr( 0, value.size( ) - 1 );
+            }
+
+            if( retval && value.empty( ) && p_node->type != c_expr_type_oval && p_node->type != c_expr_type_olist )
+            {
+               --argnum;
+               retval = false;
             }
 
             if( retval )
@@ -1382,7 +1417,7 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
    return retval;
 }
 
-bool command_parser::impl::parse_space_separator_list_items( node* p_node, size_t& argnum, string& value )
+bool command_parser::impl::parse_separated_list_items( node* p_node, size_t& argnum, string& value )
 {
    bool retval = true;
    char separator_buffer[ 2 ];
@@ -1392,7 +1427,7 @@ bool command_parser::impl::parse_space_separator_list_items( node* p_node, size_
    if( p_node->terminator != c_exp_type_list_default_terminator )
    {
 #ifdef DEBUG
-      cout << "checking for space separated list items..." << endl;
+      cout << "checking for separated list items..." << endl;
 #endif
       bool done = false;
       if( !value.empty( ) && value[ value.size( ) - 1 ] == p_node->terminator )
