@@ -31,6 +31,7 @@
 #include "ciyam_session.h"
 
 #include "sio.h"
+#include "base64.h"
 #include "config.h"
 #include "format.h"
 #ifdef HPDF_SUPPORT
@@ -42,6 +43,7 @@
 #include "date_time.h"
 #include "ciyam_base.h"
 #include "class_base.h"
+#include "hash_chain.h"
 #include "auto_script.h"
 #include "ciyam_files.h"
 #include "crypt_stream.h"
@@ -1271,55 +1273,59 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         vector< string > all_hashes;
+         bool is_existing = false;
+         response = create_raw_file( data, tag.c_str( ), &is_existing );
 
-         response = create_raw_file( data, tag.c_str( ) );
-         all_hashes.push_back( response );
-
-         for( size_t i = 0; i < extras.size( ); i++ )
+         if( !is_existing )
          {
-            if( extras[ i ].first.empty( ) )
-               throw runtime_error( "unexpected empty extra file data" );
+            vector< string > all_hashes;
+            all_hashes.push_back( response );
 
-            if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+            for( size_t i = 0; i < extras.size( ); i++ )
             {
-               string tree_info( extras[ i ].first.substr( 1 ) );
+               if( extras[ i ].first.empty( ) )
+                  throw runtime_error( "unexpected empty extra file data" );
 
-               for( size_t j = all_hashes.size( ) - 1; ; j-- )
+               if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
                {
-                  string str( "@" );
-                  str += to_string( j );
+                  string tree_info( extras[ i ].first.substr( 1 ) );
 
-                  replace( tree_info, str, all_hashes[ j ] );
+                  for( size_t j = all_hashes.size( ) - 1; ; j-- )
+                  {
+                     string str( "@" );
+                     str += to_string( j );
 
-                  if( j == 0 )
-                     break;
+                     replace( tree_info, str, all_hashes[ j ] );
+
+                     if( j == 0 )
+                        break;
+                  }
+
+                  extras[ i ].first.erase( 1 );
+                  extras[ i ].first += tree_info;
                }
 
-               extras[ i ].first.erase( 1 );
-               extras[ i ].first += tree_info;
-            }
+               string tag( extras[ i ].second );
+               string secondary_tags;
 
-            string tag( extras[ i ].second );
-            string secondary_tags;
+               string::size_type pos = tag.find( '\n' );
+               if( pos != string::npos )
+               {
+                  secondary_tags = tag.substr( pos + 1 );
+                  tag.erase( pos );
+               }
 
-            string::size_type pos = tag.find( '\n' );
-            if( pos != string::npos )
-            {
-               secondary_tags = tag.substr( pos + 1 );
-               tag.erase( pos );
-            }
+               string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
+               all_hashes.push_back( next_hash );
 
-            string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
-            all_hashes.push_back( next_hash );
+               if( !secondary_tags.empty( ) )
+               {
+                  vector< string > all_secondary_tags;
+                  split( secondary_tags, all_secondary_tags, '\n' );
 
-            if( !secondary_tags.empty( ) )
-            {
-               vector< string > all_secondary_tags;
-               split( secondary_tags, all_secondary_tags, '\n' );
-
-               for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
-                  tag_file( all_secondary_tags[ i ], next_hash );
+                  for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
+                     tag_file( all_secondary_tags[ i ], next_hash );
+               }
             }
          }
       }
@@ -1345,7 +1351,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool type( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_type ) );
          bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recurse ) );
+         string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_depth ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_tag_or_hash ) );
+
+         int depth_val = 1;
+         if( !depth.empty( ) )
+            depth_val = atoi( depth.c_str( ) );
 
          file_expansion expansion = e_file_expansion_none;
 
@@ -1354,7 +1365,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( recurse )
             expansion = e_file_expansion_recursive;
 
-         response = file_type_info( tag_or_hash, expansion );
+         response = file_type_info( tag_or_hash, expansion, depth_val );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
@@ -1368,12 +1379,38 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );
+      else if( command == c_cmd_ciyam_session_crypto_keys )
+      {
+         string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_extkey ) );
+         bool use_base64( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_base64 ) );
+         string passphrase( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_passphrase ) );
+
+         string pub_key, priv_key;
+
+         if( passphrase.empty( ) )
+            response = create_address_key_pair( extkey, pub_key, priv_key, use_base64 );
+         else
+            response = create_address_key_pair( extkey, pub_key, priv_key, passphrase, true, use_base64 );
+
+         if( use_base64 )
+            priv_key = hex_encode( base64::decode( priv_key ) );
+
+         response += '\n' + pub_key + '\n' + priv_key;
+      }
       else if( command == c_cmd_ciyam_session_crypto_sign )
       {
-         string secret( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_secret ) );
+         string privkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_privkey ) );
          string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_message ) );
 
-         response = crypto_sign( secret, message );
+         response = crypto_sign( privkey, message );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_chain )
+      {
+         size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_chain_length ) );
+         bool use_base64( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_chain_base64 ) );
+         string seed( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_chain_seed ) );
+
+         response = generate_hash_chain( length, use_base64, seed.empty( ) ? 0 : seed.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_crypto_verify )
       {

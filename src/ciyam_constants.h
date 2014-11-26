@@ -65,6 +65,8 @@ const char* const c_file_type_core_block_header_weight_prefix = "w=";
 const char* const c_file_type_core_block_header_account_prefix = "a=";
 const char* const c_file_type_core_block_header_chain_meta_prefix = "cm=";
 const char* const c_file_type_core_block_header_public_key_prefix = "pk=";
+const char* const c_file_type_core_block_header_account_hash_prefix = "ah=";
+const char* const c_file_type_core_block_header_account_lock_prefix = "al=";
 const char* const c_file_type_core_block_header_total_weight_prefix = "tw=";
 const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
 
@@ -75,8 +77,7 @@ const char* const c_file_type_core_block_header_chain_meta_reward_prefix = "r:";
 const char* const c_file_type_core_block_header_chain_meta_supply_prefix = "s:";
 
 const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
-const char* const c_file_type_core_block_detail_account_hash_address_prefix = "ha=";
-const char* const c_file_type_core_block_detail_account_next_address_prefix = "na=";
+const char* const c_file_type_core_block_detail_account_lock_prefix = "l=";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";

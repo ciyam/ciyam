@@ -4297,7 +4297,7 @@ void crypto_verify( const string& pubkey, const string& message, const string& s
 #endif
 }
 
-string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key )
+string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key, bool use_base64 )
 {
 #ifdef SSL_SUPPORT
    private_key new_key;
@@ -4311,8 +4311,8 @@ string create_address_key_pair( const string& ext_key, string& pub_key, string& 
    if( client_info.extra_info == "testnet" )
       is_testnet = true;
 
-   pub_key = new_key.get_public( );
-   priv_key = new_key.get_secret( );
+   pub_key = new_key.get_public( compressed, use_base64 );
+   priv_key = new_key.get_secret( use_base64 );
 
    return new_key.get_address( compressed, is_testnet );
 #else
@@ -4321,7 +4321,7 @@ string create_address_key_pair( const string& ext_key, string& pub_key, string& 
 }
 
 string create_address_key_pair( const string& ext_key,
- string& pub_key, string& priv_key, const string& priv_info, bool is_seed )
+ string& pub_key, string& priv_key, const string& priv_info, bool is_seed, bool use_base64 )
 {
 #ifdef SSL_SUPPORT
    auto_ptr< private_key > ap_new_key;
@@ -4343,8 +4343,8 @@ string create_address_key_pair( const string& ext_key,
       ap_new_key.reset( new private_key( lower( hash.get_digest_as_string( ) ) ) );
    }
 
-   pub_key = ap_new_key->get_public( compressed );
-   priv_key = ap_new_key->get_secret( );
+   pub_key = ap_new_key->get_public( compressed, use_base64 );
+   priv_key = ap_new_key->get_secret( use_base64 );
 
    return ap_new_key->get_address( compressed, is_testnet );
 #else
