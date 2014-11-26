@@ -41,9 +41,9 @@ enum file_expansion
 };
 
 std::string CLASS_BASE_DECL_SPEC file_type_info(
- const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none, int indent = 0 );
+ const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0 );
 
-std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data, const char* p_tag = 0 );
+std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data, const char* p_tag = 0, bool* p_is_existing = 0 );
 
 void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
@@ -64,7 +64,8 @@ void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& 
 
 bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 
-std::string CLASS_BASE_DECL_SPEC extract_file( const std::string& hash, const std::string& dest_filename );
+std::string CLASS_BASE_DECL_SPEC extract_file(
+ const std::string& hash, const std::string& dest_filename, unsigned char check_file_type_and_extra = '\0' );
 
 #endif
 

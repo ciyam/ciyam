@@ -6,10 +6,12 @@ file_put "stores a file to the files area" <val//hash>[<val//tag>]
 file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>]<opt/-blob/blob>|<opt/-item/item>|<opt/-tree/tree><val//data>[<val//tag>]
 file_tag "set/delete a tag for a file in the files area" <opt/-del/del>|<val//hash><val//name>
 file_hash "get the hash for a tag in the files area" <val//tag>
-file_info "get file information" <opt/-type/type>|<opt/-content/content>|<opt/-recurse/recurse><val//tag_or_hash>
+file_info "get file information" <opt/-type/type>|<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=/depth>]}<val//tag_or_hash>
 file_tags "get file tags for a hash or wildcard pattern" [<val/-p=/pat>|<val//hash>]
 file_stats "get file area stats"
-crypto_sign "sign a message" <val//secret><val//message>
+crypto_keys "create keys" <val//extkey>[<opt/-b64/base64>][<val//passphrase>]
+crypto_sign "sign a message" <val//privkey><val//message>
+crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//seed>]
 crypto_verify "verify a signed message" <val//pubkey><val//message><val//signature>
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>

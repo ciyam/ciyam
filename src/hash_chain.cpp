@@ -17,6 +17,7 @@
 
 #include "hash_chain.h"
 
+#include "base64.h"
 #include "sha256.h"
 #include "utilities.h"
 
@@ -281,5 +282,51 @@ bool hash_chain::check_and_update_if_good( const string& new_hash, unsigned int 
 string hash_chain::get_next_hashes_to_publish( const string& password, unsigned int num_hashes )
 {
    return p_impl->get_next_hashes_to_publish( password, num_hashes );
+}
+
+bool check_if_valid_hash_pair( const string& current, const string& previous, bool base64 )
+{
+   unsigned char buffer[ c_hash_buf_size ];
+
+   if( !base64 )
+      hex_decode( current, buffer, c_hash_buf_size );
+   else
+      base64::decode( current, buffer, c_hash_buf_size );
+
+   sha256 hash( buffer, c_hash_buf_size );
+   hash.copy_digest_to_buffer( buffer );
+
+   return previous == ( base64 ? base64::encode( buffer, c_hash_buf_size ) : hex_encode( buffer, c_hash_buf_size ) );
+}
+
+string generate_hash_chain( size_t length, bool base64, const char* p_seed, char separator )
+{
+   string retval;
+   unsigned char buffer[ c_hash_buf_size ];
+
+   string seed;
+   if( p_seed )
+      seed = *p_seed;
+   else
+      seed = uuid( ).as_string( );
+
+   sha256 hash( seed );
+   hash.copy_digest_to_buffer( buffer );
+
+   for( size_t i = 0; i < length; i++ )
+   {
+      if( !retval.empty( ) )
+         retval += separator;
+
+      if( !base64 )
+         retval += hash.get_digest_as_string( );
+      else
+         retval += base64::encode( buffer, c_hash_buf_size );
+
+      hash.update( buffer, c_hash_buf_size );
+      hash.copy_digest_to_buffer( buffer );
+   }
+
+   return retval;
 }
 

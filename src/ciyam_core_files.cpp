@@ -20,11 +20,13 @@
 #include "regex.h"
 #include "config.h"
 #include "ptypes.h"
+#include "threads.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #ifdef SSL_SUPPORT
 #  include "crypto_keys.h"
 #endif
+#include "hash_chain.h"
 #include "ciyam_files.h"
 
 using namespace std;
@@ -32,10 +34,15 @@ using namespace std;
 namespace
 {
 
+mutex g_mutex;
+
 #include "ciyam_constants.h"
 
-void verify_block( const string& content, bool check_sigs, vector< pair< string, string > >* p_extras )
+pair< unsigned long, unsigned long > verify_block( const string& content,
+ bool check_sigs, vector< pair< string, string > >* p_extras, string* p_minter_account_tag = 0 )
 {
+   guard g( g_mutex );
+
    vector< string > lines;
    split( content, lines, '\n' );
 
@@ -44,9 +51,12 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
 
    unsigned long block_height = 0;
    unsigned long block_weight = 0;
+
    unsigned long total_weight = 0;
 
-   string chain, account, previous_block, public_key_base64;
+   string chain, account, account_hash, account_lock, previous_block, public_key_base64;
+
+   string prior_block_minter_tag;
 
    uint64_t unit_reward = 0;
    uint64_t unit_supply = 0;
@@ -65,9 +75,11 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
       bool has_height = false;
       bool has_weight = false;
       bool has_account = false;
+      bool has_public_key = false;
+      bool has_account_hash = false;
+      bool has_account_lock = false;
       bool has_total_weight = false;
       bool has_previous_block = false;
-      bool has_public_key = false;
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
@@ -113,6 +125,24 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
             has_weight = true;
             block_weight = atoi( next_attribute.substr(
              string( c_file_type_core_block_header_weight_prefix ).length( ) ).c_str( ) );
+         }
+         else if( block_height && !has_account_hash )
+         {
+            if( next_attribute.find( c_file_type_core_block_header_account_hash_prefix ) != 0 )
+               throw runtime_error( "unexpected missing account hash in block header '" + header + "'" );
+
+            has_account_hash = true;
+            account_hash = next_attribute.substr(
+             string( c_file_type_core_block_header_account_hash_prefix ).length( ) );
+         }
+         else if( block_height && !has_account_lock )
+         {
+            if( next_attribute.find( c_file_type_core_block_header_account_lock_prefix ) != 0 )
+               throw runtime_error( "unexpected missing account lock in block header '" + header + "'" );
+
+            has_account_lock = true;
+            account_lock = next_attribute.substr(
+             string( c_file_type_core_block_header_account_lock_prefix ).length( ) );
          }
          else if( !has_previous_block )
          {
@@ -176,6 +206,15 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
 
                if( !has_file( previous_block ) )
                   throw runtime_error( "previous block '" + previous_block + "' does not exist" );
+
+               string previous_block_data( extract_file( previous_block, "", c_file_type_char_core_blob ) );
+
+               pos = previous_block_data.find( ':' );
+               if( pos == string::npos || previous_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+                  throw runtime_error( "invalid previous block file" );
+
+               if( p_extras && verify_block( previous_block_data.substr( pos + 1 ), false, 0 ).first != block_height - 1 )
+                  throw runtime_error( "block height is not one above previous block height" );
             }
          }
          else if( !has_public_key )
@@ -214,6 +253,40 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
    string tree_info( c_file_type_str_core_tree );
    tree_info += "@0";
 
+   bool is_new_chain_head = false;
+   string mint_address, mint_test_address, mint_address_uncompressed, mint_test_address_uncompressed;
+
+   if( p_extras && block_height )
+   {
+      string block_tag( "c" + chain + ".b" + to_string( block_height ) );
+
+      if( !has_tag( block_tag ) )
+         is_new_chain_head = true;
+      else
+      {
+         string current_block_tree( extract_file( tag_file_hash( block_tag ), "" ) );
+
+         vector< string > hashes;
+         split( current_block_tree, hashes, '\n' );
+
+         if( hashes.empty( ) || !has_file( hashes[ 0 ] ) )
+            throw runtime_error( "unexpected invalid current block tree" );
+
+         string current_block_data( extract_file( hashes[ 0 ], "" ) );
+         string::size_type pos = current_block_data.find( ':' );
+
+         if( pos == string::npos || current_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+            throw runtime_error( "invalid current block file" );
+
+         string minter_tag;
+         if( verify_block( current_block_data.substr( pos + 1 ), false, 0, &minter_tag ).second > block_weight )
+         {
+            is_new_chain_head = true;
+            prior_block_minter_tag = minter_tag;
+         }
+      }
+   }
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -231,17 +304,14 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
          vector< string > attributes;
          split( next_line, attributes );
 
-         if( attributes.size( ) < 4 )
+         if( attributes.size( ) < 3 )
             throw runtime_error( "invalid account format '" + next_line + "'" );
 
          bool has_id = false;
          bool has_hash = false;
-         bool has_hash_address = false;
-         bool has_next_address = false;
+         bool has_lock = false;
 
-         string id, hash;
-         string hash_address;
-         string next_address;
+         string id, hash, lock;
 
          for( size_t j = 0; j < attributes.size( ); j++ )
          {
@@ -272,30 +342,12 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
 
                hash = next_attribute.substr( len );
             }
-            else if( !has_hash_address )
+            else if( !has_lock )
             {
-               size_t len = string( c_file_type_core_block_detail_account_hash_address_prefix ).length( );
+               size_t len = string( c_file_type_core_block_detail_account_lock_prefix ).length( );
 
                if( next_attribute.length( ) < len + 1
-                || next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_hash_address_prefix ) )
-                  throw runtime_error( "invalid account hash address attribute '" + next_attribute + "'" );
-
-               regex expr( c_regex_bitcoin_address );
-
-               next_attribute.erase( 0, len );
-
-               if( expr.search( next_attribute ) != 0 )
-                  throw runtime_error( "invalid account hash address '" + next_attribute + "'" );
-
-               has_hash_address = true;
-               hash_address = next_attribute;
-            }
-            else if( !has_next_address )
-            {
-               size_t len = string( c_file_type_core_block_detail_account_next_address_prefix ).length( );
-
-               if( next_attribute.length( ) < len + 1
-                || next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_next_address_prefix ) )
+                || next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_lock_prefix ) )
                   throw runtime_error( "invalid account next address attribute '" + next_attribute + "'" );
 
                regex expr( c_regex_bitcoin_address );
@@ -305,14 +357,14 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
                if( expr.search( next_attribute ) != 0 )
                   throw runtime_error( "invalid account next address '" + next_attribute + "'" );
 
-               has_next_address = true;
-               next_address = next_attribute;
+               has_lock = true;
+               lock = next_attribute;
             }
             else
                throw runtime_error( "unexpected account attribute '" + next_attribute + "'" );
          }
 
-         if( !has_next_address )
+         if( !has_lock )
             throw runtime_error( "unexpected incomplete account information '" + next_line + "'" );
 
          if( p_extras )
@@ -320,7 +372,7 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
             if( !block_height )
             {
                string extra( c_file_type_str_core_blob );
-               extra += hash + '\n' + hash_address + '\n' + next_address + '\n' + to_string( unit_reward );
+               extra += hash + '\n' + lock + '\n' + to_string( unit_reward );
 
                if( unit_supply < unit_reward )
                   throw runtime_error( "invalid insufficient supply to create accounts" );
@@ -341,7 +393,14 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
       {
          public_key pkey( public_key_base64, true );
 
-         // FUTURE: If not a root block then need to verify that the public key matches the account's address.
+         if( block_height )
+         {
+            mint_address = pkey.get_address( );
+            mint_test_address = pkey.get_address( true, true );
+
+            mint_address_uncompressed = pkey.get_address( false );
+            mint_test_address_uncompressed = pkey.get_address( false, true );
+         }
 
          if( check_sigs && !pkey.verify_signature( verify, next_line ) )
             throw runtime_error( "invalid block signature" );
@@ -353,6 +412,9 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
          throw runtime_error( "unexpected line '" + lines[ i ] + "' in verify_block" );
    }
 
+   if( block_height && p_minter_account_tag )
+      *p_minter_account_tag = "c" + chain + ".a" + account;
+
    if( p_extras )
    {
       if( !block_height )
@@ -360,7 +422,9 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
          string extra( c_file_type_str_core_blob );
          extra += to_string( unit_reward ) + '\n' + to_string( unit_supply );
 
-         string tags( "c" + chain + ".a" + account );
+         string chain_account_tag( "c" + chain + ".a" + account );
+
+         string tags( chain_account_tag + ".0\n" + chain_account_tag );
          p_extras->push_back( make_pair( extra, tags ) );
 
          tree_info += "\n@" + to_string( p_extras->size( ) );
@@ -368,11 +432,15 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
       else
       {
          string chain_account_tag( "c" + chain + ".a" + chain );
+         string chain_account_tag_for_fetch( chain_account_tag );
 
-         if( !has_tag( chain_account_tag ) )
-            throw runtime_error( "unable able to find find root chain account for '" + chain_account_tag + "'" );
+         if( !prior_block_minter_tag.empty( ) )
+            chain_account_tag_for_fetch += "." + to_string( block_height - 1 );
 
-         string chain_account_hash( tag_file_hash( chain_account_tag ) );
+         if( !has_tag( chain_account_tag_for_fetch ) )
+            throw runtime_error( "unable able to find find root chain account for '" + chain_account_tag_for_fetch + "'" );
+
+         string chain_account_hash( tag_file_hash( chain_account_tag_for_fetch ) );
          string chain_account_info( extract_file( chain_account_hash, "" ) );
 
          vector< string > chain_account_items;
@@ -396,32 +464,108 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
             extra += '\n' + chain_account_items[ i ];
 
          string tags( chain_account_tag + "."
-          + to_string( block_height ) + "-" + to_string( total_weight ) + "\n" + chain_account_tag );
+          + to_string( block_height ) + "-" + to_string( block_weight ) );
+
+         if( is_new_chain_head )
+            tags += "\n" + chain_account_tag + "." + to_string( block_height ) + "\n" + chain_account_tag;
 
          p_extras->push_back( make_pair( extra, tags ) );
          tree_info += "\n@" + to_string( p_extras->size( ) );
 
-         string mint_account_tag( "c" + chain + ".a" + account );
-         string mint_account_hash( tag_file_hash( mint_account_tag ) );
-         string mint_account_info( extract_file( mint_account_hash, "" ) );
+         extra = string( c_file_type_str_core_item );
+         extra += chain_account_tag + ".undo\n" + chain_account_hash;
 
-         vector< string > mint_account_items;
-         split( mint_account_info, mint_account_items, '\n' );
+         p_extras->push_back( make_pair( extra, "" ) );
+         tree_info += "\n@" + to_string( p_extras->size( ) );
 
-         if( mint_account_items.size( ) < 4 )
-            throw runtime_error( "unexpected invalid mint_account_info '" + mint_account_info + "'" );
+         if( !prior_block_minter_tag.empty( ) )
+         {
+            string prior_block_minter_hash( tag_file_hash( prior_block_minter_tag ) );
+            string prior_block_minter_data( extract_file( prior_block_minter_hash, "" ) );
 
-         uint64_t balance = from_string< uint64_t >( mint_account_items[ 3 ] );
+            vector< string > prior_block_minter_items;
+            split( prior_block_minter_data, prior_block_minter_items, '\n' );
+
+            if( prior_block_minter_items.size( ) < 3 )
+               throw runtime_error( "unexpected invalid prior_block_minter_data '" + prior_block_minter_data + "'" );
+
+            uint64_t balance = from_string< uint64_t >( prior_block_minter_items[ 2 ] );
+
+            balance -= unit_reward;
+
+            extra = string( c_file_type_str_core_blob );
+            extra += prior_block_minter_items[ 0 ] + '\n' + prior_block_minter_items[ 1 ];
+            extra += '\n' + to_string( balance );
+
+            for( size_t i = 3; i < prior_block_minter_items.size( ); i++ )
+               extra += "\n" + prior_block_minter_items[ i ];
+
+            p_extras->push_back( make_pair( extra, prior_block_minter_tag ) );
+         }
+
+         string minter_account_tag( "c" + chain + ".a" + account );
+         string minter_account_hash( tag_file_hash( minter_account_tag ) );
+         string minter_account_data( extract_file( minter_account_hash, "" ) );
+
+         vector< string > minter_account_items;
+         split( minter_account_data, minter_account_items, '\n' );
+
+         unsigned long last_height = 0;
+         if( minter_account_items.size( ) < 3 )
+            throw runtime_error( "unexpected invalid minter_account_data '" + minter_account_data + "'" );
+
+         string previous_hash( minter_account_items[ 0 ] );
+         string previous_lock( minter_account_items[ 1 ] );
+
+         if( !check_if_valid_hash_pair( account_hash, previous_hash, true ) )
+            throw runtime_error( "invalid hash from minter" );
+
+         if( previous_lock != mint_address && previous_lock != mint_address_uncompressed
+          && previous_lock != mint_test_address && previous_lock != mint_test_address_uncompressed )
+            throw runtime_error( "invalid public key from minter" );
+
+         // NOTE: If an account has already minted then make sure that this block
+         // is more recent than the last one.
+         if( minter_account_items.size( ) > 3 )
+         {
+            last_height = from_string< unsigned long >( minter_account_items[ 3 ] );
+
+            if( block_height <= last_height )
+               throw runtime_error( "invalid block height for minting account" );
+         }
+
+         uint64_t balance = from_string< uint64_t >( minter_account_items[ 2 ] );
+
+         if( !is_new_chain_head )
+         {
+            extra = string( c_file_type_str_core_blob );
+            extra += account_hash + '\n' + account_lock;
+            extra += '\n' + to_string( balance ) + '\n' + to_string( block_height );
+
+            p_extras->push_back( make_pair( extra, minter_account_tag ) );
+         }
+
          balance += unit_reward;
 
          extra = string( c_file_type_str_core_blob );
-         extra += mint_account_items[ 0 ] + '\n' + mint_account_items[ 1 ] + '\n' + mint_account_items[ 2 ];
-         extra += '\n' + to_string( balance );
+         extra += account_hash + '\n' + account_lock;
+         extra += '\n' + to_string( balance ) + '\n' + to_string( block_height );
 
-         tags = mint_account_tag + "." + to_string( block_height )
-          + "-" + to_string( total_weight ) + "\n" + mint_account_tag;
+         for( size_t i = 4; i < minter_account_items.size( ); i++ )
+            extra += '\n' + minter_account_items[ i ];
+
+         tags = minter_account_tag + "." + to_string( block_height ) + "-" + to_string( block_weight );
+
+         if( is_new_chain_head )
+            tags += "\n" + minter_account_tag;
 
          p_extras->push_back( make_pair( extra, tags ) );
+         tree_info += "\n@" + to_string( p_extras->size( ) );
+
+         extra = string( c_file_type_str_core_item );
+         extra += minter_account_tag + ".undo\n" + minter_account_hash;
+
+         p_extras->push_back( make_pair( extra, "" ) );
          tree_info += "\n@" + to_string( p_extras->size( ) );
       }
 
@@ -430,12 +574,28 @@ void verify_block( const string& content, bool check_sigs, vector< pair< string,
          if( !block_height )
             p_extras->push_back( make_pair( tree_info, "c" + chain + ".b0\nc" + account + ".head" ) );
          else
-            p_extras->push_back( make_pair( tree_info,
-             "c" + chain + ".b" + to_string( block_height )
-             + "-" + to_string( total_weight ) + "\nc" + chain
-             + ".b" + to_string( block_height ) + "\nc" + chain + ".head" ) );
+         {
+            string block_file( "c" + chain );
+            string block_file_tag( "c" + chain + ".b" + to_string( block_height ) );
+            string block_file_old_tag( "c" + chain + ".b" + to_string( block_height - 1 ) );
+
+            string extra( c_file_type_str_core_item );
+            extra += block_file_tag + ".undo\n" + tag_file_hash( block_file_old_tag );
+
+            p_extras->push_back( make_pair( extra, "" ) );
+            tree_info += "\n@" + to_string( p_extras->size( ) );
+
+            string tags( block_file_tag + "-" + to_string( block_weight ) );
+
+            if( is_new_chain_head )
+               tags += "\n" + block_file_tag + "\n" + block_file + ".head";
+
+            p_extras->push_back( make_pair( tree_info, tags ) );
+         }
       }
    }
+
+   return make_pair( block_height, block_weight );
 }
 
 void verify_message( const string& content, bool check_sigs )

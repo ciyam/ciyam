@@ -297,7 +297,7 @@ int64_t file_bytes( const string& hash )
    return file_size( filename );
 }
 
-string file_type_info( const string& tag_or_hash, file_expansion expansion, int indent )
+string file_type_info( const string& tag_or_hash, file_expansion expansion, int max_depth, int indent )
 {
    guard g( g_mutex );
 
@@ -386,8 +386,10 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
 
          if( expansion == e_file_expansion_content )
             retval += " " + hash + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
+         else if( max_depth && indent >= max_depth )
+            retval += " " + hash;
          else
-            retval += " " + hash + "\n" + file_type_info( item_info.substr( pos + 1 ), expansion, indent + 1 );
+            retval += " " + hash + "\n" + file_type_info( item_info.substr( pos + 1 ), expansion, max_depth, indent + 1 );
       }
       else if( file_type == c_file_type_val_tree )
       {
@@ -402,8 +404,8 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          {
             if( expansion == e_file_expansion_content )
                retval += "\n" + string( indent, ' ' ) + tree_items[ i ];
-            else
-               retval += "\n" + file_type_info( tree_items[ i ], expansion, indent + 1 );
+            else if( !max_depth || indent < max_depth )
+               retval += "\n" + file_type_info( tree_items[ i ], expansion, max_depth, indent + 1 );
          }
       }
    }
@@ -411,7 +413,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    return retval;
 }
 
-string create_raw_file( const string& data, const char* p_tag )
+string create_raw_file( const string& data, const char* p_tag, bool* p_is_existing )
 {
    guard g( g_mutex );
 
@@ -461,6 +463,9 @@ string create_raw_file( const string& data, const char* p_tag )
 
    if( !file_exists( filename ) )
    {
+      if( p_is_existing )
+         *p_is_existing = false;
+         
       if( g_total_files >= get_files_area_item_max_num( ) )
          throw runtime_error( "maximum file area item limit has been reached" );
 
@@ -510,6 +515,8 @@ string create_raw_file( const string& data, const char* p_tag )
       ++g_total_files;
       g_total_bytes += final_data.size( );
    }
+   else if( p_is_existing )
+      *p_is_existing = true;
 
    string tag_name;
    if( p_tag )
@@ -819,7 +826,7 @@ bool temp_file_is_identical( const string& temp_name, const string& hash )
    return files_are_identical( temp_name, filename );
 }
 
-string extract_file( const string& hash, const string& dest_filename )
+string extract_file( const string& hash, const string& dest_filename, unsigned char check_file_type_and_extra )
 {
    guard g( g_mutex );
 
@@ -829,6 +836,12 @@ string extract_file( const string& hash, const string& dest_filename )
 
    if( !data.empty( ) )
    {
+      if( check_file_type_and_extra )
+      {
+         if( data[ 0 ] & check_file_type_and_extra != check_file_type_and_extra )
+            throw runtime_error( "unexpected file type/extra" );
+      }
+
       unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( data[ 0 ] & c_file_type_val_extra_mask );
 

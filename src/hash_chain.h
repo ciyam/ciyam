@@ -31,5 +31,9 @@ class hash_chain
    impl* p_impl;
 };
 
+bool check_if_valid_hash_pair( const std::string& current, const std::string& previous, bool base64 = false );
+
+std::string generate_hash_chain( size_t length, bool base64 = false, const char* p_seed = 0, char separator = '\n' );
+
 #endif
 
