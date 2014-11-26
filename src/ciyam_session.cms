@@ -6,7 +6,7 @@ file_put "stores a file to the files area" <val//hash>[<val//tag>]
 file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>]<opt/-blob/blob>|<opt/-item/item>|<opt/-tree/tree><val//data>[<val//tag>]
 file_tag "set/delete a tag for a file in the files area" <opt/-del/del>|<val//hash><val//name>
 file_hash "get the hash for a tag in the files area" <val//tag>
-file_info "get file information" <opt/-type/type>|<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=/depth>]}<val//tag_or_hash>
+file_info "get file information" <opt/-type/type>|<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>]}<val//tag_or_hash>
 file_tags "get file tags for a hash or wildcard pattern" [<val/-p=/pat>|<val//hash>]
 file_stats "get file area stats"
 crypto_keys "create keys" <val//extkey>[<opt/-b64/base64>][<val//passphrase>]

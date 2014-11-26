@@ -26,11 +26,11 @@ using namespace std;
 
 Format for node expressions:
 
-"type/prefix[/parameter[#value][/description[/separator[/terminator]]]]"
+"type/prefix[=[default]][/parameter[#value][/description[/separator[/terminator]]]]"
 
 Allowed values for type are:
 opt
-pat
+pat (a regular expression pattern)
 val
 oval (same as val but will permit a blank value)
 list
@@ -38,7 +38,8 @@ olist (same as list but will pemit blank values)
 
 By default a list will use a comma as the list separator unless a specific separator character
 has been provided. A terminator is only permitted for a list type and a separator provided for
-either an option or value will be stripped of the end of the value (if was found at the end).
+either an option or value will be stripped of the end of the value (if was found at the end so
+in that case can act as a terminator).
 
 A parameter with an empty prefix must have a name - if no name is provided then the parameter name is
 considered to be the same as its prefix. For "pat" type expressions the prefix is a regular expression
@@ -49,20 +50,25 @@ use of leading/trailing/consecutive list separators, or by the use of a list ter
 unprefixed parameter cannot have any other unprefixed alternative parameter nor can it be the first
 parameter in an optional branch.
 
+The "default" value for a prefix is only applicable to val or oval nodes within an optional branch where
+there is at least one following matching node.
+
 Syntax and argument examples:
 -----------------------------
 
-syntax <opt/cvs>{<opt/add>[<opt/-kb/binary>]<list//files/files/ />}|{<opt/remove><list//files/files/ />}
+syntax <opt/cvs>{<opt/add>[<opt/-kb/binary>]<list//files/new files/ >}|{<opt/remove><list//files/existing files/ >}
 command cvs add -kb one two three
 command cvs remove one two three
 
-syntax <opt/filter>[<opt/-nodups/nodups>][<val/-a/after>][<val/-b/before>]<val/@/listfile>|<list//strings/strings/ >
+syntax <opt/filter>[<opt/-nodups/nodups>][<val/-a/after>][<val/-b/before>]<val/@/listfile>|<list//strings// >
 command filter -afirst -bsecond -nodups @test.lst
 command filter -afirst -bsecond -nodups s1 s2 s3 s4
 
-syntax <opt/bcc32>[<list/-D/defs//;>][<opt/-v/debug#on>]<list//objs// /,><val//exe//,><val//map//,><list//libs// />
-command bcc32 -DONE -v -DTWO a.obj b.obj, x.exe, , a.lib b.lib
-command bcc32 -v -DONE;TWO a.obj b.obj, x.exe, x.map, a.lib b.lib
+syntax <opt/bcc32>[<list/-D/defs//;>][<opt/-v/debug#on>]<list//objs// /,><val//exe>[<oval//map//,>][<list//libs// >]
+command bcc32 -DONE -v -DTWO a.obj b.obj, x.exe
+command bcc32 -DONE -v -DTWO a.obj b.obj, x.exe a.lib b.lib
+command bcc32 -DONE -v -DTWO a.obj b.obj, x.exe , a.lib b.lib
+command bcc32 -v -DONE;TWO a.obj b.obj, x.exe x.map, a.lib b.lib
 
 syntax <opt/cvscheck>[<opt/-q/quiet>][<opt/-r/return>][<val/-p/path>][<list/-i/masks>][<val/-m/marker>]<list//files// >
 command cvscheck -pC:\\Work -i*.h,*.cpp -mTEST -q file1.h file1.cpp file2.h file2.cpp
