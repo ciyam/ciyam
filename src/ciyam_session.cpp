@@ -1273,61 +1273,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         bool is_existing = false;
-         response = create_raw_file( data, tag.c_str( ), &is_existing );
-
-         if( !is_existing )
-         {
-            vector< string > all_hashes;
-            all_hashes.push_back( response );
-
-            for( size_t i = 0; i < extras.size( ); i++ )
-            {
-               if( extras[ i ].first.empty( ) )
-                  throw runtime_error( "unexpected empty extra file data" );
-
-               if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
-               {
-                  string tree_info( extras[ i ].first.substr( 1 ) );
-
-                  for( size_t j = all_hashes.size( ) - 1; ; j-- )
-                  {
-                     string str( "@" );
-                     str += to_string( j );
-
-                     replace( tree_info, str, all_hashes[ j ] );
-
-                     if( j == 0 )
-                        break;
-                  }
-
-                  extras[ i ].first.erase( 1 );
-                  extras[ i ].first += tree_info;
-               }
-
-               string tag( extras[ i ].second );
-               string secondary_tags;
-
-               string::size_type pos = tag.find( '\n' );
-               if( pos != string::npos )
-               {
-                  secondary_tags = tag.substr( pos + 1 );
-                  tag.erase( pos );
-               }
-
-               string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
-               all_hashes.push_back( next_hash );
-
-               if( !secondary_tags.empty( ) )
-               {
-                  vector< string > all_secondary_tags;
-                  split( secondary_tags, all_secondary_tags, '\n' );
-
-                  for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
-                     tag_file( all_secondary_tags[ i ], next_hash );
-               }
-            }
-         }
+         response = create_raw_file_with_extras( data, extras, tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
@@ -1366,6 +1312,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             expansion = e_file_expansion_recursive;
 
          response = file_type_info( tag_or_hash, expansion, depth_val );
+      }
+      else if( command == c_cmd_ciyam_session_file_kill )
+      {
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_hash ) );
+
+         delete_file( hash );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
