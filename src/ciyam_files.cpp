@@ -11,7 +11,6 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
 #  include <map>
-#  include <vector>
 #  include <fstream>
 #  include <stdexcept>
 #  ifdef __GNUG__
@@ -387,7 +386,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          if( expansion == e_file_expansion_content )
             retval += " " + hash + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
          else if( max_depth && indent >= max_depth )
-            retval += " " + hash;
+            retval += " " + hash + "\n" + string( indent, ' ' ) + "...";
          else
             retval += " " + hash + "\n" + file_type_info( item_info.substr( pos + 1 ), expansion, max_depth, indent + 1 );
       }
@@ -404,7 +403,12 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          {
             if( expansion == e_file_expansion_content )
                retval += "\n" + string( indent, ' ' ) + tree_items[ i ];
-            else if( !max_depth || indent < max_depth )
+            else if( max_depth && indent >= max_depth )
+            {
+               if( i == 0 )
+                  retval += "\n" + string( indent, ' ' ) + "...";
+            }
+            else
                retval += "\n" + file_type_info( tree_items[ i ], expansion, max_depth, indent + 1 );
          }
       }
@@ -528,6 +532,78 @@ string create_raw_file( const string& data, const char* p_tag, bool* p_is_existi
    return hash;
 }
 
+string create_raw_file_with_extras( const string& data,
+ vector< pair< string, string > >& extras, const char* p_tag )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( g_total_files + extras.size( ) >= get_files_area_item_max_num( ) )
+      throw runtime_error( "maximum file area item limit has been reached" );
+
+   bool is_existing = false;
+   retval = create_raw_file( data, p_tag, &is_existing );
+
+   // NOTE: It is being assumed that "extras" should not be larger than the main file
+   // so that assuming the main file is created there should be no risk that the max.
+   // file storage capacity will be exceeded creating the extra files.
+   if( !is_existing )
+   {
+      vector< string > all_hashes;
+      all_hashes.push_back( retval );
+
+      for( size_t i = 0; i < extras.size( ); i++ )
+      {
+         if( extras[ i ].first.empty( ) )
+            throw runtime_error( "unexpected empty extra file data" );
+
+         if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+         {
+            string tree_info( extras[ i ].first.substr( 1 ) );
+
+            for( size_t j = all_hashes.size( ) - 1; ; j-- )
+            {
+               string str( "@" );
+               str += to_string( j );
+
+               replace( tree_info, str, all_hashes[ j ] );
+
+               if( j == 0 )
+                  break;
+            }
+
+            extras[ i ].first.erase( 1 );
+            extras[ i ].first += tree_info;
+         }
+
+         string tag( extras[ i ].second );
+         string secondary_tags;
+
+         string::size_type pos = tag.find( '\n' );
+         if( pos != string::npos )
+         {
+            secondary_tags = tag.substr( pos + 1 );
+            tag.erase( pos );
+         }
+
+         string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
+         all_hashes.push_back( next_hash );
+
+         if( !secondary_tags.empty( ) )
+         {
+            vector< string > all_secondary_tags;
+            split( secondary_tags, all_secondary_tags, '\n' );
+
+            for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
+               tag_file( all_secondary_tags[ i ], next_hash );
+         }
+      }
+   }
+
+   return retval;
+}
+
 void tag_del( const string& name )
 {
    guard g( g_mutex );
@@ -563,11 +639,17 @@ void tag_del( const string& name )
    }
    else
    {
+      string prefix( name.substr( 0, pos ) );
+      map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
+
       vector< string > matching_tag_names;
-      for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
+      for( ; i != g_tag_hashes.end( ); ++i )
       {
          if( wildcard_match( name, i->first ) )
             matching_tag_names.push_back( i->first );
+
+         if( i->first.length( ) < prefix.length( ) || i->first.substr( 0, prefix.length( ) ) != prefix )
+            break;
       }
 
       for( size_t i = 0; i < matching_tag_names.size( ); i++ )
@@ -610,8 +692,12 @@ string get_hash_tags( const string& hash )
 
    string retval;
 
-   multimap< string, string >::iterator i;
-   for( i = g_hash_tags.lower_bound( hash ); i != g_hash_tags.end( ); ++i )
+   multimap< string, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   if( i == g_hash_tags.end( ) || i->first != hash )
+      throw runtime_error( "unexpected hash '" + hash + "'" );
+
+   for( ; i != g_hash_tags.end( ); ++i )
    {
       if( i->first != hash )
          break;
@@ -644,16 +730,39 @@ string list_file_tags( const string& pat )
 
    string retval;
 
-   file_filter ff;
-   fs_iterator fs( c_files_directory, &ff );
-
-   while( fs.has_next( ) )
+   if( !pat.empty( ) )
    {
-      if( !retval.empty( ) )
-         retval += "\n";
+      string::size_type pos = pat.find_first_of( "*?" );
+      string prefix = pat.substr( 0, pos );
 
-      if( pat.empty( ) || wildcard_match( pat, fs.get_name( ) ) )
-         retval += fs.get_name( );
+      map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
+
+      bool found = false;
+      for( ; i != g_tag_hashes.end( ); ++i )
+      {
+         if( found && !retval.empty( ) )
+            retval += "\n";
+
+         if( wildcard_match( pat, i->first ) )
+         {
+            found = true;
+            retval += i->first;
+         }
+         else
+            found = false;   
+
+         if( i->first.length( ) < prefix.length( ) || i->first.substr( 0, prefix.length( ) ) != prefix )
+            break;
+      }
+   }
+   else
+   {
+      for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
+      {
+         if( !retval.empty( ) )
+            retval += "\n";
+         retval += i->first;
+      }
    }
 
    return retval;
@@ -784,6 +893,31 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 
    if( !tag_name.empty( ) )
       tag_file( tag_name, hash );
+}
+
+void delete_file( const string& hash )
+{
+   guard g( g_mutex );
+
+   string filename( construct_file_name_from_hash( hash, true ) );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( "file '" + filename + "' not found" );
+
+   string tags = get_hash_tags( hash );
+
+   vector< string > all_tags;
+   split( tags, all_tags, '\n' );
+
+   for( size_t i = 0; i < all_tags.size( ); i++ )
+      tag_del( all_tags[ i ] );
+
+   int64_t existing_bytes = file_size( filename );
+
+   file_remove( filename );
+
+   --g_total_files;
+   g_total_bytes -= existing_bytes;
 }
 
 void fetch_temp_file( const string& name, tcp_socket& socket )
