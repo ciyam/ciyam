@@ -271,11 +271,13 @@ bool has_tag( const string& name )
 {
    guard g( g_mutex );
 
-   string filename( c_files_directory );
+   string::size_type pos = name.rfind( '*' );
+   map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
 
-   filename += '/' + name;
-
-   return file_exists( filename );
+   if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
+      return false;
+   else
+      return true;
 }
 
 bool has_file( const string& hash )
@@ -666,11 +668,24 @@ void tag_file( const string& name, const string& hash )
    if( !file_exists( filename ) )
       throw runtime_error( hash + " was not found" );
 
-   tag_del( name );
+   string::size_type pos = name.rfind( '*' );
+
+   string tag_name;
+
+   if( pos == string::npos )
+   {
+      tag_del( name );
+      tag_name = name;
+   }
+   else
+   {
+      tag_del( name.substr( 0, pos + 1 ) );
+      tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
+   }
 
    string tag_filename( c_files_directory );
 
-   tag_filename += "/" + name;
+   tag_filename += "/" + tag_name;
 
    ofstream outf( tag_filename.c_str( ) );
    if( !outf )
@@ -682,8 +697,8 @@ void tag_file( const string& name, const string& hash )
    if( !outf.good( ) )
       throw runtime_error( "unexpected bad output stream" );
 
-   g_hash_tags.insert( make_pair( hash, name ) );
-   g_tag_hashes.insert( make_pair( name, hash ) );
+   g_hash_tags.insert( make_pair( hash, tag_name ) );
+   g_tag_hashes.insert( make_pair( tag_name, hash ) );
 }
 
 string get_hash_tags( const string& hash )
@@ -715,13 +730,13 @@ string tag_file_hash( const string& name )
 {
    guard g( g_mutex );
 
-   string tag_filename( c_files_directory );
-   tag_filename += "/" + name;
+   string::size_type pos = name.rfind( '*' );
+   map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
 
-   if( !file_exists( tag_filename ) )
-      throw runtime_error( "link '" + name + "' not found" );
+   if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
+      throw runtime_error( "tag '" + name + "' not found" );
 
-   return buffer_file( tag_filename );
+   return i->second;
 }
 
 string list_file_tags( const string& pat )
@@ -737,19 +752,14 @@ string list_file_tags( const string& pat )
 
       map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
 
-      bool found = false;
       for( ; i != g_tag_hashes.end( ); ++i )
       {
-         if( found && !retval.empty( ) )
-            retval += "\n";
-
          if( wildcard_match( pat, i->first ) )
          {
-            found = true;
+            if( !retval.empty( ) )
+               retval += "\n";
             retval += i->first;
          }
-         else
-            found = false;   
 
          if( i->first.length( ) < prefix.length( ) || i->first.substr( 0, prefix.length( ) ) != prefix )
             break;
