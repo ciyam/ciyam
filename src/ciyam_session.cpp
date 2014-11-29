@@ -1294,7 +1294,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_info )
       {
-         bool type( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_type ) );
          bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recurse ) );
          string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_depth ) );
