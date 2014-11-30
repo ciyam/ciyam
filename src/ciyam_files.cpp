@@ -709,9 +709,6 @@ string get_hash_tags( const string& hash )
 
    multimap< string, string >::iterator i = g_hash_tags.lower_bound( hash );
 
-   if( i == g_hash_tags.end( ) || i->first != hash )
-      throw runtime_error( "unexpected hash '" + hash + "'" );
-
    for( ; i != g_hash_tags.end( ); ++i )
    {
       if( i->first != hash )
@@ -909,7 +906,7 @@ void delete_file( const string& hash )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash, true ) );
+   string filename( construct_file_name_from_hash( hash ) );
 
    if( !file_exists( filename ) )
       throw runtime_error( "file '" + filename + "' not found" );
