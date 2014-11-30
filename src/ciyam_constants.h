@@ -57,7 +57,8 @@ const char* const c_file_type_str_core_item = "\x12";
 const char* const c_file_type_str_core_tree = "\x13";
 
 const char* const c_file_type_core_block_object = "blk";
-const char* const c_file_type_core_message_object = "msg";
+const char* const c_file_type_core_rewind_object = "rwd";
+const char* const c_file_type_core_restore_object = "rst";
 const char* const c_file_type_core_transaction_object = "txn";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
