@@ -556,7 +556,12 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
    unsigned char buf[ c_num_secret_bytes ];
 
    if( !is_wif_format )
-      hex_decode( secret, buf, c_num_secret_bytes );
+   {
+      if( secret.length( ) > 50 )
+         hex_decode( secret, buf, c_num_secret_bytes );
+      else
+         base64::decode( secret, buf, c_num_secret_bytes );
+   }
    else
    {
       // NOTE: If the first encoded byte is K, L or c then is compressed.

@@ -4277,7 +4277,7 @@ string create_html_embedded_image( const string& source_file )
 string crypto_sign( const string& secret, const string& message )
 {
 #ifdef SSL_SUPPORT
-   private_key priv( secret, secret.length( ) == 64 ? false : true );
+   private_key priv( secret, secret.length( ) > 48 && secret.length( ) < 64 ? true : false );
 
    return priv.construct_signature( message, true );
 #else

@@ -1343,9 +1343,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             response = create_address_key_pair( extkey, pub_key, priv_key, passphrase, true, use_base64 );
 
-         if( use_base64 )
-            priv_key = hex_encode( base64::decode( priv_key ) );
-
          response += '\n' + pub_key + '\n' + priv_key;
       }
       else if( command == c_cmd_ciyam_session_crypto_sign )
