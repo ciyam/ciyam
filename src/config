@@ -4,6 +4,9 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+if [ ! -f config.h ]; then
+ cp config.h.default config.h
+fi
 if [ ! -f config.info ]; then
  cp config.info.default config.info
 fi

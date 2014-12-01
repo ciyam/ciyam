@@ -1,0 +1,16 @@
+// Copyright (c) 2014 CIYAM Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef CONFIG_H
+#  define CONFIG_H
+
+const int c_directory_perm_val = 1;
+
+#  ifndef _WIN32
+#     define DEFAULT_UMASK 0
+#  endif
+
+#endif
+
