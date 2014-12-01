@@ -79,6 +79,19 @@ const char* const c_file_type_core_block_header_chain_meta_reward_prefix = "r:";
 
 const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
 const char* const c_file_type_core_block_detail_account_lock_prefix = "l=";
+const char* const c_file_type_core_block_detail_account_tx_hash_prefix = "th=";
+const char* const c_file_type_core_block_detail_account_tx_lock_prefix = "tl=";
+
+const char* const c_file_type_core_transaction_header_account_prefix = "a=";
+const char* const c_file_type_core_transaction_header_tnumber_prefix = "t=";
+const char* const c_file_type_core_transaction_header_public_key_prefix = "pk=";
+const char* const c_file_type_core_transaction_header_application_prefix = "ap=";
+const char* const c_file_type_core_transaction_header_previous_tchain_prefix = "pt=";
+const char* const c_file_type_core_transaction_header_transaction_hash_prefix = "th=";
+const char* const c_file_type_core_transaction_header_transaction_lock_prefix = "tl=";
+
+const char* const c_file_type_core_transaction_detail_log_prefix = "l:";
+const char* const c_file_type_core_transaction_detail_signature_prefix = "s:";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";

@@ -9,6 +9,7 @@
 ##             clean                clean all targets
 ##             usage                display this output
 ##
+##             base                 make base.lib target
 ##             xrep                 make xrep.exe target
 ##             xvars                make xvars.exe target
 ##
@@ -81,6 +82,10 @@ EXPORT=@echo Exporting $&............... &implib
  @compile.bat {$< }
 # @test_compile.bat {$< }
 
+# Custom rule to generate command definitions.
+.cms.cmh:
+ @generate_commands $&.cms
+
 #CPP_NORMAL_OPT=STATIC_RTL_SINGLE_THREAD
 #CPP_NORMAL_OPT=STATIC_RTL_MULTIPLE_THREADS
 #CPP_NORMAL_OPT=DYNAMIC_RTL_SINGLE_THREAD
@@ -135,17 +140,23 @@ LINK_DYNAMIC=$(LINK_DYNAMIC_DRTL_MT)
 ! error Unexpected CPP_DYNAMIC_OPT value $(CPP_DYNAMIC_OPT)
 !endif
 
+TARGET_BASE=base.lib
+TARGET_BASE_OBJECTS=console.obj sio.obj utilities.obj
+TARGET_BASE_ERRFILE=base.err
+
 TARGET_XREP=xrep.exe
-TARGET_XREP_OBJECTS=xrep.obj utilities.obj
+TARGET_XREP_OBJECTS=xrep.obj
 
 TARGET_XVARS=xvars.exe
-TARGET_XVARS_OBJECTS=xvars.obj utilities.obj sio.obj
+TARGET_XVARS_OBJECTS=xvars.obj
 
 ALL_TARGETS=\
+ $(TARGET_BASE)\
  $(TARGET_XREP)\
  $(TARGET_XVARS)
 
 ALL_OBJECTS=\
+ $(TARGET_BASE_OBJECTS)\
  $(TARGET_XREP_OBJECTS)\
  $(TARGET_XVARS_OBJECTS)
 
@@ -153,6 +164,7 @@ usage: make_usage
 
 all: $(ALL_TARGETS)
 
+base: $(TARGET_BASE)
 xrep: $(TARGET_XREP)
 xvars: $(TARGET_XVARS)
 
@@ -162,22 +174,38 @@ dtm:
 make_usage:
  @usage.bat makefile.bcb
 
-$(TARGET_XREP:.exe=.compile):
+$(TARGET_BASE:.lib=.compile):
+
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_XREP):: $(TARGET_XREP:.exe=.compile)
+$(TARGET_BASE):: $(TARGET_BASE:.lib=.compile)
 
-$(TARGET_XREP):: $(TARGET_XREP_OBJECTS)
+$(TARGET_BASE):: $(TARGET_BASE_OBJECTS)
+ @$(BIND) $(BIND_NORMAL) @&&!
+-+$(?: = &^
+-+)
+! >$(TARGET_BASE_ERRFILE)
+ @filter -r "^-+" "^TLIB " "^Warning: '.*' not found in library$" <$(TARGET_BASE_ERRFILE)
+ @del $(TARGET_BASE_ERRFILE)
+
+$(TARGET_XREP:.exe=.compile):
+
+ @echo $(CPP_NORMAL) %* >compile.bat
+
+$(TARGET_XREP):: $(TARGET_BASE) $(TARGET_XREP:.exe=.compile)
+
+$(TARGET_XREP):: $(TARGET_XREP_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL)
 !
 
 $(TARGET_XVARS:.exe=.compile):
+
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_XVARS):: $(TARGET_XVARS:.exe=.compile)
+$(TARGET_XVARS):: $(TARGET_BASE) $(TARGET_XVARS:.exe=.compile)
 
-$(TARGET_XVARS):: $(TARGET_XVARS_OBJECTS)
+$(TARGET_XVARS):: $(TARGET_XVARS_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL)
 !

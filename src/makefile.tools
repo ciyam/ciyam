@@ -30,18 +30,23 @@ CPPFLAGS = -fPIC -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONS
 %.o: %.cpp
 	@./compile.sh $@ $< $(file_opts_$@)
 
+%.cmh: %.cms
+	@./generate_commands $<
+
 %.compile:
 #	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >compile.sh
 	@echo echo \$$2 >compile.sh
-	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >>compile.sh;chmod a+x compile.sh
+	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -t sid.enc; fi">>compile.sh
+	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >>compile.sh
+	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -t sid.enc; fi">>compile.sh;chmod u+x compile.sh
 
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
 # and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
 
 BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
 
-LINK_NORMAL = @echo Linking $@...;$(LINK) -o $@
-LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -o $@
+LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
+LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
 
 LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
 
@@ -50,24 +55,32 @@ READLINE_LIBS = -lreadline
 #READLINE_LIBS = -lreadline -ltermcap
 
 # Targets
+TARGET_BASE = libbase.a
 TARGET_XREP = xrep
 TARGET_XVARS = xvars
 
-TARGET_XREP_CPPS = xrep.cpp utilities.cpp
+# Source and object files
+TARGET_BASE_CPPS = console.cpp sio.cpp utilities.cpp
+TARGET_BASE_OBJS = $(TARGET_BASE_CPPS:.cpp=.o)
+
+TARGET_XREP_CPPS = xrep.cpp
 TARGET_XREP_OBJS = $(TARGET_XREP_CPPS:.cpp=.o)
 
-TARGET_XVARS_CPPS = xvars.cpp utilities.cpp sio.cpp
+TARGET_XVARS_CPPS = xvars.cpp
 TARGET_XVARS_OBJS = $(TARGET_XVARS_CPPS:.cpp=.o)
 
 ALL_TARGETS =\
+ $(TARGET_BASE)\
  $(TARGET_XREP)\
  $(TARGET_XVARS)
 
 ALL_CPP_FILES =\
+ $(TARGET_BASE_CPPS)\
  $(TARGET_XREP_CPPS)\
  $(TARGET_XVARS_CPPS)
 
 ALL_OBJ_FILES =\
+ $(TARGET_BASE_OBJS)\
  $(TARGET_XREP_OBJS)\
  $(TARGET_XVARS_OBJS)
 
@@ -76,7 +89,10 @@ ALL_DEP_FILES = $(ALL_CPP_FILES:.cpp=.d)
 # Targets
 usage: make_usage
 
+base: $(TARGET_BASE)
+
 all:\
+ $(TARGET_BASE)\
  $(TARGET_XREP)\
  $(TARGET_XVARS)
 
@@ -86,18 +102,23 @@ dtm:
 make_usage:
 	@grep ^## makefile
 
+$(TARGET_BASE):: $(TARGET_BASE).compile
+
+$(TARGET_BASE):: $(TARGET_BASE_OBJS)
+	$(BIND_NORMAL) $(TARGET_BASE_OBJS)
+
 $(TARGET_XREP):: $(TARGET_BASE) $(TARGET_XREP).compile
 
 $(TARGET_XREP):: $(TARGET_XREP_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_XREP_OBJS)
+	$(LINK_NORMAL) $(TARGET_XREP_OBJS) $(READLINE_LIBS) -L. -lbase
 
 $(TARGET_XVARS):: $(TARGET_BASE) $(TARGET_XVARS).compile
 
 $(TARGET_XVARS):: $(TARGET_XVARS_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_XVARS_OBJS)
+	$(LINK_NORMAL) $(TARGET_XVARS_OBJS) -L. -lbase
 
 clean:
-	@rm -f compile.sh $(ALL_CMH_FILES) $(ALL_OBJ_FILES) $(ALL_DEP_FILES) $(ALL_TARGETS)
+	@rm -f compile.sh $(ALL_OBJ_FILES) $(ALL_DEP_FILES) $(ALL_TARGETS)
 
 # Dependency include
 -include $(ALL_DEP_FILES)
