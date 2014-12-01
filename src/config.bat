@@ -4,6 +4,7 @@ REM
 REM Distributed under the MIT/X11 software license, please refer to the file license.txt
 REM in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+if not exist config.h copy config.h.default config.h
 if not exist config.info copy config.info.default config.info
 if not exist modules.lst copy modules.lst.default modules.lst
 if not exist ciyam_server.sio copy ciyam_server.sio.default ciyam_server.sio
