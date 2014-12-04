@@ -9,6 +9,8 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
+#  include <deque>
 #  include <fstream>
 #  include <stdexcept>
 #endif
@@ -40,20 +42,19 @@ mutex g_mutex;
 
 struct block_info
 {
-   block_info( ) : block_height( 0 ), block_weight( 0 ), total_weight( 0 ), had_secondary( false ) { }
+   block_info( ) : block_height( 0 ), block_weight( 0 ), total_weight( 0 ), had_secondary_account( false ) { }
 
    string mint_id;
    string mint_hash;
    string mint_lock;
 
-   string achain_block;
-   string cchain_block;
+   string previous_block;
 
    unsigned long block_height;
    unsigned long block_weight;
    unsigned long total_weight;
 
-   bool had_secondary;
+   bool had_secondary_account;
 };
 
 string base64_to_tag_name( const string& base64 )
@@ -81,15 +82,27 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
    unsigned long block_weight = 0;
    unsigned long total_weight = 0;
 
-   string chain, account, account_hash, account_lock, previous_achain, previous_cchain, public_key_base64;
+   string previous_block_link;
 
-   string block_signature, prior_block_minter_id;
+   unsigned long previous_block_height = 0;
+   unsigned long previous_block_weight = 0;
 
-   bool prior_block_had_secondary = false;
+   string chain, account, account_hash, account_lock, previous_block, public_key_base64;
+
+   size_t account_extra_offset = 0;
+
+   string block_signature, previous_block_minter_id;
+
+   bool previous_block_had_secondary_account = false;
 
    uint64_t mint_charge = 0;
    uint64_t mint_reward = 0;
    uint64_t account_charge = 0;
+
+   uint64_t checkpoint_tolerance = 0;
+   unsigned long checkpoint_length = 0;
+
+   bool had_zero_explicit_account_charge = false;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -109,8 +122,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
       bool has_account_hash = false;
       bool has_account_lock = false;
       bool has_total_weight = false;
-      bool has_previous_achain = false;
-      bool has_previous_cchain = false;
+      bool has_previous_block = false;
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
@@ -173,12 +185,12 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             account_lock = next_attribute.substr(
              string( c_file_type_core_block_header_account_lock_prefix ).length( ) );
          }
-         else if( !has_previous_achain )
+         else if( !has_previous_block )
          {
             if( !block_height )
             {
                if( next_attribute.find( c_file_type_core_block_header_chain_meta_prefix ) != 0 )
-                  throw runtime_error( "unexpected missing chain_meta attribute in block header '" + header + "'" );
+                  throw runtime_error( "unexpected missing chain meta attribute in block header '" + header + "'" );
 
                next_attribute.erase( 0, string( c_file_type_core_block_header_chain_meta_prefix ).length( ) );
 
@@ -195,16 +207,35 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
                      throw runtime_error( "invalid chain_meta item '" + next_meta + "' in block header '" + header + "'" );
                   else if( !has_reward )
                   {
-                     if( next_meta.find( c_file_type_core_block_header_chain_meta_reward_prefix ) != 0 )
-                        throw runtime_error( "unexpected missing reward meta item in block header '" + header + "'" );
+                     if( next_meta.find( c_file_type_core_block_header_chain_meta_requisite_prefix ) != 0 )
+                        throw runtime_error( "unexpected missing requisite meta item in block header '" + header + "'" );
 
-                     next_meta.erase( 0, string( c_file_type_core_block_header_chain_meta_reward_prefix ).length( ) );
+                     next_meta.erase( 0, string( c_file_type_core_block_header_chain_meta_requisite_prefix ).length( ) );
 
-                     string::size_type pos = next_meta.find( ':' );
+                     string::size_type pos = next_meta.find( '~' );
+                     if( pos != string::npos )
+                     {
+                        string::size_type npos = next_meta.find( '<', pos );
+                        if( npos == string::npos )
+                           throw runtime_error( "unexpected missing length and tolerance separator in '" + next_meta + "'" );
+
+                        checkpoint_length = atol( next_meta.substr( pos + 1, npos - pos - 1 ).c_str( ) );
+                        checkpoint_tolerance = from_string< uint64_t >( next_meta.substr( npos + 1 ) );
+
+                        if( checkpoint_length < 2 || !checkpoint_tolerance )
+                           throw runtime_error( "invalid checkpoint length and tolerance amounts in '" + next_meta + "'" );
+
+                        next_meta.erase( pos );
+                     }
+
+                     pos = next_meta.find( '!' );
                      if( pos != string::npos )
                      {
                         account_charge = from_string< uint64_t >( next_meta.substr( pos + 1 ) );
                         next_meta.erase( pos );
+
+                        if( !account_charge )
+                           had_zero_explicit_account_charge = true;
                      }
 
                      pos = next_meta.find( '-' );
@@ -217,58 +248,23 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
                      has_reward = true;
                      mint_reward = from_string< uint64_t >( next_meta );
                   }
-                  else
-                     throw runtime_error( "unexpected chain_meta item '" + next_meta + "' in block header '" + header + "'" );
                }
 
                if( !has_reward )
                   throw runtime_error( "unexpected missing reward meta item in block header '" + header + "'" );
 
-               has_previous_achain = true;
-               has_previous_cchain = true;
+               has_previous_block = true;
             }
             else
             {
-               string::size_type pos = next_attribute.find( c_file_type_core_block_header_previous_achain_prefix );
-               if( pos != 0 )
-               {
-                  pos = next_attribute.find( c_file_type_core_block_header_previous_cchain_prefix );
-                  if( pos == 0 )
-                  {
-                     has_previous_achain = true;
+               string::size_type pos = next_attribute.find( c_file_type_core_block_header_previous_block_prefix );
+               if( pos == string::npos )
+                  throw runtime_error( "unxpected missing previous block item in block header '" + header + "'" );
 
-                     --i;
-                     continue;
-                  }
-                  else
-                     throw runtime_error( "unxpected missing previous_achain/previous_cchain item in block header '" + header + "'" );
-               }
-
-               has_previous_achain = true;
-               previous_achain = next_attribute.substr( pos
-                + string( c_file_type_core_block_header_previous_achain_prefix ).length( ) );
+               has_previous_block = true;
+               previous_block = next_attribute.substr( pos
+                + string( c_file_type_core_block_header_previous_block_prefix ).length( ) );
             }
-         }
-         else if( !has_previous_cchain )
-         {
-            string::size_type pos = next_attribute.find( c_file_type_core_block_header_previous_cchain_prefix );
-            if( pos != 0 )
-            {
-               if( !previous_achain.empty( ) )
-               {
-                  previous_cchain = previous_achain;
-                  has_previous_cchain = true;
-
-                  --i;
-                  continue;
-               }
-               else
-                  throw runtime_error( "unexpected missing previous_cchain item in block header '" + header + "'" );
-            }
-
-            has_previous_cchain = true;
-            previous_cchain = next_attribute.substr( pos
-             + string( c_file_type_core_block_header_previous_cchain_prefix ).length( ) );
          }
          else if( !has_public_key )
          {
@@ -301,23 +297,24 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          throw runtime_error( "invalid unrecognised blockchain '" + account + "'" );
    }
 
-   if( !previous_achain.empty( ) && !has_file( previous_achain ) )
-      throw runtime_error( "previous achain block '" + previous_achain + "' does not exist" );
-
    if( p_extras && block_height )
    {
-      if( !has_file( previous_cchain ) )
-         throw runtime_error( "previous chain '" + previous_cchain + "' does not exist" );
+      if( !has_file( previous_block ) )
+         throw runtime_error( "previous block '" + previous_block + "' does not exist" );
 
-      string previous_cchain_data( extract_file( previous_cchain, "", c_file_type_char_core_blob ) );
+      string previous_block_data( extract_file( previous_block, "", c_file_type_char_core_blob ) );
 
-      string::size_type pos = previous_cchain_data.find( ':' );
-      if( pos == string::npos || previous_cchain_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
-         throw runtime_error( "invalid previous cchain file" );
+      string::size_type pos = previous_block_data.find( ':' );
+      if( pos == string::npos || previous_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+         throw runtime_error( "invalid previous block file" );
 
       block_info info;
-      if( p_extras && verify_block( previous_cchain_data.substr( pos + 1 ), false, 0, &info ).first != block_height - 1 )
-         throw runtime_error( "chain height is not one above previous cchain height" );
+      if( p_extras && verify_block( previous_block_data.substr( pos + 1 ), false, 0, &info ).first != block_height - 1 )
+         throw runtime_error( "chain height is not one above previous block height" );
+
+      previous_block_link = info.previous_block;
+      previous_block_height = info.block_height;
+      previous_block_weight = info.block_weight;
 
       if( info.total_weight + block_weight != total_weight )
          throw runtime_error( "incorrect total weight specified in block (expecting "
@@ -337,7 +334,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          is_new_chain_head = true;
       else
       {
-         string current_block_data( extract_file( tag_file_hash( block_tag ), "" ) );
+         string current_block_data( extract_file( tag_file_hash( block_tag ), "", c_file_type_char_core_blob ) );
 
          string::size_type pos = current_block_data.find( ':' );
 
@@ -348,8 +345,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          if( verify_block( current_block_data.substr( pos + 1 ), false, 0, &info ).second > block_weight )
          {
             is_new_chain_head = true;
-            prior_block_minter_id = info.mint_id;
-            prior_block_had_secondary = info.had_secondary;
+            previous_block_minter_id = info.mint_id;
+            previous_block_had_secondary_account = info.had_secondary_account;
          }
       }
    }
@@ -473,7 +470,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             if( !block_height )
             {
                string extra( c_file_type_str_core_blob );
-               extra += hash + '\n' + lock + "\n<acct>";
+               extra += hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -533,14 +530,13 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
       p_block_info->mint_hash = account_hash;
       p_block_info->mint_lock = account_lock;
 
-      p_block_info->achain_block = previous_achain;
-      p_block_info->cchain_block = previous_cchain;
+      p_block_info->previous_block = previous_block;
 
       p_block_info->block_height = block_height;
       p_block_info->block_weight = block_weight;
       p_block_info->total_weight = total_weight;
 
-      p_block_info->had_secondary = has_secondary_account;
+      p_block_info->had_secondary_account = has_secondary_account;
    }
 
    if( p_extras )
@@ -566,10 +562,13 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          extra += to_string( mint_reward );
 
          if( mint_charge )
-            extra += "-" + to_string( mint_charge );
+            extra += '-' + to_string( mint_charge );
 
-         if( account_charge )
-            extra += ":" + to_string( account_charge );
+         if( account_charge || had_zero_explicit_account_charge )
+            extra += '!' + to_string( account_charge );
+
+         if( checkpoint_tolerance )
+            extra += '~' + to_string( checkpoint_length ) + '<' + to_string( checkpoint_tolerance );
 
          string chain_account_tag( "c" + chain + ".a" + account );
          p_extras->push_back( make_pair( extra, chain_account_tag ) );
@@ -582,7 +581,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             throw runtime_error( "unable to find root chain account for '" + chain_account_tag + "'" );
 
          string chain_account_hash( tag_file_hash( chain_account_tag ) );
-         string chain_account_info( extract_file( chain_account_hash, "" ) );
+         string chain_account_info( extract_file( chain_account_hash, "", c_file_type_char_core_blob ) );
 
          vector< string > chain_account_items;
          split( chain_account_info, chain_account_items, '\n' );
@@ -590,34 +589,51 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          if( chain_account_items.size( ) < 1 )
             throw runtime_error( "unexpected invalid chain_account_info '" + chain_account_info + "'" );
 
-         string reward_info( chain_account_items[ 0 ] );
+         string requisites( chain_account_items[ 0 ] );
 
-         string::size_type pos = reward_info.find( ':' );
-
+         string::size_type pos = requisites.find( '~' );
          if( pos != string::npos )
          {
-            account_charge = from_string< uint64_t >( reward_info.substr( pos + 1 ) );
-            reward_info.erase( pos );
+            string::size_type npos = requisites.find( '<', pos );
+            if( npos == string::npos )
+               throw runtime_error( "unexpected missing length and tolerance separator in '" + requisites + "'" );
+
+            checkpoint_length = atol( requisites.substr( pos + 1, npos - pos - 1 ).c_str( ) );
+            checkpoint_tolerance = from_string< uint64_t >( requisites.substr( npos + 1 ) );
+
+            requisites.erase( pos );
          }
 
-         pos = reward_info.find( '-' );
-
+         pos = requisites.find( '!' );
          if( pos != string::npos )
          {
-            mint_charge = from_string< uint64_t >( reward_info.substr( pos + 1 ) );
-            reward_info.erase( pos );
+            account_charge = from_string< uint64_t >( requisites.substr( pos + 1 ) );
+            requisites.erase( pos );
+
+            // NOTE: If the account charge is explicitly provided with a zero value
+            // then this will determine that the blockchain will not allow creation
+            // of secondary accounts.
+            if( account_charge == 0 && has_secondary_account )
+               throw runtime_error( "secondary account creation not permitted" );
          }
 
-         mint_reward = from_string< uint64_t >( reward_info );
+         pos = requisites.find( '-' );
+         if( pos != string::npos )
+         {
+            mint_charge = from_string< uint64_t >( requisites.substr( pos + 1 ) );
+            requisites.erase( pos );
+         }
+
+         mint_reward = from_string< uint64_t >( requisites );
 
          string tags, extra;
 
-         if( !prior_block_minter_id.empty( ) && !prior_block_had_secondary )
+         if( !previous_block_minter_id.empty( ) && !previous_block_had_secondary_account )
          {
-            string prior_block_minter_tag( list_file_tags( prior_block_minter_id + "*" ) );
+            string prior_block_minter_tag( list_file_tags( previous_block_minter_id + "*" ) );
 
             string prior_block_minter_hash( tag_file_hash( prior_block_minter_tag ) );
-            string prior_block_minter_data( extract_file( prior_block_minter_hash, "" ) );
+            string prior_block_minter_data( extract_file( prior_block_minter_hash, "", c_file_type_char_core_blob ) );
 
             vector< string > prior_block_minter_items;
             split( prior_block_minter_data, prior_block_minter_items, '\n' );
@@ -642,7 +658,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             for( size_t i = 1; i < prior_block_minter_items.size( ); i++ )
                extra += '\n' + prior_block_minter_items[ i ];
 
-            p_extras->push_back( make_pair( extra, prior_block_minter_id
+            p_extras->push_back( make_pair( extra, previous_block_minter_id
              + ".h" + to_string( block_height ) + ".b*" + to_string( previous_balance ) ) );
          }
 
@@ -663,7 +679,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             throw runtime_error( "invalid block height for minting account" );
 
          string minter_account_hash( tag_file_hash( minter_account_tag ) );
-         string minter_account_data( extract_file( minter_account_hash, "" ) );
+         string minter_account_data( extract_file( minter_account_hash, "", c_file_type_char_core_blob ) );
 
          vector< string > minter_account_items;
          split( minter_account_data, minter_account_items, '\n' );
@@ -693,25 +709,6 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          if( has_secondary_account && balance < account_charge )
             throw runtime_error( "unsufficient balance to create an account" );
 
-         if( last_height && previous_achain.empty( ) )
-            throw runtime_error( "missing previous achain link" );
-
-         if( !previous_achain.empty( ) )
-         {
-            string previous_achain_data( extract_file( previous_achain, "" ) );
-
-            string::size_type pos = previous_achain_data.find( ':' );
-            if( pos == string::npos || previous_achain_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
-               throw runtime_error( "invalid previous achain file" );
-
-            block_info info;
-            verify_block( previous_achain_data.substr( pos + 1 ), false, 0, &info );
-
-            if( info.mint_id != minter_account
-             || !check_if_valid_hash_pair( account_hash, info.mint_hash, true ) )
-               throw runtime_error( "previous achain block does not match the current achain" );
-         }
-
          if( has_secondary_account )
          {
             if( !account_charge )
@@ -730,14 +727,241 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             balance += mint_reward;
 
          extra = string( c_file_type_str_core_blob );
-         extra += account_hash + '\n' + account_lock + '\n' + minter_account_hash;
+         extra += account_hash + '\n' + account_lock;
 
-         for( size_t i = 3; i < minter_account_items.size( ); i++ )
+         for( size_t i = 2; i < minter_account_items.size( ); i++ )
             extra += '\n' + minter_account_items[ i ];
 
          tags += "\n" + minter_account_tag + ".h*" + to_string( block_height ) + ".b" + to_string( balance );
 
+         account_extra_offset = p_extras->size( );
          p_extras->push_back( make_pair( extra, tags ) );
+
+         // NOTE: The previous account blob instance will be removed.
+         p_extras->push_back( make_pair( "", minter_account_hash ) );
+      }
+
+      // NOTE: Determine whether or not a new checkpoint has occurred.
+      if( checkpoint_length && block_height > checkpoint_length * 2 )
+      {
+         size_t num_found = 0;
+
+         string checkpoint_hash;
+         unsigned long checkpoint_height = 0;
+         unsigned long checkpoint_weight = 0;
+
+         set< string > block_links;
+         deque< string > checkpoint_blocks;
+
+         // NOTE: If the checkpoint length is say three then blocks to be
+         // checked start from three blocks prior (back to six blocks) to
+         // make it less likely that nodes would checkpoint when a re-org
+         // was about to appear. Therefore larger checkpoint lengths will
+         // create less forks than shorter ones. Another important factor
+         // is the checkpoint tolerance which is used to decide if or not
+         // the weight is acceptable for checkpointing (the greater value
+         // used then the more likely forks are to occur).
+         for( size_t i = 0; i < checkpoint_length * 2; i++ )
+         {
+            if( previous_block.empty( ) )
+               break;
+
+            if( i >= checkpoint_length
+             && previous_block_weight >= checkpoint_tolerance )
+               break;
+
+            if( !has_file( previous_block ) )
+               break;
+
+            if( i >= checkpoint_length )
+            {
+               if( !num_found++ )
+               {
+                  checkpoint_hash = previous_block;
+                  checkpoint_height = previous_block_height;
+               }
+
+               checkpoint_weight += previous_block_weight;
+               checkpoint_blocks.push_front( previous_block );
+            }
+            else
+               block_links.insert( previous_block );
+
+            if( previous_block_link.empty( ) )
+               break;
+
+            string previous_block_data( extract_file( previous_block_link, "", c_file_type_char_core_blob ) );
+
+            string::size_type pos = previous_block_data.find( ':' );
+            if( pos == string::npos || previous_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+               throw runtime_error( "invalid previous cchain file" );
+
+            block_info info;
+            verify_block( previous_block_data.substr( pos + 1 ), false, 0, &info );
+
+            previous_block = previous_block_link;
+            previous_block_link = info.previous_block;
+            previous_block_height = info.block_height;
+            previous_block_weight = info.block_weight;
+         }
+
+         if( num_found >= checkpoint_length )
+         {
+            map< string, pair< int, int > > account_mint_info;
+
+            unsigned long last_height = block_height - 1;
+            while( true )
+            {
+               if( last_height == checkpoint_height )
+                  break;
+
+               string all_block_tags( list_file_tags( "c" + chain + ".b" + to_string( last_height ) + "-*" ) );
+
+               if( all_block_tags.empty( ) )
+                  break;
+
+               vector< string > block_tags;
+               split( all_block_tags, block_tags, '\n' );
+
+               for( size_t i = 0; i < block_tags.size( ); i++ )
+               {
+                  string last_block_tag( block_tags[ i ] );
+                  string last_block_hash( tag_file_hash( last_block_tag ) );
+
+                  string last_block_data( extract_file( last_block_hash, "", c_file_type_char_core_blob ) );
+
+                  string::size_type pos = last_block_data.find( ':' );
+                  if( pos == string::npos || last_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+                     throw runtime_error( "invalid last block file" );
+
+                  block_info info;
+                  verify_block( last_block_data.substr( pos + 1 ), false, 0, &info );
+
+                  if( block_links.count( last_block_hash ) )
+                     ++account_mint_info[ info.mint_id ].first;
+                  else
+                     ++account_mint_info[ info.mint_id ].second;
+               }
+
+               --last_height;
+            }
+
+            string all_accounts( list_file_tags( "c" + chain + ".a*" ) );
+
+            vector< string > accounts;
+            split( all_accounts, accounts, '\n' );
+
+            // NOTE: All accounts have their balance set to the default (apart from
+            // the current minter and those minters of blocks that occurred between
+            // the blockchain blockchain head and the new checkpoint).
+            for( size_t i = 0; i < accounts.size( ); i++ )
+            {
+               string next_account_tag( accounts[ i ] );
+
+               string::size_type pos = next_account_tag.find( ".b" );
+               string::size_type hpos = next_account_tag.find( ".h" );
+
+               if( pos == string::npos || hpos == string::npos )
+                  continue;
+
+               // NOTE: If the account is that of the minter then the tag that already
+               // had been added as an extra to the minter's new account blob needs to
+               // be instead modified.
+               if( next_account_tag.substr( 1, hpos - 1 ) == chain + ".a" + account )
+               {
+                  string account_tags( ( *p_extras )[ account_extra_offset ].second );
+                  string::size_type pos = account_tags.rfind( '\n' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected extra account_tags '" + account_tags + "' for minting account" );
+
+                  account_tags.erase( pos + 1 );
+
+                  int num_consensus = account_mint_info[ "c" + chain + ".a" + account ].first;
+                  int num_non_consensus = account_mint_info[ "c" + chain + ".a" + account ].second;
+
+                  uint64_t balance = ( mint_reward - mint_charge ) * 2;
+
+                  balance += ( mint_reward - mint_charge ) * num_consensus;
+
+                  if( mint_charge * num_non_consensus > balance )
+                     balance = 0;
+                  else
+                     balance -= ( mint_charge * num_non_consensus );
+
+                  account_tags += "c" + chain + ".a" + account
+                   + ".h*" + to_string( block_height ) + ".b" + to_string( balance );
+
+                  ( *p_extras )[ account_extra_offset ].second = account_tags;
+               }
+               else
+               {
+                  string account_file_hash( tag_file_hash( next_account_tag ) );
+
+                  next_account_tag.erase( pos );
+
+                  int num_consensus = account_mint_info[ next_account_tag.substr( 0, hpos ) ].first;
+                  int num_non_consensus = account_mint_info[ next_account_tag.substr( 0, hpos ) ].second;
+
+                  uint64_t balance = ( mint_reward - mint_charge );
+
+                  balance += ( mint_reward - mint_charge ) * num_consensus;
+
+                  if( mint_charge * num_non_consensus > balance )
+                     balance = 0;
+                  else
+                     balance -= ( mint_charge * num_non_consensus );
+
+                  next_account_tag += ".b*" + to_string( balance );
+
+                  p_extras->push_back( make_pair( account_file_hash, next_account_tag ) );
+              }
+            }
+
+            // NOTE: Add checkpoint files.
+            string checkpoint_block_data( c_file_type_str_blob );
+            checkpoint_block_data += string( c_file_type_core_checkpoint_blocks_object );
+
+            for( size_t i = 0; i < checkpoint_blocks.size( ); i++ )
+            {
+               if( i > 0 )
+                  checkpoint_block_data += '\n';
+               checkpoint_block_data += checkpoint_blocks[ i ];
+            }
+
+            p_extras->push_back( make_pair( checkpoint_block_data, "c" + chain + ".checkpoint.h"
+             + to_string( checkpoint_height ) + ".w" + to_string( checkpoint_weight ) + ".blocks" ) );
+
+            string checkpoint_transaction_data( c_file_type_str_blob );
+            checkpoint_transaction_data += string( c_file_type_core_checkpoint_transactions_object );
+
+            checkpoint_transaction_data += "@" + to_string( p_extras->size( ) );
+
+            // FUTURE: Transactions need to be appended here...
+
+            p_extras->push_back( make_pair( checkpoint_transaction_data, "c" + chain + ".checkpoint.h"
+             + to_string( checkpoint_height ) + ".w" + to_string( checkpoint_weight ) + ".transactions" ) );
+
+            // NOTE: Remove all block blobs that are at or below the new checkpoint height.
+            while( true )
+            {
+               string all_block_tags( list_file_tags( "c" + chain + ".b" + to_string( checkpoint_height ) + "-*" ) );
+
+               if( all_block_tags.empty( ) )
+                  break;
+
+               vector< string > block_tags;
+               split( all_block_tags, block_tags, '\n' );
+
+               for( size_t i = 0; i < block_tags.size( ); i++ )
+                  p_extras->push_back( make_pair( "", tag_file_hash( block_tags[ i ] ) ) );
+
+               if( checkpoint_height == 0 )
+                  break;
+
+               --checkpoint_height;
+            }
+         }
       }
    }
 
@@ -756,14 +980,14 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       throw runtime_error( "invalid rewind content '" + content + "'" );
 
    string block_hash( tag_file_hash( content ) );
-   string destination_block( extract_file( block_hash, "" ) );
+   string destination_block( extract_file( block_hash, "", c_file_type_char_core_blob ) );
 
    string chain( content.substr( 0, pos ) );
    string chain_id( chain.substr( 1 ) );
 
    string chain_tag( chain + ".head" );
    string chain_hash( tag_file_hash( chain_tag ) );
-   string chain_head_block_data( extract_file( chain_hash, "" ) );
+   string chain_head_block_data( extract_file( chain_hash, "", c_file_type_char_core_blob ) );
 
    string restore_data( c_file_type_str_core_blob );
    restore_data += chain_hash + '=' + chain_tag;
@@ -777,7 +1001,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
    verify_block( chain_head_block_data.substr( pos + 1 ), false, 0, &info );
 
    string chain_account_hash( tag_file_hash( chain + ".a" + chain_id ) );
-   string chain_account_info( extract_file( chain_account_hash, "" ) );
+   string chain_account_info( extract_file( chain_account_hash, "", c_file_type_char_core_blob ) );
 
    vector< string > chain_account_lines;
    split( chain_account_info, chain_account_lines, '\n' );
@@ -790,6 +1014,14 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
    uint64_t mint_charge = 0;
    uint64_t mint_reward = 0;
    uint64_t block_reward = 0;
+
+   pos = reward_and_return.find( '~' );
+   if( pos != string::npos )
+      reward_and_return.erase( pos );
+
+   pos = reward_and_return.find( '!' );
+   if( pos != string::npos )
+      reward_and_return.erase( pos );
 
    pos = reward_and_return.find( '-' );
    if( pos != string::npos )
@@ -821,13 +1053,13 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
       uint64_t previous_balance = from_string< uint64_t >( block_minter_tag.substr( pos + 2 ) );
 
-      if( !info.had_secondary )
+      if( !info.had_secondary_account )
       {
          if( previous_balance > block_reward )
             previous_balance -= block_reward;
 
          string new_account_blob( c_file_type_str_core_blob );
-         new_account_blob += extract_file( block_minter_hash, "" );
+         new_account_blob += extract_file( block_minter_hash, "", c_file_type_char_core_blob );
 
          pos = block_minter_tag.find( ".b" );
          if( pos == string::npos )
@@ -839,10 +1071,10 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
           block_minter_tag + ".b*" + to_string( previous_balance ) ) );
       }
 
-      if( info.cchain_block == block_hash )
+      if( info.previous_block == block_hash )
          break;
 
-      string next_block_data( extract_file( info.cchain_block, "" ) );
+      string next_block_data( extract_file( info.previous_block, "", c_file_type_char_core_blob ) );
       pos = next_block_data.find( ':' );
 
       if( pos == string::npos || next_block_data.substr( 0, pos ) != string( c_file_type_core_block_object ) )
@@ -869,7 +1101,7 @@ void verify_restore( const string& content, vector< pair< string, string > >* p_
    if( !p_extras )
       throw runtime_error( "unexpected null extras in verify_restore" );
 
-   string restore_data( extract_file( content, "" ) );
+   string restore_data( extract_file( content, "", c_file_type_char_core_blob ) );
 
    vector< string > lines;
    split( restore_data, lines, '\n' );
@@ -886,7 +1118,7 @@ void verify_restore( const string& content, vector< pair< string, string > >* p_
          throw runtime_error( "unexpected next_line '" + next_line + "' in verify_restore" );
 
       string data( c_file_type_str_core_blob );
-      data += extract_file( next_line.substr( 0, pos ), "" );
+      data += extract_file( next_line.substr( 0, pos ), "", c_file_type_char_core_blob );
 
       string tag( next_line.substr( pos + 1 ) );
 
@@ -1079,6 +1311,8 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
 
       string transaction_file_tag( "c" + chain + ".a" + account + ".t" + to_string( transaction_number ) );
 
+      transaction_file_tag += ".s" + base64_to_tag_name( transaction_signature );
+
       p_extras->push_back( make_pair( raw_transaction_data, transaction_file_tag ) );
 
       string transaction_account( "c" + chain + ".a" + account );
@@ -1091,7 +1325,7 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
          throw runtime_error( "unexpected transaction_account_tag '" + transaction_account_tag + "'" );
 
       string transaction_account_hash( tag_file_hash( transaction_account_tag ) );
-      string transaction_account_data( extract_file( transaction_account_hash, "" ) );
+      string transaction_account_data( extract_file( transaction_account_hash, "", c_file_type_char_core_blob ) );
 
       vector< string > transaction_account_items;
       split( transaction_account_data, transaction_account_items, '\n' );
@@ -1112,7 +1346,7 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
       string extra( c_file_type_str_core_blob );
 
       extra += transaction_account_items[ 0 ]
-       + '\n' + transaction_account_items[ 1 ] + '\n' + transaction_account_items[ 2 ];
+       + '\n' + transaction_account_items[ 1 ] + '\n' + transaction_account_hash;
 
       extra += '\n' + transaction_hash + '\n' + transaction_lock;
 
