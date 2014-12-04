@@ -60,6 +60,8 @@ const char* const c_file_type_core_block_object = "blk";
 const char* const c_file_type_core_rewind_object = "rwd";
 const char* const c_file_type_core_restore_object = "rst";
 const char* const c_file_type_core_transaction_object = "txn";
+const char* const c_file_type_core_checkpoint_blocks_object = "cbk";
+const char* const c_file_type_core_checkpoint_transactions_object = "ctx";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_weight_prefix = "w=";
@@ -69,13 +71,12 @@ const char* const c_file_type_core_block_header_public_key_prefix = "pk=";
 const char* const c_file_type_core_block_header_account_hash_prefix = "ah=";
 const char* const c_file_type_core_block_header_account_lock_prefix = "al=";
 const char* const c_file_type_core_block_header_total_weight_prefix = "tw=";
-const char* const c_file_type_core_block_header_previous_achain_prefix = "pa=";
-const char* const c_file_type_core_block_header_previous_cchain_prefix = "pc=";
+const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
 
 const char* const c_file_type_core_block_detail_account_prefix = "a:";
 const char* const c_file_type_core_block_detail_signature_prefix = "s:";
 
-const char* const c_file_type_core_block_header_chain_meta_reward_prefix = "r:";
+const char* const c_file_type_core_block_header_chain_meta_requisite_prefix = "r:";
 
 const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
 const char* const c_file_type_core_block_detail_account_lock_prefix = "l=";

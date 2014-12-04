@@ -558,47 +558,62 @@ string create_raw_file_with_extras( const string& data,
       for( size_t i = 0; i < extras.size( ); i++ )
       {
          if( extras[ i ].first.empty( ) )
-            throw runtime_error( "unexpected empty extra file data" );
-
-         if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+            delete_file( extras[ i ].second );
+         else
          {
-            string tree_info( extras[ i ].first.substr( 1 ) );
-
-            for( size_t j = all_hashes.size( ) - 1; ; j-- )
+            if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
             {
-               string str( "@" );
-               str += to_string( j );
+               string tree_info( extras[ i ].first.substr( 1 ) );
 
-               replace( tree_info, str, all_hashes[ j ] );
+               for( size_t j = all_hashes.size( ) - 1; ; j-- )
+               {
+                  string str( "@" );
+                  str += to_string( j );
 
-               if( j == 0 )
-                  break;
+                  replace( tree_info, str, all_hashes[ j ] );
+
+                  if( j == 0 )
+                     break;
+               }
+
+               extras[ i ].first.erase( 1 );
+               extras[ i ].first += tree_info;
             }
 
-            extras[ i ].first.erase( 1 );
-            extras[ i ].first += tree_info;
-         }
+            if( extras[ i ].first[ 0 ] != c_file_type_char_core_blob
+             && extras[ i ].first[ 0 ] != c_file_type_char_core_item
+             && extras[ i ].first[ 0 ] != c_file_type_char_core_tree )
+            {
+               vector< string > tags;
+               split( extras[ i ].second, tags, '\n' );
 
-         string tag( extras[ i ].second );
-         string secondary_tags;
+               for( size_t j = 0; j < tags.size( ); j++ )
+                  tag_file( tags[ j ], extras[ i ].first );
+            }
+            else
+            {
+               string tag( extras[ i ].second );
+               string secondary_tags;
 
-         string::size_type pos = tag.find( '\n' );
-         if( pos != string::npos )
-         {
-            secondary_tags = tag.substr( pos + 1 );
-            tag.erase( pos );
-         }
+               string::size_type pos = tag.find( '\n' );
+               if( pos != string::npos )
+               {
+                  secondary_tags = tag.substr( pos + 1 );
+                  tag.erase( pos );
+               }
 
-         string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
-         all_hashes.push_back( next_hash );
+               string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
+               all_hashes.push_back( next_hash );
 
-         if( !secondary_tags.empty( ) )
-         {
-            vector< string > all_secondary_tags;
-            split( secondary_tags, all_secondary_tags, '\n' );
+               if( !secondary_tags.empty( ) )
+               {
+                  vector< string > all_secondary_tags;
+                  split( secondary_tags, all_secondary_tags, '\n' );
 
-            for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
-               tag_file( all_secondary_tags[ i ], next_hash );
+                  for( size_t i = 0; i < all_secondary_tags.size( ); i++ )
+                     tag_file( all_secondary_tags[ i ], next_hash );
+               }
+            }
          }
       }
    }
