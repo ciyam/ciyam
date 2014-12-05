@@ -51,8 +51,9 @@ struct block_info
    string previous_block;
 
    unsigned long block_height;
-   unsigned long block_weight;
-   unsigned long total_weight;
+
+   uint64_t block_weight;
+   uint64_t total_weight;
 
    bool had_secondary_account;
 };
@@ -67,7 +68,7 @@ string tag_name_to_base64( const string& tag_name )
    return replaced( tag_name, "$", "/", "-", "=" );
 }
 
-pair< unsigned long, unsigned long > verify_block( const string& content,
+pair< unsigned long, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 )
 {
    guard g( g_mutex );
@@ -79,19 +80,17 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
       throw runtime_error( "unexpected empty block content" );
 
    unsigned long block_height = 0;
-   unsigned long block_weight = 0;
-   unsigned long total_weight = 0;
-
-   string previous_block_link;
-
    unsigned long previous_block_height = 0;
-   unsigned long previous_block_weight = 0;
+
+   uint64_t block_weight = 0;
+   uint64_t total_weight = 0;
+   uint64_t previous_block_weight = 0;
 
    string chain, account, account_hash, account_lock, previous_block, public_key_base64;
 
    size_t account_extra_offset = 0;
 
-   string block_signature, previous_block_minter_id;
+   string block_signature, previous_block_link, previous_block_minter_id;
 
    bool previous_block_had_secondary_account = false;
 
@@ -164,8 +163,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
                throw runtime_error( "unexpected missing weight attribute in block header '" + header + "'" );
 
             has_weight = true;
-            block_weight = atoi( next_attribute.substr(
-             string( c_file_type_core_block_header_weight_prefix ).length( ) ).c_str( ) );
+            block_weight = from_string< uint64_t >( next_attribute.substr(
+             string( c_file_type_core_block_header_weight_prefix ).length( ) ) );
          }
          else if( block_height && !has_account_hash )
          {
@@ -223,7 +222,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
                         checkpoint_tolerance = from_string< uint64_t >( next_meta.substr( npos + 1 ) );
 
                         if( checkpoint_length < 2 || !checkpoint_tolerance )
-                           throw runtime_error( "invalid checkpoint length and tolerance amounts in '" + next_meta + "'" );
+                           throw runtime_error( "invalid checkpoint length and/or tolerance amounts in '" + next_meta + "'" );
 
                         next_meta.erase( pos );
                      }
@@ -283,8 +282,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
                throw runtime_error( "unexpected missing total weight attribute in block header '" + header + "'" );
 
             has_total_weight = true;
-            total_weight = atoi( next_attribute.substr( pos
-             + string( c_file_type_core_block_header_total_weight_prefix ).length( ) ).c_str( ) );
+            total_weight = from_string< uint64_t >( next_attribute.substr( pos
+             + string( c_file_type_core_block_header_total_weight_prefix ).length( ) ) );
          }
          else
             throw runtime_error( "unexpected extra attribute '" + next_attribute + "' in block header" );
@@ -747,8 +746,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          size_t num_found = 0;
 
          string checkpoint_hash;
+         uint64_t checkpoint_weight = 0;
          unsigned long checkpoint_height = 0;
-         unsigned long checkpoint_weight = 0;
 
          set< string > block_links;
          deque< string > checkpoint_blocks;
@@ -763,14 +762,11 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
          // used then the more likely forks are to occur).
          for( size_t i = 0; i < checkpoint_length * 2; i++ )
          {
-            if( previous_block.empty( ) )
+            if( previous_block.empty( ) || !has_file( previous_block ) )
                break;
 
             if( i >= checkpoint_length
              && previous_block_weight >= checkpoint_tolerance )
-               break;
-
-            if( !has_file( previous_block ) )
                break;
 
             if( i >= checkpoint_length )
@@ -787,7 +783,7 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             else
                block_links.insert( previous_block );
 
-            if( previous_block_link.empty( ) )
+            if( previous_block_link.empty( ) || !has_file( previous_block_link ) )
                break;
 
             string previous_block_data( extract_file( previous_block_link, "", c_file_type_char_core_blob ) );
@@ -919,8 +915,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             }
 
             // NOTE: Add checkpoint files.
-            string checkpoint_block_data( c_file_type_str_blob );
-            checkpoint_block_data += string( c_file_type_core_checkpoint_blocks_object );
+            string checkpoint_block_data( c_file_type_str_core_blob );
+            checkpoint_block_data += string( c_file_type_core_checkpoint_blocks_object ) + ':';
 
             for( size_t i = 0; i < checkpoint_blocks.size( ); i++ )
             {
@@ -932,8 +928,8 @@ pair< unsigned long, unsigned long > verify_block( const string& content,
             p_extras->push_back( make_pair( checkpoint_block_data, "c" + chain + ".checkpoint.h"
              + to_string( checkpoint_height ) + ".w" + to_string( checkpoint_weight ) + ".blocks" ) );
 
-            string checkpoint_transaction_data( c_file_type_str_blob );
-            checkpoint_transaction_data += string( c_file_type_core_checkpoint_transactions_object );
+            string checkpoint_transaction_data( c_file_type_str_core_blob );
+            checkpoint_transaction_data += string( c_file_type_core_checkpoint_transactions_object ) + ':';
 
             checkpoint_transaction_data += "@" + to_string( p_extras->size( ) );
 

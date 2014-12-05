@@ -1233,6 +1233,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool is_core( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_core ) );
          bool is_mime( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_mime ) );
+         bool is_full( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_full ) );
          bool is_blob( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_blob ) );
          bool is_item( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_item ) );
          bool is_tree( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tree ) );
@@ -1273,7 +1274,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         response = create_raw_file_with_extras( data, extras, tag.c_str( ) );
+         response = create_raw_file_with_extras( data, extras, !is_full, tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {

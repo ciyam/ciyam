@@ -1042,8 +1042,6 @@ int main( int argc, char* argv[ ] )
       }
       else if( argc == 1 )
       {
-
-
          command_parser p;
          string cmd, next;
          while( cout << "\n> ", getline( cin, next ) )
