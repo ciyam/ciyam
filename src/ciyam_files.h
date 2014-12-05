@@ -41,13 +41,14 @@ enum file_expansion
    e_file_expansion_recursive
 };
 
-std::string CLASS_BASE_DECL_SPEC file_type_info(
- const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0 );
+std::string CLASS_BASE_DECL_SPEC file_type_info( const std::string& tag_or_hash,
+ file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0 );
 
-std::string CLASS_BASE_DECL_SPEC create_raw_file( const std::string& data, const char* p_tag = 0, bool* p_is_existing = 0 );
+std::string CLASS_BASE_DECL_SPEC create_raw_file(
+ const std::string& data, bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0 );
 
-std::string CLASS_BASE_DECL_SPEC create_raw_file_with_extras(
- const std::string& data, std::vector< std::pair< std::string, std::string > >& extras, const char* p_tag = 0 );
+std::string CLASS_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
+ std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
 
 void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );

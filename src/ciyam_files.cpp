@@ -419,7 +419,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    return retval;
 }
 
-string create_raw_file( const string& data, const char* p_tag, bool* p_is_existing )
+string create_raw_file( const string& data, bool compress, const char* p_tag, bool* p_is_existing )
 {
    guard g( g_mutex );
 
@@ -440,7 +440,7 @@ string create_raw_file( const string& data, const char* p_tag, bool* p_is_existi
 #ifdef ZLIB_SUPPORT
    session_file_buffer_access file_buffer;
 
-   if( !is_compressed && data.size( ) > 32 ) // i.e. don't even bother trying to compress tiny files
+   if( compress && !is_compressed && data.size( ) > 32 ) // i.e. don't even bother trying to compress tiny files
    {
       unsigned long size = data.size( ) - 1;
       unsigned long csize = file_buffer.get_size( );
@@ -535,7 +535,7 @@ string create_raw_file( const string& data, const char* p_tag, bool* p_is_existi
 }
 
 string create_raw_file_with_extras( const string& data,
- vector< pair< string, string > >& extras, const char* p_tag )
+ vector< pair< string, string > >& extras, bool compress, const char* p_tag )
 {
    guard g( g_mutex );
 
@@ -545,7 +545,7 @@ string create_raw_file_with_extras( const string& data,
       throw runtime_error( "maximum file area item limit has been reached" );
 
    bool is_existing = false;
-   retval = create_raw_file( data, p_tag, &is_existing );
+   retval = create_raw_file( data, compress, p_tag, &is_existing );
 
    // NOTE: It is being assumed that "extras" should not be larger than the main file
    // so that assuming the main file is created there should be no risk that the max.
@@ -561,23 +561,24 @@ string create_raw_file_with_extras( const string& data,
             delete_file( extras[ i ].second );
          else
          {
-            if( extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+            if( extras[ i ].first[ 0 ] == c_file_type_char_core_item
+             || extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
             {
-               string tree_info( extras[ i ].first.substr( 1 ) );
+               string details( extras[ i ].first.substr( 1 ) );
 
                for( size_t j = all_hashes.size( ) - 1; ; j-- )
                {
                   string str( "@" );
                   str += to_string( j );
 
-                  replace( tree_info, str, all_hashes[ j ] );
+                  replace( details, str, all_hashes[ j ] );
 
                   if( j == 0 )
                      break;
                }
 
                extras[ i ].first.erase( 1 );
-               extras[ i ].first += tree_info;
+               extras[ i ].first += details;
             }
 
             if( extras[ i ].first[ 0 ] != c_file_type_char_core_blob
@@ -602,7 +603,7 @@ string create_raw_file_with_extras( const string& data,
                   tag.erase( pos );
                }
 
-               string next_hash = create_raw_file( extras[ i ].first, tag.c_str( ) );
+               string next_hash = create_raw_file( extras[ i ].first, compress, tag.c_str( ) );
                all_hashes.push_back( next_hash );
 
                if( !secondary_tags.empty( ) )
