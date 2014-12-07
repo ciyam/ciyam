@@ -561,29 +561,39 @@ string create_raw_file_with_extras( const string& data,
             delete_file( extras[ i ].second );
          else
          {
-            if( extras[ i ].first[ 0 ] == c_file_type_char_core_item
+            // NOTE: If a core blob, item or tree is being added then hash of the
+            // main file being added can be expanded using @0 and also the hashes
+            // of other extra files using @1..@n.
+            if( extras[ i ].first[ 0 ] == c_file_type_char_core_blob
+             || extras[ i ].first[ 0 ] == c_file_type_char_core_item
              || extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
             {
                string details( extras[ i ].first.substr( 1 ) );
 
-               for( size_t j = all_hashes.size( ) - 1; ; j-- )
+               if( details.find( '@' ) != string::npos )
                {
-                  string str( "@" );
-                  str += to_string( j );
+                  for( size_t j = all_hashes.size( ) - 1; ; j-- )
+                  {
+                     string str( "@" );
+                     str += to_string( j );
 
-                  replace( details, str, all_hashes[ j ] );
+                     replace( details, str, all_hashes[ j ] );
 
-                  if( j == 0 )
-                     break;
+                     if( j == 0 || details.find( '@' ) == string::npos )
+                        break;
+                  }
                }
 
                extras[ i ].first.erase( 1 );
                extras[ i ].first += details;
             }
 
-            if( extras[ i ].first[ 0 ] != c_file_type_char_core_blob
-             && extras[ i ].first[ 0 ] != c_file_type_char_core_item
-             && extras[ i ].first[ 0 ] != c_file_type_char_core_tree )
+            regex expr( c_regex_hash_256 );
+
+            // NOTE: If the first part of the extra is a file hash then
+            // the second part is split up and applied as tags for this
+            // file (which is expected to exist).
+            if( expr.search( extras[ i ].first ) == 0 )
             {
                vector< string > tags;
                split( extras[ i ].second, tags, '\n' );

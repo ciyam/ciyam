@@ -61,6 +61,7 @@ const char* const c_app_title = "ciyam_client";
 const char* const c_app_version = "0.1";
 
 const char* const c_env_var_error = "ERROR";
+const char* const c_env_var_output = "OUTPUT";
 
 const size_t c_command_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
@@ -445,6 +446,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   if( is_error && getenv( c_env_var_error ) == 0 )
                      _putenv( ( char* )( string( c_env_var_error ) + "=" + response.substr( start ) ).c_str( ) );
+
+                  if( !is_error && !is_message )
+                     _putenv( ( char* )( string( c_env_var_output ) + "=" + response.substr( start ) ).c_str( ) );
 
                   // NOTE: Make sure that progress messages do not end the conversation.
                   if( is_message )
