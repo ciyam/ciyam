@@ -107,7 +107,7 @@ size_t base64::decode( const string& input, unsigned char* p_data, size_t length
    string::size_type l = decode_size( input );
    if( l > length )
       throw runtime_error( "buffer not big enough to decode base64 (given "
-       + to_string( length ) + " bytes but need at " + to_string( l ) + " bytes)" );
+       + to_string( length ) + " bytes but need " + to_string( l ) + " bytes)" );
 
    char c;
    char c1;
