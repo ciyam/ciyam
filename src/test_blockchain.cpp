@@ -50,23 +50,23 @@ string get_hash( const string& seed, size_t round, size_t rounds )
    return string( ( const char* )buf, sizeof( buf ) );
 }
 
-uint64_t get_account_id( const string& seed )
+uint64_t get_account_id( const string& hash, int offset = 0 )
 {
-   unsigned char buf[ 32 ];
+   uint64_t id = *( uint64_t* )( hash.c_str( ) );
 
-   sha256 hash( seed );
-   hash.copy_digest_to_buffer( buf );
-
-   uint64_t id = *( uint64_t* )buf;
+   if( offset )
+      id *= offset;
 
    id >>= 28;
 
    return id;
 }
 
-uint64_t get_account_hit( const string& hash, uint64_t id )
+uint64_t get_account_hit( const string& hash, uint64_t id, size_t height )
 {
    uint64_t val = *( uint64_t* )( hash.c_str( ) );
+
+   val *= height;
 
    val >>= 28;
 
@@ -111,8 +111,8 @@ string generate_blockchain_script(
    {
       account new_account;
 
-      new_account.seed = seed.empty( ) ? uuid( ).as_string( ) : seed + to_string( i );
-      new_account.id = get_account_id( new_account.seed );
+      new_account.id = get_account_id( root_pub_key, i + 1 );
+      new_account.seed = to_string( new_account.id );
 
       for( size_t j = 0; j <= rounds; j++ )
       {
@@ -142,7 +142,7 @@ string generate_blockchain_script(
    uint64_t total_weight = 0;
    size_t num_accounts( initial_accounts );
 
-   string last_hash( root_pub_key );
+   string last_hash( "0" + root_pub_key );
    string block_hash( hash.get_digest_as_string( ) );
 
    vector< string > last_hashes;
@@ -172,7 +172,7 @@ string generate_blockchain_script(
             previous_block = block_hashes[ offset ];
          }
 
-         uint64_t next_weight = get_account_hit( last_hash, accounts[ j ].id );
+         uint64_t next_weight = get_account_hit( last_hash, accounts[ j ].id, i );
          string next_hash( base64::encode( get_hash( accounts[ j ].seed, i, rounds ) ) );
 
          string data( "blk:a=" + to_string( root_id )
@@ -251,6 +251,9 @@ int main( int argc, char* argv[ ] )
          string seed;
          if( argc > 4 )
             seed = string( argv[ 4 ] );
+
+         if( seed.length( ) && seed.length( ) < 8 )
+            throw runtime_error( "seed must be at least 8 bytes" );
 
          if( num_accounts < 1 || num_accounts > 100 )
             throw runtime_error( "num accounts must be in the range 1..100" );
