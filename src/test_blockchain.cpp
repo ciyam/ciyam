@@ -175,7 +175,7 @@ string generate_blockchain_script( const string& chain_meta,
          string previous_block( block_hash );
 
          // NOTE: If not wanting determinstic data then randomly decide whether to skip.
-         if( !had_fixed_see && rand( ) % num_accounts == j )
+         if( !had_fixed_seed && rand( ) % num_accounts == j )
          {
             ++accounts[ j ].skips;
             continue;
