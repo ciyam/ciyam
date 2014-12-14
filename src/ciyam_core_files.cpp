@@ -31,8 +31,6 @@
 #include "hash_chain.h"
 #include "ciyam_files.h"
 
-#define DEBUG
-
 using namespace std;
 
 namespace
@@ -619,6 +617,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       p_block_info->had_secondary_account = has_secondary_account;
    }
 
+   bool is_debug = !get_session_variable( get_special_var_name( e_special_var_debug_blockchain ) ).empty( );
+
    if( p_extras )
    {
       string raw_block_data( c_file_type_str_core_blob );
@@ -629,10 +629,59 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       string block_file_with_weight( block_file_tag + "-" + to_string( block_weight ) );
       string block_file_with_weight_and_sig_tag( block_file_with_weight + ".s" + base64_to_tag_name( block_signature ) );
 
-      string tags( block_file_with_weight_and_sig_tag );
+      string tags;
+      if( !is_debug )
+         tags = block_file_with_weight_and_sig_tag;
+      else
+         tags = block_file_with_weight + ".a" + account;
 
       if( !block_height || is_new_chain_head )
          tags += "\n" + block_file_tag + "\nc" + chain + ".head";
+
+      if( is_debug && is_new_chain_head )
+      {
+         string full_chain_tag( "c" + chain + ".chain*" );
+         for( size_t i = 1; i < block_height; i++ )
+         {
+            string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
+
+            if( next_tag.empty( ) )
+               continue;
+
+            string next_hash( tag_file_hash( next_tag ) );
+
+            string all_tags( get_hash_tags( next_hash ) );
+
+            vector< string > tags;
+            split( all_tags, tags, '\n' );
+
+            for( size_t j = 0; j < tags.size( ); j++ )
+            {
+               if( tags[ j ].find( ".c" ) != string::npos )
+                  continue;
+
+               if( tags[ j ].length( ) > next_tag.length( ) )
+               {
+                  string::size_type pos = tags[ j ].find( ".b" );
+                  if( pos != string::npos )
+                  {
+                     string::size_type npos = tags[ j ].find( ".a" );
+
+                     if( npos == string::npos )
+                        full_chain_tag += tags[ j ].substr( pos );
+                     else
+                        full_chain_tag += tags[ j ].substr( pos, npos - pos );
+
+                     break;
+                  }
+               }
+            }
+         }
+
+         full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
+
+         tags += "\n" + full_chain_tag;
+      }
 
       p_extras->push_back( make_pair( raw_block_data, tags ) );
 
@@ -935,10 +984,31 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          unsigned long checkpoint_height = 0;
 
          set< string > block_links;
-#ifdef DEBUG
          set< string > all_block_links;
-#endif
+
          deque< string > checkpoint_blocks;
+
+         if( is_debug )
+         {
+            string temp_previous_block( previous_block );
+            string temp_past_previous_block( past_previous_block );
+            for( size_t i = 0; ; i++ )
+            {
+               if( temp_previous_block.empty( ) || !has_file( temp_previous_block ) )
+                  break;
+
+               all_block_links.insert( temp_previous_block );
+
+               if( temp_past_previous_block.empty( ) || !has_file( temp_past_previous_block ) )
+                  break;
+
+               block_info info;
+               get_block_info( info, temp_past_previous_block );
+
+               temp_previous_block = temp_past_previous_block;
+               temp_past_previous_block = info.previous_block;
+            }
+         }
 
          // NOTE: If the checkpoint length is say three then blocks to be
          // checked start from three blocks prior (back to six blocks) to
@@ -948,26 +1018,6 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          // is the checkpoint tolerance which is used to decide if or not
          // the weight is acceptable for checkpointing (the greater value
          // used then the more likely forks are to occur).
-#ifdef DEBUG
-         string temp_previous_block( previous_block );
-         string temp_past_previous_block( past_previous_block );
-         for( size_t i = 0; ; i++ )
-         {
-            if( temp_previous_block.empty( ) || !has_file( temp_previous_block ) )
-               break;
-
-            all_block_links.insert( temp_previous_block );
-
-            if( temp_past_previous_block.empty( ) || !has_file( temp_past_previous_block ) )
-               break;
-
-            block_info info;
-            get_block_info( info, temp_past_previous_block );
-
-            temp_previous_block = temp_past_previous_block;
-            temp_past_previous_block = info.previous_block;
-         }
-#endif
          for( size_t i = 0; i < checkpoint_length * 2; i++ )
          {
             if( previous_block.empty( ) || !has_file( previous_block ) )
@@ -1014,10 +1064,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             unsigned long last_height = block_height - 1;
             while( true )
             {
-#ifndef DEBUG
-               if( last_height == checkpoint_height )
+               if( !is_debug && last_height == checkpoint_height )
                   break;
-#endif
+
                string all_block_tags( list_file_tags( "c" + chain + ".b" + to_string( last_height ) + "-*" ) );
 
                if( all_block_tags.empty( ) )
@@ -1043,8 +1092,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                      else
                         ++account_new_mint_info[ info.minter_id ].second;
                   }
-#ifdef DEBUG
-                  else
+                  else if( is_debug )
                   {
                      if( info.had_secondary_account )
                         ++account_old_others[ info.minter_id ];
@@ -1053,7 +1101,6 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                      else
                         ++account_old_mint_info[ info.minter_id ].second;
                   }
-#endif
                }
 
                --last_height;
@@ -1087,39 +1134,40 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
                string next_account( next_account_tag.substr( 0, hpos ) );
 
-#ifdef DEBUG
-               uint64_t balance = from_string< uint64_t >( next_account_tag.substr( pos + 2 ) );
+               if( is_debug )
+               {
+                  uint64_t balance = from_string< uint64_t >( next_account_tag.substr( pos + 2 ) );
 
-               uint64_t expected_balance = mint_reward - mint_charge;
+                  uint64_t expected_balance = mint_reward - mint_charge;
 
-               int total_accounts = account_old_others[ next_account ] + account_new_others[ next_account ];
+                  int total_accounts = account_old_others[ next_account ] + account_new_others[ next_account ];
 
-               int total_consensus =
-                account_old_mint_info[ next_account ].first + account_new_mint_info[ next_account ].first;
+                  int total_consensus =
+                   account_old_mint_info[ next_account ].first + account_new_mint_info[ next_account ].first;
 
-               int total_non_consensus =
-                account_old_mint_info[ next_account ].second + account_new_mint_info[ next_account ].second;
+                  int total_non_consensus =
+                   account_old_mint_info[ next_account ].second + account_new_mint_info[ next_account ].second;
 
-               expected_balance += ( mint_reward - mint_charge ) * total_consensus;
+                  expected_balance += ( mint_reward - mint_charge ) * total_consensus;
 
-               if( mint_charge * total_non_consensus > expected_balance )
-                  expected_balance = 0;
-               else
-                  expected_balance -= ( mint_charge * total_non_consensus );
+                  if( mint_charge * total_non_consensus > expected_balance )
+                     expected_balance = 0;
+                  else
+                     expected_balance -= ( mint_charge * total_non_consensus );
 
-               if( !account_charge && total_accounts )
-                  expected_balance = 0;
-               else if( total_accounts * account_charge > expected_balance )
-                  expected_balance = 0;
-               else
-                  expected_balance -= ( total_accounts * account_charge );
+                  if( !account_charge && total_accounts )
+                     expected_balance = 0;
+                  else if( total_accounts * account_charge > expected_balance )
+                     expected_balance = 0;
+                  else
+                     expected_balance -= ( total_accounts * account_charge );
 
-               if( balance != expected_balance )
-                  throw runtime_error( "account "
-                   + to_string( total_accounts ) + '/' + to_string( total_consensus ) + '/' + to_string( total_non_consensus ) + " "
-                   + next_account + " balance at checkpoint was expected to be "
-                   + to_string( expected_balance ) + " but was actually " + to_string( balance ) );
-#endif
+                  if( balance != expected_balance )
+                     throw runtime_error( "account "
+                      + to_string( total_accounts ) + '/' + to_string( total_consensus ) + '/' + to_string( total_non_consensus ) + " "
+                      + next_account + " balance at checkpoint was expected to be "
+                      + to_string( expected_balance ) + " but was actually " + to_string( balance ) );
+               }
 
                // NOTE: If the account is that of the minter then the tag that already
                // had been added as an extra to the minter's new account blob needs to
@@ -1599,6 +1647,8 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
    if( p_extras && !had_signature )
       throw runtime_error( "transaction signature missing" );
 
+   bool is_debug = !get_session_variable( get_special_var_name( e_special_var_debug_blockchain ) ).empty( );
+
    if( p_extras )
    {
       string raw_transaction_data( c_file_type_str_core_blob );
@@ -1606,7 +1656,8 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
 
       string transaction_file_tag( "c" + chain + ".a" + account + ".t" + to_string( transaction_number ) );
 
-      transaction_file_tag += ".s" + base64_to_tag_name( transaction_signature );
+      if( !is_debug )
+         transaction_file_tag += ".s" + base64_to_tag_name( transaction_signature );
 
       p_extras->push_back( make_pair( raw_transaction_data, transaction_file_tag ) );
 

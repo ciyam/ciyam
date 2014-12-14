@@ -85,6 +85,7 @@ enum special_var
    e_special_var_skip_update,
    e_special_var_update_fields,
    e_special_var_check_if_changed,
+   e_special_var_debug_blockchain,
    e_special_var_skip_after_fetch,
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
