@@ -99,7 +99,8 @@ string generate_blockchain_script( const string& chain_meta,
    uint64_t root_id( get_account_id( root_seed ) );
    string root_pub_key( root_priv_key.get_public( true, true ) );
 
-   string script( "file_raw -core -full blob " );
+   string script( ".session_variable @debug_blockchain 1\n" );
+   script += ".file_raw -core -full blob ";
 
    string header( "blk:a=" + to_string( root_id ) + ",h=0,cm=r:" + chain_meta + ",pk=" + root_pub_key );
 
@@ -143,7 +144,7 @@ string generate_blockchain_script( const string& chain_meta,
    }
 
    script += "\ns:" + root_priv_key.construct_signature( validate, true ) + '\n';
-   script += "file_kill %OUTPUT%\n";
+   script += ".file_kill %OUTPUT%\n";
 
    sha256 hash( string( c_file_type_str_core_blob ) + validate );
 
@@ -170,6 +171,8 @@ string generate_blockchain_script( const string& chain_meta,
       vector< string > new_block_hashes;
       vector< uint64_t > new_total_weights;
 
+      string skipped;
+
       for( size_t j = 0; j < num_accounts; j++ )
       {
          string previous_block( block_hash );
@@ -177,6 +180,9 @@ string generate_blockchain_script( const string& chain_meta,
          // NOTE: If not wanting determinstic data then randomly decide whether to skip.
          if( !had_fixed_seed && rand( ) % num_accounts == j )
          {
+            if( !skipped.empty( ) )
+               skipped += ' ';
+            skipped += to_string( accounts[ j ].id );
             ++accounts[ j ].skips;
             continue;
          }
@@ -197,6 +203,9 @@ string generate_blockchain_script( const string& chain_meta,
          {
             if( next_weight > tolerance_multiplier * current_tolerance )
             {
+               if( !skipped.empty( ) )
+                  skipped += ' ';
+               skipped += to_string( accounts[ j ].id );
                ++accounts[ j ].skips;
                continue;
             }
@@ -244,9 +253,17 @@ string generate_blockchain_script( const string& chain_meta,
 
          data += "\\n\\";
 
-         script += "file_raw -core -full blob " + data + "\ns:" + sign_key.construct_signature( validate, true ) + '\n';
-         script += "file_kill %OUTPUT%\n";
+         script += ".file_raw -core -full blob " + data + "\ns:" + sign_key.construct_signature( validate, true ) + '\n';
+         script += ".file_kill %OUTPUT%\n";
       }
+
+      script += "#height " + to_string( i ) + "\n";
+      if( !skipped.empty( ) )
+         script += "#skipped " + skipped + "\n";
+
+      script += "file_tags -p=c" + to_string( root_id ) + ".b*-*\n";
+      script += "file_tags -p=c" + to_string( root_id ) + ".a*.b*\n";
+      script += "file_tags -p=c" + to_string( root_id ) + ".c*\n";
 
       last_hash = next_last_hash;
       block_hash = next_block_hash;
