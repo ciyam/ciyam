@@ -197,9 +197,20 @@ string generate_blockchain_script( const string& chain_meta,
             previous_block = block_hashes[ offset ];
          }
 
+         // NOTE: If the tolerance multiplier is -1 then each account will always link to
+         // to its own last minted block.
+         if( tolerance_multiplier == -1 && !block_hashes.empty( ) )
+         {
+            last_hash = last_hashes[ j ];
+            total_weight = total_weights[ j ];
+            previous_block = block_hashes[ j ];
+         }
+
          uint64_t next_weight = get_account_hit( last_hash, accounts[ j ].id, i );
 
-         if( tolerance_multiplier && current_tolerance )
+         // NOTE: If a positive tolerance multiplier was provided then skip minting
+         // if the weight is above the current tolerance.
+         if( tolerance_multiplier > 0 && current_tolerance )
          {
             if( next_weight > tolerance_multiplier * current_tolerance )
             {
