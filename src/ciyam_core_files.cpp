@@ -404,7 +404,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          previous_head = tag_file_hash( block_tag );
 
          block_info info;
-         if( get_block_info( info, previous_head ).second > block_weight )
+         if( get_block_info( info, previous_head ).second > total_weight )
          {
             is_new_chain_head = true;
             parallel_block_minted_minter_id = info.minter_id;
@@ -638,52 +638,11 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       if( !block_height || is_new_chain_head )
          tags += "\n" + block_file_tag + "\nc" + chain + ".head";
 
-      if( is_debug && is_new_chain_head )
-      {
-         string full_chain_tag( "c" + chain + ".chain*" );
-         for( size_t i = 1; i < block_height; i++ )
-         {
-            string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
-
-            if( next_tag.empty( ) )
-               continue;
-
-            string next_hash( tag_file_hash( next_tag ) );
-
-            string all_tags( get_hash_tags( next_hash ) );
-
-            vector< string > tags;
-            split( all_tags, tags, '\n' );
-
-            for( size_t j = 0; j < tags.size( ); j++ )
-            {
-               if( tags[ j ].find( ".c" ) != string::npos )
-                  continue;
-
-               if( tags[ j ].length( ) > next_tag.length( ) )
-               {
-                  string::size_type pos = tags[ j ].find( ".b" );
-                  if( pos != string::npos )
-                  {
-                     string::size_type npos = tags[ j ].find( ".a" );
-
-                     if( npos == string::npos )
-                        full_chain_tag += tags[ j ].substr( pos );
-                     else
-                        full_chain_tag += tags[ j ].substr( pos, npos - pos );
-
-                     break;
-                  }
-               }
-            }
-         }
-
-         full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
-
-         tags += "\n" + full_chain_tag;
-      }
-
       p_extras->push_back( make_pair( raw_block_data, tags ) );
+
+      size_t block_extra_offset = p_extras->size( );
+
+      map< int, string > new_chain_height_blocks;
 
       if( !block_height )
       {
@@ -792,8 +751,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                else if( !parallel_block_minted_had_secondary_account )
                   previous_balance -= mint_reward;
 
-               account_heights.insert( make_pair( prior_block_minter_hash, block_height ) );
-               account_balances.insert( make_pair( prior_block_minter_hash, previous_balance ) );
+               account_heights.insert( make_pair( parallel_block_minted_minter_id, block_height ) );
+               account_balances.insert( make_pair( parallel_block_minted_minter_id, previous_balance ) );
 
                ++non_blob_extras;
                p_extras->push_back(
@@ -811,13 +770,19 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             // NOTE: If previous blocks in the chain were not matching then need to adjust the
             // balance of the parallel minters back to the last block they both had in common.
-            if( old_previous_block != new_previous_block )
+            if( new_previous_block != old_previous_block )
             {
                unsigned long parallel_block_height( block_height );
 
                while( parallel_block_height
                 && new_previous_block != old_previous_block )
                {
+                  new_chain_height_blocks.insert( make_pair( parallel_block_height - 1, new_previous_block ) );
+
+                  ++non_blob_extras;
+                  p_extras->push_back( make_pair( new_previous_block,
+                   "c" + chain + ".b" + to_string( parallel_block_height - 1 ) ) );
+
                   block_info old_info;
                   get_block_info( old_info, old_previous_block );
 
@@ -972,6 +937,54 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          // NOTE: The previous account blob instance will be removed.
          ++non_blob_extras;
          p_extras->push_back( make_pair( "", minter_account_hash ) );
+      }
+
+      if( is_debug && is_new_chain_head )
+      {
+         string full_chain_tag( "c" + chain + ".chain*" );
+         for( size_t i = 1; i < block_height; i++ )
+         {
+            string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
+
+            if( next_tag.empty( ) )
+               continue;
+
+            string next_hash( tag_file_hash( next_tag ) );
+
+            if( new_chain_height_blocks.count( i ) )
+               next_hash = new_chain_height_blocks[ i ];
+
+            string all_tags( get_hash_tags( next_hash ) );
+
+            vector< string > tags;
+            split( all_tags, tags, '\n' );
+
+            for( size_t j = 0; j < tags.size( ); j++ )
+            {
+               if( tags[ j ].find( ".c" ) != string::npos )
+                  continue;
+
+               if( tags[ j ].length( ) > next_tag.length( ) )
+               {
+                  string::size_type pos = tags[ j ].find( ".b" );
+                  if( pos != string::npos )
+                  {
+                     string::size_type npos = tags[ j ].find( ".a" );
+
+                     if( npos == string::npos )
+                        full_chain_tag += tags[ j ].substr( pos );
+                     else
+                        full_chain_tag += tags[ j ].substr( pos, npos - pos );
+
+                     break;
+                  }
+               }
+            }
+         }
+
+         full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
+
+         ( *p_extras )[ block_extra_offset ].second += "\n" + full_chain_tag;
       }
 
       // NOTE: Determine whether or not a new checkpoint has occurred.
@@ -1311,7 +1324,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       }
    }
 
-   return make_pair( block_height, block_weight );
+   return make_pair( block_height, total_weight );
 }
 
 void verify_rewind( const string& content, vector< pair< string, string > >* p_extras )
