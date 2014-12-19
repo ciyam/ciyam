@@ -22,6 +22,7 @@
 #include "regex.h"
 #include "config.h"
 #include "ptypes.h"
+#include "sha256.h"
 #include "threads.h"
 #include "utilities.h"
 #include "ciyam_base.h"
@@ -68,12 +69,25 @@ string tag_name_to_base64( const string& tag_name )
    return replaced( tag_name, "$", "/", "-", "=" );
 }
 
+string get_hash( const string& seed, size_t rounds )
+{
+   unsigned char buf[ 32 ];
+
+   sha256 hash( seed );
+   hash.copy_digest_to_buffer( buf );
+
+   for( size_t i = 0; i <= rounds; i++ )
+   {
+      hash.update( buf, sizeof( buf ) );
+      hash.copy_digest_to_buffer( buf );
+   }
+
+   return string( ( const char* )buf, sizeof( buf ) );
+}
+
 string get_account_id( const string& hash, int offset = 0 )
 {
-   uint64_t id = *( uint64_t* )( hash.c_str( ) );
-
-   if( offset )
-      id *= offset;
+   uint64_t id = *( uint64_t* )( offset == 0 ? hash.c_str( ) : get_hash( hash, offset ).c_str( ) );
 
    id >>= 28;
 
@@ -84,14 +98,16 @@ uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long hei
 {
    uint64_t val = *( uint64_t* )( hash.c_str( ) );
 
-   val *= height;
-
    val >>= 28;
 
-   if( val > id )
-      return val - id;
+   uint64_t hit = *( uint64_t* )( get_hash( to_string( id ) + to_string( height ), 0 ).c_str( ) );
+
+   hit >>= 28;
+
+   if( val > hit )
+      return val - hit;
    else
-      return id - val;
+      return hit - val;
 }
 
 uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_hash = 0, string* p_minter_tag = 0 )
@@ -638,9 +654,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       if( !block_height || is_new_chain_head )
          tags += "\n" + block_file_tag + "\nc" + chain + ".head";
 
-      p_extras->push_back( make_pair( raw_block_data, tags ) );
-
       size_t block_extra_offset = p_extras->size( );
+      p_extras->push_back( make_pair( raw_block_data, tags ) );
 
       map< int, string > new_chain_height_blocks;
 

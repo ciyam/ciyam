@@ -55,28 +55,27 @@ string get_hash( const string& seed, size_t round, size_t rounds )
 
 uint64_t get_account_id( const string& hash, int offset = 0 )
 {
-   uint64_t id = *( uint64_t* )( hash.c_str( ) );
-
-   if( offset )
-      id *= offset;
+   uint64_t id = *( uint64_t* )( offset == 0 ? hash.c_str( ) : get_hash( hash, 0, offset ).c_str( ) );
 
    id >>= 28;
 
    return id;
 }
 
-uint64_t get_account_hit( const string& hash, uint64_t id, size_t height )
+uint64_t get_next_weight( const string& hash, uint64_t id, size_t height )
 {
    uint64_t val = *( uint64_t* )( hash.c_str( ) );
 
-   val *= height;
-
    val >>= 28;
 
-   if( val > id )
-      return val - id;
+   uint64_t hit = *( uint64_t* )( get_hash( to_string( id ) + to_string( height ), 0, 0 ).c_str( ) );
+
+   hit >>= 28;
+
+   if( val > hit )
+      return val - hit;
    else
-      return id - val;
+      return hit - val;
 }
 
 string generate_blockchain_script( const string& chain_meta,
@@ -149,10 +148,19 @@ string generate_blockchain_script( const string& chain_meta,
    sha256 hash( string( c_file_type_str_core_blob ) + validate );
 
    uint64_t total_weight = 0;
+   uint64_t odd_total_weight = 0;
+   uint64_t even_total_weight = 0;
+
    size_t num_accounts( initial_accounts );
 
    string last_hash( "0" + root_pub_key );
+   string last_odd_hash( last_hash );
+   string last_even_hash( last_hash );
+
    string block_hash( hash.get_digest_as_string( ) );
+
+   string odd_block_hash( block_hash );
+   string even_block_hash( block_hash );
 
    vector< string > last_hashes;
    vector< string > block_hashes;
@@ -160,8 +168,13 @@ string generate_blockchain_script( const string& chain_meta,
 
    for( size_t i = 1; i <= rounds; i++ )
    {
-      uint64_t least_weight = 0;
+      uint64_t least_weight = UINT64_C( 0xffffffffffffffff );
+      uint64_t least_weight_odd = UINT64_C( 0xffffffffffffffff );
+      uint64_t least_weight_even = UINT64_C( 0xffffffffffffffff );
+
       string next_last_hash, next_block_hash;
+      string next_odd_last_hash, next_odd_block_hash;
+      string next_even_last_hash, next_even_block_hash;
 
       uint64_t current_tolerance = 0;
       if( initial_tolerance )
@@ -206,7 +219,25 @@ string generate_blockchain_script( const string& chain_meta,
             previous_block = block_hashes[ j ];
          }
 
-         uint64_t next_weight = get_account_hit( last_hash, accounts[ j ].id, i );
+         // NOTE: If the tolerance multiplier is -2 then each account will always link to
+         // one of two separate chains (depending whether account offset is odd or even).
+         if( tolerance_multiplier == -2 && !block_hashes.empty( ) )
+         {
+            if( j % 2 == 1 )
+            {
+               last_hash = last_odd_hash;
+               total_weight = odd_total_weight;
+               previous_block = odd_block_hash;
+            }
+            else
+            {
+               last_hash = last_even_hash;
+               total_weight = even_total_weight;
+               previous_block = even_block_hash;
+            }
+         }
+
+         uint64_t next_weight = get_next_weight( last_hash, accounts[ j ].id, i );
 
          // NOTE: If a positive tolerance multiplier was provided then skip minting
          // if the weight is above the current tolerance.
@@ -254,12 +285,28 @@ string generate_blockchain_script( const string& chain_meta,
          new_block_hashes.push_back( new_hash.get_digest_as_string( ) );
          new_total_weights.push_back( total_weight + next_weight );
 
-         if( !least_weight || next_weight < least_weight )
+         if( next_weight < least_weight )
          {
             least_weight = next_weight;
 
             next_last_hash = next_hash;
             next_block_hash = new_block_hashes.back( );
+         }
+
+         if( j % 2 == 1 && next_weight < least_weight_odd )
+         {
+            least_weight_odd = next_weight;
+
+            next_odd_last_hash = next_hash;
+            next_odd_block_hash = new_block_hashes.back( );
+         }
+
+         if( j % 2 == 0 && next_weight < least_weight_even )
+         {
+            least_weight_even = next_weight;
+
+            next_even_last_hash = next_hash;
+            next_even_block_hash = new_block_hashes.back( );
          }
 
          data += "\\n\\";
@@ -280,10 +327,20 @@ string generate_blockchain_script( const string& chain_meta,
       block_hash = next_block_hash;
       total_weight += least_weight;
 
+      last_odd_hash = next_odd_last_hash;
+      odd_block_hash = next_odd_block_hash;
+      odd_total_weight += least_weight_odd;
+
+      last_even_hash = next_even_last_hash;
+      even_block_hash = next_even_block_hash;
+      even_total_weight += least_weight_even;
+
       last_hashes = new_last_hashes;
       block_hashes = new_block_hashes;
       total_weights = new_total_weights;
    }
+
+   script += "file_stats\n";
 
    return script;
 }
