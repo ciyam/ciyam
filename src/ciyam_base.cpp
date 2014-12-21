@@ -384,6 +384,9 @@ struct session
 
    map< string, string > variables;
 
+   deque< string > file_hashs_to_get;
+   deque< string > file_hashs_to_put;
+
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
@@ -5047,6 +5050,64 @@ void set_session_timeout( int seconds )
 {
    guard g( g_mutex );
    g_session_timeout = seconds;
+}
+
+void add_peer_file_hash_for_get( const string& hash )
+{
+   guard g( g_mutex );
+
+   gtp_session->file_hashs_to_get.push_back( hash );
+}
+
+string get_next_peer_file_hash_to_get( )
+{
+   guard g( g_mutex );
+
+   string hash;
+
+   if( !gtp_session->file_hashs_to_get.empty( ) )
+   {
+      hash = gtp_session->file_hashs_to_get.front( );
+      gtp_session->file_hashs_to_get.pop_front( );
+   }
+
+   return hash;
+}
+
+void add_peer_file_hash_for_put( const string& hash )
+{
+   guard g( g_mutex );
+
+   gtp_session->file_hashs_to_put.push_back( hash );
+}
+
+void add_peer_file_hash_for_put_for_all_peers( const string& hash, bool include_self, size_t session_id_to_skip )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->is_peer_session
+       && g_sessions[ i ]->id != session_id_to_skip
+       && ( include_self || g_sessions[ i ] != gtp_session ) )
+         g_sessions[ i ]->file_hashs_to_put.push_back( hash );
+   }
+}
+
+string get_next_peer_file_hash_to_put( )
+{
+   guard g( g_mutex );
+
+   string hash;
+
+   if( !gtp_session->file_hashs_to_put.empty( ) )
+   {
+      hash = gtp_session->file_hashs_to_put.front( );
+      gtp_session->file_hashs_to_put.pop_front( );
+   }
+
+   return hash;
 }
 
 string get_session_variable( const string& name )
