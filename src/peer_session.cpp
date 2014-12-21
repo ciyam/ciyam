@@ -143,6 +143,9 @@ class socket_command_handler : public command_handler
    void get_hello( );
    void put_hello( );
 
+   void get_file( const string& hash );
+   void put_file( const string& hash );
+
    void pip_peer( const string& ip_address );
 
    void chk_file( const string& hash );
@@ -245,6 +248,32 @@ void socket_command_handler::put_hello( )
    socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
 
    fetch_file( temp_hash, socket );
+}
+
+void socket_command_handler::get_file( const string& hash )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_progress );
+
+   store_file( hash, socket );
+}
+
+void socket_command_handler::put_file( const string& hash )
+{
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
+
+   fetch_file( hash, socket );
 }
 
 void socket_command_handler::pip_peer( const string& ip_address )
@@ -500,11 +529,26 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                handler.issue_command_reponse( response, true );
                response.erase( );
 
-               // KLUDGE: For now just use "hello" as the file.
                if( socket_handler.state( ) == e_peer_state_waiting_for_get )
-                  socket_handler.get_hello( );
+               {
+                  string next_hash( get_next_peer_file_hash_to_get( ) );
+
+                  if( !next_hash.empty( ) )
+                     socket_handler.get_file( next_hash );
+                  else
+                     // KLUDGE: For now just use "hello" as the file to get if nothing is on the get file stack.
+                     socket_handler.get_hello( );
+               }
                else
-                  socket_handler.put_hello( );
+               {
+                  string next_hash( get_next_peer_file_hash_to_put( ) );
+
+                  if( next_hash.empty( ) || !has_file( next_hash ) )
+                     // KLUDGE: For now just use "hello" as the file to put if nothing is on the put file stack.
+                     socket_handler.put_hello( );
+                  else
+                     socket_handler.put_file( next_hash );
+               }
             }
          }
       }
@@ -525,9 +569,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
 
-         // KLUDGE: For now just use "hello" as the file to put.
          if( socket_handler.get_is_listener( ) )
-            socket_handler.put_hello( );
+         {
+            string next_hash( get_next_peer_file_hash_to_put( ) );
+
+            if( next_hash.empty( ) || !has_file( next_hash ) )
+               // KLUDGE: For now just use "hello" as the file to put if nothing is on the put file stack.
+               socket_handler.put_hello( );
+            else
+               socket_handler.put_file( next_hash );
+         }
       }
       else if( command == c_cmd_peer_session_put )
       {
@@ -562,8 +613,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             else if( rand( ) % 5 == 0 )
                socket_handler.pip_peer( "127.0.0.1" );
             else
-               // KLUDGE: For now just use "hello" as the file to get.
-               socket_handler.get_hello( );
+            {
+               string next_hash( get_next_peer_file_hash_to_get( ) );
+
+               if( !next_hash.empty( ) )
+                  socket_handler.get_file( next_hash );
+               else
+                  // KLUDGE: For now just use "hello" as the file to get if nothing is on the get file stack.
+                  socket_handler.get_hello( );
+            }
          }
       }
       else if( command == c_cmd_peer_session_pip )
@@ -589,11 +647,28 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_reponse( response, true );
             response.erase( );
 
-            // KLUDGE: For now just use "hello" as the file.
             if( socket_handler.state( ) == e_peer_state_waiting_for_get )
-               socket_handler.get_hello( );
+            {
+               string next_hash( get_next_peer_file_hash_to_get( ) );
+
+               if( !next_hash.empty( ) )
+                  socket_handler.get_file( next_hash );
+               else
+               {
+                  // KLUDGE: For now just use "hello" as the file if nothing is on the get file stack.
+                  socket_handler.get_hello( );
+               }
+            }
             else
-               socket_handler.put_hello( );
+            {
+               string next_hash( get_next_peer_file_hash_to_put( ) );
+
+               if( next_hash.empty( ) || !has_file( next_hash ) )
+                  // KLUDGE: For now just use "hello" as the file if nothing is on the put file stack.
+                  socket_handler.put_hello( );
+               else
+                  socket_handler.put_file( next_hash );
+            }
          }
       }
       else if( command == c_cmd_peer_session_tls )
@@ -753,8 +828,15 @@ string socket_command_processor::get_cmd_and_args( )
             else if( rand( ) % 5 == 0 )
                socket_handler.pip_peer( "127.0.0.1" );
             else
-               // KLUDGE: For now just use "hello" as the file to get.
-               socket_handler.get_hello( );
+            {
+               string next_hash( get_next_peer_file_hash_to_get( ) );
+
+               if( !next_hash.empty( ) )
+                  socket_handler.get_file( next_hash );
+               else
+                  // KLUDGE: For now just use "hello" as the file to get if nothing is on the get file stack.
+                  socket_handler.get_hello( );
+            }
          }
       }
 

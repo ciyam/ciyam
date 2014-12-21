@@ -240,6 +240,16 @@ void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
 int CIYAM_BASE_DECL_SPEC get_session_timeout( );
 void CIYAM_BASE_DECL_SPEC set_session_timeout( int seconds );
 
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash );
+std::string CIYAM_BASE_DECL_SPEC get_next_peer_file_hash_to_get( );
+
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash );
+
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put_for_all_peers(
+ const std::string& hash, bool include_self = true, size_t session_id_to_skip = 0 );
+
+std::string CIYAM_BASE_DECL_SPEC get_next_peer_file_hash_to_put( );
+
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name );
 void CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value, const std::string& current );
