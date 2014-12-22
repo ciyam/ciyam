@@ -1,4 +1,5 @@
 inc "increment current value"
 dec "decrement current value"
+raw "unformatted current value"
 julian "julian number for current value"
 weekday "weekday name for current value"

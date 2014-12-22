@@ -337,7 +337,12 @@ bool perform_action( const string& module_name,
       }
    }
 
+#ifdef IS_TRADITIONAL_PLATFORM
    bool is_versioned = true;
+#else
+   bool is_versioned = false;
+#endif
+
    string exec_info( exec );
 
    // NOTE: If the method name has been prefixed with a '!' then it will be executed without version information.
@@ -568,8 +573,10 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !query_info.empty( ) )
       fetch_cmd += " -q=" + query_info;
 
+#ifdef IS_TRADITIONAL_PLATFORM
    if( get_storage_info( ).embed_images )
       fetch_cmd += " -x=@embed=1";
+#endif
 
    fetch_cmd += " \"" + escaped( item_key, ",\"" ) + "\" #1";
 
@@ -726,6 +733,7 @@ bool fetch_list_info( const string& module,
    if( !search_query.empty( ) )
       fetch_cmd += " \"-q=" + search_query + "\"";
 
+#ifdef IS_TRADITIONAL_PLATFORM
    if( ( is_printable || p_pdf_spec_name ) || get_storage_info( ).embed_images )
    {
       if( ( is_printable || p_pdf_spec_name ) && get_storage_info( ).embed_images )
@@ -735,6 +743,7 @@ bool fetch_list_info( const string& module,
       else
          fetch_cmd += " -x=@embed=1";
    }
+#endif
 
    fetch_cmd += " \"" + key_info + "\"";
 
@@ -2249,12 +2258,14 @@ void add_user( const string& user_id, const string& user_name,
 
    string new_user_cmd_extra;
 
+#ifdef IS_TRADITIONAL_PLATFORM
    if( p_gpg_key_file
     && !p_gpg_key_file->empty( ) && !mod_info.user_gpg_install_proc_id.empty( ) )
    {
       new_user_cmd += ",@file=" + *p_gpg_key_file;
       new_user_cmd_extra = " -x=" + mod_info.user_gpg_install_proc_id;
    }
+#endif
 
    new_user_cmd += "\"" + new_user_cmd_extra;
 
@@ -2668,6 +2679,12 @@ void save_record( const string& module_id,
          field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
       }
    }
+
+#ifndef IS_TRADITIONAL_PLATFORM
+   string::size_type pos = key_info.find( " =" );
+   if( pos != string::npos )
+      key_info.erase( pos );
+#endif
 
    act_cmd += " " + key_info + " \"" + field_values + "\"";
 

@@ -726,8 +726,15 @@ string get_class_id_for_id_or_name( const string& module_id_or_name, const strin
    if( ( mi->second ).class_ids.empty( ) )
       init_module_class_info( module_id_or_name, mi->second );
 
-   if( ( mi->second ).class_names.count( id_or_name ) )
-      class_id = ( mi->second ).class_names[ id_or_name ];
+   if( !( mi->second ).class_ids.count( id_or_name ) )
+   {
+      if( ( mi->second ).class_names.count( id_or_name ) )
+         class_id = ( mi->second ).class_names[ id_or_name ];
+      else if( ( mi->second ).class_ids.count( module_id_or_name + id_or_name ) )
+         class_id = module_id_or_name + id_or_name;
+      else if( ( mi->second ).class_names.count( module_id_or_name + ' ' + id_or_name ) )
+         class_id = ( mi->second ).class_names[ module_id_or_name + ' ' + id_or_name ];
+   }
 
    return class_id;
 }
@@ -780,11 +787,15 @@ string get_field_id_for_id_or_name(
    if( !( mi->second ).class_field_ids.count( class_id ) )
       init_module_class_field_info( module_id_or_name, class_id_or_name, mi->second );
 
-   if( ( mi->second ).class_field_names.count( class_id ) )
-   {
-      if( ( mi->second ).class_field_names[ class_id ].count( id_or_name ) )
-         field_id = ( mi->second ).class_field_names[ class_id ][ id_or_name ];
-   }
+   if( ( mi->second ).class_field_names.count( class_id )
+    && ( mi->second ).class_field_names[ class_id ].count( id_or_name ) )
+      field_id = ( mi->second ).class_field_names[ class_id ][ id_or_name ];
+   else if( ( mi->second ).class_field_ids[ class_id ].count( class_id_or_name + id_or_name ) )
+      field_id = class_id_or_name + id_or_name;
+   else if( ( mi->second ).class_field_ids[ class_id ].count( module_id_or_name + id_or_name ) )
+      field_id = module_id_or_name + id_or_name;
+   else if( ( mi->second ).class_field_ids[ class_id ].count( module_id_or_name + class_id_or_name + id_or_name ) )
+      field_id = module_id_or_name + class_id_or_name + id_or_name;
 
    return field_id;
 }
