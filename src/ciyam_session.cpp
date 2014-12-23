@@ -257,7 +257,7 @@ string get_shortened_field_id( const string& module, const string& mclass, const
 }
 
 void replace_field_values_to_log( string& next_command,
- const string& field_values_to_log, const char* p_prefix = 0 )
+ const string& field_values_to_log, const char* p_prefix = 0, string::size_type* p_rpos = 0 )
 {
    if( p_prefix )
    {
@@ -274,9 +274,11 @@ void replace_field_values_to_log( string& next_command,
          if( rpos == string::npos )
             throw runtime_error( "invalid next_command: " + next_command );
 
-         if( pos != string::npos )
-            next_command = next_command.substr( 0, pos + 1 )
-             + field_values_to_log + next_command.substr( rpos );
+         if( p_rpos )
+            *p_rpos = rpos;
+
+         next_command = next_command.substr( 0, pos + 1 )
+          + field_values_to_log + next_command.substr( rpos );
       }
    }
    else
@@ -327,6 +329,24 @@ void replace_module_and_class_to_log( string& next_command,
       next_command.erase( pos, module_and_class.size( ) );
       next_command.insert( pos, new_module_and_class );
    }
+}
+
+void replace_method_with_shortened_id( string& next_command, const string& method,
+ string::size_type rpos, const string& module, const string& mclass, const string& method_id )
+{
+   string::size_type pos = next_command.find( method, rpos );
+   if( pos == string::npos )
+      throw runtime_error( "unexpected missing method '" + method + "' in '" + next_command + "'" );
+
+   next_command.erase( pos, method.length( ) );
+
+   string shortened_method_id( method_id );
+   if( shortened_method_id.find( mclass ) == 0 )
+      shortened_method_id.erase( 0, mclass.length( ) );
+   else if( shortened_method_id.find( module ) == 0 )
+      shortened_method_id.erase( 0, module.length( ) );
+
+   next_command.insert( pos, shortened_method_id );
 }
 #endif
 
@@ -476,6 +496,20 @@ string resolve_method_name( const string& module, const string& mclass,
 
       if( p_method_id )
          *p_method_id = method;
+   }
+   else if( procedure_info.count( mclass + method ) )
+   {
+      method_name = procedure_info.find( mclass + method )->second.name;
+
+      if( p_method_id )
+         *p_method_id = mclass + method;
+   }
+   else if( procedure_info.count( module + mclass + method ) )
+   {
+      method_name = procedure_info.find( module + mclass + method )->second.name;
+
+      if( p_method_id )
+         *p_method_id = module + mclass + method;
    }
    else if( p_method_id )
    {
@@ -2381,6 +2415,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( !ver_info.empty( ) )
+            throw runtime_error( "version info is not permitted for non-traditional applications" );
+#endif
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
             ver_info.erase( );
@@ -2640,6 +2678,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( !ver_info.empty( ) )
+            throw runtime_error( "version info is not permitted for non-traditional applications" );
+#endif
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
             ver_info.erase( );
@@ -2752,6 +2794,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( !vers.empty( ) )
+            throw runtime_error( "version info is not permitted for non-traditional applications" );
+#endif
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
             vers.erase( );
@@ -2999,8 +3045,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      remove_uid_extra_from_log_command( next_command );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+                     string::size_type rpos = 0;
+
                      if( !field_values_to_log.empty( ) )
-                        replace_field_values_to_log( next_command, field_values_to_log, "-v=" );
+                        replace_field_values_to_log( next_command, field_values_to_log, "-v=", &rpos );
+
+                     replace_method_with_shortened_id( next_command, method, rpos, module, mclass, method_id );
 
                      replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 #endif
