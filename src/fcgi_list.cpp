@@ -627,7 +627,7 @@ void output_list_form( ostream& os,
       os << "\"><i>" << GDS( c_display_show_search_criteria ) << "</i></a></p>\n";
    }
 
-   if( is_child_list && get_storage_info( ).storage_name != "Sample" )
+   if( is_child_list && !is_ui_prototype( ) )
    {
       os << "<table width=\"100%\">\n";
       os << "<tr><td class=\"selected_panel\">\n";
@@ -1441,7 +1441,7 @@ void output_list_form( ostream& os,
          }
       }
 
-      if( get_storage_info( ).storage_name != "Sample" )
+      if( !is_ui_prototype( ) )
       {
          if( allow_quick_links )
             os << "<tr><td colspan=\"2\" class=\"center\">";
@@ -1466,7 +1466,7 @@ void output_list_form( ostream& os,
       os << "</tbody>\n";
       os << "</table>\n<br/><br/>\n";
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
       {
          os << "<div class=\"list-search-row center\">\n";
          os << "<div class=\"list-search-align\">\n";
@@ -1497,7 +1497,7 @@ void output_list_form( ostream& os,
    {
       if( is_child_list )
       {
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "<table><tr>";
          else
          {
@@ -1507,7 +1507,7 @@ void output_list_form( ostream& os,
       }
       else
       {
-         if( get_storage_info( ).storage_name == "Sample" )
+         if( is_ui_prototype( ) )
          {
             os << "<div class=\"topnav\">\n";
             os << "<div class=\"table-row\">\n";
@@ -1517,7 +1517,7 @@ void output_list_form( ostream& os,
             os << "<table class=\"full_width_header\"><tr>";
       }
 
-      if( get_storage_info( ).storage_name != "Sample" )
+      if( !is_ui_prototype( ) )
          os << "<td>";
 
       if( allow_list_actions )
@@ -2332,7 +2332,7 @@ void output_list_form( ostream& os,
          }
       }
 
-      if( get_storage_info( ).storage_name != "Sample" )
+      if( !is_ui_prototype( ) )
          os << "</td>";
       else
          os << "</div>\n<div class=\"table-cell message center\">";
@@ -2342,28 +2342,28 @@ void output_list_form( ostream& os,
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<td>" << error_message << "</td>";
             else
                os << "<p class=\"center list-message\">" << error_message << "</p>";
          }
          else
          {
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
                os << "<p class=\"error center list-message\">" << remove_key( error_message ) << "</p>";
          }
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "</div>\n<div class=\"table-cell right-relative\">\n";
 
       if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
        && ( sess_info.is_admin_user || !extras.count( c_list_type_extra_admin_print ) ) )
       {
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "<td class=\"right\">";
          else
          {
@@ -2394,13 +2394,13 @@ void output_list_form( ostream& os,
 
          os << "query_update( 'cmd', 'plist' );\">" << GDS( c_display_print ) << "</a>";
 
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "</td>\n";
          else
             os << "</div>\n";
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
       {
          if( !is_child_list )
             os << "</div>\n";
@@ -3677,7 +3677,7 @@ void output_list_form( ostream& os,
 
    if( !is_printable )
    {
-      if( get_storage_info( ).storage_name != "Sample" )
+      if( !is_ui_prototype( ) )
       {
          os << "<table class=\"list\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">\n";
          if( row % 2 == 0 )
@@ -3710,7 +3710,7 @@ void output_list_form( ostream& os,
             allow_new_record = sess_info.is_default_other( );
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
       {
          os << "</tr>\n";
          os << "</table>\n";
@@ -3723,19 +3723,19 @@ void output_list_form( ostream& os,
 
       if( !allow_new_record )
       {
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "  <td>&nbsp;</td>\n";
       }
       else
       {
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "  <td>";
          else
             os << "<div id=\"newrecord-view\">\n";
 
          if( !( source.lici->second )->dfield.empty( ) && ( source.lici->second )->dvalue.empty( ) )
          {
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<select name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
             else
                os << "<select class=\"newrecord_select\" name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
@@ -3847,7 +3847,7 @@ void output_list_form( ostream& os,
             os << "\">" << GDS( c_display_new_record ) << "</a>";
          }
 
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "</td>\n";
          else
             os << "</div>\n";
@@ -3869,7 +3869,7 @@ void output_list_form( ostream& os,
             new_checksum_value = get_checksum( sess_info, checksum_values );
          }
 
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "  <td class=\"right\">";
          else
             os << "<div class=\"navigation\">\n";
@@ -3916,13 +3916,13 @@ void output_list_form( ostream& os,
          else
             os << "<span class=\"disabled\">" << GDS( c_display_next ) << " &raquo;</span>\n";
 
-         if( get_storage_info( ).storage_name != "Sample" )
+         if( !is_ui_prototype( ) )
             os << "</td>\n";
          else
             os << "</div>\n";
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "</div>\n";
       else
       {
@@ -3933,7 +3933,7 @@ void output_list_form( ostream& os,
 
    os << "</form>";
 
-   if( is_child_list && get_storage_info( ).storage_name != "Sample" )
+   if( is_child_list && !is_ui_prototype( ) )
       os << "</td></tr></table>\n";
 
    os << "\n";

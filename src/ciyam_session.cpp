@@ -4230,6 +4230,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string arg_3( get_parm_val( parameters, c_cmd_parm_ciyam_session_test_arg_3 ) );
 
          // NOTE: Dummy command for testing or prototyping.
+         response = "arg_1 = " + arg_1 + "\narg_2 = " + arg_2 + "\narg_3 = " + arg_3;
       }
       else if( command == c_cmd_ciyam_session_quit )
       {

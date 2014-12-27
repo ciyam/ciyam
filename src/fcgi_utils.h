@@ -84,6 +84,8 @@ void setup_gmt_and_dtm_offset( std::map< std::string, std::string >& input_data,
 
 std::string hash_password( const std::string& salted_password );
 
+bool is_ui_prototype( );
+
 bool is_non_persistent( const std::string& session_id );
 void add_non_persistent( const std::string& session_id );
 void remove_non_persistent( const std::string& session_id );

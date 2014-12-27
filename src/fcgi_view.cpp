@@ -647,7 +647,7 @@ bool output_view_form( ostream& os, const string& act,
       if( is_in_edit || !source.has_file_attachments )
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
       {
          os << "<div class=\"topnav\">\n";
          os << "<div class=\"table-row\">\n";
@@ -770,7 +770,7 @@ bool output_view_form( ostream& os, const string& act,
             }
          }
 
-         if( get_storage_info( ).storage_name == "Sample" )
+         if( is_ui_prototype( ) )
          {
             if( had_any )
                os << "\n";
@@ -900,13 +900,13 @@ bool output_view_form( ostream& os, const string& act,
             os << ">" << GDS( c_display_create_multiple_records ) << "</input>";
          }
 #endif
-         if( get_storage_info( ).storage_name == "Sample" )
+         if( is_ui_prototype( ) )
             os << "\n";
          else
             os << "</td>";
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "</div>\n<div class=\"table-cell message center\">";
 
       if( !error_message.empty( ) )
@@ -914,7 +914,7 @@ bool output_view_form( ostream& os, const string& act,
          // NOTE: Don't display as an error unless was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<td>" << error_message << "</td>";
             else
                os << "<p class=\"table-cell center view-message\">" << error_message << "</p>\n";
@@ -925,7 +925,7 @@ bool output_view_form( ostream& os, const string& act,
          {
             extra_content_func += "had_act_error = true;\n";
 
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
             else
                os << "<p class=\"error table-cell center view-message\">&nbsp;&nbsp;" << remove_key( error_message ) << "</p>\n";
@@ -934,7 +934,7 @@ bool output_view_form( ostream& os, const string& act,
       else
          extra_content_func += "had_act_error = false;\n";
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "</div>\n";
 
       bool has_started_right = false;
@@ -955,7 +955,7 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "<div class=\"table-cell right-relative\">\n";
 
       // NOTE: If this view supports "quick linking" (and it is being used) then create an "add quick link" action.
@@ -967,7 +967,7 @@ bool output_view_form( ostream& os, const string& act,
          {
             has_started_right = true;
 
-            if( get_storage_info( ).storage_name != "Sample" )
+            if( !is_ui_prototype( ) )
                os << "<td class=\"right\">";
             else
                os << "<span id=\"link-view\" class=\"link\">";
@@ -993,7 +993,7 @@ bool output_view_form( ostream& os, const string& act,
             os << "dyn_load( document." << source.id << ", 'act="
              << c_act_qlink << "&extra=" << escape_specials( qlink_title ) << "', false );\" style=\"cursor:pointer\"/>";
 
-            if( get_storage_info( ).storage_name == "Sample" )
+            if( is_ui_prototype( ) )
                os << "</span>\n";
          }
       }
@@ -1009,7 +1009,7 @@ bool output_view_form( ostream& os, const string& act,
             if( vci->vlink == source.vici->second->id
              && ( vci->type == c_view_type_print || vci->type == c_view_type_admin_print ) )
             {
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( is_ui_prototype( ) )
                   os << "<span id=\"print-view\" class=\"print\">";
                else
                {
@@ -1039,7 +1039,7 @@ bool output_view_form( ostream& os, const string& act,
 
                os << "\">" << GDS( c_display_print ) << "</a>";
 
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( is_ui_prototype( ) )
                   os << "</span>\n";
 
                found_print_version = true;
@@ -1049,7 +1049,7 @@ bool output_view_form( ostream& os, const string& act,
 
          if( !found_print_version )
          {
-            if( get_storage_info( ).storage_name == "Sample" )
+            if( is_ui_prototype( ) )
                os << "<span id=\"print-view\" class=\"print\">";
             else
             {
@@ -1081,21 +1081,21 @@ bool output_view_form( ostream& os, const string& act,
 
             os << "\">" << GDS( c_display_print ) << "</a>";
 
-            if( get_storage_info( ).storage_name == "Sample" )
+            if( is_ui_prototype( ) )
                os << "</span>\n";
          }
       }
 
-      if( get_storage_info( ).storage_name != "Sample" && has_started_right )
+      if( !is_ui_prototype( ) && has_started_right )
          os << "</td>";
 
-      if( get_storage_info( ).storage_name == "Sample" )
+      if( is_ui_prototype( ) )
          os << "</div>\n</div>\n</div>\n";
       else
          os << "</tr></table>\n";
    }
 
-   if( get_storage_info( ).storage_name == "Sample" )
+   if( is_ui_prototype( ) )
       os << "<div class=\"menu width-fix\">\n";
 
    os << "<table class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
@@ -3011,7 +3011,7 @@ bool output_view_form( ostream& os, const string& act,
    os << "</tbody>\n";
    os << "</table>\n";
 
-   if( get_storage_info( ).storage_name == "Sample" )
+   if( is_ui_prototype( ) )
       os << "</div>\n";
 
    if( is_in_edit || !source.has_file_attachments )
