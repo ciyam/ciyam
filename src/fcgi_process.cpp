@@ -2673,13 +2673,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                extra_content << "<br/><br/>\n";
 
-               if( get_storage_info( ).storage_name != "Sample" )
+               if( !is_ui_prototype( ) )
                {
                   extra_content << "<table width=\"100%\">\n";
                   extra_content << "<tr><td>\n";
                }
 
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( is_ui_prototype( ) )
                {
                   extra_content << "<div class=\"width-fix vtab tab-alloc\" style=\"\"><br/>\n";
                   extra_content << "<ul class=\"tabs-hz\">\n";
@@ -2767,14 +2767,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      li_class += "active";
 
-                     if( get_storage_info( ).storage_name == "Sample" )
+                     if( is_ui_prototype( ) )
                         extra_content << "<li class=\"" << li_class << "\">" << name << "</li>\n";
                      else
                         extra_content << "<th class=\"selected_tab\" align=\"center\">" << name << "</th>\n";
                   }
                   else
                   {
-                     if( get_storage_info( ).storage_name == "Sample" )
+                     if( is_ui_prototype( ) )
                         extra_content << "<li class=\"" << li_class << "\"><a href=\"javascript:";
                      else
                         extra_content << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
@@ -2791,7 +2791,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      extra_content << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
                      extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a>";
 
-                     if( get_storage_info( ).storage_name == "Sample" )
+                     if( is_ui_prototype( ) )
                         extra_content << "</li>\n";
                      else
                         extra_content << "</td>\n";
@@ -2815,7 +2815,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
                }
 
-               if( get_storage_info( ).storage_name == "Sample" )
+               if( is_ui_prototype( ) )
                {
                   extra_content << "</ul>\n";
                   extra_content << "</div>\n";
@@ -2828,7 +2828,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   extra_content << "</table>\n";
                }
 
-               if( n && get_storage_info( ).storage_name == "Sample" )
+               if( n && is_ui_prototype( ) )
                   extra_content << "<div class=\"menu width-fix width-fix-view childlistborder\">\n";
 
                n = 0;
@@ -2847,7 +2847,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    findinfo + listsrch, selected_records, embed_images, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                }
 
-               if( n && get_storage_info( ).storage_name == "Sample" )
+               if( n && is_ui_prototype( ) )
                   extra_content << "</div>\n";
             }
 

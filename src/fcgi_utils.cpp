@@ -377,6 +377,11 @@ string hash_password( const string& salted_password )
    return s;
 }
 
+bool is_ui_prototype( )
+{
+   return file_exists( "ui_prototype" );
+}
+
 bool is_non_persistent( const string& session_id )
 {
    guard g( g_mutex );
