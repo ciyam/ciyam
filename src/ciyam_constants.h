@@ -75,6 +75,7 @@ const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
 
 const char* const c_file_type_core_block_detail_account_prefix = "a:";
 const char* const c_file_type_core_block_detail_signature_prefix = "s:";
+const char* const c_file_type_core_block_detail_transaction_prefix = "t:";
 
 const char* const c_file_type_core_block_header_chain_meta_requisite_prefix = "r:";
 

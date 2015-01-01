@@ -13,6 +13,7 @@
 #  include <vector>
 #  include <iostream>
 #  include <stdexcept>
+#  include <algorithm>
 #endif
 
 #include "base64.h"
@@ -32,8 +33,12 @@ struct account
    account( ) : id( 0 ), skips( 0 ) { }
 
    uint64_t id;
+
    string seed;
+   string rseed;
+
    unsigned int skips;
+
    vector< string > secrets;
 };
 
@@ -120,9 +125,11 @@ string generate_blockchain_script( const string& chain_meta,
       account new_account;
 
       new_account.id = get_account_id( root_pub_key, i + 1 );
-      new_account.seed = to_string( new_account.id );
+      new_account.seed = new_account.rseed = to_string( new_account.id );
 
-      for( size_t j = 0; j <= rounds; j++ )
+      reverse( new_account.rseed.begin( ), new_account.rseed.end( ) );
+
+      for( size_t j = 0; j <= rounds * 2; j++ )
       {
          private_key priv_key( new_account.seed + to_string( j ) );
          new_account.secrets.push_back( priv_key.get_secret( true ) );
@@ -131,10 +138,14 @@ string generate_blockchain_script( const string& chain_meta,
       accounts.push_back( new_account );
 
       private_key priv_key( new_account.secrets[ 0 ] );
+      private_key tx_priv_key( new_account.secrets[ rounds + 1 ] );
 
       string next_account( "a:" + to_string( new_account.id ) + ",h="
        + base64::encode( get_hash( new_account.seed, 0, rounds ) )
        + ",l=" + priv_key.get_address( true, true ) );
+
+      next_account += ",th=" + base64::encode( get_hash( new_account.rseed, 0, rounds ) )
+       + ",tl=" + tx_priv_key.get_address( true, true );
 
       script += "\n" + next_account + "\\n";
       validate += "\n" + next_account;
