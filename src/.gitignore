@@ -31,7 +31,9 @@ extract
 generate_commands
 modeller
 test
+test_blockchain
 test_cache
+test_crypto_keys
 test_fcgi
 test_hash_chain
 test_numeric
