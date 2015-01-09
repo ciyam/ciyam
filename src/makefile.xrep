@@ -82,7 +82,7 @@ LIBHARU_LIBS = -lhpdf
 
 LIBICONV_LIBS = -Liconv
 
-MYSQL_LIBS = -lmysqlclient
+MYSQL_LIBS = -L/usr/local/mysql/lib -lmysqlclient
 
 ZLIB_LIBS = -lz
 
