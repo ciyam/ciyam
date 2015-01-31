@@ -22,6 +22,15 @@ get_obj( ).`{`$arg_tfield`}( ) && `}state & c_modifier_`{`$arg_modifier`}`{`!`@e
       if( !get_obj( ).get_is_iterating( ) )
          actions += '<';
 `}\
+`{`@eq`(`$arg_default`,`'true`'`)\
+      actions += '>';
+`}\
+`{`@eq`(`$arg_no_log`,`'true`'`)\
+      actions += '_';
+`}\
+`{`@eq`(`$arg_no_trans`,`'true`'`)\
+      actions += '-';
+`}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );

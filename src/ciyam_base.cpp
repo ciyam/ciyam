@@ -7305,7 +7305,8 @@ string get_field_id_for_name( size_t handle, const string& context, const string
    return names_to_ids[ name ];
 }
 
-string get_field_type_name( size_t handle, const string& context, const string& id_or_name )
+string get_field_type_name( size_t handle,
+ const string& context, const string& id_or_name, bool* p_is_transient )
 {
    string type_name;
 
@@ -7319,6 +7320,10 @@ string get_field_type_name( size_t handle, const string& context, const string& 
       if( field_info[ i ].id == id_or_name || field_info[ i ].name == id_or_name )
       {
          type_name = field_info[ i ].type_name;
+
+         if( p_is_transient )
+            *p_is_transient = field_info[ i ].is_transient;
+
          break;
       }
    }

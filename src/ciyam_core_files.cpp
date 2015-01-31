@@ -927,11 +927,6 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          unsigned long last_height = atol( minter_account_tag.substr( pos + 2, rpos - pos - 2 ).c_str( ) );
 
-         // NOTE: If an account has already minted then make sure that this block is higher than
-         // the previous one minted.
-         if( block_height <= last_height )
-            throw runtime_error( "invalid block height for minting account" );
-
          string minter_account_hash( tag_file_hash( minter_account_tag ) );
          string minter_account_data( extract_file( minter_account_hash, "", c_file_type_char_core_blob ) );
 
@@ -951,6 +946,15 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
           && previous_lock != mint_test_address && previous_lock != mint_test_address_uncompressed )
             throw runtime_error( "invalid public key from minter" );
 
+         // NOTE: If an account has already minted then make sure that this block is higher than
+         // the previous one minted.
+         //
+         // FUTURE: Accounts that produce blocks that are of invalid height are purposely trying
+         // to cause a fork and should be effectively banned (with the two conflicting blocks to
+         // be show to other peers as proof that the account has gone rogue).
+         if( block_height <= last_height )
+            throw runtime_error( "invalid block height for minting account" );
+
          pos = minter_account_tag.find( ".b" );
          if( pos == string::npos )
             throw runtime_error( "unable to find account balance in '" + minter_account_tag + "'" );
@@ -961,10 +965,10 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             balance = account_balances[ minter_account ];
 
          if( balance < mint_charge )
-            throw runtime_error( "unsufficient balance to mint" );
+            throw runtime_error( "insufficient balance to mint" );
 
          if( has_secondary_account && balance < account_charge )
-            throw runtime_error( "unsufficient balance to create an account" );
+            throw runtime_error( "insufficient balance to create an account" );
 
          if( has_secondary_account )
          {

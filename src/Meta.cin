@@ -1165,8 +1165,8 @@ modifier_add -id=500730 View_Field Hide_FK_Fields Source_Parent:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate
 modifier_add -id=500740 View_Field Is_Not_Enum Enum_Starts_At:relegate,Enum_Finishes_At:relegate
-modifier_add -id=500741 View_Field Proect_Access Access_Scope:protect,Access_Restriction:protect,Access_{Permission}:protect
-modifier_add -id=500742 View_Field Proect_Change Change_Scope:protect,Change_Restriction:protect,Change_{Permission}:protect
+modifier_add -id=500741 View_Field Protect_Access Access_Scope:protect,Access_Restriction:protect,Access_{Permission}:protect
+modifier_add -id=500742 View_Field Protect_Change Change_Scope:protect,Change_Restriction:protect,Change_{Permission}:protect
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
 modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate\
 ,Create_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate,Destroy_Parent_Modifier:relegate
@@ -1240,7 +1240,7 @@ modifier_add -id=500888a List_Field Is_Not_Restrict_Search Exact_Match_Only:rele
 modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500889a List_Field Hide_View_Parent_Extra View_Parent_Extra:relegate
 modifier_add -id=500889b List_Field Is_Non_Instance_Procedure Omit_Versions:relegate,Reverse_Order:relegate
-modifier_add -id=500889c List_Field Proect_Access Access_Restriction:protect,Access_{Permission}:protect
+modifier_add -id=500889c List_Field Protect_Access Access_Restriction:protect,Access_{Permission}:protect
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate

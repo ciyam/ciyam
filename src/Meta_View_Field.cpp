@@ -391,8 +391,8 @@ const uint64_t c_modifier_Is_Not_Date = UINT64_C( 0x2000 );
 const uint64_t c_modifier_Is_Not_Enum = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x8000 );
 const uint64_t c_modifier_Is_Tab = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Proect_Access = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Proect_Change = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Protect_Access = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Protect_Change = UINT64_C( 0x40000 );
 
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_New_Value_domain;
@@ -3006,13 +3006,13 @@ uint64_t Meta_View_Field::impl::get_state( ) const
     || get_obj( ).Source_Field( ).Access_Restriction( ) != 0
     || get_obj( ).Source_Parent( ).Access_Scope( ) != 0
     || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
-      state |= c_modifier_Proect_Access;
+      state |= c_modifier_Protect_Access;
 
    if( get_obj( ).Source_Field( ).Change_Scope( ) != 0
     || get_obj( ).Source_Field( ).Change_Restriction( ) != 0
     || get_obj( ).Source_Parent( ).Change_Scope( ) != 0
     || get_obj( ).Source_Parent( ).Change_Restriction( ) != 0 )
-      state |= c_modifier_Proect_Change;
+      state |= c_modifier_Protect_Change;
    // [<finish get_state>]
 
    return state;

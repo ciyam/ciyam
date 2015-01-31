@@ -408,8 +408,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                set_field_values += userfetch;
                set_field_values += "=" + escaped( escaped( user_field_info[ userfetch ], "," ), ",\"", c_nul, "rn\r\n" );
 
+#ifdef IS_TRADITIONAL_PLATFORM
                // NOTE: Set an instance variable so the application server can identify the trigger field.
                set_field_values += ",@trigger=" + userfetch;
+#endif
             }
          }
 
@@ -423,10 +425,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   was_user_force_field = true;
                else if( user_field_info.count( view.user_force_fields[ i ] ) )
                {
-                  if( !set_field_values.empty( ) )
-                     set_field_values += ",";
-                  set_field_values += view.user_force_fields[ i ];
-                  set_field_values += "=" + escaped( escaped( user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
+                  if( view.user_force_fields[ i ] != field )
+                  {
+                     if( !set_field_values.empty( ) )
+                        set_field_values += ",";
+                     set_field_values += view.user_force_fields[ i ];
+                     set_field_values += "=" + escaped( escaped( user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
+                  }
                }
             }
          }
@@ -475,6 +480,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
+#ifdef IS_TRADITIONAL_PLATFORM
       if( act == c_act_exec )
       {
          if( !set_field_values.empty( ) )
@@ -493,6 +499,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          set_field_values += "@executed=" + procedure_id;
       }
+#endif
 
       if( !fetch_item_info( view.module_id,
        mod_info, view.cid, item_key, view.field_list, set_field_values,

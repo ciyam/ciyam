@@ -5,11 +5,17 @@
    if( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`} )
    {
       bool okay = false;
+`{`@eq`(`$arg_sfield`,`'`'`)\
 `{`@eq`(`$arg_func`,`'`'`)\
       check_with_regex( "`{`$arg_expression`}", `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`}, &okay );
 `,\
       check_with_regex( "`{`$arg_expression`}", `{`$arg_func`}( `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`} ), &okay );
-`}
+`}`,\
+`{`@eq`(`$arg_func`,`'`'`)\
+      check_with_regex( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ), `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`}, &okay );
+`,\
+      check_with_regex( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ), `{`$arg_func`}( `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`} ), &okay );
+`}`}
       if( !okay )
          p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
           get_string_message( GS( c_str_invalid_type ), make_pair(

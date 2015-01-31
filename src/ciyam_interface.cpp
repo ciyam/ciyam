@@ -1802,6 +1802,7 @@ void request_handler::process_request( )
          if( p_session_info->needs_pin && cmd != c_cmd_quit )
             cmd = c_cmd_home;
 
+#ifdef IS_TRADITIONAL_PLATFORM
          // NOTE: If a new password hash is passed from the client after logging in then
          // encrypt and store it in the application server "files area" for later usage.
          if( p_session_info->logged_in && !newhash.empty( ) )
@@ -1816,6 +1817,7 @@ void request_handler::process_request( )
 
             simple_command( *p_session_info, cmd );
          }
+#endif
 
          // NOTE: For a save or continue edit action it is expected that a field list and
          // a corresponding set of user values will be provided. If a "view" contains one

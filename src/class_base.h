@@ -1076,6 +1076,9 @@ std::string CLASS_BASE_DECL_SPEC hash_sha256( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& pw, const std::string& s );
+std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& pw, const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC totp_pin( const std::string& secret );
 std::string CLASS_BASE_DECL_SPEC totp_secret( const std::string& unique );
 
@@ -1287,6 +1290,13 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
 std::string CLASS_BASE_DECL_SPEC crypto_sign( const std::string& secret, const std::string& message );
+
+std::string CLASS_BASE_DECL_SPEC crypto_public( const std::string& privkey, bool is_wif = false );
+
+std::string CLASS_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool is_wif = false );
+
+void CLASS_BASE_DECL_SPEC crypto_verify(
+ const std::string& pubkey, const std::string& address, bool* p_rc = 0 );
 
 void CLASS_BASE_DECL_SPEC crypto_verify(
  const std::string& pubkey, const std::string& message, const std::string& signature );

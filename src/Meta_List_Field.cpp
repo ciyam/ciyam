@@ -502,7 +502,7 @@ const uint64_t c_modifier_Is_Non_Instance_Procedure = UINT64_C( 0x100000000 );
 const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x200000000 );
 const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x400000000 );
 const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x800000000 );
-const uint64_t c_modifier_Proect_Access = UINT64_C( 0x1000000000 );
+const uint64_t c_modifier_Protect_Access = UINT64_C( 0x1000000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -3828,7 +3828,7 @@ uint64_t Meta_List_Field::impl::get_state( ) const
     || !is_null( get_obj( ).Source_Field( ).Access_Permission( ) )
     || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0
     || !is_null( get_obj( ).Source_Parent( ).Access_Permission( ) ) )
-      state |= c_modifier_Proect_Access;
+      state |= c_modifier_Protect_Access;
    // [<finish get_state>]
 
    return state;

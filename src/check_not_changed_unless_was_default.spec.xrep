@@ -1,0 +1,12 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_not_changed_unless_was_default)] `{`$arg_id`}
+   if( get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} )
+`{`@eq`(`$arg_allow_default`,`'true`'`)\
+    && !( get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
+`}\
+    && g_default_`{`$arg_field`} != get_obj( ).get_original_field_value( c_field_name_`{`$arg_field`} ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_not_be_changed ), make_pair(
+       c_str_parm_field_must_not_be_changed_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+   // [(finish check_not_changed_unless_was_default)] `{`$arg_id`}
+`}

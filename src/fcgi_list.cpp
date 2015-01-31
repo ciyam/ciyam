@@ -570,8 +570,8 @@ void output_list_form( ostream& os,
    if( is_no_new
     || !allow_list_actions
     || sess_info.user_id.empty( )
-    || ( is_owner_new && !has_owner_parent )
     || ( is_admin_new && !sess_info.is_admin_user )
+    || ( is_owner_new && is_child_list && !has_owner_parent )
     || source.view.empty( ) || ( ( parent_state & c_state_uneditable )
     && ( !ignore_parent_state || !( parent_state & c_state_ignore_uneditable ) ) )
     || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) ) )

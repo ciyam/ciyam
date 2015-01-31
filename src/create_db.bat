@@ -39,7 +39,7 @@ del ~create_db>nul
 goto end
 
 :usage
-echo Usage: create_db [[-rebuild]] [db_name] [[.]|[password]]
+echo Usage: create_db [[-rebuild]] [db_name] [[.]^|[password]]
 
 :end
 endlocal

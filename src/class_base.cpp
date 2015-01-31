@@ -88,6 +88,7 @@ const char* const c_protocol_blockchain = "blockchain";
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
 const char* const c_special_regex_for_email_address = "@email_address";
+const char* const c_special_regex_for_bitcoin_address = "@bitcoin_address";
 
 const char* const c_section_timezone = "timezone";
 const char* const c_section_timezones = "timezones";
@@ -2952,6 +2953,8 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
 
    if( re == c_special_regex_for_email_address )
       re = "^" + string( c_regex_email_address ) + "$";
+   else if( re == c_special_regex_for_bitcoin_address )
+      re = string( c_regex_bitcoin_address );
 
    regex expr( re );
 
@@ -3008,6 +3011,34 @@ string decrypt( const string& s )
 string encrypt( const string& s )
 {
    return encrypt_password( s, false, false, true );
+}
+
+string decrypt( const string& pw, const string& s )
+{
+   string retval( s );
+
+   if( !s.empty( ) && !pw.empty( ) )
+   {
+      retval = password_decrypt( s, pw );
+      if( retval.empty( ) )
+         retval = "*** bad password ***";
+   }
+
+   return retval;
+}
+
+string encrypt( const string& pw, const string& s )
+{
+   string retval( s );
+
+   if( !s.empty( ) && !pw.empty( ) )
+   {
+      retval = password_encrypt( s, pw );
+      if( retval.empty( ) )
+         throw runtime_error( "unexpected empty encrypted data returned" );
+   }
+
+   return retval;
 }
 
 string totp_pin( const string& secret )
@@ -4282,6 +4313,48 @@ string crypto_sign( const string& secret, const string& message )
    return priv.construct_signature( message, true );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_sign" );
+#endif
+}
+
+string crypto_public( const string& privkey, bool is_wif )
+{
+#ifdef SSL_SUPPORT
+   private_key priv( privkey, is_wif );
+
+   return priv.get_public( true, true );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_public" );
+#endif
+}
+
+string crypto_secret( const string& privkey, bool is_wif )
+{
+#ifdef SSL_SUPPORT
+   private_key priv( privkey, is_wif );
+
+   return priv.get_secret( true );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_public" );
+#endif
+}
+
+void crypto_verify( const string& pubkey, const string& address, bool* p_rc )
+{
+#ifdef SSL_SUPPORT
+   public_key pub( pubkey, pubkey.length( ) < 64 ? true : false );
+
+   if( pub.get_address( true ) != address && pub.get_address( false ) != address
+    && pub.get_address( true, true ) != address && pub.get_address( false, true ) != address )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "invalid public key" );
+   }
+   else if( p_rc )
+      *p_rc = true;
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_verify" );
 #endif
 }
 
