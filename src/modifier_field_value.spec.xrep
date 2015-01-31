@@ -5,6 +5,7 @@
 `{`@eq`(`$arg_testop`,`'lt`'`)`$op`=`'<`'`}`{`@eq`(`$arg_testop`,`'gt`'`)`$op`=`'>`'`}\
 `{`@eq`(`$arg_testop`,`'lteq`'`)`$op`=`'<=`'`}`{`@eq`(`$arg_testop`,`'gteq`'`)`$op`=`'>=`'`}\
 `{`$value`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`^`'"`'`}`{`$value`^`$arg_value`}`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`^`'"`'`}\
+`{`@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`}\
    if( `{`!`@eq`(`$arg_not_dflt`,`'`'`)!get_obj( ).get_key( ).empty( ) && `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
 `{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && `}\

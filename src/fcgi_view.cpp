@@ -1299,6 +1299,9 @@ bool output_view_form( ostream& os, const string& act,
          bool is_relegated = ( view_edit_effect == c_modifier_effect_relegate );
          bool is_protected = ( view_edit_effect == c_modifier_effect_protect || source.protected_fields.count( source_value_id ) );
 
+         if( is_relegated )
+            is_protected = false;
+
          if( source.field_values.count( source_value_id )
           && extra_data.count( c_view_field_extra_force )
           && !is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info )
@@ -1847,7 +1850,7 @@ bool output_view_form( ostream& os, const string& act,
                 + " yearRange: 10, formatPreset: 1, confirm: true, useTime: "
                 + use_time + ", useSecs: " + use_secs + " } );\n";
             }
-            else if( is_password )
+            else if( is_password && !is_always_editable )
             {
                if( !source.field_tab_ids[ i ] || source.field_tab_ids[ i ] == vtab_num )
                {

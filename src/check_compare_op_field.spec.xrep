@@ -7,11 +7,12 @@
 `{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
 `{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
 `{`$check_create`=`'`'`}\
-`{`!`@eq`(`$arg_create_also`,`'`'`)`$check_create`=`'true`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$check_create`=`'true`'`}\
+`{`@eq`(`$arg_create_also`,`'true`'`)`$check_create`=`'true`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$check_create`=`'true`'`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`$check_create`=`'true`'`}\
 `{`$check_either`=`'`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`$check_either`=`'true`'`}\
-`{`!`@eq`(`$check_create`,`'`'`)`$check_either`=`'true`'`}\
+`{`@eq`(`$check_create`,`'true`'`)`$check_either`=`'true`'`}\
 `{`$check_both`=`'`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`&`@eq`(`$check_create`,`'true`'`)`$check_both`=`'true`'`}\
 `{`$create_also`=`$arg_create_also`}\
@@ -21,7 +22,7 @@
    // [(start check_compare_op_field)] `{`$arg_id`}
 `{`@eq`(`$arg_spfield`,`'`'`)\
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
-   if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
+   if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}\
 `{`!`@eq`(`$arg_not_null`,`'`'`)`{`!`@eq`(`$check_either`,`'`'`)
@@ -33,8 +34,8 @@
    if( ( !get_obj( ).get_graph_parent( )
     || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_create_only`,`'true`'`)
-    && get_obj( ).get_is_creating( )`}`,
-    && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
+    && `{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`}`,
+    && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
 get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$arg_not_null`,`'`'`)
     && `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
@@ -47,7 +48,7 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
        make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ) ) ) );
 `,\
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
-   if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
+   if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$check_both`,`'`'`) )`}`{`!`@eq`(`$check_either`,`'`'`)
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
@@ -58,9 +59,9 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
     || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_create_only`,`'true`'`)\
-    && get_obj( ).get_is_creating( )
+    && `{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )
 `}`,\
-    && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
+    && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}
 `}\
     && `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )

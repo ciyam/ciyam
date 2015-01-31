@@ -8561,7 +8561,7 @@
      </modifier>
      <modifier/>
       <id>500889c
-      <name>Proect_Access
+      <name>Protect_Access
      </modifier>
     </modifiers>
     <procedures/>
@@ -26688,11 +26688,11 @@
      </modifier>
      <modifier/>
       <id>500741
-      <name>Proect_Access
+      <name>Protect_Access
      </modifier>
      <modifier/>
       <id>500742
-      <name>Proect_Change
+      <name>Protect_Change
      </modifier>
     </modifiers>
     <procedures/>

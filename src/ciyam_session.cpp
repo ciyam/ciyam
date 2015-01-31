@@ -240,6 +240,10 @@ void check_instance_field_permission( const string& module,
 #ifndef IS_TRADITIONAL_PLATFORM
 string get_shortened_field_id( const string& module, const string& mclass, const string& field_id )
 {
+   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
+   if( !module.empty( ) && module[ 0 ] >= '0' && module[ 0 ] <= '9' )
+      return field_id;
+
    string::size_type pos = field_id.find( mclass );
    if( pos != string::npos )
       pos += mclass.length( );
@@ -275,9 +279,9 @@ void replace_field_values_to_log( string& next_command,
             throw runtime_error( "invalid next_command: " + next_command );
 
          if( p_rpos )
-            *p_rpos = rpos;
+            *p_rpos = pos + strlen( p_prefix ) + field_values_to_log.length( );
 
-         next_command = next_command.substr( 0, pos + 1 )
+         next_command = next_command.substr( 0, pos + strlen( p_prefix ) )
           + field_values_to_log + next_command.substr( rpos );
       }
    }
@@ -2264,9 +2268,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
-
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
@@ -2291,10 +2292,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
+                     bool is_transient = false;
                      bool was_date_time = false;
+
+                     string type_name( get_field_type_name( handle, "", i->first, &is_transient ) );
+
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
-                        string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
                         {
                            was_date_time = true;
@@ -2323,19 +2327,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      string value = execute_object_command( handle, "", method_name_and_args );
 
-                     // NOTE: Field values that are the same as the default ones are omitted from the log.
-                     if( value != i->second )
+                     method_name_and_args = "set ";
+#else
+                     string method_name_and_args( "set " );
 #endif
-                     {
-                        string method_name_and_args( "set " );
-                        method_name_and_args += i->first + " ";
-                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+                     method_name_and_args += i->first + " ";
+                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
-                        execute_object_command( handle, "", method_name_and_args );
+                     execute_object_command( handle, "", method_name_and_args );
 
-                        fields_set.insert( i->first );
+                     fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+                     // NOTE: Field values that are the same as the default ones are omitted from the log
+                     // as are values for all transient fields.
+                     if( !is_transient && value != i->second )
+                     {
                         if( !field_values_to_log.empty( ) )
                            field_values_to_log += ",";
 
@@ -2343,10 +2350,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         field_values_to_log += field_id + '=';
                         field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
-#endif
                      }
+#endif
                   }
                }
+
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
                remove_uid_extra_from_log_command( next_command );
 
@@ -2511,9 +2521,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
-
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
@@ -2541,6 +2548,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_instance_update( handle, "", key, ver_info, false );
 
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
+
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
                {
                   string method_name_and_args( "get " );
@@ -2558,10 +2568,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
+                     bool is_transient = false;
                      bool was_date_time = false;
+
+                     string type_name( get_field_type_name( handle, "", i->first, &is_transient ) );
+
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
-                        string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
                         {
                            was_date_time = true;
@@ -2590,19 +2603,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      string value = execute_object_command( handle, "", method_name_and_args );
 
-                     // NOTE: Field values that are the same as the current ones are omitted from the log.
-                     if( value != i->second )
+                     method_name_and_args = "set ";
+#else
+                     string method_name_and_args( "set " );
 #endif
-                     {
-                        string method_name_and_args( "set " );
-                        method_name_and_args += i->first + " ";
-                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+                     method_name_and_args += i->first + " ";
+                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
-                        execute_object_command( handle, "", method_name_and_args );
+                     execute_object_command( handle, "", method_name_and_args );
 
-                        fields_set.insert( i->first );
+                     fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+                     // NOTE: Field values that are the same as the record's current ones are omitted from
+                     // the log as are values for all transient fields.
+                     if( !is_transient && value != i->second )
+                     {
                         if( !field_values_to_log.empty( ) )
                            field_values_to_log += ",";
 
@@ -2610,8 +2626,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         field_values_to_log += field_id + '=';
                         field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
-#endif
                      }
+#endif
                   }
                }
 
@@ -2738,14 +2754,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
-
                if( progress )
                   instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
 
                op_destroy_rc rc;
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
+
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
 
                // NOTE: If the "quiet" option is used then will quietly ignore records that are
                // not found. But otherwise if not okay then call without the return code so the
@@ -3001,9 +3017,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         instance_set_variable( handle, "", j->first, j->second );
                      else
                      {
+                        bool is_transient = false;
+                        string type_name( get_field_type_name( handle, "", j->first, &is_transient ) );
+
                         if( !j->second.empty( ) && !tz_name.empty( ) )
                         {
-                           string type_name = get_field_type_name( handle, "", j->first );
                            if( type_name == "date_time" || type_name == "tdatetime" )
                               j->second = convert_local_to_utc( j->second, tz_name );
                         }
@@ -3026,7 +3044,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         execute_object_command( handle, "", method_name_and_args );
 #ifndef IS_TRADITIONAL_PLATFORM
-                        if( i == 0 && log_transaction )
+                        if( i == 0 && !is_transient && log_transaction )
                         {
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";

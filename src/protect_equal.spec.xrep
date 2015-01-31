@@ -1,6 +1,7 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start protect_equal)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( ) && `}`{`@eq`(`$arg_scripts_always`,`'true`'`)!is_auto_uid( ) && `}check_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$arg_value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
+`{`$value`=`$arg_value`}`{`@eq`(`$arg_value`,`'"@null"`'`)`$value`=`'""`'`}\
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( ) && `}`{`@eq`(`$arg_scripts_always`,`'true`'`)!is_auto_uid( ) && `}check_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
 `{`@eq`(`$arg_scope`,`'edit`'`)
 `{`@eq`(`$arg_changing`,`'`'`)\
       state |= c_state_uneditable;\

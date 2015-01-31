@@ -2522,12 +2522,14 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
+#ifdef IS_TRADITIONAL_PLATFORM
       else if( view.password_fields.count( field_id )
        || view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
       {
          if( !next.empty( ) )
             next = password_encrypt( next, get_server_id( ) );
       }
+#endif
       else
       {
          // NOTE: If the record is being created under a parent then the parent field
@@ -2674,9 +2676,12 @@ void save_record( const string& module_id,
       map< string, string >::const_iterator i;
       for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
       {
-         field_values += ',';
-         field_values += i->first + '=';
-         field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+         if( i->first != field )
+         {
+            field_values += ',';
+            field_values += i->first + '=';
+            field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+         }
       }
    }
 

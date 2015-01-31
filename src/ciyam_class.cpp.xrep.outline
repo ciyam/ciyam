@@ -1434,13 +1434,15 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_spfield=$specification_\0_spfield arg_spclass=$specification_\0_spclass arg_op=$specification_\0_op\
  arg_tfield=$specification_\0_tfield arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit\
- arg_modifier=$specification_\0_modifier arg_create_only=$specification_\0_create_only arg_create_also=$specification_\0_create_also`}\
+ arg_modifier=$specification_\0_modifier arg_create_only=$specification_\0_create_only arg_create_also=$specification_\0_create_also\
+ arg_update_only=$specification_\0_update_only`}\
 `,\
 `@eq`(`'\1`'`,`'check_compare_op_value`'`)
 `{`#check_compare_op_value.spec.xrep section=validate class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_spclass=$specification_\0_spclass arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype\
- arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_op=$specification_\0_op`}\
+ arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_op=$specification_\0_op\
+ arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'check_cond_non_null`'`)
 `{`#check_cond_non_null.spec.xrep section=validate class_name=$class_name\
@@ -1482,7 +1484,8 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `@eq`(`'\1`'`,`'check_matches_regex`'`)
 `{`#check_matches_regex.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
- arg_expression=$specification_\0_expression arg_func=$specification_\0_func`}\
+ arg_expression=$specification_\0_expression arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
+ arg_func=$specification_\0_func`}\
 `,\
 `@eq`(`'\1`'`,`'check_no_repeats`'`)
 `{`#check_no_repeats.spec.xrep section=validate class_name=$class_name\
@@ -1497,6 +1500,10 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `@eq`(`'\1`'`,`'check_no_repeats`'`)
 `{`#check_no_repeats.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list arg_skip_nulls=$specification_\0_skip_nulls`}\
+`,\
+`@eq`(`'\1`'`,`'check_not_changed_unless_was_default`'`)
+`{`#check_not_changed_unless_was_default.spec.xrep section=validate class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_allow_default=$specification_\0_allow_default`}\
 `,\
 `@eq`(`'\1`'`,`'check_null_match`'`)
 `{`#check_null_match.spec.xrep section=validate class_name=$class_name\
@@ -1615,7 +1622,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_add_action_child_create_for_uid`'`)
 `{`#transient_add_action_child_create_for_uid.spec.xrep section=after_fetch\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_child=$specification_\0_child arg_procedure=$specification_\0_procedure\
+ arg_child=$specification_\0_child arg_procedure=$specification_\0_procedure arg_modifier=$specification_\0_modifier\
  arg_permission=$specification_\0_permission arg_permission_id=$specification_\0_permission_id\
  arg_tfield=$specification_\0_tfield arg_not_self=$specification_\0_not_self\
  arg_top_level=$specification_\0_top_level arg_not_iterating=$specification_\0_not_iterating`}\
@@ -1654,11 +1661,12 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_action_for_mod`'`)
 `{`#transient_field_action_for_mod.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
- arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_default=$specification_\0_default\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
  arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
  arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
+ arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
  arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
@@ -1982,6 +1990,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_append=$specification_\0_append\
  arg_inc_clones=$specification_\0_inc_clones`}\
+`,\
+`@eq`(`'\1`'`,`'default_to_uuid`'`)
+`{`#default_to_uuid.spec.xrep section=to_store class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_dtm.spec.xrep section=to_or_for_store class_name=$class_name\
