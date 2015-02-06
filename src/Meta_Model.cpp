@@ -5384,7 +5384,7 @@ void Meta_Model::impl::impl_Generate( )
             if( !is_null( p_sclass->Source_Class( ) ) )
                p_sclass = &p_sclass->Source_Class( );
 
-            // FUTURE: It would be more efficient if this query were restricted to the "filter" records.
+            // FUTURE: It would be more efficient if this query were restricted to just the "filter" records.
             if( p_sclass->child_Specification( ).iterate_forwards( ) )
             {
                do
@@ -5396,7 +5396,8 @@ void Meta_Model::impl::impl_Generate( )
                    || specification_type == "filter_security_level"
                    || specification_type == "filter_perm_restricted"
                    || specification_type == "filter_field_value_perm"
-                   || ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( ) && specification_type == "filter_non_uid" ) )
+                   || ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( )
+                   && ( specification_type == "filter_field_uid" || specification_type == "filter_non_uid" ) ) )
                   {
                      if( !filters.empty( ) )
                         filters += ",";

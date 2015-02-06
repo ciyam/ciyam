@@ -1,8 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$value`,`'@null`'`)`$arg_value`=`'""`'`}\
    // [(start modifier_set_field)] `{`$arg_id`}
-   if( state & c_modifier_`{`$arg_modifier`}`{`@eq`(`$arg_non_trigger`,`'`'`) )`,
+   if( `{`@eq`(`$arg_update_only`,`'true`'`)!`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`|`@eq`(`$arg_create_only`,`'true`'`)is_create && `}( state & c_modifier_`{`$arg_modifier`}\
+`{`@eq`(`$arg_non_trigger`,`'`'`) ) )`,
     && is_null( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) ) )`}
       get_obj( ).`{`$arg_field`}( `{`$arg_value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
    // [(finish modifier_set_field)] `{`$arg_id`}

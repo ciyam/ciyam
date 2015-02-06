@@ -7686,6 +7686,11 @@ string exec_bulk_ops( const string& module,
       module_id = gtp_session->modules_by_name.find( module )->second;
    }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
+   bool is_standard_module_id = ( module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' ) ? false : true;
+#endif
+
    string class_id = get_class_id_for_id_or_name( module_id, mclass );
 
    ifstream inpf;
@@ -8064,7 +8069,14 @@ string exec_bulk_ops( const string& module,
                }
             }
 
-            next_log_line += " " + uid + " " + dtm + " " + module_id + " " + class_id + " " + key;
+            string class_id_to_log( class_id );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+            if( is_standard_module_id && class_id_to_log.find( module_id ) == 0 )
+               class_id_to_log.erase( 0, module_id.length( ) );
+#endif
+
+            next_log_line += " " + uid + " " + dtm + " " + module_id + " " + class_id_to_log + " " + key;
 
             if( !destroy_record )
             {
@@ -8106,7 +8118,17 @@ string exec_bulk_ops( const string& module,
                      if( !log_field_value_pairs.empty( ) )
                         log_field_value_pairs += ",";
 
-                     log_field_value_pairs += fields[ i ] + "="
+                     string field_id_to_log( fields[ i ] );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                     {
+                        field_id_to_log.erase( 0, module_id.length( ) );
+                        if( field_id_to_log.find( class_id_to_log ) == 0 )
+                           field_id_to_log.erase( 0, class_id_to_log.length( ) );
+                     }
+#endif
+                     log_field_value_pairs += field_id_to_log + "="
                       + search_replace( escaped( escaped( values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
 #ifndef IS_TRADITIONAL_PLATFORM
                   }
@@ -8122,7 +8144,18 @@ string exec_bulk_ops( const string& module,
                   if( !log_field_value_pairs.empty( ) )
                      log_field_value_pairs += ",";
 
-                  log_field_value_pairs += fixed_fields[ i ] + "="
+                  string field_id_to_log( fixed_fields[ i ] );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                  if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                  {
+                     field_id_to_log.erase( 0, module_id.length( ) );
+                     if( field_id_to_log.find( class_id_to_log ) == 0 )
+                        field_id_to_log.erase( 0, class_id_to_log.length( ) );
+                  }
+#endif
+
+                  log_field_value_pairs += field_id_to_log + "="
                    + search_replace( escaped( escaped( fixed_values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
 
                   execute_object_command( handle, "", method_name_and_args );
@@ -8512,6 +8545,11 @@ void import_package( const string& module,
       module_id = gtp_session->modules_by_name.find( module )->second;
    }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
+   bool is_standard_module_id = ( module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' ) ? false : true;
+#endif
+
    map< string, map< string, string > > skip_fields;
    if( !skip_field_info.empty( ) )
    {
@@ -8876,8 +8914,15 @@ void import_package( const string& module,
                         op_instance_update( handle, "", key_value, "", false );
                      }
 
+                     string class_id_to_log( mclass );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( is_standard_module_id && class_id_to_log.find( module_id ) == 0 )
+                        class_id_to_log.erase( 0, module_id.length( ) );
+#endif
+
                      next_log_line += " " + uid + " " + dtm + " "
-                      + module_id + " " + mclass + " " + key_value + " \"";
+                      + module_id + " " + class_id_to_log + " " + key_value + " \"";
 
                      string log_field_value_pairs;
 
@@ -8920,7 +8965,18 @@ void import_package( const string& module,
                            if( !log_field_value_pairs.empty( ) )
                               log_field_value_pairs += ",";
 
-                           log_field_value_pairs += fields[ i ]
+                           string field_id_to_log( fields[ i ] );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                           if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                           {
+                              field_id_to_log.erase( 0, module_id.length( ) );
+                              if( field_id_to_log.find( class_id_to_log ) == 0 )
+                                 field_id_to_log.erase( 0, class_id_to_log.length( ) );
+                           }
+#endif
+
+                           log_field_value_pairs += field_id_to_log
                             + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
 
                            execute_object_command( handle, "", method_name_and_args );

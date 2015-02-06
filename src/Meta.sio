@@ -598,7 +598,7 @@
       <name>Use_URL_Checksum
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
@@ -10383,7 +10383,7 @@
       <type>int
       <mandatory>true
       <enum_id>550
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>

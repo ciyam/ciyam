@@ -289,7 +289,7 @@ field_add -id=109101 Modifier Name identifier mand
 field_add -id=109102 Modifier Internal bool mand -def=0
 class_add -id=110100 Modifier_Affect Modifier_Affects
 field_add -id=110101 Modifier_Affect Scope int mand -def=0 -e=modifier_affect_scope
-field_add -id=110102 Modifier_Affect Type int mand -def=0 -e=modifier_affect_type
+field_add -id=110102 Modifier_Affect Type int mand -def=1 -e=modifier_affect_type
 field_add -id=110103 Modifier_Affect Extra int mand -def=0 -e=modifier_affect_extra
 field_add -id=110104 Modifier_Affect Internal bool mand -def=0
 class_add -id=111100 Procedure Procedures
@@ -714,7 +714,7 @@ field_add -id=127103 Application Module_Prefix identifier opt
 field_add -id=127104 Application Actions string opt -x=actions -def=127410
 field_add -id=127105 Application Generate_Status string opt
 field_add -id=127106 Application Generate_Details string opt -x=notes -transient
-field_add -id=127107 Application Use_URL_Checksum bool mand -def=1
+field_add -id=127107 Application Use_URL_Checksum bool mand -def=0
 field_add -id=127108 Application Allow_Duplicate_Logins bool mand -def=0
 field_add -id=127109 Application Allow_Module_Switching bool mand -def=1
 field_add -id=127110 Application Show_Inaccessible_Modules bool mand -def=0
