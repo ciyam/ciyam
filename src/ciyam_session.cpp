@@ -2811,7 +2811,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             tz_name = get_timezone( );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-         if( !vers.empty( ) )
+         if( !vers.empty( ) && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
             throw runtime_error( "version info is not permitted for non-traditional applications" );
 #endif
          // NOTE: Ignore version information during storage recovery.
@@ -2932,11 +2932,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-#ifdef IS_TRADITIONAL_PLATFORM
-                     instance_set_variable( handle, "", i->first, i->second );
-#else
+               {
+#ifndef IS_TRADITIONAL_PLATFORM
+                  if( get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
                      throw runtime_error( "invalid field '" + i->first + "'" );
 #endif
+                  instance_set_variable( handle, "", i->first, i->second );
+               }
                else
                   has_any_set_flds = true;
             }

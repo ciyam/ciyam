@@ -1,0 +1,16 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start filter_field_uid)] `{`$arg_id`}
+   if( get_obj( ).`{`$arg_spfield`}( ) == get_uid( )
+    && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
+      return true;
+   // [(finish filter_field_uid)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start filter_field_uid)] `{`$arg_id`}
+   dependents.insert( "`{`$arg_spfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+      names.insert( "`{`$arg_spfield`}" );
+   // [(finish filter_field_uid)] `{`$arg_id`}
+`}

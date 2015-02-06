@@ -194,7 +194,7 @@ bool g_default_Internal = bool( 0 );
 string g_default_Modifier = string( );
 int g_default_Scope = int( 0 );
 string g_default_Source_Modifier_Affect = string( );
-int g_default_Type = int( 0 );
+int g_default_Type = int( 1 );
 
 set< int > g_modifier_affect_extra_enum;
 set< int > g_modifier_affect_scope_enum;
