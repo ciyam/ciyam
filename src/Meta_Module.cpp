@@ -465,6 +465,8 @@ struct Meta_Module::impl : public Meta_Module_command_handler
 
 void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600701
    transaction_start( );
    try
@@ -531,6 +533,8 @@ void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const str
 
 void Meta_Module::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600701
    transaction_start( );
    try

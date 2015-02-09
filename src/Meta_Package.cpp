@@ -769,6 +769,8 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
 void Meta_Package::impl::impl_Cancel_Remove( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Cancel_Remove_impl>]
 //nyi
    if( !storage_locked_for_admin( ) )
@@ -787,6 +789,8 @@ void Meta_Package::impl::impl_Cancel_Remove( )
 
 void Meta_Package::impl::impl_Check_Install( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Check_Install_impl>]
 //nyi
    string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
@@ -852,6 +856,8 @@ void Meta_Package::impl::impl_Check_Install( )
 
 void Meta_Package::impl::impl_Complete_Remove( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Complete_Remove_impl>]
 //nyi
    get_obj( ).op_update( );
@@ -887,6 +893,8 @@ void Meta_Package::impl::impl_Complete_Remove( )
 
 void Meta_Package::impl::impl_Install( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Install_impl>]
 //nyi
    string std_package_key;
@@ -1276,6 +1284,8 @@ void Meta_Package::impl::impl_Install( )
 
 void Meta_Package::impl::impl_Remove( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Remove_impl>]
 //nyi
    string std_package_key;

@@ -2776,6 +2776,14 @@
       <item>sclass
      </specification>
      <specification/>
+      <id>600191b
+      <item>sclass
+     </specification>
+     <specification/>
+      <id>600191c
+      <item>sclass
+     </specification>
+     <specification/>
       <id>600192
       <item>sclass
      </specification>
@@ -4043,6 +4051,14 @@
        </specification>
        <specification/>
         <id>600191a
+        <item>src_field
+       </specification>
+       <specification/>
+        <id>600191b
+        <item>src_field
+       </specification>
+       <specification/>
+        <id>600191c
         <item>src_field
        </specification>
        <specification/>
@@ -14876,6 +14892,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600171b
+      <item>class
+     </specification>
+     <specification/>
       <id>600172
       <item>class
      </specification>
@@ -14965,6 +14985,14 @@
      </specification>
      <specification/>
       <id>600191a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600191b
+      <item>class
+     </specification>
+     <specification/>
+      <id>600191c
       <item>class
      </specification>
      <specification/>
@@ -15185,6 +15213,10 @@
      </specification>
      <specification/>
       <id>630128a
+      <item>class
+     </specification>
+     <specification/>
+      <id>630128b
       <item>class
      </specification>
      <specification/>
@@ -16826,6 +16858,10 @@
         <item>src_field
        </specification>
        <specification/>
+        <id>600191c
+        <item>src_pfield
+       </specification>
+       <specification/>
         <id>600194
         <item>src_pfield
        </specification>
@@ -16965,6 +17001,10 @@
        </specification>
        <specification/>
         <id>600191a
+        <item>src_pfield
+       </specification>
+       <specification/>
+        <id>600191b
         <item>src_pfield
        </specification>
        <specification/>
@@ -17942,6 +17982,10 @@
         <item>sfield
        </specification>
        <specification/>
+        <id>600171b
+        <item>sfield
+       </specification>
+       <specification/>
         <id>600172
         <item>sfield
        </specification>
@@ -18050,11 +18094,23 @@
         <item>field
        </specification>
        <specification/>
+        <id>600171b
+        <item>field
+       </specification>
+       <specification/>
         <id>600191
         <item>dest_field
        </specification>
        <specification/>
         <id>600191a
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600191b
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600191c
         <item>dest_field
        </specification>
        <specification/>
@@ -18792,6 +18848,10 @@
         <item>tpfield
        </specification>
        <specification/>
+        <id>600171b
+        <item>tpfield
+       </specification>
+       <specification/>
         <id>600174
         <item>spfield
        </specification>
@@ -18829,6 +18889,14 @@
        </specification>
        <specification/>
         <id>600191a
+        <item>test_pfield
+       </specification>
+       <specification/>
+        <id>600191b
+        <item>test_pfield
+       </specification>
+       <specification/>
+        <id>600191c
         <item>test_pfield
        </specification>
        <specification/>
@@ -18965,6 +19033,10 @@
        </specification>
        <specification/>
         <id>630128a
+        <item>field
+       </specification>
+       <specification/>
+        <id>630128b
         <item>field
        </specification>
        <specification/>
@@ -20110,6 +20182,10 @@
       <item>tclass
      </specification>
      <specification/>
+      <id>600171b
+      <item>tclass
+     </specification>
+     <specification/>
       <id>600174
       <item>sclass
      </specification>
@@ -20147,6 +20223,14 @@
      </specification>
      <specification/>
       <id>600191a
+      <item>tclass
+     </specification>
+     <specification/>
+      <id>600191b
+      <item>tclass
+     </specification>
+     <specification/>
+      <id>600191c
       <item>tclass
      </specification>
      <specification/>
@@ -20311,6 +20395,10 @@
      </specification>
      <specification/>
       <id>630128a
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>630128b
       <item>pclass
      </specification>
      <specification/>
@@ -22889,6 +22977,39 @@
        </specification>
        <specification/>
         <id>630128a
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114215
+      <name>Use_Source_Field_Or_Child_Enum
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600171b
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600191b
+        <item>test_field
+       </specification>
+       <specification/>
+        <id>600191c
+        <item>test_field
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+       <specification/>
+        <id>630128b
         <item>pfield
        </specification>
       </specifications>
@@ -33231,6 +33352,7 @@
      <field_info>@tab:Advanced_Options
      <field_info>114162
      <field_info>114207
+     <field_info>114215
      <field_info>114139
      <field_info>114211
      <field_info>114196
@@ -34839,6 +34961,19 @@
     </data>
    </specification>
    <specification/>
+    <id>630128b
+    <name>{Specification}_Protect_Enum_from_edit_3
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <modifier_id>500675
+     <field_id>301410
+     <pfield_id>114215
+     <field_value>true
+    </data>
+   </specification>
+   <specification/>
     <id>630129
     <name>{Specification}_Protect_Other_Class_From_Edit
     <type>modifier_field_value
@@ -35770,6 +35905,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600171b
+    <name>{Specification}_{Enum}_clear_3
+    <type>field_clear_on_changed
+    <data/>
+     <class_id>115100
+     <tclass_id>114100
+     <field_id>301460
+     <sfield_id>301420
+     <tfield_id>114215
+     <tpfield_id>301410
+    </data>
+   </specification>
+   <specification/>
     <id>600191
     <name>{Specification}_{Enum}_from_other_field_1
     <type>field_from_other_field
@@ -35799,6 +35947,39 @@
      <tfield_id>114207
      <tpfield_id>301410
      <test_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600191b
+    <name>{Specification}_{Enum}_from_other_field_3
+    <type>field_from_other_field
+    <data/>
+     <class_id>115100
+     <sclass_id>107100
+     <tclass_id>114100
+     <sfield_id>300720
+     <pfield_id>301481
+     <dfield_id>301460
+     <tfield_id>114215
+     <tpfield_id>301410
+     <test_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600191c
+    <name>{Specification}_{Enum}_from_other_field_4
+    <type>field_from_other_field
+    <data/>
+     <class_id>115100
+     <sclass_id>107100
+     <tclass_id>114100
+     <sfield_id>300720
+     <pfield_id>301495
+     <dfield_id>301460
+     <tfield_id>114215
+     <tpfield_id>301410
+     <test_value>true
+     <check_null>true
     </data>
    </specification>
    <specification/>

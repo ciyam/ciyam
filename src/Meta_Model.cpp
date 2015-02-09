@@ -1245,6 +1245,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
 void Meta_Model::impl::impl_Create_Module( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Create_Module_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -1297,6 +1299,8 @@ void Meta_Model::impl::impl_Create_Module( )
 
 void Meta_Model::impl::impl_Generate( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -5838,6 +5842,8 @@ void Meta_Model::impl::impl_Generate( )
 
 void Meta_Model::impl::impl_Generate_File_Links( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_File_Links_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -5886,6 +5892,8 @@ void Meta_Model::impl::impl_Generate_File_Links( )
 
 void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Get_Acyclic_Class_List_impl>]
 //nyi
    set< string > class_names;
@@ -6026,6 +6034,8 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
 
 void Meta_Model::impl::impl_Remove_All_Packages( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Remove_All_Packages_impl>]
 //nyi
    if( !storage_locked_for_admin( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
@@ -6115,6 +6125,8 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 
 void Meta_Model::impl::impl_Remove_Module( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Remove_Module_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.

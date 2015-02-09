@@ -147,7 +147,8 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
       e_field_id_Use_Parent_Source_Parent = 113,
       e_field_id_Use_Parent_Source_Parent_For_Class = 114,
       e_field_id_Use_Source_Field_Enum = 115,
-      e_field_id_View_Id = 116
+      e_field_id_Use_Source_Field_Or_Child_Enum = 116,
+      e_field_id_View_Id = 117
    };
 
    Meta_Specification_Type( );
@@ -488,6 +489,9 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    bool Use_Source_Field_Enum( ) const;
    void Use_Source_Field_Enum( bool Use_Source_Field_Enum );
+
+   bool Use_Source_Field_Or_Child_Enum( ) const;
+   void Use_Source_Field_Or_Child_Enum( bool Use_Source_Field_Or_Child_Enum );
 
    const std::string& View_Id( ) const;
    void View_Id( const std::string& View_Id );

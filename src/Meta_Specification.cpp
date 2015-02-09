@@ -3960,114 +3960,152 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
 void Meta_Specification::impl::impl_Add_Arg_1( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Arg_1_impl>]
    // [<finish Add_Arg_1_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Arg_2( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Arg_2_impl>]
    // [<finish Add_Arg_2_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Child_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Child_Info_impl>]
    // [<finish Add_Child_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Destination_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Destination_Info_impl>]
    // [<finish Add_Destination_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Extra_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Extra_Info_impl>]
    // [<finish Add_Extra_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Field( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Field_impl>]
    // [<finish Add_Field_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Field_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Field_Info_impl>]
    // [<finish Add_Field_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Field_Pair( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Field_Pair_impl>]
    // [<finish Add_Field_Pair_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Grandchild_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Grandchild_Info_impl>]
    // [<finish Add_Grandchild_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Info_impl>]
    // [<finish Add_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Next( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Next_impl>]
    // [<finish Add_Next_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Opt_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Opt_Info_impl>]
    // [<finish Add_Opt_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Other_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Other_Info_impl>]
    // [<finish Add_Other_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Secondary( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Secondary_impl>]
    // [<finish Add_Secondary_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Source_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Source_Info_impl>]
    // [<finish Add_Source_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Stats_1( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Stats_1_impl>]
    // [<finish Add_Stats_1_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Stats_2( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Stats_2_impl>]
    // [<finish Add_Stats_2_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Stats_Info( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Add_Stats_Info_impl>]
    // [<finish Add_Stats_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, const string& Parent_Prefix )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_All_Strings_impl>]
 //nyi
    // NOTE: If a recovery is in progress or a cascade is in progress then do nothing.
@@ -4131,6 +4169,8 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
 
 void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_All_Vars_impl>]
 //nyi
    // NOTE: If a recovery is in progress or a cascade is in progress then do nothing.
@@ -4202,6 +4242,8 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
 
 void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600169
    transaction_start( );
    try
@@ -4285,6 +4327,8 @@ void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, co
 
 void Meta_Specification::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600169
    transaction_start( );
    try
@@ -5601,6 +5645,11 @@ uint64_t Meta_Specification::impl::get_state( ) const
    if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) == true )
       state |= c_modifier_Protect_Enum;
    // [(finish modifier_field_value)] 630128a
+
+   // [(start modifier_field_value)] 630128b
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) == true )
+      state |= c_modifier_Protect_Enum;
+   // [(finish modifier_field_value)] 630128b
 
    // [(start modifier_field_value)] 630129
    if( get_obj( ).Specification_Type( ).Protect_Other_Class_From_Edit( ) == true )
@@ -7231,6 +7280,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Enum( string( ) );
    // [(finish field_clear_on_changed)] 600171a
 
+   // [(start field_clear_on_changed)] 600171b
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) && get_obj( ).Class( ).has_changed( ) )
+      get_obj( ).Enum( string( ) );
+   // [(finish field_clear_on_changed)] 600171b
+
    // [(start field_clear_on_changed)] 600172
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Test_Parent( string( ) );
@@ -7333,6 +7387,16 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) == true )
       get_obj( ).Enum( get_obj( ).Source_Field( ).Enum( ) );
    // [(finish field_from_other_field)] 600191a
+
+   // [(start field_from_other_field)] 600191b
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) == true )
+      get_obj( ).Enum( get_obj( ).Source_Field( ).Enum( ) );
+   // [(finish field_from_other_field)] 600191b
+
+   // [(start field_from_other_field)] 600191c
+   if( !is_null( get_obj( ).Source_Child( ) ) && get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) == true )
+      get_obj( ).Enum( get_obj( ).Source_Child( ).Enum( ) );
+   // [(finish field_from_other_field)] 600191c
 
    // [(start field_from_other_field)] 600192
    get_obj( ).Field_Class( get_obj( ).Field( ).Parent_Class( ) );
@@ -12421,6 +12485,40 @@ void Meta_Specification::get_required_field_names(
    }
    // [(finish field_from_other_field)] 600191a
 
+   // [(start field_from_other_field)] 600191b
+   if( needs_field_value( "Enum", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)] 600191b
+
+   // [(start field_from_other_field)] 600191c
+   if( needs_field_value( "Enum", dependents ) )
+   {
+      dependents.insert( "Source_Child" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Child ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Child ) ) )
+         names.insert( "Source_Child" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)] 600191c
+
    // [(start field_from_other_field)] 600192
    if( needs_field_value( "Field_Class", dependents ) )
    {
@@ -14415,6 +14513,14 @@ void Meta_Specification::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
       names.insert( "Specification_Type" );
    // [(finish modifier_field_value)] 630128a
+
+   // [(start modifier_field_value)] 630128b
+   dependents.insert( "Specification_Type" ); // (for Protect_Enum modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+      names.insert( "Specification_Type" );
+   // [(finish modifier_field_value)] 630128b
 
    // [(start modifier_field_value)] 630129
    dependents.insert( "Specification_Type" ); // (for Protect_Other_Class modifier)

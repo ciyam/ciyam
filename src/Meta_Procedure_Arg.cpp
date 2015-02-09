@@ -717,6 +717,8 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
 
 void Meta_Procedure_Arg::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 620093
    transaction_start( );
    try
@@ -783,6 +785,8 @@ void Meta_Procedure_Arg::impl::impl_Move_Down( const string& Restrict_Fields, co
 
 void Meta_Procedure_Arg::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 620093
    transaction_start( );
    try

@@ -3700,6 +3700,8 @@ void field_clear_specification::add_specification_data( model& m, specification_
    spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
    spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "create_only", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "update_only", "" ) );
 }
 
 string field_clear_specification::static_class_name( ) { return "field_clear"; }
@@ -8833,6 +8835,7 @@ void modifier_field_value_specification::add_specification_data( model& m, speci
    spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
 
    spec_data.data_pairs.push_back( make_pair( "testop", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "new_only", "" ) );
 }
 
 string modifier_field_value_specification::static_class_name( ) { return "modifier_field_value"; }
@@ -9105,7 +9108,10 @@ void modifier_set_field_specification::add_specification_data( model& m, specifi
    spec_data.data_pairs.push_back( make_pair( c_data_value, field_value ) );
    spec_data.data_pairs.push_back( make_pair( c_data_evalue, "" ) );
 
+   spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "non_trigger", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "create_only", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "update_only", "" ) );
 }
 
 string modifier_set_field_specification::static_class_name( ) { return "modifier_set_field"; }

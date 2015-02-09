@@ -2851,6 +2851,8 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
 void Meta_List_Field::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600448
    transaction_start( );
    try
@@ -2917,6 +2919,8 @@ void Meta_List_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
 
 void Meta_List_Field::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600448
    transaction_start( );
    try

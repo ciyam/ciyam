@@ -813,7 +813,9 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`@in`(`'\\0`'`,`$\$_all_complex_inputs`) const \\1& \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_non_inputs`) \\1& \\0`}\
 `+,`] `})
-{`{`?`$all_procedure_specifications`[`$all_procedure_specifications`%,`,\
+{
+   uint64_t state = p_obj->get_state( );
+`{`?`$all_procedure_specifications`[`$all_procedure_specifications`%,`,\
 `{`@eq`(`'\\1`'`,`'create_child`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#create_child.spec.xrep section=procedure full_class_name=$full_class_name\
  arg_id=$specification_\\0_id arg_child=$specification_\\0_child arg_pfield=$specification_\\0_pfield\
@@ -1086,7 +1088,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield\
  arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue arg_value=$specification_\0_value arg_evalue=$specification_\0_evalue\
  arg_testop=$specification_\0_testop arg_modifier=$specification_\0_modifier arg_not_eq=$specification_\0_not_eq arg_not_dflt=$specification_\0_not_dflt\
- arg_cvt_func=$specification_\0_cvt_func arg_fistexttype=$specification_\0_fistexttype`}\
+ arg_new_only=$specification_\0_new_only arg_cvt_func=$specification_\0_cvt_func arg_fistexttype=$specification_\0_fistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_from_not_other_mod`'`)
 `{`#modifier_from_not_other_mod.spec.xrep section=get_state\
@@ -1641,7 +1643,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_action`'`)
 `{`#transient_field_action.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
- arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield\
+ arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield arg_modifier=$specification_\0_modifier\
  arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield arg_default=$specification_\0_default\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
@@ -1671,7 +1673,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
  arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
  arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
- arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
+ arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans arg_not_sess_var=$specification_\0_not_sess_var\
  arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
@@ -2037,7 +2039,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
- arg_set_to_default=$specification_\0_set_to_default`}\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
 `@eq`(`'\1`'`,`'field_clear_if_executed`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_clear_if_executed.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2373,7 +2375,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
- arg_set_to_default=$specification_\0_set_to_default`}\
+ arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
 `@eq`(`'\1`'`,`'field_clear_if_executed`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_clear_if_executed.spec.xrep section=to_or_for_store class_name=$class_name\

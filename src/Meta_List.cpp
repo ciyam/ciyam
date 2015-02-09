@@ -2309,6 +2309,8 @@ struct Meta_List::impl : public Meta_List_command_handler
 
 void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_PDF_List_impl>]
 //nyi
    string list_ext;
