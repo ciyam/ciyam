@@ -181,6 +181,7 @@ const char* const c_field_id_Use_Parent_Source_Field_For_Class = "114190";
 const char* const c_field_id_Use_Parent_Source_Parent = "114144";
 const char* const c_field_id_Use_Parent_Source_Parent_For_Class = "114152";
 const char* const c_field_id_Use_Source_Field_Enum = "114207";
+const char* const c_field_id_Use_Source_Field_Or_Child_Enum = "114215";
 const char* const c_field_id_View_Id = "114170";
 
 const char* const c_field_name_Allow_Child_Relationship = "Allow_Child_Relationship";
@@ -298,6 +299,7 @@ const char* const c_field_name_Use_Parent_Source_Field_For_Class = "Use_Parent_S
 const char* const c_field_name_Use_Parent_Source_Parent = "Use_Parent_Source_Parent";
 const char* const c_field_name_Use_Parent_Source_Parent_For_Class = "Use_Parent_Source_Parent_For_Class";
 const char* const c_field_name_Use_Source_Field_Enum = "Use_Source_Field_Enum";
+const char* const c_field_name_Use_Source_Field_Or_Child_Enum = "Use_Source_Field_Or_Child_Enum";
 const char* const c_field_name_View_Id = "View_Id";
 
 const char* const c_field_display_name_Allow_Child_Relationship = "field_specification_type_allow_child_relationship";
@@ -415,9 +417,10 @@ const char* const c_field_display_name_Use_Parent_Source_Field_For_Class = "fiel
 const char* const c_field_display_name_Use_Parent_Source_Parent = "field_specification_type_use_parent_source_parent";
 const char* const c_field_display_name_Use_Parent_Source_Parent_For_Class = "field_specification_type_use_parent_source_parent_for_class";
 const char* const c_field_display_name_Use_Source_Field_Enum = "field_specification_type_use_source_field_enum";
+const char* const c_field_display_name_Use_Source_Field_Or_Child_Enum = "field_specification_type_use_source_field_or_child_enum";
 const char* const c_field_display_name_View_Id = "field_specification_type_view_id";
 
-const int c_num_fields = 116;
+const int c_num_fields = 117;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -534,6 +537,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "114212",
    "114213",
    "114214",
+   "114215",
    "301700",
    "301710",
    "301720"
@@ -656,6 +660,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Use_Parent_Source_Parent",
    "Use_Parent_Source_Parent_For_Class",
    "Use_Source_Field_Enum",
+   "Use_Source_Field_Or_Child_Enum",
    "View_Id"
 };
 
@@ -811,6 +816,7 @@ bool g_default_Use_Parent_Source_Field_For_Class = bool( 0 );
 bool g_default_Use_Parent_Source_Parent = bool( 0 );
 bool g_default_Use_Parent_Source_Parent_For_Class = bool( 0 );
 bool g_default_Use_Source_Field_Enum = bool( 0 );
+bool g_default_Use_Source_Field_Or_Child_Enum = bool( 0 );
 string g_default_View_Id = string( );
 
 set< int > g_field_type_enum;
@@ -1834,6 +1840,12 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
          string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Source_Field_Enum( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Use_Source_Field_Or_Child_Enum || field_name == c_field_name_Use_Source_Field_Or_Child_Enum )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Source_Field_Or_Child_Enum( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_View_Id || field_name == c_field_name_View_Id )
       {
          handled = true;
@@ -2657,6 +2669,13 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
           *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Source_Field_Enum, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Use_Source_Field_Or_Child_Enum || field_name == c_field_name_Use_Source_Field_Or_Child_Enum )
+      {
+         handled = true;
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Source_Field_Or_Child_Enum, field_value );
+      }
+
       if( !handled && field_name == c_field_id_View_Id || field_name == c_field_name_View_Id )
       {
          handled = true;
@@ -3061,6 +3080,9 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    bool impl_Use_Source_Field_Enum( ) const { return lazy_fetch( p_obj ), v_Use_Source_Field_Enum; }
    void impl_Use_Source_Field_Enum( bool Use_Source_Field_Enum ) { v_Use_Source_Field_Enum = Use_Source_Field_Enum; }
 
+   bool impl_Use_Source_Field_Or_Child_Enum( ) const { return lazy_fetch( p_obj ), v_Use_Source_Field_Or_Child_Enum; }
+   void impl_Use_Source_Field_Or_Child_Enum( bool Use_Source_Field_Or_Child_Enum ) { v_Use_Source_Field_Or_Child_Enum = Use_Source_Field_Or_Child_Enum; }
+
    const string& impl_View_Id( ) const { return lazy_fetch( p_obj ), v_View_Id; }
    void impl_View_Id( const string& View_Id ) { v_View_Id = View_Id; }
 
@@ -3435,6 +3457,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    bool v_Use_Parent_Source_Parent;
    bool v_Use_Parent_Source_Parent_For_Class;
    bool v_Use_Source_Field_Enum;
+   bool v_Use_Source_Field_Or_Child_Enum;
    string v_View_Id;
 
    string v_Child_Specification_Type;
@@ -3455,6 +3478,8 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
 void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start meta_trait_val_proc)] 600211
    if( get_obj( ).Field_type( ) != c_enum_field_type_Any_Type )
    {
@@ -4188,6 +4213,10 @@ string Meta_Specification_Type::impl::get_field_value( int field ) const
       break;
 
       case 115:
+      retval = to_string( impl_Use_Source_Field_Or_Child_Enum( ) );
+      break;
+
+      case 116:
       retval = to_string( impl_View_Id( ) );
       break;
 
@@ -4663,6 +4692,10 @@ void Meta_Specification_Type::impl::set_field_value( int field, const string& va
       break;
 
       case 115:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Source_Field_Or_Child_Enum, value );
+      break;
+
+      case 116:
       func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_View_Id, value );
       break;
 
@@ -5138,6 +5171,10 @@ bool Meta_Specification_Type::impl::is_field_default( int field ) const
       break;
 
       case 115:
+      retval = ( v_Use_Source_Field_Or_Child_Enum == g_default_Use_Source_Field_Or_Child_Enum );
+      break;
+
+      case 116:
       retval = ( v_View_Id == g_default_View_Id );
       break;
 
@@ -5343,6 +5380,7 @@ void Meta_Specification_Type::impl::clear( )
    v_Use_Parent_Source_Parent = g_default_Use_Parent_Source_Parent;
    v_Use_Parent_Source_Parent_For_Class = g_default_Use_Parent_Source_Parent_For_Class;
    v_Use_Source_Field_Enum = g_default_Use_Source_Field_Enum;
+   v_Use_Source_Field_Or_Child_Enum = g_default_Use_Source_Field_Or_Child_Enum;
    v_View_Id = g_default_View_Id;
 
    v_Child_Specification_Type = string( );
@@ -6820,6 +6858,16 @@ void Meta_Specification_Type::Use_Source_Field_Enum( bool Use_Source_Field_Enum 
    p_impl->impl_Use_Source_Field_Enum( Use_Source_Field_Enum );
 }
 
+bool Meta_Specification_Type::Use_Source_Field_Or_Child_Enum( ) const
+{
+   return p_impl->impl_Use_Source_Field_Or_Child_Enum( );
+}
+
+void Meta_Specification_Type::Use_Source_Field_Or_Child_Enum( bool Use_Source_Field_Or_Child_Enum )
+{
+   p_impl->impl_Use_Source_Field_Or_Child_Enum( Use_Source_Field_Or_Child_Enum );
+}
+
 const string& Meta_Specification_Type::View_Id( ) const
 {
    return p_impl->impl_View_Id( );
@@ -8226,6 +8274,16 @@ const char* Meta_Specification_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Use_Source_Field_Or_Child_Enum )
+   {
+      p_id = c_field_id_Use_Source_Field_Or_Child_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_View_Id )
    {
       p_id = c_field_id_View_Id;
@@ -9397,6 +9455,16 @@ const char* Meta_Specification_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Use_Source_Field_Or_Child_Enum )
+   {
+      p_name = c_field_name_Use_Source_Field_Or_Child_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_View_Id )
    {
       p_name = c_field_name_View_Id;
@@ -10016,6 +10084,11 @@ string Meta_Specification_Type::get_field_uom_symbol( const string& id_or_name )
       name = string( c_field_display_name_Use_Source_Field_Enum );
       get_module_string( c_field_display_name_Use_Source_Field_Enum, &next );
    }
+   else if( id_or_name == c_field_id_Use_Source_Field_Or_Child_Enum || id_or_name == c_field_name_Use_Source_Field_Or_Child_Enum )
+   {
+      name = string( c_field_display_name_Use_Source_Field_Or_Child_Enum );
+      get_module_string( c_field_display_name_Use_Source_Field_Or_Child_Enum, &next );
+   }
    else if( id_or_name == c_field_id_View_Id || id_or_name == c_field_name_View_Id )
    {
       name = string( c_field_display_name_View_Id );
@@ -10266,6 +10339,8 @@ string Meta_Specification_Type::get_field_display_name( const string& id_or_name
       display_name = get_module_string( c_field_display_name_Use_Parent_Source_Parent_For_Class );
    else if( id_or_name == c_field_id_Use_Source_Field_Enum || id_or_name == c_field_name_Use_Source_Field_Enum )
       display_name = get_module_string( c_field_display_name_Use_Source_Field_Enum );
+   else if( id_or_name == c_field_id_Use_Source_Field_Or_Child_Enum || id_or_name == c_field_name_Use_Source_Field_Or_Child_Enum )
+      display_name = get_module_string( c_field_display_name_Use_Source_Field_Or_Child_Enum );
    else if( id_or_name == c_field_id_View_Id || id_or_name == c_field_name_View_Id )
       display_name = get_module_string( c_field_display_name_View_Id );
 
@@ -10657,6 +10732,7 @@ void Meta_Specification_Type::get_sql_column_names(
    names.push_back( "C_Use_Parent_Source_Parent" );
    names.push_back( "C_Use_Parent_Source_Parent_For_Class" );
    names.push_back( "C_Use_Source_Field_Enum" );
+   names.push_back( "C_Use_Source_Field_Or_Child_Enum" );
    names.push_back( "C_View_Id" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -10784,6 +10860,7 @@ void Meta_Specification_Type::get_sql_column_values(
    values.push_back( to_string( Use_Parent_Source_Parent( ) ) );
    values.push_back( to_string( Use_Parent_Source_Parent_For_Class( ) ) );
    values.push_back( to_string( Use_Source_Field_Enum( ) ) );
+   values.push_back( to_string( Use_Source_Field_Or_Child_Enum( ) ) );
    values.push_back( sql_quote( to_string( View_Id( ) ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -10975,6 +11052,7 @@ void Meta_Specification_Type::static_get_field_info( field_info_container& all_f
    all_field_info.push_back( field_info( "114144", "Use_Parent_Source_Parent", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "114152", "Use_Parent_Source_Parent_For_Class", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "114207", "Use_Source_Field_Enum", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "114215", "Use_Source_Field_Or_Child_Enum", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "114170", "View_Id", "string", false, "", "" ) );
 }
 
@@ -11467,6 +11545,10 @@ const char* Meta_Specification_Type::static_get_field_id( field_id id )
       break;
 
       case 116:
+      p_id = "114215";
+      break;
+
+      case 117:
       p_id = "114170";
       break;
    }
@@ -11944,6 +12026,10 @@ const char* Meta_Specification_Type::static_get_field_name( field_id id )
       break;
 
       case 116:
+      p_id = "Use_Source_Field_Or_Child_Enum";
+      break;
+
+      case 117:
       p_id = "View_Id";
       break;
    }
@@ -12190,8 +12276,10 @@ int Meta_Specification_Type::static_get_field_num( const string& field )
       rc += 114;
    else if( field == c_field_id_Use_Source_Field_Enum || field == c_field_name_Use_Source_Field_Enum )
       rc += 115;
-   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+   else if( field == c_field_id_Use_Source_Field_Or_Child_Enum || field == c_field_name_Use_Source_Field_Or_Child_Enum )
       rc += 116;
+   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+      rc += 117;
 
    return rc - 1;
 }
@@ -12334,6 +12422,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Use_Parent_Source_Parent INTEGER NOT NULL,"
     "C_Use_Parent_Source_Parent_For_Class INTEGER NOT NULL,"
     "C_Use_Source_Field_Enum INTEGER NOT NULL,"
+    "C_Use_Source_Field_Or_Child_Enum INTEGER NOT NULL,"
     "C_View_Id VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

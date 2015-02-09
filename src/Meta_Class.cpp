@@ -2342,6 +2342,8 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
 void Meta_Class::impl::impl_Generate( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.

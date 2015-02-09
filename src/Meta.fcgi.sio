@@ -6891,6 +6891,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_use_source_field_or_child_enum
+     <field>114215
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_use_parent_class
      <field>114139
      <ftype>bool

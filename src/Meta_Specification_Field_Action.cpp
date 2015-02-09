@@ -914,6 +914,8 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
 void Meta_Specification_Field_Action::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_All_Vars_impl>]
 //nyi
    // NOTE: If a restore is in progress then do nothing.

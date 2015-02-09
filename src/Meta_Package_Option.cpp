@@ -2038,6 +2038,8 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
 void Meta_Package_Option::impl::impl_Clear( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Clear_impl>]
 //nyi
    get_obj( ).op_update( );
@@ -2048,12 +2050,16 @@ void Meta_Package_Option::impl::impl_Clear( )
 
 void Meta_Package_Option::impl::impl_Edit( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Edit_impl>]
    // [<finish Edit_impl>]
 }
 
 void Meta_Package_Option::impl::impl_Select( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Select_impl>]
 //nyi
    get_obj( ).op_update( );

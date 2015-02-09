@@ -2277,6 +2277,8 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
 void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600370
    transaction_start( );
    try
@@ -2343,6 +2345,8 @@ void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
 
 void Meta_View_Field::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600370
    transaction_start( );
    try

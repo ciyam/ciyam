@@ -2704,6 +2704,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
 void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Get_Text_Type_impl>]
 //nyi
    Result = e_sql_char_type_large;
@@ -3724,7 +3726,7 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600054
 
    // [(start modifier_set_field)] 600062
-   if( state & c_modifier_Is_Any_Non_Text_Type )
+   if( ( state & c_modifier_Is_Any_Non_Text_Type ) )
       get_obj( ).Mandatory( true );
    // [(finish modifier_set_field)] 600062
 
@@ -3737,7 +3739,7 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_empty_action)] 600063
 
    // [(start modifier_set_field)] 610065
-   if( state & c_modifier_Is_Any_Non_Text_Type )
+   if( ( state & c_modifier_Is_Any_Non_Text_Type ) )
       get_obj( ).Is_Text_Type( false );
    // [(finish modifier_set_field)] 610065
 

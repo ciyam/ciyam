@@ -2198,7 +2198,7 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_empty_action)] 630100
 
    // [(start modifier_set_field)] 650100
-   if( state & c_modifier_Is_Transient )
+   if( ( state & c_modifier_Is_Transient ) )
       get_obj( ).Cascade_Op( -1 );
    // [(finish modifier_set_field)] 650100
 

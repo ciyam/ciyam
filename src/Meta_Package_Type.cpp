@@ -543,6 +543,8 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
 void Meta_Package_Type::impl::impl_Install( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Install_impl>]
 //nyi
    string package_file;

@@ -593,6 +593,8 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
 void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600020
    transaction_start( );
    try
@@ -659,6 +661,8 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
 
 void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600020
    transaction_start( );
    try

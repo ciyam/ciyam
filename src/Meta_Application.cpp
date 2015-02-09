@@ -1525,6 +1525,8 @@ struct Meta_Application::impl : public Meta_Application_command_handler
 
 void Meta_Application::impl::impl_Generate( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -2101,6 +2103,8 @@ void Meta_Application::impl::impl_Generate( )
 
 void Meta_Application::impl::impl_Generate_File_Links( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_File_Links_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -2121,6 +2125,8 @@ void Meta_Application::impl::impl_Generate_File_Links( )
 
 void Meta_Application::impl::impl_Generate_Modules( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_Modules_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -2143,6 +2149,8 @@ void Meta_Application::impl::impl_Generate_Modules( )
 
 void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_Upgrade_DDL_impl>]
 //nyi
    // NOTE: If a recovery is in progress then do nothing.
@@ -2218,6 +2226,8 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 
 void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Test_Proc_1_impl>]
 //nyi
    Output = get_obj( ).get_variable( "test_var" );
@@ -2227,6 +2237,8 @@ void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 
 void Meta_Application::impl::impl_Test_Proc_2( const string& Input, string& Output )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Test_Proc_2_impl>]
 //nyi
    Output = get_obj( ).get_variable( "test_var" );

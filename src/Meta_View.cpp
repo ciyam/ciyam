@@ -1171,6 +1171,8 @@ struct Meta_View::impl : public Meta_View_command_handler
 
 void Meta_View::impl::impl_Generate_PDF_View( )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [<start Generate_PDF_View_impl>]
 //nyi
    string bat_filename( get_obj( ).Model( ).Name( ) );

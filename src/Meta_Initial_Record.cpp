@@ -480,6 +480,8 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
 
 void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600602
    transaction_start( );
    try
@@ -546,6 +548,8 @@ void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, c
 
 void Meta_Initial_Record::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
+   uint64_t state = p_obj->get_state( );
+
    // [(start move_up_and_down)] 600602
    transaction_start( );
    try
