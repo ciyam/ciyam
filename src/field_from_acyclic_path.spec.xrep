@@ -7,10 +7,19 @@
 `{`@eq`(`'after_fetch_or_for_store`'`,`$section`)\
 `{`@eq`(`$arg_embed_links`,`'`'`)`$arg_ext_field`=`'`'`}\
 `{`!`@eq`(`$arg_ext_field`,`'`'`)`$arg_external`=`'`'`}\
+`{`$check_transient`=`'`'`}\
+`{`$transient_or_parent_iteration`=`'`'`}\
+`{`@eq`(`$arg_allow_parent_iteration`,`'true`'`)`$transient_or_parent_iteration`=`'true`'`}\
+`{`@eq`(`$arg_ftransient`,`'1`'`)`&`@eq`(`$arg_ext_field`,`'`'`)`$check_transient`=`'true`'`}\
+`{`@eq`(`$arg_ftransient`,`'1`'`)`&`@eq`(`$arg_ext_field`,`'`'`)`$transient_or_parent_iteration`=`'true`'`}\
    // [(start field_from_acyclic_path)] `{`$arg_id`}
-   if( ( !get_obj( ).get_graph_parent( )
-    || !get_obj( ).get_graph_parent( )->get_is_fetching( ) )`{`@eq`(`$arg_ftransient`,`'1`'`)`&`@eq`(`$arg_ext_field`,`'`'`)
-    && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" ) || required_transients.count( "`{`$arg_dest_field`}" ) )`} )
+`{`@eq`(`$transient_or_parent_iteration`,`'`'`)\
+   // NOTE: Empty code block for scope purposes.
+`,\
+   if( `{`@eq`(`$arg_allow_parent_iteration`,`'`'`)( !get_obj( ).get_graph_parent( )
+    || !get_obj( ).get_graph_parent( )->get_is_iterating( ) )`{`@eq`(`$check_transient`,`'true`'`)
+    && `}`}`{`@eq`(`$check_transient`,`'true`'`)( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" ) || required_transients.count( "`{`$arg_dest_field`}" ) )`} )
+`}\
    {
 `{`@eq`(`$arg_ext_field`,`'`'`)\
       string s;
