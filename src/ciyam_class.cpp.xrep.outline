@@ -1627,7 +1627,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field\
  arg_dest_field=$specification_\0_dest_field arg_separator=$specification_\0_separator\
  arg_embed_links=$specification_\0_embed_links arg_external=$specification_\0_external\
- arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field`}\
+ arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field\
+ arg_allow_parent_iteration=$specification_\0_allow_parent_iteration`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_search_replace`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
 `{`#field_from_search_replace.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
@@ -2414,7 +2415,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field\
  arg_dest_field=$specification_\0_dest_field arg_separator=$specification_\0_separator\
  arg_embed_links=$specification_\0_embed_links arg_external=$specification_\0_external\
- arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field`}\
+ arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field\
+ arg_allow_parent_iteration=$specification_\0_allow_parent_iteration`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
