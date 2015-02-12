@@ -4,6 +4,11 @@ Understanding the Main Class Functions
 The following document identifies the main functions that are called (and in which order that they are called
 in) for objects that are derived from the standard "class_base" base class (i.e. all Meta "Class" objects).
 
+It should be noted that the "validate" function actually gets called twice (the first call occurs immediately
+after the "to_store" call and the second call occurs immediately after the "for_store" call). The second call
+is not explicitly documented below as this secondary validation is only intended as a failsafe mechanism (for
+unexpected bad code in "for_store").
+
 -------------------------------------------------------------------------------------------------------------
 1) Creating a new record:
 
@@ -11,7 +16,7 @@ Protocol: perform_create <uid> <dtm> <module> <mclass> <key> field1=value1,field
 (where <key> is " " for an automatically created key and for clone "[<new_key>] <clone_key>")
 
 Equivalent C++ Code for Rules:
-object.op_create( <key_info> );
+object.op_create( <key> );
 object.<field1>( <value1> );
 object.<field2>( <value2> );
 ...
@@ -115,6 +120,7 @@ for_store      Update        Update       If the "validate" call found no issues
                                           such other records do not require this record to have actually been
                                           created in the DB) and to provid calculated values that depend upon
                                           other DB records.
+
 
 after_store    Update        <none>       Assuming no error has occurred previously this function is the last
 [commits the tx if one was started]       step in the update process which allows further operations that are

@@ -69,6 +69,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Permission.cmh"
 
 const int32_t c_version = 1;
@@ -314,10 +322,10 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
    }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    Meta_Workgroup& impl_Workgroup( )
    {

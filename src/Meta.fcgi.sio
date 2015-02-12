@@ -7857,7 +7857,7 @@
      <ftype>int
      <extra>enum=661
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate,20000:protect
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
     </field>
     <field/>
      <name>field_view_field_access_restriction
@@ -7885,7 +7885,7 @@
      <ftype>int
      <extra>enum=662
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,100000:protect
     </field>
     <field/>
      <name>field_view_field_change_restriction
@@ -7893,7 +7893,7 @@
      <ftype>int
      <extra>enum=660
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,80000:protect
     </field>
     <field/>
      <name>field_view_field_change_permission
@@ -7901,7 +7901,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,80000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name

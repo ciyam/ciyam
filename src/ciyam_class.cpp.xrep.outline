@@ -321,6 +321,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "`{`$full_class_name`}.cmh"
 
 const int32_t c_version = `{`$class_version`};
@@ -668,7 +676,7 @@ struct \$::impl : public \$_command_handler
 `{`?`$complex_fields`&`@in`(`'\0`'`,`$complex_fields`)\
 
    const \1& impl_\0( ) const { return lazy_fetch( p_obj ), v_\0; }
-   void impl_\0( const \1& \0 ) { v_\0 = \0; }
+   void impl_\0( const \1& \0 ) { sanity_check( \0 ); v_\0 = \0; }
 `}\
 `]`}`{`?`$all_fields`[`$all_fields`%,`,\
 `{`@in`(`'\0`'`,`$parent_fields`)\
@@ -1071,6 +1079,11 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_period=$specification_\0_period arg_type=$specification_\0_type arg_annual=$specification_\0_annual`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_field_changed`'`)
+`{`#modifier_field_changed.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_field_compare`'`)
 `{`#modifier_field_compare.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
@@ -1098,6 +1111,11 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#modifier_from_other_mods.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_op=$specification_\0_op arg_modifier=$specification_\0_modifier\
  arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier`}\
+`,\
+`@eq`(`'\1`'`,`'modifier_has_variable`'`)
+`{`#modifier_has_variable.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_value=$specification_\0_value\
+ arg_session_var=$specification_\0_session_var `}\
 `,\
 `@eq`(`'\1`'`,`'modifier_key_value`'`)
 `{`#modifier_key_value.spec.xrep section=get_state\
@@ -1442,14 +1460,15 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_spfield=$specification_\0_spfield arg_spclass=$specification_\0_spclass arg_op=$specification_\0_op\
  arg_tfield=$specification_\0_tfield arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit\
  arg_modifier=$specification_\0_modifier arg_create_only=$specification_\0_create_only arg_create_also=$specification_\0_create_also\
- arg_update_only=$specification_\0_update_only`}\
+ arg_update_only=$specification_\0_update_only arg_primary_only=$specification_\0_primary_only arg_allow_internal=$specification_\0_allow_internal`}\
 `,\
 `@eq`(`'\1`'`,`'check_compare_op_value`'`)
 `{`#check_compare_op_value.spec.xrep section=validate class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_spclass=$specification_\0_spclass arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype\
  arg_value=$specification_\0_value arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_op=$specification_\0_op\
- arg_create_only=$specification_\0_create_only`}\
+ arg_enum_item=$specification_\0_enum_item arg_create_only=$specification_\0_create_only arg_primary_only=$specification_\0_primary_only\
+ arg_allow_internal=$specification_\0_allow_internal`}\
 `,\
 `@eq`(`'\1`'`,`'check_cond_non_null`'`)
 `{`#check_cond_non_null.spec.xrep section=validate class_name=$class_name\
@@ -1466,6 +1485,11 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `{`#check_field_is_between.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_lfield=$specification_\0_lfield\
  arg_rfield=$specification_\0_rfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'check_field_not_changed`'`)
+`{`#check_field_not_changed.spec.xrep section=validate class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
+ arg_modifier=$specification_\0_modifier arg_primary_only=$specification_\0_primary_only`}\
 `,\
 `@eq`(`'\1`'`,`'check_field_op_field`'`)
 `{`#check_field_op_field.spec.xrep section=validate class_name=$class_name\
@@ -1777,10 +1801,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_fk_field`'`)
 `{`#transient_fk_field.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_pfield=$specification_\0_pfield arg_cfield=$specification_\0_cfield`}\
-`,\
-`@eq`(`'\1`'`,`'transient_has_child`'`)
-`{`#transient_has_child.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value arg_child=$specification_\0_child`}\
 `,\
 `@eq`(`'\1`'`,`'transient_permission_concat`'`)
 `{`#transient_permission_concat.spec.xrep section=after_fetch class_name=$class_name\
@@ -3952,6 +3972,11 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `@eq`(`'\1`'`,`'modifier_date_notification`'`)
 `{`#modifier_date_notification.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier`}\
+`,\
+`@eq`(`'\1`'`,`'modifier_field_changed`'`)
+`{`#modifier_field_changed.spec.xrep section=get_always_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_field_compare`'`)
 `{`#modifier_field_compare.spec.xrep section=get_always_required_field_names\

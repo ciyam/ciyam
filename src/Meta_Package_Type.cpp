@@ -49,6 +49,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Package_Type.cmh"
 
 const int32_t c_version = 1;
@@ -421,13 +429,13 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    const string& impl_Dependencies( ) const { return lazy_fetch( p_obj ), v_Dependencies; }
-   void impl_Dependencies( const string& Dependencies ) { v_Dependencies = Dependencies; }
+   void impl_Dependencies( const string& Dependencies ) { sanity_check( Dependencies ); v_Dependencies = Dependencies; }
 
    const string& impl_File( ) const { return lazy_fetch( p_obj ), v_File; }
-   void impl_File( const string& File ) { v_File = File; }
+   void impl_File( const string& File ) { sanity_check( File ); v_File = File; }
 
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
@@ -436,13 +444,13 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    void impl_Multi( bool Multi ) { v_Multi = Multi; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
-   void impl_Plural( const string& Plural ) { v_Plural = Plural; }
+   void impl_Plural( const string& Plural ) { sanity_check( Plural ); v_Plural = Plural; }
 
    const string& impl_Single( ) const { return lazy_fetch( p_obj ), v_Single; }
-   void impl_Single( const string& Single ) { v_Single = Single; }
+   void impl_Single( const string& Single ) { sanity_check( Single ); v_Single = Single; }
 
    int impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
    void impl_Version( int Version ) { v_Version = Version; }

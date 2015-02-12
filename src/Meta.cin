@@ -1166,8 +1166,10 @@ modifier_add -id=500730 View_Field Hide_FK_Fields Source_Parent:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate
 modifier_add -id=500740 View_Field Is_Not_Enum Enum_Starts_At:relegate,Enum_Finishes_At:relegate
-modifier_add -id=500741 View_Field Protect_Access Access_Scope:protect,Access_Restriction:protect,Access_{Permission}:protect
-modifier_add -id=500742 View_Field Protect_Change Change_Scope:protect,Change_Restriction:protect,Change_{Permission}:protect
+modifier_add -id=500741 View_Field Protect_Access_Scope Access_Scope:protect
+modifier_add -id=500742 View_Field Protect_Access_Restriction Access_Restriction:protect,Access_{Permission}:protect
+modifier_add -id=500743 View_Field Protect_Change_Scope Change_Scope:protect
+modifier_add -id=500744 View_Field Protect_Change_Restriction Change_Restriction:protect,Change_{Permission}:protect
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
 modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate\
 ,Create_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate,Destroy_Parent_Modifier:relegate

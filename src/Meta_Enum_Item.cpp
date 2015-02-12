@@ -60,6 +60,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Enum_Item.cmh"
 
 const int32_t c_version = 1;
@@ -367,13 +375,13 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
 
    const string& impl_Label( ) const { return lazy_fetch( p_obj ), v_Label; }
-   void impl_Label( const string& Label ) { v_Label = Label; }
+   void impl_Label( const string& Label ) { sanity_check( Label ); v_Label = Label; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
-   void impl_Value( const string& Value ) { v_Value = Value; }
+   void impl_Value( const string& Value ) { sanity_check( Value ); v_Value = Value; }
 
    Meta_Enum& impl_Enum( )
    {

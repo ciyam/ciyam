@@ -67,6 +67,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Type.cmh"
 
 const int32_t c_version = 1;
@@ -962,7 +970,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    void impl_Fraction_Limit( int Fraction_Limit ) { v_Fraction_Limit = Fraction_Limit; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    int impl_Int_Type( ) const { return lazy_fetch( p_obj ), v_Int_Type; }
    void impl_Int_Type( int Int_Type ) { v_Int_Type = Int_Type; }
@@ -974,13 +982,13 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    void impl_Max_Size( int Max_Size ) { v_Max_Size = Max_Size; }
 
    const string& impl_Max_Value( ) const { return lazy_fetch( p_obj ), v_Max_Value; }
-   void impl_Max_Value( const string& Max_Value ) { v_Max_Value = Max_Value; }
+   void impl_Max_Value( const string& Max_Value ) { sanity_check( Max_Value ); v_Max_Value = Max_Value; }
 
    const string& impl_Min_Value( ) const { return lazy_fetch( p_obj ), v_Min_Value; }
-   void impl_Min_Value( const string& Min_Value ) { v_Min_Value = Min_Value; }
+   void impl_Min_Value( const string& Min_Value ) { sanity_check( Min_Value ); v_Min_Value = Min_Value; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    int impl_Numeric_Decimals( ) const { return lazy_fetch( p_obj ), v_Numeric_Decimals; }
    void impl_Numeric_Decimals( int Numeric_Decimals ) { v_Numeric_Decimals = Numeric_Decimals; }

@@ -59,6 +59,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_User.cmh"
 
 const int32_t c_version = 1;
@@ -438,25 +446,25 @@ struct Meta_User::impl : public Meta_User_command_handler
    void impl_Active( bool Active ) { v_Active = Active; }
 
    const string& impl_Description( ) const { return lazy_fetch( p_obj ), v_Description; }
-   void impl_Description( const string& Description ) { v_Description = Description; }
+   void impl_Description( const string& Description ) { sanity_check( Description ); v_Description = Description; }
 
    const string& impl_Email( ) const { return lazy_fetch( p_obj ), v_Email; }
-   void impl_Email( const string& Email ) { v_Email = Email; }
+   void impl_Email( const string& Email ) { sanity_check( Email ); v_Email = Email; }
 
    const string& impl_Password( ) const { return lazy_fetch( p_obj ), v_Password; }
-   void impl_Password( const string& Password ) { v_Password = Password; }
+   void impl_Password( const string& Password ) { sanity_check( Password ); v_Password = Password; }
 
    const string& impl_Password_Hash( ) const { return lazy_fetch( p_obj ), v_Password_Hash; }
-   void impl_Password_Hash( const string& Password_Hash ) { v_Password_Hash = Password_Hash; }
+   void impl_Password_Hash( const string& Password_Hash ) { sanity_check( Password_Hash ); v_Password_Hash = Password_Hash; }
 
    const string& impl_Permissions( ) const { return lazy_fetch( p_obj ), v_Permissions; }
-   void impl_Permissions( const string& Permissions ) { v_Permissions = Permissions; }
+   void impl_Permissions( const string& Permissions ) { sanity_check( Permissions ); v_Permissions = Permissions; }
 
    const string& impl_User_Hash( ) const { return lazy_fetch( p_obj ), v_User_Hash; }
-   void impl_User_Hash( const string& User_Hash ) { v_User_Hash = User_Hash; }
+   void impl_User_Hash( const string& User_Hash ) { sanity_check( User_Hash ); v_User_Hash = User_Hash; }
 
    const string& impl_User_Id( ) const { return lazy_fetch( p_obj ), v_User_Id; }
-   void impl_User_Id( const string& User_Id ) { v_User_Id = User_Id; }
+   void impl_User_Id( const string& User_Id ) { sanity_check( User_Id ); v_User_Id = User_Id; }
 
    Meta_Workgroup& impl_Workgroup( )
    {

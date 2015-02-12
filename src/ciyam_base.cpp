@@ -218,6 +218,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 struct instance_info
@@ -5397,6 +5398,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_attached_file_path );
       break;
 
+      case e_special_var_secondary_validation:
+      s = string( c_special_variable_secondary_validation );
+      break;
+
       case e_special_var_total_child_field_in_parent:
       s = string( c_special_variable_total_child_field_in_parent );
       break;
@@ -9141,7 +9146,8 @@ bool is_destroy_locked( class_base& instance, bool include_cascades )
    return lock.type == op_lock::e_lock_type_destroy && ( include_cascades || !lock.p_root_class );
 }
 
-bool is_create_locked_by_own_session( class_base& instance, const char* p_key, bool copy_field_values )
+bool is_create_locked_by_own_session(
+ class_base& instance, const char* p_key, bool copy_field_values, bool also_check_tx_lock_type )
 {
    op_lock lock;
    bool rc = false;
@@ -9149,7 +9155,11 @@ bool is_create_locked_by_own_session( class_base& instance, const char* p_key, b
    lock = gtp_session->p_storage_handler->get_lock_info(
     instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
-   if( lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_create )
+   bool is_create_locked = ( lock.type == op_lock::e_lock_type_create );
+   if( !is_create_locked && also_check_tx_lock_type )
+      is_create_locked = ( lock.tx_type == op_lock::e_lock_type_create );
+
+   if( lock.p_session == gtp_session && is_create_locked )
    {
       rc = true;
       if( copy_field_values )
@@ -9162,6 +9172,11 @@ bool is_create_locked_by_own_session( class_base& instance, const char* p_key, b
    }
 
    return rc;
+}
+
+bool was_create_locked_by_own_session( class_base& instance, const char* p_key, bool copy_field_values )
+{
+   return is_create_locked_by_own_session( instance, p_key, copy_field_values, true );
 }
 
 bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
@@ -10002,7 +10017,14 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             instance_accessor.for_store( op == class_base::e_op_type_create, internal_operation );
 
             // NOTE: As it's possible that "for_store" might inadvertantly have made the record invalid
-            // the validation call is repeated now and the first error (if any is found) will be thrown.
+            // the validation call is repeated now and the first error (if any is found) will be thrown
+            // (this is referred to as "secondary validation" and an object variable is being set first
+            // so that the rules code can detect this in situations such as when a foreign key record's
+            // field might have needed to be a certain value in "to_store" but has been changed by code
+            // that was executed in "for_store").
+            temporary_object_variable tmp_object_secondary_validation(
+             instance_accessor.get_obj( ), get_special_var_name( e_special_var_secondary_validation ), "1" );
+
             if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
             {
                string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );

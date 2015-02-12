@@ -60,6 +60,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Specification_Type.cmh"
 
 const int32_t c_version = 1;
@@ -2826,7 +2834,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Allow_Value( bool Allow_Value ) { v_Allow_Value = Allow_Value; }
 
    const string& impl_Child_Prefix( ) const { return lazy_fetch( p_obj ), v_Child_Prefix; }
-   void impl_Child_Prefix( const string& Child_Prefix ) { v_Child_Prefix = Child_Prefix; }
+   void impl_Child_Prefix( const string& Child_Prefix ) { sanity_check( Child_Prefix ); v_Child_Prefix = Child_Prefix; }
 
    bool impl_Child_Rel_Grandparent_Match( ) const { return lazy_fetch( p_obj ), v_Child_Rel_Grandparent_Match; }
    void impl_Child_Rel_Grandparent_Match( bool Child_Rel_Grandparent_Match ) { v_Child_Rel_Grandparent_Match = Child_Rel_Grandparent_Match; }
@@ -2838,7 +2846,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Child_Relationship_Class_Match( bool Child_Relationship_Class_Match ) { v_Child_Relationship_Class_Match = Child_Relationship_Class_Match; }
 
    const string& impl_Default_Child_Vars( ) const { return lazy_fetch( p_obj ), v_Default_Child_Vars; }
-   void impl_Default_Child_Vars( const string& Default_Child_Vars ) { v_Default_Child_Vars = Default_Child_Vars; }
+   void impl_Default_Child_Vars( const string& Default_Child_Vars ) { sanity_check( Default_Child_Vars ); v_Default_Child_Vars = Default_Child_Vars; }
 
    int impl_Field_type( ) const { return lazy_fetch( p_obj ), v_Field_type; }
    void impl_Field_type( int Field_type ) { v_Field_type = Field_type; }
@@ -2856,7 +2864,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Is_System( bool Is_System ) { v_Is_System = Is_System; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    bool impl_Needs_Child_Relationship( ) const { return lazy_fetch( p_obj ), v_Needs_Child_Relationship; }
    void impl_Needs_Child_Relationship( bool Needs_Child_Relationship ) { v_Needs_Child_Relationship = Needs_Child_Relationship; }
@@ -2970,10 +2978,10 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Next_Protect_Source_Parent( bool Next_Protect_Source_Parent ) { v_Next_Protect_Source_Parent = Next_Protect_Source_Parent; }
 
    const string& impl_Next_Specification_Actions( ) const { return lazy_fetch( p_obj ), v_Next_Specification_Actions; }
-   void impl_Next_Specification_Actions( const string& Next_Specification_Actions ) { v_Next_Specification_Actions = Next_Specification_Actions; }
+   void impl_Next_Specification_Actions( const string& Next_Specification_Actions ) { sanity_check( Next_Specification_Actions ); v_Next_Specification_Actions = Next_Specification_Actions; }
 
    const string& impl_Notes( ) const { return lazy_fetch( p_obj ), v_Notes; }
-   void impl_Notes( const string& Notes ) { v_Notes = Notes; }
+   void impl_Notes( const string& Notes ) { sanity_check( Notes ); v_Notes = Notes; }
 
    int impl_Procedure_Arg_primitive( ) const { return lazy_fetch( p_obj ), v_Procedure_Arg_primitive; }
    void impl_Procedure_Arg_primitive( int Procedure_Arg_primitive ) { v_Procedure_Arg_primitive = Procedure_Arg_primitive; }
@@ -3015,19 +3023,19 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Source_type( int Source_type ) { v_Source_type = Source_type; }
 
    const string& impl_Specification_Actions( ) const { return lazy_fetch( p_obj ), v_Specification_Actions; }
-   void impl_Specification_Actions( const string& Specification_Actions ) { v_Specification_Actions = Specification_Actions; }
+   void impl_Specification_Actions( const string& Specification_Actions ) { sanity_check( Specification_Actions ); v_Specification_Actions = Specification_Actions; }
 
    const string& impl_Specification_Name( ) const { return lazy_fetch( p_obj ), v_Specification_Name; }
-   void impl_Specification_Name( const string& Specification_Name ) { v_Specification_Name = Specification_Name; }
+   void impl_Specification_Name( const string& Specification_Name ) { sanity_check( Specification_Name ); v_Specification_Name = Specification_Name; }
 
    const string& impl_Specification_Object( ) const { return lazy_fetch( p_obj ), v_Specification_Object; }
-   void impl_Specification_Object( const string& Specification_Object ) { v_Specification_Object = Specification_Object; }
+   void impl_Specification_Object( const string& Specification_Object ) { sanity_check( Specification_Object ); v_Specification_Object = Specification_Object; }
 
    const string& impl_Specification_Strings( ) const { return lazy_fetch( p_obj ), v_Specification_Strings; }
-   void impl_Specification_Strings( const string& Specification_Strings ) { v_Specification_Strings = Specification_Strings; }
+   void impl_Specification_Strings( const string& Specification_Strings ) { sanity_check( Specification_Strings ); v_Specification_Strings = Specification_Strings; }
 
    const string& impl_Specification_Vars( ) const { return lazy_fetch( p_obj ), v_Specification_Vars; }
-   void impl_Specification_Vars( const string& Specification_Vars ) { v_Specification_Vars = Specification_Vars; }
+   void impl_Specification_Vars( const string& Specification_Vars ) { sanity_check( Specification_Vars ); v_Specification_Vars = Specification_Vars; }
 
    bool impl_Test_Field_Type_Match( ) const { return lazy_fetch( p_obj ), v_Test_Field_Type_Match; }
    void impl_Test_Field_Type_Match( bool Test_Field_Type_Match ) { v_Test_Field_Type_Match = Test_Field_Type_Match; }
@@ -3084,7 +3092,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void impl_Use_Source_Field_Or_Child_Enum( bool Use_Source_Field_Or_Child_Enum ) { v_Use_Source_Field_Or_Child_Enum = Use_Source_Field_Or_Child_Enum; }
 
    const string& impl_View_Id( ) const { return lazy_fetch( p_obj ), v_View_Id; }
-   void impl_View_Id( const string& View_Id ) { v_View_Id = View_Id; }
+   void impl_View_Id( const string& View_Id ) { sanity_check( View_Id ); v_View_Id = View_Id; }
 
    Meta_Specification_Type& impl_Child_Specification_Type( )
    {

@@ -72,6 +72,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Initial_Record_Value.cmh"
 
 const int32_t c_version = 1;
@@ -314,7 +322,7 @@ struct Meta_Initial_Record_Value::impl : public Meta_Initial_Record_Value_comman
    }
 
    const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
-   void impl_Value( const string& Value ) { v_Value = Value; }
+   void impl_Value( const string& Value ) { sanity_check( Value ); v_Value = Value; }
 
    Meta_Field& impl_Field( )
    {

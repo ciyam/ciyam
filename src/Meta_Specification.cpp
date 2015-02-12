@@ -186,6 +186,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Specification.cmh"
 
 const int32_t c_version = 1;
@@ -2148,43 +2156,43 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    const string& impl_All_Strings( ) const { return lazy_fetch( p_obj ), v_All_Strings; }
-   void impl_All_Strings( const string& All_Strings ) { v_All_Strings = All_Strings; }
+   void impl_All_Strings( const string& All_Strings ) { sanity_check( All_Strings ); v_All_Strings = All_Strings; }
 
    const string& impl_All_Vars( ) const { return lazy_fetch( p_obj ), v_All_Vars; }
-   void impl_All_Vars( const string& All_Vars ) { v_All_Vars = All_Vars; }
+   void impl_All_Vars( const string& All_Vars ) { sanity_check( All_Vars ); v_All_Vars = All_Vars; }
 
    const string& impl_Child_Rel_Field_Key( ) const { return lazy_fetch( p_obj ), v_Child_Rel_Field_Key; }
-   void impl_Child_Rel_Field_Key( const string& Child_Rel_Field_Key ) { v_Child_Rel_Field_Key = Child_Rel_Field_Key; }
+   void impl_Child_Rel_Field_Key( const string& Child_Rel_Field_Key ) { sanity_check( Child_Rel_Field_Key ); v_Child_Rel_Field_Key = Child_Rel_Field_Key; }
 
    const string& impl_Comments( ) const { return lazy_fetch( p_obj ), v_Comments; }
-   void impl_Comments( const string& Comments ) { v_Comments = Comments; }
+   void impl_Comments( const string& Comments ) { sanity_check( Comments ); v_Comments = Comments; }
 
    const string& impl_Field_Pairs( ) const { return lazy_fetch( p_obj ), v_Field_Pairs; }
-   void impl_Field_Pairs( const string& Field_Pairs ) { v_Field_Pairs = Field_Pairs; }
+   void impl_Field_Pairs( const string& Field_Pairs ) { sanity_check( Field_Pairs ); v_Field_Pairs = Field_Pairs; }
 
    const string& impl_Field_Values( ) const { return lazy_fetch( p_obj ), v_Field_Values; }
-   void impl_Field_Values( const string& Field_Values ) { v_Field_Values = Field_Values; }
+   void impl_Field_Values( const string& Field_Values ) { sanity_check( Field_Values ); v_Field_Values = Field_Values; }
 
    const string& impl_Fields( ) const { return lazy_fetch( p_obj ), v_Fields; }
-   void impl_Fields( const string& Fields ) { v_Fields = Fields; }
+   void impl_Fields( const string& Fields ) { sanity_check( Fields ); v_Fields = Fields; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    bool impl_Is_Required_For_UI_Gen( ) const { return lazy_fetch( p_obj ), v_Is_Required_For_UI_Gen; }
    void impl_Is_Required_For_UI_Gen( bool Is_Required_For_UI_Gen ) { v_Is_Required_For_UI_Gen = Is_Required_For_UI_Gen; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Options( ) const { return lazy_fetch( p_obj ), v_Options; }
-   void impl_Options( const string& Options ) { v_Options = Options; }
+   void impl_Options( const string& Options ) { sanity_check( Options ); v_Options = Options; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    bool impl_Protect_Child_Rel( ) const { return lazy_fetch( p_obj ), v_Protect_Child_Rel; }
    void impl_Protect_Child_Rel( bool Protect_Child_Rel ) { v_Protect_Child_Rel = Protect_Child_Rel; }
@@ -2196,16 +2204,16 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    void impl_Protect_Source_Parent( bool Protect_Source_Parent ) { v_Protect_Source_Parent = Protect_Source_Parent; }
 
    const string& impl_Restrict_Values( ) const { return lazy_fetch( p_obj ), v_Restrict_Values; }
-   void impl_Restrict_Values( const string& Restrict_Values ) { v_Restrict_Values = Restrict_Values; }
+   void impl_Restrict_Values( const string& Restrict_Values ) { sanity_check( Restrict_Values ); v_Restrict_Values = Restrict_Values; }
 
    const string& impl_Strings( ) const { return lazy_fetch( p_obj ), v_Strings; }
-   void impl_Strings( const string& Strings ) { v_Strings = Strings; }
+   void impl_Strings( const string& Strings ) { sanity_check( Strings ); v_Strings = Strings; }
 
    const string& impl_Test_Value( ) const { return lazy_fetch( p_obj ), v_Test_Value; }
-   void impl_Test_Value( const string& Test_Value ) { v_Test_Value = Test_Value; }
+   void impl_Test_Value( const string& Test_Value ) { sanity_check( Test_Value ); v_Test_Value = Test_Value; }
 
    const string& impl_Test_Value_Label( ) const { return lazy_fetch( p_obj ), v_Test_Value_Label; }
-   void impl_Test_Value_Label( const string& Test_Value_Label ) { v_Test_Value_Label = Test_Value_Label; }
+   void impl_Test_Value_Label( const string& Test_Value_Label ) { sanity_check( Test_Value_Label ); v_Test_Value_Label = Test_Value_Label; }
 
    bool impl_Use_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Use_Source_Parent; }
    void impl_Use_Source_Parent( bool Use_Source_Parent ) { v_Use_Source_Parent = Use_Source_Parent; }
@@ -2214,28 +2222,28 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    void impl_Use_Test_Parent_Child( bool Use_Test_Parent_Child ) { v_Use_Test_Parent_Child = Use_Test_Parent_Child; }
 
    const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
-   void impl_Value( const string& Value ) { v_Value = Value; }
+   void impl_Value( const string& Value ) { sanity_check( Value ); v_Value = Value; }
 
    const string& impl_Value_Label( ) const { return lazy_fetch( p_obj ), v_Value_Label; }
-   void impl_Value_Label( const string& Value_Label ) { v_Value_Label = Value_Label; }
+   void impl_Value_Label( const string& Value_Label ) { sanity_check( Value_Label ); v_Value_Label = Value_Label; }
 
    const string& impl_Value_Left_Part( ) const { return lazy_fetch( p_obj ), v_Value_Left_Part; }
-   void impl_Value_Left_Part( const string& Value_Left_Part ) { v_Value_Left_Part = Value_Left_Part; }
+   void impl_Value_Left_Part( const string& Value_Left_Part ) { sanity_check( Value_Left_Part ); v_Value_Left_Part = Value_Left_Part; }
 
    const string& impl_Value_Literal( ) const { return lazy_fetch( p_obj ), v_Value_Literal; }
-   void impl_Value_Literal( const string& Value_Literal ) { v_Value_Literal = Value_Literal; }
+   void impl_Value_Literal( const string& Value_Literal ) { sanity_check( Value_Literal ); v_Value_Literal = Value_Literal; }
 
    const string& impl_Value_Numeric_String( ) const { return lazy_fetch( p_obj ), v_Value_Numeric_String; }
-   void impl_Value_Numeric_String( const string& Value_Numeric_String ) { v_Value_Numeric_String = Value_Numeric_String; }
+   void impl_Value_Numeric_String( const string& Value_Numeric_String ) { sanity_check( Value_Numeric_String ); v_Value_Numeric_String = Value_Numeric_String; }
 
    const string& impl_Value_Right_Part( ) const { return lazy_fetch( p_obj ), v_Value_Right_Part; }
-   void impl_Value_Right_Part( const string& Value_Right_Part ) { v_Value_Right_Part = Value_Right_Part; }
+   void impl_Value_Right_Part( const string& Value_Right_Part ) { sanity_check( Value_Right_Part ); v_Value_Right_Part = Value_Right_Part; }
 
    const string& impl_Value_String( ) const { return lazy_fetch( p_obj ), v_Value_String; }
-   void impl_Value_String( const string& Value_String ) { v_Value_String = Value_String; }
+   void impl_Value_String( const string& Value_String ) { sanity_check( Value_String ); v_Value_String = Value_String; }
 
    const string& impl_Vars( ) const { return lazy_fetch( p_obj ), v_Vars; }
-   void impl_Vars( const string& Vars ) { v_Vars = Vars; }
+   void impl_Vars( const string& Vars ) { sanity_check( Vars ); v_Vars = Vars; }
 
    Meta_Class& impl_Child_Rel_Child_Class( )
    {

@@ -75,6 +75,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Procedure_Arg.cmh"
 
 const int32_t c_version = 1;
@@ -477,10 +485,10 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    int impl_Primitive( ) const { return lazy_fetch( p_obj ), v_Primitive; }
    void impl_Primitive( int Primitive ) { v_Primitive = Primitive; }

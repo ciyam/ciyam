@@ -147,6 +147,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_List_Field.cmh"
 
 const int32_t c_version = 1;
@@ -1918,7 +1926,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    void impl_Font_Size( int Font_Size ) { v_Font_Size = Font_Size; }
 
    const string& impl_Include_Key_Additions( ) const { return lazy_fetch( p_obj ), v_Include_Key_Additions; }
-   void impl_Include_Key_Additions( const string& Include_Key_Additions ) { v_Include_Key_Additions = Include_Key_Additions; }
+   void impl_Include_Key_Additions( const string& Include_Key_Additions ) { sanity_check( Include_Key_Additions ); v_Include_Key_Additions = Include_Key_Additions; }
 
    int impl_Label_Class( ) const { return lazy_fetch( p_obj ), v_Label_Class; }
    void impl_Label_Class( int Label_Class ) { v_Label_Class = Label_Class; }
@@ -1939,7 +1947,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    void impl_Link_Type( int Link_Type ) { v_Link_Type = Link_Type; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    bool impl_Non_Instance_Procedure( ) const { return lazy_fetch( p_obj ), v_Non_Instance_Procedure; }
    void impl_Non_Instance_Procedure( bool Non_Instance_Procedure ) { v_Non_Instance_Procedure = Non_Instance_Procedure; }
@@ -1951,16 +1959,16 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    void impl_Omit_Versions( bool Omit_Versions ) { v_Omit_Versions = Omit_Versions; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    int impl_Print_Type( ) const { return lazy_fetch( p_obj ), v_Print_Type; }
    void impl_Print_Type( int Print_Type ) { v_Print_Type = Print_Type; }
 
    const string& impl_Procedure_Args( ) const { return lazy_fetch( p_obj ), v_Procedure_Args; }
-   void impl_Procedure_Args( const string& Procedure_Args ) { v_Procedure_Args = Procedure_Args; }
+   void impl_Procedure_Args( const string& Procedure_Args ) { sanity_check( Procedure_Args ); v_Procedure_Args = Procedure_Args; }
 
    const string& impl_Restriction_Value( ) const { return lazy_fetch( p_obj ), v_Restriction_Value; }
-   void impl_Restriction_Value( const string& Restriction_Value ) { v_Restriction_Value = Restriction_Value; }
+   void impl_Restriction_Value( const string& Restriction_Value ) { sanity_check( Restriction_Value ); v_Restriction_Value = Restriction_Value; }
 
    bool impl_Retain_Selected_Rows( ) const { return lazy_fetch( p_obj ), v_Retain_Selected_Rows; }
    void impl_Retain_Selected_Rows( bool Retain_Selected_Rows ) { v_Retain_Selected_Rows = Retain_Selected_Rows; }
@@ -1972,7 +1980,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    void impl_Search_Option_Limit( int Search_Option_Limit ) { v_Search_Option_Limit = Search_Option_Limit; }
 
    const string& impl_Select_Key_Exclusions( ) const { return lazy_fetch( p_obj ), v_Select_Key_Exclusions; }
-   void impl_Select_Key_Exclusions( const string& Select_Key_Exclusions ) { v_Select_Key_Exclusions = Select_Key_Exclusions; }
+   void impl_Select_Key_Exclusions( const string& Select_Key_Exclusions ) { sanity_check( Select_Key_Exclusions ); v_Select_Key_Exclusions = Select_Key_Exclusions; }
 
    bool impl_Sort_Manually( ) const { return lazy_fetch( p_obj ), v_Sort_Manually; }
    void impl_Sort_Manually( bool Sort_Manually ) { v_Sort_Manually = Sort_Manually; }

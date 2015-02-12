@@ -49,6 +49,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_View_Field_Type.cmh"
 
 const int32_t c_version = 1;
@@ -271,10 +279,10 @@ struct Meta_View_Field_Type::impl : public Meta_View_Field_Type_command_handler
    }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_View_Field_Name( ) const { return lazy_fetch( p_obj ), v_View_Field_Name; }
-   void impl_View_Field_Name( const string& View_Field_Name ) { v_View_Field_Name = View_Field_Name; }
+   void impl_View_Field_Name( const string& View_Field_Name ) { sanity_check( View_Field_Name ); v_View_Field_Name = View_Field_Name; }
 
    Meta_View_Field& impl_child_View_Field_Type( )
    {

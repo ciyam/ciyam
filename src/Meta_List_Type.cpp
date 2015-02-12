@@ -49,6 +49,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_List_Type.cmh"
 
 const int32_t c_version = 1;
@@ -399,10 +407,10 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
    void impl_Is_Not_Anonymous( bool Is_Not_Anonymous ) { v_Is_Not_Anonymous = Is_Not_Anonymous; }
 
    const string& impl_List_Name( ) const { return lazy_fetch( p_obj ), v_List_Name; }
-   void impl_List_Name( const string& List_Name ) { v_List_Name = List_Name; }
+   void impl_List_Name( const string& List_Name ) { sanity_check( List_Name ); v_List_Name = List_Name; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    Meta_List& impl_child_List_Type( )
    {

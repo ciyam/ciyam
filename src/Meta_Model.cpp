@@ -100,6 +100,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Model.cmh"
 
 const int32_t c_version = 1;
@@ -831,7 +839,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    int impl_Add_Packages( ) const { return lazy_fetch( p_obj ), v_Add_Packages; }
    void impl_Add_Packages( int Add_Packages ) { v_Add_Packages = Add_Packages; }
@@ -840,43 +848,43 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    void impl_Allow_Anonymous_Access( bool Allow_Anonymous_Access ) { v_Allow_Anonymous_Access = Allow_Anonymous_Access; }
 
    const string& impl_Commands_File( ) const { return lazy_fetch( p_obj ), v_Commands_File; }
-   void impl_Commands_File( const string& Commands_File ) { v_Commands_File = Commands_File; }
+   void impl_Commands_File( const string& Commands_File ) { sanity_check( Commands_File ); v_Commands_File = Commands_File; }
 
    bool impl_Created( ) const { return lazy_fetch( p_obj ), v_Created; }
    void impl_Created( bool Created ) { v_Created = Created; }
 
    const string& impl_Home_Title( ) const { return lazy_fetch( p_obj ), v_Home_Title; }
-   void impl_Home_Title( const string& Home_Title ) { v_Home_Title = Home_Title; }
+   void impl_Home_Title( const string& Home_Title ) { sanity_check( Home_Title ); v_Home_Title = Home_Title; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Next_Class_Id( ) const { return lazy_fetch( p_obj ), v_Next_Class_Id; }
-   void impl_Next_Class_Id( const string& Next_Class_Id ) { v_Next_Class_Id = Next_Class_Id; }
+   void impl_Next_Class_Id( const string& Next_Class_Id ) { sanity_check( Next_Class_Id ); v_Next_Class_Id = Next_Class_Id; }
 
    const string& impl_Next_List_Id( ) const { return lazy_fetch( p_obj ), v_Next_List_Id; }
-   void impl_Next_List_Id( const string& Next_List_Id ) { v_Next_List_Id = Next_List_Id; }
+   void impl_Next_List_Id( const string& Next_List_Id ) { sanity_check( Next_List_Id ); v_Next_List_Id = Next_List_Id; }
 
    const string& impl_Next_Specification_Id( ) const { return lazy_fetch( p_obj ), v_Next_Specification_Id; }
-   void impl_Next_Specification_Id( const string& Next_Specification_Id ) { v_Next_Specification_Id = Next_Specification_Id; }
+   void impl_Next_Specification_Id( const string& Next_Specification_Id ) { sanity_check( Next_Specification_Id ); v_Next_Specification_Id = Next_Specification_Id; }
 
    const string& impl_Next_View_Id( ) const { return lazy_fetch( p_obj ), v_Next_View_Id; }
-   void impl_Next_View_Id( const string& Next_View_Id ) { v_Next_View_Id = Next_View_Id; }
+   void impl_Next_View_Id( const string& Next_View_Id ) { sanity_check( Next_View_Id ); v_Next_View_Id = Next_View_Id; }
 
    const string& impl_Source_File( ) const { return lazy_fetch( p_obj ), v_Source_File; }
-   void impl_Source_File( const string& Source_File ) { v_Source_File = Source_File; }
+   void impl_Source_File( const string& Source_File ) { sanity_check( Source_File ); v_Source_File = Source_File; }
 
    const string& impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
-   void impl_Status( const string& Status ) { v_Status = Status; }
+   void impl_Status( const string& Status ) { sanity_check( Status ); v_Status = Status; }
 
    bool impl_Use_Package_Demo_Data( ) const { return lazy_fetch( p_obj ), v_Use_Package_Demo_Data; }
    void impl_Use_Package_Demo_Data( bool Use_Package_Demo_Data ) { v_Use_Package_Demo_Data = Use_Package_Demo_Data; }
 
    const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
-   void impl_Version( const string& Version ) { v_Version = Version; }
+   void impl_Version( const string& Version ) { sanity_check( Version ); v_Version = Version; }
 
    int impl_Year_Created( ) const { return lazy_fetch( p_obj ), v_Year_Created; }
    void impl_Year_Created( int Year_Created ) { v_Year_Created = Year_Created; }

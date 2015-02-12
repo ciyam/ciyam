@@ -70,6 +70,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Application.cmh"
 
 const int32_t c_version = 1;
@@ -1264,7 +1272,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    bool impl_Add_Modules_Automatically( ) const { return lazy_fetch( p_obj ), v_Add_Modules_Automatically; }
    void impl_Add_Modules_Automatically( bool Add_Modules_Automatically ) { v_Add_Modules_Automatically = Add_Modules_Automatically; }
@@ -1315,10 +1323,10 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void impl_Encrypt_Dynamic_Content( bool Encrypt_Dynamic_Content ) { v_Encrypt_Dynamic_Content = Encrypt_Dynamic_Content; }
 
    const string& impl_Generate_Details( ) const { return lazy_fetch( p_obj ), v_Generate_Details; }
-   void impl_Generate_Details( const string& Generate_Details ) { v_Generate_Details = Generate_Details; }
+   void impl_Generate_Details( const string& Generate_Details ) { sanity_check( Generate_Details ); v_Generate_Details = Generate_Details; }
 
    const string& impl_Generate_Status( ) const { return lazy_fetch( p_obj ), v_Generate_Status; }
-   void impl_Generate_Status( const string& Generate_Status ) { v_Generate_Status = Generate_Status; }
+   void impl_Generate_Status( const string& Generate_Status ) { sanity_check( Generate_Status ); v_Generate_Status = Generate_Status; }
 
    int impl_Generate_Type( ) const { return lazy_fetch( p_obj ), v_Generate_Type; }
    void impl_Generate_Type( int Generate_Type ) { v_Generate_Type = Generate_Type; }
@@ -1327,10 +1335,10 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void impl_Keep_Existing_Data( bool Keep_Existing_Data ) { v_Keep_Existing_Data = Keep_Existing_Data; }
 
    const string& impl_Module_Prefix( ) const { return lazy_fetch( p_obj ), v_Module_Prefix; }
-   void impl_Module_Prefix( const string& Module_Prefix ) { v_Module_Prefix = Module_Prefix; }
+   void impl_Module_Prefix( const string& Module_Prefix ) { sanity_check( Module_Prefix ); v_Module_Prefix = Module_Prefix; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    bool impl_Print_Lists_With_Check_Boxes( ) const { return lazy_fetch( p_obj ), v_Print_Lists_With_Check_Boxes; }
    void impl_Print_Lists_With_Check_Boxes( bool Print_Lists_With_Check_Boxes ) { v_Print_Lists_With_Check_Boxes = Print_Lists_With_Check_Boxes; }
@@ -1339,7 +1347,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void impl_Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_Numbers ) { v_Print_Lists_With_Row_Numbers = Print_Lists_With_Row_Numbers; }
 
    const string& impl_Registration_Key( ) const { return lazy_fetch( p_obj ), v_Registration_Key; }
-   void impl_Registration_Key( const string& Registration_Key ) { v_Registration_Key = Registration_Key; }
+   void impl_Registration_Key( const string& Registration_Key ) { sanity_check( Registration_Key ); v_Registration_Key = Registration_Key; }
 
    bool impl_Show_Inaccessible_Modules( ) const { return lazy_fetch( p_obj ), v_Show_Inaccessible_Modules; }
    void impl_Show_Inaccessible_Modules( bool Show_Inaccessible_Modules ) { v_Show_Inaccessible_Modules = Show_Inaccessible_Modules; }
@@ -1360,7 +1368,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void impl_Use_Vertical_Menu( bool Use_Vertical_Menu ) { v_Use_Vertical_Menu = Use_Vertical_Menu; }
 
    const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
-   void impl_Version( const string& Version ) { v_Version = Version; }
+   void impl_Version( const string& Version ) { sanity_check( Version ); v_Version = Version; }
 
    Meta_Workgroup& impl_Workgroup( )
    {

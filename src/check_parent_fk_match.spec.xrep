@@ -1,17 +1,18 @@
 `{`@eq`(`'validate`'`,`$section`)\
    // [(start check_parent_fk_match)] `{`$arg_id`}
 `{`@eq`(`$arg_check_if_unchanged`,`'`'`)\
-   if( get_obj( ).`{`$arg_pfield`}( ).has_changed( )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) && get_obj( ).`{`$arg_pfield`}( ).has_changed( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
 `}\
     && get_obj( ).`{`$arg_field`}( ).get_key( ) != get_obj( ).`{`$arg_pfield`}( ).`{`$arg_cfield`}( ).get_key( ) )
 `,\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
-   if( get_obj( ).`{`$arg_tfield`}( )
+   if( get_obj( ).`{`$arg_tfield`}( ) && !is_null( get_obj( ).`{`$arg_pfield`}( ) )
     && get_obj( ).`{`$arg_field`}( ).get_key( ) != get_obj( ).`{`$arg_pfield`}( ).`{`$arg_cfield`}( ).get_key( ) )
 `,\
-   if( get_obj( ).`{`$arg_field`}( ).get_key( ) != get_obj( ).`{`$arg_pfield`}( ).`{`$arg_cfield`}( ).get_key( ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( )
+    && get_obj( ).`{`$arg_field`}( ).get_key( ) != get_obj( ).`{`$arg_pfield`}( ).`{`$arg_cfield`}( ).get_key( ) )
 `}`}\
       p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
        get_string_message( GS( c_str_field_must_match_parents ), make_pair(
