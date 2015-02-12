@@ -82,6 +82,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Specification_Field_Action.cmh"
 
 const int32_t c_version = 1;
@@ -769,13 +777,13 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
    void impl_Access_Restriction( int Access_Restriction ) { v_Access_Restriction = Access_Restriction; }
 
    const string& impl_Clone_Key( ) const { return lazy_fetch( p_obj ), v_Clone_Key; }
-   void impl_Clone_Key( const string& Clone_Key ) { v_Clone_Key = Clone_Key; }
+   void impl_Clone_Key( const string& Clone_Key ) { sanity_check( Clone_Key ); v_Clone_Key = Clone_Key; }
 
    int impl_Create_Type( ) const { return lazy_fetch( p_obj ), v_Create_Type; }
    void impl_Create_Type( int Create_Type ) { v_Create_Type = Create_Type; }
 
    const string& impl_New_Record_FK_Value( ) const { return lazy_fetch( p_obj ), v_New_Record_FK_Value; }
-   void impl_New_Record_FK_Value( const string& New_Record_FK_Value ) { v_New_Record_FK_Value = New_Record_FK_Value; }
+   void impl_New_Record_FK_Value( const string& New_Record_FK_Value ) { sanity_check( New_Record_FK_Value ); v_New_Record_FK_Value = New_Record_FK_Value; }
 
    int impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
    void impl_Type( int Type ) { v_Type = Type; }

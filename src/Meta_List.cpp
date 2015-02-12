@@ -121,6 +121,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_List.cmh"
 
 const int32_t c_version = 1;
@@ -1698,7 +1706,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    void impl_File_Links_Always_As_Single( bool File_Links_Always_As_Single ) { v_File_Links_Always_As_Single = File_Links_Always_As_Single; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    bool impl_Ignore_Implicit_Ordering( ) const { return lazy_fetch( p_obj ), v_Ignore_Implicit_Ordering; }
    void impl_Ignore_Implicit_Ordering( bool Ignore_Implicit_Ordering ) { v_Ignore_Implicit_Ordering = Ignore_Implicit_Ordering; }
@@ -1737,7 +1745,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    void impl_Multiline_Truncate_For_Print( bool Multiline_Truncate_For_Print ) { v_Multiline_Truncate_For_Print = Multiline_Truncate_For_Print; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    bool impl_Number_Multiple_Pages( ) const { return lazy_fetch( p_obj ), v_Number_Multiple_Pages; }
    void impl_Number_Multiple_Pages( bool Number_Multiple_Pages ) { v_Number_Multiple_Pages = Number_Multiple_Pages; }
@@ -1767,10 +1775,10 @@ struct Meta_List::impl : public Meta_List_command_handler
    void impl_Text_Match_Highlight( int Text_Match_Highlight ) { v_Text_Match_Highlight = Text_Match_Highlight; }
 
    const string& impl_Title( ) const { return lazy_fetch( p_obj ), v_Title; }
-   void impl_Title( const string& Title ) { v_Title = Title; }
+   void impl_Title( const string& Title ) { sanity_check( Title ); v_Title = Title; }
 
    const string& impl_Variation_Name( ) const { return lazy_fetch( p_obj ), v_Variation_Name; }
-   void impl_Variation_Name( const string& Variation_Name ) { v_Variation_Name = Variation_Name; }
+   void impl_Variation_Name( const string& Variation_Name ) { sanity_check( Variation_Name ); v_Variation_Name = Variation_Name; }
 
    Meta_Modifier& impl_Access_Parent_Modifier( )
    {

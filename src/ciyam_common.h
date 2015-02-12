@@ -13,6 +13,8 @@ const int c_max_fields_per_index = 5;
 
 const int c_max_indexes_per_class = 100;
 
+const int c_max_string_length_limit = 100000;
+
 enum primitive
 {
    e_primitive_string,
@@ -90,6 +92,7 @@ enum special_var
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
    e_special_var_attached_file_path,
+   e_special_var_secondary_validation,
    e_special_var_total_child_field_in_parent
 };
 

@@ -69,6 +69,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Workgroup.cmh"
 
 const int32_t c_version = 1;
@@ -402,22 +410,22 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
    }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Next_Enum_Id( ) const { return lazy_fetch( p_obj ), v_Next_Enum_Id; }
-   void impl_Next_Enum_Id( const string& Next_Enum_Id ) { v_Next_Enum_Id = Next_Enum_Id; }
+   void impl_Next_Enum_Id( const string& Next_Enum_Id ) { sanity_check( Next_Enum_Id ); v_Next_Enum_Id = Next_Enum_Id; }
 
    const string& impl_Next_Model_Id( ) const { return lazy_fetch( p_obj ), v_Next_Model_Id; }
-   void impl_Next_Model_Id( const string& Next_Model_Id ) { v_Next_Model_Id = Next_Model_Id; }
+   void impl_Next_Model_Id( const string& Next_Model_Id ) { sanity_check( Next_Model_Id ); v_Next_Model_Id = Next_Model_Id; }
 
    const string& impl_Next_Permission_Id( ) const { return lazy_fetch( p_obj ), v_Next_Permission_Id; }
-   void impl_Next_Permission_Id( const string& Next_Permission_Id ) { v_Next_Permission_Id = Next_Permission_Id; }
+   void impl_Next_Permission_Id( const string& Next_Permission_Id ) { sanity_check( Next_Permission_Id ); v_Next_Permission_Id = Next_Permission_Id; }
 
    const string& impl_Next_Type_Id( ) const { return lazy_fetch( p_obj ), v_Next_Type_Id; }
-   void impl_Next_Type_Id( const string& Next_Type_Id ) { v_Next_Type_Id = Next_Type_Id; }
+   void impl_Next_Type_Id( const string& Next_Type_Id ) { sanity_check( Next_Type_Id ); v_Next_Type_Id = Next_Type_Id; }
 
    Meta_Package& impl_Standard_Package( )
    {

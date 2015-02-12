@@ -131,6 +131,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Class.cmh"
 
 const int32_t c_version = 1;
@@ -1124,7 +1132,7 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
 
    const string& impl_Commands_File( ) const { return lazy_fetch( p_obj ), v_Commands_File; }
-   void impl_Commands_File( const string& Commands_File ) { v_Commands_File = Commands_File; }
+   void impl_Commands_File( const string& Commands_File ) { sanity_check( Commands_File ); v_Commands_File = Commands_File; }
 
    bool impl_Create_List( ) const { return lazy_fetch( p_obj ), v_Create_List; }
    void impl_Create_List( bool Create_List ) { v_Create_List = Create_List; }
@@ -1145,28 +1153,28 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    void impl_Extra( int Extra ) { v_Extra = Extra; }
 
    const string& impl_Header_File( ) const { return lazy_fetch( p_obj ), v_Header_File; }
-   void impl_Header_File( const string& Header_File ) { v_Header_File = Header_File; }
+   void impl_Header_File( const string& Header_File ) { sanity_check( Header_File ); v_Header_File = Header_File; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Next_Field_Id( ) const { return lazy_fetch( p_obj ), v_Next_Field_Id; }
-   void impl_Next_Field_Id( const string& Next_Field_Id ) { v_Next_Field_Id = Next_Field_Id; }
+   void impl_Next_Field_Id( const string& Next_Field_Id ) { sanity_check( Next_Field_Id ); v_Next_Field_Id = Next_Field_Id; }
 
    const string& impl_Next_Procedure_Id( ) const { return lazy_fetch( p_obj ), v_Next_Procedure_Id; }
-   void impl_Next_Procedure_Id( const string& Next_Procedure_Id ) { v_Next_Procedure_Id = Next_Procedure_Id; }
+   void impl_Next_Procedure_Id( const string& Next_Procedure_Id ) { sanity_check( Next_Procedure_Id ); v_Next_Procedure_Id = Next_Procedure_Id; }
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
-   void impl_Plural( const string& Plural ) { v_Plural = Plural; }
+   void impl_Plural( const string& Plural ) { sanity_check( Plural ); v_Plural = Plural; }
 
    const string& impl_Source_File( ) const { return lazy_fetch( p_obj ), v_Source_File; }
-   void impl_Source_File( const string& Source_File ) { v_Source_File = Source_File; }
+   void impl_Source_File( const string& Source_File ) { sanity_check( Source_File ); v_Source_File = Source_File; }
 
    const string& impl_Static_Instance_Key( ) const { return lazy_fetch( p_obj ), v_Static_Instance_Key; }
-   void impl_Static_Instance_Key( const string& Static_Instance_Key ) { v_Static_Instance_Key = Static_Instance_Key; }
+   void impl_Static_Instance_Key( const string& Static_Instance_Key ) { sanity_check( Static_Instance_Key ); v_Static_Instance_Key = Static_Instance_Key; }
 
    int impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
    void impl_Type( int Type ) { v_Type = Type; }

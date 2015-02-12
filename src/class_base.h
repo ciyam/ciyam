@@ -718,6 +718,8 @@ struct class_base_accessor
 {
    class_base_accessor( class_base& cb ) : cb( cb ) { }
 
+   class_base& get_obj( ) { return cb; }
+
    bool get_sql_stmts( std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) { return cb.get_sql_stmts( sql_stmts, tx_key_info ); }
 
    bool has_skipped_empty_update( ) { return cb.has_skipped_empty_update( ); }

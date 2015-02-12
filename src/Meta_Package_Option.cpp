@@ -136,6 +136,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Package_Option.cmh"
 
 const int32_t c_version = 1;
@@ -1395,13 +1403,13 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    const string& impl_Date( ) const { return lazy_fetch( p_obj ), v_Date; }
-   void impl_Date( const string& Date ) { v_Date = Date; }
+   void impl_Date( const string& Date ) { sanity_check( Date ); v_Date = Date; }
 
    const string& impl_Datetime( ) const { return lazy_fetch( p_obj ), v_Datetime; }
-   void impl_Datetime( const string& Datetime ) { v_Datetime = Datetime; }
+   void impl_Datetime( const string& Datetime ) { sanity_check( Datetime ); v_Datetime = Datetime; }
 
    bool impl_Has_Field( ) const { return lazy_fetch( p_obj ), v_Has_Field; }
    void impl_Has_Field( bool Has_Field ) { v_Has_Field = Has_Field; }
@@ -1431,7 +1439,7 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    void impl_Has_View( bool Has_View ) { v_Has_View = Has_View; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
@@ -1476,34 +1484,34 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    void impl_Is_Other_Package( bool Is_Other_Package ) { v_Is_Other_Package = Is_Other_Package; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Notes( ) const { return lazy_fetch( p_obj ), v_Notes; }
-   void impl_Notes( const string& Notes ) { v_Notes = Notes; }
+   void impl_Notes( const string& Notes ) { sanity_check( Notes ); v_Notes = Notes; }
 
    const string& impl_Numeric( ) const { return lazy_fetch( p_obj ), v_Numeric; }
-   void impl_Numeric( const string& Numeric ) { v_Numeric = Numeric; }
+   void impl_Numeric( const string& Numeric ) { sanity_check( Numeric ); v_Numeric = Numeric; }
 
    bool impl_Other_Package_Required( ) const { return lazy_fetch( p_obj ), v_Other_Package_Required; }
    void impl_Other_Package_Required( bool Other_Package_Required ) { v_Other_Package_Required = Other_Package_Required; }
 
    const string& impl_Other_Package_Type( ) const { return lazy_fetch( p_obj ), v_Other_Package_Type; }
-   void impl_Other_Package_Type( const string& Other_Package_Type ) { v_Other_Package_Type = Other_Package_Type; }
+   void impl_Other_Package_Type( const string& Other_Package_Type ) { sanity_check( Other_Package_Type ); v_Other_Package_Type = Other_Package_Type; }
 
    int impl_Primitive( ) const { return lazy_fetch( p_obj ), v_Primitive; }
    void impl_Primitive( int Primitive ) { v_Primitive = Primitive; }
 
    const string& impl_String( ) const { return lazy_fetch( p_obj ), v_String; }
-   void impl_String( const string& String ) { v_String = String; }
+   void impl_String( const string& String ) { sanity_check( String ); v_String = String; }
 
    const string& impl_Time( ) const { return lazy_fetch( p_obj ), v_Time; }
-   void impl_Time( const string& Time ) { v_Time = Time; }
+   void impl_Time( const string& Time ) { sanity_check( Time ); v_Time = Time; }
 
    bool impl_Use_Option( ) const { return lazy_fetch( p_obj ), v_Use_Option; }
    void impl_Use_Option( bool Use_Option ) { v_Use_Option = Use_Option; }
 
    const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
-   void impl_Value( const string& Value ) { v_Value = Value; }
+   void impl_Value( const string& Value ) { sanity_check( Value ); v_Value = Value; }
 
    Meta_Class& impl_Class( )
    {

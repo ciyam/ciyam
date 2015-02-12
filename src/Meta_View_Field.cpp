@@ -120,6 +120,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_View_Field.cmh"
 
 const int32_t c_version = 1;
@@ -391,8 +399,10 @@ const uint64_t c_modifier_Is_Not_Date = UINT64_C( 0x2000 );
 const uint64_t c_modifier_Is_Not_Enum = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x8000 );
 const uint64_t c_modifier_Is_Tab = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Protect_Access = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Protect_Change = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Protect_Access_Restriction = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Protect_Access_Scope = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Protect_Change_Restriction = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Protect_Change_Scope = UINT64_C( 0x100000 );
 
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_New_Value_domain;
@@ -1748,16 +1758,16 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    void impl_Mandatory_Option( int Mandatory_Option ) { v_Mandatory_Option = Mandatory_Option; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    int impl_New_Source( ) const { return lazy_fetch( p_obj ), v_New_Source; }
    void impl_New_Source( int New_Source ) { v_New_Source = New_Source; }
 
    const string& impl_New_Value( ) const { return lazy_fetch( p_obj ), v_New_Value; }
-   void impl_New_Value( const string& New_Value ) { v_New_Value = New_Value; }
+   void impl_New_Value( const string& New_Value ) { sanity_check( New_Value ); v_New_Value = New_Value; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    bool impl_Show_Hide_Start_Point( ) const { return lazy_fetch( p_obj ), v_Show_Hide_Start_Point; }
    void impl_Show_Hide_Start_Point( bool Show_Hide_Start_Point ) { v_Show_Hide_Start_Point = Show_Hide_Start_Point; }
@@ -1766,7 +1776,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    void impl_Sort_Manually( bool Sort_Manually ) { v_Sort_Manually = Sort_Manually; }
 
    const string& impl_Tab_Name( ) const { return lazy_fetch( p_obj ), v_Tab_Name; }
-   void impl_Tab_Name( const string& Tab_Name ) { v_Tab_Name = Tab_Name; }
+   void impl_Tab_Name( const string& Tab_Name ) { sanity_check( Tab_Name ); v_Tab_Name = Tab_Name; }
 
    int impl_Trigger_Behaviour( ) const { return lazy_fetch( p_obj ), v_Trigger_Behaviour; }
    void impl_Trigger_Behaviour( int Trigger_Behaviour ) { v_Trigger_Behaviour = Trigger_Behaviour; }
@@ -3007,16 +3017,20 @@ uint64_t Meta_View_Field::impl::get_state( ) const
    // [<start get_state>]
 //nyi
    if( get_obj( ).Source_Field( ).Access_Scope( ) != 0
-    || get_obj( ).Source_Field( ).Access_Restriction( ) != 0
-    || get_obj( ).Source_Parent( ).Access_Scope( ) != 0
+    || get_obj( ).Source_Parent( ).Access_Scope( ) != 0 )
+      state |= c_modifier_Protect_Access_Scope;
+
+   if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0
     || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Access;
+      state |= c_modifier_Protect_Access_Restriction;
 
    if( get_obj( ).Source_Field( ).Change_Scope( ) != 0
-    || get_obj( ).Source_Field( ).Change_Restriction( ) != 0
-    || get_obj( ).Source_Parent( ).Change_Scope( ) != 0
+    || get_obj( ).Source_Parent( ).Change_Scope( ) != 0 )
+      state |= c_modifier_Protect_Change_Scope;
+
+   if( get_obj( ).Source_Field( ).Change_Restriction( ) != 0
     || get_obj( ).Source_Parent( ).Change_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Change;
+      state |= c_modifier_Protect_Change_Restriction;
    // [<finish get_state>]
 
    return state;

@@ -503,7 +503,12 @@ void CIYAM_BASE_DECL_SPEC instance_check( class_base& instance, instance_check_r
 bool CIYAM_BASE_DECL_SPEC is_change_locked( class_base& instance, bool include_cascades = false );
 bool CIYAM_BASE_DECL_SPEC is_destroy_locked( class_base& instance, bool include_cascades = false );
 
-bool CIYAM_BASE_DECL_SPEC is_create_locked_by_own_session( class_base& instance, const char* p_key = 0, bool copy_field_values = false );
+bool CIYAM_BASE_DECL_SPEC is_create_locked_by_own_session( class_base& instance,
+ const char* p_key = 0, bool copy_field_values = false, bool also_check_tx_lock_type = false );
+
+bool CIYAM_BASE_DECL_SPEC was_create_locked_by_own_session(
+ class_base& instance, const char* p_key = 0, bool copy_field_values = false );
+
 bool CIYAM_BASE_DECL_SPEC is_update_locked_by_own_session( class_base& instance, const char* p_key = 0 );
 bool CIYAM_BASE_DECL_SPEC is_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );
 bool CIYAM_BASE_DECL_SPEC is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key = 0 );

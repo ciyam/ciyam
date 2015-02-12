@@ -90,6 +90,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Package.cmh"
 
 const int32_t c_version = 1;
@@ -531,25 +539,25 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    }
 
    const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
-   void impl_Actions( const string& Actions ) { v_Actions = Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    const string& impl_Install_Details( ) const { return lazy_fetch( p_obj ), v_Install_Details; }
-   void impl_Install_Details( const string& Install_Details ) { v_Install_Details = Install_Details; }
+   void impl_Install_Details( const string& Install_Details ) { sanity_check( Install_Details ); v_Install_Details = Install_Details; }
 
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
 
    const string& impl_Key( ) const { return lazy_fetch( p_obj ), v_Key; }
-   void impl_Key( const string& Key ) { v_Key = Key; }
+   void impl_Key( const string& Key ) { sanity_check( Key ); v_Key = Key; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
-   void impl_Plural( const string& Plural ) { v_Plural = Plural; }
+   void impl_Plural( const string& Plural ) { sanity_check( Plural ); v_Plural = Plural; }
 
    const string& impl_Type_Name( ) const { return lazy_fetch( p_obj ), v_Type_Name; }
-   void impl_Type_Name( const string& Type_Name ) { v_Type_Name = Type_Name; }
+   void impl_Type_Name( const string& Type_Name ) { sanity_check( Type_Name ); v_Type_Name = Type_Name; }
 
    int impl_Usage_Count( ) const { return lazy_fetch( p_obj ), v_Usage_Count; }
    void impl_Usage_Count( int Usage_Count ) { v_Usage_Count = Usage_Count; }

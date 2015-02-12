@@ -2306,7 +2306,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
                      }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( !is_init_uid( ) )
+#else
                      if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                      {
                         string scope_and_perm_info;
 
@@ -2355,7 +2359,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               if( !is_init_uid( ) )
+#else
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
                remove_uid_extra_from_log_command( next_command );
@@ -2548,7 +2556,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_instance_update( handle, "", key, ver_info, false );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               if( !is_init_uid( ) )
+#else
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                   check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
 
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
@@ -2582,7 +2594,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
                      }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( !is_init_uid( ) )
+#else
                      if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                      {
                         string scope_and_perm_info;
 
@@ -2760,7 +2776,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                op_destroy_rc rc;
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               if( !is_init_uid( ) )
+#else
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                   check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
 
                // NOTE: If the "quiet" option is used then will quietly ignore records that are
@@ -3009,7 +3029,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   instance_prepare_execute( handle, "", next_key, next_ver, has_any_set_flds );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                  if( !is_init_uid( ) )
+#else
                   if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                      check_instance_op_permission( module, handle, get_execute_procedure_info( handle, "", method_id ) );
 
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
@@ -3028,7 +3052,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               j->second = convert_local_to_utc( j->second, tz_name );
                         }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                        if( !is_init_uid( ) )
+#else
                         if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+#endif
                         {
                            string scope_and_perm_info;
 

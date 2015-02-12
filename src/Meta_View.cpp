@@ -98,6 +98,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_View.cmh"
 
 const int32_t c_version = 1;
@@ -832,13 +840,13 @@ struct Meta_View::impl : public Meta_View_command_handler
    void impl_File_Links_Always_As_Single( bool File_Links_Always_As_Single ) { v_File_Links_Always_As_Single = File_Links_Always_As_Single; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    bool impl_Ignore_Unactionable_Records( ) const { return lazy_fetch( p_obj ), v_Ignore_Unactionable_Records; }
    void impl_Ignore_Unactionable_Records( bool Ignore_Unactionable_Records ) { v_Ignore_Unactionable_Records = Ignore_Unactionable_Records; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    int impl_PDF_Font_Type( ) const { return lazy_fetch( p_obj ), v_PDF_Font_Type; }
    void impl_PDF_Font_Type( int PDF_Font_Type ) { v_PDF_Font_Type = PDF_Font_Type; }
@@ -850,10 +858,10 @@ struct Meta_View::impl : public Meta_View_command_handler
    void impl_Print_Without_Highlight( bool Print_Without_Highlight ) { v_Print_Without_Highlight = Print_Without_Highlight; }
 
    const string& impl_Title( ) const { return lazy_fetch( p_obj ), v_Title; }
-   void impl_Title( const string& Title ) { v_Title = Title; }
+   void impl_Title( const string& Title ) { sanity_check( Title ); v_Title = Title; }
 
    const string& impl_Type_Key( ) const { return lazy_fetch( p_obj ), v_Type_Key; }
-   void impl_Type_Key( const string& Type_Key ) { v_Type_Key = Type_Key; }
+   void impl_Type_Key( const string& Type_Key ) { sanity_check( Type_Key ); v_Type_Key = Type_Key; }
 
    bool impl_Use_First_Row_As_Header( ) const { return lazy_fetch( p_obj ), v_Use_First_Row_As_Header; }
    void impl_Use_First_Row_As_Header( bool Use_First_Row_As_Header ) { v_Use_First_Row_As_Header = Use_First_Row_As_Header; }

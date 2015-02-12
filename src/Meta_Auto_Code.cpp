@@ -47,6 +47,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Auto_Code.cmh"
 
 const int32_t c_version = 1;
@@ -301,10 +309,10 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
    void impl_Exhausted( bool Exhausted ) { v_Exhausted = Exhausted; }
 
    const string& impl_Mask( ) const { return lazy_fetch( p_obj ), v_Mask; }
-   void impl_Mask( const string& Mask ) { v_Mask = Mask; }
+   void impl_Mask( const string& Mask ) { sanity_check( Mask ); v_Mask = Mask; }
 
    const string& impl_Next( ) const { return lazy_fetch( p_obj ), v_Next; }
-   void impl_Next( const string& Next ) { v_Next = Next; }
+   void impl_Next( const string& Next ) { sanity_check( Next ); v_Next = Next; }
 
    void impl_Increment( string& Next_Value );
 

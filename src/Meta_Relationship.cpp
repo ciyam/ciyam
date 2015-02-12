@@ -118,6 +118,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Relationship.cmh"
 
 const int32_t c_version = 1;
@@ -984,22 +992,22 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void impl_Change_Scope( int Change_Scope ) { v_Change_Scope = Change_Scope; }
 
    const string& impl_Child_Class_Id( ) const { return lazy_fetch( p_obj ), v_Child_Class_Id; }
-   void impl_Child_Class_Id( const string& Child_Class_Id ) { v_Child_Class_Id = Child_Class_Id; }
+   void impl_Child_Class_Id( const string& Child_Class_Id ) { sanity_check( Child_Class_Id ); v_Child_Class_Id = Child_Class_Id; }
 
    const string& impl_Child_Class_Name( ) const { return lazy_fetch( p_obj ), v_Child_Class_Name; }
-   void impl_Child_Class_Name( const string& Child_Class_Name ) { v_Child_Class_Name = Child_Class_Name; }
+   void impl_Child_Class_Name( const string& Child_Class_Name ) { sanity_check( Child_Class_Name ); v_Child_Class_Name = Child_Class_Name; }
 
    const string& impl_Child_Name( ) const { return lazy_fetch( p_obj ), v_Child_Name; }
-   void impl_Child_Name( const string& Child_Name ) { v_Child_Name = Child_Name; }
+   void impl_Child_Name( const string& Child_Name ) { sanity_check( Child_Name ); v_Child_Name = Child_Name; }
 
    int impl_Extra( ) const { return lazy_fetch( p_obj ), v_Extra; }
    void impl_Extra( int Extra ) { v_Extra = Extra; }
 
    const string& impl_Field_Id( ) const { return lazy_fetch( p_obj ), v_Field_Id; }
-   void impl_Field_Id( const string& Field_Id ) { v_Field_Id = Field_Id; }
+   void impl_Field_Id( const string& Field_Id ) { sanity_check( Field_Id ); v_Field_Id = Field_Id; }
 
    const string& impl_Field_Key( ) const { return lazy_fetch( p_obj ), v_Field_Key; }
-   void impl_Field_Key( const string& Field_Key ) { v_Field_Key = Field_Key; }
+   void impl_Field_Key( const string& Field_Key ) { sanity_check( Field_Key ); v_Field_Key = Field_Key; }
 
    bool impl_Internal( ) const { return lazy_fetch( p_obj ), v_Internal; }
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
@@ -1008,7 +1016,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void impl_Mandatory( bool Mandatory ) { v_Mandatory = Mandatory; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    bool impl_Transient( ) const { return lazy_fetch( p_obj ), v_Transient; }
    void impl_Transient( bool Transient ) { v_Transient = Transient; }

@@ -64,6 +64,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Initial_Record.cmh"
 
 const int32_t c_version = 1;
@@ -347,13 +355,13 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
    }
 
    const string& impl_Comments( ) const { return lazy_fetch( p_obj ), v_Comments; }
-   void impl_Comments( const string& Comments ) { v_Comments = Comments; }
+   void impl_Comments( const string& Comments ) { sanity_check( Comments ); v_Comments = Comments; }
 
    const string& impl_Key( ) const { return lazy_fetch( p_obj ), v_Key; }
-   void impl_Key( const string& Key ) { v_Key = Key; }
+   void impl_Key( const string& Key ) { sanity_check( Key ); v_Key = Key; }
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
+   void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
 
    Meta_Class& impl_Class( )
    {

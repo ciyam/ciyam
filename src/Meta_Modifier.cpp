@@ -79,6 +79,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Modifier.cmh"
 
 const int32_t c_version = 1;
@@ -349,7 +357,7 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    Meta_Class& impl_Class( )
    {

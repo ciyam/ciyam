@@ -25439,7 +25439,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>500741
+        <id>500742
         <affect>protect
        </modifier>
       </modifiers>
@@ -25499,7 +25499,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>500741
+        <id>500742
         <affect>protect
        </modifier>
       </modifiers>
@@ -25568,7 +25568,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>500742
+        <id>500744
         <affect>protect
        </modifier>
       </modifiers>
@@ -25602,7 +25602,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>500742
+        <id>500743
         <affect>protect
        </modifier>
       </modifiers>
@@ -25636,7 +25636,7 @@
         <affect>relegate
        </modifier>
        <modifier/>
-        <id>500742
+        <id>500744
         <affect>protect
        </modifier>
       </modifiers>
@@ -26808,12 +26808,20 @@
       <name>Is_Tab
      </modifier>
      <modifier/>
-      <id>500741
-      <name>Protect_Access
+      <id>500742
+      <name>Protect_Access_Restriction
      </modifier>
      <modifier/>
-      <id>500742
-      <name>Protect_Change
+      <id>500741
+      <name>Protect_Access_Scope
+     </modifier>
+     <modifier/>
+      <id>500744
+      <name>Protect_Change_Restriction
+     </modifier>
+     <modifier/>
+      <id>500743
+      <name>Protect_Change_Scope
      </modifier>
     </modifiers>
     <procedures/>

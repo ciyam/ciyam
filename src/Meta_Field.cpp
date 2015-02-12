@@ -132,6 +132,14 @@ inline int system( const string& cmd ) { return exec_system( cmd ); }
 namespace
 {
 
+template< typename T > inline void sanity_check( const T& t ) { }
+
+inline void sanity_check( const string& s )
+{
+   if( s.length( ) > c_max_string_length_limit )
+      throw runtime_error( "unexpected max string length limit exceeded with: " + s );
+}
+
 #include "Meta_Field.cmh"
 
 const int32_t c_version = 1;
@@ -1320,10 +1328,10 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void impl_Create_View_Field( bool Create_View_Field ) { v_Create_View_Field = Create_View_Field; }
 
    const string& impl_Def_Value( ) const { return lazy_fetch( p_obj ), v_Def_Value; }
-   void impl_Def_Value( const string& Def_Value ) { v_Def_Value = Def_Value; }
+   void impl_Def_Value( const string& Def_Value ) { sanity_check( Def_Value ); v_Def_Value = Def_Value; }
 
    const string& impl_Default( ) const { return lazy_fetch( p_obj ), v_Default; }
-   void impl_Default( const string& Default ) { v_Default = Default; }
+   void impl_Default( const string& Default ) { sanity_check( Default ); v_Default = Default; }
 
    bool impl_Dummy_1( ) const { return lazy_fetch( p_obj ), v_Dummy_1; }
    void impl_Dummy_1( bool Dummy_1 ) { v_Dummy_1 = Dummy_1; }
@@ -1332,7 +1340,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void impl_Extra( int Extra ) { v_Extra = Extra; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
-   void impl_Id( const string& Id ) { v_Id = Id; }
+   void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
 
    bool impl_Internal( ) const { return lazy_fetch( p_obj ), v_Internal; }
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
@@ -1347,13 +1355,13 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void impl_Mandatory( bool Mandatory ) { v_Mandatory = Mandatory; }
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
-   void impl_Name( const string& Name ) { v_Name = Name; }
+   void impl_Name( const string& Name ) { sanity_check( Name ); v_Name = Name; }
 
    const numeric& impl_Numeric_Decimals( ) const { return lazy_fetch( p_obj ), v_Numeric_Decimals; }
-   void impl_Numeric_Decimals( const numeric& Numeric_Decimals ) { v_Numeric_Decimals = Numeric_Decimals; }
+   void impl_Numeric_Decimals( const numeric& Numeric_Decimals ) { sanity_check( Numeric_Decimals ); v_Numeric_Decimals = Numeric_Decimals; }
 
    const string& impl_Parent_Class_Name( ) const { return lazy_fetch( p_obj ), v_Parent_Class_Name; }
-   void impl_Parent_Class_Name( const string& Parent_Class_Name ) { v_Parent_Class_Name = Parent_Class_Name; }
+   void impl_Parent_Class_Name( const string& Parent_Class_Name ) { sanity_check( Parent_Class_Name ); v_Parent_Class_Name = Parent_Class_Name; }
 
    int impl_Primitive( ) const { return lazy_fetch( p_obj ), v_Primitive; }
    void impl_Primitive( int Primitive ) { v_Primitive = Primitive; }
@@ -1365,10 +1373,10 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void impl_UOM( int UOM ) { v_UOM = UOM; }
 
    const string& impl_UOM_Name( ) const { return lazy_fetch( p_obj ), v_UOM_Name; }
-   void impl_UOM_Name( const string& UOM_Name ) { v_UOM_Name = UOM_Name; }
+   void impl_UOM_Name( const string& UOM_Name ) { sanity_check( UOM_Name ); v_UOM_Name = UOM_Name; }
 
    const string& impl_UOM_Symbol( ) const { return lazy_fetch( p_obj ), v_UOM_Symbol; }
-   void impl_UOM_Symbol( const string& UOM_Symbol ) { v_UOM_Symbol = UOM_Symbol; }
+   void impl_UOM_Symbol( const string& UOM_Symbol ) { sanity_check( UOM_Symbol ); v_UOM_Symbol = UOM_Symbol; }
 
    bool impl_Use_In_Text_Search( ) const { return lazy_fetch( p_obj ), v_Use_In_Text_Search; }
    void impl_Use_In_Text_Search( bool Use_In_Text_Search ) { v_Use_In_Text_Search = Use_In_Text_Search; }
