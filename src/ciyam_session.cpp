@@ -1286,6 +1286,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       p_pdf_progress = &pdf_progress;
 #endif
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   bool has_identified_local_session = false;
+
+   if( get_session_variable( get_special_var_name( e_special_var_identity ) ) == get_identity( true ) )
+      has_identified_local_session = true;
+#endif
+
    try
    {
       ostringstream osstr;
@@ -2343,6 +2350,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+                     if( is_transient && !has_identified_local_session )
+                        throw runtime_error( "invalid attempt to set transient field: " + i->first );
+
                      // NOTE: Field values that are the same as the default ones are omitted from the log
                      // as are values for all transient fields.
                      if( !is_transient && value != i->second )
@@ -2369,11 +2379,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                remove_uid_extra_from_log_command( next_command );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               replace_field_values_to_log( next_command, field_values_to_log );
-               replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-#endif
+               if( !field_values_to_log.empty( ) )
+               {
+                  replace_field_values_to_log( next_command, field_values_to_log );
+                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
+                  transaction_log_command( next_command );
+               }
+#else
                transaction_log_command( next_command );
+#endif
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -2631,6 +2646,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+                     if( is_transient && !has_identified_local_session )
+                        throw runtime_error( "invalid attempt to set transient field: " + i->first );
+
                      // NOTE: Field values that are the same as the record's current ones are omitted from
                      // the log as are values for all transient fields.
                      if( !is_transient && value != i->second )
@@ -2650,11 +2668,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                remove_uid_extra_from_log_command( next_command );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               replace_field_values_to_log( next_command, field_values_to_log );
-               replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-#endif
+               if( !field_values_to_log.empty( ) )
+               {
+                  replace_field_values_to_log( next_command, field_values_to_log );
+                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
+                  transaction_log_command( next_command );
+               }
+#else
                transaction_log_command( next_command );
+#endif
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -3325,8 +3348,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_new_val )
             set_session_variable( var_name, new_value );
-
-         response = get_session_variable( var_name );
+         else
+            response = get_session_variable( var_name );
       }
       else if( command == c_cmd_ciyam_session_storage_info )
       {
@@ -4083,8 +4106,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_new_val )
             set_system_variable( var_name, new_value );
-
-         response = get_system_variable( var_name );
+         else
+            response = get_system_variable( var_name );
       }
       else if( command == c_cmd_ciyam_session_trace )
       {

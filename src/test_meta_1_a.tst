@@ -2,7 +2,6 @@
 > storage_init ciyam
 
 > session_variable @attached_file_path .
-.
 
 > perform_create guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0"
 guest_model

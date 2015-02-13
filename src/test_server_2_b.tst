@@ -63,13 +63,11 @@ One Test App Name
 > object_variable 4 test_var "Two"
 
 > session_variable test_var "Here"
-Here
 
 > object_execute 4 "Test_Proc_2 \"Is Over\""
 Two Test App Name Is Over Here
 
 > session_variable test_var "Found"
-Found
 
 > object_execute 4 "Test_Proc_2 \"Is Soon\""
 Two Test App Name Is Soon Found

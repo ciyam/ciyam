@@ -76,6 +76,7 @@ enum special_var
    e_special_var_trigger,
    e_special_var_cmd_hash,
    e_special_var_executed,
+   e_special_var_identity,
    e_special_var_progress,
    e_special_var_image_dir,
    e_special_var_val_error,
