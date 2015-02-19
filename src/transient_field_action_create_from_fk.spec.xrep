@@ -1,7 +1,8 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_action_create_from_fk)] `{`$arg_id`}
 `{`$key_sep`=`'%`'`}`{`!`@eq`(`$arg_key_sep`,`'`'`)`$key_sep`=`$arg_key_sep`}\
-   if( get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
+   if( !( state & c_state_is_changing )
+    && get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
    {
       string actions( get_obj( ).`{`$arg_actions`}( ) );
 

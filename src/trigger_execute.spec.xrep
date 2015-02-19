@@ -1,20 +1,20 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start trigger_execute)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
+`,\
+   // NOTE: Empty code block for scope purposes.
 `}\
-`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    {
+`{`!`@eq`(`$arg_has_key_already`,`'true`'`)\
+      temporary_session_variable tmp_session_key_var( "@key", get_obj( ).get_key( ) );
 `}\
-`{`$i`}   temporary_session_variable tmp_session_key_var( "@key", get_obj( ).get_key( ) );
-`{`$i`}   temporary_session_variable tmp_session_class_var( "@class", get_obj( ).get_class_id( ) );
+      temporary_session_variable tmp_session_class_var( "@class", get_obj( ).get_class_id( ) );
 `{`!`@eq`(`$arg_field`,`'`'`)\
-`{`$i`}   temporary_session_variable tmp_session_fields_and_values_var( "@fields_and_values", get_obj( ).`{`$arg_field`}( ) );
+      temporary_session_variable tmp_session_fields_and_values_var( "@fields_and_values", get_obj( ).`{`$arg_field`}( ) );
 `}
-`{`$i`}   run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`} );
-`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
+      run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`}, `{`@eq`(`$arg_delay`,`'`'`)false`,true`} );
    }
-`}\
    // [(finish trigger_execute)] `{`$arg_id`}
 `}

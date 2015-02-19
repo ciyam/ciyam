@@ -5,9 +5,24 @@
 `,\
 `{`@eq`(`$arg_value`,`'@tfield`'`)\
    get_obj( ).`{`$arg_field`}( get_module_string( c_field_display_name_`{`$arg_tfield`} ) );
+`,`@eq`(`$arg_value`,`'@tfield=tvalue`'`)\
+   get_obj( ).`{`$arg_field`}( get_module_string( c_field_display_name_`{`$arg_tfield`} )
+    + "=" + escaped_string( escaped_string( to_string( get_obj( ).`{`$arg_tfield`}( ) ), "," ), "\\\\\\\\"" ) );
 `,\
    if( get_obj( ).`{`$arg_tfield`}( ) )
       get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
 `}`}\
+   // [(finish transient_field_from_module_string)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_from_module_string)] `{`$arg_id`}
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }
    // [(finish transient_field_from_module_string)] `{`$arg_id`}
 `}

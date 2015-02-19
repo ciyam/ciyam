@@ -1,6 +1,7 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_action_for_fk_child_match)] `{`$arg_id`}
-   if( !get_uid( ).empty( ) && !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
+   if( !( state & c_state_is_changing )
+    && !get_uid( ).empty( ) && !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
    {
       bool found = false;
 

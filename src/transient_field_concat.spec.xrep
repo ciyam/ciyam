@@ -27,15 +27,25 @@
 `{`@eq`(`$arg_non_empty`,`'`'`)\
       get_obj( ).`{`$arg_dfield`}( other_value );
 `{`!`@eq`(`$arg_separator`,`'`'`)
-      if( !source_value.empty( ) && !other_value.empty( ) )
-         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
-`}
-      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`) + other_value_2`} + source_value );
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
 `,\
       if( !source_value.empty( ) && !other_value.empty( ) )
-         get_obj( ).`{`$arg_dfield`}(
-          other_value`{`!`@eq`(`$arg_field2`,`'`'`) + sep_value + other_value_2`} + sep_value + source_value );
-`}\
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
+`}`}
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`) + other_value_2 + sep_value`} + source_value );
+`,\
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`)
+       + other_value_2 + ( other_value_2.empty( ) ? string( ) : sep_value )`} + source_value );
+`}`,\
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      get_obj( ).`{`$arg_dfield`}( other_value`{`!`@eq`(`$arg_field2`,`'`'`) + sep_value + other_value_2`} + sep_value + source_value );
+`,\
+      if( !source_value.empty( ) && !other_value.empty( ) )
+         get_obj( ).`{`$arg_dfield`}( other_value`{`!`@eq`(`$arg_field2`,`'`'`)
+          + ( other_value_2.empty( ) ? string( ) : sep_value ) + other_value_2`} + sep_value + source_value );
+`}`}\
 `,\
 `{`@eq`(`$arg_non_empty`,`'`'`)\
       string str( other_value );
@@ -45,19 +55,28 @@
 
       get_obj( ).`{`$arg_dfield`}( source_value );
 `{`!`@eq`(`$arg_separator`,`'`'`)
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
+`,\
       if( !str.empty( ) && !source_value.empty( ) )
          get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
-`}
+`}`}
       get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + str );
 `,\
       string str( other_value );
 `{`!`@eq`(`$arg_field2`,`'`'`)\
-      str += sep_value + other_value_2 )
-`}\
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      str += sep_value + other_value_2;
+`,\
+      str += ( other_value.empty( ) ? string( ) : sep_value ) + other_value_2;
+`}`}\
 
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+      get_obj( ).`{`$arg_dfield`}( source_value + sep_value + str );
+`,\
       if( !str.empty( ) && !source_value.empty( ) )
          get_obj( ).`{`$arg_dfield`}( source_value + sep_value + str );
-`}\
+`}`}\
 `}\
 `,\
       if( `{`!`@eq`(`$arg_reverse`,`'`'`)!`}get_obj( ).`{`$arg_field3`}( ).`{`$arg_rfield`}( ) )
@@ -65,36 +84,60 @@
 `{`@eq`(`$arg_non_empty`,`'`'`)\
          get_obj( ).`{`$arg_dfield`}( other_value );
 `{`!`@eq`(`$arg_separator`,`'`'`)
-         if( !source_value.empty( ) && !other_value.empty( ) )
-            get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
-`}
-         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`) + other_value_2`} + source_value );
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
 `,\
          if( !source_value.empty( ) && !other_value.empty( ) )
-            get_obj( ).`{`$arg_dfield`}(
-             other_value`{`!`@eq`(`$arg_field2`,`'`'`) + sep_value + other_value_2`} + sep_value + source_value );
-`}\
+            get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
+`}`}
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`) + other_value_2 + sep_value`} + source_value );
+`,\
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( )`{`!`@eq`(`$arg_field2`,`'`'`)
+          + other_value_2 + ( other_value_2.empty( ) ? string( ) : sep_value )`} + source_value );
+`}`,\
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         get_obj( ).`{`$arg_dfield`}(
+          other_value`{`!`@eq`(`$arg_field2`,`'`'`) + sep_value + other_value_2`} + sep_value + source_value );
+   ,\
+         if( !source_value.empty( ) && !other_value.empty( ) )
+            get_obj( ).`{`$arg_dfield`}( other_value`{`!`@eq`(`$arg_field2`,`'`'`)
+             + ( other_value_2.empty( ) ? string( ) : sep_value ) + other_value_2`} + sep_value + source_value );
+`}`}\
       }
       else
       {
 `{`@eq`(`$arg_non_empty`,`'`'`)\
-         string str( other_value`{`!`@eq`(`$arg_field2`,`'`'`) + other_value_2`} );
-
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         string str( other_value`{`!`@eq`(`$arg_field2`,`'`'`) + sep_value + other_value_2`} );
+`,\
+         string str( other_value`{`!`@eq`(`$arg_field2`,`'`'`)
+          + ( other_value.empty( ) || other_value_2.empty( ) ? string( ) : sep_value ) + other_value_2`} );
+`}\
          get_obj( ).`{`$arg_dfield`}( source_value );
 `{`!`@eq`(`$arg_separator`,`'`'`)
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
+`,\
          if( !str.empty( ) && !source_value.empty( ) )
             get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + sep_value );
-`}
+`}`}
          get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + str );
 `,\
          string str( other_value );
 `{`!`@eq`(`$arg_field2`,`'`'`)\
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
          str += sep_value + other_value_2;
-`}\
+`,\
+         str += ( str.empty( ) || other_value_2.empty( ) ? string( ) : sep_value ) + other_value_2;
+`}`}\
 
+`{`@eq`(`$arg_always_use_separator`,`'true`'`)\
+         get_obj( ).`{`$arg_dfield`}( source_value + sep_value + str );
+`,\
          if( !str.empty( ) && !source_value.empty( ) )
             get_obj( ).`{`$arg_dfield`}( source_value + sep_value + str );
-`}\
+`}`}\
       }
 `}\
    }

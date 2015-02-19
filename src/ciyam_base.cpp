@@ -222,6 +222,9 @@ const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
+const char* const c_special_variable_value_increment = "@increment";
+const char* const c_special_variable_value_decrement = "@decrement";
+
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -5453,7 +5456,25 @@ void set_system_variable( const string& name, const string& value )
 {
    guard g( g_mutex );
 
-   if( value.empty( ) )
+   string val( value );
+
+   if( val == c_special_variable_value_increment
+    || val == c_special_variable_value_decrement )
+   {
+      int num_value = from_string< int >( g_variables[ name ] );
+
+      if( val == c_special_variable_value_increment )
+         ++num_value;
+      else if( num_value > 0 )
+         --num_value;
+
+      if( num_value == 0 )
+         val.clear( );
+      else
+         val = to_string( num_value );
+   }
+
+   if( val.empty( ) )
    {
       if( g_variables.count( name ) )
          g_variables.erase( name );
@@ -5461,9 +5482,9 @@ void set_system_variable( const string& name, const string& value )
    else
    {
       if( g_variables.count( name ) )
-         g_variables[ name ] = value;
+         g_variables[ name ] = val;
       else
-         g_variables.insert( make_pair( name, value ) );
+         g_variables.insert( make_pair( name, val ) );
    }
 }
 
@@ -8098,17 +8119,18 @@ string exec_bulk_ops( const string& module,
                   if( ( has_key_field && i == key_field_num ) || fields[ i ] == c_ignore_field )
                      continue;
 
-                  if( !values[ i ].empty( ) )
+                  bool is_transient = false;
+
+                  string type_name = get_field_type_name( handle, "", fields[ i ], &is_transient );
+
+                  if( !values[ i ].empty( )
+                   && ( type_name == "date_time" || type_name == "tdatetime" ) )
                   {
-                     string type_name = get_field_type_name( handle, "", fields[ i ] );
-                     if( type_name == "date_time" || type_name == "tdatetime" )
-                     {
-                        // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
-                        if( values[ i ][ 0 ] == 'U' )
-                           values[ i ].erase( 0, 1 );
-                        else if( !tz_name.empty( ) )
-                           values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
-                     }
+                     // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
+                     if( values[ i ][ 0 ] == 'U' )
+                        values[ i ].erase( 0, 1 );
+                     else if( !tz_name.empty( ) )
+                        values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
                   }
 
 #ifndef IS_TRADITIONAL_PLATFORM
@@ -8116,7 +8138,10 @@ string exec_bulk_ops( const string& module,
                   method_name_and_args += fields[ i ];
 
                   string value = execute_object_command( handle, "", method_name_and_args );
-                  if( value != values[ i ] )
+
+                  // NOTE: Field values that are unchanged are omitted from the log as are values
+                  // for all transient fields.
+                  if( !is_transient && value != values[ i ] )
                   {
 #endif
                      string method_name_and_args( "set " );
