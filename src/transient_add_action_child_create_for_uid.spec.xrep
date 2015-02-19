@@ -1,6 +1,7 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_add_action_child_create_for_uid)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
+    && !( state & c_state_is_changing )
 `{`@eq`(`$arg_top_level`,`'true`'`)\
     && !get_obj( ).get_graph_parent( )
 `}\

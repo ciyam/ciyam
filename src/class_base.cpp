@@ -3103,9 +3103,10 @@ string numeric_name( const string& s, bool show_plus_if_no_sign )
 string value_label( const string& s )
 {
    string rs;
+
    for( size_t i = 0; i < s.size( ); i++ )
    {
-      bool special = false;
+      string special;
 
       if( s[ i ] == ' ' || s[ i ] == '.' )
          rs += '_';
@@ -3113,58 +3114,51 @@ string value_label( const string& s )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "gteq";
+            special = "gteq";
             ++i;
          }
          else
             rs += "gt";
-
-         special = true;
       }
       else if( s[ i ] == '<' )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "lteq";
+            special = "lteq";
             ++i;
          }
          else
-            rs += "lt";
-
-         special = true;
+            special = "lt";
       }
       else if( s[ i ] == '!' )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "not_eq";
+            special = "not_eq";
             ++i;
          }
          else
-            rs += "not";
-
-         special = true;
+            special = "not";
       }
       else if( s[ i ] == '=' )
-      {
-         rs += "eq";
-         special = true;
-      }
+         special = "eq";
       else if( s[ i ] == '+' )
-      {
-         rs += "plus";
-         special = true;
-      }
+         special = "plus";
       else if( s[ i ] == '-' )
-      {
-         rs += "minus";
-         special = true;
-      }
+         special = "minus";
       else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
        || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
          rs += s[ i ];
 
-      if( special && i < s.size( ) - 1 && s[ i + 1 ] != ' ' )
+      if( !special.empty( ) )
+      {
+         if( !rs.empty( ) && rs[ rs.length( ) - 1 ] != '_' )
+            rs += '_';
+      }
+
+      rs += special;
+
+      if( !special.empty( ) && i < s.size( ) - 1 && s[ i + 1 ] != ' ' )
          rs += '_';
    }
 
