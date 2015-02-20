@@ -2350,12 +2350,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-                     if( is_transient && !has_identified_local_session )
+                     if( is_transient && !is_init_uid( ) && !has_identified_local_session )
                         throw runtime_error( "invalid attempt to set transient field: " + i->first );
 
                      // NOTE: Field values that are the same as the default ones are omitted from the log
-                     // as are values for all transient fields.
-                     if( !is_transient && value != i->second )
+                     // as are values for all transient fields (unless used with initial data).
+                     if( ( !is_transient || is_init_uid( ) ) && value != i->second )
                      {
                         if( !field_values_to_log.empty( ) )
                            field_values_to_log += ",";
@@ -2646,12 +2646,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      fields_set.insert( i->first );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-                     if( is_transient && !has_identified_local_session )
+                     if( is_transient && !is_init_uid( ) && !has_identified_local_session )
                         throw runtime_error( "invalid attempt to set transient field: " + i->first );
 
                      // NOTE: Field values that are the same as the record's current ones are omitted from
                      // the log as are values for all transient fields.
-                     if( !is_transient && value != i->second )
+                     if( ( !is_transient || is_init_uid( ) ) && value != i->second )
                      {
                         if( !field_values_to_log.empty( ) )
                            field_values_to_log += ",";
@@ -3097,7 +3097,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         execute_object_command( handle, "", method_name_and_args );
 #ifndef IS_TRADITIONAL_PLATFORM
-                        if( i == 0 && !is_transient && log_transaction )
+                        if( i == 0 && ( !is_transient || is_init_uid( ) ) && log_transaction )
                         {
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";

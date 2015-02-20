@@ -8140,8 +8140,8 @@ string exec_bulk_ops( const string& module,
                   string value = execute_object_command( handle, "", method_name_and_args );
 
                   // NOTE: Field values that are unchanged are omitted from the log as are values
-                  // for all transient fields.
-                  if( !is_transient && value != values[ i ] )
+                  // for all transient fields (unless used with initial data).
+                  if( ( !is_transient || is_init_uid( ) ) && value != values[ i ] )
                   {
 #endif
                      string method_name_and_args( "set " );
