@@ -1,4 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_concatenation)] `{`$arg_id`}
+   if( field_name == "`{`$arg_dfield`}" )
+      return true;
+   // [(finish field_from_concatenation)] `{`$arg_id`}
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_concatenation)] `{`$arg_id`}
    if( `{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {

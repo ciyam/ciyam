@@ -6,16 +6,17 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_key)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
-   if( get_obj( ).`{`$arg_tfield`}( ) )
+`{`$check`=`'`'`}`{`!`@eq`(`$arg_create_only`,`'`'`)`$check`=`'true`'`}\
+`{`!`@eq`(`$arg_update_only`,`'`'`)`$check`=`'true`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$check`=`'true`'`}\
+`{`$i`=`'`'`}`{`@eq`(`$check`,`'true`'`)`{`$i`=`'   `'`}\
+   if( `{`@eq`(`$arg_update_only`,`'true`'`)`|`@eq`(`$arg_create_only`,`'true`'`)`{`@eq`(`$arg_update_only`,`'true`'`)!`}is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
 `{`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
    {
-`}`}\
-`{`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
+`}`}`{`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
 `{`$i`}   get_obj( ).`{`$arg_field`}( ).set_variable( c_object_variable_skip_fk_handling, "1" );
-`}\
-`{`$i`}   get_obj( ).`{`$arg_field`}( get_obj( ).get_key( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`} );
-`{`!`@eq`(`$arg_tfield`,`'`'`)`&`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
+`}`{`$i`}   get_obj( ).`{`$arg_field`}( get_obj( ).get_key( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`} );
+`{`!`@eq`(`$check`,`'`'`)`&`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
    }
 `}\
    // [(finish field_from_key)] `{`$arg_id`}
