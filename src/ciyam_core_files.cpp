@@ -752,7 +752,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             // NOTE: If the account charge is explicitly provided with a zero value
             // then this will determine that the blockchain will not allow creation
-            // of secondary accounts.
+            // of any secondary accounts.
             if( account_charge == 0 && has_secondary_account )
                throw runtime_error( "secondary account creation not permitted" );
          }
@@ -844,7 +844,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   get_block_info( old_info, old_previous_block );
 
                   // FUTURE: For each transaction hash would need to remove the tag part that indicates
-                  // the transaction has been "used".
+                  // the transaction has been "used" (explained in another related FUTURE comment below).
 
                   uint64_t reward = mint_reward + ( transaction_reward * old_info.transaction_hashes.size( ) );
 
@@ -951,7 +951,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          //
          // FUTURE: Accounts that produce blocks that are of invalid height are purposely trying
          // to cause a fork and should be effectively banned (with the two conflicting blocks to
-         // be show to other peers as proof that the account has gone rogue).
+         // be broadcast to other peers as proof that the account has gone rogue).
          if( block_height <= last_height )
             throw runtime_error( "invalid block height for minting account" );
 
