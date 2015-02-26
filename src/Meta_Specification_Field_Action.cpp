@@ -2381,12 +2381,12 @@ void Meta_Specification_Field_Action::get_transient_replacement_field_names( con
    // [<finish get_transient_replacement_field_names>]
 }
 
-void Meta_Specification_Field_Action::do_generate_sql(
- generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
+void Meta_Specification_Field_Action::do_generate_sql( generate_sql_type type,
+ vector< string >& sql_stmts, set< string >& tx_key_info, vector< string >* p_sql_undo_stmts ) const
 {
-   parent_class_type::do_generate_sql( type, sql_stmts, tx_key_info );
+   parent_class_type::do_generate_sql( type, sql_stmts, tx_key_info, p_sql_undo_stmts );
 
-   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info );
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info, p_sql_undo_stmts );
 }
 
 const char* Meta_Specification_Field_Action::static_resolved_module_id( )

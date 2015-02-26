@@ -1260,7 +1260,8 @@ string class_base::get_original_field_value( int field ) const
    return str;
 }
 
-bool class_base::get_sql_stmts( vector< string >& sql_stmts, set< string >& tx_key_info )
+bool class_base::get_sql_stmts( vector< string >& sql_stmts,
+ set< string >& tx_key_info, vector< string >* p_sql_undo_stmts )
 {
    bool retval = false;
    sql_stmts.clear( );
@@ -1274,7 +1275,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts, set< string >& tx_k
       case e_op_type_create:
       revision = 0;
       original_identity = construct_class_identity( *this );
-      do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info );
+      do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info, p_sql_undo_stmts );
       /* drop through */
 
       case e_op_type_update:
@@ -1282,13 +1283,13 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts, set< string >& tx_k
       p_impl->has_changed_user_fields = false;
 
       if( sql_stmts.empty( ) )
-         do_generate_sql( e_generate_sql_type_update, sql_stmts, tx_key_info );
+         do_generate_sql( e_generate_sql_type_update, sql_stmts, tx_key_info, p_sql_undo_stmts );
 
       retval = true;
       break;
 
       case e_op_type_destroy:
-      do_generate_sql( e_generate_sql_type_delete, sql_stmts, tx_key_info );
+      do_generate_sql( e_generate_sql_type_delete, sql_stmts, tx_key_info, p_sql_undo_stmts );
 
       destroy( );
       retval = true;
@@ -1757,32 +1758,37 @@ int class_base::get_max_index_depth( const vector< string >& field_names ) const
    return max_depth;
 }
 
-void class_base::generate_sql( const string& class_name,
- generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
+void class_base::generate_sql( const string& class_name, generate_sql_type type,
+ vector< string >& sql_stmts, set< string >& tx_key_info, vector< string >* p_sql_undo_stmts ) const
 {
+   string undo_stmt;
+
    switch( type )
    {
       case e_generate_sql_type_insert:
-      sql_stmts.push_back( generate_sql_insert( class_name ) );
+      sql_stmts.push_back( generate_sql_insert( class_name, p_sql_undo_stmts ? &undo_stmt : 0 ) );
       tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       case e_generate_sql_type_update:
-      sql_stmts.push_back( generate_sql_update( class_name ) );
+      sql_stmts.push_back( generate_sql_update( class_name, p_sql_undo_stmts ? &undo_stmt : 0 ) );
       tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       case e_generate_sql_type_delete:
-      sql_stmts.push_back( generate_sql_delete( class_name ) );
+      sql_stmts.push_back( generate_sql_delete( class_name, p_sql_undo_stmts ? &undo_stmt : 0 ) );
       tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       default:
       throw runtime_error( "unexpected generate_sql_type #" + to_string( type ) );
    }
+
+   if( !undo_stmt.empty( ) )
+      p_sql_undo_stmts->push_back( undo_stmt );
 }
 
-string class_base::generate_sql_insert( const string& class_name ) const
+string class_base::generate_sql_insert( const string& class_name, string* p_undo_stmt ) const
 {
    string sql_stmt( "INSERT INTO T_" + get_module_name( ) + "_" + class_name );
 
@@ -1826,20 +1832,33 @@ string class_base::generate_sql_insert( const string& class_name ) const
       sql_stmt += ");";
    }
 
+   if( p_undo_stmt && !sql_stmt.empty( ) )
+      *p_undo_stmt = generate_sql_delete( class_name );
+
    return sql_stmt;
 }
 
-string class_base::generate_sql_update( const string& class_name ) const
+string class_base::generate_sql_update( const string& class_name, string* p_undo_stmt ) const
 {
    string sql_stmt( "UPDATE T_" + get_module_name( ) + "_" + class_name );
-   sql_stmt += " SET C_Ver_=" + to_string( version ) + ",C_Rev_=" + to_string( revision );
+   if( p_undo_stmt )
+      *p_undo_stmt = sql_stmt;
+
+   sql_stmt += " SET C_Rev_=" + to_string( revision );
+   if( p_undo_stmt )
+      *p_undo_stmt += " SET C_Rev_=" + to_string( revision - 1 );
 
    bool done = false;
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( ) )
+   {
       sql_stmt.erase( );
+
+      if( p_undo_stmt )
+         p_undo_stmt->erase( );
+   }
    else
    {
       done = false;
@@ -1866,21 +1885,39 @@ string class_base::generate_sql_update( const string& class_name ) const
             sql_stmt += sql_column_names[ j ];
             sql_stmt += '=';
             sql_stmt += sql_column_values[ j ];
+
+            if( p_undo_stmt )
+            {
+               bool is_text = false;
+               if( !sql_column_values[ j ].empty( ) && sql_column_values[ j ][ 0 ] == 0x27 ) // i.e. '
+                  is_text = true;
+
+               *p_undo_stmt += ",";
+               *p_undo_stmt += sql_column_names[ j ];
+               *p_undo_stmt += '=';
+               *p_undo_stmt += is_text ? sql_quote( get_original_field_value( i ) ) : get_original_field_value( i );
+            }
          }
+
          ++j;
       }
 
       sql_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
+      if( p_undo_stmt )
+         *p_undo_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
    }
 
    return sql_stmt;
 }
 
-string class_base::generate_sql_delete( const string& class_name ) const
+string class_base::generate_sql_delete( const string& class_name, string* p_undo_stmt ) const
 {
    string sql_stmt( "DELETE FROM T_" + get_module_name( ) + "_" + class_name );
 
    sql_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
+
+   if( p_undo_stmt )
+      *p_undo_stmt = generate_sql_insert( class_name );
 
    return sql_stmt;
 }

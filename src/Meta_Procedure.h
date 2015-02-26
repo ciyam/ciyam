@@ -214,8 +214,8 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 
-   void do_generate_sql( generate_sql_type type,
-    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
+   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts,
+    std::set< std::string >& tx_key_info, std::vector< std::string >* p_sql_undo_stmts = 0 ) const;
 
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );

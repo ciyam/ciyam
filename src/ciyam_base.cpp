@@ -395,6 +395,10 @@ struct session
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   vector< string > sql_undo_statements;
+#endif
+
    string async_or_delayed_temp_file;
 
    vector< string > async_or_delayed_temp_files;
@@ -2999,6 +3003,28 @@ string construct_sql_select(
 
    return sql_fields_and_table + sql;
 }
+
+#ifndef IS_TRADITIONAL_PLATFORM
+void append_undo_sql_statements( storage_handler& handler )
+{
+   if( !gtp_session->sql_undo_statements.empty( ) )
+   {
+      string undo_sql_filename( handler.get_name( ) );
+      undo_sql_filename += ".undo.sql";
+
+      ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+      if( !outf )
+         throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
+
+      for( size_t i = 0; i < gtp_session->sql_undo_statements.size( ); i++ )
+         outf << gtp_session->sql_undo_statements[ i ] << '\n';
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+   }
+}
+#endif
 
 void append_transaction_log_command(
  storage_handler& handler, bool log_even_when_locked = false, size_t load_module_id = 0 )
@@ -9414,6 +9440,9 @@ void transaction_commit( )
 
       if( gtp_session->transactions.size( ) == 1 )
       {
+#ifndef IS_TRADITIONAL_PLATFORM
+         append_undo_sql_statements( handler );
+#endif
          append_transaction_log_command( handler );
 
          if( gtp_session->ap_db.get( ) )
@@ -9430,6 +9459,10 @@ void transaction_commit( )
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+   gtp_session->sql_undo_statements.clear( );
+#endif
 
    if( gtp_session->transactions.empty( ) )
    {
@@ -9455,6 +9488,10 @@ void transaction_rollback( )
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+   gtp_session->sql_undo_statements.clear( );
+#endif
 
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
@@ -10066,11 +10103,24 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
          }
 
+#ifdef IS_TRADITIONAL_PLATFORM
          vector< string > sql_stmts;
          if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info ) )
+#else
+         vector< string > sql_stmts;
+         vector< string > sql_undo_stmts;
+
+         vector< string >* p_sql_undo_stmts = 0;
+
+         if( gtp_session->p_storage_handler->get_name( ) != "Meta"
+          && gtp_session->p_storage_handler->get_name( ) != "ciyam" )
+            p_sql_undo_stmts = &sql_undo_stmts;
+
+         if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
+#endif
             throw runtime_error( "unexpected get_sql_stmts failure" );
 
-         // NOTE: If updating but no fields apart from the ver/rev ones were changed (by any
+         // NOTE: If updating but no fields apart from the revision one were changed (by any
          // derivation) then all update statements are discarded to skip the unnecessary SQL.
          if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
             sql_stmts.clear( );
@@ -10092,6 +10142,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          }
 
          executing_sql = false;
+
+#ifndef IS_TRADITIONAL_PLATFORM
+         gtp_session->sql_undo_statements.insert(
+          gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
+#endif
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
          // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to

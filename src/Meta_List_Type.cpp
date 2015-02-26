@@ -1672,10 +1672,10 @@ void Meta_List_Type::get_transient_replacement_field_names( const string& name, 
    // [<finish get_transient_replacement_field_names>]
 }
 
-void Meta_List_Type::do_generate_sql(
- generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
+void Meta_List_Type::do_generate_sql( generate_sql_type type,
+ vector< string >& sql_stmts, set< string >& tx_key_info, vector< string >* p_sql_undo_stmts ) const
 {
-   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info );
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info, p_sql_undo_stmts );
 }
 
 const char* Meta_List_Type::static_resolved_module_id( )
