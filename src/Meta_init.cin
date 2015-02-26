@@ -4,6 +4,9 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+@ifdef %CIYAM_TEST_STORAGE%
+~rm ciyam.sql
+@endif
 storage_init -admin %CIYAM_STORAGE%
 module_load Meta
 storage_term

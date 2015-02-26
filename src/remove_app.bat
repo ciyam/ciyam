@@ -9,6 +9,8 @@ if '%1' == '' goto usage
 if exist %1.log del %1.log
 if exist %1.sql del %1.sql
 
+if exist %1.undo.sql del %1.undo.sql
+
 if exist %1.dat del %1.dat
 if exist %1.dat.lck del %1.dat.lck
 if exist %1.hdr del %1.hdr

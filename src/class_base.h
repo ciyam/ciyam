@@ -455,14 +455,16 @@ class CLASS_BASE_DECL_SPEC class_base
    int get_max_index_depth( const std::vector< std::string >& field_names ) const;
 
    virtual void do_generate_sql( generate_sql_type type,
-    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const = 0;
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info,
+    std::vector< std::string >* p_sql_undo_stmts = 0 ) const = 0;
 
-   void generate_sql( const std::string& class_name,
-    generate_sql_type type, std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
+   void generate_sql( const std::string& class_name, generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info,
+    std::vector< std::string >* p_sql_undo_stmts = 0 ) const;
 
-   std::string generate_sql_insert( const std::string& class_name ) const;
-   std::string generate_sql_update( const std::string& class_name ) const;
-   std::string generate_sql_delete( const std::string& class_name ) const;
+   std::string generate_sql_insert( const std::string& class_name, std::string* p_undo_stmt = 0 ) const;
+   std::string generate_sql_update( const std::string& class_name, std::string* p_undo_stmt = 0 ) const;
+   std::string generate_sql_delete( const std::string& class_name, std::string* p_undo_stmt = 0 ) const;
 
    void set_class_pointer_base( class_pointer_base* p_cpb );
 
@@ -540,7 +542,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    class_pointer_base* p_class_pointer_base;
 
-   bool get_sql_stmts( std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info );
+   bool get_sql_stmts( std::vector< std::string >& sql_stmts,
+    std::set< std::string >& tx_key_info, std::vector< std::string >* p_sql_undo_stmts = 0 );
 
    bool has_skipped_empty_update( );
 
@@ -720,7 +723,11 @@ struct class_base_accessor
 
    class_base& get_obj( ) { return cb; }
 
-   bool get_sql_stmts( std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) { return cb.get_sql_stmts( sql_stmts, tx_key_info ); }
+   bool get_sql_stmts( std::vector< std::string >& sql_stmts,
+    std::set< std::string >& tx_key_info, std::vector< std::string >* p_sql_undo_stmts = 0 )
+   {
+      return cb.get_sql_stmts( sql_stmts, tx_key_info, p_sql_undo_stmts );
+   }
 
    bool has_skipped_empty_update( ) { return cb.has_skipped_empty_update( ); }
 
