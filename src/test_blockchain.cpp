@@ -138,7 +138,7 @@ string generate_blockchain_script( const string& chain_meta,
       accounts.push_back( new_account );
 
       private_key priv_key( new_account.secrets[ 0 ] );
-      private_key tx_priv_key( new_account.secrets[ rounds + 1 ] );
+      private_key tx_priv_key( new_account.secrets[ rounds ] );
 
       string next_account( "a:" + to_string( new_account.id ) + ",h="
        + base64::encode( get_hash( new_account.seed, 0, rounds ) )
@@ -175,6 +175,7 @@ string generate_blockchain_script( const string& chain_meta,
 
    vector< string > last_hashes;
    vector< string > block_hashes;
+   vector< string > last_tx_hashes;
    vector< uint64_t > total_weights;
 
    for( size_t i = 1; i <= rounds; i++ )
@@ -199,6 +200,47 @@ string generate_blockchain_script( const string& chain_meta,
 
       for( size_t j = 0; j < num_accounts; j++ )
       {
+         string next_tx_hash( base64::encode( get_hash( accounts[ j ].rseed, i, rounds ) ) );
+
+         string tx_data( "txn:a=" + to_string( root_id )
+          + "." + to_string( accounts[ j ].id ) + ",t=" + to_string( i - 1 ) );
+
+         string tx_validate( tx_data );
+
+         tx_data += "\\\n";
+
+         private_key tx_priv_key( accounts[ j ].secrets[ rounds + i ] );
+         private_key tx_sign_key( accounts[ j ].secrets[ rounds + i - 1 ] );
+
+         string tx_next( ",ap=Sample,pk=" + tx_sign_key.get_public( true, true ) );
+
+         if( i > 1 )
+            tx_next += ",pt=" + last_tx_hashes[ j ];
+
+         tx_data += tx_next;
+         tx_validate += tx_next;
+
+         tx_data += "\\\n";
+
+         tx_next = ",th=" + next_tx_hash + ",tl=" + tx_priv_key.get_address( true, true );
+
+         tx_data += tx_next;
+         tx_validate += tx_next;
+
+         tx_data += "\\n\\";
+
+         sha256 new_tx_hash( string( c_file_type_str_core_blob ) + tx_validate );
+
+         if( i == 1 )
+            last_tx_hashes.push_back( new_tx_hash.get_digest_as_string( ) );
+         else
+            last_tx_hashes[ j ] = new_tx_hash.get_digest_as_string( );
+
+         script += ".file_raw -core -full blob " + tx_data
+          + "\ns:" + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
+
+         script += ".file_kill %OUTPUT%\n";
+
          string previous_block( block_hash );
 
          // NOTE: If not wanting determinstic data then randomly decide whether to skip.
