@@ -1278,7 +1278,7 @@ const size_t c_max_sessions_limit = 1000;
 
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
-const size_t c_files_area_item_max_num_default = 100;
+const size_t c_files_area_item_max_num_default = 1000;
 const size_t c_files_area_item_max_size_default = 1024 * 100; // i.e. 100K
 
 string g_empty_string;

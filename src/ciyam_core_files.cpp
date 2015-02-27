@@ -116,7 +116,7 @@ uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long hei
 
 uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_hash = 0, string* p_minter_tag = 0 )
 {
-   string minter_tag( list_file_tags( minter_id + "*" ) );
+   string minter_tag( list_file_tags( minter_id + ".h*" ) );
 
    if( p_minter_tag )
       *p_minter_tag = minter_tag;
@@ -702,6 +702,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          if( mint_charge )
             extra += '-' + to_string( mint_charge );
 
+         if( transaction_reward )
+            extra += '+' + to_string( transaction_reward );
+
          if( account_charge || had_zero_explicit_account_charge )
             extra += '!' + to_string( account_charge );
 
@@ -1212,7 +1215,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             // NOTE: All accounts have their balance set to the default (apart from
             // the current minter and those minters of blocks that occurred between
-            // the blockchain blockchain head and the new checkpoint).
+            // the blockchain blockchain head and the new checkpoint not forgetting
+            // all relevant transactions).
             for( size_t i = 0; i < accounts.size( ); i++ )
             {
                string next_account_tag( accounts[ i ] );
@@ -1498,7 +1502,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
    while( true )
    {
-      string block_minter_tag( list_file_tags( info.minter_id + "*" ) );
+      string block_minter_tag( list_file_tags( info.minter_id + ".h*" ) );
       string block_minter_hash( tag_file_hash( block_minter_tag ) );
 
       if( !block_minter_hashes.count( block_minter_hash ) )
@@ -1783,6 +1787,9 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
 
    bool is_debug = !get_session_variable( get_special_var_name( e_special_var_debug_blockchain ) ).empty( );
 
+   if( !is_debug && !num_log_lines )
+      throw runtime_error( "invalid missing tx log lines" );
+
    uint64_t transaction_reward = 0;
 
    if( p_extras )
@@ -1862,43 +1869,15 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
       if( !previous_transaction.empty( ) && !has_file( previous_transaction ) )
          throw runtime_error( "previous transaction '" + previous_transaction + "' does not exist" );
 
-      if( !previous_transaction.empty( ) )
-      {
-         string previous_transaction_tag( get_hash_tags( previous_transaction ) );
-
-         if( previous_transaction_tag.empty( ) )
-            throw runtime_error( "previous transaction '" + previous_transaction + "' tag was not found" );
-
-         pos = previous_transaction_tag.find( ".t" );
-         if( pos == string::npos )
-            throw runtime_error( "invalid previous transaction '" + previous_transaction + "' tag '" + previous_transaction_tag + "'" );
-
-         unsigned long previous_transaction_number = atol( previous_transaction_tag.substr( pos + 2 ).c_str( ) );
-
-         if( transaction_number != previous_transaction_number + 1 )
-            throw runtime_error( "expecting transaction number "
-             + to_string( previous_transaction_number + 1 ) + " but found transaction number " + to_string( transaction_number ) );
-      }
-
       uint64_t balance = from_string< uint64_t >( transaction_account_tag.substr( rpos + 2 ) );
 
-      uint64_t transaction_cost = transaction_reward * num_log_lines;
-
-      if( transaction_cost > balance )
-         throw runtime_error( "transaction_cost "
-          + to_string( transaction_cost ) + " > account balance " + to_string( balance ) );
-
-      balance -= transaction_cost;
-
       transaction_account_tag.erase( rpos + 2 );
-      transaction_account_tag += to_string( balance );
+      transaction_account_tag += "*" + to_string( balance );
 
       string extra( c_file_type_str_core_blob );
 
-      extra += transaction_account_items[ 0 ]
-       + '\n' + transaction_account_items[ 1 ] + '\n' + transaction_account_hash;
-
-      extra += '\n' + transaction_hash + '\n' + transaction_lock;
+      extra += transaction_account_items[ 0 ] + '\n'
+       + transaction_account_items[ 1 ] + '\n' + transaction_hash + '\n' + transaction_lock;
 
       for( size_t i = 4; i < transaction_account_items.size( ); i++ )
          extra += '\n' + transaction_account_items[ i ];
