@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+#  include "utilities.h"
+
 class base64
 {
    public:
@@ -32,6 +34,9 @@ class base64
       return s;
    }
 };
+
+inline std::string hex_to_base64( const std::string& input ) { return base64::encode( hex_decode( input ) ); }
+inline std::string base64_to_hex( const std::string& input ) { return hex_encode( base64::decode( input ) ); }
 
 #endif
 

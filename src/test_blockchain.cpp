@@ -202,8 +202,7 @@ string generate_blockchain_script( const string& chain_meta,
       {
          string next_tx_hash( base64::encode( get_hash( accounts[ j ].rseed, i, rounds ) ) );
 
-         string tx_data( "txn:a=" + to_string( root_id )
-          + "." + to_string( accounts[ j ].id ) + ",t=" + to_string( i - 1 ) );
+         string tx_data( "txn:a=" + to_string( root_id ) + "." + to_string( accounts[ j ].id ) );
 
          string tx_validate( tx_data );
 
@@ -214,8 +213,10 @@ string generate_blockchain_script( const string& chain_meta,
 
          string tx_next( ",ap=Sample,pk=" + tx_sign_key.get_public( true, true ) );
 
-         if( i > 1 )
-            tx_next += ",pt=" + last_tx_hashes[ j ];
+         if( i == 1 )
+            tx_next += ",pt=0";
+         else
+            tx_next += ",pt=" + hex_to_base64( last_tx_hashes[ j ] );
 
          tx_data += tx_next;
          tx_validate += tx_next;
@@ -229,12 +230,21 @@ string generate_blockchain_script( const string& chain_meta,
 
          tx_data += "\\n\\";
 
+         tx_next ="\nl:pc_*_" + to_string( i - 1 ) + "X" + to_string( j ) + "_M100_C100_F100=Sample";
+
+         tx_data += tx_next;
+         tx_validate += tx_next;
+
+         tx_data += "\\n\\";
+
          sha256 new_tx_hash( string( c_file_type_str_core_blob ) + tx_validate );
 
-         if( i == 1 )
-            last_tx_hashes.push_back( new_tx_hash.get_digest_as_string( ) );
+         string tx_hash( new_tx_hash.get_digest_as_string( ) );
+
+         if( i > 1 )
+            last_tx_hashes[ j ] = tx_hash;
          else
-            last_tx_hashes[ j ] = new_tx_hash.get_digest_as_string( );
+            last_tx_hashes.push_back( tx_hash );
 
          script += ".file_raw -core -full blob " + tx_data
           + "\ns:" + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
@@ -320,7 +330,7 @@ string generate_blockchain_script( const string& chain_meta,
          data += next + "\\\n";
 
          private_key priv_key( accounts[ j ].secrets[ i - accounts[ j ].skips ] );
-         next = ",al=" + priv_key.get_address( true, true ) + ",pb=" + previous_block;
+         next = ",al=" + priv_key.get_address( true, true ) + ",pb=" + hex_to_base64( previous_block );
 
          data += next;
          validate += next;
@@ -331,6 +341,11 @@ string generate_blockchain_script( const string& chain_meta,
 
          data += "\\\n" + next;
          validate += next;
+
+         next = "\nt:" + hex_to_base64( tx_hash );
+
+         validate += next;
+         data += "\\n\\" + next;
 
          sha256 new_hash( string( c_file_type_str_core_blob ) + validate );
 
