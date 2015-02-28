@@ -15,8 +15,6 @@
 
 #include "base64.h"
 
-#include "utilities.h"
-
 using namespace std;
 
 namespace

@@ -706,25 +706,30 @@ void tag_file( const string& name, const string& hash )
    else
    {
       tag_del( name.substr( 0, pos + 1 ) );
-      tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
+
+      if( pos != name.length( ) - 1 )
+         tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
    }
 
-   string tag_filename( c_files_directory );
+   if( !tag_name.empty( ) )
+   {
+      string tag_filename( c_files_directory );
 
-   tag_filename += "/" + tag_name;
+      tag_filename += "/" + tag_name;
 
-   ofstream outf( tag_filename.c_str( ) );
-   if( !outf )
-      throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
+      ofstream outf( tag_filename.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
 
-   outf << hash;
+      outf << hash;
 
-   outf.flush( );
-   if( !outf.good( ) )
-      throw runtime_error( "unexpected bad output stream" );
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "unexpected bad output stream" );
 
-   g_hash_tags.insert( make_pair( hash, tag_name ) );
-   g_tag_hashes.insert( make_pair( tag_name, hash ) );
+      g_hash_tags.insert( make_pair( hash, tag_name ) );
+      g_tag_hashes.insert( make_pair( tag_name, hash ) );
+   }
 }
 
 string get_hash_tags( const string& hash )

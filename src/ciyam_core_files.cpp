@@ -20,6 +20,7 @@
 #include "ciyam_core_files.h"
 
 #include "regex.h"
+#include "base64.h"
 #include "config.h"
 #include "ptypes.h"
 #include "sha256.h"
@@ -36,6 +37,8 @@ using namespace std;
 
 namespace
 {
+
+const int c_tx_id_tag_size = 8;
 
 const int c_max_core_line_size = 4096;
 
@@ -173,6 +176,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
    size_t account_extra_offset = 0;
 
    string block_signature, past_previous_block, parallel_block_minted_minter_id, parallel_block_minted_previous_block;
+
+   unsigned int parallel_block_minted_num_transactions = 0;
 
    bool parallel_block_minted_had_secondary_account = false;
 
@@ -359,8 +364,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   throw runtime_error( "unxpected missing previous block item in block header '" + header + "'" );
 
                has_previous_block = true;
-               previous_block = next_attribute.substr( pos
-                + string( c_file_type_core_block_header_previous_block_prefix ).length( ) );
+               previous_block = base64_to_hex( next_attribute.substr( pos
+                + string( c_file_type_core_block_header_previous_block_prefix ).length( ) ) );
             }
          }
          else if( !has_public_key )
@@ -440,6 +445,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             is_new_chain_head = true;
             parallel_block_minted_minter_id = info.minter_id;
             parallel_block_minted_previous_block = info.previous_block;
+            parallel_block_minted_num_transactions = info.transaction_hashes.size( );
             parallel_block_minted_had_secondary_account = info.had_secondary_account;
          }
       }
@@ -611,10 +617,12 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       {
          verify += "\n" + lines[ i ];
 
-         if( !has_file( next_line ) )
-            throw runtime_error( "transaction file '" + next_line + "' was not found" );
+         string tx_hash( base64_to_hex( next_line ) );
 
-         transaction_hashes.push_back( next_line );
+         if( !has_file( tx_hash ) )
+            throw runtime_error( "transaction file '" + tx_hash + "' was not found" );
+
+         transaction_hashes.push_back( tx_hash );
       }
       else if( !had_signature
        && prefix == string( c_file_type_core_block_detail_signature_prefix ) )
@@ -695,7 +703,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       {
          // NOTE: Add the blockchain root account which is used to store
          // all relevant meta-data for the blockchain (as the root block
-         // will end up being removed after the first checkpoint).
+         // will end up being removed after checkpointing).
          string extra( c_file_type_str_core_blob );
          extra += to_string( mint_reward );
 
@@ -806,10 +814,12 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                string prior_block_minter_hash;
                uint64_t previous_balance = get_balance_from_minter_id( parallel_block_minted_minter_id, &prior_block_minter_hash );
 
-               if( previous_balance < mint_reward )
+               uint64_t total_reward = mint_reward + ( transaction_reward * parallel_block_minted_num_transactions );
+
+               if( previous_balance < total_reward )
                   previous_balance = 0;
                else if( !parallel_block_minted_had_secondary_account )
-                  previous_balance -= mint_reward;
+                  previous_balance -= total_reward;
 
                account_heights.insert( make_pair( parallel_block_minted_minter_id, block_height ) );
                account_balances.insert( make_pair( parallel_block_minted_minter_id, previous_balance ) );
@@ -827,6 +837,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                old_previous_block = previous_head;
                new_previous_block = previous_block;
             }
+
+            map< string, string > old_transaction_hashes;
+            set< string > new_transaction_hashes( transaction_hashes.begin( ), transaction_hashes.end( ) );
 
             // NOTE: If previous blocks in the chain were not matching then need to adjust the
             // balance of the parallel minters back to the last block they both had in common.
@@ -846,10 +859,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   block_info old_info;
                   get_block_info( old_info, old_previous_block );
 
-                  // FUTURE: For each transaction hash would need to remove the tag part that indicates
-                  // the transaction has been "used" (explained in another related FUTURE comment below).
+                  uint64_t total_reward = mint_reward + ( transaction_reward * old_info.transaction_hashes.size( ) );
 
-                  uint64_t reward = mint_reward + ( transaction_reward * old_info.transaction_hashes.size( ) );
+                  // NOTE: Remember the transaction hashes (and minter) that were part of the previous best chain.
+                  for( size_t i = 0; i < old_info.transaction_hashes.size( ); i++ )
+                  {
+                     if( !new_transaction_hashes.count( old_info.transaction_hashes[ i ] ) )
+                        old_transaction_hashes.insert( make_pair( old_info.transaction_hashes[ i ], old_info.minter_id ) );
+                  }
 
                   string old_minter_hash, old_minter_tag;
                   uint64_t previous_balance = get_balance_from_minter_id(
@@ -858,10 +875,10 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   if( account_balances.count( old_info.minter_id ) )
                      previous_balance = account_balances[ old_info.minter_id ];
 
-                  if( previous_balance < reward )
+                  if( previous_balance < total_reward )
                      previous_balance = 0;
                   else if( !old_info.had_secondary_account )
-                     previous_balance -= reward;
+                     previous_balance -= total_reward;
 
                   unsigned long old_block_height = parallel_block_height;
                   if( account_heights.count( old_info.minter_id ) )
@@ -889,11 +906,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   uint64_t new_account_balance = get_balance_from_minter_id(
                    new_info.minter_id, &new_minter_hash, &new_minter_tag );
 
+                  for( size_t i = 0; i < new_info.transaction_hashes.size( ); i++ )
+                     new_transaction_hashes.insert( new_info.transaction_hashes[ i ] );
+
                   if( account_balances.count( new_info.minter_id ) )
                      new_account_balance = account_balances[ new_info.minter_id ];
 
                   if( !new_info.had_secondary_account )
-                     new_account_balance += reward;
+                     new_account_balance += total_reward;
 
                   unsigned long new_block_height = parallel_block_height;
                   if( account_heights.count( new_info.minter_id ) )
@@ -915,6 +935,19 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                    new_minter_tag + ".b*" + to_string( new_account_balance ) ) );
 
                   --parallel_block_height;
+               }
+
+               // NOTE: Any old best chain transactions that did not end up in the new best chain will now be re-tagged.
+               for( map< string, string >::iterator i = old_transaction_hashes.begin( ); i != old_transaction_hashes.end( ); ++i )
+               {
+                  if( !new_transaction_hashes.count( i->first ) )
+                  {
+                     string tx_tag( "c" + chain + ".a" + i->second
+                      + ".t" + i->first.substr( 0, c_tx_id_tag_size ) );
+
+                     ++non_blob_extras;
+                     p_extras->push_back( make_pair( i->first, tx_tag ) );
+                  }
                }
             }
          }
@@ -990,10 +1023,16 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          if( is_new_chain_head && !has_secondary_account )
             balance += mint_reward + ( transaction_hashes.size( ) * transaction_reward );
 
-         // FUTURE: Each transaction file will have a tag suffix added to indicate that
-         // it has been used (this must not already be present). If this transaction is
-         // not the first for the account then the previous transaction will need to be
-         // already thus tagged in order for the transaction to be valid.
+         // NOTE: If is the new chain head then remove the transaction file tag for all transactions included.
+         if( is_new_chain_head && !transaction_hashes.empty( ) )
+         {
+            for( size_t i = 0; i < transaction_hashes.size( ); i++ )
+            {
+               ++non_blob_extras;
+               p_extras->push_back( make_pair( transaction_hashes[ i ],
+                "c" + chain + ".a" + account + ".t" + transaction_hashes[ i ].substr( 0, c_tx_id_tag_size ) + "*" ) );
+            }
+         }
 
          string tags, extra;
 
@@ -1142,14 +1181,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          if( num_found >= checkpoint_length )
          {
-            map< string, int > account_new_others;
-            map< string, int > account_old_others;
+            map< string, unsigned int > account_new_others;
+            map< string, unsigned int > account_old_others;
 
-            map< string, int > account_new_transactions;
-            map< string, int > account_old_transactions;
+            map< string, unsigned int > account_new_transactions;
+            map< string, unsigned int > account_old_transactions;
 
-            map< string, pair< int, int > > account_new_mint_info;
-            map< string, pair< int, int > > account_old_mint_info;
+            map< string, pair< unsigned int, unsigned int > > account_new_mint_info;
+            map< string, pair< unsigned int, unsigned int > > account_old_mint_info;
 
             unsigned long last_height = block_height - 1;
             while( true )
@@ -1184,7 +1223,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                         else
                            ++account_new_mint_info[ info.minter_id ].second;
 
-                        account_new_transactions[ info.minter_id ] += info.transaction_hashes.size( );
+                        if( block_links.count( last_block_hash ) )
+                           account_new_transactions[ info.minter_id ] += info.transaction_hashes.size( );
                      }
                   }
                   else if( is_debug )
@@ -1198,7 +1238,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                         else
                            ++account_old_mint_info[ info.minter_id ].second;
 
-                        account_old_transactions[ info.minter_id ] += info.transaction_hashes.size( );
+                        if( all_block_links.count( last_block_hash ) )
+                           account_old_transactions[ info.minter_id ] += info.transaction_hashes.size( );
                      }
                   }
                }
@@ -1215,8 +1256,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             // NOTE: All accounts have their balance set to the default (apart from
             // the current minter and those minters of blocks that occurred between
-            // the blockchain blockchain head and the new checkpoint not forgetting
-            // all relevant transactions).
+            // the current blockchain head and the new checkpoint).
             for( size_t i = 0; i < accounts.size( ); i++ )
             {
                string next_account_tag( accounts[ i ] );
@@ -1250,7 +1290,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                    account_old_mint_info[ next_account ].second + account_new_mint_info[ next_account ].second;
 
                   expected_balance += ( mint_reward - mint_charge ) * total_consensus;
-                  expected_balance += account_old_transactions[ next_account ] * transaction_reward;
+
+                  expected_balance += transaction_reward *
+                   ( account_old_transactions[ next_account ] + account_new_transactions[ next_account ] );
 
                   if( mint_charge * total_non_consensus > expected_balance )
                      expected_balance = 0;
@@ -1393,7 +1435,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             checkpoint_transaction_data += "@" + to_string( p_extras->size( ) - non_blob_extras );
 
-            // FUTURE: Transactions need to be appended here...
+            for( size_t i = 0; i < checkpoint_blocks.size( ); i++ )
+            {
+               block_info info;
+               get_block_info( info, checkpoint_blocks[ i ] );
+
+               for( size_t j = 0; j < info.transaction_hashes.size( ); j++ )
+                  checkpoint_transaction_data += '\n' + info.transaction_hashes[ j ];
+            }
 
             p_extras->push_back( make_pair( checkpoint_transaction_data, "c" + chain + ".checkpoint.h"
              + to_string( checkpoint_height ) + ".w" + to_string( checkpoint_weight ) + ".transactions" ) );
@@ -1517,10 +1566,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
       uint64_t previous_balance = from_string< uint64_t >( block_minter_tag.substr( pos + 2 ) );
 
-      // FUTURE: Transaction rewards would need to be subtracted from the balance and
-      // transaction file tags would need to have the block number removed from them.
-      // The current transaction file hash and tag would need to be stored along with
-      // block minter's hash and tag.
+      uint64_t total_reward = block_reward + ( transaction_reward * info.transaction_hashes.size( ) );
 
       if( info.had_secondary_account )
       {
@@ -1529,10 +1575,19 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
          else
             previous_balance -= account_charge;
       }
-      else if( previous_balance > block_reward )
-         previous_balance -= block_reward;
+      else if( previous_balance > total_reward )
+         previous_balance -= total_reward;
       else
          previous_balance = 0;
+
+      // NOTE: Re-tag all transactions in blocks that are rewound.
+      for( size_t i = 0; i < info.transaction_hashes.size( ); i++ )
+      {
+         string tx_tag( "c" + chain + ".a" + info.minter_id
+          + ".t" + info.transaction_hashes[ i ].substr( 0, c_tx_id_tag_size ) );
+
+         p_extras->push_back( make_pair( info.transaction_hashes[ i ], tx_tag ) );
+      }
 
       string new_account_blob( c_file_type_str_core_blob );
       new_account_blob += extract_file( block_minter_hash, "", c_file_type_char_core_blob );
@@ -1551,7 +1606,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
       block_info new_info;
       if( get_block_info( info, info.previous_block ).first != info.block_height - 1 )
-         throw runtime_error( "chain height is not one below current cchain height in verify_rewind" );
+         throw runtime_error( "chain height is not one below current chain height in verify_rewind" );
 
       info = new_info;
    }
@@ -1632,7 +1687,6 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
          throw runtime_error( "unexpected empty transaction header attributes" );
 
       bool has_account = false;
-      bool has_tnumber = false;
       bool has_public_key = false;
       bool has_application = false;
       bool has_transaction_hash = false;
@@ -1662,15 +1716,6 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
             chain = account.substr( 0, pos );
             account.erase( 0, pos + 1 );
          }
-         else if( !has_tnumber )
-         {
-            if( next_attribute.find( c_file_type_core_transaction_header_tnumber_prefix ) != 0 )
-               throw runtime_error( "unexpected missing transaction number attribute in transaction header '" + header + "'" );
-
-            has_tnumber = true;
-            transaction_number = atoi( next_attribute.substr(
-             string( c_file_type_core_transaction_header_tnumber_prefix ).length( ) ).c_str( ) );
-         }
          else if( !has_application )
          {
             if( next_attribute.find( c_file_type_core_transaction_header_application_prefix ) != 0 )
@@ -1690,14 +1735,14 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
             public_key_base64 = next_attribute.substr(
              string( c_file_type_core_transaction_header_public_key_prefix ).length( ) );
          }
-         else if( transaction_number && !has_previous_transaction )
+         else if( !has_previous_transaction )
          {
             if( next_attribute.find( c_file_type_core_transaction_header_previous_tchain_prefix ) != 0 )
                throw runtime_error( "unexpected missing previous transaction attribute in transaction header '" + header + "'" );
 
             has_previous_transaction = true;
-            previous_transaction = next_attribute.substr(
-             string( c_file_type_core_transaction_header_previous_tchain_prefix ).length( ) );
+            previous_transaction = base64_to_hex( next_attribute.substr(
+             string( c_file_type_core_transaction_header_previous_tchain_prefix ).length( ) ) );
          }
          else if( !has_transaction_hash )
          {
@@ -1733,6 +1778,8 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
    int num_log_lines = 0;
    bool had_signature = false;
 
+   bool is_debug = !get_session_variable( get_special_var_name( e_special_var_debug_blockchain ) ).empty( );
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -1752,6 +1799,9 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
          ++num_log_lines;
          verify += "\n" + lines[ i ];
 
+         if( is_debug && next_line.length( ) > 3 && next_line[ 2 ] == '_' )
+            replace( next_line, "_", " " );
+
          string::size_type pos = next_line.find( ' ' );
          if( pos == string::npos )
             throw runtime_error( "invalid transaction log line '" + next_line + "'" );
@@ -1765,6 +1815,7 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
       {
          had_signature = true;
          transaction_signature = next_line;
+
 #ifdef SSL_SUPPORT
          public_key pkey( public_key_base64, true );
 
@@ -1784,8 +1835,6 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
 
    if( p_extras && !had_signature )
       throw runtime_error( "transaction signature missing" );
-
-   bool is_debug = !get_session_variable( get_special_var_name( e_special_var_debug_blockchain ) ).empty( );
 
    if( !is_debug && !num_log_lines )
       throw runtime_error( "invalid missing tx log lines" );
@@ -1828,7 +1877,8 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
       string raw_transaction_data( c_file_type_str_core_blob );
       raw_transaction_data += verify;
 
-      string transaction_file_tag( "c" + chain + ".a" + account + ".t" + to_string( transaction_number ) );
+      string transaction_file_tag( "c" + chain + ".a" + account
+       + ".t" + sha256( raw_transaction_data ).get_digest_as_string( ).substr( 0, c_tx_id_tag_size ) );
 
       if( !list_file_tags( transaction_file_tag ).empty( ) )
          throw runtime_error( "transaction file tag '" + transaction_file_tag + "' already exists" );
@@ -1866,7 +1916,11 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
        && previous_lock != transaction_test_address && previous_lock != transaction_test_address_uncompressed )
          throw runtime_error( "invalid public key in transaction" );
 
-      if( !previous_transaction.empty( ) && !has_file( previous_transaction ) )
+      size_t transaction_count = 0;
+      if( transaction_account_items.size( ) > 4 )
+         transaction_count = from_string< size_t >( transaction_account_items[ 4 ] );
+
+      if( transaction_count && !has_file( previous_transaction ) )
          throw runtime_error( "previous transaction '" + previous_transaction + "' does not exist" );
 
       uint64_t balance = from_string< uint64_t >( transaction_account_tag.substr( rpos + 2 ) );
@@ -1877,9 +1931,10 @@ void verify_transaction( const string& content, bool check_sigs, vector< pair< s
       string extra( c_file_type_str_core_blob );
 
       extra += transaction_account_items[ 0 ] + '\n'
-       + transaction_account_items[ 1 ] + '\n' + transaction_hash + '\n' + transaction_lock;
+       + transaction_account_items[ 1 ] + '\n' + transaction_hash
+       + '\n' + transaction_lock + '\n' + to_string( ++transaction_count );
 
-      for( size_t i = 4; i < transaction_account_items.size( ); i++ )
+      for( size_t i = 5; i < transaction_account_items.size( ); i++ )
          extra += '\n' + transaction_account_items[ i ];
 
       p_extras->push_back( make_pair( extra, transaction_account_tag ) );
