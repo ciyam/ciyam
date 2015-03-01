@@ -758,13 +758,36 @@ string tag_file_hash( const string& name )
 {
    guard g( g_mutex );
 
-   string::size_type pos = name.rfind( '*' );
-   map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
+   string retval;
 
-   if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
-      throw runtime_error( "tag '" + name + "' not found" );
+   // NOTE: If the name is just "*" then return all the hashes that have been tagged (which can be of
+   // use if trying to find out which files do not have tags.
+   if( name == "*" )
+   {
+      set< string > hashes;
 
-   return i->second;
+      for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
+         hashes.insert( i->second );
+
+      for( set< string >::iterator i = hashes.begin( ); i != hashes.end( ); ++i )
+      {
+         if( i != hashes.begin( ) )
+            retval += '\n';
+         retval += *i;
+      }
+   }
+   else
+   {
+      string::size_type pos = name.rfind( '*' );
+      map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
+
+      if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
+         throw runtime_error( "tag '" + name + "' not found" );
+
+      retval = i->second;
+   }
+
+   return retval;
 }
 
 string list_file_tags( const string& pat )
