@@ -32,19 +32,20 @@ class ods;
 class class_base;
 class command_handler;
 
-#  define TRACE_COMMANDS   0x0001
-#  define TRACE_SQLSTMTS   0x0002
-#  define TRACE_CLASSOPS   0x0004
-#  define TRACE_MODS_GEN   0x0008
-#  define TRACE_SQLCLSET   0x0010
-#  define TRACE_FLD_VALS   0x0020
-#  define TRACE_LOCK_OPS   0x0040
-#  define TRACE_CTR_DTRS   0x0080
-#  define TRACE_SESSIONS   0x0100
-#  define TRACE_MAIL_OPS   0x0200
-#  define TRACE_PDF_VALS   0x0400
-#  define TRACE_SOCK_OPS   0x0800
-#  define TRACE_ANYTHING   0xffff
+#  define TRACE_COMMANDS   0x00000001
+#  define TRACE_SQLSTMTS   0x00000002
+#  define TRACE_CLASSOPS   0x00000004
+#  define TRACE_MODS_GEN   0x00000008
+#  define TRACE_SQLCLSET   0x00000010
+#  define TRACE_FLD_VALS   0x00000020
+#  define TRACE_LOCK_OPS   0x00000040
+#  define TRACE_CTR_DTRS   0x00000080
+#  define TRACE_SESSIONS   0x00000100
+#  define TRACE_MAIL_OPS   0x00000200
+#  define TRACE_PDF_VALS   0x00000400
+#  define TRACE_SOCK_OPS   0x00000800
+#  define TRACE_CORE_FLS   0x00001000
+#  define TRACE_ANYTHING   0xffffffff
 
 #  define IF_IS_TRACING( flags )\
 if( get_trace_flags( ) & ( flags ) )
@@ -55,8 +56,8 @@ if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_ANYTHING, message )
 
-int CIYAM_BASE_DECL_SPEC get_trace_flags( );
-void CIYAM_BASE_DECL_SPEC set_trace_flags( int flags );
+size_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
+void CIYAM_BASE_DECL_SPEC set_trace_flags( size_t flags );
 
 void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
 
