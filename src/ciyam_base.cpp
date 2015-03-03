@@ -3821,12 +3821,12 @@ size_t g_trace_flags;
 
 }
 
-int get_trace_flags( )
+size_t get_trace_flags( )
 {
    return g_trace_flags;
 }
 
-void set_trace_flags( int flags )
+void set_trace_flags( size_t flags )
 {
    g_trace_flags = flags;
 }
@@ -3845,6 +3845,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "mail_ops" ); // TRACE_MAIL_OPS
    flag_names.push_back( "pdf_vals" ); // TRACE_PDF_VALS
    flag_names.push_back( "sock_ops" ); // TRACE_SOCK_OPS
+   flag_names.push_back( "core_fls" ); // TRACE_CORE_FLS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -3900,6 +3901,10 @@ void log_trace_message( int flag, const string& message )
 
       case TRACE_SOCK_OPS:
       type = "sock_op";
+      break;
+
+      case TRACE_CORE_FLS:
+      type = "core_fs";
       break;
 
       case TRACE_ANYTHING:
