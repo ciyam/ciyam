@@ -694,9 +694,14 @@ void tag_file( const string& name, const string& hash )
    if( !file_exists( filename ) )
       throw runtime_error( hash + " was not found" );
 
-   string::size_type pos = name.rfind( '*' );
-
    string tag_name;
+
+   // NOTE: If an asterisk is included in the name then existing tags matching
+   // the wildcard expression will be removed first then if the asterisk is at
+   // the very end no new tag will be added unless two asterisks were used for
+   // the name suffix in which case the new tag name will become the truncated
+   // version (any other wildcard characters included will cause an error).
+   string::size_type pos = name.rfind( '*' );
 
    if( pos == string::npos )
    {
@@ -709,6 +714,8 @@ void tag_file( const string& name, const string& hash )
 
       if( pos != name.length( ) - 1 )
          tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
+      else if( pos > 1 && name[ pos - 1 ] == '*' )
+         tag_name = name.substr( 0, pos - 1 );
    }
 
    if( !tag_name.empty( ) )
