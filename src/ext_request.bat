@@ -7,11 +7,11 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 if '%1' == '' goto usage
 
 if '%2' == '' goto standard_output
-curl -s -m 8 %1 >%2
+curl -k -s -m 8 %1 >%2
 goto end
 
 :standard_output
-curl -s -m 8 %1
+curl -k -s -m 8 %1
 echo.
 goto end
 
