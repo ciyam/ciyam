@@ -650,6 +650,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       if( p_extras && get_block_info( binfo, previous_block ).first != block_height - 1 )
          throw runtime_error( "chain height is not one above previous block height" );
 
+      string account_tag( list_file_tags( "c" + chain + ".a" + account + ".h*" ) );
+
+      if( account_tag.empty( ) )
+         throw runtime_error( "invalid account '" + account + "' for chain '" + chain + "'" );
+
+      if( account_tag.find( ".banned" ) != string::npos )
+         throw runtime_error( "account '" + account + "' has been banned for chain '" + chain + "'" );
+
       past_previous_block = binfo.previous_block;
       previous_block_height = binfo.block_height;
       previous_block_weight = binfo.block_weight;
@@ -1165,13 +1173,24 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             throw runtime_error( "invalid public key from minter" );
 
          // NOTE: If an account has already minted then make sure that this block is higher than
-         // the previous one minted.
-         //
-         // FUTURE: Accounts that produce blocks that are of invalid height are purposely trying
-         // to cause a fork and should be effectively banned (with the two conflicting blocks to
-         // be broadcast to other peers as proof that the account has gone rogue).
+         // the previous one minted. As any account that is producing an an invalid height block
+         // is likely trying to cause a fork, the account is set to be banned and the tag of the
+         // last block that this one conflicts with is put in a session variable. The peer using
+         // this function should then perform a rewind to the last checkpoint and after removing
+         // all blocks and transactions that belong to that account the blockchain would need to
+         // be rebuilt.
          if( block_height <= ainfo.last_height )
+         {
+            string conflict( list_file_tags(
+             "c" + chain + ".b" + to_string( ainfo.last_height ) + "-*.a" + minter_account ) );
+
+            set_session_variable( get_special_var_name( e_special_var_core_block_conflict ), conflict );
+
+            tag_file( account_hash,
+             "c" + chain + ".a" + account + ".h" + to_string( ainfo.last_height ) + ".b*anned" );
+
             throw runtime_error( "invalid block height for minting account" );
+         }
 
          string::size_type pos = minter_account_tag.find( ".b" );
 
@@ -1969,6 +1988,17 @@ void verify_transaction( const string& content, bool check_sigs,
 
       if( !has_public_key )
          throw runtime_error( "invalid incompleted transaction header '" + header + "'" );
+   }
+
+   if( p_extras )
+   {
+      string tx_account( "c" + chain + ".a" + account );
+
+      account_info ainfo;
+      get_account_info( ainfo, tx_account );
+
+      if( !ainfo.balance )
+         throw runtime_error( "zero balance tx not permitted for account '" + account + "' in chain '" + chain + "'" );
    }
 
    string verify( string( c_file_type_core_transaction_object ) + ':' + header );
