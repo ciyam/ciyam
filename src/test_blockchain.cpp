@@ -18,6 +18,7 @@
 
 #include "base64.h"
 #include "sha256.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "crypto_keys.h"
 
@@ -230,7 +231,9 @@ string generate_blockchain_script( const string& chain_meta,
 
          tx_data += "\\n\\";
 
-         tx_next ="\nl:pc_*_" + to_string( i - 1 ) + "X" + to_string( j ) + "_M100_C100_F100=Sample";
+         string unique( to_string( i - 1 ) + "X" + to_string( j ) );
+         tx_next ="\nl:pc_" + date_time::standard( ).as_string( )
+          + "_M100_C101_F102=Sample_" + unique + ",F108=test";
 
          tx_data += tx_next;
          tx_validate += tx_next;

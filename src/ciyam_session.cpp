@@ -77,6 +77,10 @@ const size_t c_request_timeout = 500;
 
 const int c_pdf_default_limit = 5000;
 
+#ifndef IS_TRADITIONAL_PLATFORM
+const size_t c_max_key_append_chars = 7;
+#endif
+
 const char* const c_log_transformation_scope_any_change = "any_change";
 const char* const c_log_transformation_scope_execute_only = "execute_only";
 const char* const c_log_transformation_scope_any_perform_op = "any_perform_op";
@@ -2159,6 +2163,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( key.empty( ) || key[ 0 ] == ' ' )
          {
             string new_key( gen_key( ) );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+            if( storage_name( ) == "Meta" )
+               new_key += "000";
+            else
+            {
+               string append( uid.substr( 0, uid.find_first_of( ":!" ) ) );
+               new_key += append.substr( 0, min( append.length( ), c_max_key_append_chars ) );
+            }
+#endif
 
             size_t remove_length = 2;
             string::size_type spos = next_command.find( uid ) + uid.length( );

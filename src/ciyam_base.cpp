@@ -219,6 +219,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_core_block_conflict = "@core_block_conflict";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
@@ -5437,6 +5438,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_attached_file_path );
       break;
 
+      case e_special_var_core_block_conflict:
+      s = string( c_special_variable_core_block_conflict );
+      break;
+
       case e_special_var_secondary_validation:
       s = string( c_special_variable_secondary_validation );
       break;
@@ -6436,15 +6441,15 @@ string gen_key( const char* p_suffix )
 
    if( gtp_session )
    {
+#ifdef IS_TRADITIONAL_PLATFORM
       date_time dtm( date_time::local( ) );
+#else
+      date_time dtm( date_time::standard( ) );
+#endif
 
 #ifdef IS_TRADITIONAL_PLATFORM
       // NOTE: Automatically generate a key using the session id and current date/time.
       size_t num( gtp_session->slot );
-#else
-      // NOTE: Automatically generate a key using a random number and current date/time.
-      size_t num = rand( ) % 1000;
-#endif
 
       char sss[ ] = "sss";
       sss[ 0 ] = '0' + ( num / 100 );
@@ -6452,6 +6457,10 @@ string gen_key( const char* p_suffix )
       sss[ 2 ] = '0' + ( num % 10 );
 
       key = dtm.as_string( ) + string( sss );
+#else
+      key = dtm.as_string( );
+#endif
+
       if( p_suffix )
          key += string( p_suffix );
 
