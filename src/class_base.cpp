@@ -52,6 +52,7 @@
 #include "tx_create.h"
 #include "file_utils.h"
 #include "ciyam_base.h"
+#include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "crypto_keys.h"
 #endif
@@ -4977,6 +4978,11 @@ string send_raw_transaction( const string& ext_key, const string& tx )
    }
 
    return txid;
+}
+
+bool account_has_been_banned( const string& account_id )
+{
+   return !list_file_tags( "c" + storage_blockchain( ) + ".a" + account_id + ".h*.banned" ).empty( );
 }
 
 void meta_relationship_child_name( string& name,

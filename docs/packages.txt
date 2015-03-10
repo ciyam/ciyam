@@ -47,9 +47,9 @@ Blog
 
 Other Package Dependencies: Standard User
 
-This package provides a Blog implementation that supports multiple blogs that each contain multiple blog
-entries that are ordered by date. A blog entry remains private until it is published. After publication
-a blog entry can be removed or republished.
+This package provides a Blog implementation that supports multiple blogs that each contain blog entries which
+are ordered by date. A blog entry remains private until it is published. After publication any blog entry can
+be removed or republished.
 
 Package Options:
 
@@ -252,20 +252,15 @@ to install it simply run the following:
 
 If the User package is not tied to the Photo package (via the "use_user" option below) then Photo Albums will
 be accessible to all users and will be published to the "webroot" directory. If the User package is linked in
-then Photo Albums and Photos are only visible to the user that "owns" them, however, if "use_user_account" is
-selected (and User Accounts were installed with the User package) then other users that the Photo Album owner
-has added User Accounts for will also be able to view their Photos (assuming they have been given high enough
-access). Only those Photo Albums with "public" visibility (and Photos likewise) are able to be "published" as
-the published Photo Albums will be visible to anyone having access to the website.
+then Photo Albums and Photos are only visible to the user that "owns" them. Photo Albums with "public" access
+visibility (and Photos likewise) are able to be "published" and the published Photo Albums will be visible to
+anyone having access to the server.
 
 Package Options:
 
 @use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
 
 use_user - This option needs to be set true in order to use the other "user" options.
-
-use_user_account - Use this option if Photo Albums are intended to be shared between user accounts.
-use_user_account_mark_as_seen - This option allows the account owners to mark a Photo Album as being seen.
 
 use_user_id_path - Use this option to publish Photo Albums below a directory that is the same as the User Id.
 
@@ -416,9 +411,6 @@ timezone_package - Optional "timezone" package to be able to tie a timezone to a
 
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
-
-use_account - Use this option to allow users to create accounts that are aliases for other users. *
-use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
 
 use_authenticator - Use this option to let users optionally use 2FA at login via an RFC 6238 TOTP.
 
