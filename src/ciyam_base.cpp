@@ -6329,6 +6329,19 @@ string storage_identity( )
    return gtp_session->p_storage_handler->get_root( ).identity;
 }
 
+string storage_blockchain( )
+{
+   // FUTURE: For now this is just returning the first blockchain id
+   // but the blockchain id should actually be tied into the storage
+   // via its application.
+   string s;
+
+   if( !g_blockchains.empty( ) )
+      s = *g_blockchains.begin( );
+
+   return s;
+}
+
 string storage_module_directory( )
 {
    return gtp_session->p_storage_handler->get_root( ).module_directory;

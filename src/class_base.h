@@ -1423,6 +1423,8 @@ bool CLASS_BASE_DECL_SPEC raw_transaction_was_signed( const std::string& tx_info
 
 std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& ext_key, const std::string& tx );
 
+bool CLASS_BASE_DECL_SPEC account_has_been_banned( const std::string& account_id );
+
 void CLASS_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );
 void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_and_args, std::string& retval );
 

@@ -319,6 +319,7 @@ struct CIYAM_BASE_DECL_SPEC storage_bulk_write_pause
 
 std::string CIYAM_BASE_DECL_SPEC storage_name( );
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
+std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
 std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand );
