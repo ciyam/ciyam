@@ -421,7 +421,7 @@ use_ignore_users - Use this option to support the maintenance of a set of users 
 
 use_personalisation - Use this option to add additional personal information (such as photo and signature).
 
-use_quick_link - Use this option to allow the user to maintain quick link records. **
+use_quick_link - Use this option to allow the user to maintain quick link records. *
 use_quick_link_active - Use this option to allow quick link records to have an "active" status.
 
 use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
@@ -429,11 +429,6 @@ use_reputation - Use this option to allow other packages to award or subtract re
 use_templates - Use this option to support the creation of users from a user template (this is most useful if
 the application has a need for different user "types" that have different permissions).
 
-* An "account" is effectively an alias that one user can give to another user. The purpose for creating these
-accounts is for a user to be able to provide restricted access to their personal information to another user.
-These accounts can be tied with the usage of other packages (such as the Photo package) which can be used for
-the construction of "social network" type applications.
-
-** A "quick link" is a method for extending the standard menu so applications can include menu items that are
+* A "quick link" is a method for extending the standard menu so applications can include menu items that are
 either links to a specific record or to a specific record search (and are also known as "user links").
 
