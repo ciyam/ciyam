@@ -151,6 +151,7 @@ void setup_list_fields( list_source& list,
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( module_name )->second );
 
+   list.sid = ( list.lici->second )->id;
    list.cid = ( list.lici->second )->cid;
    list.type = ( list.lici->second )->type;
    list.perm = ( list.lici->second )->perm;

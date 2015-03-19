@@ -2084,13 +2084,23 @@ bool fetch_user_record(
       // NOTE: Password fields that are < 20 characters are assumed to have not been
       // either hashed or encrypted.
       if( user_password.length( ) < 20 )
+      {
+         sess_info.pwd_encrypted = false;
          user_password = hash_password( gid + user_data[ 1 ] + ( userhash.empty( ) ? username : user_data[ 0 ] ) );
+      }
       else
+#ifndef IS_TRADITIONAL_PLATFORM
+         user_password = password_decrypt( user_password, password );
+#else
          user_password = password_decrypt( user_password, get_server_id( ) );
+#endif
 
       string final_password( user_password );
+
+#ifdef IS_TRADITIONAL_PLATFORM
       if( !unique_data.empty( ) )
          final_password = sha256( user_password + unique_data ).get_digest_as_string( );
+#endif
 
       if( password == final_password )
          matched_password = true;
@@ -2418,6 +2428,8 @@ void save_record( const string& module_id,
    date_time dt( date_time::standard( ) );
    string current_dtm( dt.as_string( ) );
 
+   const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
+
    string act_cmd;
    if( is_new_record )
       act_cmd = "pc";
@@ -2442,8 +2454,13 @@ void save_record( const string& module_id,
    size_t used = 0;
    string field_values;
    bool found_field = false;
-   set< string > found_new_fields;
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   string user_id;
+   string password_hash( sess_info.user_pwd_hash );
+#endif
+
+   set< string > found_new_fields;
    set< string > sorted_fields( fields.begin( ), fields.end( ) );
 
    for( size_t i = 0; i < fields.size( ); i++ )
@@ -2451,6 +2468,11 @@ void save_record( const string& module_id,
       string field_id( fields[ i ] );
 
       string next( escaped( values.at( num++ ), "," ) );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+      if( field_id == mod_info.user_uid_field_id )
+         user_id = next;
+#endif
 
       if( field_id == c_key_field )
       {
@@ -2522,14 +2544,26 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
-#ifdef IS_TRADITIONAL_PLATFORM
       else if( view.password_fields.count( field_id )
        || view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
       {
          if( !next.empty( ) )
+         {
+#ifdef IS_TRADITIONAL_PLATFORM
             next = password_encrypt( next, get_server_id( ) );
-      }
+#else
+            // NOTE: Because password hashes are encrypted using the password hash
+            // of the user record when creating a new user need to take this value
+            // from the record itself (rather than from the "admin" user).
+            if( sess_info.is_admin_user
+             && view.hpassword_fields.count( field_id )
+             && view.sid == get_storage_info( ).user_info_view_id )
+               password_hash = next;
+
+            next = password_encrypt( next, password_hash );
 #endif
+         }
+      }
       else
       {
          // NOTE: If the record is being created under a parent then the parent field
@@ -2553,8 +2587,6 @@ void save_record( const string& module_id,
             pair< string, string > item_info;
             string key_info( fld.pfield.substr( pos + 1 ) );
             key_info += "#1 " + next;
-
-            const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
 
             string query_info( replaced( fld.pextra, "+", "," ) );
 
@@ -2599,6 +2631,12 @@ void save_record( const string& module_id,
          field_values += ',';
       field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
    }
+
+#ifndef IS_TRADITIONAL_PLATFORM
+   if( password_hash != sess_info.user_pwd_hash )
+      field_values += "," + mod_info.user_hash_field_id
+       + "=" + lower( sha256( user_id + password_hash ).get_digest_as_string( ) );
+#endif
 
    // NOTE: After dealing with all the field values provided via the UI next check the view
    // for any "defcurrent" fields that haven't already been provided.

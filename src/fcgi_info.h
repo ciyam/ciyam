@@ -525,6 +525,7 @@ struct session_info
    std::string user_has_auth;
    std::string user_pin_value;
 
+   bool pwd_encrypted;
    std::string user_pwd_hash;
 
    std::string default_user_group;
@@ -588,6 +589,7 @@ struct source
 {
    std::string id;
    std::string cid;
+   std::string sid;
    std::string name;
    std::string type;
    std::string perm;

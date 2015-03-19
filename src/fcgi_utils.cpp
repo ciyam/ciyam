@@ -84,7 +84,7 @@ void log_trace_message( const string& message )
    outf << message << '\n';
 }
 
-const char* get_server_id( )
+const string& get_server_id( )
 {
    return get_sid( );
 }

@@ -1371,6 +1371,11 @@ void request_handler::process_request( )
                       true, username, userhash, password, unique_id );
 
                      pwd_hash = p_session_info->user_pwd_hash;
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( !simple_command( *p_session_info, "session_variable @pwd_hash " + pwd_hash ) )
+                        throw runtime_error( "unexpected error setting pwd_hash session variable" );
+#endif
                   }
 
                   if( !is_authorised )
@@ -1811,14 +1816,9 @@ void request_handler::process_request( )
          // encrypt and store it in the application server "files area" for later usage.
          if( p_session_info->logged_in && !newhash.empty( ) )
          {
-            string data( "B" + password_encrypt( newhash, get_server_id( ) ) );
+            string data( password_encrypt( newhash, get_server_id( ) ) );
 
-            string cmd( "file_raw " + data );
-            simple_command( *p_session_info, cmd );
-
-            cmd = "file_link " + p_session_info->user_key
-             + ' ' + lower( sha256( data ).get_digest_as_string( ) );
-
+            string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
             simple_command( *p_session_info, cmd );
          }
 #endif
@@ -2256,11 +2256,17 @@ void request_handler::process_request( )
                   error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                else
                {
-                  string new_user_pwd_hash( new_password );
-                  new_password = password_encrypt( new_password, get_server_id( ) );
+#ifndef IS_TRADITIONAL_PLATFORM
+                  string encrypted_new_password( password_encrypt( new_password, new_password ) );
+#else
+                  string encrypted_new_password( password_encrypt( new_password, get_server_id( ) ) );
+#endif
 
                   vector< pair< string, string > > pwd_field_value_pairs;
-                  pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, new_password ) );
+#ifndef IS_TRADITIONAL_PLATFORM
+                  pwd_field_value_pairs.push_back( make_pair( "@pwd_hash", new_password ) );
+#endif
+                  pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
 
                   if( !perform_update( module_id, mod_info.user_class_id,
                    p_session_info->user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
@@ -2268,6 +2274,9 @@ void request_handler::process_request( )
                      if( error_message.empty( ) )
                         throw runtime_error( "unexpected server error occurred." );
                   }
+
+                  p_session_info->pwd_encrypted = true;
+                  p_session_info->user_pwd_hash = new_password;
                }
             }
             else if( !persistent.empty( ) )
@@ -2309,7 +2318,11 @@ void request_handler::process_request( )
       if( cmd != c_cmd_status )
       {
          extra_content_func += " serverId = '" + g_id + "';";
+#ifndef IS_TRADITIONAL_PLATFORM
+         extra_content_func += " uniqueId = '';";
+#else
          extra_content_func += " uniqueId = '" + unique_id + "';";
+#endif
       }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
@@ -2387,7 +2400,11 @@ void request_handler::process_request( )
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
       else
+#ifndef IS_TRADITIONAL_PLATFORM
+         extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '';\" id=\"extra_content_func\"/>\n";
+#else
          extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
+#endif
    }
    catch( ... )
    {

@@ -167,6 +167,7 @@ void setup_view_fields( view_source& view,
  const session_info& sess_info, const string& ident, const set< string >& login_opts,
  const string& module_id, const string& module_ref, bool is_in_edit, bool is_new_record )
 {
+   view.sid = vinfo.id;
    view.cid = vinfo.cid;
    view.name = vinfo.name;
    view.type = vinfo.type;
