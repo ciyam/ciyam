@@ -401,7 +401,9 @@ This package provides the User class which is required for an application to sup
 to create the User instances an "admin" user is automatically created when an application is generated. To be
 sure a system is secured the password for "admin" must be changed (the default password is "admin"). There is
 also a "guest" user created with the password "guest" so this user should be either set to "inactive" or have
-its password changed as well for production systems.
+its password changed as well for production systems. Non-traditional (i.e. blockchain) systems do not support
+the changing of passwords nor setting a user to inactive, however, as the "admin" and "guest" users cannot be
+used to create blocks or sign transactions they are of no security concern.
 
 Package Options:
 
@@ -409,9 +411,9 @@ Package Options:
 
 timezone_package - Optional "timezone" package to be able to tie a timezone to a user.
 
+*** the following three options are only avaiable for legacy 3-tier sytems ***
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
-
 use_authenticator - Use this option to let users optionally use 2FA at login via an RFC 6238 TOTP.
 
 use_gpg - Use this option to enable the support of GPG for email messages.
@@ -429,6 +431,6 @@ use_reputation - Use this option to allow other packages to award or subtract re
 use_templates - Use this option to support the creation of users from a user template (this is most useful if
 the application has a need for different user "types" that have different permissions).
 
-* A "quick link" is a method for extending the standard menu so applications can include menu items that are
-either links to a specific record or to a specific record search (and are also known as "user links").
+* A "quick link" is a method for extending the standard menu so applications can include menu items which are
+either links to a specific record or to a specific record search (these are also known as "user links").
 

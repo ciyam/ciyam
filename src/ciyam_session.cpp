@@ -2294,18 +2294,33 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               string tmp_pwd_hash;
+#endif
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-#ifdef IS_TRADITIONAL_PLATFORM
-                     instance_set_variable( handle, "", i->first, i->second );
-#else
-                     throw runtime_error( "invalid field '" + i->first + "'" );
+                  {
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( !has_identified_local_session )
+                        throw runtime_error( "invalid field '" + i->first + "'" );
+
+                     if( i->first == get_special_var_name( e_special_var_pwd_hash ) )
+                        tmp_pwd_hash = i->second;
 #endif
+                     instance_set_variable( handle, "", i->first, i->second );
+                  }
                }
 
                op_instance_create( handle, "", key, false );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               auto_ptr< temporary_session_variable > ap_pwd_hash;
+
+               if( !tmp_pwd_hash.empty( ) )
+                  ap_pwd_hash.reset( new temporary_session_variable( get_special_var_name( e_special_var_pwd_hash ), tmp_pwd_hash ) );
+#endif
 
                set< string > fields_set;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
@@ -2563,16 +2578,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               string tmp_pwd_hash;
+#endif
                string update_fields;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-#ifdef IS_TRADITIONAL_PLATFORM
-                     instance_set_variable( handle, "", i->first, i->second );
-#else
-                     throw runtime_error( "invalid field '" + i->first + "'" );
+                  {
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( !has_identified_local_session )
+                        throw runtime_error( "invalid field '" + i->first + "'" );
+
+                     if( i->first == get_special_var_name( e_special_var_pwd_hash ) )
+                        tmp_pwd_hash = i->second;
 #endif
+                     instance_set_variable( handle, "", i->first, i->second );
+                  }
                   else
                   {
                      if( !update_fields.empty( ) )
@@ -2591,6 +2614,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
 #endif
                   check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               auto_ptr< temporary_session_variable > ap_pwd_hash;
+
+               if( !tmp_pwd_hash.empty( ) )
+                  ap_pwd_hash.reset( new temporary_session_variable( get_special_var_name( e_special_var_pwd_hash ), tmp_pwd_hash ) );
+#endif
 
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
                {
@@ -2991,7 +3021,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                {
 #ifndef IS_TRADITIONAL_PLATFORM
-                  if( get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
+                  if( !has_identified_local_session
+                   && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
                      throw runtime_error( "invalid field '" + i->first + "'" );
 #endif
                   instance_set_variable( handle, "", i->first, i->second );

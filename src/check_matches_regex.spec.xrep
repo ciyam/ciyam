@@ -2,7 +2,8 @@
 `{`$prefix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$prefix`=`'to_string( `'`}\
 `{`$suffix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$suffix`=`' )`'`}\
    // [(start check_matches_regex)] `{`$arg_id`}
-   if( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`} )
+   if( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`}`{`!`@eq`(`$arg_session_var`,`'`'`)
+    && !is_null( get_session_variable( "`{`$arg_session_var`}" ) )`} )
    {
       bool okay = false;
 `{`@eq`(`$arg_sfield`,`'`'`)\

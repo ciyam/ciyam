@@ -340,6 +340,7 @@ session_info::session_info( storage_info& si )
  logged_in( false ),
  needs_pin( false ),
  checksum_serial( 0 ),
+ pwd_encrypted( true ),
  is_openid( false ),
  is_admin_user( false ),
  is_persistent( false ),

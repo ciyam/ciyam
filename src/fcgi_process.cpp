@@ -65,6 +65,12 @@ namespace
 
 mutex g_join_mutex;
 
+#ifdef IS_TRADITIONAL_PLATFORM
+bool g_is_traditional_platform = true;
+#else
+bool g_is_traditional_platform = false;
+#endif
+
 const int c_max_pin_time_difference = 30;
 
 const int c_initial_response_timeout = 7500;
@@ -550,7 +556,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                 && ( view.password_fields.count( view.field_ids[ i ] )
                 || view.encrypted_fields.count( view.field_ids[ i ] )
                 || view.hpassword_fields.count( view.field_ids[ i ] ) ) )
+#ifdef IS_TRADITIONAL_PLATFORM
                   item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
+#else
+                  item_values[ field_num ] = password_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
+#endif
 
                if( view.field_ids[ i ] == view.filename_field )
                   filename_value = item_values[ field_num ];
@@ -1459,7 +1469,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                extra_content << GDS( c_display_logged_in_as ) << " "
                 << ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name );
 
-            if( !p_session_info->needs_pin && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
+            if( !p_session_info->needs_pin
+             && ( g_is_traditional_platform || mod_info.name == "Meta" )
+             && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
             {
                if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
                   extra_content << " | " << pwd_display_name << "";
@@ -2070,7 +2082,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( pos != string::npos )
                str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
-            str_replace( password_html, c_user_id, p_session_info->user_id );
+            // NOTE: If password wasn't encrypted then need to make sure that the UI .js knows that also.
+            string user_id( p_session_info->user_id );
+            if( !p_session_info->pwd_encrypted )
+               user_id = "!" + user_id;
+
+            str_replace( password_html, c_user_id, user_id );
 
             extra_content << password_html;
          }
@@ -2298,8 +2315,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   else
                   {
                      password = hash_password( g_id + password + req_username );
+#ifndef IS_TRADITIONAL_PLATFORM
+                     password = password_encrypt( password, password );
+#else
                      password = password_encrypt( password, get_server_id( ) );
-
+#endif
                      bool is_anon_email_addr = false;
                      string::size_type pos = email_addr.find( "@" );
                      if( pos != string::npos )
@@ -3117,7 +3137,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( !edit_timeout_func.empty( ) )
             extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
          extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
-         extra_content_func += "warn_refresh( );\n";
+         extra_content_func += "warn_refresh( );";
       }
 
       if( p_session_info && p_session_info->logged_in )

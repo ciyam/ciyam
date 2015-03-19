@@ -201,6 +201,7 @@ const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_cmd_hash = "@cmd_hash";
+const char* const c_special_variable_pwd_hash = "@pwd_hash";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_progress = "@progress";
@@ -3154,7 +3155,6 @@ external_client_container g_external_client_info;
 
 #include "sid.enc"
 
-// NOTE: For added security this function should be customised.
 string sid_hash( )
 {
    guard g( g_mutex );
@@ -3820,6 +3820,66 @@ bool timezones_file_has_changed( )
 
 size_t g_trace_flags;
 
+string instance_op_name( instance_op op )
+{
+   string retval( "unknown op " + to_string( op ) );
+
+   switch( op )
+   {
+      case e_instance_op_none:
+      retval = "none";
+      break;
+
+      case e_instance_op_review:
+      retval = "review";
+      break;
+
+      case e_instance_op_create:
+      retval = "create";
+      break;
+
+      case e_instance_op_update:
+      retval = "update";
+      break;
+
+      case e_instance_op_destroy:
+      retval = "destroy";
+      break;
+   }
+
+   return retval;
+}
+
+string instance_op_name( class_base::op_type op )
+{
+   string retval( "unknown op " + to_string( op ) );
+
+   switch( op )
+   {
+      case class_base::e_op_type_none:
+      retval = "none";
+      break;
+
+      case class_base::e_op_type_review:
+      retval = "review";
+      break;
+
+      case class_base::e_op_type_create:
+      retval = "create";
+      break;
+
+      case class_base::e_op_type_update:
+      retval = "update";
+      break;
+
+      case class_base::e_op_type_destroy:
+      retval = "destroy";
+      break;
+   }
+
+   return retval;
+}
+
 }
 
 size_t get_trace_flags( )
@@ -3929,6 +3989,9 @@ void init_globals( )
 {
    guard g( g_mutex );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   g_sid = "CIYAM";
+#else
    if( !file_exists( c_server_sid_file ) )
    {
       g_sid = upper( uuid( ).as_string( ) );
@@ -3936,6 +3999,7 @@ void init_globals( )
    }
    else
       g_sid = buffer_file( c_server_sid_file );
+#endif
 
    read_server_configuration( );
 
@@ -4150,7 +4214,7 @@ string get_checksum( const string& data, bool use_reg_key )
 {
    guard g( g_mutex );
 
-   string prefix( !use_reg_key ? get_sid( ) : g_reg_key.c_str( ) );
+   string prefix( !use_reg_key ? get_sid( ) : g_reg_key );
 
    sha1 hash( prefix + data );
 
@@ -4325,6 +4389,7 @@ void get_external_client_info( const string& key, external_client& info )
 string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
+
    if( !no_salt )
       salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
@@ -4334,6 +4399,7 @@ string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool
 string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
+
    if( !no_salt )
       salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
@@ -4342,7 +4408,11 @@ string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool
 
 string totp_secret_key( const string& unique )
 {
+#ifdef IS_TRADITIONAL_PLATFORM
    return get_totp_secret( unique, sid_hash( ) );
+#else
+   return get_totp_secret( unique, get_session_variable( c_special_variable_pwd_hash ) );
+#endif
 }
 
 int exec_system( const string& cmd, bool async, bool delay )
@@ -5364,6 +5434,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_cmd_hash:
       s = string( c_special_variable_cmd_hash );
+      break;
+
+      case e_special_var_pwd_hash:
+      s = string( c_special_variable_pwd_hash );
       break;
 
       case e_special_var_executed:
@@ -8257,6 +8331,9 @@ string exec_bulk_ops( const string& module,
 
             if( rc != e_op_apply_rc_okay )
             {
+               class_base& instance( get_class_base_from_handle( handle, "" ) );
+               string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+
                op_instance_cancel( handle, "", false );
 
                // FUTURE: These need to be implemented as string messages.
@@ -8264,11 +8341,6 @@ string exec_bulk_ops( const string& module,
                   outf << "Error: Processing line #" << line << " - record was locked." << endl;
                else if( rc == e_op_apply_rc_invalid )
                {
-                  class_base& instance( get_class_base_from_handle( handle, "" ) );
-
-                  instance.is_valid( false );
-                  string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
-
                   outf << "Error: Processing line #" << line << " - record was invalid.";
                   if( !validation_error.empty( ) )
                      outf << ' ' << validation_error;
@@ -9674,7 +9746,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       return;
 
    TRACE_LOG( TRACE_CLASSOPS, "begin (enter) op = "
-    + to_string( op ) + ", class = " + instance.get_class_name( )
+    + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 
    string sql;
@@ -10010,7 +10082,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       instance_accessor.set_xlock_handle( xlock_handle );
 
    TRACE_LOG( TRACE_CLASSOPS, "begin (leave) op = "
-    + to_string( op ) + ", class = " + instance.get_class_name( )
+    + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 }
 
@@ -10029,7 +10101,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       return;
 
    TRACE_LOG( TRACE_CLASSOPS, "finish (enter) op = "
-    + to_string( op ) + ", class = " + instance.get_class_name( )
+    + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
 
@@ -10291,7 +10363,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    instance_accessor.set_ver_exp( "" );
 
    TRACE_LOG( TRACE_CLASSOPS, "finish (leave) op = "
-    + to_string( op ) + ", class = " + instance.get_class_name( )
+    + instance_op_name( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
 }

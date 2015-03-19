@@ -1525,7 +1525,7 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `{`#check_matches_regex.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
  arg_expression=$specification_\0_expression arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
- arg_func=$specification_\0_func`}\
+ arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var`}\
 `,\
 `@eq`(`'\1`'`,`'check_no_repeats`'`)
 `{`#check_no_repeats.spec.xrep section=validate class_name=$class_name\
