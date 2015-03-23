@@ -2445,10 +2445,12 @@ void save_record( const string& module_id,
       act_cmd += " -tz=" + sess_info.tz_name;
 
    vector< string > values;
-   split( app, values );
+   if( !app.empty( ) )
+      split( app, values );
 
    vector< string > fields;
-   split( fieldlist, fields );
+   if( !fieldlist.empty( ) )
+      split( fieldlist, fields );
 
    size_t num = 0;
    size_t used = 0;
