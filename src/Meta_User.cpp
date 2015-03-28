@@ -37,6 +37,8 @@
 #include "module_interface.h"
 
 // [<start includes>]
+//nyi
+#include "config.h"
 // [<finish includes>]
 
 using namespace std;
