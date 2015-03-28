@@ -942,6 +942,11 @@ void Meta_User::impl::for_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [<start for_store>]
+//nyi
+#ifdef IS_TRADITIONAL_PLATFORM
+   get_obj( ).Password_Hash( decrypt( get_obj( ).Password( ) ) );
+   get_obj( ).User_Hash( hash_sha256( get_obj( ).User_Id( ) + get_obj( ).Password_Hash( ) ) );
+#endif
    // [<finish for_store>]
 }
 
