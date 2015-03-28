@@ -553,13 +553,19 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
                if( item_values[ field_num ].length( ) >= 20
                 && !view.hidden_fields.count( view.field_ids[ i ] )
-                && ( view.password_fields.count( view.field_ids[ i ] )
-                || view.encrypted_fields.count( view.field_ids[ i ] )
+                && ( view.encrypted_fields.count( view.field_ids[ i ] )
                 || view.hpassword_fields.count( view.field_ids[ i ] ) ) )
 #ifdef IS_TRADITIONAL_PLATFORM
                   item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
 #else
-                  item_values[ field_num ] = password_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
+               {
+                  if( view.hpassword_fields.count( view.field_ids[ i ] ) )
+                     item_values[ field_num ] = password_decrypt(
+                      item_values[ field_num ], p_session_info->user_pwd_hash );
+                  else
+                     item_values[ field_num ] = password_decrypt( item_values[ field_num ],
+                      password_decrypt( p_session_info->user_crypt, p_session_info->user_pwd_hash ) );
+               }
 #endif
 
                if( view.field_ids[ i ] == view.filename_field )
@@ -1470,7 +1476,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                 << ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name );
 
             if( !p_session_info->needs_pin
-             && ( g_is_traditional_platform || mod_info.name == "Meta" )
              && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
             {
                if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
@@ -2082,12 +2087,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( pos != string::npos )
                str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
-            // NOTE: If password wasn't encrypted then need to make sure that the UI .js knows that also.
-            string user_id( p_session_info->user_id );
-            if( !p_session_info->pwd_encrypted )
-               user_id = "!" + user_id;
-
-            str_replace( password_html, c_user_id, user_id );
+            str_replace( password_html, c_user_id, p_session_info->user_id );
 
             extra_content << password_html;
          }

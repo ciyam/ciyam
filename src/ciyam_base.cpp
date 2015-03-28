@@ -201,10 +201,10 @@ const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_cmd_hash = "@cmd_hash";
-const char* const c_special_variable_pwd_hash = "@pwd_hash";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_progress = "@progress";
+const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_permission = "@permission";
@@ -4411,7 +4411,7 @@ string totp_secret_key( const string& unique )
 #ifdef IS_TRADITIONAL_PLATFORM
    return get_totp_secret( unique, sid_hash( ) );
 #else
-   return get_totp_secret( unique, get_session_variable( c_special_variable_pwd_hash ) );
+   return get_totp_secret( unique, get_session_variable( c_special_variable_crypt_key ) );
 #endif
 }
 
@@ -5436,10 +5436,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_cmd_hash );
       break;
 
-      case e_special_var_pwd_hash:
-      s = string( c_special_variable_pwd_hash );
-      break;
-
       case e_special_var_executed:
       s = string( c_special_variable_executed );
       break;
@@ -5450,6 +5446,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_progress:
       s = string( c_special_variable_progress );
+      break;
+
+      case e_special_var_crypt_key:
+      s = string( c_special_variable_crypt_key );
       break;
 
       case e_special_var_image_dir:

@@ -186,6 +186,7 @@ void module_info::clear( )
    user_pwd_field_id.erase( );
    user_hash_field_id.erase( );
    user_name_field_id.erase( );
+   user_crypt_field_id.erase( );
    user_email_field_id.erase( );
 
    user_perm_field_id.erase( );
@@ -568,7 +569,14 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       {
          string str( user_info );
 
-         string::size_type pos = str.find( ';' );
+         string::size_type pos = str.find( ':' );
+         if( pos != string::npos )
+         {
+            info.user_crypt_field_id = str.substr( pos + 1 );
+            str.erase( pos );
+         }
+
+         pos = str.find( ';' );
          if( pos != string::npos )
          {
             info.user_email_field_id = str.substr( pos + 1 );

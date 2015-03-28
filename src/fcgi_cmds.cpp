@@ -2017,6 +2017,9 @@ bool fetch_user_record(
    if( !mod_info.user_extra2_field_id.empty( ) )
       field_list += "," + mod_info.user_extra2_field_id;
 
+   if( !mod_info.user_crypt_field_id.empty( ) )
+      field_list += "," + mod_info.user_crypt_field_id;
+
    if( !mod_info.user_group_field_id.empty( ) )
       field_list += "," + mod_info.user_group_field_id;
 
@@ -2165,6 +2168,9 @@ bool fetch_user_record(
 
    if( !mod_info.user_extra2_field_id.empty( ) )
       sess_info.user_extra2 = user_data[ offset++ ];
+
+   if( !mod_info.user_crypt_field_id.empty( ) )
+      sess_info.user_crypt = user_data[ offset++ ];
 
    if( !mod_info.user_group_field_id.empty( ) )
       sess_info.user_group = user_data[ offset++ ];
@@ -2546,8 +2552,7 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
-      else if( view.password_fields.count( field_id )
-       || view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
+      else if( view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
       {
          if( !next.empty( ) )
          {
@@ -2562,7 +2567,10 @@ void save_record( const string& module_id,
              && view.sid == get_storage_info( ).user_info_view_id )
                password_hash = next;
 
-            next = password_encrypt( next, password_hash );
+            if( view.hpassword_fields.count( field_id ) )
+               next = password_encrypt( next, password_hash );
+            else
+               next = password_encrypt( next, password_decrypt( sess_info.user_crypt, password_hash ) );
 #endif
          }
       }
@@ -2634,16 +2642,25 @@ void save_record( const string& module_id,
       field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
    }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-   if( password_hash != sess_info.user_pwd_hash )
-      field_values += "," + mod_info.user_hash_field_id
-       + "=" + lower( sha256( user_id + password_hash ).get_digest_as_string( ) );
-#endif
-
    // NOTE: After dealing with all the field values provided via the UI next check the view
    // for any "defcurrent" fields that haven't already been provided.
    if( is_new_record )
    {
+#ifndef IS_TRADITIONAL_PLATFORM
+      if( password_hash != sess_info.user_pwd_hash )
+      {
+         if( used++ > 0 )
+            field_values += ',';
+
+         field_values += mod_info.user_hash_field_id
+          + "=" + lower( sha256( user_id + password_hash ).get_digest_as_string( ) );
+
+         if( !mod_info.user_crypt_field_id.empty( ) )
+            field_values += "," + mod_info.user_crypt_field_id
+             + "=" + password_encrypt( uuid( ).as_string( ), password_hash );
+      }
+#endif
+
       date_time dt_current;
       get_session_dtm( sess_info, dt_current );
 

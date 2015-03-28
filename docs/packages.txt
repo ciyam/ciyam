@@ -411,7 +411,7 @@ Package Options:
 
 timezone_package - Optional "timezone" package to be able to tie a timezone to a user.
 
-*** the following three options are only avaiable for legacy 3-tier sytems ***
+*** the following three options are only avaiable for traditional 3-tier sytems ***
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
 use_authenticator - Use this option to let users optionally use 2FA at login via an RFC 6238 TOTP.
@@ -421,10 +421,14 @@ use_gpg - Use this option to enable the support of GPG for email messages.
 use_ignore_users - Use this option to support the maintenance of a set of users to be ignored. Other packages
 (such as the Forum package) will utilise this list for the purposes of "hiding" records.
 
-use_personalisation - Use this option to add additional personal information (such as photo and signature).
+use_personalisation - Use this option to add additional personal information (such as avatar and website).
 
 use_quick_link - Use this option to allow the user to maintain quick link records. *
+*** the following option is only avaiable for traditional 3-tier sytems ***
 use_quick_link_active - Use this option to allow quick link records to have an "active" status.
+
+*** the following option is only avaiable for non-traditional sytems ***
+use_signature - Use this option to add a HTML signature field.
 
 use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
 
