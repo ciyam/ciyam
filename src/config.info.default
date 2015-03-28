@@ -1,9 +1,9 @@
 `{`$port`=`'12345`'`}
-`{`$use_ssl`=`'false`'`}
-`{`$use_hpdf`=`'false`'`}
+`{`$use_ssl`=`'true`'`}
+`{`$use_hpdf`=`'true`'`}
 `{`$use_zlib`=`'true`'`}
 `{`$use_iconv`=`'true`'`}
-`{`$use_rdline`=`'false`'`}
+`{`$use_rdline`=`'true`'`}
 `{`$pwd_rounds`=`'12345`'`}
 `{`$new_rounds`=`'12345`'`}
 `{`$use_salt_val`=`'false`'`}

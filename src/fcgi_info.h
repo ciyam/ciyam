@@ -358,6 +358,7 @@ struct module_info
    std::string user_pwd_field_id;
    std::string user_hash_field_id;
    std::string user_name_field_id;
+   std::string user_crypt_field_id;
    std::string user_email_field_id;
 
    std::string user_perm_field_id;
@@ -515,6 +516,7 @@ struct session_info
    std::string user_id;
    std::string user_key;
    std::string user_name;
+   std::string user_crypt;
    std::string user_group;
    std::string user_other;
    std::string user_extra1;
@@ -527,6 +529,7 @@ struct session_info
 
    bool pwd_encrypted;
    std::string user_pwd_hash;
+   std::string content_pwd_hash;
 
    std::string default_user_group;
    std::string default_user_other;

@@ -149,7 +149,7 @@ types are not so interesting (as seen in the sample application created initiall
 
 In order to be able to create a more interesting application it is recommended to install one or more package
 types that are not automatically included in "Meta". To do this you'll need to login to "Meta" using the user
-id "!admin" and password "nimda" (logout first if still logged in as "guest" from before).
+id "!admin" and password "admin" (logout first if still logged in as "guest" from before).
 
 The navigation sidebar will look very different when you are logged in as "admin" as this special user is not
 intended to perform standard activities but instead to perform "system configuration" and "user maintenance".

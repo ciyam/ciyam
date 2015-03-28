@@ -804,7 +804,12 @@ void request_handler::process_request( )
       {
          p_session_info = get_session_info( session_id, false );
          if( p_session_info )
-            pwd_hash = p_session_info->user_pwd_hash;
+         {
+            if( p_session_info->content_pwd_hash.empty( ) )
+               p_session_info->content_pwd_hash = p_session_info->user_pwd_hash;
+
+            pwd_hash = p_session_info->content_pwd_hash;
+         }
       }
 
       string ver( input_data[ c_param_ver ] );
@@ -1373,8 +1378,9 @@ void request_handler::process_request( )
                      pwd_hash = p_session_info->user_pwd_hash;
 
 #ifndef IS_TRADITIONAL_PLATFORM
-                     if( !simple_command( *p_session_info, "session_variable @pwd_hash " + pwd_hash ) )
-                        throw runtime_error( "unexpected error setting pwd_hash session variable" );
+                     if( !simple_command( *p_session_info,
+                      "session_variable @crypt_key " + password_decrypt( p_session_info->user_crypt, pwd_hash ) ) )
+                        throw runtime_error( "unexpected error setting crypt_key session variable" );
 #endif
                   }
 
@@ -2263,10 +2269,23 @@ void request_handler::process_request( )
 #endif
 
                   vector< pair< string, string > > pwd_field_value_pairs;
-#ifndef IS_TRADITIONAL_PLATFORM
-                  pwd_field_value_pairs.push_back( make_pair( "@pwd_hash", new_password ) );
-#endif
                   pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
+
+                  pwd_field_value_pairs.push_back( make_pair(
+                   mod_info.user_hash_field_id, lower( sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) ) );
+
+                  string user_crypt_key;
+                  if( !mod_info.user_crypt_field_id.empty( ) )
+                  {
+                     if( p_session_info->user_crypt.empty( ) )
+                        user_crypt_key = uuid( ).as_string( );
+                     else
+                        user_crypt_key = password_decrypt( p_session_info->user_crypt, old_password );
+
+                     user_crypt_key = password_encrypt( user_crypt_key, new_password );
+
+                     pwd_field_value_pairs.push_back( make_pair( mod_info.user_crypt_field_id, user_crypt_key ) );
+                  }
 
                   if( !perform_update( module_id, mod_info.user_class_id,
                    p_session_info->user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
@@ -2276,6 +2295,7 @@ void request_handler::process_request( )
                   }
 
                   p_session_info->pwd_encrypted = true;
+                  p_session_info->user_crypt = user_crypt_key;
                   p_session_info->user_pwd_hash = new_password;
                }
             }
@@ -2528,7 +2548,10 @@ void request_handler::process_request( )
          while( output.length( ) % 40 )
             output += ' ';
 
-         crypt_decoded( p_session_info->user_pwd_hash, output, false );
+         if( p_session_info->content_pwd_hash.empty( ) )
+            p_session_info->content_pwd_hash = p_session_info->user_pwd_hash;
+
+         crypt_decoded( p_session_info->content_pwd_hash, output, false );
 
          output = base64::encode( output );
       }

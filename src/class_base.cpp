@@ -3046,7 +3046,7 @@ string decrypt( const string& s )
 #ifdef IS_TRADITIONAL_PLATFORM
       return decrypt_password( s, false, false, true );
 #else
-      return decrypt( get_session_variable( get_special_var_name( e_special_var_pwd_hash ) ), s );
+      return decrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
 #endif
 }
 
@@ -3055,7 +3055,7 @@ string encrypt( const string& s )
 #ifdef IS_TRADITIONAL_PLATFORM
    return encrypt_password( s, false, false, true );
 #else
-   return encrypt( get_session_variable( get_special_var_name( e_special_var_pwd_hash ) ), s );
+   return encrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
 #endif
 }
 
