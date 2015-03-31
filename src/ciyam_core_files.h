@@ -19,6 +19,14 @@
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+struct blockchain_info
+{
+   std::string chain_id;
+   std::string checkpoint_hash;
+   std::vector< std::string > earlier_block_height_hash_of_hashes;
+   std::vector< std::string > all_specific_block_height_block_hashes;
+};
+
 void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 

@@ -340,56 +340,59 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      socket.read_line( response );
                   }
 
-                  string::size_type pos = response.find( ' ' );
-
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected response: " + response );
-
-                  was_pip = false;
-                  was_chk_tag = false;
-                  was_chk_token = false;
-                  was_get_or_put = false;
-
-                  if( response.substr( 0, pos ) == "get" )
+                  if( was_get_or_put || response != string( c_response_okay ) )
                   {
-                     file_transfer( response.substr( pos + 1 ), socket,
-                      e_ft_direction_send, c_max_file_transfer_size,
-                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
-                  }
-                  else if( response.substr( 0, pos ) == "put" )
-                  {
-                     file_transfer( response.substr( pos + 1 ), socket,
-                      e_ft_direction_receive, c_max_file_transfer_size,
-                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
-                  }
-                  else if( response.substr( 0, pos ) == "chk" )
-                  {
-                     response.erase( 0, pos + 1 );
-                     pos = response.find( ' ' );
+                     string::size_type pos = response.find( ' ' );
+
                      if( pos == string::npos )
-                        throw runtime_error( "unexpected chk args '" + response + "'" );
+                        throw runtime_error( "unexpected response: " + response );
 
-                     string hash( response.substr( 0, pos ) );
-                     string token( response.substr( pos + 1 ) );
+                     was_pip = false;
+                     was_chk_tag = false;
+                     was_chk_token = false;
+                     was_get_or_put = false;
 
-                     sha256 temp_hash;
-                     temp_hash.update( token );
-                     temp_hash.update( hash, true );
+                     if( response.substr( 0, pos ) == "get" )
+                     {
+                        file_transfer( response.substr( pos + 1 ), socket,
+                         e_ft_direction_send, c_max_file_transfer_size,
+                         c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                     }
+                     else if( response.substr( 0, pos ) == "put" )
+                     {
+                        file_transfer( response.substr( pos + 1 ), socket,
+                         e_ft_direction_receive, c_max_file_transfer_size,
+                         c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                     }
+                     else if( response.substr( 0, pos ) == "chk" )
+                     {
+                        response.erase( 0, pos + 1 );
+                        pos = response.find( ' ' );
+                        if( pos == string::npos )
+                           throw runtime_error( "unexpected chk args '" + response + "'" );
 
-                     string hash_val( lower( temp_hash.get_digest_as_string( ) ) );
-                     cout << hash_val << endl;
+                        string hash( response.substr( 0, pos ) );
+                        string token( response.substr( pos + 1 ) );
 
-                     socket.write_line( hash_val );
-                     response.erase( );
-                     socket.read_line( response );
-                  }
-                  else if( response.substr( 0, pos ) == "pip" )
-                  {
-                     cout << response.substr( pos + 1 ) << endl;
+                        sha256 temp_hash;
+                        temp_hash.update( token );
+                        temp_hash.update( hash, true );
 
-                     socket.write_line( "127.0.0.1" );
-                     response.erase( );
-                     socket.read_line( response );
+                        string hash_val( lower( temp_hash.get_digest_as_string( ) ) );
+                        cout << hash_val << endl;
+
+                        socket.write_line( hash_val );
+                        response.erase( );
+                        socket.read_line( response );
+                     }
+                     else if( response.substr( 0, pos ) == "pip" )
+                     {
+                        cout << response.substr( pos + 1 ) << endl;
+
+                        socket.write_line( "127.0.0.1" );
+                        response.erase( );
+                        socket.read_line( response );
+                     }
                   }
                }
 
