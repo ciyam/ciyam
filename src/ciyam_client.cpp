@@ -103,7 +103,8 @@ class ciyam_console_command_handler : public console_command_handler
     :
     port( c_default_ciyam_port ),
     host( c_default_ciyam_host ),
-    socket( socket )
+    socket( socket ),
+    had_chk_command( false )
    {
       set_custom_startup_options( 1, "[<port> or <host[:port]>]" );
    }
@@ -120,6 +121,8 @@ class ciyam_console_command_handler : public console_command_handler
 #else
    tcp_socket& socket;
 #endif
+
+   bool had_chk_command;
 
    string preprocess_command_and_args( const string& cmd_and_args );
 
@@ -142,6 +145,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
       if( !str.empty( ) )
       {
+         bool was_chk = false;
          bool was_pip = false;
          bool was_chk_tag = false;
          bool was_chk_token = false;
@@ -159,6 +163,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
             if( str.substr( 0, pos ) == "chk" )
             {
+               was_chk = true;
                if( data.find( ' ' ) != string::npos )
                   was_chk_token = true;
             }
@@ -183,6 +188,20 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             regex expr( c_regex_hash_256 );
             if( !was_chk_token && expr.search( data ) == string::npos && str.substr( 0, pos ) == "chk" )
                was_chk_tag = true;
+
+            // NOTE: For testing purposes if a local file exists with the name given then
+            // assumes what is wanted is a blob with this file content rather than a tag.
+            if( was_chk_tag && file_exists( data ) )
+            {
+               str.erase( pos + 1 );
+               data = buffer_file( data );
+
+               str += lower( sha256( prefix + data ).get_digest_as_string( ) ) + extra;
+
+               cout << str << endl;
+
+               was_chk_tag = false;
+            }
 
             if( expr.search( data ) == string::npos
              && str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
@@ -308,28 +327,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      throw runtime_error( "server has terminated this connection" );
                }
 
-               // NOTE: If connected as a peer and *not found* is returned for a "chk" then it is next
-               // expected that a file will be be sent and then fetched to check that the peer is able
-               // to store and fetch back the same file content.
-               if( had_not_found )
-               {
-                  string::size_type pos = response.find( ' ' );
-
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected response: " + response );
-
-                  if( response.substr( 0, pos ) == "put" )
-                  {
-                     file_transfer( response.substr( pos + 1 ), socket,
-                      e_ft_direction_receive, c_max_file_transfer_size,
-                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
-
-                     file_transfer( response.substr( pos + 1 ), socket,
-                      e_ft_direction_send, c_max_file_transfer_size,
-                      c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
-                  }
-               }
-               else if( was_pip || was_chk_tag || was_chk_token || was_get_or_put )
+               if( was_pip || was_chk_tag || was_chk_token || was_get_or_put )
                {
                   // FUTURE: Verify the hash if "was_chk_token".
                   if( was_pip || was_chk_tag || was_chk_token )
@@ -347,11 +345,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      if( pos == string::npos )
                         throw runtime_error( "unexpected response: " + response );
 
-                     was_pip = false;
-                     was_chk_tag = false;
-                     was_chk_token = false;
-                     was_get_or_put = false;
-
                      if( response.substr( 0, pos ) == "get" )
                      {
                         file_transfer( response.substr( pos + 1 ), socket,
@@ -363,6 +356,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         file_transfer( response.substr( pos + 1 ), socket,
                          e_ft_direction_receive, c_max_file_transfer_size,
                          c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+
+                        // NOTE: If is first "chk" and *not found* is returned then it is next expected
+                        // that a file will be be sent and then fetched to ensure that the peer is able
+                        // to store and fetch back the same file content.
+                        if( was_chk_tag && !had_chk_command )
+                        {
+                           file_transfer( response.substr( pos + 1 ), socket,
+                            e_ft_direction_send, c_max_file_transfer_size,
+                            c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                        }
                      }
                      else if( response.substr( 0, pos ) == "chk" )
                      {
@@ -393,8 +396,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         response.erase( );
                         socket.read_line( response );
                      }
+
+                     was_pip = false;
+                     was_chk_tag = false;
+                     was_chk_token = false;
+                     was_get_or_put = false;
                   }
                }
+
+               if( was_chk )
+                  had_chk_command = true;
 
                had_not_found = false;
                is_in_progress = false;
@@ -459,7 +470,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      response.erase( );
                      is_in_progress = true;
                   }
-
                }
 #ifdef DEBUG
                else
