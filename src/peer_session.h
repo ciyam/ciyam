@@ -37,6 +37,7 @@ class peer_session : public thread
    bool acceptor;
    bool is_local;
    std::string ip_addr;
+   std::string blockchain;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
@@ -47,8 +48,20 @@ class peer_session : public thread
 
 class peer_listener : public thread
 {
+   public:
+   peer_listener( int port ) : port( port ) { }
+   peer_listener( int port, const std::string& blockchain ) : port( port ), blockchain( blockchain ) { }
+
    void on_start( );
+
+   private:
+   int port;
+   std::string blockchain;
 };
+
+void create_peer_listener( int port, const std::string& blockchain );
+
+void create_peer_initiator( int port, const std::string& ip_addr, const std::string& blockchain );
 
 void create_initial_peer_sessions( );
 

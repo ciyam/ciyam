@@ -156,7 +156,7 @@ namespace
 {
 
 bool g_start_autoscript = true;
-bool g_start_peer_listener = true;
+bool g_start_peer_listeners = true;
 
 #ifdef _WIN32
 BOOL CtrlHandler( DWORD fdwCtrlType )
@@ -302,7 +302,7 @@ class ciyam_server_startup_functor : public command_functor
       else if( command == c_cmd_no_auto )
          g_start_autoscript = false;
       else if( command == c_cmd_no_peers )
-         g_start_peer_listener = false;
+         g_start_peer_listeners = false;
 #ifdef USE_MAC_LICENSE
       else if( command == c_cmd_register )
       {
@@ -398,7 +398,7 @@ int main( int argc, char* argv[ ] )
           "", "don't start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_no_peers, 1,
-          "", "don't start the peer listener thread", new ciyam_server_startup_functor( cmd_handler ) );
+          "", "don't start any peer listener threads", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
          cmd_handler.add_command( c_cmd_svcins, 2,
@@ -530,10 +530,16 @@ int main( int argc, char* argv[ ] )
                p_autoscript_session->start( );
             }
 
-            if( g_start_peer_listener )
+            if( g_start_peer_listeners )
             {
-               peer_listener* p_peer_litener = new peer_listener;
-               p_peer_litener->start( );
+               map< int, string > blockchains;
+               get_blockchains( blockchains );
+
+               for( map< int, string >::iterator i = blockchains.begin( ); i != blockchains.end( ); ++i )
+               {
+                  peer_listener* p_peer_litener = new peer_listener( i->first, i->second );
+                  p_peer_litener->start( );
+               }
             }
 
             create_initial_peer_sessions( );

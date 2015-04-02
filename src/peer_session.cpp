@@ -35,8 +35,6 @@
 #include "command_handler.h"
 #include "command_processor.h"
 
-//#define DEBUG
-
 using namespace std;
 
 extern size_t g_active_sessions;
@@ -53,12 +51,12 @@ namespace
 
 mutex g_mutex;
 
-int g_port = c_default_ciyam_port + 1;
-
 const char* const c_hello = "hello";
 
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
+
+const int c_minimum_port_num = 1000;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -91,33 +89,26 @@ bool has_max_peers( )
 
 inline void issue_error( const string& message )
 {
-#ifdef DEBUG
-   cerr << "session error: " << message << endl;
-#else
    TRACE_LOG( TRACE_ANYTHING, string( "session error: " ) + message );
-#endif
 }
 
 inline void issue_warning( const string& message )
 {
-#ifdef DEBUG
-   cout << "session warning: " << message << endl;
-#else
    TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
-#endif
 }
 
 class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket, peer_state session_state, bool is_local )
+   socket_command_handler( ssl_socket& socket, peer_state session_state, bool is_local, const string& blockchain )
 #else
-   socket_command_handler( tcp_socket& socket, peer_state session_state, bool is_local )
+   socket_command_handler( tcp_socket& socket, peer_state session_state, bool is_local, const string& blockchain )
 #endif
     :
     socket( socket ),
     is_local( is_local ),
+    blockchain( blockchain ),
     session_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
    {
@@ -137,6 +128,8 @@ class socket_command_handler : public command_handler
 
    bool get_is_local( ) const { return is_local; }
    bool get_is_listener( ) const { return is_listener; }
+
+   const string& get_blockchain( ) const { return blockchain; }
 
    string& prior_put( ) { return prior_put_hash; }
 
@@ -189,6 +182,8 @@ class socket_command_handler : public command_handler
    bool is_local;
    bool had_usage;
    bool is_listener;
+
+   string blockchain;
 
    string last_command;
    string next_command;
@@ -377,7 +372,8 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
    last_command = cmd_and_args.substr( 0, pos );
 
    if( has_finished( ) )
-      TRACE_LOG( TRACE_SESSIONS, "finished session" );
+      TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
+       ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
 }
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
@@ -426,9 +422,6 @@ command_functor* peer_session_command_functor_factory( const string& /*name*/, c
 
 void peer_session_command_functor::operator ( )( const string& command, const parameter_info& parameters )
 {
-#ifdef DEBUG
-   cout << "processing command: " << command << endl;
-#endif
    string response;
    bool send_okay_response = true;
    bool possibly_expected_error = false;
@@ -469,17 +462,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             response = hash = tag_file_hash( tag_or_hash );
 
-         bool has = has_file( hash );
+         bool has = has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_listener );
 
          if( !has )
          {
             response = c_response_not_found;
 
-            handler.issue_command_reponse( response, true );
-
             if( was_initial_state )
             {
+               handler.issue_command_reponse( response, true );
+
                // NOTE: For the initial file transfer just a dummy "hello" blob.
                string data( c_file_type_str_blob );
                data += string( c_hello );
@@ -523,6 +516,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                socket_handler.state( ) = e_peer_state_waiting_for_put;
             else
                socket_handler.state( ) = e_peer_state_waiting_for_get;
+
+            if( was_initial_state && socket_handler.get_is_listener( ) )
+            {
+               if( !socket_handler.get_blockchain( ).empty( ) )
+               {
+                  string tags( get_hash_tags( hash ) );
+                  string tag( "c" + socket_handler.get_blockchain( ) + ".head" );
+
+                  if( tags.find( "\n" + tag ) == string::npos )
+                     throw runtime_error( "blockchain tag: " + tag + " not found for hash " + hash );
+               }
+            }
 
             if( !was_initial_state && socket_handler.get_is_listener( ) )
             {
@@ -759,13 +764,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 class socket_command_processor : public command_processor
 {
    public:
-   socket_command_processor( tcp_socket& socket, command_handler& handler, bool is_local, bool is_listener )
+   socket_command_processor( tcp_socket& socket,
+    command_handler& handler, bool is_local, bool is_listener )
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
     is_local( is_local ),
-    is_listener( is_listener ),
-    is_first_command( true )
+    is_listener( is_listener )
    {
    }
 
@@ -775,7 +780,6 @@ class socket_command_processor : public command_processor
 
    bool is_local;
    bool is_listener;
-   bool is_first_command;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
@@ -787,12 +791,6 @@ class socket_command_processor : public command_processor
 string socket_command_processor::get_cmd_and_args( )
 {
    string request;
-
-   if( is_first_command )
-   {
-      is_first_command = false;
-      TRACE_LOG( TRACE_SESSIONS, ( !is_listener ? "started session (as peer)" : "started session (as listener)" ) );
-   }
 
    socket_command_handler& socket_handler = dynamic_cast< socket_command_handler& >( handler );
 
@@ -878,18 +876,11 @@ string socket_command_processor::get_cmd_and_args( )
       }
    }
 
-#ifdef DEBUG
-   cout << "request = '" << request << "'" << endl;
-#endif
    return request;
 }
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
-#ifdef DEBUG
-   cout << "<processing usage request>" << endl;
-#endif
-
    if( !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
@@ -917,7 +908,9 @@ peer_session* construct_session( bool acceptor, auto_ptr< tcp_socket >& ap_socke
    guard g( g_mutex );
    peer_session* p_session = 0;
 
-   if( ip_addr == "127.0.0.1" || !has_session_with_ip_addr( ip_addr ) )
+   string::size_type pos = ip_addr.find( '=' );
+
+   if( ip_addr.substr( 0, pos ) == "127.0.0.1" || !has_session_with_ip_addr( ip_addr.substr( 0, pos ) ) )
       p_session = new peer_session( acceptor, ap_socket, ip_addr );
 
    return p_session;
@@ -939,7 +932,14 @@ peer_session::peer_session( bool acceptor, auto_ptr< tcp_socket >& ap_socket, co
    if( !( *this->ap_socket ) )
       throw runtime_error( "invalid socket..." );
 
-   if( ip_addr == "127.0.0.1" )
+   string::size_type pos = ip_addr.find( '=' );
+   if( pos != string::npos )
+   {
+      blockchain = ip_addr.substr( pos + 1 );
+      this->ip_addr.erase( pos );
+   }
+
+   if( this->ip_addr == "127.0.0.1" )
       is_local = true;
 
    increment_session_count( );
@@ -952,13 +952,10 @@ peer_session::~peer_session( )
 
 void peer_session::on_start( )
 {
-#ifdef DEBUG
-   cout << "started session..." << endl;
-#endif
    try
    {
       socket_command_handler cmd_handler( *ap_socket,
-       acceptor ? e_peer_state_listener : e_peer_state_initiator, is_local );
+       acceptor ? e_peer_state_listener : e_peer_state_initiator, is_local, blockchain );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
@@ -993,24 +990,39 @@ void peer_session::on_start( )
             throw runtime_error( "incompatible protocol version "
              + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
          }
+      }
 
+      init_session( cmd_handler, true, &ip_addr );
+
+      TRACE_LOG( TRACE_SESSIONS,
+       string( "started peer session " )
+       + ( acceptor ? "(as listener)" : "(as initiator)" )
+       + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+
+      if( !acceptor )
+      {
          progress* p_progress = 0;
          trace_progress progress( TRACE_SOCK_OPS );
 
          if( get_trace_flags( ) & TRACE_SOCK_OPS )
             p_progress = &progress;
 
-         string data( c_file_type_str_blob );
-         data += string( c_hello );
+         string hash;
+         if( !blockchain.empty( ) && has_tag( "c" + blockchain + ".head" ) )
+            hash = tag_file_hash( "c" + blockchain + ".head" );
 
-         string hash( lower( sha256( data ).get_digest_as_string( ) ) );
+         if( hash.empty( ) )
+         {
+            string data( c_file_type_str_blob );
+            data += string( c_hello );
+
+            hash = lower( sha256( data ).get_digest_as_string( ) );
+         }
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash, c_request_timeout, p_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
       }
-
-      init_session( cmd_handler, true, &ip_addr );
 
       socket_command_processor processor( *ap_socket, cmd_handler, is_local, acceptor );
       processor.process_commands( );
@@ -1034,9 +1046,6 @@ void peer_session::on_start( )
       ap_socket->close( );
    }
 
-#ifdef DEBUG
-   cout << "finished session..." << endl;
-#endif
    delete this;
 }
 
@@ -1058,13 +1067,10 @@ void peer_session::decrement_session_count( )
 
 void peer_listener::on_start( )
 {
-#ifdef DEBUG
-   cout << "started peer_listener..." << endl;
-#endif
    tcp_socket s;
    bool okay = s.open( );
 
-   ip_address address( g_port );
+   ip_address address( port );
    if( okay )
    {
       s.set_reuse_addr( );
@@ -1074,7 +1080,9 @@ void peer_listener::on_start( )
       {
          s.listen( );
 
-         TRACE_LOG( TRACE_ANYTHING, "peer listener started on port " + to_string( g_port ) );
+         TRACE_LOG( TRACE_ANYTHING,
+          "peer listener started on port " + to_string( port )
+          + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
          while( s && ( !g_server_shutdown || g_active_sessions ) )
          {
@@ -1087,7 +1095,8 @@ void peer_listener::on_start( )
             if( !g_server_shutdown && *ap_socket
              && !has_max_peers( ) && get_is_accepted_peer_id_addr( address.get_addr_string( ) ) )
             {
-               peer_session* p_session = construct_session( true, ap_socket, address.get_addr_string( ) );
+               peer_session* p_session = construct_session(
+                true, ap_socket, address.get_addr_string( ) + '=' + blockchain );
 
                if( p_session )
                   p_session->start( );
@@ -1100,22 +1109,70 @@ void peer_listener::on_start( )
          s.close( );
    }
 
-#ifdef DEBUG
-   cout << "finished peer_listener..." << endl;
-#endif
+   TRACE_LOG( TRACE_SESSIONS,
+    "peer listener finished (port " + to_string( port ) + ")"
+    + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+
    delete this;
+}
+
+void create_peer_listener( int port, const string& blockchain )
+{
+   if( port < c_minimum_port_num )
+      throw runtime_error( "invalid port " + to_string( port ) + " for peer listener" );
+
+   if( !blockchain.empty( ) )
+      register_blockchain( port, blockchain );
+
+   peer_listener* p_peer_litener = new peer_listener( port, blockchain );
+   p_peer_litener->start( );
+}
+
+void create_peer_initiator( int port, const string& ip_addr, const string& blockchain )
+{
+   if( port < c_minimum_port_num )
+      throw runtime_error( "invalid port " + to_string( port ) + " for peer initiator" );
+
+   if( !blockchain.empty( ) )
+      register_blockchain( port, blockchain );
+
+   if( !get_is_accepted_peer_id_addr( ip_addr ) )
+      throw runtime_error( "ip address " + ip_addr + " is not permitted" );
+
+   if( g_server_shutdown || has_max_peers( ) )
+      throw runtime_error( "server is shutting down or has reached its maximum peer limit" );
+
+#ifdef SSL_SUPPORT
+   auto_ptr< ssl_socket > ap_socket( new ssl_socket );
+#else
+   auto_ptr< tcp_socket > ap_socket( new tcp_socket );
+#endif
+
+   if( ap_socket->open( ) )
+   {
+      ip_address address( ip_addr.c_str( ), port );
+
+      if( ap_socket->connect( address ) )
+      {
+         peer_session* p_session = construct_session( false, ap_socket,
+          address.get_addr_string( ) + "=" + ( !blockchain.empty( ) ? blockchain : get_blockchain_for_port( port ) ) );
+
+         if( p_session )
+            p_session->start( );
+      }
+   }
 }
 
 void create_initial_peer_sessions( )
 {
-   set< string > initial_ips;
+   map< string, int > initial_ips;
    get_initial_peer_ips( initial_ips );
 
-   for( set< string >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
+   for( map< string, int >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
    {
-      string ip( *i );
+      string ip_addr( i->first );
 
-      if( !get_is_accepted_peer_id_addr( ip ) )
+      if( !get_is_accepted_peer_id_addr( ip_addr ) )
          continue;
 
       if( g_server_shutdown || has_max_peers( ) )
@@ -1129,11 +1186,12 @@ void create_initial_peer_sessions( )
 
       if( ap_socket->open( ) )
       {
-         ip_address address( ip.c_str( ), g_port );
+         ip_address address( ip_addr.c_str( ), i->second );
 
          if( ap_socket->connect( address ) )
          {
-            peer_session* p_session = construct_session( false, ap_socket, address.get_addr_string( ) );
+            peer_session* p_session = construct_session( false,
+             ap_socket, address.get_addr_string( ) + "=" + get_blockchain_for_port( i->second ) );
 
             if( p_session )
                p_session->start( );

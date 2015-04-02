@@ -3120,13 +3120,15 @@ int g_session_timeout = 0;
 
 bool g_script_reconfig = false;
 
-set< string > g_blockchains;
-
 set< string > g_accepted_ip_addrs;
 set< string > g_rejected_ip_addrs;
-set< string > g_initial_peer_ip_addrs;
 set< string > g_accepted_peer_ip_addrs;
 set< string > g_rejected_peer_ip_addrs;
+
+map< int, string > g_blockchains;
+map< string, int > g_blockchain_ids;
+
+map< string, int > g_initial_peer_ips;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -3275,9 +3277,26 @@ void read_server_configuration( )
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
-      string blockchains( reader.read_opt_attribute( c_attribute_blockchains ) );
-      if( !blockchains.empty( ) )
-         split( blockchains, g_blockchains );
+      string all_blockchains( reader.read_opt_attribute( c_attribute_blockchains ) );
+      if( !all_blockchains.empty( ) )
+      {
+         vector< string > blockchains;
+         split( all_blockchains, blockchains, ' ' );
+
+         for( size_t i = 0; i < blockchains.size( ); i++ )
+         {
+            string next( blockchains[ i ] );
+            string::size_type pos = next.find( '=' );
+            if( pos == string::npos )
+               throw runtime_error( "invalid format '" + next + "' for blockchains entry" );
+
+            if( g_blockchain_ids.count( next.substr( pos + 1 ) ) )
+               throw runtime_error( "invalid repeated blockchain id: " + next.substr( pos + 1 ) );
+
+            g_blockchains.insert( make_pair( atoi( next.substr( 0, pos ).c_str( ) ), next.substr( pos + 1 ) ) );
+            g_blockchain_ids.insert( make_pair( next.substr( pos + 1 ), atoi( next.substr( 0, pos ).c_str( ) ) ) );
+         }
+      }
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -3291,15 +3310,28 @@ void read_server_configuration( )
 
       string peer_ips_direct( reader.read_opt_attribute( c_attribute_peer_ips_direct ) );
       if( !peer_ips_direct.empty( ) )
-         split( peer_ips_direct, g_initial_peer_ip_addrs );
+      {
+         vector< string > ips_direct;
+         split( peer_ips_direct, ips_direct, ' ' );
+
+         for( size_t i = 0; i < ips_direct.size( ); i++ )
+         {
+            string next( ips_direct[ i ] );
+            string::size_type pos = next.find( '=' );
+            if( pos == string::npos )
+               throw runtime_error( "invalid format '" + next + "' for peer_ips_direct entry" );
+
+            g_initial_peer_ips.insert( make_pair( next.substr( 0, pos ), atoi( next.substr( pos + 1 ).c_str( ) ) ) );
+         }
+      }
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
       if( !peer_ips_permit.empty( ) )
-         split( peer_ips_permit, g_accepted_peer_ip_addrs );
+         split( peer_ips_permit, g_accepted_peer_ip_addrs, ' ' );
 
       string peer_ips_reject( reader.read_opt_attribute( c_attribute_peer_ips_reject ) );
       if( !peer_ips_reject.empty( ) )
-         split( peer_ips_reject, g_rejected_peer_ip_addrs );
+         split( peer_ips_reject, g_rejected_peer_ip_addrs, ' ' );
 
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
@@ -4242,9 +4274,9 @@ string get_web_root( )
    return g_web_root;
 }
 
-void get_initial_peer_ips( set< string >& ips )
+void get_initial_peer_ips( map< string, int >& ips )
 {
-   ips = g_initial_peer_ip_addrs;
+   ips = g_initial_peer_ips;
 }
 
 bool get_is_accepted_ip_addr( const string& ip_addr )
@@ -4259,9 +4291,52 @@ bool get_is_accepted_peer_id_addr( const string& ip_addr )
     && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
 }
 
+void get_blockchains( map< int, string >& blockchains )
+{
+   guard g( g_mutex );
+
+   blockchains = g_blockchains;
+}
+
+int get_blockchain_port( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   if( !g_blockchain_ids.count( blockchain ) )
+      throw runtime_error( "unknown blockchain: " + blockchain );
+
+   return g_blockchain_ids[ blockchain ];
+}
+
 bool get_is_known_blockchain( const string& blockchain )
 {
-   return g_blockchains.count( blockchain );
+   guard g( g_mutex );
+
+   return g_blockchain_ids.count( blockchain );
+}
+
+string get_blockchain_for_port( int port )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( g_blockchains.count( port ) )
+      retval = g_blockchains[ port ];
+
+   return retval;
+}
+
+void register_blockchain( int port, const string& blockchain )
+{
+   guard g( g_mutex );
+
+   if( g_blockchain_ids.count( blockchain ) && g_blockchain_ids[ blockchain ] != port )
+      throw runtime_error( "blockchain "
+       + blockchain + " is already registered to port " + to_string( g_blockchain_ids[ blockchain ] ) );
+
+   g_blockchains[ port ] = blockchain;
+   g_blockchain_ids[ blockchain ] = port;
 }
 
 bool get_using_ssl( )
@@ -6411,7 +6486,7 @@ string storage_blockchain( )
    string s;
 
    if( !g_blockchains.empty( ) )
-      s = *g_blockchains.begin( );
+      s = g_blockchains.begin( )->second;
 
    return s;
 }

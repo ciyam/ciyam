@@ -28,9 +28,11 @@ std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
 void CLASS_BASE_DECL_SPEC init_files_area( );
 
+void CLASS_BASE_DECL_SPEC resync_files_area( );
+
 bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
 
-bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash );
+bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
 
 int64_t CLASS_BASE_DECL_SPEC file_bytes( const std::string& hash );
 

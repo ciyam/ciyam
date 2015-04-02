@@ -267,6 +267,18 @@ void init_files_area( )
    }
 }
 
+void resync_files_area( )
+{
+   guard g( g_mutex );
+
+   g_hash_tags.clear( );
+   g_tag_hashes.clear( );
+
+   g_total_bytes = g_total_files = 0;
+
+   init_files_area( );
+}
+
 bool has_tag( const string& name )
 {
    guard g( g_mutex );
@@ -280,11 +292,11 @@ bool has_tag( const string& name )
       return true;
 }
 
-bool has_file( const string& hash )
+bool has_file( const string& hash, bool check_is_hash )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash ) );
+   string filename( construct_file_name_from_hash( hash, false, check_is_hash ) );
 
    return file_exists( filename );
 }
