@@ -9,6 +9,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
 #  include <map>
 #  include <deque>
 #  include <fstream>
