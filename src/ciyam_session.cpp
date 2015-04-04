@@ -1465,6 +1465,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          create_peer_initiator( atoi( port.c_str( ) ), ip_addr, blockchain );
       }
+      else if( command == c_cmd_ciyam_session_peer_block_info )
+      {
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_blockchain ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_password ) );
+         size_t rounds( atoi( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_rounds ).c_str( ) ) );
+         string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_account ) );
+
+         response = construct_new_block( blockchain, password, rounds, account );
+      }
+      else if( command == c_cmd_ciyam_session_peer_account_info )
+      {
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_blockchain ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_password ) );
+         size_t rounds( atoi( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_rounds ).c_str( ) ) );
+         string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_account ) );
+
+         response = construct_account_info( blockchain, password, rounds, account );
+      }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
          string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_extkey ) );

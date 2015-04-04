@@ -66,8 +66,8 @@ const size_t c_request_throttle_sleep_time = 500;
 enum peer_state
 {
    e_peer_state_invalid,
-   e_peer_state_listener,
    e_peer_state_initiator,
+   e_peer_state_responder,
    e_peer_state_waiting_for_get,
    e_peer_state_waiting_for_put
 };
@@ -114,7 +114,7 @@ class socket_command_handler : public command_handler
    {
       had_usage = false;
 
-      is_listener = ( session_state == e_peer_state_listener );
+      is_responder = ( session_state == e_peer_state_responder );
    }
 
 #ifdef SSL_SUPPORT
@@ -127,7 +127,7 @@ class socket_command_handler : public command_handler
    const string& get_next_command( ) { return next_command; }
 
    bool get_is_local( ) const { return is_local; }
-   bool get_is_listener( ) const { return is_listener; }
+   bool get_is_responder( ) const { return is_responder; }
 
    const string& get_blockchain( ) const { return blockchain; }
 
@@ -181,7 +181,7 @@ class socket_command_handler : public command_handler
 
    bool is_local;
    bool had_usage;
-   bool is_listener;
+   bool is_responder;
 
    string blockchain;
 
@@ -392,7 +392,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
       socket.write_line( response, c_request_timeout, p_progress );
    }
 
-   if( !is_special && is_listener )
+   if( !is_special && is_responder )
    {
       if( !socket.set_no_delay( ) )
          issue_warning( "socket set_no_delay failure" );
@@ -452,7 +452,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string tag_or_hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_tag_or_hash ) );
          string nonce( get_parm_val( parameters, c_cmd_parm_peer_session_chk_nonce ) );
 
-         if( socket_handler.state( ) != e_peer_state_listener
+         if( socket_handler.state( ) != e_peer_state_responder
           && socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for chk" );
@@ -463,7 +463,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             response = hash = tag_file_hash( tag_or_hash );
 
          bool has = has_file( hash, false );
-         bool was_initial_state = ( socket_handler.state( ) == e_peer_state_listener );
+         bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
          if( !has )
          {
@@ -517,7 +517,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             else
                socket_handler.state( ) = e_peer_state_waiting_for_get;
 
-            if( was_initial_state && socket_handler.get_is_listener( ) )
+            if( was_initial_state && socket_handler.get_is_responder( ) )
             {
                if( !socket_handler.get_blockchain( ).empty( ) )
                {
@@ -529,7 +529,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                }
             }
 
-            if( !was_initial_state && socket_handler.get_is_listener( ) )
+            if( !was_initial_state && socket_handler.get_is_responder( ) )
             {
                handler.issue_command_reponse( response, true );
                response.erase( );
@@ -574,7 +574,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
 
-         if( socket_handler.get_is_listener( ) )
+         if( socket_handler.get_is_responder( ) )
          {
             string next_hash( get_next_peer_file_hash_to_put( ) );
 
@@ -609,7 +609,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
 
-         if( socket_handler.get_is_listener( ) )
+         if( socket_handler.get_is_responder( ) )
          {
             // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
             // based upon the actual needs of the peer).
@@ -647,7 +647,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else if( socket_handler.state( ) == e_peer_state_waiting_for_get )
             socket_handler.state( ) = e_peer_state_waiting_for_put;
 
-         if( socket_handler.get_is_listener( ) )
+         if( socket_handler.get_is_responder( ) )
          {
             handler.issue_command_reponse( response, true );
             response.erase( );
@@ -678,7 +678,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_tls )
       {
-         if( socket_handler.state( ) != e_peer_state_listener )
+         if( socket_handler.state( ) != e_peer_state_responder )
             throw runtime_error( "invalid state for tls" );
 
 #ifdef SSL_SUPPORT
@@ -733,7 +733,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       else if( !is_condemned_session( ) )
          condemn_this_session( );
    }
-   else if( !socket_handler.get_is_listener( )
+   else if( !socket_handler.get_is_responder( )
     && !g_server_shutdown && !is_condemned_session( )
     && socket_handler.state( ) == e_peer_state_waiting_for_get )
    {
@@ -765,12 +765,12 @@ class socket_command_processor : public command_processor
 {
    public:
    socket_command_processor( tcp_socket& socket,
-    command_handler& handler, bool is_local, bool is_listener )
+    command_handler& handler, bool is_local, bool is_responder )
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
     is_local( is_local ),
-    is_listener( is_listener )
+    is_responder( is_responder )
    {
    }
 
@@ -779,7 +779,7 @@ class socket_command_processor : public command_processor
    command_handler& handler;
 
    bool is_local;
-   bool is_listener;
+   bool is_responder;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
@@ -802,7 +802,7 @@ string socket_command_processor::get_cmd_and_args( )
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
 
-      if( !is_listener && !g_server_shutdown && !is_condemned_session( ) )
+      if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
       {
          if( socket_handler.state( ) == e_peer_state_waiting_for_put )
          {
@@ -955,7 +955,7 @@ void peer_session::on_start( )
    try
    {
       socket_command_handler cmd_handler( *ap_socket,
-       acceptor ? e_peer_state_listener : e_peer_state_initiator, is_local, blockchain );
+       acceptor ? e_peer_state_responder : e_peer_state_initiator, is_local, blockchain );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
@@ -996,7 +996,7 @@ void peer_session::on_start( )
 
       TRACE_LOG( TRACE_SESSIONS,
        string( "started peer session " )
-       + ( acceptor ? "(as listener)" : "(as initiator)" )
+       + ( !acceptor ? "(as initiator)" : "(as responder)" )
        + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
       if( !acceptor )
@@ -1124,8 +1124,8 @@ void create_peer_listener( int port, const string& blockchain )
    if( !blockchain.empty( ) )
       register_blockchain( port, blockchain );
 
-   peer_listener* p_peer_litener = new peer_listener( port, blockchain );
-   p_peer_litener->start( );
+   peer_listener* p_peer_listener = new peer_listener( port, blockchain );
+   p_peer_listener->start( );
 }
 
 void create_peer_initiator( int port, const string& ip_addr, const string& blockchain )

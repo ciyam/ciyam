@@ -27,8 +27,26 @@ struct blockchain_info
    std::vector< std::string > all_specific_block_height_block_hashes;
 };
 
+struct account_key_info
+{
+   std::string block_hash;
+   std::string block_lock;
+   std::string block_secret;
+
+   std::string trans_hash;
+   std::string trans_lock;
+   std::string trans_secret;
+};
+
 void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
+
+std::string CLASS_BASE_DECL_SPEC construct_new_block( const std::string& blockchain,
+ const std::string& password, size_t rounds, const std::string& account );
+
+std::string CLASS_BASE_DECL_SPEC construct_account_info(
+ const std::string& blockchain, const std::string& password,
+ size_t rounds, const std::string& account, account_key_info* p_key_info = 0 );
 
 #endif
 
