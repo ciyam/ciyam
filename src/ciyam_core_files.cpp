@@ -15,6 +15,10 @@
 #  include <stdexcept>
 #endif
 
+#ifdef __GNUG__
+#  include <unistd.h>
+#endif
+
 #define CIYAM_BASE_IMPL
 
 #include "ciyam_core_files.h"
@@ -37,6 +41,8 @@ using namespace std;
 
 namespace
 {
+
+const int c_hash_buf_size = 32;
 
 const unsigned int c_id_length = 10;
 const unsigned int c_tx_min_non_confirmed = 5;
@@ -140,7 +146,7 @@ string tag_name_to_base64( const string& tag_name )
 
 string get_hash( const string& seed, size_t rounds )
 {
-   unsigned char buf[ 32 ];
+   unsigned char buf[ c_hash_buf_size ];
 
    sha256 hash( seed );
    hash.copy_digest_to_buffer( buf );
@@ -154,13 +160,11 @@ string get_hash( const string& seed, size_t rounds )
    return string( ( const char* )buf, sizeof( buf ) );
 }
 
-string get_account_id( const string& hash, int offset = 0 )
+string get_hash_secret( sha256& hash )
 {
-   uint64_t id = *( uint64_t* )( offset == 0 ? hash.c_str( ) : get_hash( hash, offset ).c_str( ) );
-
-   id >>= 28;
-
-   return to_string( id );
+   // NOTE: The first nibble is zeroed out to ensure that the return
+   // value is always valid to use as a Bitcoin address "secret".
+   return "0" + lower( hash.get_digest_as_string( ).substr( 1 ) );
 }
 
 uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long height )
@@ -181,21 +185,21 @@ uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long hei
 
 string get_chain_info( chain_info& info, const string& chain )
 {
-   string chain_account_tag( "c" + chain + ".a" + chain );
+   string chain_info_tag( "c" + chain );
 
-   if( !has_tag( chain_account_tag ) )
-      throw runtime_error( "unable to find root chain account for '" + chain_account_tag + "'" );
+   if( !has_tag( chain_info_tag ) )
+      throw runtime_error( "unable to find blockchain meta info '" + chain_info_tag + "'" );
 
-   string chain_account_hash = tag_file_hash( chain_account_tag );
-   string chain_account_info( extract_file( chain_account_hash, "", c_file_type_char_core_blob ) );
+   string chain_info_hash = tag_file_hash( chain_info_tag );
+   string chain_info_info( extract_file( chain_info_hash, "", c_file_type_char_core_blob ) );
 
-   vector< string > chain_account_items;
-   split( chain_account_info, chain_account_items, '\n' );
+   vector< string > chain_info_items;
+   split( chain_info_info, chain_info_items, '\n' );
 
-   if( chain_account_items.size( ) < 2 )
-      throw runtime_error( "unexpected invalid chain_account_info '" + chain_account_info + "'" );
+   if( chain_info_items.size( ) < 2 )
+      throw runtime_error( "unexpected invalid chain_info '" + chain_info_info + "'" );
 
-   string requisites( chain_account_items[ 0 ] );
+   string requisites( chain_info_items[ 0 ] );
 
    string::size_type pos = requisites.find( '~' );
    if( pos != string::npos )
@@ -236,7 +240,7 @@ string get_chain_info( chain_info& info, const string& chain )
 
    info.mint_reward = from_string< uint64_t >( requisites );
 
-   string extras( chain_account_items[ 1 ] );
+   string extras( chain_info_items[ 1 ] );
 
    pos = extras.find( ':' );
    if( pos != string::npos )
@@ -250,10 +254,10 @@ string get_chain_info( chain_info& info, const string& chain )
    if( info.num_accounts )
       info.checkpoint_tolerance /= info.num_accounts;
 
-   return chain_account_hash;
+   return chain_info_hash;
 }
 
-string get_chain_extra( const chain_info& cinfo, bool had_zero_explicit_account_charge )
+string chain_info_blob( const chain_info& cinfo, bool had_zero_explicit_account_charge )
 {
    string extra( c_file_type_str_core_blob );
    extra += to_string( cinfo.mint_reward );
@@ -283,7 +287,7 @@ string get_account_info( account_info& info, const string& account_id )
    string::size_type rpos = account_tag.find( ".b" );
 
    if( pos == string::npos || rpos == string::npos || rpos < pos )
-      throw runtime_error( "unexpected account_tag '" + account_tag + "'" );
+      throw runtime_error( "unable to find account " + account_id );
 
    info.tag = account_tag;
 
@@ -441,7 +445,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
    bool parallel_block_minted_had_secondary_account = false;
 
-   string chain_account_hash;
+   string chain_info_hash;
 
    bool had_zero_explicit_account_charge = false;
 
@@ -838,11 +842,6 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          {
             if( !block_height )
             {
-               string expected_id = get_account_id( public_key_base64, ++num_accounts );
-
-               if( id != expected_id )
-                  throw runtime_error( "expected account id " + expected_id + " but found " + id );
-
                string extra( c_file_type_str_core_blob );
                extra += hash + '\n' + lock;
 
@@ -855,11 +854,6 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             else if( !has_secondary_account )
             {
                has_secondary_account = true;
-
-               string expected_id = get_account_id( account_hash );
-
-               if( id != expected_id )
-                  throw runtime_error( "expected account id " + expected_id + " but found " + id );
 
                string extra( c_file_type_str_core_blob );
                extra += hash + '\n' + lock + "\n<acct>";;
@@ -962,19 +956,19 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
       if( !block_height )
       {
-         // NOTE: Add the blockchain root account which is used to store all relevant
+         // NOTE: Add blockchain meta information which is used to store all relevant
          // meta-data for the blockchain (as the root block will end up being removed
          // after checkpoint pruning).
-         string extra( get_chain_extra( cinfo, had_zero_explicit_account_charge ) );
+         string extra( chain_info_blob( cinfo, had_zero_explicit_account_charge ) );
 
-         string chain_account_tag( "c" + chain + ".a" + account );
-         p_extras->push_back( make_pair( extra, chain_account_tag ) );
+         string chain_info_tag( "c" + chain );
+         p_extras->push_back( make_pair( extra, chain_info_tag ) );
 
          TRACE_LOG( TRACE_CORE_FLS, "created new blockchain " + chain + " with block " + block_id );
       }
       else
       {
-         chain_account_hash = get_chain_info( cinfo, chain );
+         chain_info_hash = get_chain_info( cinfo, chain );
 
          // NOTE: If the account charge is explicitly provided with a zero value
          // then this will determine that the blockchain will not allow creation
@@ -1658,8 +1652,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             checkpoint_height = 0;
       }
 
-      // NOTE: Update the root account with the new number of active accounts and checkpoint height.
-      if( !chain_account_hash.empty( )
+      // NOTE: Update blockchain meta information with the number of active accounts and checkpoint height.
+      if( !chain_info_hash.empty( )
        && ( num_accounts > cinfo.num_accounts || checkpoint_height > cinfo.checkpoint_start_height ) )
       {
          if( num_accounts > cinfo.num_accounts )
@@ -1668,14 +1662,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          if( checkpoint_height > cinfo.checkpoint_start_height )
             cinfo.checkpoint_start_height = checkpoint_height;
 
-         string extra( get_chain_extra( cinfo, had_zero_explicit_account_charge ) );
+         string extra( chain_info_blob( cinfo, had_zero_explicit_account_charge ) );
 
-         string chain_account_tag( "c" + chain + ".a" + chain );
-         p_extras->push_back( make_pair( extra, chain_account_tag ) );
+         string chain_info_tag( "c" + chain );
+         p_extras->push_back( make_pair( extra, chain_info_tag ) );
 
-         // NOTE: The previous root account blob instance will be removed.
+         // NOTE: Remove the previous blockchain meta information blob.
          ++non_blob_extras;
-         p_extras->push_back( make_pair( "", chain_account_hash ) );
+         p_extras->push_back( make_pair( "", chain_info_hash ) );
       }
    }
 
@@ -2502,5 +2496,238 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
       else
          throw runtime_error( "unable to verify non-blob core files" );
    }
+}
+
+string construct_new_block( const string& blockchain,
+ const string& password, size_t rounds, const string& account )
+{
+   string acct( account );
+   string accts_file;
+
+   if( !acct.empty( ) && acct[ 0 ] == '@' )
+   {
+      accts_file = acct.substr( 1 );
+      acct.erase( );
+   }
+
+   string chain( blockchain );
+   if( acct.empty( ) )
+      chain.erase( );
+
+   account_key_info key_info;
+   string account_id( construct_account_info( chain, password, rounds, acct, &key_info ) );
+
+   string head_hash;
+   unsigned long height = 0;
+
+   uint64_t weight = 0;
+   uint64_t total_weight = 0;
+
+   if( !chain.empty( ) )
+   {
+      head_hash = tag_file_hash(  "c" + chain + ".head" );
+
+      block_info binfo;
+      get_block_info( binfo, head_hash );
+
+      height = binfo.block_height + 1;
+      weight = get_expected_weight( binfo.minter_hash, from_string< uint64_t >( account_id ), height );
+
+      total_weight = binfo.total_weight + weight;
+   }
+
+   string data( "blk:a=" + ( chain.empty( ) ? account_id : chain ) );
+
+   if( !acct.empty( ) )
+      data += "." + acct;
+
+   data += ",h=" + to_string( height );
+
+   if( acct.empty( ) )
+      data += ",cm=r:" + blockchain;
+   else
+      data += ",w=" + to_string( weight ) + ",ah=" + key_info.block_hash + ",al=" + key_info.block_lock;
+
+   if( !head_hash.empty( ) )
+      data += ",pb=" + hex_to_base64( head_hash );
+
+#ifdef SSL_SUPPORT
+   private_key priv_key( key_info.block_secret.empty( ) ? uuid( ).as_string( ) : key_info.block_secret );
+   data += ",pk=" + priv_key.get_public( true, true );
+#endif
+
+   if( !chain.empty( ) )
+      data += ",tw=" + to_string( total_weight );
+   else if( !accts_file.empty( ) )
+   {
+      vector< string > accounts;
+      buffer_file_lines( accts_file, accounts );
+
+      for( size_t i = 0; i < accounts.size( ); i++ )
+         data += '\n' + accounts[ i ];
+   }
+   else
+   {
+      data += "\na:" + account_id
+       + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
+       + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
+   }
+
+#ifdef SSL_SUPPORT
+   data += "\ns:" + priv_key.construct_signature( data, true );
+#endif
+
+   return data;
+}
+
+string construct_account_info(
+ const string& blockchain, const string& password,
+ size_t rounds, const string& account, account_key_info* p_key_info )
+{
+   string account_id( account );
+
+   string last_block_hash;
+   string last_block_lock;
+
+   string last_trans_hash;
+   string last_trans_lock;
+
+   account_key_info key_info;
+
+   if( !account_id.empty( ) )
+   {
+      account_info ainfo;
+      get_account_info( ainfo, "c" + blockchain + ".a" + account_id );
+
+      last_block_hash = base64::decode( ainfo.block_hash );
+      last_trans_hash = base64::decode( ainfo.transaction_hash );
+
+      last_block_lock = ainfo.block_lock;
+      last_trans_lock = ainfo.transaction_lock;
+   }
+
+   unsigned char buf[ c_hash_buf_size ];
+
+   sha256 hash( password );
+   hash.copy_digest_to_buffer( buf );
+
+   uint64_t id = *( uint64_t* )( buf );
+   id >>= 28;
+
+   if( account_id.empty( ) )
+      account_id = to_string( id );
+   else if( account_id != to_string( id ) )
+      throw runtime_error( "invalid password for account '" + account + "'" );
+
+   sha256 block_hash( account_id + password );
+   sha256 trans_hash( password + account_id );
+
+   unsigned char bbuf[ c_hash_buf_size ];
+   unsigned char tbuf[ c_hash_buf_size ];
+
+   block_hash.copy_digest_to_buffer( bbuf );
+   trans_hash.copy_digest_to_buffer( tbuf );
+
+   size_t block_round = 0;
+   size_t trans_round = 0;
+
+   bool found_block = false;
+   bool found_trans = false;
+
+   for( size_t i = 0; i < rounds; i++ )
+   {
+      if( !found_block )
+      {
+         block_hash.update( bbuf, c_hash_buf_size );
+         block_hash.copy_digest_to_buffer( buf );
+
+         if( memcmp( buf, last_block_hash.data( ), c_hash_buf_size ) == 0 )
+         {
+            block_round = i;
+            found_block = true;
+            key_info.block_hash = base64::encode( bbuf, c_hash_buf_size );
+         }
+
+         memcpy( bbuf, buf, c_hash_buf_size );
+      }
+
+      if( !found_trans )
+      {
+         trans_hash.update( tbuf, c_hash_buf_size );
+         trans_hash.copy_digest_to_buffer( buf );
+
+         if( memcmp( buf, last_trans_hash.data( ), c_hash_buf_size ) == 0 )
+         {
+            trans_round = i;
+            found_trans = true;
+            key_info.trans_hash = base64::encode( tbuf, c_hash_buf_size );
+         }
+
+         memcpy( tbuf, buf, c_hash_buf_size );
+      }
+
+      if( found_block && found_trans )
+         break;
+   }
+
+   if( found_block )
+   {
+      sha256 hash( to_string( block_round + 1 ) + password );
+      key_info.block_secret = get_hash_secret( hash );
+
+#ifdef SSL_SUPPORT
+      private_key pkey( key_info.block_secret );
+      if( pkey.get_address( true, true ) != last_block_lock )
+         throw runtime_error( "unexpected invalid private key for block lock" );
+#endif
+   }
+   else if( !account.empty( ) )
+      throw runtime_error( "invalid account " + account + " for blockchain " + blockchain );
+   else
+   {
+      block_round = rounds;
+      key_info.block_hash = base64::encode( bbuf, c_hash_buf_size );
+   }
+
+#ifdef SSL_SUPPORT
+   sha256 block_lock_hash( to_string( block_round ) + password );
+   private_key block_privkey( get_hash_secret( block_lock_hash ) );
+   key_info.block_lock = block_privkey.get_address( true, true );
+#endif
+
+   if( found_trans )
+   {
+      sha256 hash( password + to_string( trans_round + 1 ) );
+      key_info.trans_secret = get_hash_secret( hash );
+
+#ifdef SSL_SUPPORT
+      private_key pkey( key_info.trans_secret );
+      if( pkey.get_address( true, true ) != last_trans_lock )
+         throw runtime_error( "unexpected invalid private key for trans lock" );
+#endif
+   }
+   else
+   {
+      trans_round = rounds;
+      key_info.trans_hash = base64::encode( tbuf, c_hash_buf_size );
+   }
+
+#ifdef SSL_SUPPORT
+   sha256 trans_lock_hash( password + to_string( trans_round ) );
+   private_key trans_privkey( get_hash_secret( trans_lock_hash ) );
+   key_info.trans_lock = trans_privkey.get_address( true, true );
+#endif
+
+   if( p_key_info )
+   {
+      *p_key_info = key_info;
+      return account_id;
+   }
+   else
+   {
+      return "a:" + account_id
+       + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
+       + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
+   }    
 }
 

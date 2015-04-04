@@ -55,11 +55,11 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    rs.read_meta( sf.file_name );
 
    if( sf.file_name.empty( ) )
-      throw runtime_error( "unexpected missing read_stream meta data for storable_file" );
+      throw runtime_error( "unexpected missing read_stream meta-data for storable_file" );
 
    string::size_type pos = sf.file_name.find_last_of( ':' );
    if( pos == string::npos )
-      throw runtime_error( "unexpected file length missing from storable_file read_stream meta data" );
+      throw runtime_error( "unexpected file length missing from storable_file read_stream meta-data" );
 
    int64_t size = from_string< int64_t >( sf.file_name.substr( pos + 1 ) );
    sf.file_name.erase( pos );

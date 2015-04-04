@@ -2419,7 +2419,10 @@ string get_random_hash( )
 #else
    sha256 hash( uuid( ).as_string( ) );
 #endif
-   return lower( hash.get_digest_as_string( ) );
+
+   // NOTE: The first nibble is zeroed out to ensure that the return
+   // value is always valid to use as a Bitcoin address "secret".
+   return "0" + lower( hash.get_digest_as_string( ).substr( 1 ) );
 }
 
 string get_ext( const string& filename )
@@ -4453,7 +4456,10 @@ string create_address_key_pair( const string& ext_key,
    else
    {
       sha256 hash( priv_info );
-      ap_new_key.reset( new private_key( lower( hash.get_digest_as_string( ) ) ) );
+
+      // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+      // as a Bitcoin address "secret" (as the range of its EC is smaller than the whole 256 bits).
+      ap_new_key.reset( new private_key( "0" + lower( hash.get_digest_as_string( ) ).substr( 1 ) ) );
    }
 
    pub_key = ap_new_key->get_public( compressed, use_base64 );
