@@ -81,6 +81,7 @@ const char* const c_file_type_core_block_detail_transaction_prefix = "t:";
 
 const char* const c_file_type_core_block_header_chain_meta_requisite_prefix = "r:";
 
+const char* const c_file_type_core_block_detail_account_exp_prefix = "e=";
 const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
 const char* const c_file_type_core_block_detail_account_lock_prefix = "l=";
 const char* const c_file_type_core_block_detail_account_tx_hash_prefix = "th=";

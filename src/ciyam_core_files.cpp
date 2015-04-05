@@ -44,6 +44,7 @@ namespace
 {
 
 const int c_hash_buf_size = 32;
+const unsigned int c_default_exp = 5;
 
 const unsigned int c_id_length = 10;
 const unsigned int c_tx_min_non_confirmed = 5;
@@ -107,9 +108,11 @@ struct chain_info
 
 struct account_info
 {
-   account_info( ) : balance( 0 ), last_height( 0 ), num_transactions( 0 ) { }
+   account_info( ) : exp( 0 ), balance( 0 ), last_height( 0 ), num_transactions( 0 ) { }
 
    string tag;
+
+   unsigned int exp;
 
    string block_hash;
    string block_lock;
@@ -302,23 +305,25 @@ string get_account_info( account_info& info, const string& account_id )
    vector< string > account_items;
    split( account_data, account_items, '\n' );
 
-   if( account_items.size( ) < 2 )
+   if( account_items.size( ) < 3 )
       throw runtime_error( "unexpected invalid account_data '" + account_data + "'" );
 
-   info.block_hash = account_items[ 0 ];
-   info.block_lock = account_items[ 1 ];
+   info.exp = atoi( account_items[ 0 ].c_str( ) );
 
-   if( account_items.size( ) > 2 )
+   info.block_hash = account_items[ 1 ];
+   info.block_lock = account_items[ 2 ];
+
+   if( account_items.size( ) > 3 )
    {
-      if( account_items.size( ) < 4 )
+      if( account_items.size( ) < 5 )
          throw runtime_error( "unexpected invalid account_data '" + account_data + "'" );
 
-      info.transaction_hash = account_items[ 2 ];
-      info.transaction_lock = account_items[ 3 ];
+      info.transaction_hash = account_items[ 3 ];
+      info.transaction_lock = account_items[ 4 ];
 
-      if( account_items.size( ) > 4 )
+      if( account_items.size( ) > 5 )
       {
-         string extra_transaction_info( account_items[ 4 ] );
+         string extra_transaction_info( account_items[ 5 ] );
          string::size_type pos = extra_transaction_info.find( ':' );
 
          info.num_transactions = from_string< size_t >( extra_transaction_info.substr( 0, pos ) );
@@ -333,7 +338,9 @@ string get_account_data( const account_info& info,
  const string& account_hash, const string& account_lock,
  const string& transaction_hash, const string& transaction_lock, const string& last_transaction_id )
 {
-   string extras( account_hash.empty( ) ? info.block_hash : account_hash );
+   string extras( to_string( info.exp ) );
+
+   extras += '\n' + ( account_hash.empty( ) ? info.block_hash : account_hash );
    extras += '\n' + ( account_lock.empty( ) ? info.block_lock : account_lock );
 
    if( !info.transaction_hash.empty( ) )
@@ -353,6 +360,19 @@ string get_account_data( const account_info& info,
    }
 
    return extras;
+}
+
+string get_account_id_from_password( const string& password )
+{
+   unsigned char buf[ c_hash_buf_size ];
+
+   sha256 hash( password );
+   hash.copy_digest_to_buffer( buf );
+
+   uint64_t id = *( uint64_t* )( buf );
+   id >>= 28;
+
+   return to_string( id );
 }
 
 uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_hash = 0, string* p_minter_tag = 0 )
@@ -749,12 +769,13 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             throw runtime_error( "invalid account format '" + next_line + "'" );
 
          bool has_id = false;
+         bool has_exp = false;
          bool has_hash = false;
          bool has_lock = false;
          bool has_tx_hash = false;
          bool has_tx_lock = false;
 
-         string id, hash, lock, tx_hash, tx_lock;
+         string id, exp, hash, lock, tx_hash, tx_lock;
 
          for( size_t j = 0; j < attributes.size( ); j++ )
          {
@@ -773,6 +794,17 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                has_id = true;
 
                id = next_attribute;
+            }
+            else if( !has_exp )
+            {
+               size_t len = string( c_file_type_core_block_detail_account_exp_prefix ).length( );
+
+               if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_exp_prefix ) )
+                  throw runtime_error( "invalid account exp attribute '" + next_attribute + "'" );
+
+               has_exp = true;
+
+               exp = next_attribute.substr( len );
             }
             else if( !has_hash )
             {
@@ -844,7 +876,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             if( !block_height )
             {
                string extra( c_file_type_str_core_blob );
-               extra += hash + '\n' + lock;
+               extra += exp + '\n' + hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -857,7 +889,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                has_secondary_account = true;
 
                string extra( c_file_type_str_core_blob );
-               extra += hash + '\n' + lock + "\n<acct>";;
+               extra += exp + '\n' + hash + '\n' + lock + "\n<acct>";;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -1138,7 +1170,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   --parallel_block_height;
                }
 
-               // NOTE: Any old best chain transactions that did not end up in the new best chain are now retagged.
+               // NOTE: Any old best chain transactions that did not end up in the new best chain are now re-tagged.
                for( map< string, string >::iterator i = old_transaction_hashes.begin( ); i != old_transaction_hashes.end( ); ++i )
                {
                   if( !new_transaction_hashes.count( i->first ) )
@@ -2499,8 +2531,7 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
    }
 }
 
-string construct_new_block( const string& blockchain,
- const string& password, size_t rounds, const string& account )
+string construct_new_block( const string& blockchain, const string& password, const string& account )
 {
    string acct( account );
    string accts_file;
@@ -2510,13 +2541,19 @@ string construct_new_block( const string& blockchain,
       accts_file = acct.substr( 1 );
       acct.erase( );
    }
+   else if( acct.empty( ) )
+   {
+      string id( get_account_id_from_password( password ) );
+      if( !list_file_tags( "c" + blockchain + ".a" + id + ".h*" ).empty( ) )
+         acct = id;
+   }
 
    string chain( blockchain );
    if( acct.empty( ) )
       chain.erase( );
 
    account_key_info key_info;
-   string account_id( construct_account_info( chain, password, rounds, acct, &key_info ) );
+   string account_id( construct_account_info( chain, password, c_default_exp, acct, &key_info ) );
 
    string head_hash;
    unsigned long height = 0;
@@ -2583,7 +2620,7 @@ string construct_new_block( const string& blockchain,
 
 string construct_account_info(
  const string& blockchain, const string& password,
- size_t rounds, const string& account, account_key_info* p_key_info )
+ unsigned int exp, const string& account, account_key_info* p_key_info )
 {
    string account_id( account );
 
@@ -2595,10 +2632,14 @@ string construct_account_info(
 
    account_key_info key_info;
 
+   unsigned int exponent( exp == 0 ? c_default_exp : exp );
+
    if( !account_id.empty( ) )
    {
       account_info ainfo;
       get_account_info( ainfo, "c" + blockchain + ".a" + account_id );
+
+      exponent = ainfo.exp;
 
       last_block_hash = base64::decode( ainfo.block_hash );
       last_trans_hash = base64::decode( ainfo.transaction_hash );
@@ -2607,21 +2648,15 @@ string construct_account_info(
       last_trans_lock = ainfo.transaction_lock;
    }
 
-   unsigned char buf[ c_hash_buf_size ];
-
-   sha256 hash( password );
-   hash.copy_digest_to_buffer( buf );
-
-   uint64_t id = *( uint64_t* )( buf );
-   id >>= 28;
-
    if( account_id.empty( ) )
-      account_id = to_string( id );
-   else if( account_id != to_string( id ) )
+      account_id = get_account_id_from_password( password );
+   else if( account_id != get_account_id_from_password( password ) )
       throw runtime_error( "invalid password for account '" + account + "'" );
 
    sha256 block_hash( account_id + password );
    sha256 trans_hash( password + account_id );
+
+   unsigned char buf[ c_hash_buf_size ];
 
    unsigned char bbuf[ c_hash_buf_size ];
    unsigned char tbuf[ c_hash_buf_size ];
@@ -2634,6 +2669,10 @@ string construct_account_info(
 
    bool found_block = false;
    bool found_trans = false;
+
+   size_t rounds = 10;
+   for( size_t i = 1; i < exp; i++ )
+      rounds *= 10;
 
    for( size_t i = 0; i < rounds; i++ )
    {
@@ -2673,6 +2712,9 @@ string construct_account_info(
 
    if( found_block )
    {
+      if( block_round + 1 >= rounds )
+         throw runtime_error( "account block hashes have been exhausted" );
+
       sha256 hash( to_string( block_round + 1 ) + password );
       key_info.block_secret = get_hash_secret( hash );
 
@@ -2698,6 +2740,9 @@ string construct_account_info(
 
    if( found_trans )
    {
+      if( trans_round + 1 >= rounds )
+         throw runtime_error( "account trans hashes have been exhausted" );
+
       sha256 hash( password + to_string( trans_round + 1 ) );
       key_info.trans_secret = get_hash_secret( hash );
 
@@ -2726,7 +2771,7 @@ string construct_account_info(
    }
    else
    {
-      return "a:" + account_id
+      return "a:" + account_id + ",e=" + to_string( exponent )
        + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
        + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
    }    
