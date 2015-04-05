@@ -41,12 +41,18 @@ struct account_key_info
 void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 
-std::string CLASS_BASE_DECL_SPEC construct_new_block( const std::string& blockchain,
- const std::string& password, size_t rounds, const std::string& account );
+std::string CLASS_BASE_DECL_SPEC construct_new_block(
+ const std::string& blockchain, const std::string& password, const std::string& account );
+
+inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
+ const std::string& blockchain, const std::string& password )
+{
+   return construct_new_block( blockchain, password, "" );
+}
 
 std::string CLASS_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
- size_t rounds, const std::string& account, account_key_info* p_key_info = 0 );
+ unsigned int exp, const std::string& account, account_key_info* p_key_info = 0 );
 
 #endif
 

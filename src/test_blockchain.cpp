@@ -141,7 +141,8 @@ string generate_blockchain_script( const string& chain_meta,
       private_key priv_key( new_account.secrets[ 0 ] );
       private_key tx_priv_key( new_account.secrets[ rounds ] );
 
-      string next_account( "a:" + to_string( new_account.id ) + ",h="
+      string next_account( "a:"
+       + to_string( new_account.id ) + ",e=2,h="
        + base64::encode( get_hash( new_account.seed, 0, rounds ) )
        + ",l=" + priv_key.get_address( true, true ) );
 

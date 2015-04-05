@@ -33,6 +33,7 @@
 #include "ciyam_strings.h"
 #include "command_parser.h"
 #include "command_handler.h"
+#include "ciyam_core_files.h"
 #include "command_processor.h"
 
 using namespace std;
@@ -95,6 +96,31 @@ inline void issue_error( const string& message )
 inline void issue_warning( const string& message )
 {
    TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
+}
+
+string mint_next_block( const string& blockchain )
+{
+   string hash;
+
+   string password( get_system_variable( "@" + blockchain + "_pwd" ) );
+
+   if( !password.empty( ) )
+   {
+      string data( construct_new_block( blockchain, password ) );
+
+      if( !data.empty( ) )
+      {
+         data = string( c_file_type_str_core_blob ) + data;
+
+         vector< pair< string, string > > extras;
+
+         verify_core_file( data, true, &extras );
+
+         hash = create_raw_file_with_extras( data, extras );
+      }
+   }
+
+   return hash;
 }
 
 class socket_command_handler : public command_handler
@@ -443,6 +469,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
+   string blockchain( socket_handler.get_blockchain( ) );
+
    try
    {
       ostringstream osstr;
@@ -519,10 +547,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             if( was_initial_state && socket_handler.get_is_responder( ) )
             {
-               if( !socket_handler.get_blockchain( ).empty( ) )
+               if( !blockchain.empty( ) )
                {
                   string tags( get_hash_tags( hash ) );
-                  string tag( "c" + socket_handler.get_blockchain( ) + ".head" );
+                  string tag( "c" + blockchain + ".head" );
 
                   if( tags.find( "\n" + tag ) == string::npos )
                      throw runtime_error( "blockchain tag: " + tag + " not found for hash " + hash );
@@ -548,11 +576,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   string next_hash( get_next_peer_file_hash_to_put( ) );
 
+                  bool remove_file_after_put = false;
+
+                  // NOTE: If there is no other file waiting to be sent then attempt to mint a new block.
+                  if( ( next_hash.empty( ) || !has_file( next_hash ) ) && !blockchain.empty( ) )
+                  {
+                     next_hash = mint_next_block( blockchain );
+
+                     if( !next_hash.empty( ) )
+                        remove_file_after_put = true;
+                  }
+
                   if( next_hash.empty( ) || !has_file( next_hash ) )
                      // KLUDGE: For now just use "hello" as the file to put if nothing is on the put file stack.
                      socket_handler.put_hello( );
                   else
+                  {
                      socket_handler.put_file( next_hash );
+
+                     if( remove_file_after_put )
+                        delete_file( next_hash );
+                  }
                }
             }
          }
@@ -578,11 +622,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             string next_hash( get_next_peer_file_hash_to_put( ) );
 
+            bool remove_file_after_put = false;
+
+            // NOTE: If there is no other file waiting to be sent then attempt to mint a new block.
+            if( ( next_hash.empty( ) || !has_file( next_hash ) ) && !blockchain.empty( ) )
+            {
+               next_hash = mint_next_block( blockchain );
+
+               if( !next_hash.empty( ) )
+                  remove_file_after_put = true;
+            }
+
             if( next_hash.empty( ) || !has_file( next_hash ) )
                // KLUDGE: For now just use "hello" as the file to put if nothing is on the put file stack.
                socket_handler.put_hello( );
             else
+            {
                socket_handler.put_file( next_hash );
+
+               if( remove_file_after_put )
+                  delete_file( next_hash );
+            }
          }
       }
       else if( command == c_cmd_peer_session_put )
@@ -668,11 +728,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( get_next_peer_file_hash_to_put( ) );
 
+               bool remove_file_after_put = false;
+
+               // NOTE: If there is no other file waiting to be sent then attempt to mint a new block.
+               if( ( next_hash.empty( ) || !has_file( next_hash ) ) && !blockchain.empty( ) )
+               {
+                  next_hash = mint_next_block( blockchain );
+
+                  if( !next_hash.empty( ) )
+                     remove_file_after_put = true;
+               }
+
                if( next_hash.empty( ) || !has_file( next_hash ) )
                   // KLUDGE: For now just use "hello" as the file if nothing is on the put file stack.
                   socket_handler.put_hello( );
                else
+               {
                   socket_handler.put_file( next_hash );
+
+                  if( remove_file_after_put )
+                     delete_file( next_hash );
+               }
             }
          }
       }
