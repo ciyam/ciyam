@@ -573,15 +573,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !has )
          {
+            send_okay_response = false;
             response = c_response_not_found;
 
             if( was_initial_state )
             {
                if( !blockchain.empty( ) )
-               {
-                  send_okay_response = false;
                   socket_handler.state( ) = e_peer_state_invalid;
-               }
                else
                {
                   handler.issue_command_reponse( response, true );
@@ -604,10 +602,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   response.erase( );
 
                   if( !temp_file_is_identical( temp_file_name, temp_hash ) )
-                  {
-                     send_okay_response = false;
                      socket_handler.state( ) = e_peer_state_invalid;
-                  }
                   else
                   {
                      socket_handler.state( ) = e_peer_state_waiting_for_put;
@@ -642,40 +637,40 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      throw runtime_error( "blockchain " + blockchain + " was not found" );
                }
             }
+         }
 
-            if( !was_initial_state && socket_handler.get_is_responder( ) )
+         if( !was_initial_state && socket_handler.get_is_responder( ) )
+         {
+            handler.issue_command_reponse( response, true );
+            response.erase( );
+
+            if( socket_handler.state( ) == e_peer_state_waiting_for_get )
             {
-               handler.issue_command_reponse( response, true );
-               response.erase( );
+               string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+               if( !next_hash.empty( ) )
                {
-                  string next_hash( top_next_peer_file_hash_to_get( ) );
+                  socket_handler.get_file( next_hash );
+                  pop_next_peer_file_hash_to_get( );
 
-                  if( !next_hash.empty( ) )
-                  {
-                     socket_handler.get_file( next_hash );
-                     pop_next_peer_file_hash_to_get( );
-
-                     process_file( next_hash, blockchain );
-                  }
-                  else
-                     socket_handler.get_hello( );
+                  process_file( next_hash, blockchain );
                }
                else
-               {
-                  string next_hash( top_next_peer_file_hash_to_put( ) );
+                  socket_handler.get_hello( );
+            }
+            else
+            {
+               string next_hash( top_next_peer_file_hash_to_put( ) );
 
-                  bool had_hash = !next_hash.empty( );
+               bool had_hash = !next_hash.empty( );
 
-                  if( next_hash.empty( ) || !has_file( next_hash ) )
-                     socket_handler.put_hello( );
-                  else
-                     socket_handler.put_file( next_hash );
+               if( next_hash.empty( ) || !has_file( next_hash ) )
+                  socket_handler.put_hello( );
+               else
+                  socket_handler.put_file( next_hash );
 
-                  if( had_hash )
-                     pop_next_peer_file_hash_to_put( );
-               }
+               if( had_hash )
+                  pop_next_peer_file_hash_to_put( );
             }
          }
       }
