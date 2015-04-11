@@ -101,9 +101,6 @@ const char* const c_file_type_core_blockchain_info_header_chain_prefix = "c=";
 const char* const c_file_type_core_blockchain_info_header_height_prefix = "h=";
 const char* const c_file_type_core_blockchain_info_header_checkpoint_hash_prefix = "ch=";
 
-const char* const c_file_type_core_blockchain_info_details_old = "old";
-const char* const c_file_type_core_blockchain_info_details_new = "new";
-
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";
 const char* const c_init = "init";

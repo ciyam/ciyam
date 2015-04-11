@@ -84,10 +84,10 @@ std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_m
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2,
  const std::pair< std::string, std::string >& parm3, const std::pair< std::string, std::string >& parm4 );
 
-int CIYAM_BASE_DECL_SPEC get_max_peers( );
+unsigned int CIYAM_BASE_DECL_SPEC get_max_peers( );
 
-int CIYAM_BASE_DECL_SPEC get_max_user_limit( );
-void CIYAM_BASE_DECL_SPEC set_max_user_limit( int new_limit );
+unsigned int CIYAM_BASE_DECL_SPEC get_max_user_limit( );
+void CIYAM_BASE_DECL_SPEC set_max_user_limit( unsigned int new_limit );
 
 std::string CIYAM_BASE_DECL_SPEC get_prefix( );
 std::string CIYAM_BASE_DECL_SPEC get_domain( );
@@ -174,7 +174,8 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_arg
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
 void CIYAM_BASE_DECL_SPEC init_session(
- command_handler& cmd_handler, bool is_peer_session = false, const std::string* p_ip_addr = 0 );
+ command_handler& cmd_handler, bool is_peer_session = false,
+ const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0 );
 
 void CIYAM_BASE_DECL_SPEC term_session( );
 
@@ -245,22 +246,36 @@ std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
 std::string CIYAM_BASE_DECL_SPEC get_default_storage( );
 void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
 
-int CIYAM_BASE_DECL_SPEC get_session_timeout( );
-void CIYAM_BASE_DECL_SPEC set_session_timeout( int seconds );
+std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
+
+unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );
+
+unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
+void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash );
-std::string CIYAM_BASE_DECL_SPEC get_next_peer_file_hash_to_get( );
+
+std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( );
+void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put_for_all_peers(
- const std::string& hash, bool include_self = true, size_t session_id_to_skip = 0 );
+ const std::string& hash, const std::string* p_blockchain = 0,
+ const std::string* p_session_variable = 0, bool include_self = true, size_t session_id_to_skip = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_next_peer_file_hash_to_put( );
+std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_put( );
+void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
+
+bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
+ const std::string& hash, const std::string* p_blockchain = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name );
 void CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value, const std::string& current );
+
+bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name );
+bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name, const std::string& value );
 
 struct temporary_session_variable
 {

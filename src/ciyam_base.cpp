@@ -71,11 +71,11 @@ const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
 
-const int c_default_max_peers = 100;
+const unsigned int c_default_max_peers = 100;
 
 // NOTE: This limit is supplied (along with the identity information) to
 // client interfaces and is not the max # of concurrent server sessions.
-const int c_default_max_user_limit = 1000;
+const unsigned int c_default_max_user_limit = 1000;
 
 const size_t c_default_cache_limit = 1000;
 
@@ -214,6 +214,8 @@ const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_update_fields = "@update_fields";
+const char* const c_special_variable_peer_initiator = "@peer_initiator";
+const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_debug_blockchain = "@debug_blockchain";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
@@ -300,9 +302,9 @@ struct global_storage_name_lock
 
 struct session
 {
-   session( size_t id,
-    size_t slot, command_handler& cmd_handler,
-    storage_handler* p_storage_handler, bool is_peer_session, const string* p_ip_addr )
+   session( size_t id, size_t slot,
+    command_handler& cmd_handler, storage_handler* p_storage_handler,
+    bool is_peer_session, const string* p_ip_addr, const string* p_blockchain )
     :
     id( id ),
     slot( slot ),
@@ -326,6 +328,9 @@ struct session
       if( p_ip_addr )
          ip_addr = *p_ip_addr;
 
+      if( p_blockchain )
+         blockchain = *p_blockchain;
+
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
 
@@ -344,6 +349,7 @@ struct session
    string tz_name;
 
    string last_cmd;
+   string blockchain;
 
    set< string > perms;
 
@@ -3107,16 +3113,16 @@ string g_set_trace;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
-int g_max_peers = c_default_max_peers;
-int g_max_user_limit = c_default_max_user_limit;
-
 string g_gpg_password;
 string g_pem_password;
 string g_sql_password;
 
 string g_default_storage;
 
-int g_session_timeout = 0;
+unsigned int g_session_timeout = 0;
+
+unsigned int g_max_peers = c_default_max_peers;
+unsigned int g_max_user_limit = c_default_max_user_limit;
 
 bool g_script_reconfig = false;
 
@@ -4168,19 +4174,19 @@ string get_string_message( const string& string_message,
    return message;
 }
 
-int get_max_peers( )
+unsigned int get_max_peers( )
 {
    return g_max_peers;
 }
 
-int get_max_user_limit( )
+unsigned int get_max_user_limit( )
 {
    guard g( g_mutex );
 
    return g_max_user_limit;
 }
 
-void set_max_user_limit( int new_limit )
+void set_max_user_limit( unsigned int new_limit )
 {
    guard g( g_mutex );
 
@@ -4738,7 +4744,8 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-void init_session( command_handler& cmd_handler, bool is_peer_session, const string* p_ip_addr )
+void init_session( command_handler& cmd_handler,
+ bool is_peer_session, const string* p_ip_addr, const string* p_blockchain )
 {
    guard g( g_mutex );
 
@@ -4747,8 +4754,8 @@ void init_session( command_handler& cmd_handler, bool is_peer_session, const str
    {
       if( !g_sessions[ i ] )
       {
-         g_sessions[ i ] = new session(
-          ++g_next_session_id, i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session, p_ip_addr );
+         g_sessions[ i ] = new session( ++g_next_session_id,
+          i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain );
 
          gtp_session = g_sessions[ i ];
          ods::instance( 0, true );
@@ -4837,9 +4844,13 @@ void list_sessions( ostream& os, bool inc_dtms )
              << ' ' << g_sessions[ i ]->dtm_last_cmd.as_string( true, false );
          }
 
-         os << ' ' << g_sessions[ i ]->last_cmd;
+         os << ' ' << g_sessions[ i ]->last_cmd << ' ';
 
-         os << ' ' << ( g_sessions[ i ]->is_peer_session ? string( "(peer)" ) : g_sessions[ i ]->p_storage_handler->get_name( ) );
+         if( !g_sessions[ i ]->is_peer_session )
+            os << g_sessions[ i ]->p_storage_handler->get_name( );
+         else
+            os << ( g_sessions[ i ]->blockchain.empty( ) ? string( "(peer" ) : g_sessions[ i ]->blockchain );
+
          if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
             os << '*';
 
@@ -5153,7 +5164,6 @@ bool get_script_reconfig( )
 string get_pem_password( )
 {
    guard g( g_mutex );
-
    return decrypt_password( g_pem_password );
 }
 
@@ -5178,35 +5188,30 @@ string get_sql_password( )
 string get_encrypted_gpg_password( )
 {
    guard g( g_mutex );
-
    return g_gpg_password;
 }
 
 string get_encrypted_pem_password( )
 {
    guard g( g_mutex );
-
    return g_pem_password;
 }
 
 string get_encrypted_sql_password( )
 {
    guard g( g_mutex );
-
    return g_sql_password;
 }
 
 string get_encrypted_pop3_password( )
 {
    guard g( g_mutex );
-
    return g_pop3_password;
 }
 
 string get_encrypted_smtp_password( )
 {
    guard g( g_mutex );
-
    return g_smtp_password;
 }
 
@@ -5222,16 +5227,37 @@ void set_default_storage( const string& name )
    g_default_storage = name;
 }
 
-int get_session_timeout( )
+unsigned int get_session_timeout( )
 {
    guard g( g_mutex );
    return g_session_timeout;
 }
 
-void set_session_timeout( int seconds )
+void set_session_timeout( unsigned int seconds )
 {
    guard g( g_mutex );
    g_session_timeout = seconds;
+}
+
+string get_session_blockchain( )
+{
+   guard g( g_mutex );
+   return gtp_session->blockchain;
+}
+
+unsigned int get_num_sessions_for_blockchain( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   unsigned int num_sessions = 0;
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && blockchain == g_sessions[ i ]->blockchain )
+         ++num_sessions;
+   }
+
+   return num_sessions;
 }
 
 void add_peer_file_hash_for_get( const string& hash )
@@ -5241,19 +5267,24 @@ void add_peer_file_hash_for_get( const string& hash )
    gtp_session->file_hashs_to_get.push_back( hash );
 }
 
-string get_next_peer_file_hash_to_get( )
+string top_next_peer_file_hash_to_get( )
 {
    guard g( g_mutex );
 
    string hash;
 
    if( !gtp_session->file_hashs_to_get.empty( ) )
-   {
       hash = gtp_session->file_hashs_to_get.front( );
-      gtp_session->file_hashs_to_get.pop_front( );
-   }
 
    return hash;
+}
+
+void pop_next_peer_file_hash_to_get( )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session->file_hashs_to_get.empty( ) )
+      gtp_session->file_hashs_to_get.pop_front( );
 }
 
 void add_peer_file_hash_for_put( const string& hash )
@@ -5263,7 +5294,8 @@ void add_peer_file_hash_for_put( const string& hash )
    gtp_session->file_hashs_to_put.push_back( hash );
 }
 
-void add_peer_file_hash_for_put_for_all_peers( const string& hash, bool include_self, size_t session_id_to_skip )
+void add_peer_file_hash_for_put_for_all_peers( const string& hash,
+ const string* p_blockchain, const string* p_session_variable, bool include_self, size_t session_id_to_skip )
 {
    guard g( g_mutex );
 
@@ -5272,24 +5304,53 @@ void add_peer_file_hash_for_put_for_all_peers( const string& hash, bool include_
       if( g_sessions[ i ]
        && g_sessions[ i ]->is_peer_session
        && g_sessions[ i ]->id != session_id_to_skip
-       && ( include_self || g_sessions[ i ] != gtp_session ) )
+       && ( include_self || g_sessions[ i ] != gtp_session )
+       && ( !p_blockchain || *p_blockchain == g_sessions[ i ]->blockchain )
+       && ( !p_session_variable || g_sessions[ i ]->variables.count( *p_session_variable ) ) )
          g_sessions[ i ]->file_hashs_to_put.push_back( hash );
    }
 }
 
-string get_next_peer_file_hash_to_put( )
+string top_next_peer_file_hash_to_put( )
 {
    guard g( g_mutex );
 
    string hash;
 
    if( !gtp_session->file_hashs_to_put.empty( ) )
-   {
       hash = gtp_session->file_hashs_to_put.front( );
-      gtp_session->file_hashs_to_put.pop_front( );
-   }
 
    return hash;
+}
+
+void pop_next_peer_file_hash_to_put( )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session->file_hashs_to_put.empty( ) )
+      gtp_session->file_hashs_to_put.pop_front( );
+}
+
+bool any_peer_still_has_file_hash_to_put(
+ const string& hash, const string* p_blockchain )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->is_peer_session
+       && ( !p_blockchain || *p_blockchain == g_sessions[ i ]->blockchain ) )
+      {
+         for( size_t j = 0; j < g_sessions[ i ]->file_hashs_to_put.size( ); j++ )
+         {
+            if( g_sessions[ i ]->file_hashs_to_put[ j ] == hash )
+               return true;
+         }
+      }
+   }
+
+   return false;
 }
 
 string get_session_variable( const string& name )
@@ -5383,6 +5444,35 @@ bool set_session_variable( const string& name, const string& value, const string
    }
 
    return retval;
+}
+
+bool is_first_using_session_variable( const string& name )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name ) )
+         return ( g_sessions[ i ] == gtp_session );
+   }
+
+   return false;
+}
+
+bool is_first_using_session_variable( const string& name, const string& value )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name )
+       && g_sessions[ i ]->variables[ name ] == value )
+         return ( g_sessions[ i ] == gtp_session );
+   }
+
+   return false;
 }
 
 string get_special_var_name( special_var var )
@@ -5561,6 +5651,14 @@ string get_special_var_name( special_var var )
 
       case e_special_var_update_fields:
       s = string( c_special_variable_update_fields );
+      break;
+
+      case e_special_var_peer_initiator:
+      s = string( c_special_variable_peer_initiator );
+      break;
+
+      case e_special_var_peer_responder:
+      s = string( c_special_variable_peer_responder );
       break;
 
       case e_special_var_check_if_changed:

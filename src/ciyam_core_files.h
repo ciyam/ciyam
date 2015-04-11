@@ -23,8 +23,7 @@ struct blockchain_info
 {
    std::string chain_id;
    std::string checkpoint_hash;
-   std::vector< std::string > earlier_block_height_hash_of_hashes;
-   std::vector< std::string > all_specific_block_height_block_hashes;
+   std::vector< std::string > block_hashes_with_sigs;
 };
 
 struct account_key_info
@@ -41,6 +40,11 @@ struct account_key_info
 void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 
+bool CLASS_BASE_DECL_SPEC is_block( const std::string& core_type );
+bool CLASS_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
+
+void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
+
 std::string CLASS_BASE_DECL_SPEC construct_new_block(
  const std::string& blockchain, const std::string& password, const std::string& account );
 
@@ -50,9 +54,14 @@ inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
    return construct_new_block( blockchain, password, "" );
 }
 
+std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
+ const std::string& block_content, const std::string& block_signature );
+
 std::string CLASS_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0 );
+
+std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 
 #endif
 

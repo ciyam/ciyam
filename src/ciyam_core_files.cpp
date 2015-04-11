@@ -2199,7 +2199,7 @@ void verify_blockchain_info( const string& content,
    guard g( g_mutex );
 
    bool construct_info = false;
-   if( content.find( ".info.h" ) != string::npos )
+   if( content.find( ".info" ) != string::npos )
       construct_info = true;
 
    if( !construct_info )
@@ -2207,20 +2207,18 @@ void verify_blockchain_info( const string& content,
       chain_info cinfo;
 
       vector< string > lines;
-      split( content, lines );
+      split( content, lines, '\n' );
 
       string chain_id, checkpoint_hash;
+
       unsigned int height = 0;
+      unsigned int block_height = 0;
 
-      vector< string > specific_block_hashes;
-      vector< string > hashes_of_block_hashes;
-
-      bool had_old_details_marker = false;
-      bool had_new_details_marker = false;
+      vector< string > block_hashes_with_sigs;
 
       for( size_t i = 0; i < lines.size( ); i++ )
       {
-         string next_line( lines[ 0 ] );
+         string next_line( lines[ i ] );
 
          if( i == 0 )
          {
@@ -2241,7 +2239,7 @@ void verify_blockchain_info( const string& content,
                if( pos == string::npos )
                   throw runtime_error( "invalid header '" + next_header + "' in verify_blockchain_info" );
 
-               string prefix( next_header.substr( 0, pos ) );
+               string prefix( next_header.substr( 0, pos + 1 ) );
                string remainder( next_header.substr( pos + 1 ) );
 
                if( !has_chain )
@@ -2302,33 +2300,33 @@ void verify_blockchain_info( const string& content,
                   throw runtime_error( "unexpected extra header '" + next_header + "' in verify_blockchain_info" );
             }
          }
-         else if( !had_old_details_marker )
+         else if( next_line.length( ) < 10 )
          {
-            if( next_line != string( c_file_type_core_blockchain_info_details_old ) )
-               throw runtime_error( "unexpected missing old details marker in verify_blockchain_info" );
+            unsigned int next_height = from_string< unsigned int >( next_line );
 
-            had_old_details_marker = true;
+            if( block_height && next_height != block_height + 1 )
+               throw runtime_error( "unexpected block height " + to_string( next_height )
+                + " after previous block height " + to_string( block_height ) + " in verify_blockchain_info" );
+
+            block_height = next_height;
          }
-         else if( next_line == string( c_file_type_core_blockchain_info_details_new ) )
-            had_new_details_marker = true;
          else
          {
-            if( !had_new_details_marker )
-               hashes_of_block_hashes.push_back( next_line );
-            else
-               specific_block_hashes.push_back( next_line );
+            if( next_line.find( ':' ) == string::npos )
+               throw runtime_error( "unexpected missing signature from '" + next_line + "' in verify_blockchain_info" );
+
+            block_hashes_with_sigs.push_back( next_line );
          }
       }
 
-      if( !had_new_details_marker )
-         throw runtime_error( "unexpected missing new details marker in verify_blockchain_info" );
+      if( checkpoint_hash.empty( ) )
+         throw runtime_error( "unexpected missing checkpoint hash in verify_blockchain_info" );
 
       if( p_blockchain_info )
       {
          p_blockchain_info->chain_id = chain_id;
          p_blockchain_info->checkpoint_hash = checkpoint_hash;
-         p_blockchain_info->earlier_block_height_hash_of_hashes = hashes_of_block_hashes;
-         p_blockchain_info->all_specific_block_height_block_hashes = specific_block_hashes;
+         p_blockchain_info->block_hashes_with_sigs = block_hashes_with_sigs;
       }
    }
    else
@@ -2341,8 +2339,13 @@ void verify_blockchain_info( const string& content,
       chain_info cinfo;
       get_chain_info( cinfo, chain_id );
 
-      pos = content.find( ".h" );
-      unsigned int height = from_string< unsigned int >( content.substr( pos + 2 ) );
+      string chain_tag( chain + ".head" );
+      string chain_hash( tag_file_hash( chain_tag ) );
+
+      block_info binfo;
+      get_block_info( binfo, chain_hash );
+
+      unsigned int height = binfo.block_height;
 
       if( height <= cinfo.checkpoint_start_height )
          throw runtime_error( "cannot get blockchain info at height "
@@ -2361,28 +2364,29 @@ void verify_blockchain_info( const string& content,
        + "," + string( c_file_type_core_blockchain_info_header_height_prefix ) + to_string( height )
        + "," + string( c_file_type_core_blockchain_info_header_checkpoint_hash_prefix ) + checkpoint_hash;
 
-      blockchain_info_data += '\n' + string( c_file_type_core_blockchain_info_details_old );
-
       unsigned int next_height = cinfo.checkpoint_start_height + 1;
 
       while( true )
       {
-         string all_block_hashes = list_file_tags( "c" + chain_id + ".b" + to_string( next_height ) + "-*" );
+         string all_block_tags = list_file_tags( "c" + chain_id + ".b" + to_string( next_height ) + "-*" );
 
-         if( all_block_hashes.empty( ) )
+         if( all_block_tags.empty( ) )
             throw runtime_error( "no blocks found at height " + to_string( next_height ) + " in verify_blockchain_info" );
 
-         if( next_height < height )
-            blockchain_info_data += '\n' + sha256( all_block_hashes ).get_digest_as_string( );
-         else
+         blockchain_info_data += '\n' + to_string( next_height );
+
+         vector< string > block_tags;
+         split( all_block_tags, block_tags, '\n' );
+
+         for( size_t i = 0; i < block_tags.size( ); i++ )
          {
-            blockchain_info_data += '\n' + string( c_file_type_core_blockchain_info_details_new );
+            string next_tag( block_tags[ i ] );
+            string::size_type pos = next_tag.find( ".s" );
 
-            vector< string > block_hashes;
-            split( all_block_hashes, block_hashes, '\n' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected block tag format '" + next_tag + "' in verify_blockchain_info" );
 
-            for( size_t i = 0; i < block_hashes.size( ); i++ )
-               blockchain_info_data += '\n' + tag_file_hash( block_hashes[ i ] );
+            blockchain_info_data += '\n' + tag_file_hash( next_tag ) + ':' + next_tag.substr( pos + 2 );
          }
 
          if( ++next_height > height )
@@ -2390,7 +2394,11 @@ void verify_blockchain_info( const string& content,
       }
 
       if( p_extras )
-         p_extras->push_back( make_pair( blockchain_info_data, "c" + chain_id + ".info.h" + to_string( height ) ) );
+         p_extras->push_back( make_pair( blockchain_info_data, "c" + chain_id + ".info" ) );
+
+      // NOTE: If there was a previous info blob instance then it will be removed.
+      if( has_tag( "c" + chain_id + ".info" ) )
+         p_extras->push_back( make_pair( "", tag_file_hash( "c" + chain_id + ".info" ) ) );
    }
 }
 
@@ -2531,6 +2539,27 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
    }
 }
 
+bool is_block( const string& core_type )
+{
+   return ( core_type == string( c_file_type_core_block_object ) );
+}
+
+bool is_blockchain_info( const string& core_type )
+{
+   return ( core_type == string( c_file_type_core_blockchain_info_object ) );
+}
+
+void get_blockchain_info( const string& content, blockchain_info& bc_info )
+{
+   string::size_type pos = content.find( ':' );
+
+   if( pos == string::npos
+    || content.substr( 0, pos ) != string( c_file_type_core_blockchain_info_object ) )
+      throw runtime_error( "invalid content provided to get_blockchain_info" );
+
+   verify_blockchain_info( content.substr( pos + 1 ), 0, &bc_info );
+}
+
 string construct_new_block( const string& blockchain, const string& password, const string& account )
 {
    string acct( account );
@@ -2616,6 +2645,11 @@ string construct_new_block( const string& blockchain, const string& password, co
 #endif
 
    return data;
+}
+
+string construct_blob_for_block_content( const string& block_content, const string& block_signature )
+{
+   return string( c_file_type_str_core_blob ) + block_content + "\ns:" + block_signature;
 }
 
 string construct_account_info(
@@ -2775,5 +2809,22 @@ string construct_account_info(
        + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
        + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
    }    
+}
+
+string construct_blockchain_info_file( const string& blockchain )
+{
+   string data( c_file_type_str_core_blob );
+
+   data += string( c_file_type_core_blockchain_info_object ) + ":c" + blockchain + ".info";
+
+   vector< pair< string, string > > extras;
+
+   verify_core_file( data, true, &extras );
+
+   // NOTE: There is no need to create a raw file for the info "request"
+   // so only the extras are passed for raw file creation.
+   create_raw_file_with_extras( "", extras );
+
+   return tag_file_hash( "c" + blockchain + ".info" );
 }
 

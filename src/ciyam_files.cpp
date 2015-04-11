@@ -340,6 +340,8 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
       throw runtime_error( "invalid content for '" + tag_or_hash + "' (hash does not match hashed data)" );
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+
+   bool is_core = ( data[ 0 ] & c_file_type_val_extra_core );
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
    if( file_type != c_file_type_val_blob
@@ -367,15 +369,29 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
 
    string retval( indent, ' ' );
 
+   retval += '[';
+
+   if( is_core )
+      retval += "core-";
+
    if( file_type == c_file_type_val_blob )
-      retval += "[blob]";
+      retval += "blob]";
    else if( file_type == c_file_type_val_item )
-      retval += "[item]";
+      retval += "item]";
    else if( file_type == c_file_type_val_tree )
-      retval += "[tree]";
+      retval += "tree]";
 
    if( expansion == e_file_expansion_none )
+   {
       retval += " " + hash;
+
+      if( is_core )
+      {
+         string::size_type pos = final_data.find( ':' );
+         if( pos != string::npos )
+            retval += " " + final_data.substr( 1, pos - 1 );
+      }
+   }
    else
    {
       if( file_type == c_file_type_val_blob )
@@ -553,11 +569,13 @@ string create_raw_file_with_extras( const string& data,
 
    string retval;
 
-   if( g_total_files + extras.size( ) >= get_files_area_item_max_num( ) )
+   if( g_total_files + !data.empty( ) + extras.size( ) >= get_files_area_item_max_num( ) )
       throw runtime_error( "maximum file area item limit has been reached" );
 
    bool is_existing = false;
-   retval = create_raw_file( data, compress, p_tag, &is_existing );
+
+   if( !data.empty( ) )
+      retval = create_raw_file( data, compress, p_tag, &is_existing );
 
    // NOTE: It is being assumed that "extras" should not be larger than the main file
    // so that assuming the main file is created there should be no risk that the max.
@@ -863,28 +881,65 @@ string hash_with_nonce( const string& hash, const string& nonce )
 
 void fetch_file( const string& hash, tcp_socket& socket )
 {
+   string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash ) );
 
-   file_transfer( filename,
-    socket, e_ft_direction_send, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout,
-    c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+#ifndef _WIN32
+   int um = umask( 077 );
+#endif
+   try
+   {
+      // NOTE: As the file may end up being deleted whilst it is being
+      // transferred it is copied to a temporary file which is instead
+      // used for the transfer (and deleted afterwards).
+      if( !filename.empty( ) )
+      {
+         guard g( g_mutex );
+
+         if( !file_exists( filename ) )
+            throw runtime_error( "file '" + hash + "' was not found" );
+
+         file_copy( filename, tmp_filename );
+      }
+
+      file_transfer( tmp_filename,
+       socket, e_ft_direction_send, get_files_area_item_max_size( ),
+       c_response_okay_more, c_file_transfer_initial_timeout,
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+
+#ifndef _WIN32
+      umask( um );
+#endif
+      file_remove( tmp_filename );
+   }
+   catch( ... )
+   {
+#ifndef _WIN32
+      umask( um );
+#endif
+      file_remove( tmp_filename );
+
+      throw;
+   }
 }
 
 void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 {
-   guard g( g_mutex );
-
+   string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash, true ) );
 
-   bool existing = file_exists( filename );
+   bool existing = false;
    int64_t existing_bytes = 0;
 
-   if( existing )
-      existing_bytes = file_size( filename );
+   if( !filename.empty( ) )
+   {
+      guard g( g_mutex );
 
-   if( !existing && g_total_files >= get_files_area_item_max_num( ) )
-      throw runtime_error( "maximum file area item limit has been reached" );
+      existing = file_exists( filename );
+
+      if( existing )
+         existing_bytes = file_size( filename );
+   }
 
 #ifndef _WIN32
    int um = umask( 077 );
@@ -893,7 +948,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
    {
       session_file_buffer_access file_buffer;
 
-      file_transfer( filename,
+      file_transfer( tmp_filename,
        socket, e_ft_direction_receive, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ) );
@@ -906,7 +961,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 #ifdef ZLIB_SUPPORT
       if( is_compressed )
       {
-         unsigned long size = file_size( filename ) - 1;
+         unsigned long size = file_size( tmp_filename ) - 1;
          unsigned long usize = file_buffer.get_size( ) - size;
 
          if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
@@ -920,7 +975,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 
          if( !rc )
          {
-            file_remove( filename );
+            file_remove( tmp_filename );
             throw runtime_error( "invalid 'item' or 'tree' file" );
          }
       }
@@ -935,7 +990,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
          throw runtime_error( "invalid 'item' or 'tree' file" );
 
       sha256 test_hash;
-      test_hash.update( filename, true );
+      test_hash.update( tmp_filename, true );
 
       if( hash != lower( test_hash.get_digest_as_string( ) ) )
          throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
@@ -943,9 +998,23 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
 #ifndef _WIN32
       umask( um );
 #endif
+      if( rc )
+      {
+         guard g( g_mutex );
 
-      g_total_bytes -= existing_bytes;
-      g_total_bytes += file_size( filename );
+         if( !existing && g_total_files >= get_files_area_item_max_num( ) )
+            throw runtime_error( "maximum file area item limit has been reached" );
+
+         file_copy( tmp_filename, filename );
+
+         file_remove( tmp_filename );
+
+         if( !existing )
+            ++g_total_files;
+
+         g_total_bytes -= existing_bytes;
+         g_total_bytes += file_size( filename );
+      }
    }
    catch( ... )
    {
@@ -953,19 +1022,9 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       umask( um );
 #endif
 
-      file_remove( filename );
-
-      if( existing )
-      {
-         --g_total_files;
-         g_total_bytes -= existing_bytes;
-      }
-
+      file_remove( tmp_filename );
       throw;
    }
-
-   if( !existing )
-      ++g_total_files;
 
    string tag_name;
    if( p_tag )

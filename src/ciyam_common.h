@@ -88,6 +88,8 @@ enum special_var
    e_special_var_permissions,
    e_special_var_skip_update,
    e_special_var_update_fields,
+   e_special_var_peer_initiator,
+   e_special_var_peer_responder,
    e_special_var_check_if_changed,
    e_special_var_debug_blockchain,
    e_special_var_skip_after_fetch,

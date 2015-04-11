@@ -3386,7 +3386,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string seconds( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_timeout_seconds ) );
 
-         int val;
+         unsigned int val;
          if( !seconds.empty( ) )
          {
             val = atoi( seconds.c_str( ) );
