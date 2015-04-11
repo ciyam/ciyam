@@ -630,10 +630,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                if( !blockchain.empty( ) )
                {
-                  string tags( get_hash_tags( hash ) );
+                  string all_tags( get_hash_tags( hash ) );
+
+                  set< string > tags;
+                  split( all_tags, tags, '\n' );
+
                   string tag( "c" + blockchain + ".head" );
 
-                  if( tags.find( "\n" + tag ) == string::npos )
+                  if( !tags.count( tag ) )
                      throw runtime_error( "blockchain " + blockchain + " was not found" );
                }
             }
