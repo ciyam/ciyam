@@ -573,7 +573,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !has )
          {
-            send_okay_response = false;
             response = c_response_not_found;
 
             if( was_initial_state )
@@ -1012,7 +1011,9 @@ string socket_command_processor::get_cmd_and_args( )
                string blockchain_info_hash;
                socket_handler.chk_file( "c" + blockchain + ".info", &blockchain_info_hash );
 
-               if( !blockchain_info_hash.empty( ) )
+               if( blockchain_info_hash.empty( ) )
+                  socket_handler.state( ) = e_peer_state_waiting_for_get;
+               else
                {
                   needs_blockchain_info = false;
                   add_peer_file_hash_for_get( blockchain_info_hash );
