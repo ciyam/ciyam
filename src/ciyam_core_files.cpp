@@ -2385,7 +2385,8 @@ void verify_blockchain_info( const string& content,
             if( pos == string::npos )
                throw runtime_error( "unexpected block tag format '" + next_tag + "' in verify_blockchain_info" );
 
-            blockchain_info_data += '\n' + tag_file_hash( next_tag ) + ':' + next_tag.substr( pos + 2 );
+            blockchain_info_data += '\n' + tag_file_hash( next_tag )
+             + ':' + tag_name_to_base64( next_tag.substr( pos + 2 ) );
          }
 
          if( ++next_height > height )
