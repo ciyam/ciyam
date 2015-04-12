@@ -148,7 +148,7 @@ void process_file( const string& hash, const string& blockchain )
             try
             {
                verify_core_file( construct_blob_for_block_content(
-                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
+                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ), true, &extras );
 
                create_raw_file_with_extras( "", extras );
             }
