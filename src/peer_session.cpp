@@ -151,6 +151,8 @@ void process_file( const string& hash, const string& blockchain )
                 extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ), true, &extras );
 
                create_raw_file_with_extras( "", extras );
+
+               construct_blockchain_info_file( blockchain );
             }
             catch( ... )
             {
@@ -176,6 +178,8 @@ void process_file( const string& hash, const string& blockchain )
             if( !has_file( hash_with_sig.substr( 0, pos ) ) )
                add_peer_file_hash_for_get( hash_with_sig );
          }
+
+         delete_file( hash.substr( 0, pos ) );
       }
    }
 }
@@ -662,7 +666,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) )
+               if( !next_hash.empty( ) && !has_file( next_hash ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -670,7 +674,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   process_file( next_hash, blockchain );
                }
                else
+               {
                   socket_handler.get_hello( );
+
+                  if( !blockchain.empty( ) )
+                     socket_handler.set_needs_blockchain_info( true );
+               }
             }
             else
             {
@@ -787,7 +796,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) )
+               if( !next_hash.empty( ) && !has_file( next_hash ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -795,7 +804,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   process_file( next_hash, blockchain );
                }
                else
+               {
                   socket_handler.get_hello( );
+
+                  if( !blockchain.empty( ) )
+                     socket_handler.set_needs_blockchain_info( true );
+               }
             }
          }
       }
@@ -826,7 +840,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) )
+               if( !next_hash.empty( ) && !has_file( next_hash ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -1060,7 +1074,7 @@ string socket_command_processor::get_cmd_and_args( )
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) )
+               if( !next_hash.empty( ) && !has_file( next_hash ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -1068,7 +1082,12 @@ string socket_command_processor::get_cmd_and_args( )
                   process_file( next_hash, blockchain );
                }
                else
+               {
                   socket_handler.get_hello( );
+
+                  if( !blockchain.empty( ) )
+                     needs_blockchain_info = true;
+               }
             }
          }
       }
