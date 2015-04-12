@@ -666,7 +666,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) && !has_file( next_hash ) )
+               if( !next_hash.empty( ) && !has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -796,7 +796,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) && !has_file( next_hash ) )
+               if( !next_hash.empty( ) && !has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -840,7 +840,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) && !has_file( next_hash ) )
+               if( !next_hash.empty( ) && !has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
@@ -1074,7 +1074,7 @@ string socket_command_processor::get_cmd_and_args( )
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
-               if( !next_hash.empty( ) && !has_file( next_hash ) )
+               if( !next_hash.empty( ) && !has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
                {
                   socket_handler.get_file( next_hash );
                   pop_next_peer_file_hash_to_get( );
