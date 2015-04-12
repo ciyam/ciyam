@@ -647,7 +647,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_reponse( response, true );
             response.erase( );
 
-            if( socket_handler.state( ) == e_peer_state_waiting_for_get )
+            if( socket_handler.get_needs_blockchain_info( ) )
+            {
+               string blockchain_info_hash;
+               socket_handler.chk_file( "c" + blockchain + ".info", &blockchain_info_hash );
+
+               if( !blockchain_info_hash.empty( ) )
+               {
+                  socket_handler.set_needs_blockchain_info( false );
+                  add_peer_file_hash_for_get( blockchain_info_hash );
+               }
+            }
+            else if( socket_handler.state( ) == e_peer_state_waiting_for_get )
             {
                string next_hash( top_next_peer_file_hash_to_get( ) );
 
@@ -696,17 +707,37 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_responder( ) )
          {
-            string next_hash( top_next_peer_file_hash_to_put( ) );
+            if( socket_handler.get_needs_blockchain_info( ) )
+            {
+               string blockchain_info_hash;
+               socket_handler.chk_file( "c" + blockchain + ".info", &blockchain_info_hash );
 
-            bool had_hash = !next_hash.empty( );
-
-            if( next_hash.empty( ) || !has_file( next_hash ) )
-               socket_handler.put_hello( );
+               if( !blockchain_info_hash.empty( ) )
+               {
+                  socket_handler.set_needs_blockchain_info( false );
+                  add_peer_file_hash_for_get( blockchain_info_hash );
+               }
+            }
+            // KLUDGE: For now just randomly perform a "chk", "pip" or a "put" (this should instead be
+            // based upon the actual needs of the peer).
+            else if( rand( ) % 5 == 0 )
+               socket_handler.chk_file( socket_handler.prior_put( ) );
+            else if( rand( ) % 5 == 0 )
+               socket_handler.pip_peer( "127.0.0.1" );
             else
-               socket_handler.put_file( next_hash );
+            {
+               string next_hash( top_next_peer_file_hash_to_put( ) );
 
-            if( had_hash )
-               pop_next_peer_file_hash_to_put( );
+               bool had_hash = !next_hash.empty( );
+
+               if( next_hash.empty( ) || !has_file( next_hash ) )
+                  socket_handler.put_hello( );
+               else
+                  socket_handler.put_file( next_hash );
+
+               if( had_hash )
+                  pop_next_peer_file_hash_to_put( );
+            }
          }
       }
       else if( command == c_cmd_peer_session_put )

@@ -2260,8 +2260,7 @@ void verify_blockchain_info( const string& content,
                   has_height = true;
                   height = from_string< unsigned int >( remainder );
 
-                  if( height <= cinfo.checkpoint_start_height
-                   || list_file_tags( "c" + chain_id + ".b" + to_string( height ) ).empty( ) )
+                  if( height <= cinfo.checkpoint_start_height )
                      throw runtime_error( "invalid height "
                       + to_string( height ) + " for chain '" + chain_id + "' in verify_blockchain_info" );
                }
