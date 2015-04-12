@@ -774,6 +774,7 @@ string get_hash_tags( const string& hash )
    guard g( g_mutex );
 
    string retval;
+   set< string > tags_found;
 
    multimap< string, string >::iterator i = g_hash_tags.lower_bound( hash );
 
@@ -782,10 +783,15 @@ string get_hash_tags( const string& hash )
       if( i->first != hash )
          break;
 
+      tags_found.insert( i->second );
+   }
+
+   for( set< string >::iterator si = tags_found.begin( ); si != tags_found.end( ); ++si )
+   {
       if( !retval.empty( ) )
          retval += '\n';
 
-      retval += i->second;
+      retval += *si;
    }
 
    return retval;
