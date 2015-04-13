@@ -1040,29 +1040,32 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       tag_file( tag_name, hash );
 }
 
-void delete_file( const string& hash )
+void delete_file( const string& hash, bool even_if_tagged )
 {
    guard g( g_mutex );
 
    string filename( construct_file_name_from_hash( hash ) );
 
-   if( !file_exists( filename ) )
-      throw runtime_error( "file '" + filename + "' not found" );
+   if( even_if_tagged || get_hash_tags( hash ).empty( ) )
+   {
+      if( !file_exists( filename ) )
+         throw runtime_error( "file '" + filename + "' not found" );
 
-   string tags = get_hash_tags( hash );
+      string tags = get_hash_tags( hash );
 
-   vector< string > all_tags;
-   split( tags, all_tags, '\n' );
+      vector< string > all_tags;
+      split( tags, all_tags, '\n' );
 
-   for( size_t i = 0; i < all_tags.size( ); i++ )
-      tag_del( all_tags[ i ] );
+      for( size_t i = 0; i < all_tags.size( ); i++ )
+         tag_del( all_tags[ i ] );
 
-   int64_t existing_bytes = file_size( filename );
+      int64_t existing_bytes = file_size( filename );
 
-   file_remove( filename );
+      file_remove( filename );
 
-   --g_total_files;
-   g_total_bytes -= existing_bytes;
+      --g_total_files;
+      g_total_bytes -= existing_bytes;
+   }   
 }
 
 void fetch_temp_file( const string& name, tcp_socket& socket )

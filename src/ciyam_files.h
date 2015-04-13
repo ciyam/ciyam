@@ -66,7 +66,7 @@ std::string CLASS_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const
 void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socket, const char* p_tag = 0 );
 
-void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash );
+void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
 
 void CLASS_BASE_DECL_SPEC fetch_temp_file( const std::string& name, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& socket );

@@ -163,23 +163,31 @@ void process_file( const string& hash, const string& blockchain )
       }
       else if( is_blockchain_info( core_type ) )
       {
-         string content( extract_file( hash.substr( 0, pos ), "" ) );
-
-         blockchain_info bc_info;
-         get_blockchain_info( content, bc_info );
-
-         // NOTE: Fetch any blocks that have not already been stored locally.
-         for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
+         try
          {
-            string hash_with_sig( bc_info.block_hashes_with_sigs[ i ] );
+            string content( extract_file( hash.substr( 0, pos ), "" ) );
 
-            string::size_type pos = hash_with_sig.find( ':' );
+            blockchain_info bc_info;
+            get_blockchain_info( content, bc_info );
 
-            if( !has_file( hash_with_sig.substr( 0, pos ) ) )
-               add_peer_file_hash_for_get( hash_with_sig );
+            // NOTE: Fetch any blocks that have not already been stored locally.
+            for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
+            {
+               string hash_with_sig( bc_info.block_hashes_with_sigs[ i ] );
+
+               string::size_type pos = hash_with_sig.find( ':' );
+
+               if( !has_file( hash_with_sig.substr( 0, pos ) ) )
+                  add_peer_file_hash_for_get( hash_with_sig );
+            }
+
+            delete_file( hash.substr( 0, pos ), false );
          }
-
-         delete_file( hash.substr( 0, pos ) );
+         catch( ... )
+         {
+            delete_file( hash.substr( 0, pos ), false );
+            throw;
+         }
       }
    }
 }
