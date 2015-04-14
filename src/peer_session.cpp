@@ -755,19 +755,19 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
 
+         if( !blockchain.empty( ) && tag_or_hash == "c" + blockchain + ".info" )
+         {
+            if( !socket_handler.get_blockchain_info( ).second.empty( ) )
+               file_remove( socket_handler.get_blockchain_info( ).second );
+
+            socket_handler.get_blockchain_info( ).first = hash;
+            socket_handler.get_blockchain_info( ).second = "~" + uuid( ).as_string( );
+
+            copy_raw_file( hash, socket_handler.get_blockchain_info( ).second );
+         }
+
          if( !was_initial_state && socket_handler.get_is_responder( ) )
          {
-            if( tag_or_hash == "c" + blockchain + ".info" )
-            {
-               if( !socket_handler.get_blockchain_info( ).second.empty( ) )
-                  file_remove( socket_handler.get_blockchain_info( ).second );
-
-               socket_handler.get_blockchain_info( ).first = hash;
-               socket_handler.get_blockchain_info( ).second = "~" + uuid( ).as_string( );
-
-               copy_raw_file( hash, socket_handler.get_blockchain_info( ).second );
-            }
-
             handler.issue_command_reponse( response, true );
             response.erase( );
 
