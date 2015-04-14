@@ -68,6 +68,8 @@ void CLASS_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socke
 
 void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
 
+void CLASS_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_filename );
+
 void CLASS_BASE_DECL_SPEC fetch_temp_file( const std::string& name, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& socket );
 
