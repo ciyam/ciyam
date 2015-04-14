@@ -133,9 +133,11 @@ void process_file( const string& hash, const string& blockchain )
    vector< string > info_parts;
    split( file_info, info_parts, ' ' );
 
+
    // NOTE: A core file will return three parts in the form: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
-   if( info_parts.size( ) == 3 )
+   if( info_parts.size( ) == 3 && hash.substr( 0, pos )
+    != get_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) )
    {
       string core_type( info_parts[ 2 ] );
 
@@ -169,6 +171,9 @@ void process_file( const string& hash, const string& blockchain )
 
             blockchain_info bc_info;
             get_blockchain_info( content, bc_info );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
 
             // NOTE: Fetch any blocks that have not already been stored locally.
             for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
@@ -235,6 +240,8 @@ class socket_command_handler : public command_handler
 
    const string& get_blockchain( ) const { return blockchain; }
 
+   pair< string, string >& get_blockchain_info( ) { return blockchain_info; }
+
    string& prior_put( ) { return prior_put_hash; }
 
    void get_hello( );
@@ -294,6 +301,7 @@ class socket_command_handler : public command_handler
    bool needs_blockchain_info;
 
    string blockchain;
+   pair< string, string > blockchain_info;
 
    string last_command;
    string next_command;
@@ -479,12 +487,14 @@ void socket_command_handler::issue_cmd_for_peer( )
       if( !blockchain_info_hash.empty( ) )
       {
          set_needs_blockchain_info( false );
-         add_peer_file_hash_for_get( blockchain_info_hash );
+
+         if( !has_file( blockchain_info_hash ) )
+            add_peer_file_hash_for_get( blockchain_info_hash );
       }
    }
    // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
    // based upon the actual needs of the peer).
-   else if( rand( ) % 5 == 0 )
+   else if( !prior_put( ).empty( ) && rand( ) % 5 == 0 )
       chk_file( prior_put( ) );
    else if( rand( ) % 5 == 0 )
       pip_peer( "127.0.0.1" );
@@ -742,6 +752,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !was_initial_state && socket_handler.get_is_responder( ) )
          {
+            if( tag_or_hash == "c" + blockchain + ".info" )
+            {
+               socket_handler.get_blockchain_info( ).first = hash;
+               socket_handler.get_blockchain_info( ).second = extract_file( hash, "" );
+            }
+
             handler.issue_command_reponse( response, true );
             response.erase( );
 
@@ -760,7 +776,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
 
-         fetch_file( hash, socket );
+         if( hash == socket_handler.get_blockchain_info( ).first )
+         {
+            string temp_file_name( "~" + uuid( ).as_string( ) );
+            write_file( temp_file_name, socket_handler.get_blockchain_info( ).second );
+
+            fetch_temp_file( temp_file_name, socket );
+         }
+         else
+            fetch_file( hash, socket );
+
          increment_peer_files_downloaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
@@ -809,10 +834,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string addr( get_parm_val( parameters, c_cmd_parm_peer_session_pip_addr ) );
 
-         if( socket_handler.get_last_command( ) == c_cmd_peer_session_pip )
-            throw runtime_error( "invalid state for pip" );
-         else
-            response = "127.0.0.1"; // KLUDGE: This should return an actual peer IP address.
+         response = "127.0.0.1"; // KLUDGE: This should return an actual peer IP address.
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put )

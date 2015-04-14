@@ -97,6 +97,7 @@ enum special_var
    e_special_var_package_type_path,
    e_special_var_attached_file_path,
    e_special_var_core_block_conflict,
+   e_special_var_blockchain_info_hash,
    e_special_var_secondary_validation,
    e_special_var_total_child_field_in_parent
 };

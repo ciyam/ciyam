@@ -223,6 +223,7 @@ const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_core_block_conflict = "@core_block_conflict";
+const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
@@ -5687,6 +5688,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_core_block_conflict:
       s = string( c_special_variable_core_block_conflict );
+      break;
+
+      case e_special_var_blockchain_info_hash:
+      s = string( c_special_variable_blockchain_info_hash );
       break;
 
       case e_special_var_secondary_validation:
