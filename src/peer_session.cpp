@@ -755,7 +755,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
 
-         if( !blockchain.empty( ) && tag_or_hash == "c" + blockchain + ".info" )
+         if( has && !blockchain.empty( ) && tag_or_hash == "c" + blockchain + ".info" )
          {
             if( !socket_handler.get_blockchain_info( ).second.empty( ) )
                file_remove( socket_handler.get_blockchain_info( ).second );
