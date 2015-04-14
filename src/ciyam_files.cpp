@@ -1068,6 +1068,18 @@ void delete_file( const string& hash, bool even_if_tagged )
    }   
 }
 
+void copy_raw_file( const string& hash, const string& dest_filename )
+{
+   guard g( g_mutex );
+
+   string filename( construct_file_name_from_hash( hash ) );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( "file '" + filename + "' not found" );
+
+   file_copy( filename, dest_filename );
+}
+
 void fetch_temp_file( const string& name, tcp_socket& socket )
 {
    file_transfer( name, socket,

@@ -133,7 +133,6 @@ void process_file( const string& hash, const string& blockchain )
    vector< string > info_parts;
    split( file_info, info_parts, ' ' );
 
-
    // NOTE: A core file will return three parts in the form: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
    if( info_parts.size( ) == 3 && hash.substr( 0, pos )
@@ -218,6 +217,12 @@ class socket_command_handler : public command_handler
       is_responder = ( session_state == e_peer_state_responder );
 
       last_issued_was_put = !is_responder;
+   }
+
+   ~socket_command_handler( )
+   {
+      if( !blockchain_info.second.empty( ) )
+         file_remove( blockchain_info.second );
    }
 
 #ifdef SSL_SUPPORT
@@ -754,8 +759,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             if( tag_or_hash == "c" + blockchain + ".info" )
             {
+               if( !socket_handler.get_blockchain_info( ).second.empty( ) )
+                  file_remove( socket_handler.get_blockchain_info( ).second );
+
                socket_handler.get_blockchain_info( ).first = hash;
-               socket_handler.get_blockchain_info( ).second = extract_file( hash, "" );
+               socket_handler.get_blockchain_info( ).second = "~" + uuid( ).as_string( );
+
+               copy_raw_file( hash, socket_handler.get_blockchain_info( ).second );
             }
 
             handler.issue_command_reponse( response, true );
@@ -776,15 +786,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
 
-         if( hash == socket_handler.get_blockchain_info( ).first )
-         {
-            string temp_file_name( "~" + uuid( ).as_string( ) );
-            write_file( temp_file_name, socket_handler.get_blockchain_info( ).second );
-
-            fetch_temp_file( temp_file_name, socket );
-         }
-         else
+         if( hash != socket_handler.get_blockchain_info( ).first )
             fetch_file( hash, socket );
+         else
+         {
+            fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket );
+
+            file_remove( socket_handler.get_blockchain_info( ).second );
+
+            socket_handler.get_blockchain_info( ).first.erase( );
+            socket_handler.get_blockchain_info( ).second.erase( );
+         }
 
          increment_peer_files_downloaded( file_bytes( hash ) );
 
