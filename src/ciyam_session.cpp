@@ -1388,7 +1388,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         response = create_raw_file_with_extras( data, extras, !is_full, tag.c_str( ) );
+         response = create_raw_file_with_extras( is_core ? "" : data, extras, !is_full, tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
@@ -1471,7 +1471,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_password ) );
          string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_account ) );
 
-         response = construct_new_block( blockchain, password, account );
+         response = construct_new_block( blockchain, password, account, false );
       }
       else if( command == c_cmd_ciyam_session_peer_account_info )
       {

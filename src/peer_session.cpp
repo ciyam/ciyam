@@ -59,6 +59,8 @@ const int c_max_line_length = 500;
 
 const int c_minimum_port_num = 1000;
 
+const int c_new_block_wait_passes = 5;
+
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
 
@@ -98,28 +100,28 @@ inline void issue_warning( const string& message )
    TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
 }
 
-string mint_next_block( const string& blockchain )
+string mint_new_block( const string& blockchain, new_block_info& new_block )
 {
-   string hash;
+   string data;
 
    string password( get_system_variable( "@" + blockchain + "_pwd" ) );
 
    if( !password.empty( ) )
-   {
-      string data( construct_new_block( blockchain, password ) );
+      data = construct_new_block( blockchain, password, &new_block );
 
-      if( !data.empty( ) )
-      {
-         data = string( c_file_type_str_core_blob ) + data;
+   return data;
+}
 
-         vector< pair< string, string > > extras;
+string store_new_block( const string& blockchain, const string& data )
+{
+   string hash;
 
-         verify_core_file( data, true, &extras );
-         create_raw_file_with_extras( "", extras );
+   vector< pair< string, string > > extras;
 
-         hash = construct_blockchain_info_file( blockchain );
-      }
-   }
+   verify_core_file( data, true, &extras );
+   create_raw_file_with_extras( "", extras );
+
+   hash = construct_blockchain_info_file( blockchain );
 
    return hash;
 }
@@ -787,18 +789,20 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             hash = tag_file_hash( tag_or_hash );
 
          if( hash != socket_handler.get_blockchain_info( ).first )
+         {
             fetch_file( hash, socket );
+            increment_peer_files_uploaded( file_bytes( hash ) );
+         }
          else
          {
             fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket );
+            increment_peer_files_uploaded( file_size( socket_handler.get_blockchain_info( ).second ) );
 
             file_remove( socket_handler.get_blockchain_info( ).second );
 
             socket_handler.get_blockchain_info( ).first.erase( );
             socket_handler.get_blockchain_info( ).second.erase( );
          }
-
-         increment_peer_files_downloaded( file_bytes( hash ) );
 
          socket_handler.state( ) = e_peer_state_waiting_for_put;
 
@@ -820,7 +824,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( !has_file( hash ) )
          {
             store_file( hash, socket );
-            increment_peer_files_uploaded( file_bytes( hash ) );
+            increment_peer_files_downloaded( file_bytes( hash ) );
          }
          else
          {
@@ -952,10 +956,12 @@ class socket_command_processor : public command_processor
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
+    new_block_wait( 0 ),
     is_local( is_local ),
     is_responder( is_responder ),
     needs_blockchain_info( false )
    {
+      peer_special_variable = get_special_var_name( e_special_var_peer );
       initiator_special_variable = get_special_var_name( e_special_var_peer_initiator );
       responder_special_variable = get_special_var_name( e_special_var_peer_responder );
 
@@ -969,6 +975,8 @@ class socket_command_processor : public command_processor
          value = socket_handler.get_blockchain( );
       }
 
+      set_session_variable( peer_special_variable, value );
+
       if( !is_responder )
          set_session_variable( initiator_special_variable, value );
       else
@@ -979,9 +987,13 @@ class socket_command_processor : public command_processor
    tcp_socket& socket;
    command_handler& handler;
 
-   string block_info_hash;
+   string peer_special_variable;
    string initiator_special_variable;
    string responder_special_variable;
+
+   int new_block_wait;
+   string new_block_data;
+   new_block_info new_block;
 
    bool is_local;
    bool is_responder;
@@ -1011,24 +1023,40 @@ string socket_command_processor::get_cmd_and_args( )
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
 
-      if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
+      if( !g_server_shutdown && !is_condemned_session( ) )
       {
-         if( !block_info_hash.empty( ) )
-            block_info_hash.erase( );
-         else if( !blockchain.empty( )
-          && is_first_using_session_variable( initiator_special_variable, blockchain ) )
+         if( !new_block_data.empty( ) )
          {
-            // FUTURE: No new block should be minted if receiving blocks from
-            // other peers at the same height.
-            string new_block_info_hash( mint_next_block( blockchain ) );
-
-            if( !new_block_info_hash.empty( ) && new_block_info_hash != block_info_hash )
+            if( !new_block.can_mint )
+               new_block_data.erase( );
+            else
             {
-               block_info_hash = new_block_info_hash;
-               add_peer_file_hash_for_put_for_all_peers( block_info_hash, &blockchain, &responder_special_variable );
+               if( !new_block.is_optimal )
+               {
+                  if( new_block_wait > 0 )
+                     --new_block_wait;
+               }
+
+               if( ( !new_block_wait || new_block.is_optimal )
+                && !has_better_block( blockchain, new_block.height, new_block.weight ) )
+               {
+                  string block_info_hash( store_new_block( blockchain, new_block_data ) );
+                  add_peer_file_hash_for_put_for_all_peers( block_info_hash, &blockchain, &peer_special_variable );
+
+                  new_block_data.erase( );
+               }
             }
          }
+         else if( !blockchain.empty( )
+          && is_first_using_session_variable( peer_special_variable, blockchain ) )
+         {
+            new_block_wait = c_new_block_wait_passes;
+            new_block_data = mint_new_block( blockchain, new_block );
+         }
+      }
 
+      if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
+      {
          if( socket_handler.state( ) == e_peer_state_waiting_for_put )
          {
             string response;
@@ -1405,12 +1433,14 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
 
 void create_initial_peer_sessions( )
 {
-   map< string, int > initial_ips;
+   map< string, string > initial_ips;
    get_initial_peer_ips( initial_ips );
 
-   for( map< string, int >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
+   for( map< string, string >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
    {
       string ip_addr( i->first );
+
+      int port = get_blockchain_port( i->second );
 
       if( !get_is_accepted_peer_id_addr( ip_addr ) )
          continue;
@@ -1426,12 +1456,12 @@ void create_initial_peer_sessions( )
 
       if( ap_socket->open( ) )
       {
-         ip_address address( ip_addr.c_str( ), i->second );
+         ip_address address( ip_addr.c_str( ), port );
 
          if( ap_socket->connect( address ) )
          {
             peer_session* p_session = construct_session( false,
-             ap_socket, address.get_addr_string( ) + "=" + get_blockchain_for_port( i->second ) );
+             ap_socket, address.get_addr_string( ) + "=" + i->second );
 
             if( p_session )
                p_session->start( );

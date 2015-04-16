@@ -102,7 +102,7 @@ std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use
 std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );
 
-void CIYAM_BASE_DECL_SPEC get_initial_peer_ips( std::map< std::string, int >& ips );
+void CIYAM_BASE_DECL_SPEC get_initial_peer_ips( std::map< std::string, std::string >& ips );
 
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_id_addr( const std::string& ip_addr );
