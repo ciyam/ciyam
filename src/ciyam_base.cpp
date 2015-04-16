@@ -182,6 +182,7 @@ const char* const c_special_variable_file = "@file";
 const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_name = "@name";
 const char* const c_special_variable_none = "@none";
+const char* const c_special_variable_peer = "@peer";
 const char* const c_special_variable_async = "@async";
 const char* const c_special_variable_class = "@class";
 const char* const c_special_variable_embed = "@embed";
@@ -3135,7 +3136,7 @@ set< string > g_rejected_peer_ip_addrs;
 map< int, string > g_blockchains;
 map< string, int > g_blockchain_ids;
 
-map< string, int > g_initial_peer_ips;
+map< string, string > g_initial_peer_ips;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -3328,7 +3329,7 @@ void read_server_configuration( )
             if( pos == string::npos )
                throw runtime_error( "invalid format '" + next + "' for peer_ips_direct entry" );
 
-            g_initial_peer_ips.insert( make_pair( next.substr( 0, pos ), atoi( next.substr( pos + 1 ).c_str( ) ) ) );
+            g_initial_peer_ips.insert( make_pair( next.substr( 0, pos ), next.substr( pos + 1 ) ) );
          }
       }
 
@@ -4281,7 +4282,7 @@ string get_web_root( )
    return g_web_root;
 }
 
-void get_initial_peer_ips( map< string, int >& ips )
+void get_initial_peer_ips( map< string, string >& ips )
 {
    ips = g_initial_peer_ips;
 }
@@ -5524,6 +5525,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_none:
       s = string( c_special_variable_none );
+      break;
+
+      case e_special_var_peer:
+      s = string( c_special_variable_peer );
       break;
 
       case e_special_var_async:

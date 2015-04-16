@@ -56,6 +56,7 @@ enum special_var
    e_special_var_loop,
    e_special_var_name,
    e_special_var_none,
+   e_special_var_peer,
    e_special_var_async,
    e_special_var_class,
    e_special_var_embed,

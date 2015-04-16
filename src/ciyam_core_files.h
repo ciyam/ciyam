@@ -11,13 +11,25 @@
 #     include <vector>
 #  endif
 
-#  include "macros.h"
+#  include "ptypes.h"
 
 #  ifdef CIYAM_BASE_IMPL
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_EXPORT
 #  else
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
+
+struct new_block_info
+{
+   new_block_info( ) : can_mint( false ), weight( 0 ), is_optimal( false ), height( 0 ) { }
+
+   bool can_mint;
+
+   uint64_t weight;
+   bool is_optimal;
+
+   unsigned long height;
+};
 
 struct blockchain_info
 {
@@ -45,13 +57,17 @@ bool CLASS_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
 
 void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
 
+bool CLASS_BASE_DECL_SPEC has_better_block(
+ const std::string& blockchain, unsigned long height, uint64_t weight );
+
 std::string CLASS_BASE_DECL_SPEC construct_new_block(
- const std::string& blockchain, const std::string& password, const std::string& account );
+ const std::string& blockchain, const std::string& password,
+ const std::string& account, bool use_core_file_format = true, new_block_info* p_new_block_info = 0 );
 
 inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
- const std::string& blockchain, const std::string& password )
+ const std::string& blockchain, const std::string& password, new_block_info* p_new_block_info = 0 )
 {
-   return construct_new_block( blockchain, password, "" );
+   return construct_new_block( blockchain, password, "", true, p_new_block_info );
 }
 
 std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
@@ -59,7 +75,7 @@ std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
 
 std::string CLASS_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
- unsigned int exp, const std::string& account, account_key_info* p_key_info = 0 );
+ unsigned int exp, const std::string& account, account_key_info* p_key_info = 0, uint64_t* p_balance = 0 );
 
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 

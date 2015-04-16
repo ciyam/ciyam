@@ -105,7 +105,7 @@ string generate_blockchain_script( const string& chain_meta,
    string root_pub_key( root_priv_key.get_public( true, true ) );
 
    string script( ".session_variable @debug_blockchain 1\n" );
-   script += ".file_raw -core -full blob ";
+   script += ".file_raw -core blob ";
 
    string header( "blk:a=" + to_string( root_id ) + ",h=0,cm=r:" + chain_meta + ",pk=" + root_pub_key );
 
@@ -156,7 +156,6 @@ string generate_blockchain_script( const string& chain_meta,
    }
 
    script += "\ns:" + root_priv_key.construct_signature( validate, true ) + '\n';
-   script += ".file_kill %OUTPUT%\n";
 
    sha256 hash( string( c_file_type_str_core_blob ) + validate );
 
@@ -250,10 +249,8 @@ string generate_blockchain_script( const string& chain_meta,
          else
             last_tx_hashes.push_back( tx_hash );
 
-         script += ".file_raw -core -full blob " + tx_data
+         script += ".file_raw -core blob " + tx_data
           + "\ns:" + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
-
-         script += ".file_kill %OUTPUT%\n";
 
          string previous_block( block_hash );
 
@@ -383,8 +380,7 @@ string generate_blockchain_script( const string& chain_meta,
 
          data += "\\n\\";
 
-         script += ".file_raw -core -full blob " + data + "\ns:" + sign_key.construct_signature( validate, true ) + '\n';
-         script += ".file_kill %OUTPUT%\n";
+         script += ".file_raw -core blob " + data + "\ns:" + sign_key.construct_signature( validate, true ) + '\n';
       }
 
       script += "#height " + to_string( i ) + "\n";

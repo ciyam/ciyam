@@ -27,7 +27,6 @@
 #include "regex.h"
 #include "base64.h"
 #include "config.h"
-#include "ptypes.h"
 #include "sha256.h"
 #include "threads.h"
 #include "utilities.h"
@@ -2560,8 +2559,50 @@ void get_blockchain_info( const string& content, blockchain_info& bc_info )
    verify_blockchain_info( content.substr( pos + 1 ), 0, &bc_info );
 }
 
-string construct_new_block( const string& blockchain, const string& password, const string& account )
+bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight )
 {
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-" ) );
+
+   if( !all_tags.empty( ) )
+   {
+      vector< string > tags;
+      split( all_tags, tags, '\n' );
+
+      for( size_t i = 0; i < tags.size( ); i++ )
+      {
+         string next_tag( tags[ i ] );
+
+         string::size_type pos = next_tag.find( ".s" );
+
+         if( pos != string::npos )
+            next_tag.erase( pos );
+
+         pos = next_tag.find( "-" );
+         if( pos != string::npos )
+         {
+            uint64_t next_weight = from_string< uint64_t >( next_tag.substr( pos + 1 ) );
+
+            if( next_weight < weight )
+            {
+               retval = true;
+               break;
+            }
+         }
+      }
+   }
+
+   return retval;
+}
+
+string construct_new_block( const string& blockchain,
+ const string& password, const string& account, bool use_core_file_format, new_block_info* p_new_block_info )
+{
+   guard g( g_mutex );
+
    string acct( account );
    string accts_file;
 
@@ -2581,8 +2622,9 @@ string construct_new_block( const string& blockchain, const string& password, co
    if( acct.empty( ) )
       chain.erase( );
 
+   uint64_t balance = 0;
    account_key_info key_info;
-   string account_id( construct_account_info( chain, password, c_default_exp, acct, &key_info ) );
+   string account_id( construct_account_info( chain, password, c_default_exp, acct, &key_info, &balance ) );
 
    string head_hash;
    unsigned long height = 0;
@@ -2601,6 +2643,22 @@ string construct_new_block( const string& blockchain, const string& password, co
       weight = get_expected_weight( binfo.minter_hash, from_string< uint64_t >( account_id ), height );
 
       total_weight = binfo.total_weight + weight;
+
+      if( p_new_block_info )
+      {
+         chain_info cinfo;
+         get_chain_info( cinfo, chain );
+
+         p_new_block_info->height = height;
+         p_new_block_info->weight = weight;
+
+         p_new_block_info->can_mint = ( balance > cinfo.mint_charge );
+
+         if( !cinfo.checkpoint_tolerance || weight < cinfo.checkpoint_tolerance )
+            p_new_block_info->is_optimal = true;
+         else
+            p_new_block_info->is_optimal = false;
+      }
    }
 
    string data( "blk:a=" + ( chain.empty( ) ? account_id : chain ) );
@@ -2644,6 +2702,9 @@ string construct_new_block( const string& blockchain, const string& password, co
    data += "\ns:" + priv_key.construct_signature( data, true );
 #endif
 
+   if( use_core_file_format )
+      data = string( c_file_type_str_core_blob ) + data;
+
    return data;
 }
 
@@ -2654,8 +2715,10 @@ string construct_blob_for_block_content( const string& block_content, const stri
 
 string construct_account_info(
  const string& blockchain, const string& password,
- unsigned int exp, const string& account, account_key_info* p_key_info )
+ unsigned int exp, const string& account, account_key_info* p_key_info, uint64_t* p_balance )
 {
+   guard g( g_mutex );
+
    string account_id( account );
 
    string last_block_hash;
@@ -2674,6 +2737,9 @@ string construct_account_info(
       get_account_info( ainfo, "c" + blockchain + ".a" + account_id );
 
       exponent = ainfo.exp;
+
+      if( p_balance )
+         *p_balance = ainfo.balance;
 
       last_block_hash = base64::decode( ainfo.block_hash );
       last_trans_hash = base64::decode( ainfo.transaction_hash );
@@ -2813,6 +2879,8 @@ string construct_account_info(
 
 string construct_blockchain_info_file( const string& blockchain )
 {
+   guard g( g_mutex );
+
    string data( c_file_type_str_core_blob );
 
    data += string( c_file_type_core_blockchain_info_object ) + ":c" + blockchain + ".info";
