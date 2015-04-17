@@ -3243,11 +3243,11 @@ void read_server_configuration( )
 
       string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
       if( !ip_addrs.empty( ) )
-         split( ip_addrs, g_accepted_ip_addrs );
+         split( ip_addrs, g_accepted_ip_addrs, ' ' );
 
       string na_addrs( reader.read_opt_attribute( c_attribute_na_addrs ) );
       if( !na_addrs.empty( ) )
-         split( na_addrs, g_rejected_ip_addrs );
+         split( na_addrs, g_rejected_ip_addrs, ' ' );
 
       g_reg_key = upper( reader.read_opt_attribute( c_attribute_reg_key ) );
 

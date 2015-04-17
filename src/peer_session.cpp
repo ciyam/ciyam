@@ -59,7 +59,7 @@ const int c_max_line_length = 500;
 
 const int c_minimum_port_num = 1000;
 
-const int c_new_block_wait_passes = 5;
+const int c_new_block_wait_passes = 6;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -1031,20 +1031,22 @@ string socket_command_processor::get_cmd_and_args( )
                new_block_data.erase( );
             else
             {
-               if( !new_block.is_optimal )
+               if( new_block_wait > 0 )
                {
-                  if( new_block_wait > 0 )
+                  if( !new_block.is_optimal )
                      --new_block_wait;
+                  else
+                     new_block_wait -= 2;
                }
-
-               if( ( !new_block_wait || new_block.is_optimal )
-                && !has_better_block( blockchain, new_block.height, new_block.weight ) )
+               else if( !has_better_block( blockchain, new_block.height, new_block.weight ) )
                {
                   string block_info_hash( store_new_block( blockchain, new_block_data ) );
                   add_peer_file_hash_for_put_for_all_peers( block_info_hash, &blockchain, &peer_special_variable );
 
                   new_block_data.erase( );
                }
+               else
+                  new_block_data.erase( );
             }
          }
          else if( !blockchain.empty( )

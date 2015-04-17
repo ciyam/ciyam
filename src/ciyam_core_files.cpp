@@ -2270,29 +2270,6 @@ void verify_blockchain_info( const string& content,
 
                   has_checkpoint_hash = true;
                   checkpoint_hash = remainder;
-
-                  string tag( get_hash_tags( checkpoint_hash ) );
-
-                  bool valid = true;
-                  string::size_type pos = tag.find( '\n' );
-
-                  // NOTE: If more than one tag is found then the hash should be that of the root block.
-                  if( pos != string::npos )
-                  {
-                     tag.erase( pos );
-                     if( tag != "c" + chain_id + ".b0" )
-                        valid = false;
-                  }
-                  else
-                  {
-                     pos = tag.find( "c" + chain_id + ".checkpoint.h" );
-                     if( pos == string::npos )
-                        valid = false;
-                  }
-
-                  if( !valid )
-                     throw runtime_error( "invalid tag '" + tag
-                      + "' for checkpoint hash for chain '" + chain_id + "' in verify_blockchain_info" );
                }
                else
                   throw runtime_error( "unexpected extra header '" + next_header + "' in verify_blockchain_info" );
@@ -2302,9 +2279,15 @@ void verify_blockchain_info( const string& content,
          {
             unsigned int next_height = from_string< unsigned int >( next_line );
 
+            if( next_height == 0 )
+               throw runtime_error( "invalid block height 0 in verify_blockchain_info" );
+
             if( block_height && next_height != block_height + 1 )
                throw runtime_error( "unexpected block height " + to_string( next_height )
                 + " after previous block height " + to_string( block_height ) + " in verify_blockchain_info" );
+
+            if( !block_height && !has_tag( "c" + chain_id + ".b" + to_string( next_height - 1 ) ) )
+               throw runtime_error( "missing blocks between last checkpoint in verify_blockchain_info" );
 
             block_height = next_height;
          }
