@@ -2653,7 +2653,7 @@ void save_record( const string& module_id,
             field_values += ',';
 
          field_values += mod_info.user_hash_field_id
-          + "=" + lower( sha256( user_id + password_hash ).get_digest_as_string( ) );
+          + "=" + sha256( user_id + password_hash ).get_digest_as_string( );
 
          if( !mod_info.user_crypt_field_id.empty( ) )
             field_values += "," + mod_info.user_crypt_field_id

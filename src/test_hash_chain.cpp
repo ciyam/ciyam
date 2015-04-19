@@ -57,15 +57,15 @@ int main( )
          hash.update( buffer, sizeof( buffer ) );
 
          if( last.empty( ) )
-            last = lower( hash.get_digest_as_string( ) );
+            last = hash.get_digest_as_string( );
          else if( i == c_test_rounds - 2 )
-            next = lower( hash.get_digest_as_string( ) );
+            next = hash.get_digest_as_string( );
       }
 
-      cout << lower( hash.get_digest_as_string( ) ) << '\n';
+      cout << hash.get_digest_as_string( ) << '\n';
 
       hash_chain chain_external( c_test_hash_chain_external, true );
-      chain_external.check_and_update_if_good( lower( hash.get_digest_as_string( ) ) );
+      chain_external.check_and_update_if_good( hash.get_digest_as_string( ) );
 
       string new_hash_value( chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password ) );
 

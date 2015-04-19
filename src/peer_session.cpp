@@ -332,7 +332,7 @@ void socket_command_handler::get_hello( )
    string data( c_file_type_str_blob );
    data += string( c_hello );
 
-   string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+   string temp_hash( sha256( data ).get_digest_as_string( ) );
 
    if( !has_file( temp_hash ) )
       create_raw_file( data );
@@ -372,7 +372,7 @@ void socket_command_handler::put_hello( )
    string data( c_file_type_str_blob );
    data += string( c_hello );
 
-   string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+   string temp_hash( sha256( data ).get_digest_as_string( ) );
 
    if( !has_file( temp_hash ) )
       create_raw_file( data );
@@ -486,6 +486,11 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
 void socket_command_handler::issue_cmd_for_peer( )
 {
+   // NOTE: If a prior put no longer exists locally then it is to be expected
+   // it would not exist in the peer either.
+   if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
+      prior_put( ).erase( );
+
    if( get_needs_blockchain_info( ) )
    {
       string blockchain_info_hash;
@@ -509,7 +514,13 @@ void socket_command_handler::issue_cmd_for_peer( )
    {
       string next_hash( top_next_peer_file_hash_to_get( ) );
 
-      if( !next_hash.empty( ) && !has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
+      while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
+      {
+         pop_next_peer_file_hash_to_get( );
+         next_hash = top_next_peer_file_hash_to_get( );
+      }   
+
+      if( !next_hash.empty( ) )
       {
          get_file( next_hash );
          pop_next_peer_file_hash_to_get( );
@@ -696,7 +707,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   string data( c_file_type_str_blob );
                   data += string( c_hello );
 
-                  string temp_hash( lower( sha256( data ).get_digest_as_string( ) ) );
+                  string temp_hash( sha256( data ).get_digest_as_string( ) );
 
                   if( !has_file( temp_hash ) )
                      create_raw_file( data );
@@ -1259,7 +1270,7 @@ void peer_session::on_start( )
             string data( c_file_type_str_blob );
             data += string( c_hello );
 
-            hash_or_tag = lower( sha256( data ).get_digest_as_string( ) );
+            hash_or_tag = sha256( data ).get_digest_as_string( );
          }
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );

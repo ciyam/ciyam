@@ -237,7 +237,7 @@ string hash_chain::impl::get_next_hashes_to_publish( const string& password, uns
          if( !retval.empty( ) )
             retval += ',';
 
-         retval += lower( hash.get_digest_as_string( ) );
+         retval += hash.get_digest_as_string( );
       }
    }
 

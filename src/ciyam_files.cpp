@@ -150,6 +150,34 @@ void validate_item_or_tree( int type, const string& data, bool* p_rc = 0 )
       *p_rc = true;
 }
 
+void validate_hash_with_uncompressed_content( const string& hash, unsigned char* p_data, unsigned long length )
+{
+   bool okay = false;
+
+   if( length )
+   {
+      // NOTE: Although the compressed bit flag could be still set it is
+      // required that the data checked here will have been uncompressed
+      // first.
+      bool is_compressed = ( p_data[ 0 ] & c_file_type_val_compressed );
+
+      if( is_compressed )
+         p_data[ 0 ] &= ~c_file_type_val_compressed;
+
+      sha256 test_hash;
+      test_hash.update( p_data, length );
+
+      if( hash == test_hash.get_digest_as_string( ) )
+         okay = true;
+
+      if( is_compressed )
+         p_data[ 0 ] |= c_file_type_val_compressed;
+   }
+
+   if( !okay )
+      throw runtime_error( "invalid content for file hash '" + hash + "'" );
+}
+
 }
 
 size_t get_total_files( )
@@ -231,14 +259,7 @@ void init_files_area( )
                {
                   string file_path( fs.get_full_name( ) );
 
-                  sha256 test_hash;
-                  test_hash.update( file_path, true );
-
-                  string hash( dfsi.get_name( ) + fs.get_name( ) );
-
-                  if( hash != lower( test_hash.get_digest_as_string( ) ) )
-                     files_to_delete.push_back( file_path );
-                  else if( file_size( file_path ) > max_size )
+                  if( file_size( file_path ) > max_size )
                      files_to_delete.push_back( file_path );
                   else if( g_total_files >= max_num )
                      files_to_delete.push_back( file_path );
@@ -334,11 +355,6 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    if( data.empty( ) )
       throw runtime_error( "unexpected empty file" );
 
-   sha256 test_hash( data );
-
-   if( hash != lower( test_hash.get_digest_as_string( ) ) )
-      throw runtime_error( "invalid content for '" + tag_or_hash + "' (hash does not match hashed data)" );
-
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
    bool is_core = ( data[ 0 ] & c_file_type_val_extra_core );
@@ -347,6 +363,14 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    if( file_type != c_file_type_val_blob
     && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
+
+   if( !is_compressed )
+   {
+      sha256 test_hash( data );
+
+      if( hash != test_hash.get_digest_as_string( ) )
+         throw runtime_error( "invalid content for '" + tag_or_hash + "' (hash does not match hashed data)" );
+   }
 
    string final_data( data );
 
@@ -364,6 +388,8 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
 
       final_data.erase( 1 );
       final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+
+      validate_hash_with_uncompressed_content( hash, ( unsigned char* )final_data.data( ), final_data.length( ) );
    }
 #endif
 
@@ -459,11 +485,18 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
+   if( is_compressed )
+      throw runtime_error( "create_raw_file doesn't support already compressed files" );
+
    if( file_type != c_file_type_val_blob
     && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    string final_data( data );
+
+   string hash( sha256( final_data ).get_digest_as_string( ) );
+
+   string filename( construct_file_name_from_hash( hash, true ) );
 
 #ifdef ZLIB_SUPPORT
    session_file_buffer_access file_buffer;
@@ -490,10 +523,6 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       }
    }
 #endif
-
-   string hash( lower( sha256( final_data ).get_digest_as_string( ) ) );
-
-   string filename( construct_file_name_from_hash( hash, true ) );
 
    if( !file_exists( filename ) )
    {
@@ -882,7 +911,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
       temp_hash.update( nonce );
    temp_hash.update( filename, true );
 
-   return lower( temp_hash.get_digest_as_string( ) );
+   return temp_hash.get_digest_as_string( );
 }
 
 void fetch_file( const string& hash, tcp_socket& socket )
@@ -974,6 +1003,8 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
           &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
+         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ 0 ], usize );
+
          bool rc = true;
 
          if( file_type != c_file_type_val_blob )
@@ -995,11 +1026,14 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       if( !rc )
          throw runtime_error( "invalid 'item' or 'tree' file" );
 
-      sha256 test_hash;
-      test_hash.update( tmp_filename, true );
+      if( !is_compressed )
+      {
+         sha256 test_hash;
+         test_hash.update( tmp_filename, true );
 
-      if( hash != lower( test_hash.get_digest_as_string( ) ) )
-         throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+         if( hash != test_hash.get_digest_as_string( ) )
+            throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+      }
 
 #ifndef _WIN32
       umask( um );
