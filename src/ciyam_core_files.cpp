@@ -167,7 +167,7 @@ string get_hash_secret( sha256& hash )
 {
    // NOTE: The first nibble is zeroed out to ensure that the return
    // value is always valid to use as a Bitcoin address "secret".
-   return "0" + lower( hash.get_digest_as_string( ).substr( 1 ) );
+   return "0" + hash.get_digest_as_string( ).substr( 1 );
 }
 
 uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long height )
@@ -389,6 +389,32 @@ uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_h
       throw runtime_error( "unable to find account balance in '" + minter_tag + "'" );
 
    return from_string< uint64_t >( minter_tag.substr( pos + 2 ) );
+}
+
+void get_ordered_checkpoint_hashes( const string& chain_id, map< unsigned long, string >& ordered_checkpoint_hashes )
+{
+   string all_checkpoint_tags( list_file_tags( "c" + chain_id + ".checkpoint.h*" ) );
+
+   if( !all_checkpoint_tags.empty( ) )
+   {
+      vector< string > checkpoint_tags;
+      split( all_checkpoint_tags, checkpoint_tags, '\n' );
+
+      // NOTE: Need to ensure that the ordering of the checkpoint tags is
+      // according to the checkpoint height.
+      for( size_t i = 0; i < checkpoint_tags.size( ); i++ )
+      {
+         string next_tag( checkpoint_tags[ i ] );
+
+         string::size_type pos = next_tag.find( ".h" );
+         if( pos == string::npos )
+            throw runtime_error( "unexpect checkpoint tag '" + next_tag + "'" );
+
+         unsigned long height = from_string< unsigned long >( next_tag.substr( pos + 2 ) );
+
+         ordered_checkpoint_hashes.insert( make_pair( height, tag_file_hash( next_tag ) ) );
+      }
+   }
 }
 
 pair< unsigned long, uint64_t > verify_block( const string& content,
@@ -1674,11 +1700,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             p_extras->push_back( make_pair( checkpoint_data,
              "c" + chain + ".checkpoint.h" + to_string( checkpoint_height ) ) );
 
-            p_extras->push_back( make_pair( checkpoint_block_data,
-             "c" + chain + ".checkpoint.h" + to_string( checkpoint_height ) + ".blocks" ) );
-
-            p_extras->push_back( make_pair( checkpoint_transaction_data,
-             "c" + chain + ".checkpoint.h" + to_string( checkpoint_height ) + ".transactions" ) );
+            p_extras->push_back( make_pair( checkpoint_block_data, "" ) );
+            p_extras->push_back( make_pair( checkpoint_transaction_data, "" ) );
          }
          else
             checkpoint_height = 0;
@@ -2208,11 +2231,14 @@ void verify_blockchain_info( const string& content,
       vector< string > lines;
       split( content, lines, '\n' );
 
-      string chain_id, checkpoint_hash;
+      string chain_id;
+
+      bool is_prior_to_checkpoint = false;
 
       unsigned int height = 0;
       unsigned int block_height = 0;
 
+      vector< string > checkpoint_hashes;
       vector< string > block_hashes_with_sigs;
 
       for( size_t i = 0; i < lines.size( ); i++ )
@@ -2228,7 +2254,6 @@ void verify_blockchain_info( const string& content,
 
             bool has_chain = false;
             bool has_height = false;
-            bool has_checkpoint_hash = false;
 
             for( size_t j = 0; j < headers.size( ); j++ )
             {
@@ -2260,16 +2285,7 @@ void verify_blockchain_info( const string& content,
                   height = from_string< unsigned int >( remainder );
 
                   if( height <= cinfo.checkpoint_start_height )
-                     throw runtime_error( "invalid height "
-                      + to_string( height ) + " for chain '" + chain_id + "' in verify_blockchain_info" );
-               }
-               else if( !has_checkpoint_hash )
-               {
-                  if( prefix != string( c_file_type_core_blockchain_info_header_checkpoint_hash_prefix ) )
-                     throw runtime_error( "unexpected missing checkpoint hash prefix header in verify_blockchain_info" );
-
-                  has_checkpoint_hash = true;
-                  checkpoint_hash = remainder;
+                     is_prior_to_checkpoint = true;
                }
                else
                   throw runtime_error( "unexpected extra header '" + next_header + "' in verify_blockchain_info" );
@@ -2291,6 +2307,8 @@ void verify_blockchain_info( const string& content,
 
             block_height = next_height;
          }
+         else if( !block_height )
+            checkpoint_hashes.push_back( next_line );
          else
          {
             if( next_line.find( ':' ) == string::npos )
@@ -2300,14 +2318,13 @@ void verify_blockchain_info( const string& content,
          }
       }
 
-      if( checkpoint_hash.empty( ) )
-         throw runtime_error( "unexpected missing checkpoint hash in verify_blockchain_info" );
-
       if( p_blockchain_info )
       {
          p_blockchain_info->chain_id = chain_id;
-         p_blockchain_info->checkpoint_hash = checkpoint_hash;
-         p_blockchain_info->block_hashes_with_sigs = block_hashes_with_sigs;
+         p_blockchain_info->checkpoint_hashes = checkpoint_hashes;
+
+         if( !is_prior_to_checkpoint )
+            p_blockchain_info->block_hashes_with_sigs = block_hashes_with_sigs;
       }
    }
    else
@@ -2335,15 +2352,17 @@ void verify_blockchain_info( const string& content,
       string blockchain_info_data( c_file_type_str_core_blob );
       blockchain_info_data += string( c_file_type_core_blockchain_info_object ) + ':';
 
-      string checkpoint_hash;
-      if( cinfo.checkpoint_start_height == 0 )
-         checkpoint_hash = tag_file_hash( "c" + chain_id + ".b0" );
-      else
-         checkpoint_hash = tag_file_hash( "c" + chain_id + ".checkpoint.h" + to_string( cinfo.checkpoint_start_height ) );
-
       blockchain_info_data += string( c_file_type_core_blockchain_info_header_chain_prefix ) + chain_id
-       + "," + string( c_file_type_core_blockchain_info_header_height_prefix ) + to_string( height )
-       + "," + string( c_file_type_core_blockchain_info_header_checkpoint_hash_prefix ) + checkpoint_hash;
+       + "," + string( c_file_type_core_blockchain_info_header_height_prefix ) + to_string( height );
+
+      map< unsigned long, string > ordered_checkpoint_hashes;
+      get_ordered_checkpoint_hashes( chain_id, ordered_checkpoint_hashes );
+
+      for( map< unsigned long, string >::iterator i
+       = ordered_checkpoint_hashes.begin( ); i != ordered_checkpoint_hashes.end( ); ++i )
+      {
+         blockchain_info_data += '\n' + i->second;
+      }
 
       unsigned int next_height = cinfo.checkpoint_start_height + 1;
 
@@ -2401,71 +2420,40 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
       pos = content.find( ".h" );
       unsigned int checkpoint_height = from_string< unsigned int >( content.substr( pos + 2 ) );
 
-      string checkpoints( content );
-      checkpoints.erase( pos );
+      string checkpoint_hash( tag_file_hash( content ) );
 
-      string all_checkpoint_tags( list_file_tags( checkpoints + "*" ) );
+      map< unsigned long, string > ordered_checkpoint_hashes;
+      get_ordered_checkpoint_hashes( chain_id, ordered_checkpoint_hashes );
 
-      vector< string > checkpoint_tags;
-      split( all_checkpoint_tags, checkpoint_tags, '\n' );
+      if( !ordered_checkpoint_hashes.empty( ) && checkpoint_hash != ordered_checkpoint_hashes.begin( )->second )
+         throw runtime_error( "can only prune the checkpoint at height " + to_string( ordered_checkpoint_hashes.begin( )->first ) );
 
-      for( size_t i = 0; i < checkpoint_tags.size( ); i++ )
+      string checkpoint_data( extract_file( checkpoint_hash, "", c_file_type_char_core_blob ) );
+
+      vector< string > lines;
+      split( checkpoint_data, lines, '\n' );
+
+      if( lines.size( ) != 3 )
+         throw runtime_error( "unexpected checkpoint content was not 3 lines" );
+
+      string all_checkpoint_blocks( extract_file( lines[ 1 ], "", c_file_type_char_core_blob ) );
+      string all_checkpoint_transactions( extract_file( lines[ 2 ], "", c_file_type_char_core_blob ) );
+
+      vector< string > checkpoint_transactions;
+      split( all_checkpoint_transactions, checkpoint_transactions, '\n' );
+
+      for( size_t i = 1; i < checkpoint_transactions.size( ); i++ )
       {
-         string next_tag( checkpoint_tags[ i ] );
-
-         pos = next_tag.find( ".h" );
-         if( pos == string::npos )
-            throw runtime_error( "unexpected checkpoint tag format '" + next_tag + "' in verify_checkpoint_prune" );
-
-         string::size_type rpos = next_tag.find( ".w", pos + 1 );
-         if( rpos == string::npos )
-            throw runtime_error( "unexpected checkpoint tag format '" + next_tag + "' in verify_checkpoint_prune" );
-
-         string height_part( next_tag.substr( pos, rpos - pos ) );
-         if( height_part.size( ) < 3 )
-            throw runtime_error( "unexpected checkpoint tag format '" + next_tag + "' in verify_checkpoint_prune" );
-
-         height_part.erase( 0, 2 );
-         unsigned int next_height = from_string< unsigned int >( height_part );
-
-         // NOTE: Ordering will not be in numeric order so need to continue rather than break here.
-         if( next_height > checkpoint_height )
-            continue;
-
-         string checkpoint_hash( tag_file_hash( next_tag ) );
-         string checkpoint_data( extract_file( checkpoint_hash, "", c_file_type_char_core_blob ) );
-
-         string::size_type pos = checkpoint_data.find( ':' );
-         if( pos == string::npos )
-            throw runtime_error( "invalid checkpoint data found in verify_checkpoint_prune" );
-
-         string type( checkpoint_data.substr( 0, pos ) );
-         checkpoint_data.erase( 0, pos + 1 );
-
-         if( type != string( c_file_type_core_checkpoint_blocks_object )
-          && type != string( c_file_type_core_checkpoint_transactions_object ) )
-            throw runtime_error( "unexpected blob type '" + type + "' found in verify_checkpoint_prune" );
-
-         if( type == string( c_file_type_core_checkpoint_transactions_object ) )
-         {
-            vector< string > hashes;
-            split( checkpoint_data, hashes, '\n' );
-
-            for( size_t j = 0; j < hashes.size( ); j++ )
-            {
-               if( has_file( hashes[ j ] ) )
-                  p_extras->push_back( make_pair( "", hashes[ j ] ) );
-            }
-         }
-
-         // NOTE: The checkpoint blob instance will be removed.
-         p_extras->push_back( make_pair( "", checkpoint_hash ) );
+         if( has_file( checkpoint_transactions[ i ] ) )
+            p_extras->push_back( make_pair( "", checkpoint_transactions[ i ] ) );
       }
+
+      unsigned int height = checkpoint_height;
 
       // NOTE: Remove all block blobs that are at or below the checkpoint height.
       while( true )
       {
-         string all_block_tags( list_file_tags( "c" + chain_id + ".b" + to_string( checkpoint_height ) + "-*" ) );
+         string all_block_tags( list_file_tags( "c" + chain_id + ".b" + to_string( height ) + "-*" ) );
 
          if( all_block_tags.empty( ) )
             break;
@@ -2476,11 +2464,14 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
          for( size_t i = 0; i < block_tags.size( ); i++ )
             p_extras->push_back( make_pair( "", tag_file_hash( block_tags[ i ] ) ) );
 
-         if( checkpoint_height == 0 )
+         if( height-- == 0 )
             break;
-
-         --checkpoint_height;
       }
+
+      // NOTE: The checkpoint blobs will also be removed.
+      p_extras->push_back( make_pair( "", lines[ 1 ] ) );
+      p_extras->push_back( make_pair( "", lines[ 2 ] ) );
+      p_extras->push_back( make_pair( "", checkpoint_hash ) );
    }
 }
 
@@ -2754,7 +2745,7 @@ string construct_account_info(
    bool found_trans = false;
 
    size_t rounds = 10;
-   for( size_t i = 1; i < exp; i++ )
+   for( size_t i = 1; i < exponent; i++ )
       rounds *= 10;
 
    for( size_t i = 0; i < rounds; i++ )
@@ -2795,7 +2786,7 @@ string construct_account_info(
 
    if( found_block )
    {
-      if( block_round + 1 >= rounds )
+      if( block_round >= rounds )
          throw runtime_error( "account block hashes have been exhausted" );
 
       sha256 hash( to_string( block_round + 1 ) + password );
@@ -2823,7 +2814,7 @@ string construct_account_info(
 
    if( found_trans )
    {
-      if( trans_round + 1 >= rounds )
+      if( trans_round >= rounds )
          throw runtime_error( "account trans hashes have been exhausted" );
 
       sha256 hash( password + to_string( trans_round + 1 ) );

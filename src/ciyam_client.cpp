@@ -196,7 +196,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                str.erase( pos + 1 );
                data = buffer_file( data );
 
-               str += lower( sha256( prefix + data ).get_digest_as_string( ) ) + extra;
+               str += sha256( prefix + data ).get_digest_as_string( ) + extra;
 
                cout << str << endl;
 
@@ -215,7 +215,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                data = buffer_file( put_source_file );
 
-               str += lower( sha256( prefix + data ).get_digest_as_string( ) ) + extra;
+               str += sha256( prefix + data ).get_digest_as_string( ) + extra;
 
                cout << str << endl;
             }
@@ -381,7 +381,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         temp_hash.update( token );
                         temp_hash.update( hash, true );
 
-                        string hash_val( lower( temp_hash.get_digest_as_string( ) ) );
+                        string hash_val( temp_hash.get_digest_as_string( ) );
                         cout << hash_val << endl;
 
                         socket.write_line( hash_val );

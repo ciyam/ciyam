@@ -34,7 +34,7 @@ struct new_block_info
 struct blockchain_info
 {
    std::string chain_id;
-   std::string checkpoint_hash;
+   std::vector< std::string > checkpoint_hashes;
    std::vector< std::string > block_hashes_with_sigs;
 };
 

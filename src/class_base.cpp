@@ -2422,7 +2422,7 @@ string get_random_hash( )
 
    // NOTE: The first nibble is zeroed out to ensure that the return
    // value is always valid to use as a Bitcoin address "secret".
-   return "0" + lower( hash.get_digest_as_string( ).substr( 1 ) );
+   return "0" + hash.get_digest_as_string( ).substr( 1 );
 }
 
 string get_ext( const string& filename )
@@ -3031,13 +3031,13 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
 string hash_sha1( const string& s )
 {
    sha1 hash( s );
-   return lower( hash.get_digest_as_string( ) );
+   return hash.get_digest_as_string( );
 }
 
 string hash_sha256( const string& s )
 {
    sha256 hash( s );
-   return lower( hash.get_digest_as_string( ) );
+   return hash.get_digest_as_string( );
 }
 
 string decrypt( const string& s )
@@ -4458,8 +4458,8 @@ string create_address_key_pair( const string& ext_key,
       sha256 hash( priv_info );
 
       // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-      // as a Bitcoin address "secret" (as the range of its EC is smaller than the whole 256 bits).
-      ap_new_key.reset( new private_key( "0" + lower( hash.get_digest_as_string( ) ).substr( 1 ) ) );
+      // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+      ap_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
    }
 
    pub_key = ap_new_key->get_public( compressed, use_base64 );
@@ -4901,7 +4901,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
    hash.copy_digest_to_buffer( buf );
 
    hash.update( buf, 32 );
-   string input( lower( hash.get_digest_as_string( ) ) );
+   string input( hash.get_digest_as_string( ) );
 
    for( int i = input.length( ) - 1; i >= 0; i -= 2 )
    {

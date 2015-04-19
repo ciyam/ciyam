@@ -4968,7 +4968,7 @@ void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_i
          pos += cmd.length( );
 
       string s( cmd + parameter_info.substr( pos ) );
-      s = lower( sha1( s ).get_digest_as_string( ) );
+      s = sha1( s ).get_digest_as_string( );
 
       set_session_variable( c_special_variable_cmd_hash, s.substr( 0, 20 ) );
    }

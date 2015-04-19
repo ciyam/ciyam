@@ -2272,7 +2272,7 @@ void request_handler::process_request( )
                   pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
 
                   pwd_field_value_pairs.push_back( make_pair(
-                   mod_info.user_hash_field_id, lower( sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) ) );
+                   mod_info.user_hash_field_id, sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) );
 
                   string user_crypt_key;
                   if( !mod_info.user_crypt_field_id.empty( ) )
