@@ -1003,7 +1003,8 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
           &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
-         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ 0 ], usize );
+         file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
+         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
 
          bool rc = true;
 
