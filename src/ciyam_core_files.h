@@ -53,6 +53,7 @@ void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 
 bool CLASS_BASE_DECL_SPEC is_block( const std::string& core_type );
+bool CLASS_BASE_DECL_SPEC is_checkpoint( const std::string& core_type );
 bool CLASS_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
 
 void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
