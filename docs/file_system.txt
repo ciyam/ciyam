@@ -8,8 +8,8 @@ accessible via the peer protocol.
 The way this file system operates is quite similar to how "git" operates under the covers and so will be very
 familiar to those who have a thorough knowledge of that system. Each file is stored in a directory whose name
 is the first two characters of the hex ASCII string of the SHA256 hash of the file content (uncompressed) and
-whose filename is the remaining thirty characters of the hash. To save on disk space space files are normally
-compressed when they are created (but this behaviour is optional).
+whose filename is the remaining characters of the hash. In order to reduce the disk space footprint files are
+normally compressed when they are created (but this behaviour is optional).
 
 Because the name of the file is a secure hash of its content files cannot be edited (as a new version will of
 course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
