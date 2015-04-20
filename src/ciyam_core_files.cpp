@@ -2517,6 +2517,11 @@ bool is_block( const string& core_type )
    return ( core_type == string( c_file_type_core_block_object ) );
 }
 
+bool is_checkpoint( const string& core_type )
+{
+   return ( core_type == string( c_file_type_core_checkpoint_object ) );
+}
+
 bool is_blockchain_info( const string& core_type )
 {
    return ( core_type == string( c_file_type_core_blockchain_info_object ) );

@@ -1,0 +1,121 @@
+Understanding the File System
+-----------------------------
+
+Immediately below the directory where the application server operates is a "files" directory which allows the
+application server to function as a file storage system accessible via the standard protocol as well as being
+accessible via the peer protocol.
+
+The way this file system operates is quite similar to how "git" operates under the covers and so will be very
+familiar to those who have a thorough knowledge of that system. Each file is stored in a directory whose name
+is the first two characters of the hex ASCII string of the SHA256 hash of the file content (uncompressed) and
+whose filename is the remaining thirty characters of the hash. To save on disk space space files are normally
+compressed when they are created (but this behaviour is optional).
+
+Because the name of the file is a secure hash of its content files cannot be edited (as a new version will of
+course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
+could ever hope to remember "tags" can be used for labelling and later locating files.
+
+Fundamental File Types
+----------------------
+
+In a very similar manner to "git" the file system there are only three fundamental file types: Blob, Item and
+Tree. The first byte of every file is used to identify the file type as well as holding some other flags that
+will be explained further on.
+
+The Blob file type is used to store any kind of arbitrary data (without any formal meta-data so that it isn't
+possible to actually know what kind of data it is that is being stored). The Item file type provides a method
+of tying a name to another file and the Tree file type holds a directed acyclic graph of other files.
+
+The following illustrates the type, full path and the content of each of the fundamental types of file:
+
+[blob - files/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
+hello
+
+[item - files/73/c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff]
+hello
+cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+[tree - files/38/9c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460]
+73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+
+It should be noted that the caret symbol is being used to indicate control characters in the above content so
+the actual values of the first character in each of the files above are 0x01, 0x02 and 0x03 respectively. The
+above files can be created using the standard application server protocol with the following commands:
+
+> file_raw -text blob hello
+> file_raw -text item hello\ncceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+> file_raw -text tree 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+
+The "-text" option is used to prevent file compression which is useful for testing purposes (but not normally
+recommended). The "file_info" command can be used to examine the information about a file, and if the file is
+an "item" or a "tree", to examine the information of any referenced files as well.
+
+> file_info -recurse -d=2 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
+[tree] 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
+ [item] hello 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+hello
+
+The above shows us that the "tree" that had been created contains a single "item" with the name "hello" which
+then points to a "blob" that contains the text "hello". Whilst it is clear that this is an extremely flexible
+approach it is not clear at all as to how the hash for the "tree", "item" or "blob" can be found which brings
+us to the next main feature of the file system.
+
+Tags
+----
+
+File "tags" enable the linking of human readible file names to the file hashes in the file system. These tags
+function in much the same way as "branch tags" in "git" work. To illustrate how this is useful let's tag just
+the "tree" file that was created before.
+
+> file_tag 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460 hello
+
+Now we can see the same "file info" output we saw above with the following far more user friendly command:
+
+> file_info -recurse -d=2 hello
+[tree] 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
+ [item] hello 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+hello
+
+So rather than trying to recall "389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460" it is only
+required to recall "hello". So if the "item" represents a traditional "file name" then let's say we wanted to
+rename the file with the content "hello" to "greetings".
+
+Firstly we'd create a new "item" with the following command:
+
+> file_raw -text item greetings\ncceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+This will create a new file which will require a new tree as well which we would next create using this:
+
+> file_raw -text tree 6157266eef1b081e83fdf2b4103bae00717470652ae9405ec92fe40a803e36b2 greetings
+
+Note that this time the Tag was added along with the creation of the new Tree file.
+
+If we take a look at the content starting from the "greetings" tag (recursing from the tree) the output which
+we will now see differs from the output from the "hello" tag but not entirely.
+
+> file_info -recurse -d=2 greetings
+[tree] 2ff855f2b47220fb99e472aacf8ae3d44c6b9ae1f54531ef482af10c1db35a04
+ [item] greetings 6157266eef1b081e83fdf2b4103bae00717470652ae9405ec92fe40a803e36b2
+  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+hello
+
+What can be seen here is that the Blob in both the "hello" and "greetings" Trees is the same file (so only is
+physically stored as a single file). So in this way Blobs can be used with different Items and Trees but disk
+space is never wasted (as only one file per "hash" ever exists).
+
+Core Files
+----------
+
+The other flags that were mentioned previously include one flag to indicate if the file is compressed as well
+as a flag to indicate that a file is a "core file" and another to indicate that the file is in MIME format.
+
+The "core file" format is a plain text format that begins with a three letter type followed by a colon. After
+the colon a header typically follows which consists of comma separated attributes in the form of an attribute
+id being assigned a value (e.g. a=123,b=xyz). Some of the core files will include further lines of text which
+may or may not be prefixed by a detail type followed by a colon.
+
+Core files (much like configuration files) are essential for the application server so should not be manually
+tagged, created or removed (doing so would risk corrupting application behaviour).
+
