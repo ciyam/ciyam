@@ -210,9 +210,6 @@ void process_file( const string& hash, const string& blockchain )
             blockchain_info bc_info;
             get_blockchain_info( content, bc_info );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
-
             bool needs_checkpoint = false;
 
             for( size_t i = 0; i < bc_info.checkpoint_info.size( ); i++ )
@@ -233,6 +230,9 @@ void process_file( const string& hash, const string& blockchain )
 
             if( !needs_checkpoint )
             {
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
+
                // NOTE: Fetch any blocks that have not already been stored locally.
                for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
                {
