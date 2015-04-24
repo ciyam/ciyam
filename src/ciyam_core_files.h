@@ -34,7 +34,14 @@ struct new_block_info
 struct blockchain_info
 {
    std::string chain_id;
-   std::vector< std::string > checkpoint_hashes;
+   std::vector< std::string > checkpoint_info;
+   std::vector< std::string > block_hashes_with_sigs;
+};
+
+struct checkpoint_info
+{
+   std::string chain_id;
+   std::string checkpoint_hash;
    std::vector< std::string > block_hashes_with_sigs;
 };
 
@@ -55,8 +62,14 @@ void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
 bool CLASS_BASE_DECL_SPEC is_block( const std::string& core_type );
 bool CLASS_BASE_DECL_SPEC is_checkpoint( const std::string& core_type );
 bool CLASS_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
+bool CLASS_BASE_DECL_SPEC is_checkpoint_info( const std::string& core_type );
+bool CLASS_BASE_DECL_SPEC is_checkpoint_blocks( const std::string& core_type );
+bool CLASS_BASE_DECL_SPEC is_checkpoint_transactions( const std::string& core_type );
 
 void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
+
+void CLASS_BASE_DECL_SPEC get_checkpoint_info(
+ const std::string& blockchain, const std::string& conbtent, checkpoint_info& cp_info );
 
 bool CLASS_BASE_DECL_SPEC has_better_block(
  const std::string& blockchain, unsigned long height, uint64_t weight );

@@ -164,6 +164,37 @@ void process_file( const string& hash, const string& blockchain )
             }
          }
       }
+      else if( is_checkpoint_info( core_type ) )
+      {
+         try
+         {
+            string content( extract_file( hash.substr( 0, pos ), "" ) );
+
+            checkpoint_info cp_info;
+            get_checkpoint_info( blockchain, content, cp_info );
+
+            if( !has_file( cp_info.checkpoint_hash ) )
+            {
+               // NOTE: Fetch any blocks that have not already been stored locally.
+               for( size_t i = 0; i < cp_info.block_hashes_with_sigs.size( ); i++ )
+               {
+                  string hash_with_sig( cp_info.block_hashes_with_sigs[ i ] );
+
+                  string::size_type pos = hash_with_sig.find( ':' );
+
+                  if( !has_file( hash_with_sig.substr( 0, pos ) ) )
+                     add_peer_file_hash_for_get( hash_with_sig );
+               }
+            }
+
+            delete_file( hash.substr( 0, pos ), false );
+         }
+         catch( ... )
+         {
+            delete_file( hash.substr( 0, pos ), false );
+            throw;
+         }
+      }
       else if( is_blockchain_info( core_type ) )
       {
          try
@@ -176,15 +207,36 @@ void process_file( const string& hash, const string& blockchain )
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
 
-            // NOTE: Fetch any blocks that have not already been stored locally.
-            for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
+            bool needs_checkpoint = false;
+
+            for( size_t i = 0; i < bc_info.checkpoint_info.size( ); i++ )
             {
-               string hash_with_sig( bc_info.block_hashes_with_sigs[ i ] );
+               string next_info( bc_info.checkpoint_info[ i ] );
 
-               string::size_type pos = hash_with_sig.find( ':' );
+               string::size_type pos = next_info.find( '.' );
+               if( pos == string::npos )
+                  throw runtime_error( "invalid checkpoint information: " + next_info );
 
-               if( !has_file( hash_with_sig.substr( 0, pos ) ) )
-                  add_peer_file_hash_for_get( hash_with_sig );
+               if( !has_file( next_info.substr( 0, pos ) ) )
+               {
+                  add_peer_file_hash_for_get( next_info.substr( pos + 1 ) );
+                  needs_checkpoint = true;
+                  break;
+               }
+            }
+
+            if( !needs_checkpoint )
+            {
+               // NOTE: Fetch any blocks that have not already been stored locally.
+               for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
+               {
+                  string hash_with_sig( bc_info.block_hashes_with_sigs[ i ] );
+
+                  string::size_type pos = hash_with_sig.find( ':' );
+
+                  if( !has_file( hash_with_sig.substr( 0, pos ) ) )
+                     add_peer_file_hash_for_get( hash_with_sig );
+               }
             }
 
             delete_file( hash.substr( 0, pos ), false );
