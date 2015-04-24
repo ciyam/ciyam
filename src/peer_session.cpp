@@ -185,6 +185,12 @@ void process_file( const string& hash, const string& blockchain )
                   if( !has_file( hash_with_sig.substr( 0, pos ) ) )
                      add_peer_file_hash_for_get( hash_with_sig );
                }
+
+               // NOTE: Because the checkpoint won't be created locally until blocks
+               // after its height have been processed the checkpoint itself must be
+               // stored to avoid the peer simply getting stuck at the height of the
+               // checkpoint.
+               add_peer_file_hash_for_get( cp_info.checkpoint_hash );
             }
 
             delete_file( hash.substr( 0, pos ), false );

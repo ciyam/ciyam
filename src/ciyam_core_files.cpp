@@ -2359,9 +2359,6 @@ void verify_blockchain_info( const string& content,
                throw runtime_error( "unexpected block height " + to_string( next_height )
                 + " after previous block height " + to_string( block_height ) + " in verify_blockchain_info" );
 
-            if( !block_height && !has_tag( "c" + chain_id + ".b" + to_string( next_height - 1 ) ) )
-               throw runtime_error( "missing blocks between last checkpoint in verify_blockchain_info" );
-
             block_height = next_height;
          }
          else if( !block_height )
@@ -2545,7 +2542,7 @@ void verify_checkpoint_info( const string& content,
          {
             unsigned long next_height = from_string< unsigned long >( next_line );
 
-            if( height && next_height != height + 1 )
+            if( i > 1 && next_height != height + 1 )
                throw runtime_error( "unexpected height " + to_string( next_height ) + " in verify_checkpoint_info" );
 
             height = next_height;
