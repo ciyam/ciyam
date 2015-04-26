@@ -344,11 +344,11 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    else
    {
       hash = tag_or_hash;
-      filename = construct_file_name_from_hash( tag_or_hash );
+      filename = construct_file_name_from_hash( tag_or_hash, false, false );
    }
 
    if( !file_exists( filename ) )
-      throw runtime_error( tag_or_hash + " was not found" );
+      throw runtime_error( "file '" + tag_or_hash + "' was not found" );
 
    string data( buffer_file( filename ) );
 

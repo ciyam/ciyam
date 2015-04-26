@@ -228,8 +228,14 @@ void process_file( const string& hash, const string& blockchain )
                }
             }
 
-            if( !needs_checkpoint )
+            if( needs_checkpoint )
+               set_session_variable(
+                get_special_var_name( e_special_var_peer_is_synchronising ), "1" );
+            else
             {
+               set_session_variable(
+                get_special_var_name( e_special_var_peer_is_synchronising ), "" );
+
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
 
@@ -1107,19 +1113,19 @@ string socket_command_processor::get_cmd_and_args( )
                   else
                      new_block_wait -= 2;
                }
-               else if( !has_better_block( blockchain, new_block.height, new_block.weight ) )
+               else
                {
-                  string block_info_hash( store_new_block( blockchain, new_block_data ) );
-                  add_peer_file_hash_for_put_for_all_peers( block_info_hash, &blockchain, &peer_special_variable );
+                  if( !has_better_block( blockchain, new_block.height, new_block.weight )
+                   && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
+                     store_new_block( blockchain, new_block_data );
 
                   new_block_data.erase( );
                }
-               else
-                  new_block_data.erase( );
             }
          }
          else if( !blockchain.empty( )
-          && is_first_using_session_variable( peer_special_variable, blockchain ) )
+          && is_first_using_session_variable( peer_special_variable, blockchain )
+          && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
          {
             new_block_wait = c_new_block_wait_passes;
             new_block_data = mint_new_block( blockchain, new_block );
@@ -1348,6 +1354,11 @@ void peer_session::on_start( )
       {
          socket_command_processor processor( *ap_socket, cmd_handler, is_local, responder );
          processor.process_commands( );
+      }
+      else
+      {
+         TRACE_LOG( TRACE_SESSIONS, blockchain.empty( )
+          ? "finished peer session" : "finished peer session for blockchain " + blockchain );
       }
 
       ap_socket->close( );
