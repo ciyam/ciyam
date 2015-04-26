@@ -226,6 +226,7 @@ const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_core_block_conflict = "@core_block_conflict";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
+const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 const char* const c_special_variable_value_increment = "@increment";
@@ -5448,6 +5449,35 @@ bool set_session_variable( const string& name, const string& value, const string
    return retval;
 }
 
+bool any_has_session_variable( const string& name )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name ) )
+         return true;
+   }
+
+   return false;
+}
+
+bool any_has_session_variable( const string& name, const string& value )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name )
+       && g_sessions[ i ]->variables[ name ] == value )
+         return true;
+   }
+
+   return false;
+}
+
 bool is_first_using_session_variable( const string& name )
 {
    guard g( g_mutex );
@@ -5701,6 +5731,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_secondary_validation:
       s = string( c_special_variable_secondary_validation );
+      break;
+
+      case e_special_var_peer_is_synchronising:
+      s = string( c_special_variable_peer_is_synchronising );
       break;
 
       case e_special_var_total_child_field_in_parent:
