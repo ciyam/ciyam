@@ -114,6 +114,8 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
 
 string store_new_block( const string& blockchain, const string& data )
 {
+   guard g( g_mutex );
+
    string hash;
 
    vector< pair< string, string > > extras;
