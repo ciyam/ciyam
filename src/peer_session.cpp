@@ -92,12 +92,12 @@ bool has_max_peers( )
 
 inline void issue_error( const string& message )
 {
-   TRACE_LOG( TRACE_ANYTHING, string( "session error: " ) + message );
+   TRACE_LOG( TRACE_ANYTHING, string( "peer session error: " ) + message );
 }
 
 inline void issue_warning( const string& message )
 {
-   TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
+   TRACE_LOG( TRACE_SESSIONS, string( "peer session warning: " ) + message );
 }
 
 string mint_new_block( const string& blockchain, new_block_info& new_block )
@@ -1375,6 +1375,8 @@ void peer_session::on_start( )
 
       ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
+
+      term_session( );
    }
    catch( ... )
    {
@@ -1382,6 +1384,8 @@ void peer_session::on_start( )
 
       ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
       ap_socket->close( );
+
+      term_session( );
    }
 
    delete this;

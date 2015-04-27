@@ -4552,6 +4552,8 @@ void ciyam_session::on_start( )
 
       ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
+
+      term_session( );
    }
    catch( ... )
    {
@@ -4559,6 +4561,8 @@ void ciyam_session::on_start( )
 
       ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
       ap_socket->close( );
+
+      term_session( );
    }
 
 #ifdef DEBUG
