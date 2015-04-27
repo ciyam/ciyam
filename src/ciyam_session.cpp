@@ -4461,6 +4461,9 @@ string socket_command_processor::get_cmd_and_args( )
             msleep( c_request_timeout );
             continue;
          }
+
+         if( !socket.had_timeout( ) )
+            break;
       }
       else
          break;
