@@ -128,6 +128,8 @@ string store_new_block( const string& blockchain, const string& data )
 
 void process_file( const string& hash, const string& blockchain )
 {
+   guard g( g_mutex );
+
    string::size_type pos = hash.find( ':' );
 
    string file_info( file_type_info( hash.substr( 0, pos ) ) );
@@ -620,7 +622,7 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
    string str( cmd_and_args );
 
    if( session_state == e_peer_state_invalid )
-      str.erase( );
+      str = c_cmd_peer_session_bye;
 
    if( !str.empty( ) )
    {
@@ -1172,7 +1174,7 @@ string socket_command_processor::get_cmd_and_args( )
             continue;
          }
 
-         if( !is_local && socket.had_timeout( ) )
+         if( !is_local || !socket.had_timeout( ) )
          {
             // NOTE: Don't allow zombies to hang around unless they are local.
             request = "bye";
