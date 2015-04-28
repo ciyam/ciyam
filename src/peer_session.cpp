@@ -59,7 +59,8 @@ const int c_max_line_length = 500;
 
 const int c_minimum_port_num = 1000;
 
-const int c_new_block_wait_passes = 10;
+const int c_min_block_wait_passes = 5;
+const int c_max_block_wait_passes = 10;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -1115,12 +1116,7 @@ string socket_command_processor::get_cmd_and_args( )
             else
             {
                if( new_block_wait > 0 )
-               {
-                  if( !new_block.is_optimal )
-                     --new_block_wait;
-                  else
-                     new_block_wait = 0;
-               }
+                  --new_block_wait;
                else
                {
                   if( !has_better_block( blockchain, new_block.height, new_block.weight )
@@ -1135,8 +1131,8 @@ string socket_command_processor::get_cmd_and_args( )
           && is_first_using_session_variable( peer_special_variable, blockchain )
           && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
          {
-            new_block_wait = c_new_block_wait_passes;
             new_block_data = mint_new_block( blockchain, new_block );
+            new_block_wait = ( new_block.is_optimal ? c_min_block_wait_passes : c_max_block_wait_passes );
          }
       }
 
