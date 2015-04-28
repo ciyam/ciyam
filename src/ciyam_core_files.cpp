@@ -2734,7 +2734,7 @@ bool has_better_block( const string& blockchain, unsigned long height, uint64_t 
 
    bool retval = false;
 
-   string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-" ) );
+   string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-*" ) );
 
    if( !all_tags.empty( ) )
    {
