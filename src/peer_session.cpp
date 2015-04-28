@@ -59,7 +59,7 @@ const int c_max_line_length = 500;
 
 const int c_minimum_port_num = 1000;
 
-const int c_new_block_wait_passes = 6;
+const int c_new_block_wait_passes = 10;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -1104,6 +1104,10 @@ string socket_command_processor::get_cmd_and_args( )
 
       if( !g_server_shutdown && !is_condemned_session( ) )
       {
+         // NOTE: If a new better block has already been processed then build on it rather than wait.
+         if( !new_block_data.empty( ) && has_better_block( blockchain, new_block.height, new_block.weight ) )
+            new_block_data.erase( );
+
          if( !new_block_data.empty( ) )
          {
             if( !new_block.can_mint )
