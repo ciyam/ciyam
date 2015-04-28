@@ -595,6 +595,9 @@ void socket_command_handler::issue_cmd_for_peer( )
          pop_next_peer_file_hash_to_get( );
 
          process_file( next_hash, blockchain );
+
+         if( !blockchain.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
+            set_needs_blockchain_info( true );
       }
       else
       {
