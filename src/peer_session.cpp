@@ -64,7 +64,7 @@ const int c_new_block_wait_passes = 6;
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
 
-const size_t c_request_throttle_sleep_time = 500;
+const size_t c_request_throttle_sleep_time = 250;
 
 enum peer_state
 {
@@ -1115,7 +1115,7 @@ string socket_command_processor::get_cmd_and_args( )
                   if( !new_block.is_optimal )
                      --new_block_wait;
                   else
-                     new_block_wait -= 3;
+                     new_block_wait = 0;
                }
                else
                {
