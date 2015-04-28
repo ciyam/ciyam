@@ -2728,11 +2728,14 @@ void get_checkpoint_info( const string& blockchain, const string& content, check
    verify_checkpoint_info( content.substr( pos + 1 ), 0, &cp_info );
 }
 
-bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight )
+bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight, bool* p_has_worser )
 {
    guard g( g_mutex );
 
    bool retval = false;
+
+   if( p_has_worser )
+      *p_has_worser = false;
 
    string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-*" ) );
 
@@ -2760,6 +2763,8 @@ bool has_better_block( const string& blockchain, unsigned long height, uint64_t 
                retval = true;
                break;
             }
+            else if( p_has_worser )
+               *p_has_worser = true;
          }
       }
    }
