@@ -1115,7 +1115,7 @@ string socket_command_processor::get_cmd_and_args( )
                   if( !new_block.is_optimal )
                      --new_block_wait;
                   else
-                     new_block_wait -= 2;
+                     new_block_wait -= 3;
                }
                else
                {

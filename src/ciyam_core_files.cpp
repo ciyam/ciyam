@@ -758,21 +758,26 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       }
       else
       {
-         previous_head = tag_file_hash( block_tag );
+         string next_block_tag( "c" + chain + ".b" + to_string( block_height + 1 ) );
 
-         block_info binfo;
-         if( get_block_info( binfo, previous_head ).second > total_weight )
+         if( !has_tag( next_block_tag ) )
          {
-            is_new_chain_head = true;
+            previous_head = tag_file_hash( block_tag );
 
-            parallel_block_minted_minter_id = binfo.minter_id;
-            parallel_block_minted_previous_block = binfo.previous_block;
-            parallel_block_minted_num_transactions = binfo.transaction_hashes.size( );
-            parallel_block_minted_had_secondary_account = binfo.had_secondary_account;
+            block_info binfo;
+            if( get_block_info( binfo, previous_head ).second > total_weight )
+            {
+               is_new_chain_head = true;
 
-            parallel_block_minted_transaction_hashes.insert(
-             binfo.transaction_hashes.begin( ), binfo.transaction_hashes.end( ) );
-         }
+               parallel_block_minted_minter_id = binfo.minter_id;
+               parallel_block_minted_previous_block = binfo.previous_block;
+               parallel_block_minted_num_transactions = binfo.transaction_hashes.size( );
+               parallel_block_minted_had_secondary_account = binfo.had_secondary_account;
+
+               parallel_block_minted_transaction_hashes.insert(
+                binfo.transaction_hashes.begin( ), binfo.transaction_hashes.end( ) );
+            }
+         }   
       }
    }
 
