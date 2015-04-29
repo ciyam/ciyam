@@ -745,6 +745,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
    string verify( string( c_file_type_core_block_object ) + ':' + header );
 
    bool is_new_chain_head = false;
+   bool is_better_chain_head = false;
+
    string mint_address, mint_test_address;
 
    if( p_extras && block_height )
@@ -768,6 +770,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             if( get_block_info( binfo, previous_head ).second > total_weight )
             {
                is_new_chain_head = true;
+               is_better_chain_head = true;
 
                parallel_block_minted_minter_id = binfo.minter_id;
                parallel_block_minted_previous_block = binfo.previous_block;
@@ -1316,7 +1319,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          if( is_new_chain_head )
          {
-            TRACE_LOG( TRACE_CORE_FLS, "new chain "
+            TRACE_LOG( TRACE_CORE_FLS, string( is_better_chain_head ? "better chain " : "new chain " )
              + chain + " head block " + block_id + " at height " + to_string( block_height ) );
 
             if( !has_secondary_account )
@@ -2728,14 +2731,11 @@ void get_checkpoint_info( const string& blockchain, const string& content, check
    verify_checkpoint_info( content.substr( pos + 1 ), 0, &cp_info );
 }
 
-bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight, bool* p_has_worser )
+bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight )
 {
    guard g( g_mutex );
 
    bool retval = false;
-
-   if( p_has_worser )
-      *p_has_worser = false;
 
    string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-*" ) );
 
@@ -2763,8 +2763,6 @@ bool has_better_block( const string& blockchain, unsigned long height, uint64_t 
                retval = true;
                break;
             }
-            else if( p_has_worser )
-               *p_has_worser = true;
          }
       }
    }
