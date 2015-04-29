@@ -60,7 +60,7 @@ const int c_max_line_length = 500;
 const int c_minimum_port_num = 1000;
 
 const int c_min_block_wait_passes = 5;
-const int c_max_block_wait_passes = 15;
+const int c_max_block_wait_passes = 10;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -1110,9 +1110,12 @@ string socket_command_processor::get_cmd_and_args( )
       {
          bool has_worser = false;
 
-         // NOTE: If a better block has already been processed then build on that rather than keep waiting.
+         // NOTE: If either a better block at the newly minted block's height or a better previous block than
+         // the one it is currently linked to has been processed then will need to mint another new block.
          if( !new_block_data.empty( )
-          && has_better_block( blockchain, new_block.height, new_block.weight, &has_worser ) )
+          && ( has_better_block( blockchain, new_block.height, new_block.weight, &has_worser )
+          || ( new_block.height > 1
+          && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
             new_block_data.erase( );
 
          if( !new_block_data.empty( ) )

@@ -21,7 +21,16 @@
 
 struct new_block_info
 {
-   new_block_info( ) : can_mint( false ), weight( 0 ), is_optimal( false ), height( 0 ) { }
+   new_block_info( )
+    :
+    can_mint( false ),
+    weight( 0 ),
+    is_optimal( false ),
+    height( 0 ),
+    total_weight( 0 ),
+    previous_block_weight( 0 )
+   {
+   }
 
    bool can_mint;
 
@@ -29,6 +38,9 @@ struct new_block_info
    bool is_optimal;
 
    unsigned long height;
+
+   uint64_t total_weight;
+   uint64_t previous_block_weight;
 };
 
 struct blockchain_info

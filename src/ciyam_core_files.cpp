@@ -2826,6 +2826,9 @@ string construct_new_block( const string& blockchain,
          p_new_block_info->height = height;
          p_new_block_info->weight = weight;
 
+         p_new_block_info->total_weight = total_weight;
+         p_new_block_info->previous_block_weight = binfo.block_weight;
+
          p_new_block_info->can_mint = ( balance > cinfo.mint_charge );
 
          if( !cinfo.checkpoint_tolerance || weight < cinfo.checkpoint_tolerance )
