@@ -59,8 +59,8 @@ const int c_max_line_length = 500;
 
 const int c_minimum_port_num = 1000;
 
-const int c_min_block_wait_passes = 5;
-const int c_max_block_wait_passes = 10;
+const int c_min_block_wait_passes = 8;
+const int c_max_block_wait_passes = 28;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
@@ -575,9 +575,9 @@ void socket_command_handler::issue_cmd_for_peer( )
    }
    // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
    // based upon the actual needs of the peer).
-   else if( !prior_put( ).empty( ) && rand( ) % 5 == 0 )
+   else if( !prior_put( ).empty( ) && rand( ) % 10 == 0 )
       chk_file( prior_put( ) );
-   else if( rand( ) % 5 == 0 )
+   else if( rand( ) % 10 == 0 )
       pip_peer( "127.0.0.1" );
    else if( get_last_issued_was_put( ) )
    {
@@ -1108,12 +1108,10 @@ string socket_command_processor::get_cmd_and_args( )
 
       if( !g_server_shutdown && !is_condemned_session( ) )
       {
-         bool has_worser = false;
-
          // NOTE: If either a better block at the newly minted block's height or a better previous block than
          // the one it is currently linked to has been processed then will need to mint another new block.
          if( !new_block_data.empty( )
-          && ( has_better_block( blockchain, new_block.height, new_block.weight, &has_worser )
+          && ( has_better_block( blockchain, new_block.height, new_block.weight )
           || ( new_block.height > 1
           && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
             new_block_data.erase( );
@@ -1124,9 +1122,7 @@ string socket_command_processor::get_cmd_and_args( )
                new_block_data.erase( );
             else
             {
-               // NOTE: If we already have stored a worser block then no need to wait any longer (this is to
-               // try and keep peers in sync as much as possible).
-               if( !has_worser && new_block_wait > 0 )
+               if( new_block_wait > 0 )
                   --new_block_wait;
                else
                {
