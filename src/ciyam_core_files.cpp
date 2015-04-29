@@ -1255,11 +1255,14 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             string existing_block_tag( list_file_tags(
              "c" + chain + ".b" + to_string( ainfo.last_height ) + "-*.a" + account ) );
 
-            string existing_block_hash( tag_file_hash( existing_block_tag ) );
+            if( !existing_block_tag.empty( ) )
+            {
+               string existing_block_hash( tag_file_hash( existing_block_tag ) );
 
-            get_block_info( binfo, existing_block_hash );
-            if( account_hash == binfo.minter_hash && public_key_base64 == binfo.minter_pubkey )
-               had_existing = true;
+               get_block_info( binfo, existing_block_hash );
+               if( account_hash == binfo.minter_hash && public_key_base64 == binfo.minter_pubkey )
+                  had_existing = true;
+            }
          }
 
          if( !had_existing && !check_if_valid_hash_pair( account_hash, ainfo.block_hash, true ) )
@@ -1643,7 +1646,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
                   ++non_blob_extras;
                   p_extras->push_back( make_pair( account_file_hash,
-                   next_account + ".h*" + to_string( block_height - 1 ) + ".b" + to_string( balance ) ) );
+                   next_account + ".h*" + to_string( account_height ) + ".b" + to_string( balance ) ) );
                }
 
                // NOTE: An extra redundant recalcuation is being done for debug testing
