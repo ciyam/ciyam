@@ -2773,6 +2773,20 @@ bool has_better_block( const string& blockchain, unsigned long height, uint64_t 
    return retval;
 }
 
+string check_account( const string& blockchain, const string& password )
+{
+   string retval;
+
+   string id( get_account_id_from_password( password ) );
+
+   if( !list_file_tags( "c" + blockchain + ".a" + id + ".h*" ).empty( ) )
+      retval = id;
+   else
+      throw runtime_error( "invalid account: " + id + " for blockchain: " + blockchain );
+
+   return retval;
+}
+
 string construct_new_block( const string& blockchain,
  const string& password, const string& account, bool use_core_file_format, new_block_info* p_new_block_info )
 {

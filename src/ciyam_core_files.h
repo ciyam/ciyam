@@ -86,6 +86,8 @@ void CLASS_BASE_DECL_SPEC get_checkpoint_info(
 bool CLASS_BASE_DECL_SPEC has_better_block(
  const std::string& blockchain, unsigned long height, uint64_t weight );
 
+std::string CLASS_BASE_DECL_SPEC check_account( const std::string& blockchain, const std::string& password );
+
 std::string CLASS_BASE_DECL_SPEC construct_new_block(
  const std::string& blockchain, const std::string& password,
  const std::string& account, bool use_core_file_format = true, new_block_info* p_new_block_info = 0 );

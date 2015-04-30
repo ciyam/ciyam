@@ -1461,9 +1461,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string port( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_port ) );
          string ip_addr( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_ip_addr ) );
+         bool force( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_force ) );
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_blockchain ) );
 
-         create_peer_initiator( atoi( port.c_str( ) ), ip_addr, blockchain );
+         create_peer_initiator( atoi( port.c_str( ) ), ip_addr, blockchain, force );
       }
       else if( command == c_cmd_ciyam_session_peer_block_info )
       {
@@ -1481,6 +1482,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_account ) );
 
          response = construct_account_info( blockchain, password, exponent, account );
+      }
+      else if( command == c_cmd_ciyam_session_peer_account_lock )
+      {
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_password ) );
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_blockchain ) );
+
+         response = peer_account_lock( blockchain, password );
       }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {

@@ -37,6 +37,7 @@ class peer_session : public thread
    bool is_local;
    bool responder;
 
+   std::string port;
    std::string ip_addr;
    std::string blockchain;
 
@@ -60,9 +61,12 @@ class peer_listener : public thread
    std::string blockchain;
 };
 
+std::string peer_account_lock( const std::string& blockchain, const std::string& password );
+
 void create_peer_listener( int port, const std::string& blockchain );
 
-void create_peer_initiator( int port, const std::string& ip_addr, const std::string& blockchain );
+void create_peer_initiator( int port,
+ const std::string& ip_addr, const std::string& blockchain, bool skip_registration = false );
 
 void create_initial_peer_sessions( );
 
