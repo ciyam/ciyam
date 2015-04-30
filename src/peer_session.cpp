@@ -12,6 +12,7 @@
 #  include <cstring>
 #  include <csignal>
 #  include <cstdlib>
+#  include <deque>
 #  include <memory>
 #  include <vector>
 #  include <string>
@@ -57,13 +58,14 @@ const char* const c_hello = "hello";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
-const int c_minimum_port_num = 1000;
-
 const int c_min_block_wait_passes = 8;
 const int c_max_block_wait_passes = 28;
 
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
+
+const size_t c_connect_timeout = 2500;
+const size_t c_recconect_timeout = 1000;
 
 const size_t c_request_throttle_sleep_time = 250;
 
@@ -81,6 +83,11 @@ enum peer_trust_level
    e_peer_trust_level_none,
    e_peer_trust_level_normal
 };
+
+map< string, string > g_blockchain_passwords;
+
+set< string > g_good_peers;
+map< string, deque< string > > g_peers_to_retry;
 
 size_t g_num_peers = 0;
 
@@ -101,11 +108,49 @@ inline void issue_warning( const string& message )
    TRACE_LOG( TRACE_SESSIONS, string( "peer session warning: " ) + message );
 }
 
+void add_good_peer( const string& ip_addr, const string& blockchain )
+{
+   guard g( g_mutex );
+
+   g_good_peers.insert( ip_addr + '=' + blockchain );
+}
+
+bool was_good_peer( const string& ip_addr, const string& blockchain )
+{
+   guard g( g_mutex );
+
+   return g_good_peers.count( ip_addr + '=' + blockchain );
+}
+
+void add_peer_to_retry( const string& ip_addr, const string& blockchain )
+{
+   guard g( g_mutex );
+
+   g_peers_to_retry[ blockchain ].push_back( ip_addr );
+}
+
+string get_peer_to_retry( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( !g_peers_to_retry[ blockchain ].empty( ) )
+   {
+      retval = g_peers_to_retry[ blockchain ].front( );
+      g_peers_to_retry[ blockchain ].pop_front( );
+   }
+
+   return retval;
+}
+
 string mint_new_block( const string& blockchain, new_block_info& new_block )
 {
+   guard g( g_mutex );
+
    string data;
 
-   string password( get_system_variable( "@" + blockchain + "_pwd" ) );
+   string password( g_blockchain_passwords[ blockchain ] );
 
    if( !password.empty( ) )
       data = construct_new_block( blockchain, password, &new_block );
@@ -501,7 +546,7 @@ void socket_command_handler::pip_peer( const string& ip_address )
       if( socket.had_timeout( ) )
          error = "timeout occurred getting peer response";
       else
-         error = "server has terminated this connection";
+         error = "peer has terminated this connection";
 
       socket.close( );
       throw runtime_error( error );
@@ -538,7 +583,7 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
       if( socket.had_timeout( ) )
          error = "timeout occurred getting peer response";
       else
-         error = "server has terminated this connection";
+         error = "peer has terminated this connection";
 
       socket.close( );
       throw runtime_error( error );
@@ -1015,7 +1060,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( socket.had_timeout( ) )
             error = "timeout occurred getting peer response";
          else
-            error = "server has terminated this connection";
+            error = "peer has terminated this connection";
 
          socket.close( );
          throw runtime_error( error );
@@ -1265,6 +1310,13 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
       this->ip_addr.erase( pos );
    }
 
+   pos = blockchain.find( ':' );
+   if( pos != string::npos )
+   {
+      port = blockchain.substr( pos + 1 );
+      blockchain.erase( pos );
+   }
+
    if( this->ip_addr == "127.0.0.1" )
       is_local = true;
 
@@ -1278,6 +1330,8 @@ peer_session::~peer_session( )
 
 void peer_session::on_start( )
 {
+   bool okay = false;
+
    try
    {
       socket_command_handler cmd_handler( *ap_socket,
@@ -1295,9 +1349,9 @@ void peer_session::on_start( )
          {
             string error;
             if( ap_socket->had_timeout( ) )
-               error = "timeout occurred trying to connect to server";
+               error = "timeout occurred trying to connect to peer";
             else
-               error = "server has terminated this connection";
+               error = "peer has terminated this connection";
 
             ap_socket->close( );
             throw runtime_error( error );
@@ -1320,12 +1374,7 @@ void peer_session::on_start( )
 
       init_session( cmd_handler, true, &ip_addr, &blockchain );
 
-      TRACE_LOG( TRACE_SESSIONS,
-       string( "started peer session " )
-       + ( !responder ? "(as initiator)" : "(as responder)" )
-       + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
-
-      bool okay = true;
+      okay = true;
 
       if( !responder )
       {
@@ -1363,13 +1412,13 @@ void peer_session::on_start( )
 
       if( okay )
       {
+         TRACE_LOG( TRACE_SESSIONS,
+          string( "started peer session " )
+          + ( !responder ? "(as initiator)" : "(as responder)" )
+          + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+
          socket_command_processor processor( *ap_socket, cmd_handler, is_local, responder );
          processor.process_commands( );
-      }
-      else
-      {
-         TRACE_LOG( TRACE_SESSIONS, blockchain.empty( )
-          ? "finished peer session" : "finished peer session for blockchain " + blockchain );
       }
 
       ap_socket->close( );
@@ -1393,6 +1442,21 @@ void peer_session::on_start( )
       ap_socket->close( );
 
       term_session( );
+   }
+
+   if( !responder && !blockchain.empty( ) && !g_server_shutdown )
+   {
+      string addr( ip_addr );
+      if( !port.empty( ) )
+         addr += '!' + port;
+
+      if( okay )
+         add_good_peer( addr, blockchain );
+      else if( was_good_peer( addr, blockchain ) )
+         okay = true;
+
+      if( okay )
+         add_peer_to_retry( addr, blockchain );
    }
 
    delete this;
@@ -1453,6 +1517,53 @@ void peer_listener::on_start( )
                   if( p_session )
                      p_session->start( );
                }
+
+               // NOTE: If a previously good peer has become disconnected then will
+               // try and re-connect to it here.
+               if( !g_server_shutdown && !blockchain.empty( ) && !has_max_peers( ) )
+               {
+                  string peer_info( get_peer_to_retry( blockchain ) );
+
+                  int peer_port( port );
+                  string peer_ip_addr( peer_info );
+
+                  string::size_type pos = peer_info.find( '!' );
+                  if( pos != string::npos )
+                  {
+                     peer_ip_addr = peer_info.substr( 0, pos );
+                     peer_port = atoi( peer_info.substr( pos + 1 ).c_str( ) );
+                  }
+
+                  if( !peer_info.empty( ) )
+                  {
+#ifdef SSL_SUPPORT
+                     auto_ptr< ssl_socket > ap_socket( new ssl_socket );
+#else
+                     auto_ptr< tcp_socket > ap_socket( new tcp_socket );
+#endif
+
+                     bool started = false;
+                     if( ap_socket->open( ) )
+                     {
+                        ip_address address( peer_ip_addr.c_str( ), peer_port );
+
+                        if( ap_socket->connect( address, c_recconect_timeout ) )
+                        {
+                           peer_session* p_session = construct_session(
+                            false, ap_socket, peer_ip_addr + "=" + blockchain + ":" + to_string( peer_port ) );
+
+                           if( p_session )
+                           {
+                              started = true;
+                              p_session->start( );
+                           }
+                        }
+                     }
+
+                     if( !started )
+                        add_peer_to_retry( peer_info, blockchain );
+                  }
+               }
             }
 
             s.close( );
@@ -1481,11 +1592,35 @@ void peer_listener::on_start( )
    delete this;
 }
 
+string peer_account_lock( const string& blockchain, const string& password )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( password.empty( ) )
+   {
+      if( g_blockchain_passwords.count( blockchain ) )
+      {
+         // NOTE: For added security overwrite the password characters before removing
+         // the string from the container.
+         for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].length( ); i++ )
+            g_blockchain_passwords[ blockchain ][ i ] = '\0';
+
+         g_blockchain_passwords.erase( blockchain );
+      }
+   }
+   else
+   {
+      retval = check_account( blockchain, password );
+      g_blockchain_passwords[ blockchain ] = password;
+   }
+
+   return retval;
+}
+
 void create_peer_listener( int port, const string& blockchain )
 {
-   if( port < c_minimum_port_num )
-      throw runtime_error( "invalid port " + to_string( port ) + " for peer listener" );
-
    if( !blockchain.empty( ) )
       register_blockchain( port, blockchain );
 
@@ -1493,12 +1628,9 @@ void create_peer_listener( int port, const string& blockchain )
    p_peer_listener->start( );
 }
 
-void create_peer_initiator( int port, const string& ip_addr, const string& blockchain )
+void create_peer_initiator( int port, const string& ip_addr, const string& blockchain, bool skip_registration )
 {
-   if( port < c_minimum_port_num )
-      throw runtime_error( "invalid port " + to_string( port ) + " for peer initiator" );
-
-   if( !blockchain.empty( ) )
+   if( !skip_registration && !blockchain.empty( ) )
       register_blockchain( port, blockchain );
 
    if( !get_is_accepted_peer_id_addr( ip_addr ) )
@@ -1517,10 +1649,10 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
    {
       ip_address address( ip_addr.c_str( ), port );
 
-      if( ap_socket->connect( address ) )
+      if( ap_socket->connect( address, c_connect_timeout ) )
       {
-         peer_session* p_session = construct_session( false, ap_socket,
-          address.get_addr_string( ) + "=" + ( !blockchain.empty( ) ? blockchain : get_blockchain_for_port( port ) ) );
+         peer_session* p_session = construct_session( false, ap_socket, address.get_addr_string( )
+          + "=" + ( !blockchain.empty( ) ? blockchain : get_blockchain_for_port( port ) ) + ":" + to_string( port ) );
 
          if( p_session )
             p_session->start( );
@@ -1558,7 +1690,7 @@ void create_initial_peer_sessions( )
          if( ap_socket->connect( address ) )
          {
             peer_session* p_session = construct_session( false,
-             ap_socket, address.get_addr_string( ) + "=" + i->second );
+             ap_socket, address.get_addr_string( ) + "=" + i->second + ":" + to_string( port ) );
 
             if( p_session )
                p_session->start( );
