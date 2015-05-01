@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
 #  include <map>
+#  include <set>
 #  include <fstream>
 #  include <stdexcept>
 #  ifdef __GNUG__
@@ -215,7 +216,7 @@ string get_file_stats( )
    return s;
 }
 
-void init_files_area( )
+void init_files_area( vector< string >* p_untagged )
 {
    string cwd( get_cwd( ) );
 
@@ -267,6 +268,19 @@ void init_files_area( )
                   {
                      ++g_total_files;
                      g_total_bytes += file_size( file_path );
+
+                     if( p_untagged )
+                     {
+                        string::size_type pos = file_path.find_last_of( "/\\" );
+                        if( pos != string::npos && pos >= 2 )
+                        {
+                           string hash( file_path.substr( pos - 2, 2 ) );
+                           hash += file_path.substr( pos + 1 );
+
+                           if( !g_hash_tags.count( hash ) )
+                              p_untagged->push_back( hash );
+                        }
+                     }
                   }
                }
             }
@@ -288,7 +302,7 @@ void init_files_area( )
    }
 }
 
-void resync_files_area( )
+void resync_files_area( vector< string >* p_untagged )
 {
    guard g( g_mutex );
 
@@ -297,7 +311,7 @@ void resync_files_area( )
 
    g_total_bytes = g_total_files = 0;
 
-   init_files_area( );
+   init_files_area( p_untagged );
 }
 
 bool has_tag( const string& name )
@@ -846,6 +860,19 @@ string tag_file_hash( const string& name )
          if( i != hashes.begin( ) )
             retval += '\n';
          retval += *i;
+      }
+   }
+   else if( name == "?" )
+   {
+      vector< string > untagged_hashes;
+
+      resync_files_area( &untagged_hashes );
+
+      for( size_t i = 0; i < untagged_hashes.size( ); i++ )
+      {
+         if( i > 0 )
+            retval += '\n';
+         retval += untagged_hashes[ i ];
       }
    }
    else
