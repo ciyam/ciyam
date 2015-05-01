@@ -26,9 +26,9 @@ int64_t CLASS_BASE_DECL_SPEC get_total_bytes( );
 
 std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
-void CLASS_BASE_DECL_SPEC init_files_area( );
+void CLASS_BASE_DECL_SPEC init_files_area( std::vector< std::string >* p_untagged = 0 );
 
-void CLASS_BASE_DECL_SPEC resync_files_area( );
+void CLASS_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untagged = 0 );
 
 bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
 
