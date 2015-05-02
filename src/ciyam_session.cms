@@ -12,7 +12,8 @@ file_tags "get file tags for a hash or wildcard pattern" [<val/-p=/pat>|<val//ha
 file_stats "get file area stats"
 file_resync "resync file area stats"
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
-peer_connect "add a new peer connection" <val//port><val//ip_addr>[{[<opt/-force/force>]<val//blockchain>}]
+peer_reject "add an ip address to be rejected" <val//ip_addr>
+peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]
 peer_block_info "get new block information for a peer account" <val//blockchain><val//password>[<val//account>]
 peer_account_info "get peer account information" <val//blockchain><val//password>[<val//exponent>][<val//account>]
 peer_account_lock "lock or unlock a blockchain account" <val//blockchain>[<val//password>]
