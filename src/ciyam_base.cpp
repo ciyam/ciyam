@@ -4294,10 +4294,19 @@ bool get_is_accepted_ip_addr( const string& ip_addr )
     && ( g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 ) );
 }
 
-bool get_is_accepted_peer_id_addr( const string& ip_addr )
+bool get_is_accepted_peer_ip_addr( const string& ip_addr )
 {
+   guard g( g_mutex );
+
    return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
+}
+
+void add_peer_ip_addr_for_rejection( const string& ip_addr )
+{
+   guard g( g_mutex );
+
+   g_rejected_peer_ip_addrs.insert( ip_addr );
 }
 
 void get_blockchains( map< int, string >& blockchains )

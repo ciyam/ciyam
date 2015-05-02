@@ -1457,14 +1457,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          create_peer_listener( atoi( port.c_str( ) ), blockchain );
       }
+      else if( command == c_cmd_ciyam_session_peer_reject )
+      {
+         string ip_addr( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_reject_ip_addr ) );
+
+         add_peer_ip_addr_for_rejection( ip_addr );
+      }
       else if( command == c_cmd_ciyam_session_peer_connect )
       {
+         string host( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_host ) );
          string port( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_port ) );
-         string ip_addr( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_ip_addr ) );
          bool force( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_force ) );
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_connect_blockchain ) );
 
-         create_peer_initiator( atoi( port.c_str( ) ), ip_addr, blockchain, force );
+         create_peer_initiator( atoi( port.c_str( ) ), host, blockchain, force );
       }
       else if( command == c_cmd_ciyam_session_peer_block_info )
       {

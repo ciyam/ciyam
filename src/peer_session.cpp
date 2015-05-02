@@ -1521,7 +1521,7 @@ void peer_listener::on_start( )
                auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
                if( !g_server_shutdown && *ap_socket
-                && !has_max_peers( ) && get_is_accepted_peer_id_addr( address.get_addr_string( ) ) )
+                && !has_max_peers( ) && get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
                {
                   peer_session* p_session = construct_session(
                    true, ap_socket, address.get_addr_string( ) + '=' + blockchain );
@@ -1546,7 +1546,7 @@ void peer_listener::on_start( )
                      peer_port = atoi( peer_info.substr( pos + 1 ).c_str( ) );
                   }
 
-                  if( !peer_info.empty( ) )
+                  if( !peer_info.empty( ) && get_is_accepted_peer_ip_addr( peer_ip_addr ) )
                   {
 #ifdef SSL_SUPPORT
                      auto_ptr< ssl_socket > ap_socket( new ssl_socket );
@@ -1645,9 +1645,6 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
    if( !skip_registration && !blockchain.empty( ) )
       register_blockchain( port, blockchain );
 
-   if( !get_is_accepted_peer_id_addr( ip_addr ) )
-      throw runtime_error( "ip address " + ip_addr + " is not permitted" );
-
    if( g_server_shutdown || has_max_peers( ) )
       throw runtime_error( "server is shutting down or has reached its maximum peer limit" );
 
@@ -1660,6 +1657,9 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
    if( ap_socket->open( ) )
    {
       ip_address address( ip_addr.c_str( ), port );
+
+      if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
+         throw runtime_error( "ip address " + ip_addr + " is not permitted" );
 
       if( ap_socket->connect( address, c_connect_timeout ) )
       {
@@ -1683,7 +1683,7 @@ void create_initial_peer_sessions( )
 
       int port = get_blockchain_port( i->second );
 
-      if( !get_is_accepted_peer_id_addr( ip_addr ) )
+      if( !get_is_accepted_peer_ip_addr( ip_addr ) )
          continue;
 
       if( g_server_shutdown || has_max_peers( ) )
