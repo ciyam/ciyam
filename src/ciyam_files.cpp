@@ -1039,10 +1039,7 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
             validate_item_or_tree( file_type, ( const char* )&file_buffer.get_buffer( )[ size ], &rc );
 
          if( !rc )
-         {
-            file_remove( tmp_filename );
             throw runtime_error( "invalid 'item' or 'tree' file" );
-         }
       }
 #endif
 

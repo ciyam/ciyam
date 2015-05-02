@@ -2466,7 +2466,7 @@ void verify_blockchain_info( const string& content,
          p_extras->push_back( make_pair( blockchain_info_data, "c" + chain_id + ".info" ) );
 
       // NOTE: If there was a previous blockchain info blob then it will be removed.
-      if( has_tag( "c" + chain_id + ".info" ) )
+      if( p_extras && has_tag( "c" + chain_id + ".info" ) )
          p_extras->push_back( make_pair( "", tag_file_hash( "c" + chain_id + ".info" ) ) );
    }
 }

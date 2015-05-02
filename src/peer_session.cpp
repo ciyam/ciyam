@@ -185,10 +185,14 @@ void process_file( const string& hash, const string& blockchain )
    vector< string > info_parts;
    split( file_info, info_parts, ' ' );
 
-   // NOTE: A core file will return three parts in the form: <type> <hash> <core_type>
+   string last_blockchain_info(
+    get_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
+
+   // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
-   if( info_parts.size( ) == 3 && hash.substr( 0, pos )
-    != get_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) )
+   if( hash.substr( 0, pos ) == last_blockchain_info )
+      delete_file( hash.substr( 0, pos ), false );
+   else if( info_parts.size( ) == 3 )
    {
       string core_type( info_parts[ 2 ] );
 
@@ -568,12 +572,12 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
        + " " + hash_or_tag, c_request_timeout, p_progress );
    else
    {
-      string token( uuid( ).as_string( ) );
+      string nonce( uuid( ).as_string( ) );
 
-      expected = hash_with_nonce( hash_or_tag, token );
+      expected = hash_with_nonce( hash_or_tag, nonce );
 
       socket.write_line( string( c_cmd_peer_session_chk )
-       + " " + hash_or_tag + " " + token, c_request_timeout, p_progress );
+       + " " + hash_or_tag + " " + nonce, c_request_timeout, p_progress );
    }
 
    string response;
@@ -957,8 +961,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          else
          {
             string temp_file_name( "~" + uuid( ).as_string( ) );
-            store_temp_file( temp_file_name, socket );
-            file_remove( temp_file_name );
+            try
+            {
+               store_temp_file( temp_file_name, socket );
+               file_remove( temp_file_name );
+            }
+            catch( ... )
+            {
+               file_remove( temp_file_name );
+               throw;
+            }
          }
 
          if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
