@@ -107,11 +107,13 @@ struct chain_info
 
 struct account_info
 {
-   account_info( ) : exp( 0 ), balance( 0 ), last_height( 0 ), num_transactions( 0 ) { }
+   account_info( ) : exp( 0 ), is_banned( false ), balance( 0 ), last_height( 0 ), num_transactions( 0 ) { }
 
    string tag;
 
    unsigned int exp;
+
+   bool is_banned;
 
    string block_hash;
    string block_lock;
@@ -305,6 +307,9 @@ string get_account_info( account_info& info, const string& account_id )
    info.last_height = from_string< unsigned long >( account_tag.substr( pos + 2, rpos - pos - 2 ) );
 
    info.balance = from_string< uint64_t >( account_tag.substr( rpos + 2 ) );
+
+   if( account_tag.find( ".banned" ) != string::npos )
+      info.is_banned = true;
 
    string account_hash( tag_file_hash( account_tag ) );
    string account_data( extract_file( account_hash, "", c_file_type_char_core_blob ) );
@@ -928,6 +933,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
 
+               ++num_accounts;
+
                string tags( "c" + chain + ".a" + id + ".h0.b" + to_string( cinfo.mint_reward - cinfo.mint_charge ) );
                p_extras->push_back( make_pair( extra, tags ) );
             }
@@ -941,7 +948,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
 
-               string tags( "c" + chain + ".a" + id + ".h0.b0" );
+               string tags( "c" + chain + ".a" + id + ".h" + to_string( block_height ) + ".b0" );
                p_extras->push_back( make_pair( extra, tags ) );
             }
             else
@@ -1036,6 +1043,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
       if( !block_height )
       {
+         cinfo.num_accounts = num_accounts;
+
          // NOTE: Add blockchain meta information which is used to store all relevant
          // meta-data for the blockchain (as the root block will end up being removed
          // after checkpoint pruning).
@@ -1052,6 +1061,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          if( block_height < cinfo.checkpoint_start_height )
             throw runtime_error( "invalid block height is below current checkpoint" );
+
+         num_accounts = cinfo.num_accounts;
 
          // NOTE: If the account charge is explicitly provided with a zero value
          // then this will determine that the blockchain will not allow creation
@@ -1273,18 +1284,16 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          // NOTE: If an account has already minted then make sure that this block is higher than
          // the previous one minted. As any account that is producing such invalid height blocks
-         // is likely trying to cause a fork, the account is set to be banned and the tag of the
-         // last block that this one conflicts with is put in a session variable. The peer using
-         // this function should then send the conflicting block to the peer that sent the block
-         // just receieved in order for that peer to also ban the account (it would also then be
-         // expected that the other peer would replace their block with the conflicting one thus
-         // preventing that peer from ending up on a fork).
+         // is likely trying to cause a fork, the account is set to be banned which will prevent
+         // any further blocks being accepted from it. Assuming accounts are considered to be of
+         // some value (with a "banned" account having none) it is not very likely for such fork
+         // attempts to occur often, however, a mechanism to evaluate which side of the fork has
+         // the lightest weight should be developed in order for a peer to be able to get itself
+         // back onto the best chain rather than to be permanently stuck on a fork.
          if( block_height <= ainfo.last_height )
          {
             string conflict( list_file_tags(
              "c" + chain + ".b" + to_string( ainfo.last_height ) + "-*.a" + minter_account ) );
-
-            set_session_variable( get_special_var_name( e_special_var_core_block_conflict ), conflict );
 
             tag_file( "c" + chain + ".a" + account
              + ".h" + to_string( ainfo.last_height ) + ".b*anned", minter_account_hash );
@@ -1572,7 +1581,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                unsigned long account_height
                 = from_string< unsigned long >( next_account_tag.substr( hpos + 2, pos - hpos - 2 ) );
 
-               if( account_height > cinfo.checkpoint_start_height )
+               bool is_banned = ( next_account_tag.find( "banned" ) != string::npos );
+
+               if( !is_banned && account_height <= cinfo.checkpoint_start_height )
                   ++num_accounts;
 
                uint64_t balance = 0;
@@ -1592,7 +1603,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
                   account_tags.erase( pos + 1 );
 
-                  int num_accounts = account_new_others[ next_account ];
+                  int num_new_accts = account_new_others[ next_account ];
                   int num_consensus = account_new_mint_info[ next_account ].first;
                   int num_non_consensus = account_new_mint_info[ next_account ].second;
 
@@ -1607,23 +1618,23 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   else
                      balance -= ( cinfo.mint_charge * num_non_consensus );
 
-                  if( !cinfo.account_charge && num_accounts )
+                  if( !cinfo.account_charge && num_new_accts )
                      balance = 0;
-                  else if( num_accounts * cinfo.account_charge > balance )
+                  else if( num_new_accts * cinfo.account_charge > balance )
                      balance = 0;
                   else
-                     balance -= ( num_accounts * cinfo.account_charge );
+                     balance -= ( num_new_accts * cinfo.account_charge );
 
                   account_tags += "c" + chain + ".a" + account
                    + ".h*" + to_string( block_height ) + ".b" + to_string( balance );
 
                   ( *p_extras )[ account_extra_offset ].second = account_tags;
                }
-               else
+               else if( !is_banned )
                {
                   string account_file_hash( tag_file_hash( next_account_tag ) );
 
-                  int num_accounts = account_new_others[ next_account ];
+                  int num_new_accts = account_new_others[ next_account ];
                   int num_consensus = account_new_mint_info[ next_account ].first;
                   int num_non_consensus = account_new_mint_info[ next_account ].second;
 
@@ -1637,12 +1648,12 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   else
                      balance -= ( cinfo.mint_charge * num_non_consensus );
 
-                  if( !cinfo.account_charge && num_accounts )
+                  if( !cinfo.account_charge && num_new_accts )
                      balance = 0;
-                  else if( num_accounts * cinfo.account_charge > balance )
+                  else if( num_new_accts * cinfo.account_charge > balance )
                      balance = 0;
                   else
-                     balance -= ( num_accounts * cinfo.account_charge );
+                     balance -= ( num_new_accts * cinfo.account_charge );
 
                   ++non_blob_extras;
                   p_extras->push_back( make_pair( account_file_hash,
@@ -1651,7 +1662,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
                // NOTE: An extra redundant recalcuation is being done for debug testing
                // just to make sure that nothing has incorrectly been calculated above.
-               if( is_debug )
+               if( is_debug && !is_banned )
                {
                   uint64_t expected_balance = cinfo.mint_reward - cinfo.mint_charge;
 
@@ -1774,9 +1785,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
       // NOTE: Update blockchain meta information with the number of active accounts and checkpoint height.
       if( !chain_info_hash.empty( )
-       && ( num_accounts > cinfo.num_accounts || checkpoint_height > cinfo.checkpoint_start_height ) )
+       && ( num_accounts != cinfo.num_accounts || checkpoint_height > cinfo.checkpoint_start_height ) )
       {
-         if( num_accounts > cinfo.num_accounts )
+         if( num_accounts != cinfo.num_accounts )
             cinfo.num_accounts = num_accounts;
 
          if( checkpoint_height > cinfo.checkpoint_start_height )
@@ -1975,6 +1986,9 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
          account_info ainfo;
          string account_hash = get_account_info( ainfo, account_tag );
+
+         if( ainfo.is_banned )
+            continue;
 
          if( ainfo.block_lock != account_block_locks[ i->first ] )
          {
