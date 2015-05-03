@@ -468,6 +468,8 @@ void socket_command_handler::get_hello( )
          throw runtime_error( "invalid get_hello" );
       }
 
+      increment_peer_files_downloaded( file_bytes( temp_hash ) );
+
       file_remove( temp_file_name );
    }
    catch( ... )
@@ -498,6 +500,8 @@ void socket_command_handler::put_hello( )
    socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
 
    fetch_file( temp_hash, socket );
+
+   increment_peer_files_uploaded( file_bytes( temp_hash ) );
 }
 
 void socket_command_handler::get_file( const string& hash )
@@ -516,6 +520,8 @@ void socket_command_handler::get_file( const string& hash )
     + " " + hash.substr( 0, pos ), c_request_timeout, p_progress );
 
    store_file( hash.substr( 0, pos ), socket );
+
+   increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
 }
 
 void socket_command_handler::put_file( const string& hash )
@@ -531,6 +537,8 @@ void socket_command_handler::put_file( const string& hash )
    socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
 
    fetch_file( hash, socket );
+
+   increment_peer_files_uploaded( file_bytes( hash ) );
 }
 
 void socket_command_handler::pip_peer( const string& ip_address )
@@ -954,10 +962,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             throw runtime_error( "invalid state for put" );
 
          if( !has_file( hash ) )
-         {
             store_file( hash, socket );
-            increment_peer_files_downloaded( file_bytes( hash ) );
-         }
          else
          {
             string temp_file_name( "~" + uuid( ).as_string( ) );
@@ -972,6 +977,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                throw;
             }
          }
+
+         increment_peer_files_downloaded( file_bytes( hash ) );
 
          if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
             socket_handler.prior_put( ) = hash;
