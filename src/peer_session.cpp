@@ -213,7 +213,7 @@ void process_file( const string& hash, const string& blockchain )
             }
             catch( ... )
             {
-               delete_file( hash.substr( 0, pos ) );
+               delete_file( hash.substr( 0, pos ), false );
                throw;
             }
          }
@@ -1335,6 +1335,9 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
       port = blockchain.substr( pos + 1 );
       blockchain.erase( pos );
    }
+
+   if( !blockchain.empty( ) && !has_tag( "c" + blockchain ) )
+      throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
    if( this->ip_addr == "127.0.0.1" )
       is_local = true;
