@@ -64,6 +64,7 @@ const char* const c_file_type_core_blockchain_info_object = "bci";
 const char* const c_file_type_core_checkpoint_info_object = "cpi";
 const char* const c_file_type_core_checkpoint_prune_object = "cpr";
 const char* const c_file_type_core_checkpoint_blocks_object = "cbk";
+const char* const c_file_type_core_transactions_info_object = "txi";
 const char* const c_file_type_core_checkpoint_transactions_object = "ctx";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
@@ -104,6 +105,8 @@ const char* const c_file_type_core_blockchain_info_header_height_prefix = "h=";
 const char* const c_file_type_core_checkpoint_info_header_chain_prefix = "c=";
 const char* const c_file_type_core_checkpoint_info_header_height_prefix = "h=";
 const char* const c_file_type_core_checkpoint_info_header_checkpoint_prefix = "cp=";
+
+const char* const c_file_type_core_transactions_info_header_chain_prefix = "c=";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";
