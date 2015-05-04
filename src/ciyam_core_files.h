@@ -57,6 +57,12 @@ struct checkpoint_info
    std::vector< std::string > block_hashes_with_sigs;
 };
 
+struct transactions_info
+{
+   std::string chain_id;
+   std::vector< std::string > transaction_hashes_with_sigs;
+};
+
 struct account_key_info
 {
    std::string block_hash;
@@ -106,6 +112,7 @@ std::string CLASS_BASE_DECL_SPEC construct_account_info(
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0, uint64_t* p_balance = 0 );
 
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
+std::string CLASS_BASE_DECL_SPEC construct_transactions_info_file( const std::string& blockchain );
 
 #endif
 

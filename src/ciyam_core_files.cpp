@@ -445,6 +445,11 @@ void verify_blockchain_info( const string& content,
 void verify_checkpoint_info( const string& content,
  vector< pair< string, string > >* p_extras, checkpoint_info* p_checkpoint_info = 0 );
 
+void verify_checkpoint_prune( const string& content, vector< pair< string, string > >* p_extras = 0 );
+
+void verify_transactions_info( const string& content,
+ vector< pair< string, string > >* p_extras, transactions_info* p_transactions_info = 0 );
+
 pair< unsigned long, uint64_t > get_block_info( block_info& binfo, const string& block_hash )
 {
    if( !has_file( block_hash ) )
@@ -1563,7 +1568,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             vector< string > account_tags;
             split( all_account_tags, account_tags, '\n' );
 
-            num_accounts = 0;
+            num_accounts = has_secondary_account ? 1 : 0;
 
             // NOTE: All accounts have their balance set to the default (apart from
             // the current minter and those minters of blocks that occurred between
@@ -1583,7 +1588,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
                bool is_banned = ( next_account_tag.find( "banned" ) != string::npos );
 
-               if( !is_banned && account_height <= cinfo.checkpoint_start_height )
+               if( !is_banned )
                   ++num_accounts;
 
                uint64_t balance = 0;
@@ -2659,6 +2664,119 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
    }
 }
 
+void verify_transactions_info( const string& content,
+ vector< pair< string, string > >* p_extras, transactions_info* p_transactions_info )
+{
+   guard g( g_mutex );
+
+   bool construct_info = false;
+   if( content.find( ".txinfo" ) != string::npos )
+      construct_info = true;
+
+   if( !construct_info )
+   {
+      chain_info cinfo;
+
+      vector< string > lines;
+      split( content, lines, '\n' );
+
+      string chain_id;
+
+      vector< string > transaction_hashes_with_sigs;
+
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next_line( lines[ i ] );
+
+         if( i == 0 )
+         {
+            string all_headers( next_line );
+            vector< string > headers;
+
+            split( all_headers, headers );
+
+            bool has_chain = false;
+
+            for( size_t j = 0; j < headers.size( ); j++ )
+            {
+               string next_header( headers[ j ] );
+               string::size_type pos = next_header.find( '=' );
+
+               if( pos == string::npos )
+                  throw runtime_error( "invalid header '" + next_header + "' in verify_transactions_info" );
+
+               string prefix( next_header.substr( 0, pos + 1 ) );
+               string remainder( next_header.substr( pos + 1 ) );
+
+               if( !has_chain )
+               {
+                  if( prefix != string( c_file_type_core_transactions_info_header_chain_prefix ) )
+                     throw runtime_error( "unexpected missing chain prefix header in verify_transactions_info" );
+
+                  has_chain = true;
+                  chain_id = remainder;
+
+                  get_chain_info( cinfo, chain_id );
+               }
+               else
+                  throw runtime_error( "unexpected extra header '" + next_header + "' in verify_transactions_info" );
+            }
+
+            if( !has_chain )
+               throw runtime_error( "one or more missing headers in verify_transactions_info" );
+         }
+         else
+         {
+            if( next_line.find( ':' ) == string::npos )
+               throw runtime_error( "unexpected missing signature from '" + next_line + "' in verify_transactions_info" );
+
+            transaction_hashes_with_sigs.push_back( next_line );
+         }
+      }
+
+      if( p_transactions_info )
+      {
+         p_transactions_info->chain_id = chain_id;
+         p_transactions_info->transaction_hashes_with_sigs = transaction_hashes_with_sigs;
+      }
+   }
+   else
+   {
+      string::size_type pos = content.find( "." );
+
+      string chain( content.substr( 0, pos ) );
+      string chain_id( chain.substr( 1 ) );
+
+      string transactions_info_data( c_file_type_str_core_blob );
+      transactions_info_data += string( c_file_type_core_transactions_info_object ) + ':';
+
+      transactions_info_data += string( c_file_type_core_transactions_info_header_chain_prefix ) + chain_id;
+
+      string all_transaction_tags( list_file_tags( "c" + chain_id + ".a*.t*" ) );
+
+      if( !all_transaction_tags.empty( ) )
+      {
+         vector< string > transaction_tags;
+         split( all_transaction_tags, transaction_tags, '\n' );
+
+         for( size_t i = 0; i < transaction_tags.size( ); i++ )
+         {
+            string next_tag( transaction_tags[ i ] );
+
+            transactions_info_data += '\n' + tag_file_hash( next_tag )
+             + ':' + tag_name_to_base64( next_tag.substr( pos + 2 ) );
+         }
+      }
+
+      if( p_extras )
+         p_extras->push_back( make_pair( transactions_info_data, "c" + chain_id + ".txinfo" ) );
+
+      // NOTE: If there was a previous transaction info blob then it will be removed.
+      if( p_extras && has_tag( "c" + chain_id + ".txinfo" ) )
+         p_extras->push_back( make_pair( "", tag_file_hash( "c" + chain_id + ".txinfo" ) ) );
+   }
+}
+
 }
 
 void verify_core_file( const string& content, bool check_sigs, vector< pair< string, string > >* p_extras )
@@ -2688,6 +2806,8 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
             verify_blockchain_info( content.substr( pos + 1 ), p_extras );
          else if( type == string( c_file_type_core_checkpoint_prune_object ) )
             verify_checkpoint_prune( content.substr( pos + 1 ), p_extras );
+         else if( type == string( c_file_type_core_transactions_info_object ) )
+            verify_transactions_info( content.substr( pos + 1 ), p_extras );
          else
             throw runtime_error( "unknown type '" + type + "' for core file" );
       }
@@ -3100,5 +3220,24 @@ string construct_blockchain_info_file( const string& blockchain )
    create_raw_file_with_extras( "", extras );
 
    return tag_file_hash( "c" + blockchain + ".info" );
+}
+
+string construct_transactions_info_file( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   string data( c_file_type_str_core_blob );
+
+   data += string( c_file_type_core_transactions_info_object ) + ":c" + blockchain + ".txinfo";
+
+   vector< pair< string, string > > extras;
+
+   verify_core_file( data, true, &extras );
+
+   // NOTE: There is no need to create a raw file for the info "request"
+   // so only the extras are passed for raw file creation.
+   create_raw_file_with_extras( "", extras );
+
+   return tag_file_hash( "c" + blockchain + ".txinfo" );
 }
 
