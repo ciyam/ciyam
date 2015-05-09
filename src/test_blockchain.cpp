@@ -31,7 +31,7 @@ namespace
 
 struct account
 {
-   account( ) : id( 0 ), skips( 0 ) { }
+   account( ) : id( 0 ), skips( 0 ), num_transactions( 0 ) { }
 
    uint64_t id;
 
@@ -39,6 +39,8 @@ struct account
    string rseed;
 
    unsigned int skips;
+
+   unsigned long num_transactions;
 
    vector< string > secrets;
 };
@@ -107,7 +109,12 @@ string generate_blockchain_script( const string& chain_meta,
    string script( ".session_variable @debug_blockchain 1\n" );
    script += ".file_raw -core blob ";
 
-   string header( "blk:a=" + to_string( root_id ) + ",h=0,cm=r:" + chain_meta + ",pk=" + root_pub_key );
+   string header( string( c_file_type_core_block_object ) + ":"
+    + string( c_file_type_core_block_header_account_prefix ) + to_string( root_id )
+    + "," + string( c_file_type_core_block_header_height_prefix ) + string( "0" )
+    + "," + string( c_file_type_core_block_header_chain_meta_prefix )
+    + string( c_file_type_core_block_header_chain_meta_requisite_prefix ) + chain_meta
+    + "," + string( c_file_type_core_block_header_public_key_prefix ) + root_pub_key );
 
    uint64_t initial_tolerance = 0;
    string::size_type pos = chain_meta.find( '<' );
@@ -141,13 +148,17 @@ string generate_blockchain_script( const string& chain_meta,
       private_key priv_key( new_account.secrets[ 0 ] );
       private_key tx_priv_key( new_account.secrets[ rounds ] );
 
-      string next_account( "a:"
-       + to_string( new_account.id ) + ",e=2,h="
-       + base64::encode( get_hash( new_account.seed, 0, rounds ) )
-       + ",l=" + priv_key.get_address( true, true ) );
+      string encoded_bhash( base64::encode( get_hash( new_account.seed, 0, rounds ) ) );
 
-      next_account += ",th=" + base64::encode( get_hash( new_account.rseed, 0, rounds ) )
-       + ",tl=" + tx_priv_key.get_address( true, true );
+      string next_account( string( c_file_type_core_block_detail_account_prefix ) + to_string( new_account.id )
+       + "," + string( c_file_type_core_block_detail_account_exp_prefix ) + to_string( 2 )
+       + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + encoded_bhash
+       + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + priv_key.get_address( true, true ) );
+
+      string encoded_thash( base64::encode( get_hash( new_account.rseed, 0, rounds ) ) );
+
+      next_account += "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + encoded_thash
+       + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + tx_priv_key.get_address( true, true );
 
       script += "\n" + next_account + "\\n";
       validate += "\n" + next_account;
@@ -155,7 +166,9 @@ string generate_blockchain_script( const string& chain_meta,
       script += "\\";
    }
 
-   script += "\ns:" + root_priv_key.construct_signature( validate, true ) + '\n';
+   script += "\n"
+    + string( c_file_type_core_block_detail_signature_prefix )
+    + root_priv_key.construct_signature( validate, true ) + '\n';
 
    sha256 hash( string( c_file_type_str_core_blob ) + validate );
 
@@ -203,7 +216,10 @@ string generate_blockchain_script( const string& chain_meta,
       {
          string next_tx_hash( base64::encode( get_hash( accounts[ j ].rseed, i, rounds ) ) );
 
-         string tx_data( "txn:a=" + to_string( root_id ) + "." + to_string( accounts[ j ].id ) );
+         string tx_data( string( c_file_type_core_transaction_object ) + ":"
+          + string( c_file_type_core_transaction_header_account_prefix ) + to_string( root_id ) + "." + to_string( accounts[ j ].id ) );
+
+         tx_data += "," + string( c_file_type_core_transaction_header_sequence_prefix ) + to_string( accounts[ j ].num_transactions + 1 );
 
          string tx_validate( tx_data );
 
@@ -212,19 +228,21 @@ string generate_blockchain_script( const string& chain_meta,
          private_key tx_priv_key( accounts[ j ].secrets[ rounds + i ] );
          private_key tx_sign_key( accounts[ j ].secrets[ rounds + i - 1 ] );
 
-         string tx_next( ",ap=Sample,pk=" + tx_sign_key.get_public( true, true ) );
+         string tx_next( "," + string( c_file_type_core_transaction_header_application_prefix ) + string( "Sample" )
+          + "," + string( c_file_type_core_transaction_header_public_key_prefix ) + tx_sign_key.get_public( true, true ) );
 
          if( i == 1 )
-            tx_next += ",pt=0";
+            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + string( "0" );
          else
-            tx_next += ",pt=" + hex_to_base64( last_tx_hashes[ j ] );
+            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + hex_to_base64( last_tx_hashes[ j ] );
 
          tx_data += tx_next;
          tx_validate += tx_next;
 
          tx_data += "\\\n";
 
-         tx_next = ",th=" + next_tx_hash + ",tl=" + tx_priv_key.get_address( true, true );
+         tx_next = "," + string( c_file_type_core_transaction_header_transaction_hash_prefix ) + next_tx_hash
+          + "," + string( c_file_type_core_transaction_header_transaction_lock_prefix ) + tx_priv_key.get_address( true, true );
 
          tx_data += tx_next;
          tx_validate += tx_next;
@@ -232,8 +250,9 @@ string generate_blockchain_script( const string& chain_meta,
          tx_data += "\\n\\";
 
          string unique( to_string( i - 1 ) + "X" + to_string( j ) );
-         tx_next ="\nl:pc_" + date_time::standard( ).as_string( )
-          + "_M100_C101_F102=Sample_" + unique + ",F108=test";
+
+         tx_next = "\n" + string( c_file_type_core_transaction_detail_log_prefix )
+          + "pc_" + date_time::standard( ).as_string( ) + "_M100_C101_F102=Sample_" + unique + ",F108=test";
 
          tx_data += tx_next;
          tx_validate += tx_next;
@@ -250,7 +269,8 @@ string generate_blockchain_script( const string& chain_meta,
             last_tx_hashes.push_back( tx_hash );
 
          script += ".file_raw -core blob " + tx_data
-          + "\ns:" + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
+          + "\n" + string( c_file_type_core_transaction_detail_signature_prefix )
+          + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
 
          string previous_block( block_hash );
 
@@ -317,33 +337,40 @@ string generate_blockchain_script( const string& chain_meta,
             }
          }
 
+         ++accounts[ j ].num_transactions;
+
          string next_hash( base64::encode( get_hash( accounts[ j ].seed, i - accounts[ j ].skips, rounds ) ) );
 
-         string data( "blk:a=" + to_string( root_id )
-          + "." + to_string( accounts[ j ].id ) + ",h=" + to_string( i ) );
+         string data( string( c_file_type_core_block_object ) + ":"
+          + string( c_file_type_core_block_header_account_prefix )
+          + to_string( root_id ) + "." + to_string( accounts[ j ].id )
+          + "," + string( c_file_type_core_block_header_height_prefix ) + to_string( i ) );
 
          validate = data;
          data += "\\\n";
 
-         string next( ",w=" + to_string( next_weight ) + ",ah=" + next_hash );
+         string next( "," + string( c_file_type_core_block_header_weight_prefix ) + to_string( next_weight )
+          + "," + string( c_file_type_core_block_header_account_hash_prefix ) + next_hash );
 
          validate += next;
          data += next + "\\\n";
 
          private_key priv_key( accounts[ j ].secrets[ i - accounts[ j ].skips ] );
-         next = ",al=" + priv_key.get_address( true, true ) + ",pb=" + hex_to_base64( previous_block );
+         next = "," + string( c_file_type_core_block_header_account_lock_prefix ) + priv_key.get_address( true, true )
+          + "," + string( c_file_type_core_block_header_previous_block_prefix ) + hex_to_base64( previous_block );
 
          data += next;
          validate += next;
 
          private_key sign_key( accounts[ j ].secrets[ i - accounts[ j ].skips - 1 ] );
 
-         next = ",pk=" + sign_key.get_public( true, true ) + ",tw=" + to_string( total_weight + next_weight );
+         next = "," + string( c_file_type_core_block_header_public_key_prefix ) + sign_key.get_public( true, true )
+          + "," + string( c_file_type_core_block_header_total_weight_prefix ) + to_string( total_weight + next_weight );
 
          data += "\\\n" + next;
          validate += next;
 
-         next = "\nt:" + hex_to_base64( tx_hash );
+         next = "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + hex_to_base64( tx_hash );
 
          validate += next;
          data += "\\n\\" + next;
@@ -380,7 +407,9 @@ string generate_blockchain_script( const string& chain_meta,
 
          data += "\\n\\";
 
-         script += ".file_raw -core blob " + data + "\ns:" + sign_key.construct_signature( validate, true ) + '\n';
+         script += ".file_raw -core blob " + data + "\n"
+          + string( c_file_type_core_block_detail_signature_prefix )
+          + sign_key.construct_signature( validate, true ) + '\n';
       }
 
       script += "#height " + to_string( i ) + "\n";

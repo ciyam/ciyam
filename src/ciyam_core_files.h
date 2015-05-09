@@ -84,6 +84,9 @@ bool CLASS_BASE_DECL_SPEC is_checkpoint_info( const std::string& core_type );
 bool CLASS_BASE_DECL_SPEC is_checkpoint_blocks( const std::string& core_type );
 bool CLASS_BASE_DECL_SPEC is_checkpoint_transactions( const std::string& core_type );
 
+void CLASS_BASE_DECL_SPEC get_unknown_transactions_for_block(
+ const std::string& content, std::vector< std::string >& transaction_hashes );
+
 void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
 
 void CLASS_BASE_DECL_SPEC get_checkpoint_info(
@@ -104,12 +107,18 @@ inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
    return construct_new_block( blockchain, password, "", true, p_new_block_info );
 }
 
+std::string CLASS_BASE_DECL_SPEC construct_new_transaction(
+ const std::string& blockchain, const std::string& password,
+ const std::string& account, const std::string& application,
+ const std::string& transaction_log_lines, bool use_core_file_format = true );
+
 std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
  const std::string& block_content, const std::string& block_signature );
 
 std::string CLASS_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
- unsigned int exp, const std::string& account, account_key_info* p_key_info = 0, uint64_t* p_balance = 0 );
+ unsigned int exp, const std::string& account, account_key_info* p_key_info = 0,
+ uint64_t* p_balance = 0, unsigned long* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
 
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 std::string CLASS_BASE_DECL_SPEC construct_transactions_info_file( const std::string& blockchain );

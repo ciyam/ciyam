@@ -45,6 +45,8 @@ namespace
 const size_t c_id_length = 10;
 const size_t c_hash_buf_size = 32;
 
+const size_t c_tx_soft_limit = 100;
+
 const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 4096;
 
@@ -131,9 +133,11 @@ struct account_info
 
 struct transaction_info
 {
-   transaction_info( ) : is_included_in_best_chain( false ) { }
+   transaction_info( ) : sequence( 0 ), is_included_in_best_chain( false ) { }
 
    string account_id;
+   unsigned long sequence;
+
    string previous_transaction;
 
    bool is_included_in_best_chain;
@@ -966,7 +970,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
          string tx_hash( base64_to_hex( next_line ) );
 
-         if( !has_file( tx_hash ) )
+         if( p_extras && !has_file( tx_hash ) )
             throw runtime_error( "transaction file '" + tx_hash + "' was not found" );
 
          transaction_hashes.push_back( tx_hash );
@@ -1118,7 +1122,10 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   {
                      retagged_transactions.insert( *i );
 
-                     string tx_tag( parallel_block_minted_minter_id + ".t" + i->substr( 0, c_id_length ) );
+                     transaction_info tinfo;
+                     get_transaction_info( tinfo, *i );
+
+                     string tx_tag( parallel_block_minted_minter_id + ".t" + to_string( tinfo.sequence ) );
 
                      ++non_blob_extras;
                      p_extras->push_back( make_pair( *i, tx_tag ) );
@@ -1243,7 +1250,10 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   {
                      retagged_transactions.insert( i->first );
 
-                     string tx_tag( "c" + chain + ".a" + i->second + ".t" + i->first.substr( 0, c_id_length ) );
+                     transaction_info tinfo;
+                     get_transaction_info( tinfo, i->first );
+
+                     string tx_tag( "c" + chain + ".a" + i->second + ".t" + to_string( tinfo.sequence ) );
 
                      ++non_blob_extras;
                      p_extras->push_back( make_pair( i->first, tx_tag ) );
@@ -1348,24 +1358,46 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          // previous transaction).
          if( is_new_chain_head && !transaction_hashes.empty( ) )
          {
+            set< string > included_transactions;
+
             for( size_t i = 0; i < transaction_hashes.size( ); i++ )
             {
                transaction_info tinfo;
 
-               if( get_transaction_info( tinfo, transaction_hashes[ i ] )
-                && !retagged_transactions.count( transaction_hashes[ i ] ) )
+               if( included_transactions.count( transaction_hashes[ i ] )
+                || ( get_transaction_info( tinfo, transaction_hashes[ i ] )
+                && !retagged_transactions.count( transaction_hashes[ i ] ) ) )
                   throw runtime_error( "transaction " + transaction_hashes[ i ] + " has already been included" );
 
+               unsigned long sequence = tinfo.sequence;
+
+               string previous_transaction = tinfo.previous_transaction;
+
+               if( previous_transaction.empty( ) && sequence != 1 )
+                  throw runtime_error( "initial transaction " + transaction_hashes[ i ] + " has incorrect sequence" );
+
                if( !is_debug
-                && !tinfo.previous_transaction.empty( ) && has_file( tinfo.previous_transaction ) )
+                && !previous_transaction.empty( ) && has_file( previous_transaction ) )
                {
-                  if( !get_transaction_info( tinfo, tinfo.previous_transaction ) )
+                  bool included = get_transaction_info( tinfo, previous_transaction );
+
+                  if( !included
+                   && ( included_transactions.count( previous_transaction )
+                   || retagged_transactions.count( previous_transaction ) ) )
+                     included = true;
+
+                  if( !included || sequence != tinfo.sequence + 1 )
                      throw runtime_error( "transaction " + transaction_hashes[ i ] + " is not in sequence" );
                }
 
+               included_transactions.insert( transaction_hashes[ i ] );
+
+               if( retagged_transactions.count( transaction_hashes[ i ] ) )
+                  retagged_transactions.erase( transaction_hashes[ i ] );
+
                ++non_blob_extras;
-               p_extras->push_back( make_pair( transaction_hashes[ i ],
-                "c" + chain + ".a" + account + ".t" + transaction_hashes[ i ].substr( 0, c_id_length ) + "*" ) );
+               p_extras->push_back( make_pair(
+                transaction_hashes[ i ], get_hash_tags( transaction_hashes[ i ] ) + "*" ) );
             }
          }
 
@@ -2052,7 +2084,7 @@ void verify_transaction( const string& content, bool check_sigs,
 
    string transaction_signature;
 
-   unsigned long transaction_number = 0;
+   unsigned long sequence = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -2066,6 +2098,7 @@ void verify_transaction( const string& content, bool check_sigs,
          throw runtime_error( "unexpected empty transaction header attributes" );
 
       bool has_account = false;
+      bool has_sequence = false;
       bool has_public_key = false;
       bool has_application = false;
       bool has_transaction_hash = false;
@@ -2084,6 +2117,7 @@ void verify_transaction( const string& content, bool check_sigs,
                throw runtime_error( "unexpected missing account attribute in transaction header '" + header + "'" );
 
             has_account = true;
+
             account = next_attribute.substr(
              string( c_file_type_core_transaction_header_account_prefix ).length( ) );
 
@@ -2095,12 +2129,30 @@ void verify_transaction( const string& content, bool check_sigs,
             chain = account.substr( 0, pos );
             account.erase( 0, pos + 1 );
          }
+         else if( !has_sequence )
+         {
+            if( next_attribute.find( c_file_type_core_transaction_header_sequence_prefix ) != 0 )
+               throw runtime_error( "unexpected missing sequence attribute in transaction header '" + header + "'" );
+
+            has_sequence = true;
+
+            string value( next_attribute.substr(
+             string( c_file_type_core_transaction_header_sequence_prefix ).length( ) ) );
+
+            regex expr( c_regex_integer );
+
+            if( expr.search( value ) != 0 )
+               throw runtime_error( "unexpected sequence value '" + value + "'" );
+
+            sequence = from_string< unsigned long >( value );
+         }
          else if( !has_application )
          {
             if( next_attribute.find( c_file_type_core_transaction_header_application_prefix ) != 0 )
                throw runtime_error( "unexpected missing application attribute in transaction header '" + header + "'" );
 
             has_application = true;
+
             application = next_attribute.substr(
              string( c_file_type_core_transaction_header_application_prefix ).length( ) );
          }
@@ -2120,8 +2172,13 @@ void verify_transaction( const string& content, bool check_sigs,
                throw runtime_error( "unexpected missing previous transaction attribute in transaction header '" + header + "'" );
 
             has_previous_transaction = true;
-            previous_transaction = base64_to_hex( next_attribute.substr(
+
+            string encoded( next_attribute.substr(
              string( c_file_type_core_transaction_header_previous_tchain_prefix ).length( ) ) );
+
+            // NOTE: The very first transaction will have "0" instead of a valid previous transaction hash.
+            if( encoded != "0" )
+               previous_transaction = base64_to_hex( encoded );
          }
          else if( !has_transaction_hash )
          {
@@ -2129,6 +2186,7 @@ void verify_transaction( const string& content, bool check_sigs,
                throw runtime_error( "unexpected missing transaction hash attribute in transaction header '" + header + "'" );
 
             has_transaction_hash = true;
+
             transaction_hash = next_attribute.substr(
              string( c_file_type_core_transaction_header_transaction_hash_prefix ).length( ) );
          }
@@ -2138,6 +2196,7 @@ void verify_transaction( const string& content, bool check_sigs,
                throw runtime_error( "unexpected missing transaction lock attribute in transaction header '" + header + "'" );
 
             has_transaction_lock = true;
+
             transaction_lock = next_attribute.substr(
              string( c_file_type_core_transaction_header_transaction_lock_prefix ).length( ) );
          }
@@ -2158,6 +2217,10 @@ void verify_transaction( const string& content, bool check_sigs,
 
       if( !ainfo.balance )
          throw runtime_error( "zero balance tx not permitted for account '" + account + "' in chain '" + chain + "'" );
+
+      if( sequence != ainfo.num_transactions + 1 )
+         throw runtime_error( "invalid transaction sequence "
+          + to_string( sequence ) + " for account '" + account + "' in chain '" + chain + "'" );
    }
 
    string verify( string( c_file_type_core_transaction_object ) + ':' + header );
@@ -2233,12 +2296,16 @@ void verify_transaction( const string& content, bool check_sigs,
    if( p_transaction_info )
    {
       p_transaction_info->account_id = "c" + chain + ".a" + account;
+      p_transaction_info->sequence = sequence;
       p_transaction_info->previous_transaction = previous_transaction;
       p_transaction_info->is_included_in_best_chain = get_hash_tags( transaction_id ).empty( );
    }
 
    if( p_extras )
    {
+      if( sequence != 1 && previous_transaction.empty( ) )
+         throw runtime_error( "incorrect initial sequence number for transaction" );
+
       if( !is_debug && !previous_transaction.empty( ) )
       {
          chain_info cinfo;
@@ -2247,9 +2314,13 @@ void verify_transaction( const string& content, bool check_sigs,
          transaction_info tinfo;
          string next_transaction_id( previous_transaction );
 
+         bool is_in_best_chain = get_transaction_info( tinfo, next_transaction_id );
+         if( sequence != tinfo.sequence + 1 )
+            throw runtime_error( "sequence number does not follow that of the previous transaction" );
+
          unsigned int transactions_not_in_best_chain = 0;
 
-         while( !get_transaction_info( tinfo, next_transaction_id ) )
+         while( !is_in_best_chain )
          {
             if( ++transactions_not_in_best_chain > min( c_tx_min_non_confirmed, cinfo.checkpoint_length * 2 ) )
                throw runtime_error( "already has maximum non-confirmed transactions for account: " + account );
@@ -2257,6 +2328,8 @@ void verify_transaction( const string& content, bool check_sigs,
             next_transaction_id = tinfo.previous_transaction;
             if( next_transaction_id.empty( ) || !has_file( next_transaction_id ) )
                break;
+
+            is_in_best_chain = get_transaction_info( tinfo, next_transaction_id );
          }
       }
 
@@ -2265,8 +2338,7 @@ void verify_transaction( const string& content, bool check_sigs,
       account_info ainfo;
       get_account_info( ainfo, transaction_account );
 
-      string transaction_file_tag( "c" + chain
-       + ".a" + account + ".t" + transaction_id.substr( 0, c_id_length ) );
+      string transaction_file_tag( "c" + chain + ".a" + account + ".t" + to_string( sequence ) );
 
       if( !list_file_tags( transaction_file_tag ).empty( ) )
          throw runtime_error( "transaction file tag '" + transaction_file_tag + "' already exists" );
@@ -2290,7 +2362,8 @@ void verify_transaction( const string& content, bool check_sigs,
 
       string extra( c_file_type_str_core_blob );
 
-      extra += get_account_data( ainfo, "", "", transaction_hash, transaction_lock, transaction_id );
+      extra += get_account_data( ainfo, "", "",
+       transaction_hash, transaction_lock, hex_to_base64( transaction_id ) );
 
       p_extras->push_back( make_pair( extra, ainfo.tag ) );
 
@@ -2846,6 +2919,25 @@ bool is_checkpoint_transactions( const string& core_type )
    return ( core_type == string( c_file_type_core_checkpoint_transactions_object ) );
 }
 
+void get_unknown_transactions_for_block( const string& content, vector< string >& transaction_hashes )
+{
+   string::size_type pos = content.find( ':' );
+
+   if( pos == string::npos
+    || content.substr( 0, pos ) != string( c_file_type_core_block_object ) )
+      throw runtime_error( "invalid content provided to get_unknown_transactions_for_block" );
+
+   block_info binfo;
+
+   verify_block( content.substr( pos + 1 ), false, 0, &binfo );
+
+   for( size_t i = 0; i < binfo.transaction_hashes.size( ); i++ )
+   {
+      if( !has_file( binfo.transaction_hashes[ i ] ) )
+         transaction_hashes.push_back( binfo.transaction_hashes[ i ] );
+   }
+}
+
 void get_blockchain_info( const string& content, blockchain_info& bc_info )
 {
    string::size_type pos = content.find( ':' );
@@ -2987,28 +3079,32 @@ string construct_new_block( const string& blockchain,
       }
    }
 
-   string data( "blk:a=" + ( chain.empty( ) ? account_id : chain ) );
+   string data( string( c_file_type_core_block_object )
+    + ":" + string( c_file_type_core_block_header_account_prefix ) + ( chain.empty( ) ? account_id : chain ) );
 
    if( !acct.empty( ) )
       data += "." + acct;
 
-   data += ",h=" + to_string( height );
+   data += "," + string( c_file_type_core_block_header_height_prefix ) + to_string( height );
 
    if( acct.empty( ) )
-      data += ",cm=r:" + blockchain;
+      data += "," + string( c_file_type_core_block_header_chain_meta_prefix )
+       + string( c_file_type_core_block_header_chain_meta_requisite_prefix ) + blockchain;
    else
-      data += ",w=" + to_string( weight ) + ",ah=" + key_info.block_hash + ",al=" + key_info.block_lock;
+      data += "," + string( c_file_type_core_block_header_weight_prefix ) + to_string( weight )
+      + "," + string( c_file_type_core_block_header_account_hash_prefix ) + key_info.block_hash
+      + "," + string( c_file_type_core_block_header_account_lock_prefix ) + key_info.block_lock;
 
    if( !head_hash.empty( ) )
-      data += ",pb=" + hex_to_base64( head_hash );
+      data += "," + string( c_file_type_core_block_header_previous_block_prefix ) + hex_to_base64( head_hash );
 
 #ifdef SSL_SUPPORT
    private_key priv_key( key_info.block_secret.empty( ) ? uuid( ).as_string( ) : key_info.block_secret );
-   data += ",pk=" + priv_key.get_public( true, true );
+   data += "," + string( c_file_type_core_block_header_public_key_prefix ) + priv_key.get_public( true, true );
 #endif
 
    if( !chain.empty( ) )
-      data += ",tw=" + to_string( total_weight );
+      data += "," + string( c_file_type_core_block_header_total_weight_prefix ) + to_string( total_weight );
    else if( !accts_file.empty( ) )
    {
       vector< string > accounts;
@@ -3019,13 +3115,125 @@ string construct_new_block( const string& blockchain,
    }
    else
    {
-      data += "\na:" + account_id
-       + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
-       + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
+      data += "\n" + string( c_file_type_core_block_detail_account_prefix ) + account_id
+       + "," + string( c_file_type_core_block_detail_account_exp_prefix ) + to_string( c_default_exp )
+       + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + key_info.block_hash
+       + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + key_info.block_lock
+       + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
+       + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
+   }
+
+   string all_transaction_tags( list_file_tags( "c" + blockchain + ".a*.t*" ) );
+
+   if( !all_transaction_tags.empty( ) )
+   {
+      vector< string > transaction_tags;
+      split( all_transaction_tags, transaction_tags, '\n' );
+
+      map< unsigned long, string > sequenced_transactions;
+
+      // NOTE: Use the transaction sequence numbers to order all transactions to be added (this will
+      // ensure the ordering is correct and will also naturally favour the accounts that create less
+      // transacions).
+      for( size_t i = 0; i < transaction_tags.size( ); i++ )
+      {
+         string next_transaction_tag( transaction_tags[ i ] );
+         string encoded_hash( hex_to_base64( tag_file_hash( next_transaction_tag ) ) );
+
+         string::size_type pos = next_transaction_tag.find( ".t" );
+
+         if( pos != string::npos )
+         {
+            next_transaction_tag.erase( 0, pos + 2 );
+            pos = next_transaction_tag.find( ".s" );
+
+            if( pos != string::npos )
+               next_transaction_tag.erase( pos );
+
+            sequenced_transactions.insert(
+             make_pair( from_string< unsigned long >( next_transaction_tag ), encoded_hash ) );
+         }
+      }
+
+      size_t num_txs = 0;
+
+      for( map< unsigned long, string >::iterator
+       i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
+      {
+         // NOTE: The "hard limit" for the number of txs per block is determined by the actual
+         // file item size limit but a smaller "soft limit" is being used here.
+         if( ++num_txs > c_tx_soft_limit )
+            break;
+
+         data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + i->second;
+      }
    }
 
 #ifdef SSL_SUPPORT
-   data += "\ns:" + priv_key.construct_signature( data, true );
+   data += "\n" + string( c_file_type_core_block_detail_signature_prefix ) + priv_key.construct_signature( data, true );
+#endif
+
+   if( use_core_file_format )
+      data = string( c_file_type_str_core_blob ) + data;
+
+   return data;
+}
+
+string construct_new_transaction( const string& blockchain,
+ const string& password, const string& account, const string& application,
+ const string& transaction_log_lines, bool use_core_file_format )
+{
+   string acct;
+
+   string id( get_account_id_from_password( password ) );
+   if( !list_file_tags( "c" + blockchain + ".a" + id + ".h*" ).empty( ) )
+      acct = id;
+
+   if( acct.empty( ) )
+      throw runtime_error( "unknown account: " + id );
+
+   if( !account.empty( ) && acct != account )
+      throw runtime_error( "invalid password for account: " + account );
+
+   string data( string( c_file_type_core_transaction_object )
+    + ":" + string( c_file_type_core_transaction_header_account_prefix ) + blockchain + "." + acct );
+
+   uint64_t balance = 0;
+   unsigned long num_transactions = 0;
+
+   string last_transaction_id( "0" );
+
+   account_key_info key_info;
+   string account_id( construct_account_info( blockchain,
+    password, c_default_exp, acct, &key_info, &balance, &num_transactions, &last_transaction_id ) );
+
+   if( balance == 0 )
+      throw runtime_error( "cannot create a transaction for a zero balance account" );
+
+   data += "," + string( c_file_type_core_transaction_header_sequence_prefix ) + to_string( num_transactions + 1 );
+   data += "," + string( c_file_type_core_transaction_header_application_prefix ) + application;
+
+#ifdef SSL_SUPPORT
+   private_key priv_key( key_info.trans_secret );
+   data += "," + string( c_file_type_core_transaction_header_public_key_prefix ) + priv_key.get_public( true, true );
+#endif
+
+   data += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + last_transaction_id;
+
+   data += "," + string( c_file_type_core_transaction_header_transaction_hash_prefix ) + key_info.trans_hash;
+   data += "," + string( c_file_type_core_transaction_header_transaction_lock_prefix ) + key_info.trans_lock;
+
+   if( !transaction_log_lines.empty( ) )
+   {
+      vector< string > tx_log_lines;
+      split( transaction_log_lines, tx_log_lines, '\n' );
+
+      for( size_t i = 0; i < tx_log_lines.size( ); i++ )
+         data += "\n" + string( c_file_type_core_transaction_detail_log_prefix ) + tx_log_lines[ i ];
+   }
+
+#ifdef SSL_SUPPORT
+   data += "\n" + string( c_file_type_core_transaction_detail_signature_prefix ) + priv_key.construct_signature( data, true );
 #endif
 
    if( use_core_file_format )
@@ -3036,12 +3244,14 @@ string construct_new_block( const string& blockchain,
 
 string construct_blob_for_block_content( const string& block_content, const string& block_signature )
 {
-   return string( c_file_type_str_core_blob ) + block_content + "\ns:" + block_signature;
+   return string( c_file_type_str_core_blob ) + block_content
+    + "\n" + string( c_file_type_core_block_detail_signature_prefix ) + block_signature;
 }
 
 string construct_account_info(
  const string& blockchain, const string& password,
- unsigned int exp, const string& account, account_key_info* p_key_info, uint64_t* p_balance )
+ unsigned int exp, const string& account, account_key_info* p_key_info,
+ uint64_t* p_balance, unsigned long* p_num_transactions, string* p_last_transaction_id )
 {
    guard g( g_mutex );
 
@@ -3066,6 +3276,12 @@ string construct_account_info(
 
       if( p_balance )
          *p_balance = ainfo.balance;
+
+      if( p_num_transactions )
+         *p_num_transactions = ainfo.num_transactions;
+
+      if( p_last_transaction_id && !ainfo.last_transaction_id.empty( ) )
+         *p_last_transaction_id = ainfo.last_transaction_id;
 
       last_block_hash = base64::decode( ainfo.block_hash );
       last_trans_hash = base64::decode( ainfo.transaction_hash );
@@ -3197,9 +3413,12 @@ string construct_account_info(
    }
    else
    {
-      return "a:" + account_id + ",e=" + to_string( exponent )
-       + ",h=" + key_info.block_hash + ",l=" + key_info.block_lock
-       + ",th=" + key_info.trans_hash + ",tl=" + key_info.trans_lock;
+      return string( c_file_type_core_block_detail_account_prefix ) + account_id
+       + "," + string( c_file_type_core_block_detail_account_exp_prefix ) + to_string( exponent )
+       + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + key_info.block_hash
+       + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + key_info.block_lock
+       + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
+       + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }    
 }
 

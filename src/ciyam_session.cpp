@@ -1496,6 +1496,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = peer_account_lock( blockchain, password );
       }
+      else if( command == c_cmd_ciyam_session_peer_transaction_info )
+      {
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_blockchain ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_password ) );
+         string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_account ) );
+         string application( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_application ) );
+         string tx_data( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_tx_data ) );
+
+         response = construct_new_transaction( blockchain, password, account, application, tx_data, false );
+      }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
          string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_extkey ) );
