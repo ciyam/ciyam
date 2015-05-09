@@ -783,7 +783,12 @@ void tag_file( const string& name, const string& hash )
    }
    else
    {
-      tag_del( name.substr( 0, pos + 1 ) );
+      // NOTE: If a question mark preceeds the asterisk then only the exact tag
+      // will be removed.
+      if( pos > 1 && name[ pos - 1 ] == '?' )
+         tag_del( name.substr( 0, pos - 1 ) );
+      else
+         tag_del( name.substr( 0, pos + 1 ) );
 
       if( pos != name.length( ) - 1 )
          tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );

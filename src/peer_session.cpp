@@ -53,6 +53,8 @@ namespace
 
 mutex g_mutex;
 
+const char c_reprocess_prefix = '*';
+
 const char* const c_hello = "hello";
 
 const int c_accept_timeout = 250;
@@ -204,12 +206,28 @@ void process_file( const string& hash, const string& blockchain )
 
             try
             {
-               verify_core_file( construct_blob_for_block_content(
-                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ), true, &extras );
+               string block_content( construct_blob_for_block_content(
+                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
 
-               create_raw_file_with_extras( "", extras );
+               vector< string > transaction_hashes;
+               get_unknown_transactions_for_block( block_content, transaction_hashes );
 
-               construct_blockchain_info_file( blockchain );
+               if( !transaction_hashes.empty( ) )
+               {
+                  for( size_t i = 0; i < transaction_hashes.size( ); i++ )
+                     add_peer_file_hash_for_get( transaction_hashes[ i ] );
+
+                  // NOTE: Force the block to be reprocessed after all unknown
+                  // transactions have been first processed.
+                  add_peer_file_hash_for_get( c_reprocess_prefix + hash );
+               }
+               else
+               {
+                  verify_core_file( block_content, true, &extras );
+
+                  create_raw_file_with_extras( "", extras );
+                  construct_blockchain_info_file( blockchain );
+               }
             }
             catch( ... )
             {
@@ -639,6 +657,12 @@ void socket_command_handler::issue_cmd_for_peer( )
    else if( get_last_issued_was_put( ) )
    {
       string next_hash( top_next_peer_file_hash_to_get( ) );
+
+      if( !next_hash.empty( ) && next_hash[ 0 ] == c_reprocess_prefix )
+      {
+         process_file( next_hash.substr( 1 ), blockchain );
+         next_hash.erase( );
+      }
 
       while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
       {
