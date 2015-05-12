@@ -218,7 +218,6 @@ const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
-const char* const c_special_variable_debug_blockchain = "@debug_blockchain";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
@@ -5707,10 +5706,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_check_if_changed:
       s = string( c_special_variable_check_if_changed );
-      break;
-
-      case e_special_var_debug_blockchain:
-      s = string( c_special_variable_debug_blockchain );
       break;
 
       case e_special_var_skip_after_fetch:
