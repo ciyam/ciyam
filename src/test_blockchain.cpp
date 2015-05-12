@@ -234,7 +234,7 @@ string generate_blockchain_script( const string& chain_meta,
          if( i == 1 )
             tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + string( "0" );
          else
-            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + hex_to_base64( last_tx_hashes[ j ] );
+            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + last_tx_hashes[ j ];
 
          tx_data += tx_next;
          tx_validate += tx_next;
@@ -252,7 +252,7 @@ string generate_blockchain_script( const string& chain_meta,
          string unique( to_string( i - 1 ) + "X" + to_string( j ) );
 
          tx_next = "\n" + string( c_file_type_core_transaction_detail_log_prefix )
-          + "pc_" + date_time::standard( ).as_string( ) + "_M100_C101_F102=Sample_" + unique + ",F108=test";
+          + "pc " + date_time::standard( ).as_string( ) + " M100 C101 F102=Sample " + unique + ",F108=test";
 
          tx_data += tx_next;
          tx_validate += tx_next;
@@ -268,9 +268,9 @@ string generate_blockchain_script( const string& chain_meta,
          else
             last_tx_hashes.push_back( tx_hash );
 
-         script += ".file_raw -core blob " + tx_data
+         script += ".file_raw -core blob \"" + tx_data
           + "\n" + string( c_file_type_core_transaction_detail_signature_prefix )
-          + tx_sign_key.construct_signature( tx_validate, true ) + '\n';
+          + tx_sign_key.construct_signature( tx_validate, true ) + "\"\n";
 
          string previous_block( block_hash );
 
@@ -357,7 +357,7 @@ string generate_blockchain_script( const string& chain_meta,
 
          private_key priv_key( accounts[ j ].secrets[ i - accounts[ j ].skips ] );
          next = "," + string( c_file_type_core_block_header_account_lock_prefix ) + priv_key.get_address( true, true )
-          + "," + string( c_file_type_core_block_header_previous_block_prefix ) + hex_to_base64( previous_block );
+          + "," + string( c_file_type_core_block_header_previous_block_prefix ) + previous_block;
 
          data += next;
          validate += next;
@@ -370,7 +370,7 @@ string generate_blockchain_script( const string& chain_meta,
          data += "\\\n" + next;
          validate += next;
 
-         next = "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + hex_to_base64( tx_hash );
+         next = "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + tx_hash;
 
          validate += next;
          data += "\\n\\" + next;
@@ -455,7 +455,7 @@ int main( int argc, char* argv[ ] )
       }
       else
       {
-         string chain_meta( argv[ 1 ] );
+         string chain_meta( "T" + string( argv[ 1 ] ) );
          size_t num_accounts = from_string< size_t >( argv[ 2 ] );
          size_t num_rounds = from_string< size_t >( argv[ 3 ] );
 

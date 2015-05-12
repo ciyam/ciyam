@@ -202,32 +202,39 @@ void process_file( const string& hash, const string& blockchain )
       {
          if( pos != string::npos )
          {
-            vector< pair< string, string > > extras;
-
             try
             {
+               vector< pair< string, string > > extras;
+
                string block_content( construct_blob_for_block_content(
                 extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
 
-               vector< string > transaction_hashes;
-               get_unknown_transactions_for_block( block_content, transaction_hashes );
+               verify_core_file( block_content, true, &extras );
 
-               if( !transaction_hashes.empty( ) )
-               {
-                  for( size_t i = 0; i < transaction_hashes.size( ); i++ )
-                     add_peer_file_hash_for_get( transaction_hashes[ i ] );
+               create_raw_file_with_extras( "", extras );
+               construct_blockchain_info_file( blockchain );
+            }
+            catch( ... )
+            {
+               delete_file( hash.substr( 0, pos ), false );
+               throw;
+            }
+         }
+      }
+      else if( is_transaction( core_type ) )
+      {
+         if( pos != string::npos )
+         {
+            try
+            {
+               vector< pair< string, string > > extras;
 
-                  // NOTE: Force the block to be reprocessed after all unknown
-                  // transactions have been first processed.
-                  add_peer_file_hash_for_get( c_reprocess_prefix + hash );
-               }
-               else
-               {
-                  verify_core_file( block_content, true, &extras );
+               string transaction_content( construct_blob_for_transaction_content(
+                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
 
-                  create_raw_file_with_extras( "", extras );
-                  construct_blockchain_info_file( blockchain );
-               }
+               verify_core_file( transaction_content, true, &extras );
+
+               create_raw_file_with_extras( "", extras );
             }
             catch( ... )
             {
@@ -247,10 +254,10 @@ void process_file( const string& hash, const string& blockchain )
 
             if( !has_file( cp_info.checkpoint_hash ) )
             {
-               // NOTE: Fetch any blocks that have not already been stored locally.
-               for( size_t i = 0; i < cp_info.block_hashes_with_sigs.size( ); i++ )
+               // NOTE: Fetch any blobs that have not already been stored locally.
+               for( size_t i = 0; i < cp_info.blob_hashes_with_sigs.size( ); i++ )
                {
-                  string hash_with_sig( cp_info.block_hashes_with_sigs[ i ] );
+                  string hash_with_sig( cp_info.blob_hashes_with_sigs[ i ] );
 
                   string::size_type pos = hash_with_sig.find( ':' );
 
@@ -311,10 +318,10 @@ void process_file( const string& hash, const string& blockchain )
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
 
-               // NOTE: Fetch any blocks that have not already been stored locally.
-               for( size_t i = 0; i < bc_info.block_hashes_with_sigs.size( ); i++ )
+               // NOTE: Fetch any blobs that have not already been stored locally.
+               for( size_t i = 0; i < bc_info.blob_hashes_with_sigs.size( ); i++ )
                {
-                  string hash_with_sig( bc_info.block_hashes_with_sigs[ i ] );
+                  string hash_with_sig( bc_info.blob_hashes_with_sigs[ i ] );
 
                   string::size_type pos = hash_with_sig.find( ':' );
 
