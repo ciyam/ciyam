@@ -4307,6 +4307,31 @@ void add_peer_ip_addr_for_rejection( const string& ip_addr )
    g_rejected_peer_ip_addrs.insert( ip_addr );
 }
 
+void remove_peer_ip_addr_from_rejection( const string& ip_addr )
+{
+   guard g( g_mutex );
+
+   g_rejected_peer_ip_addrs.erase( ip_addr );
+}
+
+string list_peer_ip_addrs_for_rejection( )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   for( set< string >::iterator
+    i = g_rejected_peer_ip_addrs.begin( ); i != g_rejected_peer_ip_addrs.end( ); ++i )
+   {
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      retval += *i;
+   }
+
+   return retval;
+}
+
 void get_blockchains( map< int, string >& blockchains )
 {
    guard g( g_mutex );

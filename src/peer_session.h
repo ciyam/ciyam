@@ -66,7 +66,7 @@ std::string peer_account_lock( const std::string& blockchain, const std::string&
 void create_peer_listener( int port, const std::string& blockchain );
 
 void create_peer_initiator( int port,
- const std::string& ip_addr, const std::string& blockchain, bool skip_registration = false );
+ const std::string& ip_addr, const std::string& blockchain, bool force = false );
 
 void create_initial_peer_sessions( );
 

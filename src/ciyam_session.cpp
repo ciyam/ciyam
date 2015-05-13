@@ -1459,9 +1459,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {
+         bool list( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_reject_list ) );
+         bool remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_reject_remove ) );
          string ip_addr( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_reject_ip_addr ) );
 
-         add_peer_ip_addr_for_rejection( ip_addr );
+         if( list )
+            response = list_peer_ip_addrs_for_rejection( );
+         else
+         {
+            if( !remove )
+               add_peer_ip_addr_for_rejection( ip_addr );
+            else
+               remove_peer_ip_addr_from_rejection( ip_addr );
+         }      
       }
       else if( command == c_cmd_ciyam_session_peer_connect )
       {
