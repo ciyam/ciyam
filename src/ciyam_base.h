@@ -108,6 +108,9 @@ bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_ip_addr( const std::string& ip_addr );
 
 void CIYAM_BASE_DECL_SPEC add_peer_ip_addr_for_rejection( const std::string& ip_addr );
+void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string& ip_addr );
+
+std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
 
 void CIYAM_BASE_DECL_SPEC get_blockchains( std::map< int, std::string >& blockchains );
 

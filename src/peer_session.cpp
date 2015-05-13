@@ -137,10 +137,15 @@ string get_peer_to_retry( const string& blockchain )
 
    string retval;
 
-   if( !g_peers_to_retry[ blockchain ].empty( ) )
+   while( !g_peers_to_retry[ blockchain ].empty( ) )
    {
       retval = g_peers_to_retry[ blockchain ].front( );
       g_peers_to_retry[ blockchain ].pop_front( );
+
+      if( get_is_accepted_peer_ip_addr( retval.substr( 0, retval.find( '!' ) ) ) )
+         break;
+      else
+         retval.erase( );
    }
 
    return retval;
@@ -1587,7 +1592,7 @@ void peer_listener::on_start( )
                      peer_port = atoi( peer_info.substr( pos + 1 ).c_str( ) );
                   }
 
-                  if( !peer_info.empty( ) && get_is_accepted_peer_ip_addr( peer_ip_addr ) )
+                  if( !peer_info.empty( ) )
                   {
 #ifdef SSL_SUPPORT
                      auto_ptr< ssl_socket > ap_socket( new ssl_socket );
@@ -1681,9 +1686,9 @@ void create_peer_listener( int port, const string& blockchain )
    p_peer_listener->start( );
 }
 
-void create_peer_initiator( int port, const string& ip_addr, const string& blockchain, bool skip_registration )
+void create_peer_initiator( int port, const string& ip_addr, const string& blockchain, bool force )
 {
-   if( !skip_registration && !blockchain.empty( ) )
+   if( !force && !blockchain.empty( ) )
       register_blockchain( port, blockchain );
 
    if( g_server_shutdown || has_max_peers( ) )
@@ -1699,7 +1704,9 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
    {
       ip_address address( ip_addr.c_str( ), port );
 
-      if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
+      if( force )
+         remove_peer_ip_addr_from_rejection( address.get_addr_string( ) );
+      else if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
          throw runtime_error( "ip address " + ip_addr + " is not permitted" );
 
       if( ap_socket->connect( address, c_connect_timeout ) )
