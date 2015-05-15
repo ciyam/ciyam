@@ -2383,19 +2383,21 @@ void verify_transaction( const string& content, bool check_sigs,
          throw runtime_error( "invalid incompleted transaction header '" + header + "'" );
    }
 
+   unsigned long expected_sequence = 0;
+
+   account_info ainfo;
+   string account_hash;
+
    if( p_extras )
    {
       string tx_account( "c" + chain + ".a" + account );
 
-      account_info ainfo;
-      get_account_info( ainfo, tx_account );
+      account_hash = get_account_info( ainfo, tx_account );
 
       if( !ainfo.balance )
          throw runtime_error( "zero balance tx not permitted for account '" + account + "' in chain '" + chain + "'" );
 
-      if( sequence != ainfo.num_transactions + 1 )
-         throw runtime_error( "invalid transaction sequence "
-          + to_string( sequence ) + " for account '" + account + "' in chain '" + chain + "'" );
+      expected_sequence = ainfo.num_transactions + 1;
    }
 
    string verify( string( c_file_type_core_transaction_object ) + ':' + header );
@@ -2455,8 +2457,17 @@ void verify_transaction( const string& content, bool check_sigs,
    if( p_extras && !had_signature )
       throw runtime_error( "transaction signature missing" );
 
+   string error_message;
+
    if( !cinfo.is_test && !num_log_lines )
-      throw runtime_error( "invalid missing tx log lines" );
+      error_message = "invalid missing tx log lines";
+   else if( sequence != expected_sequence )
+      error_message = "invalid transaction sequence " + to_string( sequence );
+   else if( sequence != 1 && previous_transaction.empty( ) )
+      error_message = "incorrect initial sequence number for transaction";
+
+   if( !p_extras && !error_message.empty( ) )
+      throw runtime_error( error_message );
 
    string raw_transaction_data( c_file_type_str_core_blob );
    raw_transaction_data += verify;
@@ -2473,21 +2484,18 @@ void verify_transaction( const string& content, bool check_sigs,
 
    if( p_extras )
    {
-      if( sequence != 1 && previous_transaction.empty( ) )
-         throw runtime_error( "incorrect initial sequence number for transaction" );
-
-      if( !cinfo.is_test && !previous_transaction.empty( ) )
+      if( !cinfo.is_test && !previous_transaction.empty( ) && error_message.empty( ) )
       {
          transaction_info tinfo;
          string next_transaction_id( previous_transaction );
 
          bool is_in_best_chain = get_transaction_info( tinfo, next_transaction_id );
          if( sequence != tinfo.sequence + 1 )
-            throw runtime_error( "sequence number does not follow that of the previous transaction" );
+            error_message = "sequence number does not follow that of the previous transaction";
 
          unsigned int transactions_not_in_best_chain = 0;
 
-         while( !is_in_best_chain )
+         while( !is_in_best_chain && error_message.empty( ) )
          {
             if( ++transactions_not_in_best_chain > min( c_tx_min_non_confirmed, cinfo.checkpoint_length * 2 ) )
                throw runtime_error( "already has maximum non-confirmed transactions for account: " + account );
@@ -2500,11 +2508,6 @@ void verify_transaction( const string& content, bool check_sigs,
          }
       }
 
-      string transaction_account( "c" + chain + ".a" + account );
-
-      account_info ainfo;
-      get_account_info( ainfo, transaction_account );
-
       string transaction_file_tag( "c" + chain + ".a" + account + ".t" + to_string( sequence ) );
 
       if( !list_file_tags( transaction_file_tag ).empty( ) )
@@ -2516,14 +2519,25 @@ void verify_transaction( const string& content, bool check_sigs,
       p_extras->push_back( make_pair( raw_transaction_data, transaction_file_tag ) );
 
       if( !check_if_valid_hash_pair( transaction_hash, ainfo.transaction_hash, true ) )
-         throw runtime_error( "invalid hash in transaction" );
+         error_message = "invalid hash in transaction";
 
       if( ainfo.transaction_lock != transaction_address
        && ainfo.transaction_lock != transaction_test_address )
-         throw runtime_error( "invalid public key in transaction" );
+         error_message = "invalid public key in transaction";
 
       if( ainfo.num_transactions && !has_file( previous_transaction ) )
-         throw runtime_error( "previous transaction '" + previous_transaction + "' does not exist" );
+         error_message = "previous transaction '" + previous_transaction + "' does not exist";
+
+      // NOTE: If an invalid (but correctly signed) tx has been provided by an account
+      // then ban that account (as most likely this would only occur due to an account
+      // trying to cause a fork).
+      if( !error_message.empty( ) )
+      {
+         tag_file( "c" + chain + ".a" + account
+          + ".h" + to_string( ainfo.last_height ) + ".b*anned", account_hash );
+
+         throw runtime_error( error_message );
+      }
 
       ++ainfo.num_transactions;
 
