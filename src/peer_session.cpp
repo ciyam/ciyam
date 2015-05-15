@@ -197,9 +197,12 @@ void process_file( const string& hash, const string& blockchain )
 
    // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
+   // If the hash is the same as the "blockchain info" file that was previously processed
+   // then just delete the file and if the file has any tags then it is assumed that this
+   // file was already processed by another peer session.
    if( hash.substr( 0, pos ) == last_blockchain_info )
       delete_file( hash.substr( 0, pos ), false );
-   else if( info_parts.size( ) == 3 )
+   else if( info_parts.size( ) == 3 && get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
    {
       string core_type( info_parts[ 2 ] );
 
@@ -1729,7 +1732,20 @@ void create_initial_peer_sessions( )
    {
       string ip_addr( i->first );
 
-      int port = get_blockchain_port( i->second );
+      string blockchain( i->second );
+
+      int port = 0;
+
+      // NOTE: A specific port can be provided if an initial peer
+      // is not using the standard port for that blockchain.
+      string::size_type pos = blockchain.find( ':' );
+      if( pos != string::npos )
+      {
+         port = atoi( blockchain.substr( pos + 1 ).c_str( ) );
+         blockchain.erase( pos );
+      }
+      else
+         port = get_blockchain_port( blockchain );
 
       if( !get_is_accepted_peer_ip_addr( ip_addr ) )
          continue;
@@ -1750,7 +1766,7 @@ void create_initial_peer_sessions( )
          if( ap_socket->connect( address ) )
          {
             peer_session* p_session = construct_session( false,
-             ap_socket, address.get_addr_string( ) + "=" + i->second + ":" + to_string( port ) );
+             ap_socket, address.get_addr_string( ) + "=" + blockchain + ":" + to_string( port ) );
 
             if( p_session )
                p_session->start( );
