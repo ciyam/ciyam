@@ -1653,7 +1653,7 @@ void peer_listener::on_start( )
    delete this;
 }
 
-string peer_account_lock( const string& blockchain, const string& password )
+string peer_account_lock( const string& blockchain, const string& password, bool check_only )
 {
    guard g( g_mutex );
 
@@ -1663,18 +1663,25 @@ string peer_account_lock( const string& blockchain, const string& password )
    {
       if( g_blockchain_passwords.count( blockchain ) )
       {
-         // NOTE: For added security overwrite the password characters before removing
-         // the string from the container.
-         for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].length( ); i++ )
-            g_blockchain_passwords[ blockchain ][ i ] = '\0';
+         if( check_only )
+            retval = check_account( blockchain, g_blockchain_passwords[ blockchain ] );
+         else
+         {
+            // NOTE: For added security overwrite the password characters before removing
+            // the string from the container.
+            for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].length( ); i++ )
+               g_blockchain_passwords[ blockchain ][ i ] = '\0';
 
-         g_blockchain_passwords.erase( blockchain );
+            g_blockchain_passwords.erase( blockchain );
+         }
       }
    }
    else
    {
       retval = check_account( blockchain, password );
-      g_blockchain_passwords[ blockchain ] = password;
+
+      if( !check_only )
+         g_blockchain_passwords[ blockchain ] = password;
    }
 
    return retval;

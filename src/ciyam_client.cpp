@@ -106,7 +106,7 @@ class ciyam_console_command_handler : public console_command_handler
     socket( socket ),
     had_chk_command( false )
    {
-      set_custom_startup_options( 1, "[<port> or <host[:port]>]" );
+      set_custom_startup_options( 1, "[<port> or <host[:|-]port]>]" );
    }
 
    const char* get_host( ) const { return host.c_str( ); }
@@ -489,12 +489,19 @@ void ciyam_console_command_handler::process_custom_startup_option( size_t num, c
 {
    if( num == 0 )
    {
-      if( !option.empty( ) && option[ 0 ] >= '0' && option[ 0 ] <= '9' )
+      if( !option.empty( )
+       && option.find( '.' ) == string::npos
+       && option[ 0 ] >= '0' && option[ 0 ] <= '9'  )
          port = atoi( option.c_str( ) );
       else
       {
          host = option;
          string::size_type pos = host.find( ':' );
+
+         // NOTE: If host is an IPV6 address then use '-' as the port separator.
+         if( pos == string::npos || host.find( ':', pos + 1 ) != string::npos )
+            pos = host.find( '-' );
+
          if( pos != string::npos )
          {
             port = atoi( host.substr( pos + 1 ).c_str( ) );

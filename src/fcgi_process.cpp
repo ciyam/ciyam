@@ -558,14 +558,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 #ifdef IS_TRADITIONAL_PLATFORM
                   item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
 #else
-               {
-                  if( view.hpassword_fields.count( view.field_ids[ i ] ) )
-                     item_values[ field_num ] = password_decrypt(
-                      item_values[ field_num ], p_session_info->user_pwd_hash );
-                  else
-                     item_values[ field_num ] = password_decrypt( item_values[ field_num ],
-                      password_decrypt( p_session_info->user_crypt, p_session_info->user_pwd_hash ) );
-               }
+                  item_values[ field_num ] = password_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
 #endif
 
                if( view.field_ids[ i ] == view.filename_field )
@@ -1350,6 +1343,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             if( cmd != c_cmd_join && cmd != c_cmd_open && !mod_info.user_class_id.empty( ) )
             {
+#ifndef IS_TRADITIONAL_PLATFORM
+               extra_content << "<div id=\"sign\"><ul><li><a href=\"http://" << input_data[ c_http_param_host ]
+                << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_password;
+
+               extra_content << "\">" << GDS( c_display_sign_in ) << "</a></li></ul>";
+
+               extra_content << "</div>\n";
+#else
                // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
                // should not be menus but just direct links to the "client crypto" implementations.
                extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
@@ -1404,6 +1405,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                }
 
                extra_content << "</ul></div>\n";
+#endif
             }
          }
          else
@@ -1475,7 +1477,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                extra_content << GDS( c_display_logged_in_as ) << " "
                 << ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name );
 
-            if( !p_session_info->needs_pin
+            bool can_change_password = true;
+
+#ifndef IS_TRADITIONAL_PLATFORM
+            if( module_name != "Meta" )
+               can_change_password = false;
+#endif
+            if( can_change_password && !p_session_info->needs_pin
              && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
             {
                if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )

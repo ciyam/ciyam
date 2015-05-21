@@ -1501,10 +1501,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_account_lock )
       {
-         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_password ) );
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_blockchain ) );
+         bool check_only( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_check ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_password ) );
 
-         response = peer_account_lock( blockchain, password );
+         response = peer_account_lock( blockchain, password, check_only );
       }
       else if( command == c_cmd_ciyam_session_peer_transaction_info )
       {
@@ -3699,6 +3700,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string ltf_name( name + ".ltf" );
          string key_name( name + ".dead_keys.lst" );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         string undo_name( name + ".undo.sql" );
+#endif
+
          string sav_hdr_name( hdr_name + ".sav" );
          string sav_idx_name( idx_name + ".sav" );
          string sav_dat_name( dat_name + ".sav" );
@@ -3790,6 +3795,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file( idx_name );
             remove_file( dat_name );
             remove_file( sql_name );
+#ifndef IS_TRADITIONAL_PLATFORM
+            remove_file( undo_name );
+#endif
          }
          else if( !partial )
          {

@@ -16,7 +16,7 @@ peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{
 peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]
 peer_block_info "get new peer block information" <val//blockchain><val//password>[<val//account>]
 peer_account_info "get peer account information" <val//blockchain><val//password>[<val//exponent>][<val//account>]
-peer_account_lock "lock or unlock a peer account" <val//blockchain>[<val//password>]
+peer_account_lock "lock/unlock or check a peer account" <val//blockchain>[<opt/-check/check>][<val//password>]
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>
 crypto_keys "create keys" <val//extkey>[<opt/-b64/base64>][<val//passphrase>]
 crypto_sign "sign a message" <val//privkey><val//message>
