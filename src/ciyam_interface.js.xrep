@@ -513,12 +513,16 @@ function load2( )
    }
 
    var dummy = 'dummy=';
-   var num_random = 10 + Math.floor( Math.random( ) * 6 );
+   if( encryptPosts )
+   {
+      var num_random = 10 + Math.floor( Math.random( ) * 6 );
 
-   for( var i = 0; i < num_random; i++ )
-      dummy += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
+      for( var i = 0; i < num_random; i++ )
+         dummy += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
-   full_context += '&' + dummy;
+      full_context += '&' + dummy;
+   }
+
    full_context += '&ver=' + scriptVersion;
 
    if( qsFurther != '' )

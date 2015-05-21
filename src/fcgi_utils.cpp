@@ -1302,6 +1302,10 @@ void output_login_logout( const string& module_name, ostream& os,
    {
       if( is_activation )
          os << "<h3 class=\"right-top\">" << GDS( c_display_activate_account ) << "</h3>" << endl;
+#ifndef IS_TRADITIONAL_PLATFORM
+      else if( module_name != "Meta" )
+         os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_password ) << "</h3>" << endl;
+#endif
       else
          os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
    }

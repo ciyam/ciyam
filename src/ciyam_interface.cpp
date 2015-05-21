@@ -122,6 +122,7 @@ const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
 const char* const c_authenticate_file = "authenticate.htms";
+const char* const c_login_password_file = "login_password.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
 const char* const c_login_persistent_file = "login_persistent.htms";
 const char* const c_password_persistent_file = "password_persistent.htms";
@@ -196,6 +197,7 @@ string g_password_html;
 string g_ssl_signup_html;
 string g_authenticate_html;
 
+string g_login_password_html;
 string g_ciyam_interface_html;
 string g_login_persistent_html;
 string g_password_persistent_html;
@@ -803,6 +805,7 @@ void request_handler::process_request( )
       if( !session_id.empty( ) && session_id != c_new_session )
       {
          p_session_info = get_session_info( session_id, false );
+
          if( p_session_info )
          {
             if( p_session_info->content_pwd_hash.empty( ) )
@@ -922,10 +925,12 @@ void request_handler::process_request( )
 
             if( !p_session_info )
             {
-               if( cmd.empty( ) || cmd == c_cmd_home
-                || cmd == c_cmd_quit || cmd == c_cmd_login || !username.empty( ) || !userhash.empty( ) )
+               if( cmd.empty( ) || cmd == c_cmd_home || cmd == c_cmd_quit || cmd == c_cmd_login
+                || ( cmd == c_cmd_password && !password.empty( ) ) || !username.empty( ) || !userhash.empty( ) )
                {
-                  cmd = c_cmd_home;
+                  if( cmd != c_cmd_password )
+                     cmd = c_cmd_home;
+
                   session_id.erase( );
                }
 
@@ -948,7 +953,7 @@ void request_handler::process_request( )
       bool using_anonymous = false;
 
       if( !is_kept
-       && cmd != c_cmd_credentials
+       && cmd != c_cmd_password && cmd != c_cmd_credentials
        && !is_invalid_session && mod_info.allows_anonymous_access
        && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
@@ -956,7 +961,7 @@ void request_handler::process_request( )
          using_anonymous = true;
       }
 
-      if( cmd == c_cmd_credentials )
+      if( cmd == c_cmd_password || cmd == c_cmd_credentials )
       {
          cmd = c_cmd_home;
          is_sign_in = true;
@@ -1107,6 +1112,11 @@ void request_handler::process_request( )
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+            if( module_name != "Meta" )
+               login_html = g_login_password_html;
+#endif
+
             output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
 
             if( cookies_permitted )
@@ -1199,6 +1209,7 @@ void request_handler::process_request( )
 
                      string server_id( identity_info.substr( 0, pos ) );
 
+#ifdef IS_TRADITIONAL_PLATFORM
                      string reg_key;
                      string::size_type npos = server_id.find( '-' );
                      if( npos != string::npos )
@@ -1209,6 +1220,7 @@ void request_handler::process_request( )
 
                      if( reg_key != get_storage_info( ).reg_key )
                         throw runtime_error( GDS( c_display_system_is_under_maintenance ) );
+#endif
 
                      if( get_server_id( ) != server_id )
                      {
@@ -1369,18 +1381,36 @@ void request_handler::process_request( )
                      p_session_info->user_module = module_name;
                   else
                   {
-                     string new_password( newhash );
+                     bool has_fetched = false;
+#ifndef IS_TRADITIONAL_PLATFORM
+                     if( module_name != "Meta" )
+                     {
+                        if( !simple_command( *p_session_info, "peer_account_lock "
+                         + get_storage_info( ).reg_key + " " + password, &username ) )
+                           throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
-                     fetch_user_record( id_for_login, module_id, module_name, mod_info,
-                      *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
-                      true, username, userhash, password, unique_id );
+                        fetch_user_record( id_for_login, module_id, module_name,
+                         mod_info, *p_session_info, false, false, username, "", "", "" );
+
+                        has_fetched = true;
+                     }
+#endif
+                     if( !has_fetched )
+                        fetch_user_record( id_for_login, module_id, module_name, mod_info,
+                         *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
+                         true, username, userhash, password, unique_id );
 
                      pwd_hash = p_session_info->user_pwd_hash;
 
 #ifndef IS_TRADITIONAL_PLATFORM
-                     if( !simple_command( *p_session_info,
-                      "session_variable @crypt_key " + password_decrypt( p_session_info->user_crypt, pwd_hash ) ) )
-                        throw runtime_error( "unexpected error setting crypt_key session variable" );
+                     if( module_name != "Meta" )
+                     {
+                        pwd_hash = p_session_info->user_pwd_hash = sha256( password ).get_digest_as_string( );
+
+                        if( !simple_command( *p_session_info,
+                         "session_variable @crypt_key " + p_session_info->user_pwd_hash ) )
+                           throw runtime_error( "unexpected error setting crypt_key session variable" );
+                     }
 #endif
                   }
 
@@ -2262,11 +2292,7 @@ void request_handler::process_request( )
                   error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                else
                {
-#ifndef IS_TRADITIONAL_PLATFORM
-                  string encrypted_new_password( password_encrypt( new_password, new_password ) );
-#else
                   string encrypted_new_password( password_encrypt( new_password, get_server_id( ) ) );
-#endif
 
                   vector< pair< string, string > > pwd_field_value_pairs;
                   pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
@@ -2338,11 +2364,17 @@ void request_handler::process_request( )
       if( cmd != c_cmd_status )
       {
          extra_content_func += " serverId = '" + g_id + "';";
+
+         bool needs_unique = true;
 #ifndef IS_TRADITIONAL_PLATFORM
-         extra_content_func += " uniqueId = '';";
-#else
-         extra_content_func += " uniqueId = '" + unique_id + "';";
+         if( module_name != "Meta" )
+         {
+            needs_unique = false;
+            extra_content_func += " uniqueId = '';";
+         }
 #endif
+         if( needs_unique )
+            extra_content_func += " uniqueId = '" + unique_id + "';";
       }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
@@ -2398,6 +2430,11 @@ void request_handler::process_request( )
       {
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( module_name != "Meta" )
+            login_html = g_login_password_html;
+#endif
 
          if( created_session && p_session_info->logged_in )
          {
@@ -2703,6 +2740,14 @@ int main( int argc, char* argv[ ] )
       str_replace( g_authenticate_html, c_pin_name, GDS( c_display_pin ) );
       str_replace( g_authenticate_html, c_pin_message, GDS( c_display_pin_message ) );
       str_replace( g_authenticate_html, c_continue, GDS( c_display_continue ) );
+
+      if( file_exists( c_login_password_file ) )
+      {
+         g_login_password_html = buffer_file( c_login_password_file );
+
+         str_replace( g_login_password_html, c_login, GDS( c_display_login ) );
+         str_replace( g_login_password_html, c_password, GDS( c_display_password ) );
+      }
 
       if( file_exists( c_login_persistent_file ) )
       {

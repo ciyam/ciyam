@@ -116,6 +116,7 @@ const char* const c_cmd_plist = "plist";
 const char* const c_cmd_pview = "pview";
 const char* const c_cmd_status = "status";
 const char* const c_cmd_activate = "activate";
+const char* const c_cmd_password = "password";
 const char* const c_cmd_credentials = "credentials";
 
 const char* const c_param_act = "act";
@@ -587,6 +588,7 @@ const char* const c_display_click_here_to_go_back_parm_href = "{@href}";
 const char* const c_display_ssl_sign_up_main_form = "Enter your desired User Id and Email then select an Account Type and Send Request.";
 const char* const c_display_completed_successfully = "Completed Succesfully";
 const char* const c_display_sign_up_for_an_account = "Sign Up for an Account";
+const char* const c_display_sign_in_using_password = "Sign In Using Password";
 const char* const c_display_authentication_required = "Authentication Required";
 const char* const c_display_click_here_to_view_file = "Click {@href}here{#href} to view file ({@ext}).";
 const char* const c_display_click_here_to_view_file_parm_ext = "{@ext}";

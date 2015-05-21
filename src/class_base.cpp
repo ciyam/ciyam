@@ -3046,20 +3046,24 @@ string decrypt( const string& s )
    if( s.length( ) < 20 )
       return s;
    else
-#ifdef IS_TRADITIONAL_PLATFORM
-      return decrypt_password( s, false, false, true );
-#else
-      return decrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
-#endif
+   {
+      string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+
+      if( crypt_key.empty( ) )
+         return decrypt_password( s, false, false, true );
+      else
+         return decrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
+   }
 }
 
 string encrypt( const string& s )
 {
-#ifdef IS_TRADITIONAL_PLATFORM
-   return encrypt_password( s, false, false, true );
-#else
-   return encrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
-#endif
+   string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+
+   if( crypt_key.empty( ) )
+      return encrypt_password( s, false, false, true );
+   else
+      return encrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
 }
 
 string decrypt( const string& pw, const string& s )
