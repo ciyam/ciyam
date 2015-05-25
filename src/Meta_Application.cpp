@@ -309,8 +309,9 @@ const char* const c_procedure_id_Test_Proc_1 = "127495";
 const char* const c_procedure_id_Test_Proc_2 = "127497";
 
 const uint64_t c_modifier_Has_No_Application_Log = UINT64_C( 0x100 );
-const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x200 );
-const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x400 );
+const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x800 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -354,7 +355,7 @@ int g_default_Default_Multiline_Max_Rows = int( 50 );
 int g_default_Default_Multiline_Min_Rows = int( 10 );
 int g_default_Default_Multiline_Text_Limit = int( 2000 );
 int g_default_Default_Multiline_Text_Trunc = int( 50 );
-bool g_default_Encrypt_Dynamic_Content = bool( 1 );
+bool g_default_Encrypt_Dynamic_Content = bool( 0 );
 string g_default_Generate_Details = string( );
 string g_default_Generate_Status = string( );
 int g_default_Generate_Type = int( 0 );
@@ -366,7 +367,7 @@ bool g_default_Print_Lists_With_Row_Numbers = bool( 0 );
 string g_default_Registration_Key = string( );
 bool g_default_Show_Inaccessible_Modules = bool( 0 );
 bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
-bool g_default_Use_Embedded_Images = bool( 1 );
+bool g_default_Use_Embedded_Images = bool( 0 );
 bool g_default_Use_TLS_Sessions = bool( 0 );
 bool g_default_Use_URL_Checksum = bool( 0 );
 bool g_default_Use_Vertical_Menu = bool( 0 );
@@ -2721,6 +2722,10 @@ uint64_t Meta_Application::impl::get_state( ) const
 
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
+
+#ifndef IS_TRADITIONAL_PLATFORM
+   state |= c_modifier_Is_Non_Traditional;
+#endif
    // [<finish get_state>]
 
    return state;

@@ -555,6 +555,11 @@ void output_list_form( ostream& os,
    if( is_parent_edit || sess_info.user_id.empty( ) )
       allow_list_actions = false;
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   if( mod_info.name != "Meta" && sess_info.user_id == c_guest_user_key )
+      allow_list_actions = false;
+#endif
+
    bool is_no_new = has_perm_extra( c_list_type_extra_no_new, extras, sess_info );
    bool is_no_erase = has_perm_extra( c_list_type_extra_no_erase, extras, sess_info );
    bool is_owner_new = has_perm_extra( c_list_type_extra_owner_new, extras, sess_info );

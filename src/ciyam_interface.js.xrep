@@ -1289,7 +1289,7 @@ function focus_on_first_text( )
              || form.elements[ j ].type == 'textarea'
              || form.elements[ j ].type == 'password' )
             {
-               if( form.elements[ j ].type == 'text' )
+               if( form.elements[ j ].type == 'text' || form.elements[ j ].type == 'password' )
                   form.elements[ j ].select( );
 
                form.elements[ j ].focus( );
