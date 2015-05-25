@@ -2392,7 +2392,7 @@
      <ftype>bool
      <extra>non_new+always_editable
      <mandatory>true
-     <modifiers>200:relegate,100:relegate
+     <modifiers>400:relegate,100:relegate
     </field>
     <field/>
      <name>field_application_create_database
@@ -2408,7 +2408,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>400:relegate
+     <modifiers>800:relegate
     </field>
     <field/>
      <name>tab_generate_details
@@ -2432,7 +2432,7 @@
      <ftype>string
      <extra>show+no_edit+full_height+notes
      <mandatory>false
-     <modifiers>400:relegate
+     <modifiers>800:relegate
     </field>
     <field/>
      <name>tab_display_settings
@@ -2600,7 +2600,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_application_encrypt_dynamic_content
@@ -2608,7 +2608,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_application_auto_login_days
@@ -2616,7 +2616,7 @@
      <ftype>int
      <extra>enum=906
      <mandatory>true
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_application_allow_duplicate_logins
@@ -2624,7 +2624,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_application_registration_key

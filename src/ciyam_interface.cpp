@@ -1385,9 +1385,18 @@ void request_handler::process_request( )
 #ifndef IS_TRADITIONAL_PLATFORM
                      if( module_name != "Meta" )
                      {
-                        if( !simple_command( *p_session_info, "peer_account_lock "
-                         + get_storage_info( ).reg_key + " " + password, &username ) )
-                           throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+                        if( password == c_guest_user_key )
+                           username = password;
+                        else
+                        {
+                           if( !simple_command( *p_session_info, "peer_account_lock "
+                            + get_storage_info( ).reg_key + " " + password, &username ) )
+                              throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
+                           // NOTE: The "admin" user is the one whose account id matches the blockchain id.
+                           if( username == get_storage_info( ).reg_key )
+                              username = c_admin_user_key;
+                        }
 
                         fetch_user_record( id_for_login, module_id, module_name,
                          mod_info, *p_session_info, false, false, username, "", "", "" );

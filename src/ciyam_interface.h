@@ -79,6 +79,7 @@ const char* const c_new_session = "new_session";
 
 const char* const c_anon_user_key = "anon";
 const char* const c_admin_user_key = "admin";
+const char* const c_guest_user_key = "guest";
 
 const char* const c_uom_prefix = "uom_";
 

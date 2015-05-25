@@ -87,6 +87,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>127310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -122,6 +126,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>127310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -326,10 +334,14 @@
       <name>Encrypt_Dynamic_Content
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>127310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -564,10 +576,14 @@
       <name>Use_Embedded_Images
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>127310
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -678,6 +694,10 @@
      <modifier/>
       <id>500922
       <name>Has_No_Application_Log
+     </modifier>
+     <modifier/>
+      <id>127310
+      <name>Is_Non_Traditional
      </modifier>
      <modifier/>
       <id>500920
