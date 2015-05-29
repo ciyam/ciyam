@@ -213,6 +213,13 @@ string get_chain_info( chain_info& info, const string& chain )
    string chain_info_hash = tag_file_hash( chain_info_tag );
    string chain_info_info( extract_file( chain_info_hash, "", c_file_type_char_core_blob ) );
 
+   string::size_type pos = chain_info_info.find( ':' );
+
+   if( pos == string::npos || chain_info_info.substr( 0, pos ) != string( c_file_type_core_blockchain_meta_object ) )
+      throw runtime_error( "invalid or missing blockchain meta core file type for " + chain );
+
+   chain_info_info.erase( 0, pos + 1 );
+
    vector< string > chain_info_items;
    split( chain_info_info, chain_info_items, '\n' );
 
@@ -227,7 +234,7 @@ string get_chain_info( chain_info& info, const string& chain )
       requisites.erase( 0, 1 );
    }
 
-   string::size_type pos = requisites.find( '~' );
+   pos = requisites.find( '~' );
    if( pos != string::npos )
    {
       string::size_type npos = requisites.find( '<', pos );
@@ -287,6 +294,8 @@ string chain_info_blob( const chain_info& cinfo, bool had_zero_explicit_account_
 {
    string extra( c_file_type_str_core_blob );
 
+   extra += string( c_file_type_core_blockchain_meta_object ) + ':';
+
    if( cinfo.is_test )
       extra += 'T';
 
@@ -331,6 +340,13 @@ string get_account_info( account_info& info, const string& account_id )
    string account_hash( tag_file_hash( account_tag ) );
    string account_data( extract_file( account_hash, "", c_file_type_char_core_blob ) );
 
+   pos = account_data.find( ':' );
+
+   if( pos == string::npos || account_data.substr( 0, pos ) != string( c_file_type_core_account_object ) )
+      throw runtime_error( "invalid or missing account core file type for " + account_id );
+
+   account_data.erase( 0, pos + 1 );
+
    vector< string > account_items;
    split( account_data, account_items, '\n' );
 
@@ -367,7 +383,9 @@ string get_account_data( const account_info& info,
  const string& account_hash, const string& account_lock,
  const string& transaction_hash, const string& transaction_lock, const string& last_transaction_id )
 {
-   string extras( to_string( info.exp ) );
+   string extras( c_file_type_core_account_object );
+
+   extras += ':' + to_string( info.exp );
 
    extras += '\n' + ( account_hash.empty( ) ? info.block_hash : account_hash );
    extras += '\n' + ( account_lock.empty( ) ? info.block_lock : account_lock );
@@ -1046,6 +1064,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             if( !block_height )
             {
                string extra( c_file_type_str_core_blob );
+               extra += string( c_file_type_core_account_object ) + ':';
+
                extra += exp + '\n' + hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
@@ -1061,7 +1081,9 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                has_secondary_account = true;
 
                string extra( c_file_type_str_core_blob );
-               extra += exp + '\n' + hash + '\n' + lock + "\n<acct>";;
+               extra += string( c_file_type_core_account_object ) + ':';
+
+               extra += exp + '\n' + hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -2461,7 +2483,7 @@ void verify_transaction( const string& content, bool check_sigs,
 
    if( !cinfo.is_test && !num_log_lines )
       error_message = "invalid missing tx log lines";
-   else if( sequence != expected_sequence )
+   else if( p_extras && sequence != expected_sequence )
       error_message = "invalid transaction sequence " + to_string( sequence );
    else if( sequence != 1 && previous_transaction.empty( ) )
       error_message = "incorrect initial sequence number for transaction";
