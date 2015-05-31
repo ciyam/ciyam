@@ -4031,6 +4031,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
                   }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                  if( name != "Meta" )
+                  {
+                     new_logf << "[2]" << ";block 0\n";
+
+                     if( file_exists( name + ".undo.sql" ) )
+                     {
+                        ofstream outf( string( name + ".undo.sql" ).c_str( ), ios::out | ios::app );
+                        outf << "#block 0\n";
+                     }
+                  }
+#endif
+
                   session_skip_fk_fetches( old_skip_fetches );
                }
 

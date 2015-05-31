@@ -37,7 +37,7 @@ struct new_block_info
    uint64_t weight;
    bool is_optimal;
 
-   unsigned long height;
+   uint64_t height;
 
    uint64_t total_weight;
    uint64_t previous_block_weight;
@@ -91,7 +91,7 @@ void CLASS_BASE_DECL_SPEC get_checkpoint_info(
  const std::string& blockchain, const std::string& conbtent, checkpoint_info& cp_info );
 
 bool CLASS_BASE_DECL_SPEC has_better_block(
- const std::string& blockchain, unsigned long height, uint64_t weight );
+ const std::string& blockchain, uint64_t height, uint64_t weight );
 
 std::string CLASS_BASE_DECL_SPEC check_account( const std::string& blockchain, const std::string& password );
 
@@ -119,7 +119,7 @@ std::string CLASS_BASE_DECL_SPEC construct_blob_for_transaction_content(
 std::string CLASS_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0,
- uint64_t* p_balance = 0, unsigned long* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
+ uint64_t* p_balance = 0, uint64_t* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
 
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 

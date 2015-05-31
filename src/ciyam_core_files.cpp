@@ -50,7 +50,7 @@ const size_t c_tx_soft_limit = 100;
 const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 4096;
 
-const unsigned long c_tx_min_non_confirmed = 5;
+const uint16_t c_tx_min_non_confirmed = 5;
 
 mutex g_mutex;
 
@@ -67,7 +67,7 @@ struct block_info
 
    string previous_block;
 
-   unsigned long block_height;
+   uint64_t block_height;
 
    uint64_t block_weight;
    uint64_t total_weight;
@@ -104,10 +104,10 @@ struct chain_info
    uint64_t checkpoint_tolerance;
    uint64_t ocheckpoint_tolerance;
 
-   unsigned long num_accounts;
+   uint64_t num_accounts;
 
-   unsigned long checkpoint_length;
-   unsigned long checkpoint_start_height;
+   uint16_t checkpoint_length;
+   uint64_t checkpoint_start_height;
 };
 
 struct account_info
@@ -128,8 +128,8 @@ struct account_info
 
    uint64_t balance;
 
-   unsigned long last_height;
-   unsigned long num_transactions;
+   uint64_t last_height;
+   uint64_t num_transactions;
 
    string last_transaction_id;
 };
@@ -139,7 +139,8 @@ struct transaction_info
    transaction_info( ) : sequence( 0 ), is_included_in_best_chain( false ) { }
 
    string account_id;
-   unsigned long sequence;
+
+   uint64_t sequence;
 
    string previous_transaction;
 
@@ -187,7 +188,7 @@ void validate_ascii_hash( const string& hash )
       throw runtime_error( "unexpected hash '" + hash + "'" );
 }
 
-uint64_t get_expected_weight( const string& hash, uint64_t id, unsigned long height )
+uint64_t get_expected_weight( const string& hash, uint64_t id, uint64_t height )
 {
    uint64_t val = *( uint64_t* )( hash.c_str( ) );
 
@@ -241,7 +242,7 @@ string get_chain_info( chain_info& info, const string& chain )
       if( npos == string::npos )
          throw runtime_error( "unexpected missing length and tolerance separator in '" + requisites + "'" );
 
-      info.checkpoint_length = from_string< unsigned long >( requisites.substr( pos + 1, npos - pos - 1 ) );
+      info.checkpoint_length = from_string< uint16_t >( requisites.substr( pos + 1, npos - pos - 1 ) );
       info.checkpoint_tolerance = info.ocheckpoint_tolerance = from_string< uint64_t >( requisites.substr( npos + 1 ) );
 
       requisites.erase( pos );
@@ -278,7 +279,7 @@ string get_chain_info( chain_info& info, const string& chain )
    pos = extras.find( ':' );
    if( pos != string::npos )
    {
-      info.checkpoint_start_height = from_string< unsigned long >( extras.substr( pos + 1 ) );
+      info.checkpoint_start_height = from_string< uint64_t >( extras.substr( pos + 1 ) );
       extras.erase( pos );
    }
 
@@ -330,7 +331,7 @@ string get_account_info( account_info& info, const string& account_id )
 
    info.tag = account_tag;
 
-   info.last_height = from_string< unsigned long >( account_tag.substr( pos + 2, rpos - pos - 2 ) );
+   info.last_height = from_string< uint64_t >( account_tag.substr( pos + 2, rpos - pos - 2 ) );
 
    info.balance = from_string< uint64_t >( account_tag.substr( rpos + 2 ) );
 
@@ -439,7 +440,7 @@ uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_h
    return from_string< uint64_t >( minter_tag.substr( pos + 2 ) );
 }
 
-void get_ordered_checkpoint_hashes( const string& chain_id, map< unsigned long, string >& ordered_checkpoint_hashes )
+void get_ordered_checkpoint_hashes( const string& chain_id, map< uint64_t, string >& ordered_checkpoint_hashes )
 {
    string all_checkpoint_tags( list_file_tags( "c" + chain_id + ".checkpoint.h*" ) );
 
@@ -461,7 +462,7 @@ void get_ordered_checkpoint_hashes( const string& chain_id, map< unsigned long, 
          if( next_tag.find( ".info" ) != string::npos )
             continue;
 
-         unsigned long height = from_string< unsigned long >( next_tag.substr( pos + 2 ) );
+         uint64_t height = from_string< uint64_t >( next_tag.substr( pos + 2 ) );
 
          ordered_checkpoint_hashes.insert( make_pair( height, tag_file_hash( next_tag ) ) );
       }
@@ -469,7 +470,7 @@ void get_ordered_checkpoint_hashes( const string& chain_id, map< unsigned long, 
 }
 
 void get_sequenced_transactions( const string& chain_id,
- multimap< unsigned long, string >& sequenced_transactions, bool is_test, bool no_sigs )
+ multimap< uint64_t, string >& sequenced_transactions, bool is_test, bool no_sigs )
 {
    string all_transaction_tags( list_file_tags( "c" + chain_id + ".a*.t*" ) );
 
@@ -507,7 +508,7 @@ void get_sequenced_transactions( const string& chain_id,
                encoded_hash += sig_suffix;
 
             sequenced_transactions.insert( make_pair(
-             from_string< unsigned long >( next_transaction_tag ),
+             from_string< uint64_t >( next_transaction_tag ),
              !is_test ? encoded_hash : next_transaction_hash ) );
          }
       }
@@ -515,7 +516,7 @@ void get_sequenced_transactions( const string& chain_id,
 }
 
 
-pair< unsigned long, uint64_t > verify_block( const string& content,
+pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
 
 void verify_transaction( const string& content, bool check_sigs,
@@ -532,7 +533,7 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
 void verify_transactions_info( const string& content,
  vector< pair< string, string > >* p_extras, transactions_info* p_transactions_info = 0 );
 
-pair< unsigned long, uint64_t > get_block_info( block_info& binfo, const string& block_hash )
+pair< uint64_t, uint64_t > get_block_info( block_info& binfo, const string& block_hash )
 {
    if( !has_file( block_hash ) )
       throw runtime_error( "block file '" + block_hash + "' does not exist" );
@@ -599,7 +600,7 @@ void get_transactions_and_hash_offsets( const string& chain_id,
    }
 }
 
-pair< unsigned long, uint64_t > verify_block( const string& content,
+pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info )
 {
    guard g( g_mutex );
@@ -610,8 +611,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty block content" );
 
-   unsigned long block_height = 0;
-   unsigned long previous_block_height = 0;
+   uint64_t block_height = 0;
+   uint64_t previous_block_height = 0;
 
    uint64_t block_weight = 0;
    uint64_t total_weight = 0;
@@ -689,7 +690,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                throw runtime_error( "unexpected missing height attribute in block header '" + header + "'" );
 
             has_height = true;
-            block_height = from_string< unsigned long >( next_attribute.substr(
+            block_height = from_string< uint64_t >( next_attribute.substr(
              string( c_file_type_core_block_header_height_prefix ).length( ) ) );
          }
          else if( block_height && !has_weight )
@@ -759,7 +760,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                         if( npos == string::npos )
                            throw runtime_error( "unexpected missing length and tolerance separator in '" + next_meta + "'" );
 
-                        cinfo.checkpoint_length = from_string< unsigned long >( next_meta.substr( pos + 1, npos - pos - 1 ) );
+                        cinfo.checkpoint_length = from_string< uint16_t >( next_meta.substr( pos + 1, npos - pos - 1 ) );
                         cinfo.checkpoint_tolerance = cinfo.ocheckpoint_tolerance = from_string< uint64_t >( next_meta.substr( npos + 1 ) );
 
                         if( cinfo.checkpoint_length < 2 || !cinfo.checkpoint_tolerance )
@@ -925,7 +926,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       }
    }
 
-   unsigned long num_accounts = 0;
+   uint64_t num_accounts = 0;
 
    vector< string > transaction_hashes;
 
@@ -1177,7 +1178,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
       size_t block_extra_offset = p_extras->size( );
       p_extras->push_back( make_pair( raw_block_data, tags ) );
 
-      map< int, string > new_chain_height_blocks;
+      map< uint64_t, string > new_chain_height_blocks;
 
       if( !block_height )
       {
@@ -1207,7 +1208,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             throw runtime_error( "secondary account creation not permitted" );
 
          map< string, uint64_t > account_balances;
-         map< string, unsigned long > account_heights;
+         map< string, uint64_t > account_heights;
 
          set< string > retagged_transactions;
 
@@ -1272,7 +1273,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             // balance of the parallel minters back to the last block they both had in common.
             if( new_previous_block != old_previous_block )
             {
-               unsigned long parallel_block_height( block_height );
+               uint64_t parallel_block_height( block_height );
 
                while( parallel_block_height
                 && new_previous_block != old_previous_block )
@@ -1313,7 +1314,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   else if( !old_binfo.had_secondary_account )
                      previous_balance -= total_reward;
 
-                  unsigned long old_block_height = parallel_block_height;
+                  uint64_t old_block_height = parallel_block_height;
                   if( account_heights.count( old_binfo.minter_id ) )
                      old_block_height = account_heights[ old_binfo.minter_id ];
 
@@ -1348,7 +1349,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                   if( !new_binfo.had_secondary_account )
                      new_account_balance += total_reward;
 
-                  unsigned long new_block_height = parallel_block_height;
+                  uint64_t new_block_height = parallel_block_height;
                   if( account_heights.count( new_binfo.minter_id ) )
                      new_block_height = account_heights[ new_binfo.minter_id ];
 
@@ -1496,7 +1497,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                 && !retagged_transactions.count( transaction_hashes[ i ] ) ) )
                   throw runtime_error( "transaction " + transaction_hashes[ i ] + " has already been included" );
 
-               unsigned long sequence = tinfo.sequence;
+               uint64_t sequence = tinfo.sequence;
 
                string previous_transaction = tinfo.previous_transaction;
 
@@ -1546,10 +1547,10 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
       if( cinfo.is_test && is_new_chain_head )
       {
-         unsigned long start = cinfo.checkpoint_start_height + 1;
+         uint64_t start = cinfo.checkpoint_start_height + 1;
 
          string full_chain_tag( "c" + chain + ".chain*" );
-         for( size_t i = start; i < block_height; i++ )
+         for( uint64_t i = start; i < block_height; i++ )
          {
             string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
 
@@ -1594,7 +1595,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
          ( *p_extras )[ block_extra_offset ].second += "\n" + full_chain_tag;
       }
 
-      unsigned long checkpoint_height = 0;
+      uint64_t checkpoint_height = 0;
 
       // NOTE: Determine whether or not a new checkpoint has occurred.
       if( cinfo.checkpoint_length
@@ -1683,7 +1684,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
             map< string, unsigned int > account_new_transactions;
             map< string, pair< unsigned int, unsigned int > > account_new_mint_info;
 
-            unsigned long last_height = block_height - 1;
+            uint64_t last_height = block_height - 1;
             while( true )
             {
                if( last_height == checkpoint_height )
@@ -1742,8 +1743,8 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
                if( pos == string::npos || hpos == string::npos )
                   continue;
 
-               unsigned long account_height
-                = from_string< unsigned long >( next_account_tag.substr( hpos + 2, pos - hpos - 2 ) );
+               uint64_t account_height
+                = from_string< uint64_t >( next_account_tag.substr( hpos + 2, pos - hpos - 2 ) );
 
                bool is_banned = ( next_account_tag.find( "banned" ) != string::npos );
 
@@ -1909,7 +1910,7 @@ pair< unsigned long, uint64_t > verify_block( const string& content,
 
             get_transactions_and_hash_offsets( chain, txs_info, tx_hash_offsets );
 
-            for( unsigned long i = cinfo.checkpoint_start_height + 1; i <= checkpoint_height; i++ )
+            for( uint64_t i = cinfo.checkpoint_start_height + 1; i <= checkpoint_height; i++ )
             {
                checkpoint_info_data += '\n' + to_string( i );
 
@@ -2051,7 +2052,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
    if( p_extras )
    {
-      unsigned long new_block_height = from_string< unsigned long >( content.substr( pos + 2 ) );
+      uint64_t new_block_height = from_string< uint64_t >( content.substr( pos + 2 ) );
 
       string chain( content.substr( 0, pos ) );
       string chain_id( chain.substr( 1 ) );
@@ -2079,7 +2080,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       map< string, string > account_block_hashes;
 
       map< string, uint64_t > account_balances;
-      map< string, unsigned long > account_block_heights;
+      map< string, uint64_t > account_block_heights;
 
       TRACE_LOG( TRACE_CORE_FLS, "rewinding chain " + chain_id + " to " + to_string( new_block_height ) );
 
@@ -2134,7 +2135,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
          next_account_height.erase( pos );
 
-         unsigned long height = from_string< unsigned long >( next_account_height );
+         uint64_t height = from_string< uint64_t >( next_account_height );
 
          if( height > new_block_height )
          {
@@ -2279,7 +2280,7 @@ void verify_transaction( const string& content, bool check_sigs,
    chain_info cinfo;
    string transaction_signature;
 
-   unsigned long sequence = 0;
+   uint64_t sequence = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -2341,7 +2342,7 @@ void verify_transaction( const string& content, bool check_sigs,
             if( expr.search( value ) != 0 )
                throw runtime_error( "unexpected sequence value '" + value + "'" );
 
-            sequence = from_string< unsigned long >( value );
+            sequence = from_string< uint64_t >( value );
          }
          else if( !has_application )
          {
@@ -2405,7 +2406,7 @@ void verify_transaction( const string& content, bool check_sigs,
          throw runtime_error( "invalid incompleted transaction header '" + header + "'" );
    }
 
-   unsigned long expected_sequence = 0;
+   uint64_t expected_sequence = 0;
 
    account_info ainfo;
    string account_hash;
@@ -2515,11 +2516,11 @@ void verify_transaction( const string& content, bool check_sigs,
          if( sequence != tinfo.sequence + 1 )
             error_message = "sequence number does not follow that of the previous transaction";
 
-         unsigned int transactions_not_in_best_chain = 0;
+         uint16_t transactions_not_in_best_chain = 0;
 
          while( !is_in_best_chain && error_message.empty( ) )
          {
-            if( ++transactions_not_in_best_chain > min( c_tx_min_non_confirmed, cinfo.checkpoint_length * 2 ) )
+            if( ++transactions_not_in_best_chain > min( c_tx_min_non_confirmed, ( uint16_t )( cinfo.checkpoint_length * 2 ) ) )
                throw runtime_error( "already has maximum non-confirmed transactions for account: " + account );
 
             next_transaction_id = tinfo.previous_transaction;
@@ -2622,8 +2623,8 @@ void verify_blockchain_info( const string& content,
 
       bool is_prior_to_checkpoint = false;
 
-      unsigned long height = 0;
-      unsigned long block_height = 0;
+      uint64_t height = 0;
+      uint64_t block_height = 0;
 
       vector< string > checkpoint_info;
       vector< string > blob_hashes_with_sigs;
@@ -2669,7 +2670,7 @@ void verify_blockchain_info( const string& content,
                      throw runtime_error( "unexpected missing height prefix header in verify_blockchain_info" );
 
                   has_height = true;
-                  height = from_string< unsigned long >( remainder );
+                  height = from_string< uint64_t >( remainder );
 
                   if( height <= cinfo.checkpoint_start_height )
                      is_prior_to_checkpoint = true;
@@ -2683,7 +2684,7 @@ void verify_blockchain_info( const string& content,
          }
          else if( next_line.length( ) < 10 )
          {
-            unsigned long next_height = from_string< unsigned long >( next_line );
+            uint64_t next_height = from_string< uint64_t >( next_line );
 
             if( next_height == 0 )
                throw runtime_error( "invalid block height 0 in verify_blockchain_info" );
@@ -2750,9 +2751,9 @@ void verify_blockchain_info( const string& content,
       block_info binfo;
       get_block_info( binfo, chain_hash );
 
-      unsigned long height = binfo.block_height;
+      uint64_t height = binfo.block_height;
 
-      if( height <= cinfo.checkpoint_start_height )
+      if( cinfo.checkpoint_start_height && height <= cinfo.checkpoint_start_height )
          throw runtime_error( "cannot get blockchain info at height "
           + to_string( height ) + " as checkpoint height is " + to_string( cinfo.checkpoint_start_height ) );
 
@@ -2762,10 +2763,10 @@ void verify_blockchain_info( const string& content,
       blockchain_info_data += string( c_file_type_core_blockchain_info_header_chain_prefix ) + chain_id
        + "," + string( c_file_type_core_blockchain_info_header_height_prefix ) + to_string( height );
 
-      map< unsigned long, string > ordered_checkpoint_hashes;
+      map< uint64_t, string > ordered_checkpoint_hashes;
       get_ordered_checkpoint_hashes( chain_id, ordered_checkpoint_hashes );
 
-      for( map< unsigned long, string >::iterator i
+      for( map< uint64_t, string >::iterator i
        = ordered_checkpoint_hashes.begin( ); i != ordered_checkpoint_hashes.end( ); ++i )
       {
          string info_hash( tag_file_hash( "c"
@@ -2777,7 +2778,10 @@ void verify_blockchain_info( const string& content,
             blockchain_info_data += '\n' + hex_to_base64( i->second ) + '.' + hex_to_base64( info_hash );
       }
 
-      unsigned long next_height = cinfo.checkpoint_start_height + 1;
+      uint64_t next_height = cinfo.checkpoint_start_height + 1;
+
+      if( !cinfo.checkpoint_start_height )
+         --next_height;
 
       string txs_info_tag( "c" + chain_id + ".txinfo" );
 
@@ -2849,10 +2853,10 @@ void verify_blockchain_info( const string& content,
             break;
       }
 
-      multimap< unsigned long, string > sequenced_transactions;
+      multimap< uint64_t, string > sequenced_transactions;
       get_sequenced_transactions( chain_id, sequenced_transactions, cinfo.is_test, false );
 
-      for( multimap< unsigned long, string >::iterator
+      for( multimap< uint64_t, string >::iterator
        i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
          blockchain_info_data += "\n" + i->second;
 
@@ -2878,7 +2882,7 @@ void verify_checkpoint_info( const string& content,
    string chain_id;
    string checkpoint_hash;
 
-   unsigned long height = 0;
+   uint64_t height = 0;
 
    vector< string > blob_hashes_with_sigs;
 
@@ -2924,7 +2928,7 @@ void verify_checkpoint_info( const string& content,
                   throw runtime_error( "unexpected missing height prefix header in verify_checkpoint_info" );
 
                has_height = true;
-               height = from_string< unsigned long >( remainder );
+               height = from_string< uint64_t >( remainder );
             }
             else if( !has_checkpoint )
             {
@@ -2949,7 +2953,7 @@ void verify_checkpoint_info( const string& content,
       {
          if( next_line.length( ) < 10 )
          {
-            unsigned long next_height = from_string< unsigned long >( next_line );
+            uint64_t next_height = from_string< uint64_t >( next_line );
 
             if( i > 1 && next_height != height + 1 )
                throw runtime_error( "unexpected height " + to_string( next_height ) + " in verify_checkpoint_info" );
@@ -2997,12 +3001,12 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
       string chain_id( chain.substr( 1 ) );
 
       pos = content.find( ".h" );
-      unsigned long checkpoint_height = from_string< unsigned long >( content.substr( pos + 2 ) );
+      uint64_t checkpoint_height = from_string< uint64_t >( content.substr( pos + 2 ) );
 
       string checkpoint_hash( tag_file_hash( content ) );
       string checkpoint_info_hash( tag_file_hash( content + ".info" ) );
 
-      map< unsigned long, string > ordered_checkpoint_hashes;
+      map< uint64_t, string > ordered_checkpoint_hashes;
       get_ordered_checkpoint_hashes( chain_id, ordered_checkpoint_hashes );
 
       if( !ordered_checkpoint_hashes.empty( ) && checkpoint_hash != ordered_checkpoint_hashes.begin( )->second )
@@ -3028,7 +3032,7 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
             p_extras->push_back( make_pair( "", checkpoint_transactions[ i ] ) );
       }
 
-      unsigned long height = checkpoint_height;
+      uint64_t height = checkpoint_height;
 
       // NOTE: Remove all block blobs that are at or below the checkpoint height.
       while( true )
@@ -3229,7 +3233,7 @@ void get_checkpoint_info( const string& blockchain, const string& content, check
    verify_checkpoint_info( content.substr( pos + 1 ), 0, &cp_info );
 }
 
-bool has_better_block( const string& blockchain, unsigned long height, uint64_t weight )
+bool has_better_block( const string& blockchain, uint64_t height, uint64_t weight )
 {
    guard g( g_mutex );
 
@@ -3311,7 +3315,7 @@ string construct_new_block( const string& blockchain,
    string account_id( construct_account_info( chain, password, c_default_exp, acct, &key_info, &balance ) );
 
    string head_hash;
-   unsigned long height = 0;
+   uint64_t height = 0;
 
    uint64_t weight = 0;
    uint64_t total_weight = 0;
@@ -3398,12 +3402,12 @@ string construct_new_block( const string& blockchain,
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }
 
-   multimap< unsigned long, string > sequenced_transactions;
+   multimap< uint64_t, string > sequenced_transactions;
    get_sequenced_transactions( blockchain, sequenced_transactions, cinfo.is_test, true );
 
    size_t num_txs = 0;
 
-   for( multimap< unsigned long, string >::iterator
+   for( multimap< uint64_t, string >::iterator
     i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
    {
       // NOTE: The "hard limit" for the number of txs per block is determined by the actual
@@ -3444,7 +3448,7 @@ string construct_new_transaction( const string& blockchain,
     + ":" + string( c_file_type_core_transaction_header_account_prefix ) + blockchain + "." + acct );
 
    uint64_t balance = 0;
-   unsigned long num_transactions = 0;
+   uint64_t num_transactions = 0;
 
    string last_transaction_id( "0" );
 
@@ -3503,7 +3507,7 @@ string construct_blob_for_transaction_content(
 string construct_account_info(
  const string& blockchain, const string& password,
  unsigned int exp, const string& account, account_key_info* p_key_info,
- uint64_t* p_balance, unsigned long* p_num_transactions, string* p_last_transaction_id )
+ uint64_t* p_balance, uint64_t* p_num_transactions, string* p_last_transaction_id )
 {
    guard g( g_mutex );
 

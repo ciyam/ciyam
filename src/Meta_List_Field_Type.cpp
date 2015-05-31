@@ -3130,8 +3130,8 @@ string Meta_List_Field_Type::static_get_sql_columns( )
 
    sql_columns += 
     "C_Key_ VARCHAR(75),"
-    "C_Ver_ INTEGER NOT NULL,"
-    "C_Rev_ INTEGER NOT NULL,"
+    "C_Ver_ SMALLINT UNSIGNED NOT NULL,"
+    "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Allow_Child_Rel_Select_Specifics INTEGER NOT NULL,"
     "C_Allow_Exclude_In_Use_FK INTEGER NOT NULL,"

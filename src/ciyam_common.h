@@ -88,6 +88,7 @@ enum special_var
    e_special_var_path_prefix,
    e_special_var_permissions,
    e_special_var_skip_update,
+   e_special_var_block_height,
    e_special_var_update_fields,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,

@@ -532,6 +532,7 @@ class_base::class_base( )
  :
  version( 0 ),
  revision( 0 ),
+ original_revision( 0 ),
  op( e_op_type_none ),
  index_num( 0 ),
  lock_handle( 0 ),
@@ -965,7 +966,7 @@ void class_base::perform_lazy_fetch( )
       {
          key = last_lazy_fetch_key;
          version = last_lazy_fetch_ver;
-         revision = last_lazy_fetch_rev;
+         revision = original_revision = last_lazy_fetch_rev;
 
          for( size_t i = 0; i < last_lazy_fetch_field_values.size( ); i++ )
             set_field_value( i, last_lazy_fetch_field_values[ i ] );
@@ -1275,12 +1276,35 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
 
       case e_op_type_create:
       revision = 0;
+#ifndef IS_TRADITIONAL_PLATFORM
+      if( get_module_name( ) != "Meta" )
+      {
+         string block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
+
+         if( !block_height.empty( ) )
+            revision = from_string< uint64_t >( block_height );
+      }
+#endif
       original_identity = construct_class_identity( *this );
       do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info, p_sql_undo_stmts );
       /* drop through */
 
       case e_op_type_update:
+#ifdef IS_TRADITIONAL_PLATFORM
       ++revision;
+#else
+      if( get_module_name( ) == "Meta" )
+         ++revision;
+      else if( sql_stmts.empty( ) )
+      {
+         string block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
+
+         if( block_height.empty( ) )
+            revision = 0;
+         else
+            revision = from_string< uint64_t >( block_height );
+      }
+#endif
       p_impl->has_changed_user_fields = false;
 
       if( sql_stmts.empty( ) )
@@ -1306,7 +1330,7 @@ bool class_base::has_skipped_empty_update( )
       return false;
    else
    {
-      --revision;
+      revision = original_revision;
       return true;
    }
 }
@@ -1847,7 +1871,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
 
    sql_stmt += " SET C_Rev_=" + to_string( revision );
    if( p_undo_stmt )
-      *p_undo_stmt += " SET C_Rev_=" + to_string( revision - 1 );
+      *p_undo_stmt += " SET C_Rev_=" + to_string( original_revision );
 
    bool done = false;
    vector< string > sql_column_names;

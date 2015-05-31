@@ -1887,8 +1887,8 @@ string Meta_Initial_Record::static_get_sql_columns( )
 
    sql_columns += 
     "C_Key_ VARCHAR(75),"
-    "C_Ver_ INTEGER NOT NULL,"
-    "C_Rev_ INTEGER NOT NULL,"
+    "C_Ver_ SMALLINT UNSIGNED NOT NULL,"
+    "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Class VARCHAR(75) NOT NULL,"
     "C_Comments VARCHAR(200) NOT NULL,"
