@@ -1410,8 +1410,8 @@ string Meta_View_Field_Type::static_get_sql_columns( )
 
    sql_columns += 
     "C_Key_ VARCHAR(75),"
-    "C_Ver_ INTEGER NOT NULL,"
-    "C_Rev_ INTEGER NOT NULL,"
+    "C_Ver_ SMALLINT UNSIGNED NOT NULL,"
+    "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
     "C_View_Field_Name VARCHAR(200) NOT NULL,"

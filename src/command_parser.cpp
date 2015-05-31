@@ -746,7 +746,15 @@ bool command_parser::impl::do_parse_command( node* p_node, size_t& argnum, bool 
    }
    else
    {
-      if( !p_node->opt_branch_nodes.empty( ) )
+      bool prefix_matched = false;
+      string input( ( *p_arguments )[ argnum ] );
+
+      // NOTE: If the node has a prefix that is found in the input then don't check
+      // any optional branch nodes (as it is clear it should match with this node).
+      if( !p_node->prefix.empty( ) && input.find( p_node->prefix ) == 0 )
+         prefix_matched = true;
+
+      if( !prefix_matched && !p_node->opt_branch_nodes.empty( ) )
       {
 #ifdef DEBUG
          cout << "(checking optional branch nodes)" << endl;
