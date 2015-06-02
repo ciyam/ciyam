@@ -108,7 +108,10 @@ inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
 std::string CLASS_BASE_DECL_SPEC construct_new_transaction(
  const std::string& blockchain, const std::string& password,
  const std::string& account, const std::string& application,
- const std::string& transaction_log_lines, bool use_core_file_format = true );
+ const std::string& transaction_log_lines, bool use_core_file_format = true, std::string* p_tx_hash = 0 );
+
+void CLASS_BASE_DECL_SPEC add_local_transaction_for_application(
+ const std::string& application, const std::string& transaction_hash, const std::string& class_and_key_info );
 
 std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
  const std::string& block_content, const std::string& block_signature );

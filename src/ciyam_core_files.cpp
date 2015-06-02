@@ -500,7 +500,7 @@ void get_sequenced_transactions( const string& chain_id,
 
             if( pos != string::npos )
             {
-               sig_suffix = ':' + next_transaction_tag.substr( pos + 2 );
+               sig_suffix = ':' + tag_name_to_base64( next_transaction_tag.substr( pos + 2 ) );
                next_transaction_tag.erase( pos );
             }
 
@@ -3430,7 +3430,7 @@ string construct_new_block( const string& blockchain,
 
 string construct_new_transaction( const string& blockchain,
  const string& password, const string& account, const string& application,
- const string& transaction_log_lines, bool use_core_file_format )
+ const string& transaction_log_lines, bool use_core_file_format, string* p_tx_hash )
 {
    string acct;
 
@@ -3481,6 +3481,9 @@ string construct_new_transaction( const string& blockchain,
          data += "\n" + string( c_file_type_core_transaction_detail_log_prefix ) + tx_log_lines[ i ];
    }
 
+   if( p_tx_hash )
+      *p_tx_hash = sha256( string( c_file_type_str_core_blob ) + data ).get_digest_as_string( );
+
 #ifdef SSL_SUPPORT
    data += "\n" + string( c_file_type_core_transaction_detail_signature_prefix ) + priv_key.construct_signature( data, true );
 #endif
@@ -3489,6 +3492,30 @@ string construct_new_transaction( const string& blockchain,
       data = string( c_file_type_str_core_blob ) + data;
 
    return data;
+}
+
+void add_local_transaction_for_application(
+ const string& application, const string& transaction_hash, const string& class_and_key_info )
+{
+   guard g( g_mutex );
+
+   string filename( application + ".txs.log" );
+   if( !file_exists( filename ) )
+   {
+      ofstream outf( filename.c_str( ) );
+      outf << "block 0\n";
+   }
+
+   ofstream outf( filename.c_str( ), ios::out | ios::app );
+   if( !outf )
+      throw runtime_error( "unable to open '" + filename + "' for append" );
+
+   outf << transaction_hash << '\n';
+   outf << class_and_key_info << '\n';
+
+   outf.flush( );
+   if( !outf.good( ) )
+      throw runtime_error( "*** unexpected error occurred appending local tx ***" );
 }
 
 string construct_blob_for_block_content( const string& block_content, const string& block_signature )

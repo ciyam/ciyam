@@ -1382,6 +1382,7 @@ void request_handler::process_request( )
                   else
                   {
                      bool has_fetched = false;
+
 #ifndef IS_TRADITIONAL_PLATFORM
                      if( module_name != "Meta" )
                      {
@@ -1396,6 +1397,10 @@ void request_handler::process_request( )
                            // NOTE: The "admin" user is the one whose account id matches the blockchain id.
                            if( username == get_storage_info( ).reg_key )
                               username = c_admin_user_key;
+
+                           if( !simple_command( *p_session_info,
+                            "session_variable @blockchain " + get_storage_info( ).reg_key ) )
+                              throw runtime_error( "unexpected failure to set blockchain session_variable" );
                         }
 
                         fetch_user_record( id_for_login, module_id, module_name,

@@ -2362,6 +2362,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+#endif
+
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
@@ -2468,16 +2472,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                remove_uid_extra_from_log_command( next_command );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               if( !field_values_to_log.empty( ) )
-               {
-                  replace_field_values_to_log( next_command, field_values_to_log );
-                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-
-                  transaction_log_command( next_command );
-               }
-#else
-               transaction_log_command( next_command );
+               replace_field_values_to_log( next_command, field_values_to_log );
+               replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 #endif
+               transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -2492,6 +2490,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  create_blockchain_transaction( blockchain, storage_name( ), next_command );
+#endif
 
                destroy_object_instance( handle );
             }
@@ -2633,6 +2638,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+#endif
+
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
@@ -2759,7 +2768,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                remove_uid_extra_from_log_command( next_command );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               if( !field_values_to_log.empty( ) )
+               if( field_values_to_log.empty( ) )
+                  throw runtime_error( "unexpected record update without any changed field values" );
+               else
                {
                   replace_field_values_to_log( next_command, field_values_to_log );
                   replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
@@ -2781,6 +2792,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response = instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  create_blockchain_transaction( blockchain, storage_name( ), next_command );
+#endif
 
                destroy_object_instance( handle );
             }
@@ -2884,6 +2902,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+#endif
+
                if( progress )
                   instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
 
@@ -2905,6 +2927,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( rc == e_op_destroy_rc_okay )
                   op_instance_apply( handle, "", false );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  create_blockchain_transaction( blockchain, storage_name( ), next_command );
+#endif
 
                destroy_object_instance( handle );
             }
@@ -3112,6 +3141,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+#endif
+
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
                   throw runtime_error( "unexpected # keys ("
                    + to_string( all_keys.size( ) ) + ") not equal to # vers (" + to_string( all_vers.size( ) ) + ")" );
@@ -3257,6 +3290,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( !is_first && !skip_transaction )
                   transaction_commit( );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  create_blockchain_transaction( blockchain, storage_name( ), next_command );
+#endif
 
                destroy_object_instance( handle );
             }

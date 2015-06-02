@@ -208,6 +208,7 @@ const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
+const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_output_file = "@output_file";
@@ -219,6 +220,7 @@ const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
+const char* const c_special_variable_classes_and_keys = "@classes_and_keys";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
@@ -1590,8 +1592,8 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
       vector< string >& columns( handler.get_record_cache( )[ key_info ] );
 
       instance_accessor.set_key( columns[ 0 ], true );
-      instance_accessor.set_version( from_string< int >( columns[ 1 ] ) );
-      instance_accessor.set_revision( from_string< int >( columns[ 2 ] ) );
+      instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
+      instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
       instance_accessor.set_original_identity( columns[ 3 ] );
 
       if( !sys_only_fields )
@@ -1645,8 +1647,8 @@ bool fetch_instance_from_db( class_base& instance,
       TRACE_LOG( TRACE_SQLCLSET, "(from instance dataset)" );
 
       instance_accessor.set_key( ds.as_string( 0 ), true );
-      instance_accessor.set_version( ds.as_int( 1 ) );
-      instance_accessor.set_revision( ds.as_int( 2 ) );
+      instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
+      instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
       instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
       for( int i = 4; i < ds.get_fieldcount( ); i++ )
@@ -1696,8 +1698,8 @@ bool fetch_instance_from_db( class_base& instance,
 
          if( ds.get_fieldcount( ) > 1 )
          {
-            instance_accessor.set_version( ds.as_int( 1 ) );
-            instance_accessor.set_revision( ds.as_int( 2 ) );
+            instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
+            instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
             instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
             if( !sys_only_fields )
@@ -3812,8 +3814,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( ) + "')" );
 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
-   instance_accessor.set_version( atoi( instance_accessor.row_cache( )[ 0 ][ 1 ].c_str( ) ) );
-   instance_accessor.set_revision( atoi( instance_accessor.row_cache( )[ 0 ][ 2 ].c_str( ) ) );
+   instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
+   instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
    instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 3 ] );
 
    const map< int, int >& fields( instance_accessor.select_fields( ) );
@@ -5694,6 +5696,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_val_error );
       break;
 
+      case e_special_var_blockchain:
+      s = string( c_special_variable_blockchain );
+      break;
+
       case e_special_var_permission:
       s = string( c_special_variable_permission );
       break;
@@ -5736,6 +5742,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_check_if_changed:
       s = string( c_special_variable_check_if_changed );
+      break;
+
+      case e_special_var_classes_and_keys:
+      s = string( c_special_variable_classes_and_keys );
       break;
 
       case e_special_var_skip_after_fetch:
@@ -9488,6 +9498,17 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
          state &= ~c_state_ignore_uneditable;
       }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+      if( instance.get_revision( ) == c_unconfirmed_revision )
+      {
+         state |= c_state_uneditable;
+         state |= c_state_undeletable;
+         state |= c_state_unactionable;
+
+         state &= ~c_state_ignore_uneditable;
+      }
+#endif
+
       retval += " =" + instance.get_version_info( )
        + " " + to_string( state ) + " " + instance.get_original_identity( );
    }
@@ -10118,6 +10139,12 @@ void begin_instance_op( instance_op op, class_base& instance,
             throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
              make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( !internal_modification && instance.get_revision( ) == c_unconfirmed_revision )
+            throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
+             make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
+#endif
+
          if( instance.get_current_identity( ) != instance.get_original_identity( ) )
             throw runtime_error( "cannot destroy '" + instance.get_original_identity( )
              + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
@@ -10300,6 +10327,13 @@ void begin_instance_op( instance_op op, class_base& instance,
           && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )
             throw runtime_error( get_string_message( GS( c_str_cannot_update ),
              make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+         if( op == e_instance_op_update
+          && !internal_modification && instance.get_revision( ) == c_unconfirmed_revision )
+            throw runtime_error( get_string_message( GS( c_str_cannot_update ),
+             make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
+#endif
 
          if( op == e_instance_op_update
           && instance.get_current_identity( ) != instance.get_original_identity( ) )

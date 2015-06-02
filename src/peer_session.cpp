@@ -1687,6 +1687,49 @@ string peer_account_lock( const string& blockchain, const string& password, bool
    return retval;
 }
 
+void create_blockchain_transaction(
+ const string& blockchain, const string& application, const string& log_command )
+{
+   guard g( g_mutex );
+
+   if( !g_blockchain_passwords.count( blockchain ) )
+      throw runtime_error( "blockchain '" + blockchain + "' has not been unlocked" );
+
+   string::size_type pos = log_command.find( ' ' );
+   if( pos == string::npos )
+      throw runtime_error( "invalid log command format: " + log_command );
+
+   string cmd( log_command.substr( 0, pos ) );
+   string remaining( log_command.substr( pos + 1 ) );
+
+   pos = remaining.find( ' ' );
+   if( pos == string::npos )
+      throw runtime_error( "invalid log command format: " + log_command );
+
+   string account = remaining.substr( 0, pos );
+   remaining.erase( 0, pos );
+
+   if( check_account( blockchain, g_blockchain_passwords[ blockchain ] ) != account )
+      throw runtime_error( "invalid account for blockchain transaction" );
+
+   string tx_hash;
+
+   string tx_data( construct_new_transaction( blockchain,
+    g_blockchain_passwords[ blockchain ], account, application, cmd + remaining, true, &tx_hash ) );
+
+   vector< pair< string, string > > extras;
+
+   verify_core_file( tx_data, true, &extras );
+   create_raw_file_with_extras( "", extras );
+
+   construct_blockchain_info_file( blockchain );
+
+   add_local_transaction_for_application( application, tx_hash,
+    get_session_variable( get_special_var_name( e_special_var_classes_and_keys ) ) );
+
+   set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+}
+
 void create_peer_listener( int port, const string& blockchain )
 {
    if( !blockchain.empty( ) )
