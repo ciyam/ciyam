@@ -36,6 +36,8 @@ const uint64_t c_state_ignore_uneditable = UINT64_C( 0x10 );
 const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
 const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 
+const uint64_t c_unconfirmed_revision = UINT64_C( 999999999999999999 );
+
 enum quote_style
 {
    e_quote_style_both_linux,
@@ -82,6 +84,7 @@ enum special_var
    e_special_var_crypt_key,
    e_special_var_image_dir,
    e_special_var_val_error,
+   e_special_var_blockchain,
    e_special_var_permission,
    e_special_var_allow_async,
    e_special_var_output_file,
@@ -93,6 +96,7 @@ enum special_var
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
    e_special_var_check_if_changed,
+   e_special_var_classes_and_keys,
    e_special_var_skip_after_fetch,
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
