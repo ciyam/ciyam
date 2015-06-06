@@ -5,6 +5,11 @@
   <arguments>@arg1 @output_file
  </script>
  <script/>
+  <name>app_blk_txs
+  <filename>*script*
+  <arguments>app_blk_txs.cin @application @block_height
+ </script>
+ <script/>
   <name>install_package
   <filename>*script*
   <arguments>install_package.cin @storage @name

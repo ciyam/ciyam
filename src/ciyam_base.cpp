@@ -165,12 +165,15 @@ const char* const c_expand_store = "%store%";
 const char* const c_uid_anon = "anon";
 const char* const c_uid_unknown = "<unknown>";
 
+const char* const c_block_prefix = "block";
+
 const char* const c_dead_keys_ext = ".dead_keys.lst";
 
 const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
 
+const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_dtm = "@dtm";
 const char* const c_special_variable_key = "@key";
@@ -211,6 +214,7 @@ const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
+const char* const c_special_variable_application = "@application";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
@@ -1594,6 +1598,8 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
       instance_accessor.set_key( columns[ 0 ], true );
       instance_accessor.set_version( from_string< uint16_t >( columns[ 1 ] ) );
       instance_accessor.set_revision( from_string< uint64_t >( columns[ 2 ] ) );
+
+      instance_accessor.set_original_revision( instance.get_revision( ) );
       instance_accessor.set_original_identity( columns[ 3 ] );
 
       if( !sys_only_fields )
@@ -1649,6 +1655,8 @@ bool fetch_instance_from_db( class_base& instance,
       instance_accessor.set_key( ds.as_string( 0 ), true );
       instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
       instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
+
+      instance_accessor.set_original_revision( instance.get_revision( ) );
       instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
       for( int i = 4; i < ds.get_fieldcount( ); i++ )
@@ -1700,6 +1708,8 @@ bool fetch_instance_from_db( class_base& instance,
          {
             instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
             instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
+
+            instance_accessor.set_original_revision( instance.get_revision( ) );
             instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
             if( !sys_only_fields )
@@ -3038,8 +3048,8 @@ void append_undo_sql_statements( storage_handler& handler )
 }
 #endif
 
-void append_transaction_log_command(
- storage_handler& handler, bool log_even_when_locked = false, size_t load_module_id = 0 )
+void append_transaction_log_command( storage_handler& handler,
+ bool log_even_when_locked = false, size_t load_module_id = 0, int32_t use_tx_id = 0 )
 {
    if( ( log_even_when_locked || handler.get_alternative_log_file( )
     || !handler.get_is_locked_for_admin( ) ) && !gtp_session->transaction_log_command.empty( ) )
@@ -3060,13 +3070,15 @@ void append_transaction_log_command(
       if( is_new )
          log_file << "[0]" << handler.get_root( ).identity << '\n';
 
-      int tx_id;
+      int32_t tx_id;
 
-      // NOTE: When log file is truncated during a backup no transaction is active so
+      // NOTE: When log file is truncated during a backup no transaction is active, so
       // change the tx id to 2 to ensure the restore can recognise a partial log file.
       // Any "init" ops will also get the tx id of 2 and the tx id of any module loads
       // will always be 1.
-      if( load_module_id )
+      if( use_tx_id )
+         tx_id = use_tx_id;
+      else if( load_module_id )
          tx_id = 1;
       else if( !ods::instance( )->get_transaction_id( ) || handler.get_alternative_log_file( ) )
          tx_id = 2;
@@ -3139,6 +3151,8 @@ map< int, string > g_blockchains;
 map< string, int > g_blockchain_ids;
 
 map< string, string > g_initial_peer_ips;
+
+map< string, map< string, string > > g_blockchain_application_txs;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -3816,6 +3830,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
    instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
    instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
+
+   instance_accessor.set_original_revision( instance.get_revision( ) );
    instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 3 ] );
 
    const map< int, int >& fields( instance_accessor.select_fields( ) );
@@ -5548,6 +5564,10 @@ string get_special_var_name( special_var var )
 
    switch( var )
    {
+      case e_special_var_bh:
+      s = string( c_special_variable_bh );
+      break;
+
       case e_special_var_id:
       s = string( c_special_variable_id );
       break;
@@ -5706,6 +5726,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_allow_async:
       s = string( c_special_variable_allow_async );
+      break;
+
+      case e_special_var_application:
+      s = string( c_special_variable_application );
       break;
 
       case e_special_var_output_file:
@@ -6200,6 +6224,23 @@ void storage_admin_name_lock( const string& name )
    }
 }
 
+void storage_comment( const string& comment )
+{
+   guard g( g_mutex );
+
+   ods* p_ods( ods::instance( ) );
+
+   if( p_ods && gtp_session )
+   {
+      gtp_session->transaction_log_command = ";" + comment;
+
+      storage_handler& handler( *gtp_session->p_storage_handler );
+      storable_identity& identity( *handler.get_root( ).o_identity );
+
+      append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
+   }
+}
+
 void storage_cache_clear( )
 {
    guard g( g_mutex );
@@ -6234,8 +6275,10 @@ size_t storage_cache_limit( size_t new_limit )
       *p_ods << handler.get_root( );
       tx.commit( );
 
+      storable_identity& identity( *handler.get_root( ).o_identity );
+
       gtp_session->transaction_log_command = ";cache_limit ==> " + to_string( new_limit );
-      append_transaction_log_command( *gtp_session->p_storage_handler );
+      append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
    }
 
    return new_limit;
@@ -9498,17 +9541,6 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
          state &= ~c_state_ignore_uneditable;
       }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-      if( instance.get_revision( ) == c_unconfirmed_revision )
-      {
-         state |= c_state_uneditable;
-         state |= c_state_undeletable;
-         state |= c_state_unactionable;
-
-         state &= ~c_state_ignore_uneditable;
-      }
-#endif
-
       retval += " =" + instance.get_version_info( )
        + " " + to_string( state ) + " " + instance.get_original_identity( );
    }
@@ -9947,6 +9979,108 @@ void transaction_log_command( const string& log_command )
    }
 }
 
+bool append_transaction_for_blockchain_application(
+ const string& application, const string& tx_hash_or_block,
+ const string& class_and_key_info, string* p_class_and_key_info )
+{
+   guard g( g_mutex );
+
+   bool was_existing = false;
+
+   string filename( application + ".txs.log" );
+
+   if( !file_exists( filename ) )
+   {
+      ofstream outf( filename.c_str( ) );
+      outf << c_block_prefix << " 0\n";
+   }
+   else if( !g_blockchain_application_txs.count( application ) )
+   {
+      ifstream inpf( filename.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open '" + filename + "' for input" );
+
+      string next;
+      while( getline( inpf, next ) )
+      {
+         if( next.find( c_block_prefix ) == 0 )
+            continue;
+
+         string::size_type pos = next.find( ' ' );
+         if( pos == string::npos && g_blockchain_application_txs[ application ].count( next ) )
+            g_blockchain_application_txs[ application ].erase( next );
+         else
+            g_blockchain_application_txs[ application ].insert(
+             make_pair( next.substr( 0, pos ), next.substr( pos + 1 ) ) );
+      }
+   }
+
+   bool is_block_marker = false;
+
+   if( tx_hash_or_block.find( c_block_prefix ) != string::npos )
+      is_block_marker = true;
+   else
+   {
+      if( g_blockchain_application_txs[ application ].count( tx_hash_or_block ) )
+      {
+         was_existing = true;
+
+         if( p_class_and_key_info )
+            *p_class_and_key_info = g_blockchain_application_txs[ application ][ tx_hash_or_block ];
+
+         g_blockchain_application_txs[ application ].erase( tx_hash_or_block );
+      }
+      else if( !class_and_key_info.empty( ) )
+         g_blockchain_application_txs[ application ].insert( make_pair( tx_hash_or_block, class_and_key_info ) );
+   }
+
+   if( was_existing || is_block_marker || !class_and_key_info.empty( ) )
+   {
+      ofstream outf( filename.c_str( ), ios::out | ios::app );
+      if( !outf )
+         throw runtime_error( "unable to open '" + filename + "' for append" );
+
+      outf << tx_hash_or_block;
+
+      if( !class_and_key_info.empty( ) )
+         outf << ' ' << class_and_key_info;
+
+      outf << '\n';
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred appending tx for blockchain ***" );
+   }
+
+   return was_existing;
+}
+
+void append_height_for_blockchain_application( const string& application, uint64_t height )
+{
+   guard g( g_mutex );
+
+   string filename( application + ".undo.sql" );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( "application sql undo file '" + filename + "' was not found" );
+
+   ofstream outf( filename.c_str( ), ios::out | ios::app );
+   if( !outf )
+      throw runtime_error( "unable to open '" + filename + "' for append" );
+
+   string block_marker( c_block_prefix );
+   block_marker += ' ' + to_string( height );
+
+   append_transaction_for_blockchain_application( application, block_marker );
+
+   outf << '#' << block_marker << '\n';
+
+   outf.flush( );
+
+   if( !outf.good( ) )
+      throw runtime_error( "*** unexpected error occurred appending block height for blockchain ***" );
+}
+
 transaction::transaction( bool is_not_dummy )
  :
  is_dummy( !is_not_dummy ),
@@ -10139,12 +10273,6 @@ void begin_instance_op( instance_op op, class_base& instance,
             throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
              make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-         if( !internal_modification && instance.get_revision( ) == c_unconfirmed_revision )
-            throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
-             make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
-#endif
-
          if( instance.get_current_identity( ) != instance.get_original_identity( ) )
             throw runtime_error( "cannot destroy '" + instance.get_original_identity( )
              + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
@@ -10327,13 +10455,6 @@ void begin_instance_op( instance_op op, class_base& instance,
           && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )
             throw runtime_error( get_string_message( GS( c_str_cannot_update ),
              make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
-
-#ifndef IS_TRADITIONAL_PLATFORM
-         if( op == e_instance_op_update
-          && !internal_modification && instance.get_revision( ) == c_unconfirmed_revision )
-            throw runtime_error( get_string_message( GS( c_str_cannot_update ),
-             make_pair( c_str_parm_cannot_update_class, instance.get_display_name( ) ) ) );
-#endif
 
          if( op == e_instance_op_update
           && instance.get_current_identity( ) != instance.get_original_identity( ) )

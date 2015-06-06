@@ -149,6 +149,34 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
+#ifdef IS_TRADITIONAL_PLATFORM
+void set_variable( size_t handle, const string& vname, const string& value )
+#else
+void set_variable( size_t handle,
+ const string& vname, const string& value, bool has_identified_local_session,
+ string& field_values_to_log, auto_ptr< temporary_session_variable >& ap_tmp_bh )
+{
+   if( !has_identified_local_session && vname != get_special_var_name( e_special_var_bh )
+    && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
+      throw runtime_error( "invalid field '" + vname + "'" );
+
+   // NOTE: The special variable used for block height is set as a session variable as it
+   // needs to apply to any other records created or updated in the same operation scope.
+   if( vname == get_special_var_name( e_special_var_bh ) )
+   {
+      ap_tmp_bh.reset( new temporary_session_variable( vname, value ) );
+
+      if( !field_values_to_log.empty( ) )
+         field_values_to_log += ',';
+
+      field_values_to_log += vname + '=' + value;
+   }
+   else
+      instance_set_variable( handle, "", vname, value );
+#endif
+   instance_set_variable( handle, "", vname, value );
+}
+
 void check_instance_op_permission( const string& module,
  size_t handle, string permission_info, bool is_field_perm = false )
 {
@@ -1507,6 +1535,31 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = peer_account_lock( blockchain, password, check_only );
       }
+      else if( command == c_cmd_ciyam_session_peer_transactions )
+      {
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transactions_blockchain ) );
+
+         if( !file_exists( blockchain + ".txs" ) )
+            throw runtime_error( "no unprocessed txs found for blockchain: " + blockchain );
+
+         vector< string > applications;
+         uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, applications );
+
+         set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
+
+         for( size_t i = 0; i < applications.size( ); i++ )
+         {
+            string application( applications[ i ] );
+
+            if( file_exists( application + ".log" ) )
+            {
+               set_session_variable( get_special_var_name( e_special_var_application ), application );
+               run_script( "app_blk_txs", false );
+            }
+
+            file_remove( applications[ i ] + ".txs.cin" );
+         }
+      }
       else if( command == c_cmd_ciyam_session_peer_transaction_info )
       {
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transaction_info_blockchain ) );
@@ -2363,6 +2416,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+               auto_ptr< temporary_session_variable > ap_tmp_bh;
                set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
 #endif
 
@@ -2375,13 +2429,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                  {
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( !has_identified_local_session )
-                        throw runtime_error( "invalid field '" + i->first + "'" );
+#ifdef IS_TRADITIONAL_PLATFORM
+                     set_variable( handle, i->first, i->second );
+#else
+                     set_variable( handle, i->first, i->second, has_identified_local_session, field_values_to_log, ap_tmp_bh );
 #endif
-                     instance_set_variable( handle, "", i->first, i->second );
-                  }
                }
 
                op_instance_create( handle, "", key, false );
@@ -2639,6 +2691,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+               auto_ptr< temporary_session_variable > ap_tmp_bh;
                set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
 #endif
 
@@ -2652,13 +2705,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                  {
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( !has_identified_local_session )
-                        throw runtime_error( "invalid field '" + i->first + "'" );
+#ifdef IS_TRADITIONAL_PLATFORM
+                     set_variable( handle, i->first, i->second );
+#else
+                     set_variable( handle, i->first, i->second, has_identified_local_session, field_values_to_log, ap_tmp_bh );
 #endif
-                     instance_set_variable( handle, "", i->first, i->second );
-                  }
                   else
                   {
                      if( !update_fields.empty( ) )
@@ -2974,6 +3025,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             tz_name = get_timezone( );
 
 #ifndef IS_TRADITIONAL_PLATFORM
+         auto_ptr< temporary_session_variable > ap_tmp_bh;
+
          if( !vers.empty( ) && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
             throw runtime_error( "version info is not permitted for non-traditional applications" );
 #endif
@@ -3095,14 +3148,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-               {
-#ifndef IS_TRADITIONAL_PLATFORM
-                  if( !has_identified_local_session
-                   && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
-                     throw runtime_error( "invalid field '" + i->first + "'" );
+#ifdef IS_TRADITIONAL_PLATFORM
+                  set_variable( handle, i->first, i->second );
+#else
+                  set_variable( handle, i->first, i->second, has_identified_local_session, field_values_to_log, ap_tmp_bh );
 #endif
-                  instance_set_variable( handle, "", i->first, i->second );
-               }
                else
                   has_any_set_flds = true;
             }
@@ -3721,6 +3771,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( truncate_log )
             remove_file( name + ".log." + osstr.str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_comment )
+      {
+         string text( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_comment_text ) );
+
+         storage_comment( text );
       }
       else if( command == c_cmd_ciyam_session_storage_restore )
       {
