@@ -151,6 +151,7 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
 
 #ifdef IS_TRADITIONAL_PLATFORM
 void set_variable( size_t handle, const string& vname, const string& value )
+{
 #else
 void set_variable( size_t handle,
  const string& vname, const string& value, bool has_identified_local_session,
