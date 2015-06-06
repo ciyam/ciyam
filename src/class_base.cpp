@@ -1293,7 +1293,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
 #ifndef IS_TRADITIONAL_PLATFORM
       if( get_module_name( ) != "Meta" )
       {
-         string block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
+         string block_height( get_session_variable( get_special_var_name( e_special_var_bh ) ) );
 
          if( block_height.empty( ) )
             revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
@@ -1316,7 +1316,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
          ++revision;
       else if( sql_stmts.empty( ) )
       {
-         string block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
+         string block_height( get_session_variable( get_special_var_name( e_special_var_bh ) ) );
 
          if( block_height.empty( ) )
             revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
@@ -1350,6 +1350,10 @@ bool class_base::has_skipped_empty_update( )
 {
    if( p_impl->has_changed_user_fields )
       return false;
+#ifndef IS_TRADITIONAL_PLATFORM
+   else if( !get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+      return false;
+#endif
    else
    {
       revision = original_revision;
@@ -1843,7 +1847,12 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
+#ifdef IS_TRADITIONAL_PLATFORM
    if( sql_column_names.empty( ) )
+#else
+   if( sql_column_names.empty( )
+    && get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+#endif
       sql_stmt.erase( );
    else
    {
@@ -1899,7 +1908,12 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
+#ifdef IS_TRADITIONAL_PLATFORM
    if( sql_column_names.empty( ) )
+#else
+   if( sql_column_names.empty( )
+    && get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+#endif
    {
       sql_stmt.erase( );
 

@@ -47,6 +47,7 @@ enum quote_style
 
 enum special_var
 {
+   e_special_var_bh,
    e_special_var_id,
    e_special_var_dtm,
    e_special_var_key,
@@ -87,6 +88,7 @@ enum special_var
    e_special_var_blockchain,
    e_special_var_permission,
    e_special_var_allow_async,
+   e_special_var_application,
    e_special_var_output_file,
    e_special_var_path_prefix,
    e_special_var_permissions,

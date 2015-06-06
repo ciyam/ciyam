@@ -142,7 +142,10 @@ struct transaction_info
 
    uint64_t sequence;
 
+   string application;
    string previous_transaction;
+
+   vector< string > log_lines;
 
    bool is_included_in_best_chain;
 };
@@ -1179,6 +1182,10 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       p_extras->push_back( make_pair( raw_block_data, tags ) );
 
       map< uint64_t, string > new_chain_height_blocks;
+      vector< vector< string > > all_transaction_hashes;
+
+      uint64_t parallel_block_height = 0;
+      all_transaction_hashes.push_back( transaction_hashes );
 
       if( !block_height )
       {
@@ -1222,6 +1229,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
             if( !parallel_block_minted_minter_id.empty( ) )
             {
+               parallel_block_height = block_height;
+
                string prior_block_minter_hash;
                uint64_t previous_balance = get_balance_from_minter_id( parallel_block_minted_minter_id, &prior_block_minter_hash );
 
@@ -1273,7 +1282,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             // balance of the parallel minters back to the last block they both had in common.
             if( new_previous_block != old_previous_block )
             {
-               uint64_t parallel_block_height( block_height );
+               parallel_block_height = block_height;
 
                while( parallel_block_height
                 && new_previous_block != old_previous_block )
@@ -1340,6 +1349,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   uint64_t new_account_balance = get_balance_from_minter_id(
                    new_binfo.minter_id, &new_minter_hash, &new_minter_tag );
 
+                  all_transaction_hashes.push_back( new_binfo.transaction_hashes );
+
                   for( size_t i = 0; i < new_binfo.transaction_hashes.size( ); i++ )
                      new_transaction_hashes.insert( new_binfo.transaction_hashes[ i ] );
 
@@ -1368,7 +1379,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   p_extras->push_back( make_pair( new_minter_hash,
                    new_minter_tag + ".b*" + to_string( new_account_balance ) ) );
 
-                  --parallel_block_height;
+                  if( new_previous_block != old_previous_block )
+                     --parallel_block_height;
                }
 
                // NOTE: Any old best chain transactions that did not end up in the new best chain are now re-tagged.
@@ -1593,6 +1605,41 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
 
          ( *p_extras )[ block_extra_offset ].second += "\n" + full_chain_tag;
+      }
+
+      // NOTE: The parallel block height (if the chain has not just been extended)
+      // as well as all relevant transaction hashes (which include all those found
+      // in the current block as well as those from all previous blocks going back
+      // to the parallel block height) are appended to a <blockchain>.txs file.
+      if( is_new_chain_head && !all_transaction_hashes.empty( ) )
+      {
+         string filename( chain + ".txs" );
+
+         ofstream outf( filename.c_str( ), ios::out | ios::app );
+         if( !outf )
+            throw runtime_error( "unable to open '" + filename + "' for append" );
+
+         outf << block_height;
+
+         if( parallel_block_height )
+            outf << ':' << parallel_block_height;
+
+         outf << '\n';
+
+         for( size_t i = all_transaction_hashes.size( ) - 1; ; )
+         {
+            for( size_t j = 0; j < all_transaction_hashes[ i ].size( ); j++ )
+               outf << all_transaction_hashes[ i ][ j ] << '\n';
+
+            if( i == 0 )
+               break;
+            else
+               --i;
+         }
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred appending tx hash for blockchain ***" );
       }
 
       uint64_t checkpoint_height = 0;
@@ -2068,7 +2115,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       chain_info cinfo;
       get_chain_info( cinfo, chain_id );
 
-      if( new_block_height <= cinfo.checkpoint_start_height )
+      if( cinfo.checkpoint_start_height && new_block_height <= cinfo.checkpoint_start_height )
          throw runtime_error( "invalid attempt to rewind through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
 
       string block_hash( tag_file_hash( content ) );
@@ -2090,7 +2137,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       {
          chain_blocks.insert( current_block_hash );
 
-         if( binfo.previous_block == block_hash )
+         if( binfo.previous_block.empty( ) || binfo.previous_block == block_hash )
             break;
 
          current_block_hash = binfo.previous_block;
@@ -2144,6 +2191,9 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
             string next_account_block_tag(
              list_file_tags( "c" + chain_id + ".b" + to_string( height ) + "-*.a" + next_account ) );
+
+            if( next_account_block_tag.empty( ) )
+               continue;
 
             string next_account_block_hash( tag_file_hash( next_account_block_tag ) );
 
@@ -2276,6 +2326,8 @@ void verify_transaction( const string& content, bool check_sigs,
       throw runtime_error( "unexpected empty transaction content" );
 
    string chain, account, application, transaction_hash, transaction_lock, previous_transaction, public_key_base64;
+
+   vector< string > log_lines;
 
    chain_info cinfo;
    string transaction_signature;
@@ -2449,6 +2501,8 @@ void verify_transaction( const string& content, bool check_sigs,
          ++num_log_lines;
          verify += "\n" + lines[ i ];
 
+         log_lines.push_back( lines[ i ].substr( 2 ) );
+
          string::size_type pos = next_line.find( ' ' );
          if( pos == string::npos )
             throw runtime_error( "invalid transaction log line '" + next_line + "'" );
@@ -2456,6 +2510,10 @@ void verify_transaction( const string& content, bool check_sigs,
          string cmd( next_line.substr( 0, pos ) );
          if( cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
             throw runtime_error( "invalid cmd '" + cmd + "' in log line '" + next_line + "'" );
+
+         pos = next_line.find( '"' );
+         if( pos == string::npos )
+            throw runtime_error( "invalid transaction log line '" + next_line + "'" );
       }
       else if( !had_signature
        && prefix == string( c_file_type_core_transaction_detail_signature_prefix ) )
@@ -2501,6 +2559,8 @@ void verify_transaction( const string& content, bool check_sigs,
    {
       p_transaction_info->account_id = "c" + chain + ".a" + account;
       p_transaction_info->sequence = sequence;
+      p_transaction_info->log_lines = log_lines;
+      p_transaction_info->application = application;
       p_transaction_info->previous_transaction = previous_transaction;
       p_transaction_info->is_included_in_best_chain = get_hash_tags( transaction_id ).empty( );
    }
@@ -3494,30 +3554,6 @@ string construct_new_transaction( const string& blockchain,
    return data;
 }
 
-void add_local_transaction_for_application(
- const string& application, const string& transaction_hash, const string& class_and_key_info )
-{
-   guard g( g_mutex );
-
-   string filename( application + ".txs.log" );
-   if( !file_exists( filename ) )
-   {
-      ofstream outf( filename.c_str( ) );
-      outf << "block 0\n";
-   }
-
-   ofstream outf( filename.c_str( ), ios::out | ios::app );
-   if( !outf )
-      throw runtime_error( "unable to open '" + filename + "' for append" );
-
-   outf << transaction_hash << '\n';
-   outf << class_and_key_info << '\n';
-
-   outf.flush( );
-   if( !outf.good( ) )
-      throw runtime_error( "*** unexpected error occurred appending local tx ***" );
-}
-
 string construct_blob_for_block_content( const string& block_content, const string& block_signature )
 {
    return string( c_file_type_str_core_blob ) + block_content
@@ -3722,5 +3758,99 @@ string construct_blockchain_info_file( const string& blockchain )
    create_raw_file_with_extras( "", extras );
 
    return tag_file_hash( "c" + blockchain + ".info" );
+}
+
+uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain, vector< string >& applications )
+{
+   guard g( g_mutex );
+
+   string filename( blockchain + ".txs" );
+
+   uint64_t block_height = 0;
+
+   if( file_exists( filename ) )
+   {
+      vector< string > lines;
+      buffer_file_lines( filename, lines );
+
+
+      map< string, vector< string > > app_log_lines;
+
+      for( size_t i = 0; i < lines.size( ); i++ )
+      {
+         string next( lines[ i ] );
+
+         if( i == 0 )
+         {
+            block_height = from_string< uint64_t >( next );
+            continue;
+         }
+
+         transaction_info tinfo;
+         if( get_transaction_info( tinfo, next ) )
+         {
+            string account( tinfo.account_id );
+            string::size_type pos = account.find( ".a" );
+            if( pos != string::npos )
+               account.erase( 0, pos + 2 );
+
+            if( !app_log_lines.count( tinfo.application ) )
+               append_height_for_blockchain_application( tinfo.application, block_height );
+
+            // FUTURE: If existing then need to get the mappped class ids and keys as there might
+            // need to be multiple updates issued to fix the revision numbers of related records.
+            bool was_existing = append_transaction_for_blockchain_application( tinfo.application, next );
+
+            for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+            {
+               string next_log_line( tinfo.log_lines[ j ] );
+
+               string::size_type pos = next_log_line.find( ' ' );
+               if( pos == string::npos )
+                  throw runtime_error( "invalid next log line '"
+                   + tinfo.log_lines[ j ] + "' when attempting to construct script" );
+
+               next_log_line.insert( pos + 1, account + ' ' );
+
+               pos = next_log_line.find( '"' );
+               if( pos == string::npos )
+                  throw runtime_error( "invalid next log line '"
+                   + tinfo.log_lines[ j ] + "' when attempting to construct script" );
+
+               if( was_existing )
+               {
+                  next_log_line.erase( pos + 1 );
+                  next_log_line += "@bh=%1\"";
+               }
+               else
+                  next_log_line.insert( pos + 1, "@bh=%1," );
+
+               app_log_lines[ tinfo.application ].push_back( next_log_line );
+            }
+         }
+      }
+
+      for( map< string, vector< string > >::iterator i = app_log_lines.begin( ); i!= app_log_lines.end( ); ++i )
+      {
+         string filename( i->first + ".txs.cin" );
+
+         ofstream outf( filename.c_str( ), ios::out | ios::app );
+         if( !outf )
+            throw runtime_error( "unable to open file '" + filename + "' for output" );
+
+         for( size_t j = 0; j < ( i->second ).size( ); j++ )
+            outf << '.' << ( i->second )[ j ] << '\n';
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred appending tx script for blockchain ***" );
+
+         applications.push_back( i->first );
+      }
+
+      file_remove( filename );
+   }
+
+   return block_height;
 }
 

@@ -151,6 +151,32 @@ string get_peer_to_retry( const string& blockchain )
    return retval;
 }
 
+void process_txs( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   if( file_exists( blockchain + ".txs" ) )
+   {
+      vector< string > applications;
+      uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, applications );
+
+      set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
+
+      for( size_t i = 0; i < applications.size( ); i++ )
+      {
+         string application( applications[ i ] );
+
+         if( file_exists( application + ".log" ) )
+         {
+            set_session_variable( get_special_var_name( e_special_var_application ), application );
+            run_script( "app_blk_txs", false );
+         }
+
+         file_remove( applications[ i ] + ".txs.cin" );
+      }
+   }
+}
+
 string mint_new_block( const string& blockchain, new_block_info& new_block )
 {
    guard g( g_mutex );
@@ -176,6 +202,7 @@ string store_new_block( const string& blockchain, const string& data )
    verify_core_file( data, true, &extras );
    create_raw_file_with_extras( "", extras );
 
+   process_txs( blockchain );
    hash = construct_blockchain_info_file( blockchain );
 
    return hash;
@@ -220,6 +247,8 @@ void process_file( const string& hash, const string& blockchain )
                verify_core_file( block_content, true, &extras );
 
                create_raw_file_with_extras( "", extras );
+
+               process_txs( blockchain );
                construct_blockchain_info_file( blockchain );
             }
             catch( ... )
@@ -1724,7 +1753,7 @@ void create_blockchain_transaction(
 
    construct_blockchain_info_file( blockchain );
 
-   add_local_transaction_for_application( application, tx_hash,
+   append_transaction_for_blockchain_application( application, tx_hash,
     get_session_variable( get_special_var_name( e_special_var_classes_and_keys ) ) );
 
    set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );

@@ -326,6 +326,8 @@ void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC storage_admin_name_lock( const std::string& name );
 
+void CIYAM_BASE_DECL_SPEC storage_comment( const std::string& comment );
+
 void CIYAM_BASE_DECL_SPEC storage_cache_clear( );
 size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( );
 size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( size_t new_limit );
@@ -611,6 +613,18 @@ size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
 
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
 void CIYAM_BASE_DECL_SPEC transaction_log_command( const std::string& log_command );
+
+bool CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
+ const std::string& application, const std::string& tx_hash_or_block,
+ const std::string& class_and_key_info, std::string* p_class_and_key_info = 0 );
+
+inline bool CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
+ const std::string& application, const std::string& tx_hash_or_block, std::string* p_class_and_key_info = 0 )
+{
+   return append_transaction_for_blockchain_application( application, tx_hash_or_block, "", p_class_and_key_info );
+}
+
+void CIYAM_BASE_DECL_SPEC append_height_for_blockchain_application( const std::string& application, uint64_t height );
 
 class CIYAM_BASE_DECL_SPEC transaction
 {

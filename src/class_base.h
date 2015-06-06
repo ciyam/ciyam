@@ -667,6 +667,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void set_version( uint16_t new_version ) { version = new_version; }
    void set_revision( uint64_t new_revision ) { revision = new_revision; }
 
+   void set_original_revision( uint64_t new_revision ) { original_revision = new_revision; }
    void set_original_identity( const std::string& new_original_identity ) { original_identity = new_original_identity; }
 
    void set_graph_parent( class_base* p_parent, const std::string& fk_field, bool is_fk = false );
@@ -778,6 +779,7 @@ struct class_base_accessor
    void set_version( uint16_t new_version ) { cb.set_version( new_version ); }
    void set_revision( uint64_t new_revision ) { cb.set_revision( new_revision ); }
 
+   void set_original_revision( uint64_t new_revision ) { cb.set_original_revision( new_revision ); }
    void set_original_identity( const std::string& new_original_identity ) { cb.set_original_identity( new_original_identity ); }
 
    size_t get_index_num( ) const { return cb.get_index_num( ); }
