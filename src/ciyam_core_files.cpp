@@ -2732,7 +2732,7 @@ void verify_blockchain_info( const string& content,
                   has_height = true;
                   height = from_string< uint64_t >( remainder );
 
-                  if( height <= cinfo.checkpoint_start_height )
+                  if( cinfo.checkpoint_start_height && height <= cinfo.checkpoint_start_height )
                      is_prior_to_checkpoint = true;
                }
                else
@@ -2746,7 +2746,7 @@ void verify_blockchain_info( const string& content,
          {
             uint64_t next_height = from_string< uint64_t >( next_line );
 
-            if( next_height == 0 )
+            if( block_height && next_height == 0 )
                throw runtime_error( "invalid block height 0 in verify_blockchain_info" );
 
             if( block_height && next_height != block_height + 1 )
