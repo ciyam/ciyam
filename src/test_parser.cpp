@@ -18,6 +18,15 @@
 #include "macros.h"
 #include "utilities.h"
 
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+extern "C"
+{
+#     include <readline/history.h>
+}
+#  endif
+#endif
+
 //#define DEBUG
 
 using namespace std;
@@ -1042,10 +1051,22 @@ int main( int argc, char* argv[ ] )
       }
       else if( argc == 1 )
       {
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+         if( isatty( STDIN_FILENO ) )
+            using_history( );
+#  endif
+#endif
          command_parser p;
          string cmd, next;
          while( cout << "\n> ", getline( cin, next ) )
          {
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+            if( isatty( STDIN_FILENO ) )
+               add_history( next.c_str( ) );
+#  endif
+#endif
             string::size_type pos = next.find( ' ' );
             cmd = next.substr( 0, pos );
 
