@@ -16,6 +16,7 @@
 #include "command_parser.h"
 
 #include "macros.h"
+#include "console.h"
 #include "utilities.h"
 
 #ifdef __GNUG__
@@ -1059,8 +1060,12 @@ int main( int argc, char* argv[ ] )
 #endif
          command_parser p;
          string cmd, next;
-         while( cout << "\n> ", getline( cin, next ) )
+         while( cin )
          {
+            next = get_line( "\n> " );
+
+            if( next.empty( ) )
+               continue;
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
             if( isatty( STDIN_FILENO ) )
