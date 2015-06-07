@@ -6,5 +6,6 @@
 `{`$use_rdline`=`'true`'`}
 `{`$pwd_rounds`=`'12345`'`}
 `{`$new_rounds`=`'12345`'`}
+`{`$traditional`=`'false`'`}
 `{`$use_salt_val`=`'false`'`}
 `{`$ui_script_version`=`'1`'`}

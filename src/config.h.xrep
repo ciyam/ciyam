@@ -8,7 +8,7 @@
 #ifndef CONFIG_H
 #  define CONFIG_H
 
-#  define IS_TRADITIONAL_PLATFORM
+`{`@eq`(`$traditional`,`'false`'`)//`}#  define IS_TRADITIONAL_PLATFORM
 
 `{`!`@eq`(`$port`,`'12345`'`)//`}#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
 
