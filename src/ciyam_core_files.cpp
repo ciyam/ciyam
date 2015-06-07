@@ -2681,6 +2681,7 @@ void verify_blockchain_info( const string& content,
 
       string chain_id;
 
+      bool had_block_height = false;
       bool is_prior_to_checkpoint = false;
 
       uint64_t height = 0;
@@ -2753,9 +2754,10 @@ void verify_blockchain_info( const string& content,
                throw runtime_error( "unexpected block height " + to_string( next_height )
                 + " after previous block height " + to_string( block_height ) + " in verify_blockchain_info" );
 
+            had_block_height = true;
             block_height = next_height;
          }
-         else if( !block_height )
+         else if( !block_height && !had_block_height )
          {
             string::size_type pos = next_line.find( '.' );
             if( pos == string::npos )
