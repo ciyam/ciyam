@@ -63,6 +63,8 @@ files
 salt.h
 config.h
 config.info
+autoscript.sio
+manuscript.sio
 
 # Ignore generated compile script.
 compile.sh
