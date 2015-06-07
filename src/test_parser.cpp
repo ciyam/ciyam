@@ -11,10 +11,14 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <iostream>
+#  ifdef __GNUG__
+#     include <unistd.h>
+#  endif
 #endif
 
 #include "command_parser.h"
 
+#include "config.h"
 #include "macros.h"
 #include "console.h"
 #include "utilities.h"
