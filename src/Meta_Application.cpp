@@ -89,6 +89,7 @@ const char* const c_field_id_Add_Modules_Automatically = "127128";
 const char* const c_field_id_Allow_Duplicate_Logins = "127108";
 const char* const c_field_id_Allow_Module_Switching = "127109";
 const char* const c_field_id_Auto_Login_Days = "127124";
+const char* const c_field_id_Blockchain = "127135";
 const char* const c_field_id_Create_Database = "127125";
 const char* const c_field_id_Created_Database = "127126";
 const char* const c_field_id_Default_Image_Height = "127114";
@@ -124,6 +125,7 @@ const char* const c_field_name_Add_Modules_Automatically = "Add_Modules_Automati
 const char* const c_field_name_Allow_Duplicate_Logins = "Allow_Duplicate_Logins";
 const char* const c_field_name_Allow_Module_Switching = "Allow_Module_Switching";
 const char* const c_field_name_Auto_Login_Days = "Auto_Login_Days";
+const char* const c_field_name_Blockchain = "Blockchain";
 const char* const c_field_name_Create_Database = "Create_Database";
 const char* const c_field_name_Created_Database = "Created_Database";
 const char* const c_field_name_Default_Image_Height = "Default_Image_Height";
@@ -159,6 +161,7 @@ const char* const c_field_display_name_Add_Modules_Automatically = "field_applic
 const char* const c_field_display_name_Allow_Duplicate_Logins = "field_application_allow_duplicate_logins";
 const char* const c_field_display_name_Allow_Module_Switching = "field_application_allow_module_switching";
 const char* const c_field_display_name_Auto_Login_Days = "field_application_auto_login_days";
+const char* const c_field_display_name_Blockchain = "field_application_blockchain";
 const char* const c_field_display_name_Create_Database = "field_application_create_database";
 const char* const c_field_display_name_Created_Database = "field_application_created_database";
 const char* const c_field_display_name_Default_Image_Height = "field_application_default_image_height";
@@ -189,7 +192,7 @@ const char* const c_field_display_name_Use_Vertical_Menu = "field_application_us
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 
-const int c_num_fields = 34;
+const int c_num_fields = 35;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -226,6 +229,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127132",
    "127133",
    "127134",
+   "127135",
    "302220"
 };
 
@@ -236,6 +240,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Allow_Duplicate_Logins",
    "Allow_Module_Switching",
    "Auto_Login_Days",
+   "Blockchain",
    "Create_Database",
    "Created_Database",
    "Default_Image_Height",
@@ -311,8 +316,10 @@ const char* const c_procedure_id_Test_Proc_2 = "127497";
 const uint64_t c_modifier_Has_No_Application_Log = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x200 );
 const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x400 );
-const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Traditional = UINT64_C( 0x800 );
+const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x1000 );
 
+domain_string_max_size< 30 > g_Blockchain_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Module_Prefix_domain;
@@ -344,6 +351,7 @@ bool g_default_Add_Modules_Automatically = bool( 1 );
 bool g_default_Allow_Duplicate_Logins = bool( 0 );
 bool g_default_Allow_Module_Switching = bool( 1 );
 int g_default_Auto_Login_Days = int( 0 );
+string g_default_Blockchain = string( );
 bool g_default_Create_Database = bool( 1 );
 bool g_default_Created_Database = bool( 0 );
 int g_default_Default_Image_Height = int( 75 );
@@ -767,6 +775,12 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< int >( cmd_handler.p_Meta_Application->Auto_Login_Days( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Blockchain || field_name == c_field_name_Blockchain )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Application->Blockchain( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
       {
          handled = true;
@@ -986,6 +1000,13 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Auto_Login_Days, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Blockchain || field_name == c_field_name_Blockchain )
+      {
+         handled = true;
+         func_string_setter< Meta_Application, string >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Blockchain, field_value );
       }
 
       if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
@@ -1287,6 +1308,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    int impl_Auto_Login_Days( ) const { return lazy_fetch( p_obj ), v_Auto_Login_Days; }
    void impl_Auto_Login_Days( int Auto_Login_Days ) { v_Auto_Login_Days = Auto_Login_Days; }
 
+   const string& impl_Blockchain( ) const { return lazy_fetch( p_obj ), v_Blockchain; }
+   void impl_Blockchain( const string& Blockchain ) { sanity_check( Blockchain ); v_Blockchain = Blockchain; }
+
    bool impl_Create_Database( ) const { return lazy_fetch( p_obj ), v_Create_Database; }
    void impl_Create_Database( bool Create_Database ) { v_Create_Database = Create_Database; }
 
@@ -1497,6 +1521,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Allow_Duplicate_Logins;
    bool v_Allow_Module_Switching;
    int v_Auto_Login_Days;
+   string v_Blockchain;
    bool v_Create_Database;
    bool v_Created_Database;
    int v_Default_Image_Height;
@@ -1593,6 +1618,10 @@ void Meta_Application::impl::impl_Generate( )
       ofstream outm( modules_list.c_str( ) );
       if( !outm )
          throw runtime_error( "unexpected error opening '" + modules_list + "' for output" );
+
+      // NOTE: Treat the blockchain attribute as a module name.
+      if( !get_obj( ).Blockchain( ).empty( ) )
+         outm << get_obj( ).Blockchain( ) << '\n';
 
       ofstream outs( generate_script.c_str( ) );
       if( !outs )
@@ -1725,6 +1754,8 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$reg_key\x60=\x60'" << get_obj( ).Registration_Key( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$use_tls\x60=\x60'" << use_tls << "\x60'\x60}\n";
+
+      outv << "\x60{\x60$blockchain\x60=\x60'" << get_obj( ).Blockchain( ) << "\x60'\x60}\n";
 
       outv << "\x60{\x60$image_width\x60=\x60'" << get_obj( ).Default_Image_Width( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$image_height\x60=\x60'" << get_obj( ).Default_Image_Height( ) << "\x60'\x60}\n";
@@ -2284,118 +2315,122 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 5:
-      retval = to_string( impl_Create_Database( ) );
+      retval = to_string( impl_Blockchain( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Created_Database( ) );
+      retval = to_string( impl_Create_Database( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Default_Image_Height( ) );
+      retval = to_string( impl_Created_Database( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Default_Image_Width( ) );
+      retval = to_string( impl_Default_Image_Height( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Default_List_Print_Row_Limit( ) );
+      retval = to_string( impl_Default_Image_Width( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Default_List_Row_Limit( ) );
+      retval = to_string( impl_Default_List_Print_Row_Limit( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Default_Max_Attached_File_Size( ) );
+      retval = to_string( impl_Default_List_Row_Limit( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Default_Multiline_Max_Rows( ) );
+      retval = to_string( impl_Default_Max_Attached_File_Size( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Default_Multiline_Min_Rows( ) );
+      retval = to_string( impl_Default_Multiline_Max_Rows( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Default_Multiline_Text_Limit( ) );
+      retval = to_string( impl_Default_Multiline_Min_Rows( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Default_Multiline_Text_Trunc( ) );
+      retval = to_string( impl_Default_Multiline_Text_Limit( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Encrypt_Dynamic_Content( ) );
+      retval = to_string( impl_Default_Multiline_Text_Trunc( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Generate_Details( ) );
+      retval = to_string( impl_Encrypt_Dynamic_Content( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Generate_Status( ) );
+      retval = to_string( impl_Generate_Details( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Generate_Type( ) );
+      retval = to_string( impl_Generate_Status( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Keep_Existing_Data( ) );
+      retval = to_string( impl_Generate_Type( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Module_Prefix( ) );
+      retval = to_string( impl_Keep_Existing_Data( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Module_Prefix( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Print_Lists_With_Check_Boxes( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Print_Lists_With_Row_Numbers( ) );
+      retval = to_string( impl_Print_Lists_With_Check_Boxes( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Registration_Key( ) );
+      retval = to_string( impl_Print_Lists_With_Row_Numbers( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Show_Inaccessible_Modules( ) );
+      retval = to_string( impl_Registration_Key( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
+      retval = to_string( impl_Show_Inaccessible_Modules( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Use_Embedded_Images( ) );
+      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Use_TLS_Sessions( ) );
+      retval = to_string( impl_Use_Embedded_Images( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_TLS_Sessions( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Use_Vertical_Menu( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Vertical_Menu( ) );
       break;
 
       case 33:
+      retval = to_string( impl_Version( ) );
+      break;
+
+      case 34:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -2431,118 +2466,122 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 5:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Create_Database, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Blockchain, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Created_Database, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Create_Database, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Image_Height, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Created_Database, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Image_Width, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Image_Height, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_List_Print_Row_Limit, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Image_Width, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_List_Row_Limit, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_List_Print_Row_Limit, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Max_Attached_File_Size, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_List_Row_Limit, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Max_Rows, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Max_Attached_File_Size, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Min_Rows, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Max_Rows, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Text_Limit, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Min_Rows, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Text_Trunc, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Text_Limit, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Encrypt_Dynamic_Content, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Default_Multiline_Text_Trunc, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Details, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Encrypt_Dynamic_Content, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Status, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Details, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Generate_Type, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Status, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Keep_Existing_Data, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Generate_Type, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Module_Prefix, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Keep_Existing_Data, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Name, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Module_Prefix, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Check_Boxes, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Name, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Row_Numbers, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Check_Boxes, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Registration_Key, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Row_Numbers, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Registration_Key, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
       break;
 
       case 30:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
       break;
 
       case 31:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 32:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
       break;
 
       case 33:
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      break;
+
+      case 34:
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
@@ -2578,118 +2617,122 @@ bool Meta_Application::impl::is_field_default( int field ) const
       break;
 
       case 5:
-      retval = ( v_Create_Database == g_default_Create_Database );
+      retval = ( v_Blockchain == g_default_Blockchain );
       break;
 
       case 6:
-      retval = ( v_Created_Database == g_default_Created_Database );
+      retval = ( v_Create_Database == g_default_Create_Database );
       break;
 
       case 7:
-      retval = ( v_Default_Image_Height == g_default_Default_Image_Height );
+      retval = ( v_Created_Database == g_default_Created_Database );
       break;
 
       case 8:
-      retval = ( v_Default_Image_Width == g_default_Default_Image_Width );
+      retval = ( v_Default_Image_Height == g_default_Default_Image_Height );
       break;
 
       case 9:
-      retval = ( v_Default_List_Print_Row_Limit == g_default_Default_List_Print_Row_Limit );
+      retval = ( v_Default_Image_Width == g_default_Default_Image_Width );
       break;
 
       case 10:
-      retval = ( v_Default_List_Row_Limit == g_default_Default_List_Row_Limit );
+      retval = ( v_Default_List_Print_Row_Limit == g_default_Default_List_Print_Row_Limit );
       break;
 
       case 11:
-      retval = ( v_Default_Max_Attached_File_Size == g_default_Default_Max_Attached_File_Size );
+      retval = ( v_Default_List_Row_Limit == g_default_Default_List_Row_Limit );
       break;
 
       case 12:
-      retval = ( v_Default_Multiline_Max_Rows == g_default_Default_Multiline_Max_Rows );
+      retval = ( v_Default_Max_Attached_File_Size == g_default_Default_Max_Attached_File_Size );
       break;
 
       case 13:
-      retval = ( v_Default_Multiline_Min_Rows == g_default_Default_Multiline_Min_Rows );
+      retval = ( v_Default_Multiline_Max_Rows == g_default_Default_Multiline_Max_Rows );
       break;
 
       case 14:
-      retval = ( v_Default_Multiline_Text_Limit == g_default_Default_Multiline_Text_Limit );
+      retval = ( v_Default_Multiline_Min_Rows == g_default_Default_Multiline_Min_Rows );
       break;
 
       case 15:
-      retval = ( v_Default_Multiline_Text_Trunc == g_default_Default_Multiline_Text_Trunc );
+      retval = ( v_Default_Multiline_Text_Limit == g_default_Default_Multiline_Text_Limit );
       break;
 
       case 16:
-      retval = ( v_Encrypt_Dynamic_Content == g_default_Encrypt_Dynamic_Content );
+      retval = ( v_Default_Multiline_Text_Trunc == g_default_Default_Multiline_Text_Trunc );
       break;
 
       case 17:
-      retval = ( v_Generate_Details == g_default_Generate_Details );
+      retval = ( v_Encrypt_Dynamic_Content == g_default_Encrypt_Dynamic_Content );
       break;
 
       case 18:
-      retval = ( v_Generate_Status == g_default_Generate_Status );
+      retval = ( v_Generate_Details == g_default_Generate_Details );
       break;
 
       case 19:
-      retval = ( v_Generate_Type == g_default_Generate_Type );
+      retval = ( v_Generate_Status == g_default_Generate_Status );
       break;
 
       case 20:
-      retval = ( v_Keep_Existing_Data == g_default_Keep_Existing_Data );
+      retval = ( v_Generate_Type == g_default_Generate_Type );
       break;
 
       case 21:
-      retval = ( v_Module_Prefix == g_default_Module_Prefix );
+      retval = ( v_Keep_Existing_Data == g_default_Keep_Existing_Data );
       break;
 
       case 22:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_Module_Prefix == g_default_Module_Prefix );
       break;
 
       case 23:
-      retval = ( v_Print_Lists_With_Check_Boxes == g_default_Print_Lists_With_Check_Boxes );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 24:
-      retval = ( v_Print_Lists_With_Row_Numbers == g_default_Print_Lists_With_Row_Numbers );
+      retval = ( v_Print_Lists_With_Check_Boxes == g_default_Print_Lists_With_Check_Boxes );
       break;
 
       case 25:
-      retval = ( v_Registration_Key == g_default_Registration_Key );
+      retval = ( v_Print_Lists_With_Row_Numbers == g_default_Print_Lists_With_Row_Numbers );
       break;
 
       case 26:
-      retval = ( v_Show_Inaccessible_Modules == g_default_Show_Inaccessible_Modules );
+      retval = ( v_Registration_Key == g_default_Registration_Key );
       break;
 
       case 27:
-      retval = ( v_Use_Check_Boxes_for_Bools == g_default_Use_Check_Boxes_for_Bools );
+      retval = ( v_Show_Inaccessible_Modules == g_default_Show_Inaccessible_Modules );
       break;
 
       case 28:
-      retval = ( v_Use_Embedded_Images == g_default_Use_Embedded_Images );
+      retval = ( v_Use_Check_Boxes_for_Bools == g_default_Use_Check_Boxes_for_Bools );
       break;
 
       case 29:
-      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
+      retval = ( v_Use_Embedded_Images == g_default_Use_Embedded_Images );
       break;
 
       case 30:
-      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
+      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
       break;
 
       case 31:
-      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
+      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
       break;
 
       case 32:
-      retval = ( v_Version == g_default_Version );
+      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
       break;
 
       case 33:
+      retval = ( v_Version == g_default_Version );
+      break;
+
+      case 34:
       retval = ( v_Workgroup == g_default_Workgroup );
       break;
 
@@ -2723,7 +2766,9 @@ uint64_t Meta_Application::impl::get_state( ) const
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
 
-#ifndef IS_TRADITIONAL_PLATFORM
+#ifdef IS_TRADITIONAL_PLATFORM
+   state |= c_modifier_Is_Traditional;
+#else
    state |= c_modifier_Is_Non_Traditional;
 #endif
    // [<finish get_state>]
@@ -2795,6 +2840,7 @@ void Meta_Application::impl::clear( )
    v_Allow_Duplicate_Logins = g_default_Allow_Duplicate_Logins;
    v_Allow_Module_Switching = g_default_Allow_Module_Switching;
    v_Auto_Login_Days = g_default_Auto_Login_Days;
+   v_Blockchain = g_default_Blockchain;
    v_Create_Database = g_default_Create_Database;
    v_Created_Database = g_default_Created_Database;
    v_Default_Image_Height = g_default_Default_Image_Height;
@@ -2863,6 +2909,13 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
 
    string error_message;
+   if( !is_null( v_Blockchain )
+    && ( v_Blockchain != g_default_Blockchain
+    || !value_will_be_provided( c_field_name_Blockchain ) )
+    && !g_Blockchain_domain.is_valid( v_Blockchain, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
+       get_module_string( c_field_display_name_Blockchain ) + " " + error_message ) );
+
    if( !is_null( v_Module_Prefix )
     && ( v_Module_Prefix != g_default_Module_Prefix
     || !value_will_be_provided( c_field_name_Module_Prefix ) )
@@ -2943,6 +2996,12 @@ void Meta_Application::impl::validate_set_fields( set< string >& fields_set, val
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+
+   if( !is_null( v_Blockchain )
+    && ( fields_set.count( c_field_id_Blockchain ) || fields_set.count( c_field_name_Blockchain ) )
+    && !g_Blockchain_domain.is_valid( v_Blockchain, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
+       get_module_string( c_field_display_name_Blockchain ) + " " + error_message ) );
 
    if( !is_null( v_Module_Prefix )
     && ( fields_set.count( c_field_id_Module_Prefix ) || fields_set.count( c_field_name_Module_Prefix ) )
@@ -3326,6 +3385,16 @@ int Meta_Application::Auto_Login_Days( ) const
 void Meta_Application::Auto_Login_Days( int Auto_Login_Days )
 {
    p_impl->impl_Auto_Login_Days( Auto_Login_Days );
+}
+
+const string& Meta_Application::Blockchain( ) const
+{
+   return p_impl->impl_Blockchain( );
+}
+
+void Meta_Application::Blockchain( const string& Blockchain )
+{
+   p_impl->impl_Blockchain( Blockchain );
 }
 
 bool Meta_Application::Create_Database( ) const
@@ -3859,6 +3928,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Blockchain )
+   {
+      p_id = c_field_id_Blockchain;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Create_Database )
    {
       p_id = c_field_id_Create_Database;
@@ -4210,6 +4289,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Blockchain )
+   {
+      p_name = c_field_name_Blockchain;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Create_Database )
    {
       p_name = c_field_name_Create_Database;
@@ -4559,6 +4648,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Auto_Login_Days );
       get_module_string( c_field_display_name_Auto_Login_Days, &next );
    }
+   else if( id_or_name == c_field_id_Blockchain || id_or_name == c_field_name_Blockchain )
+   {
+      name = string( c_field_display_name_Blockchain );
+      get_module_string( c_field_display_name_Blockchain, &next );
+   }
    else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
    {
       name = string( c_field_display_name_Create_Database );
@@ -4729,6 +4823,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Allow_Module_Switching );
    else if( id_or_name == c_field_id_Auto_Login_Days || id_or_name == c_field_name_Auto_Login_Days )
       display_name = get_module_string( c_field_display_name_Auto_Login_Days );
+   else if( id_or_name == c_field_id_Blockchain || id_or_name == c_field_name_Blockchain )
+      display_name = get_module_string( c_field_display_name_Blockchain );
    else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
       display_name = get_module_string( c_field_display_name_Create_Database );
    else if( id_or_name == c_field_id_Created_Database || id_or_name == c_field_name_Created_Database )
@@ -5026,6 +5122,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Allow_Duplicate_Logins" );
    names.push_back( "C_Allow_Module_Switching" );
    names.push_back( "C_Auto_Login_Days" );
+   names.push_back( "C_Blockchain" );
    names.push_back( "C_Created_Database" );
    names.push_back( "C_Default_Image_Height" );
    names.push_back( "C_Default_Image_Width" );
@@ -5068,6 +5165,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Allow_Duplicate_Logins( ) ) );
    values.push_back( to_string( Allow_Module_Switching( ) ) );
    values.push_back( to_string( Auto_Login_Days( ) ) );
+   values.push_back( sql_quote( to_string( Blockchain( ) ) ) );
    values.push_back( to_string( Created_Database( ) ) );
    values.push_back( to_string( Default_Image_Height( ) ) );
    values.push_back( to_string( Default_Image_Width( ) ) );
@@ -5191,6 +5289,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127108", "Allow_Duplicate_Logins", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127109", "Allow_Module_Switching", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127124", "Auto_Login_Days", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127135", "Blockchain", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "127125", "Create_Database", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127126", "Created_Database", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127114", "Default_Image_Height", "int", false, "", "" ) );
@@ -5269,118 +5368,122 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 6:
-      p_id = "127125";
+      p_id = "127135";
       break;
 
       case 7:
-      p_id = "127126";
+      p_id = "127125";
       break;
 
       case 8:
-      p_id = "127114";
+      p_id = "127126";
       break;
 
       case 9:
-      p_id = "127113";
+      p_id = "127114";
       break;
 
       case 10:
-      p_id = "127118";
+      p_id = "127113";
       break;
 
       case 11:
-      p_id = "127115";
+      p_id = "127118";
       break;
 
       case 12:
-      p_id = "127127";
+      p_id = "127115";
       break;
 
       case 13:
-      p_id = "127123";
+      p_id = "127127";
       break;
 
       case 14:
-      p_id = "127116";
+      p_id = "127123";
       break;
 
       case 15:
-      p_id = "127117";
+      p_id = "127116";
       break;
 
       case 16:
-      p_id = "127119";
+      p_id = "127117";
       break;
 
       case 17:
-      p_id = "127130";
+      p_id = "127119";
       break;
 
       case 18:
-      p_id = "127106";
+      p_id = "127130";
       break;
 
       case 19:
-      p_id = "127105";
+      p_id = "127106";
       break;
 
       case 20:
-      p_id = "127120";
+      p_id = "127105";
       break;
 
       case 21:
-      p_id = "127129";
+      p_id = "127120";
       break;
 
       case 22:
-      p_id = "127103";
+      p_id = "127129";
       break;
 
       case 23:
-      p_id = "127101";
+      p_id = "127103";
       break;
 
       case 24:
-      p_id = "127111";
+      p_id = "127101";
       break;
 
       case 25:
-      p_id = "127112";
+      p_id = "127111";
       break;
 
       case 26:
-      p_id = "127132";
+      p_id = "127112";
       break;
 
       case 27:
-      p_id = "127110";
+      p_id = "127132";
       break;
 
       case 28:
-      p_id = "127121";
+      p_id = "127110";
       break;
 
       case 29:
-      p_id = "127131";
+      p_id = "127121";
       break;
 
       case 30:
-      p_id = "127134";
+      p_id = "127131";
       break;
 
       case 31:
-      p_id = "127107";
+      p_id = "127134";
       break;
 
       case 32:
-      p_id = "127133";
+      p_id = "127107";
       break;
 
       case 33:
-      p_id = "127102";
+      p_id = "127133";
       break;
 
       case 34:
+      p_id = "127102";
+      break;
+
+      case 35:
       p_id = "302220";
       break;
    }
@@ -5418,118 +5521,122 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 6:
-      p_id = "Create_Database";
+      p_id = "Blockchain";
       break;
 
       case 7:
-      p_id = "Created_Database";
+      p_id = "Create_Database";
       break;
 
       case 8:
-      p_id = "Default_Image_Height";
+      p_id = "Created_Database";
       break;
 
       case 9:
-      p_id = "Default_Image_Width";
+      p_id = "Default_Image_Height";
       break;
 
       case 10:
-      p_id = "Default_List_Print_Row_Limit";
+      p_id = "Default_Image_Width";
       break;
 
       case 11:
-      p_id = "Default_List_Row_Limit";
+      p_id = "Default_List_Print_Row_Limit";
       break;
 
       case 12:
-      p_id = "Default_Max_Attached_File_Size";
+      p_id = "Default_List_Row_Limit";
       break;
 
       case 13:
-      p_id = "Default_Multiline_Max_Rows";
+      p_id = "Default_Max_Attached_File_Size";
       break;
 
       case 14:
-      p_id = "Default_Multiline_Min_Rows";
+      p_id = "Default_Multiline_Max_Rows";
       break;
 
       case 15:
-      p_id = "Default_Multiline_Text_Limit";
+      p_id = "Default_Multiline_Min_Rows";
       break;
 
       case 16:
-      p_id = "Default_Multiline_Text_Trunc";
+      p_id = "Default_Multiline_Text_Limit";
       break;
 
       case 17:
-      p_id = "Encrypt_Dynamic_Content";
+      p_id = "Default_Multiline_Text_Trunc";
       break;
 
       case 18:
-      p_id = "Generate_Details";
+      p_id = "Encrypt_Dynamic_Content";
       break;
 
       case 19:
-      p_id = "Generate_Status";
+      p_id = "Generate_Details";
       break;
 
       case 20:
-      p_id = "Generate_Type";
+      p_id = "Generate_Status";
       break;
 
       case 21:
-      p_id = "Keep_Existing_Data";
+      p_id = "Generate_Type";
       break;
 
       case 22:
-      p_id = "Module_Prefix";
+      p_id = "Keep_Existing_Data";
       break;
 
       case 23:
-      p_id = "Name";
+      p_id = "Module_Prefix";
       break;
 
       case 24:
-      p_id = "Print_Lists_With_Check_Boxes";
+      p_id = "Name";
       break;
 
       case 25:
-      p_id = "Print_Lists_With_Row_Numbers";
+      p_id = "Print_Lists_With_Check_Boxes";
       break;
 
       case 26:
-      p_id = "Registration_Key";
+      p_id = "Print_Lists_With_Row_Numbers";
       break;
 
       case 27:
-      p_id = "Show_Inaccessible_Modules";
+      p_id = "Registration_Key";
       break;
 
       case 28:
-      p_id = "Use_Check_Boxes_for_Bools";
+      p_id = "Show_Inaccessible_Modules";
       break;
 
       case 29:
-      p_id = "Use_Embedded_Images";
+      p_id = "Use_Check_Boxes_for_Bools";
       break;
 
       case 30:
-      p_id = "Use_TLS_Sessions";
+      p_id = "Use_Embedded_Images";
       break;
 
       case 31:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_TLS_Sessions";
       break;
 
       case 32:
-      p_id = "Use_Vertical_Menu";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 33:
-      p_id = "Version";
+      p_id = "Use_Vertical_Menu";
       break;
 
       case 34:
+      p_id = "Version";
+      break;
+
+      case 35:
       p_id = "Workgroup";
       break;
    }
@@ -5556,64 +5663,66 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 4;
    else if( field == c_field_id_Auto_Login_Days || field == c_field_name_Auto_Login_Days )
       rc += 5;
-   else if( field == c_field_id_Create_Database || field == c_field_name_Create_Database )
+   else if( field == c_field_id_Blockchain || field == c_field_name_Blockchain )
       rc += 6;
-   else if( field == c_field_id_Created_Database || field == c_field_name_Created_Database )
+   else if( field == c_field_id_Create_Database || field == c_field_name_Create_Database )
       rc += 7;
-   else if( field == c_field_id_Default_Image_Height || field == c_field_name_Default_Image_Height )
+   else if( field == c_field_id_Created_Database || field == c_field_name_Created_Database )
       rc += 8;
-   else if( field == c_field_id_Default_Image_Width || field == c_field_name_Default_Image_Width )
+   else if( field == c_field_id_Default_Image_Height || field == c_field_name_Default_Image_Height )
       rc += 9;
-   else if( field == c_field_id_Default_List_Print_Row_Limit || field == c_field_name_Default_List_Print_Row_Limit )
+   else if( field == c_field_id_Default_Image_Width || field == c_field_name_Default_Image_Width )
       rc += 10;
-   else if( field == c_field_id_Default_List_Row_Limit || field == c_field_name_Default_List_Row_Limit )
+   else if( field == c_field_id_Default_List_Print_Row_Limit || field == c_field_name_Default_List_Print_Row_Limit )
       rc += 11;
-   else if( field == c_field_id_Default_Max_Attached_File_Size || field == c_field_name_Default_Max_Attached_File_Size )
+   else if( field == c_field_id_Default_List_Row_Limit || field == c_field_name_Default_List_Row_Limit )
       rc += 12;
-   else if( field == c_field_id_Default_Multiline_Max_Rows || field == c_field_name_Default_Multiline_Max_Rows )
+   else if( field == c_field_id_Default_Max_Attached_File_Size || field == c_field_name_Default_Max_Attached_File_Size )
       rc += 13;
-   else if( field == c_field_id_Default_Multiline_Min_Rows || field == c_field_name_Default_Multiline_Min_Rows )
+   else if( field == c_field_id_Default_Multiline_Max_Rows || field == c_field_name_Default_Multiline_Max_Rows )
       rc += 14;
-   else if( field == c_field_id_Default_Multiline_Text_Limit || field == c_field_name_Default_Multiline_Text_Limit )
+   else if( field == c_field_id_Default_Multiline_Min_Rows || field == c_field_name_Default_Multiline_Min_Rows )
       rc += 15;
-   else if( field == c_field_id_Default_Multiline_Text_Trunc || field == c_field_name_Default_Multiline_Text_Trunc )
+   else if( field == c_field_id_Default_Multiline_Text_Limit || field == c_field_name_Default_Multiline_Text_Limit )
       rc += 16;
-   else if( field == c_field_id_Encrypt_Dynamic_Content || field == c_field_name_Encrypt_Dynamic_Content )
+   else if( field == c_field_id_Default_Multiline_Text_Trunc || field == c_field_name_Default_Multiline_Text_Trunc )
       rc += 17;
-   else if( field == c_field_id_Generate_Details || field == c_field_name_Generate_Details )
+   else if( field == c_field_id_Encrypt_Dynamic_Content || field == c_field_name_Encrypt_Dynamic_Content )
       rc += 18;
-   else if( field == c_field_id_Generate_Status || field == c_field_name_Generate_Status )
+   else if( field == c_field_id_Generate_Details || field == c_field_name_Generate_Details )
       rc += 19;
-   else if( field == c_field_id_Generate_Type || field == c_field_name_Generate_Type )
+   else if( field == c_field_id_Generate_Status || field == c_field_name_Generate_Status )
       rc += 20;
-   else if( field == c_field_id_Keep_Existing_Data || field == c_field_name_Keep_Existing_Data )
+   else if( field == c_field_id_Generate_Type || field == c_field_name_Generate_Type )
       rc += 21;
-   else if( field == c_field_id_Module_Prefix || field == c_field_name_Module_Prefix )
+   else if( field == c_field_id_Keep_Existing_Data || field == c_field_name_Keep_Existing_Data )
       rc += 22;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Module_Prefix || field == c_field_name_Module_Prefix )
       rc += 23;
-   else if( field == c_field_id_Print_Lists_With_Check_Boxes || field == c_field_name_Print_Lists_With_Check_Boxes )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 24;
-   else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
+   else if( field == c_field_id_Print_Lists_With_Check_Boxes || field == c_field_name_Print_Lists_With_Check_Boxes )
       rc += 25;
-   else if( field == c_field_id_Registration_Key || field == c_field_name_Registration_Key )
+   else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
       rc += 26;
-   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
+   else if( field == c_field_id_Registration_Key || field == c_field_name_Registration_Key )
       rc += 27;
-   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
+   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
       rc += 28;
-   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
+   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
       rc += 29;
-   else if( field == c_field_id_Use_TLS_Sessions || field == c_field_name_Use_TLS_Sessions )
+   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
       rc += 30;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( field == c_field_id_Use_TLS_Sessions || field == c_field_name_Use_TLS_Sessions )
       rc += 31;
-   else if( field == c_field_id_Use_Vertical_Menu || field == c_field_name_Use_Vertical_Menu )
+   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
       rc += 32;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_Vertical_Menu || field == c_field_name_Use_Vertical_Menu )
       rc += 33;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 34;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 35;
 
    return rc - 1;
 }
@@ -5650,6 +5759,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Allow_Duplicate_Logins INTEGER NOT NULL,"
     "C_Allow_Module_Switching INTEGER NOT NULL,"
     "C_Auto_Login_Days INTEGER NOT NULL,"
+    "C_Blockchain VARCHAR(200) NOT NULL,"
     "C_Created_Database INTEGER NOT NULL,"
     "C_Default_Image_Height INTEGER NOT NULL,"
     "C_Default_Image_Width INTEGER NOT NULL,"

@@ -742,8 +742,10 @@ field_add -id=127131 Application Use_Embedded_Images bool mand -def=0
 field_add -id=127132 Application Registration_Key str100 opt
 field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
-modifier_add -id=127310 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\
-,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate
+field_add -id=127135 Application Blockchain str30 opt
+modifier_add -id=127310 Application Is_Traditional Blockchain:relegate
+modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\
+,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate,Registration_Key:relegate
 procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links
@@ -2128,7 +2130,7 @@ specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_l
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"
 specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version,Generate_Status {Workgroup}"
 specification_add -id=602910 {Application}_view view "? standard:can_copy Application\
- Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
+ Name;new_edit,Blockchain;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
 ,@tab:Generate_Details,Version,Generate_Details;show+no_edit+full_height\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\

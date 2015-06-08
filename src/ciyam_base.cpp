@@ -1419,6 +1419,13 @@ void perform_storage_op( storage_op op,
 
             ap_handler->get_root( ).set_new( );
             ap_handler->get_root( ).module_directory = directory;
+#ifndef IS_TRADITIONAL_PLATFORM
+            string blockchain( get_session_variable( c_special_variable_blockchain ) );
+
+            if( !blockchain.empty( ) )
+               ap_handler->get_root( ).identity += ":" + blockchain;
+#endif
+
             *ap_ods << ap_handler->get_root( );
 
             // NOTE: Create the storage "identity" object then store the root object again (so that
@@ -6749,6 +6756,109 @@ void storage_web_root( const string& new_root )
 
       gtp_session->transaction_log_command = ";web_root ==> " + new_root;
       append_transaction_log_command( *gtp_session->p_storage_handler );
+   }
+}
+
+void storage_process_undo( uint64_t new_height )
+{
+   guard g( g_mutex );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+   string undo_sql( gtp_session->p_storage_handler->get_name( ) + ".undo.sql" );
+
+   string new_undo_sql( undo_sql + ".new" );
+
+   if( gtp_session->ap_db.get( ) )
+   {
+      ifstream inpf( undo_sql.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open file '" + undo_sql + "' for input" );
+
+      ofstream outf( new_undo_sql.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output" );
+
+      deque< string > undo_statements;
+
+      string block_marker( "#block " );
+
+      string next;
+      bool found_rewind_point = false;
+      while( getline( inpf, next ) )
+      {
+         string::size_type pos = next.find( block_marker );
+         if( pos == 0 )
+         {
+            if( !found_rewind_point )
+            {
+               uint64_t height = from_string< uint64_t >( next.substr( pos + block_marker.size( ) ) );
+
+               if( height > new_height )
+                  found_rewind_point = true;
+            }
+         }
+         else if( found_rewind_point )
+            undo_statements.push_front( next );
+
+         if( !found_rewind_point )
+            outf << next << '\n';
+      }
+
+      if( !found_rewind_point )
+         throw runtime_error( "unexpected rewind point not found" );
+
+      for( size_t i = 0; i < undo_statements.size( ); i++ )
+      {
+         TRACE_LOG( TRACE_SQLSTMTS, undo_statements[ i ] );
+         exec_sql( *gtp_session->ap_db, undo_statements[ i ] );
+      }
+   }
+
+   string log_name( gtp_session->p_storage_handler->get_name( ) + ".log" );
+   string new_log_name( log_name + ".new" );
+
+   if( file_exists( new_undo_sql ) )
+   {
+      remove_file( undo_sql );
+      rename_file( new_undo_sql, undo_sql );
+
+      ifstream inpf( log_name.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open '" + log_name + "' for input" );
+
+      ofstream outf( new_log_name.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open '" + new_log_name + "' for output" );
+
+      string next;
+      bool finished = false;
+      string block_marker( ";block " );
+      while( getline( inpf, next ) )
+      {
+         string::size_type pos = next.find( ']' );
+         if( pos != string::npos && next.find( block_marker ) == pos + 1 )
+         {
+            uint64_t block = from_string< uint64_t >( next.substr( pos + block_marker.length( ) ) );
+
+            if( block > new_height )
+               finished = true;
+         }
+
+         if( finished )
+         {
+            if( pos != string::npos )
+               outf << next.substr( 0, pos + 1 ) << ";rewound\n";
+            break;
+         }
+
+         outf << next << '\n';
+      }
+   }
+
+   if( file_exists( new_log_name ) )
+   {
+      remove_file( log_name );
+      rename_file( new_log_name, log_name );
    }
 }
 

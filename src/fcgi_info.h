@@ -467,6 +467,8 @@ struct storage_info
    int login_days;
    std::string login_opts;
 
+   std::string blockchain;
+
    std::string storage_name;
    std::string module_prefix;
 

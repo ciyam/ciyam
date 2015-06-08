@@ -88,7 +88,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>127310
+        <id>127311
         <affect>relegate
        </modifier>
       </modifiers>
@@ -123,6 +123,26 @@
       <mandatory>true
       <enum_id>906
       <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>127311
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>127135
+      <name>Blockchain
+      <type>1010
+      <mandatory>false
       <indexes/>
       </indexes>
       <modifiers/>
@@ -339,7 +359,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>127310
+        <id>127311
         <affect>relegate
        </modifier>
       </modifiers>
@@ -529,6 +549,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>127311
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -581,7 +605,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>127310
+        <id>127311
         <affect>relegate
        </modifier>
       </modifiers>
@@ -696,12 +720,16 @@
       <name>Has_No_Application_Log
      </modifier>
      <modifier/>
-      <id>127310
+      <id>127311
       <name>Is_Non_Traditional
      </modifier>
      <modifier/>
       <id>500920
       <name>Is_Not_Full_Generate
+     </modifier>
+     <modifier/>
+      <id>127310
+      <name>Is_Traditional
      </modifier>
      <modifier/>
       <id>500921
@@ -28963,6 +28991,7 @@
      <extra>can_copy
      <class_id>127100
      <field_info>127101;new_edit
+     <field_info>127135;new_edit
      <field_info>127120;always_editable+force+enum=905
      <field_info>127105;no_edit
      <field_info>127129;non_new+always_editable

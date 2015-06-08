@@ -112,6 +112,7 @@ const char* const c_attribute_modifiers = "modifiers";
 const char* const c_attribute_row_limit = "row_limit";
 const char* const c_attribute_user_info = "user_info";
 const char* const c_attribute_user_perm = "user_perm";
+const char* const c_attribute_blockchain = "blockchain";
 const char* const c_attribute_user_qlink = "user_qlink";
 const char* const c_attribute_login_days = "login_days";
 const char* const c_attribute_login_opts = "login_opts";
@@ -293,6 +294,7 @@ void storage_info::clear( )
    url_opts.erase( );
    menu_opts.erase( );
    login_opts.erase( );
+   blockchain.erase( );
 
    storage_name.erase( );
    module_prefix.erase( );
@@ -412,6 +414,8 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
          info.row_limit = atoi( row_limit.c_str( ) );
 
       info.menu_opts = reader.read_opt_attribute( c_attribute_menu_opts );
+
+      info.blockchain = reader.read_opt_attribute( c_attribute_blockchain );
 
       string login_days = reader.read_opt_attribute( c_attribute_login_days );
       if( !login_days.empty( ) )

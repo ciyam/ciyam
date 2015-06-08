@@ -473,7 +473,8 @@ void get_ordered_checkpoint_hashes( const string& chain_id, map< uint64_t, strin
 }
 
 void get_sequenced_transactions( const string& chain_id,
- multimap< uint64_t, string >& sequenced_transactions, bool is_test, bool no_sigs )
+ multimap< uint64_t, string >& sequenced_transactions,
+ bool is_test, bool no_sigs, transactions_info* p_txs_info = 0 )
 {
    string all_transaction_tags( list_file_tags( "c" + chain_id + ".a*.t*" ) );
 
@@ -481,6 +482,19 @@ void get_sequenced_transactions( const string& chain_id,
    {
       vector< string > transaction_tags;
       split( all_transaction_tags, transaction_tags, '\n' );
+
+      map< string, string > tx_sigs;
+      if( p_txs_info )
+      {
+         for( size_t i = 0; i < p_txs_info->transaction_hashes_with_sigs.size( ); i++ )
+         {
+            string next_tx( p_txs_info->transaction_hashes_with_sigs[ i ] );
+
+            string::size_type pos = next_tx.find( ':' );
+            if( pos != string::npos )
+               tx_sigs.insert( make_pair( next_tx.substr( 0, pos ), next_tx.substr( pos + 1 ) ) );
+         }
+      }
 
       // NOTE: Use the transaction sequence numbers to order all transactions to be added (this will
       // ensure the ordering is correct and will also naturally favour the accounts that create less
@@ -506,6 +520,8 @@ void get_sequenced_transactions( const string& chain_id,
                sig_suffix = ':' + tag_name_to_base64( next_transaction_tag.substr( pos + 2 ) );
                next_transaction_tag.erase( pos );
             }
+            else if( tx_sigs.count( next_transaction_hash ) )
+               sig_suffix = ':' + tx_sigs[ next_transaction_hash ];
 
             if( !no_sigs )
                encoded_hash += sig_suffix;
@@ -517,7 +533,6 @@ void get_sequenced_transactions( const string& chain_id,
       }
    }
 }
-
 
 pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
@@ -601,6 +616,42 @@ void get_transactions_and_hash_offsets( const string& chain_id,
          tx_hash_offsets.insert( make_pair( next_hash_with_sig.substr( 0, pos ), i ) );
       }
    }
+}
+
+string get_block_hash_for_account_and_height( const string& chain_id,
+ const string& account_id, uint64_t height, block_info* p_block_info = 0 )
+{
+   string block_hash;
+
+   string all_block_tags( list_file_tags( "c" + chain_id + ".b" + to_string( height ) + "-*" ) );
+
+   if( !all_block_tags.empty( ) )
+   {
+      vector< string > block_tags;
+      split( all_block_tags, block_tags, '\n' );
+
+      for( size_t i = 0; i < block_tags.size( ); i++ )
+      {
+         string next_tag( block_tags[ i ] );
+         string next_hash( tag_file_hash( next_tag ) );
+
+         block_info binfo;
+         get_block_info( binfo, next_hash );
+
+         string::size_type pos = binfo.minter_id.find( '.' );
+         if( account_id == binfo.minter_id.substr( pos == string::npos ? 0 : pos + 2 ) )
+         {
+            block_hash = next_hash;
+
+            if( p_block_info )
+               *p_block_info = binfo;
+
+            break;
+         }
+      }
+   }
+
+   return block_hash;
 }
 
 pair< uint64_t, uint64_t > verify_block( const string& content,
@@ -2109,17 +2160,16 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
       string current_block_hash( chain_hash );
 
-      block_info binfo;
-      get_block_info( binfo, chain_hash );
-
       chain_info cinfo;
       get_chain_info( cinfo, chain_id );
 
-      if( cinfo.checkpoint_start_height && new_block_height <= cinfo.checkpoint_start_height )
+      if( new_block_height <= cinfo.checkpoint_start_height )
          throw runtime_error( "invalid attempt to rewind through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
 
-      string block_hash( tag_file_hash( content ) );
-      string destination_block( extract_file( block_hash, "", c_file_type_char_core_blob ) );
+      block_info binfo;
+      get_block_info( binfo, chain_hash );
+
+      string destination_block_hash( tag_file_hash( content ) );
 
       uint64_t block_reward = cinfo.mint_reward - cinfo.mint_charge;
 
@@ -2137,7 +2187,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       {
          chain_blocks.insert( current_block_hash );
 
-         if( binfo.previous_block.empty( ) || binfo.previous_block == block_hash )
+         if( binfo.previous_block.empty( ) || binfo.previous_block == destination_block_hash )
             break;
 
          current_block_hash = binfo.previous_block;
@@ -2189,21 +2239,18 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
             account_balances[ next_account ] = balance;
             account_block_heights[ next_account ] = height;
 
-            string next_account_block_tag(
-             list_file_tags( "c" + chain_id + ".b" + to_string( height ) + "-*.a" + next_account ) );
-
-            if( next_account_block_tag.empty( ) )
-               continue;
-
-            string next_account_block_hash( tag_file_hash( next_account_block_tag ) );
-
             block_info next_account_binfo;
-            get_block_info( next_account_binfo, next_account_block_hash );
+            string next_account_block_hash(
+             get_block_hash_for_account_and_height( chain_id, next_account, height, &next_account_binfo ) );
+
+            if( next_account_block_hash.empty( ) )
+               throw runtime_error( "unexpected failure to find block at height "
+                + to_string( height ) + " for account " + next_account + " in blockchain " + chain_id );
 
             account_block_locks[ next_account ] = next_account_binfo.minter_lock;
             account_block_hashes[ next_account ] = next_account_binfo.minter_hash;
 
-            while( next_account_binfo.block_height > new_block_height )
+            while( next_account_binfo.block_height >= new_block_height )
             {
                if( chain_blocks.count( next_account_block_hash ) )
                {
@@ -2223,35 +2270,50 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
                   else
                      balance = 0;
                }
-               else
+               else if( next_account_binfo.block_height > new_block_height )
                   balance += cinfo.mint_charge;
 
                height = next_account_binfo.block_height;
 
                account_balances[ next_account ] = balance;
+               account_block_locks[ next_account ] = next_account_binfo.minter_lock;
                account_block_hashes[ next_account ] = next_account_binfo.minter_hash;
                account_block_heights[ next_account ] = new_block_height;
+
+               // NOTE: Re-tag any txs that were part of the main chain.
+               if( chain_blocks.count( next_account_block_hash )
+                && next_account_binfo.block_height > new_block_height )
+               {
+                  for( size_t j = 0; j < next_account_binfo.transaction_hashes.size( ); j++ )
+                  {
+                     string next_tx_hash( next_account_binfo.transaction_hashes[ j ] );
+
+                     transaction_info tinfo;
+                     get_transaction_info( tinfo, next_tx_hash );
+
+                     string tx_tag( tinfo.account_id + ".t" + to_string( tinfo.sequence ) );
+
+                     p_extras->push_back( make_pair( next_tx_hash, tx_tag ) );
+                  }
+               }
+
+               // NOTE: If the block is above the new height then remove it.
+               if( next_account_binfo.block_height > new_block_height )
+                  p_extras->push_back( make_pair( "", next_account_block_hash ) );
 
                bool okay = true;
                while( true )
                {
                   if( --height <= cinfo.checkpoint_start_height )
                   {
-                     account_block_heights[ next_account ] = cinfo.checkpoint_start_height;
                      okay = false;
                      break;
                   }
 
-                  next_account_block_tag = list_file_tags( "c" + chain_id
-                   + ".b" + to_string( height ) + "-*.a" + next_account );
+                  next_account_block_hash = get_block_hash_for_account_and_height( chain_id, next_account, height, &next_account_binfo );
 
-                   if( next_account_block_tag.empty( ) )
+                  if( next_account_block_hash.empty( ) )
                      continue;
-
-                  next_account_block_hash = tag_file_hash( next_account_block_tag );
-
-                  get_block_info( next_account_binfo, next_account_block_hash );
-                  account_block_heights[ next_account ] = next_account_binfo.block_height;
 
                   break;
                }
@@ -2307,10 +2369,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
          }
       }
 
-      string new_head( c_file_type_str_core_blob );
-      new_head += destination_block;
-
-      p_extras->push_back( make_pair( new_head, chain + ".head" ) );
+      p_extras->push_back( make_pair( destination_block_hash, chain + ".head" ) );
    }
 }
 
@@ -2916,7 +2975,7 @@ void verify_blockchain_info( const string& content,
       }
 
       multimap< uint64_t, string > sequenced_transactions;
-      get_sequenced_transactions( chain_id, sequenced_transactions, cinfo.is_test, false );
+      get_sequenced_transactions( chain_id, sequenced_transactions, cinfo.is_test, false, &txs_info );
 
       for( multimap< uint64_t, string >::iterator
        i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
@@ -3741,6 +3800,27 @@ string construct_account_info(
        + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }    
+}
+
+void perform_blockchain_rewind( const string& blockchain, uint64_t block_height )
+{
+   guard g( g_mutex );
+
+   string data( c_file_type_str_core_blob );
+
+   data += string( c_file_type_core_rewind_object ) + ":c" + blockchain + ".b" + to_string( block_height );
+
+   vector< pair< string, string > > extras;
+
+   verify_core_file( data, true, &extras );
+
+   // NOTE: There is no need to create a raw file for the info "request"
+   // so only the extras are passed for raw file creation.
+   create_raw_file_with_extras( "", extras );
+
+   construct_blockchain_info_file( blockchain );
+
+   storage_process_undo( block_height );
 }
 
 string construct_blockchain_info_file( const string& blockchain )

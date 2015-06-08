@@ -356,6 +356,8 @@ std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
 
+void CIYAM_BASE_DECL_SPEC storage_process_undo( uint64_t new_height );
+
 void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
 void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 
