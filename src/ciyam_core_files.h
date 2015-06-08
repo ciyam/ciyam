@@ -121,6 +121,8 @@ std::string CLASS_BASE_DECL_SPEC construct_account_info(
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0,
  uint64_t* p_balance = 0, uint64_t* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
 
+void CLASS_BASE_DECL_SPEC perform_blockchain_rewind( const std::string& blockchain, uint64_t block_height );
+
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 
 uint64_t CLASS_BASE_DECL_SPEC construct_transaction_scripts_for_blockchain(

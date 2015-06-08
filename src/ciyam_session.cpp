@@ -3773,6 +3773,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( truncate_log )
             remove_file( name + ".log." + osstr.str( ) );
       }
+      else if( command == c_cmd_ciyam_session_storage_rewind )
+      {
+         uint64_t block_height( from_string< uint64_t >(
+          get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_rewind_block_height ) ) );
+
+         string blockchain( storage_identity( ) );
+         string::size_type pos = blockchain.find( ':' );
+         if( pos == string::npos )
+            throw runtime_error( "current storage does not have a blockchain" );
+
+         blockchain.erase( 0, pos + 1 );
+
+         perform_blockchain_rewind( blockchain, block_height );
+      }
       else if( command == c_cmd_ciyam_session_storage_comment )
       {
          string text( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_comment_text ) );
@@ -3811,6 +3825,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string backup_sql_name( name + ".backup.sql" );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         auto_ptr< temporary_session_variable > ap_blockchain;
+#endif
          vector< string > module_list;
          string module_list_name( name + ".modules.lst" );
          if( rebuild )
@@ -3819,6 +3836,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "need '" + module_list_name + "' to perform a rebuild" );
 
             buffer_file_lines( module_list_name, module_list );
+#ifndef IS_TRADITIONAL_PLATFORM
+            if( !module_list.empty( ) && !module_list[ 0 ].empty( )
+             && module_list[ 0 ][ 0 ] >= '0' && module_list[ 0 ][ 0 ] <= '9' )
+            {
+               ap_blockchain.reset( new temporary_session_variable(
+                get_special_var_name( e_special_var_blockchain ), module_list[ 0 ] ) );
+
+               module_list.erase( module_list.begin( ) );
+            }
+#endif
          }
 
          if( !rebuild && !partial && !file_exists( name + ".backup.bun.gz" ) )

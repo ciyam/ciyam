@@ -9,6 +9,7 @@
  <url_opts>`{`$url_opts`}
  <row_limit>`{`$row_limit`}
  <menu_opts>`{`$menu_opts`}
+ <blockchain>`{`$blockchain`}
  <login_days>`{`$login_days`}
  <login_opts>`{`$login_opts`}
  <notes_rmin>`{`$notes_rmin`}

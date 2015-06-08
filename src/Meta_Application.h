@@ -38,35 +38,36 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Allow_Duplicate_Logins = 3,
       e_field_id_Allow_Module_Switching = 4,
       e_field_id_Auto_Login_Days = 5,
-      e_field_id_Create_Database = 6,
-      e_field_id_Created_Database = 7,
-      e_field_id_Default_Image_Height = 8,
-      e_field_id_Default_Image_Width = 9,
-      e_field_id_Default_List_Print_Row_Limit = 10,
-      e_field_id_Default_List_Row_Limit = 11,
-      e_field_id_Default_Max_Attached_File_Size = 12,
-      e_field_id_Default_Multiline_Max_Rows = 13,
-      e_field_id_Default_Multiline_Min_Rows = 14,
-      e_field_id_Default_Multiline_Text_Limit = 15,
-      e_field_id_Default_Multiline_Text_Trunc = 16,
-      e_field_id_Encrypt_Dynamic_Content = 17,
-      e_field_id_Generate_Details = 18,
-      e_field_id_Generate_Status = 19,
-      e_field_id_Generate_Type = 20,
-      e_field_id_Keep_Existing_Data = 21,
-      e_field_id_Module_Prefix = 22,
-      e_field_id_Name = 23,
-      e_field_id_Print_Lists_With_Check_Boxes = 24,
-      e_field_id_Print_Lists_With_Row_Numbers = 25,
-      e_field_id_Registration_Key = 26,
-      e_field_id_Show_Inaccessible_Modules = 27,
-      e_field_id_Use_Check_Boxes_for_Bools = 28,
-      e_field_id_Use_Embedded_Images = 29,
-      e_field_id_Use_TLS_Sessions = 30,
-      e_field_id_Use_URL_Checksum = 31,
-      e_field_id_Use_Vertical_Menu = 32,
-      e_field_id_Version = 33,
-      e_field_id_Workgroup = 34
+      e_field_id_Blockchain = 6,
+      e_field_id_Create_Database = 7,
+      e_field_id_Created_Database = 8,
+      e_field_id_Default_Image_Height = 9,
+      e_field_id_Default_Image_Width = 10,
+      e_field_id_Default_List_Print_Row_Limit = 11,
+      e_field_id_Default_List_Row_Limit = 12,
+      e_field_id_Default_Max_Attached_File_Size = 13,
+      e_field_id_Default_Multiline_Max_Rows = 14,
+      e_field_id_Default_Multiline_Min_Rows = 15,
+      e_field_id_Default_Multiline_Text_Limit = 16,
+      e_field_id_Default_Multiline_Text_Trunc = 17,
+      e_field_id_Encrypt_Dynamic_Content = 18,
+      e_field_id_Generate_Details = 19,
+      e_field_id_Generate_Status = 20,
+      e_field_id_Generate_Type = 21,
+      e_field_id_Keep_Existing_Data = 22,
+      e_field_id_Module_Prefix = 23,
+      e_field_id_Name = 24,
+      e_field_id_Print_Lists_With_Check_Boxes = 25,
+      e_field_id_Print_Lists_With_Row_Numbers = 26,
+      e_field_id_Registration_Key = 27,
+      e_field_id_Show_Inaccessible_Modules = 28,
+      e_field_id_Use_Check_Boxes_for_Bools = 29,
+      e_field_id_Use_Embedded_Images = 30,
+      e_field_id_Use_TLS_Sessions = 31,
+      e_field_id_Use_URL_Checksum = 32,
+      e_field_id_Use_Vertical_Menu = 33,
+      e_field_id_Version = 34,
+      e_field_id_Workgroup = 35
    };
 
    Meta_Application( );
@@ -86,6 +87,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    int Auto_Login_Days( ) const;
    void Auto_Login_Days( int Auto_Login_Days );
+
+   const std::string& Blockchain( ) const;
+   void Blockchain( const std::string& Blockchain );
 
    bool Create_Database( ) const;
    void Create_Database( bool Create_Database );

@@ -2371,6 +2371,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_blockchain
+     <field>127135
+     <ftype>string
+     <extra>new_edit+max_size=30
+     <mandatory>false
+     <modifiers>800:relegate
+    </field>
+    <field/>
      <name>field_application_generate_type
      <field>127120
      <ftype>int
@@ -2408,7 +2416,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>tab_generate_details
@@ -2432,7 +2440,7 @@
      <ftype>string
      <extra>show+no_edit+full_height+notes
      <mandatory>false
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>tab_display_settings
@@ -2632,7 +2640,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_application_actions

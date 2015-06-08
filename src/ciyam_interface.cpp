@@ -1391,15 +1391,15 @@ void request_handler::process_request( )
                         else
                         {
                            if( !simple_command( *p_session_info, "peer_account_lock "
-                            + get_storage_info( ).reg_key + " " + password, &username ) )
+                            + get_storage_info( ).blockchain + " " + password, &username ) )
                               throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
                            // NOTE: The "admin" user is the one whose account id matches the blockchain id.
-                           if( username == get_storage_info( ).reg_key )
+                           if( username == get_storage_info( ).blockchain )
                               username = c_admin_user_key;
 
                            if( !simple_command( *p_session_info,
-                            "session_variable @blockchain " + get_storage_info( ).reg_key ) )
+                            "session_variable @blockchain " + get_storage_info( ).blockchain ) )
                               throw runtime_error( "unexpected failure to set blockchain session_variable" );
                         }
 
