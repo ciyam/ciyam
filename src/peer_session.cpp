@@ -155,6 +155,11 @@ void process_txs( const string& blockchain )
 {
    guard g( g_mutex );
 
+   string rewind_block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
+
+   if( !rewind_block_height.empty( ) )
+      storage_process_undo( from_string< uint64_t >( rewind_block_height ) );
+
    if( file_exists( blockchain + ".txs" ) )
    {
       vector< string > applications;

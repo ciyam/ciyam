@@ -1238,6 +1238,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       uint64_t parallel_block_height = 0;
       all_transaction_hashes.push_back( transaction_hashes );
 
+      set_session_variable( get_special_var_name( e_special_var_block_height ), "" );
+
       if( !block_height )
       {
          cinfo.num_accounts = num_accounts;
@@ -1276,6 +1278,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          if( !parallel_block_minted_minter_id.empty( )
           || ( is_new_chain_head && previous_head != previous_block ) )
          {
+            bool need_to_rewind_storage = false;
+
             string new_previous_block, old_previous_block;
 
             if( !parallel_block_minted_minter_id.empty( ) )
@@ -1300,6 +1304,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                p_extras->push_back(
                 make_pair( prior_block_minter_hash, parallel_block_minted_minter_id
                 + ".h" + to_string( block_height ) + ".b*" + to_string( previous_balance ) ) );
+
+               need_to_rewind_storage = ( parallel_block_minted_transaction_hashes.size( ) > 0 );
 
                // NOTE: Retag any txs from the previous best block that aren't included in the new block.
                for( set< string >::iterator i =
@@ -1353,6 +1359,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   uint64_t total_reward = cinfo.mint_reward
                    + ( cinfo.transaction_reward * old_binfo.transaction_hashes.size( ) );
+
+                  need_to_rewind_storage = ( old_binfo.transaction_hashes.size( ) > 0 );
 
                   // NOTE: Remember the transaction hashes (and minter) that were part of the previous best chain.
                   for( size_t i = 0; i < old_binfo.transaction_hashes.size( ); i++ )
@@ -1450,6 +1458,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      p_extras->push_back( make_pair( i->first, tx_tag ) );
                   }
                }
+
+               if( need_to_rewind_storage )
+                  set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( parallel_block_height ) );
             }
          }
 
