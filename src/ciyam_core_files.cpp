@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
 #  include <map>
+#  include <set>
 #  include <deque>
 #  include <fstream>
 #  include <stdexcept>
@@ -534,6 +535,23 @@ void get_sequenced_transactions( const string& chain_id,
    }
 }
 
+string::size_type insert_account_into_transaction_log_line( const string& account, string& next_log_line )
+{
+   string::size_type pos = next_log_line.find( ' ' );
+   if( pos == string::npos )
+      throw runtime_error( "invalid next log line '"
+       + next_log_line + "' when attempting to construct script" );
+
+   next_log_line.insert( pos + 1, account + ' ' );
+
+   pos = next_log_line.find( '"' );
+   if( pos == string::npos )
+      throw runtime_error( "invalid next log line '"
+       + next_log_line + "' when attempting to construct script" );
+
+   return pos;
+}
+
 pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
 
@@ -743,18 +761,34 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             if( next_attribute.find( c_file_type_core_block_header_height_prefix ) != 0 )
                throw runtime_error( "unexpected missing height attribute in block header '" + header + "'" );
 
-            has_height = true;
-            block_height = from_string< uint64_t >( next_attribute.substr(
+            string value( next_attribute.substr(
              string( c_file_type_core_block_header_height_prefix ).length( ) ) );
+
+            regex expr( c_regex_integer );
+
+            if( ( value.length( ) > 1 && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
+               throw runtime_error( "invalid height value '" + value + "'" );
+
+            has_height = true;
+
+            block_height = from_string< uint64_t >( value );
          }
          else if( block_height && !has_weight )
          {
             if( next_attribute.find( c_file_type_core_block_header_weight_prefix ) != 0 )
                throw runtime_error( "unexpected missing weight attribute in block header '" + header + "'" );
 
-            has_weight = true;
-            block_weight = from_string< uint64_t >( next_attribute.substr(
+            string value( next_attribute.substr(
              string( c_file_type_core_block_header_weight_prefix ).length( ) ) );
+
+            regex expr( c_regex_integer );
+
+            if( ( !value.empty( ) && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
+               throw runtime_error( "invalid weight value '" + value + "'" );
+
+            has_weight = true;
+
+            block_weight = from_string< uint64_t >( value );
          }
          else if( block_height && !has_account_hash )
          {
@@ -762,6 +796,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                throw runtime_error( "unexpected missing account hash in block header '" + header + "'" );
 
             has_account_hash = true;
+
             account_hash = next_attribute.substr(
              string( c_file_type_core_block_header_account_hash_prefix ).length( ) );
          }
@@ -771,6 +806,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                throw runtime_error( "unexpected missing account lock in block header '" + header + "'" );
 
             has_account_lock = true;
+
             account_lock = next_attribute.substr(
              string( c_file_type_core_block_header_account_lock_prefix ).length( ) );
          }
@@ -943,7 +979,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    bool is_new_chain_head = false;
    bool is_better_chain_head = false;
 
-   string mint_address, mint_test_address;
+   string mint_address;
 
    if( p_extras && block_height )
    {
@@ -1170,10 +1206,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          public_key pkey( public_key_base64, true );
 
          if( block_height )
-         {
-            mint_address = pkey.get_address( );
-            mint_test_address = pkey.get_address( true, true );
-         }
+            mint_address = pkey.get_address( true, true );
 
          if( check_sigs && !pkey.verify_signature( verify, block_signature ) )
             throw runtime_error( "invalid block signature" );
@@ -1238,7 +1271,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       uint64_t parallel_block_height = 0;
       all_transaction_hashes.push_back( transaction_hashes );
 
-      set_session_variable( get_special_var_name( e_special_var_block_height ), "" );
+      set_session_variable( get_special_var_name( e_special_var_rewind_height ), to_string( c_unconfirmed_revision ) );
 
       if( !block_height )
       {
@@ -1460,7 +1493,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                }
 
                if( need_to_rewind_storage )
-                  set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( parallel_block_height ) );
+                  set_session_variable( get_special_var_name( e_special_var_rewind_height ), to_string( parallel_block_height ) );
             }
          }
 
@@ -1496,7 +1529,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          if( !had_existing && !check_if_valid_hash_pair( account_hash, ainfo.block_hash, true ) )
             throw runtime_error( "invalid hash from minter" );
 
-         if( !had_existing && ainfo.block_lock != mint_address && ainfo.block_lock != mint_test_address )
+         if( !had_existing && ainfo.block_lock != mint_address )
             throw runtime_error( "invalid public key from minter" );
 
          // NOTE: If an account has already minted then make sure that this block is higher than
@@ -2461,8 +2494,8 @@ void verify_transaction( const string& content, bool check_sigs,
 
             regex expr( c_regex_integer );
 
-            if( expr.search( value ) != 0 )
-               throw runtime_error( "unexpected sequence value '" + value + "'" );
+            if( ( !value.empty( ) && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
+               throw runtime_error( "invalid sequence value '" + value + "'" );
 
             sequence = from_string< uint64_t >( value );
          }
@@ -2547,7 +2580,7 @@ void verify_transaction( const string& content, bool check_sigs,
 
    string verify( string( c_file_type_core_transaction_object ) + ':' + header );
 
-   string transaction_address, transaction_test_address;
+   string transaction_address;
 
    int num_log_lines = 0;
    bool had_signature = false;
@@ -2594,8 +2627,7 @@ void verify_transaction( const string& content, bool check_sigs,
 #ifdef SSL_SUPPORT
          public_key pkey( public_key_base64, true );
 
-         transaction_address = pkey.get_address( );
-         transaction_test_address = pkey.get_address( true, true );
+         transaction_address = pkey.get_address( true, true );
 
          if( check_sigs && !pkey.verify_signature( verify, transaction_signature ) )
             throw runtime_error( "invalid transaction signature" );
@@ -2674,8 +2706,7 @@ void verify_transaction( const string& content, bool check_sigs,
       if( !check_if_valid_hash_pair( transaction_hash, ainfo.transaction_hash, true ) )
          error_message = "invalid hash in transaction";
 
-      if( ainfo.transaction_lock != transaction_address
-       && ainfo.transaction_lock != transaction_test_address )
+      if( ainfo.transaction_lock != transaction_address )
          error_message = "invalid public key in transaction";
 
       if( ainfo.num_transactions && !has_file( previous_transaction ) )
@@ -3817,19 +3848,22 @@ void perform_blockchain_rewind( const string& blockchain, uint64_t block_height 
 {
    guard g( g_mutex );
 
-   string data( c_file_type_str_core_blob );
+   if( block_height != c_unconfirmed_revision )
+   {
+      string data( c_file_type_str_core_blob );
 
-   data += string( c_file_type_core_rewind_object ) + ":c" + blockchain + ".b" + to_string( block_height );
+      data += string( c_file_type_core_rewind_object ) + ":c" + blockchain + ".b" + to_string( block_height );
 
-   vector< pair< string, string > > extras;
+      vector< pair< string, string > > extras;
 
-   verify_core_file( data, true, &extras );
+      verify_core_file( data, true, &extras );
 
-   // NOTE: There is no need to create a raw file for the info "request"
-   // so only the extras are passed for raw file creation.
-   create_raw_file_with_extras( "", extras );
+      // NOTE: There is no need to create a raw file for the info "request"
+      // so only the extras are passed for raw file creation.
+      create_raw_file_with_extras( "", extras );
 
-   construct_blockchain_info_file( blockchain );
+      construct_blockchain_info_file( blockchain );
+   }
 
    storage_process_undo( block_height );
 }
@@ -3863,9 +3897,9 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
 
    if( file_exists( filename ) )
    {
+      set< string > txs;
       vector< string > lines;
       buffer_file_lines( filename, lines );
-
 
       map< string, vector< string > > app_log_lines;
 
@@ -3882,6 +3916,8 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          transaction_info tinfo;
          if( get_transaction_info( tinfo, next ) )
          {
+            txs.insert( next );
+
             string account( tinfo.account_id );
             string::size_type pos = account.find( ".a" );
             if( pos != string::npos )
@@ -3890,34 +3926,12 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
             if( !app_log_lines.count( tinfo.application ) )
                append_height_for_blockchain_application( tinfo.application, block_height );
 
-            // FUTURE: If existing then need to get the mappped class ids and keys as there might
-            // need to be multiple updates issued to fix the revision numbers of related records.
-            bool was_existing = append_transaction_for_blockchain_application( tinfo.application, next );
-
             for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
             {
                string next_log_line( tinfo.log_lines[ j ] );
+               string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-               string::size_type pos = next_log_line.find( ' ' );
-               if( pos == string::npos )
-                  throw runtime_error( "invalid next log line '"
-                   + tinfo.log_lines[ j ] + "' when attempting to construct script" );
-
-               next_log_line.insert( pos + 1, account + ' ' );
-
-               pos = next_log_line.find( '"' );
-               if( pos == string::npos )
-                  throw runtime_error( "invalid next log line '"
-                   + tinfo.log_lines[ j ] + "' when attempting to construct script" );
-
-               if( was_existing )
-               {
-                  next_log_line.erase( pos + 1 );
-                  next_log_line += "@bh=%1\"";
-               }
-               else
-                  next_log_line.insert( pos + 1, "@bh=%1," );
-
+               next_log_line.insert( pos + 1, "@bh=%1," );
                app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
@@ -3926,6 +3940,21 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
       for( map< string, vector< string > >::iterator i = app_log_lines.begin( ); i!= app_log_lines.end( ); ++i )
       {
          string filename( i->first + ".txs.cin" );
+         string local_txs( i->first + ".txs.log" );
+
+         vector< string > old_local_txs;
+         vector< string > new_local_txs;
+
+         if( file_exists( local_txs ) )
+         {
+            buffer_file_lines( local_txs, old_local_txs );
+
+            for( size_t j = 0; j < old_local_txs.size( ); j++ )
+            {
+               if( !txs.count( old_local_txs[ j ] ) )
+                  new_local_txs.push_back( old_local_txs[ j ] );
+            }
+         }
 
          ofstream outf( filename.c_str( ), ios::out | ios::app );
          if( !outf )
@@ -3933,6 +3962,31 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
 
          for( size_t j = 0; j < ( i->second ).size( ); j++ )
             outf << '.' << ( i->second )[ j ] << '\n';
+
+         // NOTE: If any previous local txs have not been processed then issue them again.
+         if( !new_local_txs.empty( ) )
+         {
+            outf << ".session_variable @blockchain " << blockchain << '\n';
+
+            for( size_t j = 0; j < new_local_txs.size( ); j++ )
+            {
+               string next( new_local_txs[ j ] );
+
+               transaction_info tinfo;
+               if( get_transaction_info( tinfo, next ) )
+               {
+                  string account( tinfo.account_id );
+
+                  for( size_t k = 0; k < tinfo.log_lines.size( ); k++ )
+                  {
+                     string next_log_line( tinfo.log_lines[ k ] );
+                     insert_account_into_transaction_log_line( account, next_log_line );
+
+                     outf << '.' << next_log_line << '\n';
+                  }
+               }
+            }
+         }
 
          outf.flush( );
          if( !outf.good( ) )

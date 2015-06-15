@@ -220,11 +220,11 @@ const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_block_height = "@block_height";
+const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
-const char* const c_special_variable_classes_and_keys = "@classes_and_keys";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
@@ -3045,6 +3045,16 @@ void append_undo_sql_statements( storage_handler& handler )
       if( !outf )
          throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
+      string blockchain( get_session_variable( c_special_variable_blockchain ) );
+
+      if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+      {
+         string filename( handler.get_name( ) + ".txs.log" );
+
+         if( !file_exists( filename ) )
+            outf << "#" << c_block_prefix << ' ' << c_unconfirmed_revision << '\n';
+      }
+
       for( size_t i = 0; i < gtp_session->sql_undo_statements.size( ); i++ )
          outf << gtp_session->sql_undo_statements[ i ] << '\n';
 
@@ -3158,8 +3168,6 @@ map< int, string > g_blockchains;
 map< string, int > g_blockchain_ids;
 
 map< string, string > g_initial_peer_ips;
-
-map< string, map< string, string > > g_blockchain_application_txs;
 
 string g_mbox_path;
 string g_mbox_username;
@@ -5759,6 +5767,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_block_height );
       break;
 
+      case e_special_var_rewind_height:
+      s = string( c_special_variable_rewind_height );
+      break;
+
       case e_special_var_update_fields:
       s = string( c_special_variable_update_fields );
       break;
@@ -5773,10 +5785,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_check_if_changed:
       s = string( c_special_variable_check_if_changed );
-      break;
-
-      case e_special_var_classes_and_keys:
-      s = string( c_special_variable_classes_and_keys );
       break;
 
       case e_special_var_skip_after_fetch:
@@ -5822,6 +5830,37 @@ void set_default_session_variables( )
 {
    set_session_variable( c_special_variable_restore, "0" );
    set_session_variable( c_special_variable_storage, get_default_storage( ) );
+}
+
+system_variable_lock::system_variable_lock( const string& name )
+ :
+ name( name )
+{
+   bool acquired = false;
+
+   for( size_t i = 0; i < c_max_lock_attempts; i++ )
+   {
+      // NOTE: Empty code block for scope purposes.
+      {
+         guard g( g_mutex );
+
+         if( set_system_variable( name, "<locked>", "" ) )
+         {
+            acquired = true;
+            break;
+         }
+      }
+
+      msleep( c_lock_attempt_sleep_time );
+   }
+
+   if( !acquired )
+      throw runtime_error( "unable to acquire lock for system variable '" + name + "'" );
+}
+
+system_variable_lock::~system_variable_lock( )
+{
+   set_system_variable( name, "" );
 }
 
 string get_system_variable( const string& name )
@@ -5902,9 +5941,14 @@ bool set_system_variable( const string& name, const string& value, const string&
       g_variables.erase( name );
    }
 
-   if( retval && !value.empty( ) )
+   if( retval )
    {
-      if( g_variables.count( name ) )
+      if( value.empty( ) )
+      {
+         if( g_variables.count( name ) )
+            g_variables.erase( name );
+      }
+      else if( g_variables.count( name ) )
          g_variables[ name ] = value;
       else
          g_variables.insert( make_pair( name, value ) );
@@ -6764,11 +6808,28 @@ void storage_process_undo( uint64_t new_height )
    guard g( g_mutex );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
+
    string undo_sql( gtp_session->p_storage_handler->get_name( ) + ".undo.sql" );
+   string local_txs( gtp_session->p_storage_handler->get_name( ) + ".txs.log" );
 
    string new_undo_sql( undo_sql + ".new" );
 
-   if( gtp_session->ap_db.get( ) )
+   bool okay = true;
+   bool local_only = false;
+
+   // NOTE: If the request was to undo local txs then only proceed if there are any.
+   if( new_height == c_unconfirmed_revision )
+   {
+      if( !file_exists( local_txs ) )
+         okay = false;
+      else
+      {
+         --new_height;
+         local_only = true;
+      }
+   }
+
+   if( okay && gtp_session->ap_db.get( ) )
    {
       ifstream inpf( undo_sql.c_str( ) );
       if( !inpf )
@@ -6846,7 +6907,7 @@ void storage_process_undo( uint64_t new_height )
 
          if( finished )
          {
-            if( pos != string::npos )
+            if( pos != string::npos && !local_only )
                outf << next.substr( 0, pos + 1 ) << ";rewound\n";
             break;
          }
@@ -6860,6 +6921,9 @@ void storage_process_undo( uint64_t new_height )
       remove_file( log_name );
       rename_file( new_log_name, log_name );
    }
+
+   if( file_exists( local_txs ) )
+      remove_file( local_txs );
 }
 
 void storage_lock_all_tables( )
@@ -10082,6 +10146,17 @@ void transaction_log_command( const string& log_command )
       gtp_session->transaction_log_command.erase( );
    else
    {
+#ifndef IS_TRADITIONAL_PLATFORM
+      string blockchain( get_session_variable( c_special_variable_blockchain ) );
+
+      if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+      {
+         string filename( gtp_session->p_storage_handler->get_name( ) + ".txs.log" );
+
+         if( !file_exists( filename ) )
+            gtp_session->transaction_log_command = ";block " + to_string( c_unconfirmed_revision );
+      }
+#endif
       if( !gtp_session->transaction_log_command.empty( ) )
          gtp_session->transaction_log_command += '\n';
 
@@ -10089,80 +10164,20 @@ void transaction_log_command( const string& log_command )
    }
 }
 
-bool append_transaction_for_blockchain_application(
- const string& application, const string& tx_hash_or_block,
- const string& class_and_key_info, string* p_class_and_key_info )
+void append_transaction_for_blockchain_application(
+ const string& application, const string& transaction_hash )
 {
    guard g( g_mutex );
 
-   bool was_existing = false;
-
    string filename( application + ".txs.log" );
 
-   if( !file_exists( filename ) )
-   {
-      ofstream outf( filename.c_str( ) );
-      outf << c_block_prefix << " 0\n";
-   }
-   else if( !g_blockchain_application_txs.count( application ) )
-   {
-      ifstream inpf( filename.c_str( ) );
-      if( !inpf )
-         throw runtime_error( "unable to open '" + filename + "' for input" );
+   ofstream outf( filename.c_str( ), ios::out | ios::app );
+   if( !outf )
+      throw runtime_error( "unable to open '" + filename + "' for append" );
 
-      string next;
-      while( getline( inpf, next ) )
-      {
-         if( next.find( c_block_prefix ) == 0 )
-            continue;
+   outf << transaction_hash << '\n';
 
-         string::size_type pos = next.find( ' ' );
-         if( pos == string::npos && g_blockchain_application_txs[ application ].count( next ) )
-            g_blockchain_application_txs[ application ].erase( next );
-         else
-            g_blockchain_application_txs[ application ].insert(
-             make_pair( next.substr( 0, pos ), next.substr( pos + 1 ) ) );
-      }
-   }
-
-   bool is_block_marker = false;
-
-   if( tx_hash_or_block.find( c_block_prefix ) != string::npos )
-      is_block_marker = true;
-   else
-   {
-      if( g_blockchain_application_txs[ application ].count( tx_hash_or_block ) )
-      {
-         was_existing = true;
-
-         if( p_class_and_key_info )
-            *p_class_and_key_info = g_blockchain_application_txs[ application ][ tx_hash_or_block ];
-
-         g_blockchain_application_txs[ application ].erase( tx_hash_or_block );
-      }
-      else if( !class_and_key_info.empty( ) )
-         g_blockchain_application_txs[ application ].insert( make_pair( tx_hash_or_block, class_and_key_info ) );
-   }
-
-   if( was_existing || is_block_marker || !class_and_key_info.empty( ) )
-   {
-      ofstream outf( filename.c_str( ), ios::out | ios::app );
-      if( !outf )
-         throw runtime_error( "unable to open '" + filename + "' for append" );
-
-      outf << tx_hash_or_block;
-
-      if( !class_and_key_info.empty( ) )
-         outf << ' ' << class_and_key_info;
-
-      outf << '\n';
-
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "*** unexpected error occurred appending tx for blockchain ***" );
-   }
-
-   return was_existing;
+   outf.flush( );
 }
 
 void append_height_for_blockchain_application( const string& application, uint64_t height )
@@ -10180,8 +10195,6 @@ void append_height_for_blockchain_application( const string& application, uint64
 
    string block_marker( c_block_prefix );
    block_marker += ' ' + to_string( height );
-
-   append_transaction_for_blockchain_application( application, block_marker );
 
    outf << '#' << block_marker << '\n';
 
@@ -10754,6 +10767,17 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          executing_sql = false;
 
 #ifndef IS_TRADITIONAL_PLATFORM
+         if( storage_locked_for_admin( ) )
+         {
+            string block_height( get_session_variable( c_special_variable_block_height ) );
+
+            if( !block_height.empty( ) )
+            {
+               set_session_variable( c_special_variable_block_height, "" );
+               gtp_session->sql_undo_statements.push_back( "#" + string( c_block_prefix ) + ' ' +  block_height );
+            }
+         }
+
          gtp_session->sql_undo_statements.insert(
           gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
 #endif

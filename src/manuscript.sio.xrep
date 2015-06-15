@@ -9,7 +9,7 @@
  <script/>
   <name>app_blk_txs
   <filename>*script*
-  <arguments>app_blk_txs.cin @application @block_height
+  <arguments>app_blk_txs.cin @application @rewind_height @block_height
  </script>\
 `}
  <script/>

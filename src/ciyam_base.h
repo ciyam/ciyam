@@ -307,6 +307,14 @@ std::string CIYAM_BASE_DECL_SPEC get_special_var_name( special_var var );
 
 void CIYAM_BASE_DECL_SPEC set_default_session_variables( );
 
+struct CIYAM_BASE_DECL_SPEC system_variable_lock
+{
+   system_variable_lock( const std::string& name );
+   ~system_variable_lock( );
+
+   const std::string& name;
+};
+
 std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name );
 void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
@@ -616,15 +624,8 @@ size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
 void CIYAM_BASE_DECL_SPEC transaction_log_command( const std::string& log_command );
 
-bool CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
- const std::string& application, const std::string& tx_hash_or_block,
- const std::string& class_and_key_info, std::string* p_class_and_key_info = 0 );
-
-inline bool CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
- const std::string& application, const std::string& tx_hash_or_block, std::string* p_class_and_key_info = 0 )
-{
-   return append_transaction_for_blockchain_application( application, tx_hash_or_block, "", p_class_and_key_info );
-}
+void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
+ const std::string& application, const std::string& transaction_hash );
 
 void CIYAM_BASE_DECL_SPEC append_height_for_blockchain_application( const std::string& application, uint64_t height );
 
