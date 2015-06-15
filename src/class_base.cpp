@@ -463,20 +463,6 @@ void validate_addresses( const string& addresses )
       throw runtime_error( "invalid addresses: " + addresses );
 }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-void add_class_and_key_to_session_variable( class_base& cb )
-{
-   string classes_and_keys( get_session_variable( get_special_var_name( e_special_var_classes_and_keys ) ) );
-
-   if( !classes_and_keys.empty( ) )
-      classes_and_keys += ',';
-
-   classes_and_keys += cb.get_class_id( ) + ':' + cb.get_key( );
-
-   set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), classes_and_keys );
-}
-#endif
-
 #include "trace_progress.cpp"
 
 }
@@ -1299,9 +1285,6 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
             revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
          else
             revision = from_string< uint64_t >( block_height );
-
-         if( revision == c_unconfirmed_revision )
-            add_class_and_key_to_session_variable( *this );
       }
 #endif
       original_identity = construct_class_identity( *this );
@@ -1322,9 +1305,6 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
             revision = is_init_uid( ) ? 0 : c_unconfirmed_revision;
          else
             revision = from_string< uint64_t >( block_height );
-
-         if( revision == c_unconfirmed_revision )
-            add_class_and_key_to_session_variable( *this );
       }
 #endif
       p_impl->has_changed_user_fields = false;

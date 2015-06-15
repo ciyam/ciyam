@@ -2418,7 +2418,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
 #ifndef IS_TRADITIONAL_PLATFORM
                auto_ptr< temporary_session_variable > ap_tmp_bh;
-               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+               auto_ptr< system_variable_lock > ap_blockchain_lock;
+
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
                map< string, string > field_scope_and_perm_info_by_id;
@@ -2545,8 +2550,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
                if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
                   create_blockchain_transaction( blockchain, storage_name( ), next_command );
 #endif
@@ -2693,7 +2696,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
 #ifndef IS_TRADITIONAL_PLATFORM
                auto_ptr< temporary_session_variable > ap_tmp_bh;
-               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+               auto_ptr< system_variable_lock > ap_blockchain_lock;
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
                map< string, string > field_scope_and_perm_info_by_id;
@@ -2846,8 +2853,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
                if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
                   create_blockchain_transaction( blockchain, storage_name( ), next_command );
 #endif
@@ -2955,7 +2960,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+               auto_ptr< system_variable_lock > ap_blockchain_lock;
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
                if( progress )
@@ -2981,8 +2990,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   op_instance_apply( handle, "", false );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
                if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
                   create_blockchain_transaction( blockchain, storage_name( ), next_command );
 #endif
@@ -3193,7 +3200,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+               auto_ptr< system_variable_lock > ap_blockchain_lock;
+               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+
+               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                  ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
@@ -3343,8 +3354,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_commit( );
 
 #ifndef IS_TRADITIONAL_PLATFORM
-               string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
                if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
                   create_blockchain_transaction( blockchain, storage_name( ), next_command );
 #endif
@@ -4160,11 +4169,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      new_logf << "[2]" << ";block 0\n";
 
-                     if( file_exists( name + ".undo.sql" ) )
-                     {
-                        ofstream outf( string( name + ".undo.sql" ).c_str( ), ios::out | ios::app );
-                        outf << "#block 0\n";
-                     }
+                     set_session_variable( get_special_var_name( e_special_var_block_height ), "0" );
                   }
 #endif
 
@@ -4182,6 +4187,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         next_tran_id = next_transaction_id( );
                   }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+                  string block_comment_prefix( ";block " );
+
+                  if( tran_info.find( block_comment_prefix ) == 0 )
+                  {
+                     set_session_variable(
+                      get_special_var_name( e_special_var_block_height ),
+                      tran_info.substr( block_comment_prefix.length( ) ) );
+                  }    
+#endif
                   if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= next_tran_id ) )
                   {
                      next_tran_id = set_transaction_id( tran_id );

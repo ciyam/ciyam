@@ -155,10 +155,7 @@ void process_txs( const string& blockchain )
 {
    guard g( g_mutex );
 
-   string rewind_block_height( get_session_variable( get_special_var_name( e_special_var_block_height ) ) );
-
-   if( !rewind_block_height.empty( ) )
-      storage_process_undo( from_string< uint64_t >( rewind_block_height ) );
+   system_variable_lock blockchain_lock( blockchain );
 
    if( file_exists( blockchain + ".txs" ) )
    {
@@ -1758,10 +1755,7 @@ void create_blockchain_transaction(
 
    construct_blockchain_info_file( blockchain );
 
-   append_transaction_for_blockchain_application( application, tx_hash,
-    get_session_variable( get_special_var_name( e_special_var_classes_and_keys ) ) );
-
-   set_session_variable( get_special_var_name( e_special_var_classes_and_keys ), "" );
+   append_transaction_for_blockchain_application( application, tx_hash );
 }
 
 void create_peer_listener( int port, const string& blockchain )
