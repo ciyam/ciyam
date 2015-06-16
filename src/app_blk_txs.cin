@@ -6,5 +6,5 @@
 .storage_init %1
 .storage_rewind %2
 .storage_comment "block %3"
-<%1.txs.cin %2
+<%1.txs.cin %3
 .quit
