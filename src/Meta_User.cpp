@@ -141,6 +141,28 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
+const int c_num_encrypted_fields = 2;
+
+const char* const c_encrypted_sorted_field_ids[ ] =
+{
+   "100101",
+   "100103"
+};
+
+const char* const c_encrypted_sorted_field_names[ ] =
+{
+   "Password",
+   "User_Id"
+};
+
+inline bool is_encrypted_field( const string& field )
+{
+   return binary_search( c_encrypted_sorted_field_ids,
+    c_encrypted_sorted_field_ids + c_num_encrypted_fields, field.c_str( ), compare )
+    || binary_search( c_encrypted_sorted_field_names,
+    c_encrypted_sorted_field_names + c_num_encrypted_fields, field.c_str( ), compare );
+}
+
 const int c_num_transient_fields = 1;
 
 const char* const c_transient_sorted_field_ids[ ] =
@@ -153,14 +175,12 @@ const char* const c_transient_sorted_field_names[ ] =
    "Password_Hash"
 };
 
-inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
-
 inline bool is_transient_field( const string& field )
 {
    return binary_search( c_transient_sorted_field_ids,
-    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), compare )
     || binary_search( c_transient_sorted_field_names,
-    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
 domain_string_max_size< 100 > g_Description_domain;
@@ -1179,6 +1199,11 @@ bool Meta_User::is_field_default( const string& field ) const
    return p_impl->is_field_default( get_field_num( field ) );
 }
 
+bool Meta_User::is_field_encrypted( int field ) const
+{
+   return static_is_field_encrypted( ( field_id )( field + 1 ) );
+}
+
 bool Meta_User::is_field_transient( int field ) const
 {
    return static_is_field_transient( ( field_id )( field + 1 ) );
@@ -1927,6 +1952,11 @@ int Meta_User::static_get_num_fields( bool* p_done, const string* p_class_name )
       *p_done = true;
 
    return c_num_fields;
+}
+
+bool Meta_User::static_is_field_encrypted( field_id id )
+{
+   return is_encrypted_field( static_get_field_id( id ) );
 }
 
 bool Meta_User::static_is_field_transient( field_id id )

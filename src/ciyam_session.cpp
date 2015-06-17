@@ -2450,10 +2450,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
+                     bool is_encrypted = false;
                      bool is_transient = false;
                      bool was_date_time = false;
 
-                     string type_name( get_field_type_name( handle, "", i->first, &is_transient ) );
+                     string type_name( get_field_type_name( handle, "", i->first, &is_encrypted, &is_transient ) );
 
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
@@ -2754,10 +2755,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
+                     bool is_encrypted = false;
                      bool is_transient = false;
                      bool was_date_time = false;
 
-                     string type_name( get_field_type_name( handle, "", i->first, &is_transient ) );
+                     string type_name( get_field_type_name( handle, "", i->first, &is_encrypted, &is_transient ) );
 
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
@@ -2808,9 +2810,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( is_transient && !is_init_uid( ) && !has_identified_local_session )
                         throw runtime_error( "invalid attempt to set transient field: " + i->first );
 
+                     bool check_decrypted = false;
+                     if( !blockchain.empty( ) && is_encrypted )
+                        check_decrypted = true;
+
                      // NOTE: Field values that are the same as the record's current ones are omitted from
                      // the log as are values for all transient fields.
-                     if( ( !is_transient || is_init_uid( ) ) && value != i->second )
+                     if( ( !is_transient || is_init_uid( ) )
+                      && ( ( value.empty( ) != i->second.empty( ) )
+                      || ( !check_decrypted && value != i->second )
+                      || ( check_decrypted && decrypt( value ) != decrypt( i->second ) ) ) )
                      {
                         if( !field_values_to_log.empty( ) )
                            field_values_to_log += ",";
@@ -3253,8 +3262,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         instance_set_variable( handle, "", j->first, j->second );
                      else
                      {
+                        bool is_encrypted = false;
                         bool is_transient = false;
-                        string type_name( get_field_type_name( handle, "", j->first, &is_transient ) );
+
+                        string type_name( get_field_type_name( handle, "", j->first, &is_encrypted, &is_transient ) );
 
                         if( !j->second.empty( ) && !tz_name.empty( ) )
                         {
@@ -3803,7 +3814,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 #else
          string bundle( "./bundle" );
 #endif
-         exec_system( bundle + " -r -q " + name + ".backup.bun.gz " + file_names );
+         exec_system( bundle + " -q " + name + ".backup.bun.gz " + file_names );
 
          if( truncate_log )
             exec_system( bundle + " -q " + name + "." + osstr.str( ) + ".bun.gz " + name + ".log." + osstr.str( ) );

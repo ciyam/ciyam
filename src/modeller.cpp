@@ -1103,6 +1103,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                vector< string > basic_fields;
                vector< string > parent_fields;
                vector< string > complex_fields;
+               vector< string > encrypted_fields;
                vector< string > transient_fields;
                vector< string > commandable_fields;
                vector< string > sql_numeric_fields;
@@ -1202,6 +1203,11 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      order_field = field_name;
 
                   string enum_name( all_field_data[ i ].enum_name );
+
+                  if( all_field_data[ i ].extra.find( "password" ) != string::npos
+                   || all_field_data[ i ].extra.find( "encrypted" ) != string::npos
+                   || all_field_data[ i ].extra.find( "hpassword" ) != string::npos )
+                     encrypted_fields.push_back( field_id + "," + field_name );
 
                   if( all_field_data[ i ].is_transient )
                      transient_fields.push_back( field_id + "," + field_name );
@@ -1347,6 +1353,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
 
                if( !parent_fields.empty( ) )
                   outf << "`{`$parent_fields`=`'" << string_list( parent_fields ) << "`'`}\n";
+
+               if( !encrypted_fields.empty( ) )
+                  outf << "`{`$encrypted_fields`=`'" << string_list( encrypted_fields ) << "`'`}\n";
 
                if( !transient_fields.empty( ) )
                   outf << "`{`$transient_fields`=`'" << string_list( transient_fields ) << "`'`}\n";

@@ -306,6 +306,10 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
+const int c_num_encrypted_fields = 0;
+
+bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
+
 const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
@@ -320,14 +324,12 @@ const char* const c_transient_sorted_field_names[ ] =
    "Create_View"
 };
 
-inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
-
 inline bool is_transient_field( const string& field )
 {
    return binary_search( c_transient_sorted_field_ids,
-    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), compare )
     || binary_search( c_transient_sorted_field_names,
-    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
 const char* const c_procedure_id_Generate = "106410";
@@ -2495,6 +2497,7 @@ void Meta_Class::impl::impl_Generate( )
    vector< string > basic_fields;
    vector< string > parent_fields;
    vector< string > complex_fields;
+   vector< string > encrypted_fields;
    vector< string > file_field_names;
    vector< string > transient_fields;
    vector< string > sql_numeric_fields;
@@ -2651,11 +2654,18 @@ void Meta_Class::impl::impl_Generate( )
             if( get_obj( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
                permission_field = get_obj( ).child_Field( ).Name( );
 
+            bool is_encrypted = false;
+
+            if( get_obj( ).child_Field( ).Extra( ) == 10 // i.e. "password"
+             || get_obj( ).child_Field( ).Extra( ) == 25 // i.e. "encrypted"
+             || get_obj( ).child_Field( ).Extra( ) == 26 ) // i.e. "hpassword"
+               is_encrypted = true;
+
             bool is_transient = get_obj( ).child_Field( ).Transient( );
 
             outf << get_obj( ).child_Field( ).Name( ) << ',' << field_type << ','
-             << get_mapped_id( model_name, get_obj( ).child_Field( ).Id( ) ) << ','
-             << field_scope << ',' << field_update << ',' << is_owner_fk << ',' << is_transient;
+             << get_mapped_id( model_name, get_obj( ).child_Field( ).Id( ) ) << ',' << field_scope
+             << ',' << field_update << ',' << is_owner_fk << ',' << is_encrypted << ',' << is_transient;
 
             if( !get_obj( ).child_Field( ).Default( ).empty( ) )
             {
@@ -2718,6 +2728,11 @@ void Meta_Class::impl::impl_Generate( )
              || get_obj( ).child_Field( ).Extra( ) == 3 // i.e. "image"
              || get_obj( ).child_Field( ).Extra( ) == 21 ) // i.e. "file_link"
                file_field_names.push_back( get_obj( ).child_Field( ).Name( ) );
+
+            if( get_obj( ).child_Field( ).Extra( ) == 10 // i.e. "password"
+             || get_obj( ).child_Field( ).Extra( ) == 25 // i.e. "encrypted"
+             || get_obj( ).child_Field( ).Extra( ) == 26 ) // i.e. "hpassword"
+               encrypted_fields.push_back( get_obj( ).child_Field( ).Id( ) + "," + get_obj( ).child_Field( ).Name( ) );
 
             // NOTE: The "int" and "bool" types are the only basic primitives.
             if( get_obj( ).child_Field( ).Primitive( ) == 5 || get_obj( ).child_Field( ).Primitive( ) == 6 )
@@ -2858,6 +2873,18 @@ void Meta_Class::impl::impl_Generate( )
          if( i > 0 )
             outf << ' ';
          outf << file_field_names[ i ];
+      }
+      outf << "\x60'\x60}\n";
+   }
+
+   if( !encrypted_fields.empty( ) )
+   {
+      outf << "\x60{\x60$encrypted_fields\x60=\x60'";
+      for( size_t i = 0; i < encrypted_fields.size( ); i++ )
+      {
+         if( i > 0 )
+            outf << ' ';
+         outf << encrypted_fields[ i ];
       }
       outf << "\x60'\x60}\n";
    }
@@ -5749,6 +5776,11 @@ bool Meta_Class::is_field_default( const string& field ) const
    return p_impl->is_field_default( get_field_num( field ) );
 }
 
+bool Meta_Class::is_field_encrypted( int field ) const
+{
+   return static_is_field_encrypted( ( field_id )( field + 1 ) );
+}
+
 bool Meta_Class::is_field_transient( int field ) const
 {
    return static_is_field_transient( ( field_id )( field + 1 ) );
@@ -7659,6 +7691,11 @@ int Meta_Class::static_get_num_fields( bool* p_done, const string* p_class_name 
       *p_done = true;
 
    return c_num_fields;
+}
+
+bool Meta_Class::static_is_field_encrypted( field_id id )
+{
+   return is_encrypted_field( static_get_field_id( id ) );
 }
 
 bool Meta_Class::static_is_field_transient( field_id id )

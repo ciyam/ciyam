@@ -383,6 +383,10 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
+const int c_num_encrypted_fields = 0;
+
+bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
+
 const int c_num_transient_fields = 0;
 
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
@@ -1605,6 +1609,16 @@ bool Meta_Specification_Field_Action::is_field_default( const string& field ) co
    return p_impl->is_field_default( get_field_num( field ) );
 }
 
+bool Meta_Specification_Field_Action::is_field_encrypted( int field ) const
+{
+   int num_parent_fields( parent_class_type::get_num_fields( ) );
+
+   if( field < num_parent_fields )
+      return parent_class_type::is_field_encrypted( field );
+   else
+      return static_is_field_encrypted( ( field_id )( field - num_parent_fields + 1 ) );
+}
+
 bool Meta_Specification_Field_Action::is_field_transient( int field ) const
 {
    int num_parent_fields( parent_class_type::get_num_fields( ) );
@@ -2455,6 +2469,11 @@ int Meta_Specification_Field_Action::static_get_num_fields( bool* p_done, const 
       *p_done = true;
 
    return num_fields;
+}
+
+bool Meta_Specification_Field_Action::static_is_field_encrypted( field_id id )
+{
+   return is_encrypted_field( static_get_field_id( id ) );
 }
 
 bool Meta_Specification_Field_Action::static_is_field_transient( field_id id )

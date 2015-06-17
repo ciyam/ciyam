@@ -16,6 +16,7 @@
 `{`;$complex_fields='name2 ...'`}
 `{`;$parent_fields='name4 ...'`}
 `{`;$file_field_names='name3 ...'`}
+`{`;$encrypted_fields='id2,name2 ...'`}
 `{`;$transient_fields='id2,name2 ...'`}
 `{`;$text_search_fields='name1 name5 ...'`}
 `{`}
@@ -102,6 +103,15 @@
 `{`(`?`$basic_fields`|`?`$complex_fields`)`$standard_fields`=`'`'`}
 `{`(`?`$basic_fields`)`$standard_fields`=`$standard_fields`+`$basic_fields`}
 `{`(`?`$complex_fields`)`$standard_fields`=`$standard_fields`+`$complex_fields`}
+`{`}
+`{`(`?`$encrypted_fields`)`$encrypted_field_ids`=`'`'`}
+`{`(`?`$encrypted_fields`)`$encrypted_field_names`=`'`'`}
+`{`(`?`$encrypted_fields`)`[`$encrypted_fields`%,`,\
+`{`$encrypted_field_ids`=`$encrypted_field_ids`+`'\0`'`}\
+`{`$encrypted_field_names`=`$encrypted_field_names`+`'\1`'`}\
+`]`}
+`{`(`?`$encrypted_field_ids`)`$encrypted_sorted_field_ids`=`@sort`(`$encrypted_field_ids`)`}
+`{`(`?`$encrypted_field_names`)`$encrypted_sorted_field_names`=`@sort`(`$encrypted_field_names`)`}
 `{`}
 `{`(`?`$transient_fields`)`$transient_field_ids`=`'`'`}
 `{`(`?`$transient_fields`)`$transient_field_names`=`'`'`}
@@ -378,6 +388,32 @@ inline bool has_field( const string& field )
 `,
 bool has_field( const string& ) { static bool false_value( false ); return false_value; }\
 `}
+`{`!`(`?`$encrypted_fields`)
+const int c_num_encrypted_fields = 0;`,
+const int c_num_encrypted_fields = `{`@count`(`$encrypted_fields`)`};`}
+`{`?`$encrypted_sorted_field_ids`[`$encrypted_sorted_field_ids`'
+const char* const c_encrypted_sorted_field_ids[ ] =
+{`'
+   "\$"\
+`+,`]
+};`}
+`{`?`$encrypted_sorted_field_names`[`$encrypted_sorted_field_names`'
+const char* const c_encrypted_sorted_field_names[ ] =
+{`'
+   "\$"\
+`+,`]
+};`}
+`{`(`?`$encrypted_fields`)
+inline bool is_encrypted_field( const string& field )
+{
+   return binary_search( c_encrypted_sorted_field_ids,
+    c_encrypted_sorted_field_ids + c_num_encrypted_fields, field.c_str( ), compare )
+    || binary_search( c_encrypted_sorted_field_names,
+    c_encrypted_sorted_field_names + c_num_encrypted_fields, field.c_str( ), compare );
+}\
+`,
+bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }\
+`}
 `{`!`(`?`$transient_fields`)
 const int c_num_transient_fields = 0;`,
 const int c_num_transient_fields = `{`@count`(`$transient_fields`)`};`}
@@ -394,14 +430,12 @@ const char* const c_transient_sorted_field_names[ ] =
 `+,`]
 };`}
 `{`(`?`$transient_fields`)
-inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
-
 inline bool is_transient_field( const string& field )
 {
    return binary_search( c_transient_sorted_field_ids,
-    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), compare )
     || binary_search( c_transient_sorted_field_names,
-    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }\
 `,
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }\
@@ -3110,6 +3144,20 @@ bool `{`$full_class_name`}::is_field_default( const string& field ) const
    return p_impl->is_field_default( get_field_num( field ) );
 }
 
+bool `{`$full_class_name`}::is_field_encrypted( int field ) const
+{
+`{`!`(`?`$parent_class`)\
+   return static_is_field_encrypted( ( field_id )( field + 1 ) );\
+`,\
+   int num_parent_fields( parent_class_type::get_num_fields( ) );
+
+   if( field < num_parent_fields )
+      return parent_class_type::is_field_encrypted( field );
+   else
+      return static_is_field_encrypted( ( field_id )( field - num_parent_fields + 1 ) );\
+`}
+}
+
 bool `{`$full_class_name`}::is_field_transient( int field ) const
 {
 `{`!`(`?`$parent_class`)\
@@ -4179,7 +4227,7 @@ void `{`$full_class_name`}::static_get_field_info( field_info_container& all_fie
 `}`}
 `{`?`$all_fields`[`$all_fields`%,`,\
    all_field_info.push_back( field_info( "\2", "\0", "\1", \
-`{`?`$mandatory_parent_fields`&`@in`(`'\0`'`,`$mandatory_parent_fields`)true`,false`}, "\3", "\4"`{`!`@eq`(`'\5`'`,`'`'`), \5, \6`} ) );\
+`{`?`$mandatory_parent_fields`&`@in`(`'\0`'`,`$mandatory_parent_fields`)true`,false`}, "\3", "\4"`{`!`@eq`(`'\5`'`,`'`'`), \5, \6, \7`} ) );\
 `+\n`]`}
 }
 
@@ -4215,6 +4263,11 @@ int `{`$full_class_name`}::static_get_num_fields( bool* p_done, const string* p_
 
    return num_fields;\
 `}
+}
+
+bool `{`$full_class_name`}::static_is_field_encrypted( field_id id )
+{
+   return is_encrypted_field( static_get_field_id( id ) );
 }
 
 bool `{`$full_class_name`}::static_is_field_transient( field_id id )

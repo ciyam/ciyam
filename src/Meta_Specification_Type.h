@@ -534,6 +534,9 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    bool has_field_changed( const std::string& field ) const;
 
+   bool is_field_encrypted( int field ) const;
+   bool is_field_encrypted( field_id id ) const { return static_is_field_encrypted( id ); }
+
    bool is_field_transient( int field ) const;
    bool is_field_transient( field_id id ) const { return static_is_field_transient( id ); }
 
@@ -669,6 +672,7 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    static int static_get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 );
 
+   static bool static_is_field_encrypted( field_id id );
    static bool static_is_field_transient( field_id id );
 
    static const char* static_get_field_id( field_id id );
