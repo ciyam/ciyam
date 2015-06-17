@@ -480,7 +480,7 @@ std::string CIYAM_BASE_DECL_SPEC get_field_id_for_name(
  size_t handle, const std::string& context, const std::string& name, bool no_throw = false );
 
 std::string CIYAM_BASE_DECL_SPEC get_field_type_name( size_t handle,
- const std::string& context, const std::string& id_or_name, bool* p_is_transient = 0 );
+ const std::string& context, const std::string& id_or_name, bool* p_is_encrypted = 0, bool* p_is_transient = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol( size_t handle, const std::string& context, const std::string& id_or_name );
 std::string CIYAM_BASE_DECL_SPEC get_field_display_name( size_t handle, const std::string& context, const std::string& id_or_name );

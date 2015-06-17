@@ -6289,6 +6289,26 @@ void storage_comment( const string& comment )
       storable_identity& identity( *handler.get_root( ).o_identity );
 
       append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+      string block_marker( string( c_block_prefix ) + ' ' );
+
+      if( comment.find( block_marker ) == 0 )
+      {
+         string undo_sql_filename( handler.get_name( ) );
+         undo_sql_filename += ".undo.sql";
+
+         ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+         if( !outf )
+            throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
+
+         outf << "#" << comment << '\n';
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+      }
+#endif
    }
 }
 
@@ -7937,7 +7957,7 @@ string get_field_id_for_name( size_t handle, const string& context, const string
 }
 
 string get_field_type_name( size_t handle,
- const string& context, const string& id_or_name, bool* p_is_transient )
+ const string& context, const string& id_or_name, bool* p_is_encrypted, bool* p_is_transient )
 {
    string type_name;
 
@@ -7951,6 +7971,9 @@ string get_field_type_name( size_t handle,
       if( field_info[ i ].id == id_or_name || field_info[ i ].name == id_or_name )
       {
          type_name = field_info[ i ].type_name;
+
+         if( p_is_encrypted )
+            *p_is_encrypted = field_info[ i ].is_encrypted;
 
          if( p_is_transient )
             *p_is_transient = field_info[ i ].is_transient;

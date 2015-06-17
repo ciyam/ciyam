@@ -74,13 +74,14 @@ struct field_info
    field_info( const std::string& id,
     const std::string& name, const std::string& type_name,
     bool mandatory, const char* p_scope = 0, const char* p_change = 0,
-    bool is_owner_fk = false, bool is_transient = false )
+    bool is_owner_fk = false, bool is_encrypted = false, bool is_transient = false )
     :
     id( id ),
     name( name ),
     type_name( type_name ),
     mandatory( mandatory ),
     is_owner_fk( is_owner_fk ),
+    is_encrypted( is_encrypted ),
     is_transient( is_transient )
    {
       if( p_scope )
@@ -99,6 +100,7 @@ struct field_info
 
    bool mandatory;
    bool is_owner_fk;
+   bool is_encrypted;
    bool is_transient;
 };
 
@@ -369,7 +371,9 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual bool is_field_default( int field ) const = 0;
    virtual bool is_field_default( const std::string& field ) const = 0;
 
+   virtual bool is_field_encrypted( int field ) const = 0;
    virtual bool is_field_transient( int field ) const = 0;
+
    virtual std::string get_field_name( int field ) const = 0;
 
    virtual int get_field_num( const std::string& field ) const = 0;

@@ -268,6 +268,10 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
+const int c_num_encrypted_fields = 0;
+
+bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
+
 const int c_num_transient_fields = 5;
 
 const char* const c_transient_sorted_field_ids[ ] =
@@ -288,14 +292,12 @@ const char* const c_transient_sorted_field_names[ ] =
    "Parent_Field_For_View"
 };
 
-inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
-
 inline bool is_transient_field( const string& field )
 {
    return binary_search( c_transient_sorted_field_ids,
-    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), compare )
     || binary_search( c_transient_sorted_field_names,
-    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
 const uint64_t c_modifier_Hide_Parent_Field_For_List = UINT64_C( 0x100 );
@@ -2798,6 +2800,11 @@ bool Meta_Relationship::is_field_default( const string& field ) const
    return p_impl->is_field_default( get_field_num( field ) );
 }
 
+bool Meta_Relationship::is_field_encrypted( int field ) const
+{
+   return static_is_field_encrypted( ( field_id )( field + 1 ) );
+}
+
 bool Meta_Relationship::is_field_transient( int field ) const
 {
    return static_is_field_transient( ( field_id )( field + 1 ) );
@@ -4173,6 +4180,11 @@ int Meta_Relationship::static_get_num_fields( bool* p_done, const string* p_clas
       *p_done = true;
 
    return c_num_fields;
+}
+
+bool Meta_Relationship::static_is_field_encrypted( field_id id )
+{
+   return is_encrypted_field( static_get_field_id( id ) );
 }
 
 bool Meta_Relationship::static_is_field_transient( field_id id )
