@@ -86,7 +86,7 @@ enum peer_trust_level
    e_peer_trust_level_normal
 };
 
-map< string, string > g_blockchain_passwords;
+map< string, vector< string > > g_blockchain_passwords;
 
 set< string > g_good_peers;
 map< string, deque< string > > g_peers_to_retry;
@@ -185,10 +185,26 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
 
    string data;
 
-   string password( g_blockchain_passwords[ blockchain ] );
+   vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
 
-   if( !password.empty( ) )
-      data = construct_new_block( blockchain, password, &new_block );
+   if( !passwords.empty( ) )
+   {
+      string next_data;
+      new_block_info next_block;
+
+      for( size_t i = 0; i < passwords.size( ); i++ )
+      {
+         string next_password( passwords[ i ] );
+
+         next_data = construct_new_block( blockchain, next_password, &next_block );
+
+         if( i == 0 || next_block.weight < new_block.weight )
+         {
+            data = next_data;
+            new_block = next_block;
+         }
+      }
+   }
 
    return data;
 }
@@ -1695,13 +1711,26 @@ string peer_account_lock( const string& blockchain, const string& password, bool
       if( g_blockchain_passwords.count( blockchain ) )
       {
          if( check_only )
-            retval = check_account( blockchain, g_blockchain_passwords[ blockchain ] );
+         {
+            vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
+
+            for( size_t i = 0; i < passwords.size( ); i++ )
+            {
+               if( !retval.empty( ) )
+                  retval += '\n';
+
+               retval += check_account( blockchain, passwords[ i ] );
+            }
+         }
          else
          {
             // NOTE: For added security overwrite the password characters before removing
-            // the string from the container.
-            for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].length( ); i++ )
-               g_blockchain_passwords[ blockchain ][ i ] = '\0';
+            // the blockchain entry from the container.
+            for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].size( ); i++ )
+            {
+               for( size_t j = 0; j < g_blockchain_passwords[ blockchain ][ i ].length( ); j++ )
+                  g_blockchain_passwords[ blockchain ][ i ][ j ] = '\0';
+            }
 
             g_blockchain_passwords.erase( blockchain );
          }
@@ -1712,7 +1741,27 @@ string peer_account_lock( const string& blockchain, const string& password, bool
       retval = check_account( blockchain, password );
 
       if( !check_only )
-         g_blockchain_passwords[ blockchain ] = password;
+      {
+         vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
+
+         if( passwords.empty( ) )
+            g_blockchain_passwords[ blockchain ].push_back( password );
+         else
+         {
+            bool found = false;
+            for( size_t i = 0; i < passwords.size( ); i++ )
+            {
+               if( passwords[ i ] == password )
+               {
+                  found = true;
+                  break;
+               }
+            }
+
+            if( !found )
+               g_blockchain_passwords[ blockchain ].push_back( password );
+         }
+      }
    }
 
    return retval;
@@ -1740,13 +1789,25 @@ void create_blockchain_transaction(
    string account = remaining.substr( 0, pos );
    remaining.erase( 0, pos );
 
-   if( check_account( blockchain, g_blockchain_passwords[ blockchain ] ) != account )
+   string password;
+   vector< string >& passwords = g_blockchain_passwords[ blockchain ];
+
+   for( size_t i = 0; i < passwords.size( ); i++ )
+   {
+      if( check_account( blockchain, g_blockchain_passwords[ blockchain ][ i ] ) == account )
+      {
+         password = g_blockchain_passwords[ blockchain ][ i ];
+         break;
+      }
+   }
+
+   if( password.empty( ) )
       throw runtime_error( "invalid account for blockchain transaction" );
 
    string tx_hash;
 
    string tx_data( construct_new_transaction( blockchain,
-    g_blockchain_passwords[ blockchain ], account, application, cmd + remaining, true, &tx_hash ) );
+    password, account, application, cmd + remaining, true, &tx_hash ) );
 
    vector< pair< string, string > > extras;
 
