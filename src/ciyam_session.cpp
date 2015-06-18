@@ -1531,10 +1531,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_peer_account_lock )
       {
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_blockchain ) );
-         bool check_only( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_check ) );
+         bool release( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_release ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_password ) );
 
-         response = peer_account_lock( blockchain, password, check_only );
+         response = use_peer_account( blockchain, password, release );
       }
       else if( command == c_cmd_ciyam_session_peer_transactions )
       {
