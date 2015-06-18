@@ -1728,17 +1728,7 @@ string use_peer_account( const string& blockchain, const string& password, bool 
             }
          }
          else
-         {
-            // NOTE: For added security overwrite the password characters before removing
-            // the blockchain entry from the container.
-            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-            {
-               for( size_t j = 0; j < i->length( ); j++ )
-                  ( *i )[ j ] = '\0';
-            }
-
             g_blockchain_passwords.erase( blockchain );
-         }
       }
    }
    else
@@ -1746,21 +1736,7 @@ string use_peer_account( const string& blockchain, const string& password, bool 
       if( release )
       {
          if( g_blockchain_passwords.count( blockchain ) )
-         {
-            set< string >& passwords( g_blockchain_passwords[ blockchain ] );
-
-            set< string >::iterator i = passwords.find( password );
-
-            // NOTE: For added security overwrite the password characters before removing
-            // the password from the container.
-            if( i != passwords.end( ) )
-            {
-               for( size_t j = 0; j < i->length( ); j++ )
-                  ( *i )[ j ] = '\0';
-
-               passwords.erase( i );
-            }
-         }
+            g_blockchain_passwords[ blockchain ].erase( password );
       }
       else
       {
