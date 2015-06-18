@@ -86,7 +86,7 @@ enum peer_trust_level
    e_peer_trust_level_normal
 };
 
-map< string, vector< string > > g_blockchain_passwords;
+map< string, set< string > > g_blockchain_passwords;
 
 set< string > g_good_peers;
 map< string, deque< string > > g_peers_to_retry;
@@ -185,20 +185,20 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
 
    string data;
 
-   vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
+   set< string >& passwords( g_blockchain_passwords[ blockchain ] );
 
    if( !passwords.empty( ) )
    {
       string next_data;
       new_block_info next_block;
 
-      for( size_t i = 0; i < passwords.size( ); i++ )
+      for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
       {
-         string next_password( passwords[ i ] );
+         string next_password( *i );
 
          next_data = construct_new_block( blockchain, next_password, &next_block );
 
-         if( i == 0 || next_block.weight < new_block.weight )
+         if( i == passwords.begin( ) || next_block.weight < new_block.weight )
          {
             data = next_data;
             new_block = next_block;
@@ -1700,7 +1700,7 @@ void peer_listener::on_start( )
    delete this;
 }
 
-string peer_account_lock( const string& blockchain, const string& password, bool check_only )
+string use_peer_account( const string& blockchain, const string& password, bool release )
 {
    guard g( g_mutex );
 
@@ -1710,26 +1710,31 @@ string peer_account_lock( const string& blockchain, const string& password, bool
    {
       if( g_blockchain_passwords.count( blockchain ) )
       {
-         if( check_only )
-         {
-            vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
+         set< string >& passwords( g_blockchain_passwords[ blockchain ] );
 
-            for( size_t i = 0; i < passwords.size( ); i++ )
+         if( !release )
+         {
+            set< string > account_ids;
+
+            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
+               account_ids.insert( check_account( blockchain, *i ) );
+
+            for( set< string >::iterator i = account_ids.begin( ); i != account_ids.end( ); ++i )
             {
                if( !retval.empty( ) )
                   retval += '\n';
 
-               retval += check_account( blockchain, passwords[ i ] );
+               retval += *i;
             }
          }
          else
          {
             // NOTE: For added security overwrite the password characters before removing
             // the blockchain entry from the container.
-            for( size_t i = 0; i < g_blockchain_passwords[ blockchain ].size( ); i++ )
+            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
             {
-               for( size_t j = 0; j < g_blockchain_passwords[ blockchain ][ i ].length( ); j++ )
-                  g_blockchain_passwords[ blockchain ][ i ][ j ] = '\0';
+               for( size_t j = 0; j < i->length( ); j++ )
+                  ( *i )[ j ] = '\0';
             }
 
             g_blockchain_passwords.erase( blockchain );
@@ -1738,29 +1743,29 @@ string peer_account_lock( const string& blockchain, const string& password, bool
    }
    else
    {
-      retval = check_account( blockchain, password );
-
-      if( !check_only )
+      if( release )
       {
-         vector< string >& passwords( g_blockchain_passwords[ blockchain ] );
-
-         if( passwords.empty( ) )
-            g_blockchain_passwords[ blockchain ].push_back( password );
-         else
+         if( g_blockchain_passwords.count( blockchain ) )
          {
-            bool found = false;
-            for( size_t i = 0; i < passwords.size( ); i++ )
-            {
-               if( passwords[ i ] == password )
-               {
-                  found = true;
-                  break;
-               }
-            }
+            set< string >& passwords( g_blockchain_passwords[ blockchain ] );
 
-            if( !found )
-               g_blockchain_passwords[ blockchain ].push_back( password );
+            set< string >::iterator i = passwords.find( password );
+
+            // NOTE: For added security overwrite the password characters before removing
+            // the password from the container.
+            if( i != passwords.end( ) )
+            {
+               for( size_t j = 0; j < i->length( ); j++ )
+                  ( *i )[ j ] = '\0';
+
+               passwords.erase( i );
+            }
          }
+      }
+      else
+      {
+         retval = check_account( blockchain, password );
+         g_blockchain_passwords[ blockchain ].insert( password );
       }
    }
 
@@ -1790,13 +1795,13 @@ void create_blockchain_transaction(
    remaining.erase( 0, pos );
 
    string password;
-   vector< string >& passwords = g_blockchain_passwords[ blockchain ];
+   set< string >& passwords = g_blockchain_passwords[ blockchain ];
 
-   for( size_t i = 0; i < passwords.size( ); i++ )
+   for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
    {
-      if( check_account( blockchain, g_blockchain_passwords[ blockchain ][ i ] ) == account )
+      if( check_account( blockchain, *i ) == account )
       {
-         password = g_blockchain_passwords[ blockchain ][ i ];
+         password = *i;
          break;
       }
    }

@@ -61,8 +61,8 @@ class peer_listener : public thread
    std::string blockchain;
 };
 
-std::string peer_account_lock(
- const std::string& blockchain, const std::string& password, bool check_only = false );
+std::string use_peer_account(
+ const std::string& blockchain, const std::string& password, bool release = false );
 
 void create_blockchain_transaction( const std::string& blockchain,
  const std::string& application, const std::string& log_command );
