@@ -10203,30 +10203,6 @@ void append_transaction_for_blockchain_application(
    outf.flush( );
 }
 
-void append_height_for_blockchain_application( const string& application, uint64_t height )
-{
-   guard g( g_mutex );
-
-   string filename( application + ".undo.sql" );
-
-   if( !file_exists( filename ) )
-      throw runtime_error( "application sql undo file '" + filename + "' was not found" );
-
-   ofstream outf( filename.c_str( ), ios::out | ios::app );
-   if( !outf )
-      throw runtime_error( "unable to open '" + filename + "' for append" );
-
-   string block_marker( c_block_prefix );
-   block_marker += ' ' + to_string( height );
-
-   outf << '#' << block_marker << '\n';
-
-   outf.flush( );
-
-   if( !outf.good( ) )
-      throw runtime_error( "*** unexpected error occurred appending block height for blockchain ***" );
-}
-
 transaction::transaction( bool is_not_dummy )
  :
  is_dummy( !is_not_dummy ),

@@ -3920,11 +3920,9 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
 
             string account( tinfo.account_id );
             string::size_type pos = account.find( ".a" );
+
             if( pos != string::npos )
                account.erase( 0, pos + 2 );
-
-            if( !app_log_lines.count( tinfo.application ) )
-               append_height_for_blockchain_application( tinfo.application, block_height );
 
             for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
             {

@@ -4246,11 +4246,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
 #ifndef IS_TRADITIONAL_PLATFORM
                   if( name != "Meta" )
-                  {
-                     new_logf << "[2]" << ";block 0\n";
-
-                     set_session_variable( get_special_var_name( e_special_var_block_height ), "0" );
-                  }
+                     storage_comment( "block 0" );
 #endif
 
                   session_skip_fk_fetches( old_skip_fetches );

@@ -312,7 +312,7 @@ struct CIYAM_BASE_DECL_SPEC system_variable_lock
    system_variable_lock( const std::string& name );
    ~system_variable_lock( );
 
-   const std::string& name;
+   std::string name;
 };
 
 std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name );
@@ -626,8 +626,6 @@ void CIYAM_BASE_DECL_SPEC transaction_log_command( const std::string& log_comman
 
 void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
  const std::string& application, const std::string& transaction_hash );
-
-void CIYAM_BASE_DECL_SPEC append_height_for_blockchain_application( const std::string& application, uint64_t height );
 
 class CIYAM_BASE_DECL_SPEC transaction
 {
