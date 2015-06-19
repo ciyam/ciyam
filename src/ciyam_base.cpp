@@ -229,6 +229,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_in_block_txs_script = "@in_block_txs_script";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
@@ -5803,6 +5804,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_attached_file_path );
       break;
 
+      case e_special_var_in_block_txs_script:
+      s = string( c_special_variable_in_block_txs_script );
+      break;
+
       case e_special_var_blockchain_info_hash:
       s = string( c_special_variable_blockchain_info_hash );
       break;
@@ -6861,7 +6866,7 @@ void storage_process_undo( uint64_t new_height )
 
       deque< string > undo_statements;
 
-      string block_marker( "#block " );
+      string block_marker( "#" + string( c_block_prefix ) + " " );
 
       string next;
       bool found_rewind_point = false;
@@ -6911,9 +6916,10 @@ void storage_process_undo( uint64_t new_height )
       if( !outf )
          throw runtime_error( "unable to open '" + new_log_name + "' for output" );
 
+      string block_marker( ";" + string( c_block_prefix ) + " " );
+
       string next;
       bool finished = false;
-      string block_marker( ";block " );
       while( getline( inpf, next ) )
       {
          string::size_type pos = next.find( ']' );

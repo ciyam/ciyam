@@ -3964,7 +3964,8 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          // NOTE: If any previous local txs have not been processed then issue them again.
          if( !new_local_txs.empty( ) )
          {
-            outf << ".session_variable @blockchain " << blockchain << '\n';
+            outf << ".session_variable " <<
+             get_special_var_name( e_special_var_blockchain ) << " " << blockchain << '\n';
 
             for( size_t j = 0; j < new_local_txs.size( ); j++ )
             {
