@@ -2419,10 +2419,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 #ifndef IS_TRADITIONAL_PLATFORM
                auto_ptr< temporary_session_variable > ap_tmp_bh;
                auto_ptr< system_variable_lock > ap_blockchain_lock;
-
                string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+               bool in_blocks_txs_script =
+                !get_session_variable( get_special_var_name( e_special_var_in_block_txs_script ) ).empty( );
+
+               if( !blockchain.empty( ) && !in_blocks_txs_script && !storage_locked_for_admin( ) )
                   ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
@@ -2700,7 +2702,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                auto_ptr< system_variable_lock > ap_blockchain_lock;
                string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+               bool in_blocks_txs_script =
+                !get_session_variable( get_special_var_name( e_special_var_in_block_txs_script ) ).empty( );
+
+               if( !blockchain.empty( ) && !in_blocks_txs_script && !storage_locked_for_admin( ) )
                   ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
@@ -2972,7 +2977,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                auto_ptr< system_variable_lock > ap_blockchain_lock;
                string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+               bool in_blocks_txs_script =
+                !get_session_variable( get_special_var_name( e_special_var_in_block_txs_script ) ).empty( );
+
+               if( !blockchain.empty( ) && !in_blocks_txs_script && !storage_locked_for_admin( ) )
                   ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
@@ -3212,7 +3220,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                auto_ptr< system_variable_lock > ap_blockchain_lock;
                string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+               bool in_blocks_txs_script =
+                !get_session_variable( get_special_var_name( e_special_var_in_block_txs_script ) ).empty( );
+
+               if( !blockchain.empty( ) && !in_blocks_txs_script && !storage_locked_for_admin( ) )
                   ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
 #endif
 
