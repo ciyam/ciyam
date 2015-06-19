@@ -6893,6 +6893,13 @@ void storage_process_undo( uint64_t new_height )
       if( !found_rewind_point )
          throw runtime_error( "unexpected rewind point not found" );
 
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to new undo sql ***" );
+
+      inpf.close( );
+      outf.close( );
+
       for( size_t i = 0; i < undo_statements.size( ); i++ )
       {
          TRACE_LOG( TRACE_SQLSTMTS, undo_statements[ i ] );
@@ -6940,6 +6947,13 @@ void storage_process_undo( uint64_t new_height )
 
          outf << next << '\n';
       }
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to new transaction log ***" );
+
+      inpf.close( );
+      outf.close( );
    }
 
    if( file_exists( new_log_name ) )
