@@ -21,11 +21,18 @@
 
 struct new_block_info
 {
+   enum target_range
+   {
+      e_target_range_optimal = 1,
+      e_target_range_sub_optimal = 2,
+      e_target_range_less_optimal = 4
+   };
+
    new_block_info( )
     :
     can_mint( false ),
     weight( 0 ),
-    is_optimal( false ),
+    range( e_target_range_less_optimal ),
     height( 0 ),
     total_weight( 0 ),
     previous_block_weight( 0 )
@@ -35,7 +42,7 @@ struct new_block_info
    bool can_mint;
 
    uint64_t weight;
-   bool is_optimal;
+   target_range range;
 
    uint64_t height;
 

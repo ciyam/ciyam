@@ -1303,6 +1303,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          map< string, uint64_t > account_balances;
          map< string, uint64_t > account_heights;
 
+         set< string > reused_transactions;
          set< string > retagged_transactions;
 
          map< string, string > old_transaction_hashes;
@@ -1345,7 +1346,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                 parallel_block_minted_transaction_hashes.begin( );
                 i != parallel_block_minted_transaction_hashes.end( ); ++i )
                {
-                  if( !new_transaction_hashes.count( *i ) )
+                  if( new_transaction_hashes.count( *i ) )
+                     reused_transactions.insert( *i );
+                  else
                   {
                      retagged_transactions.insert( *i );
 
@@ -1601,7 +1604,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                if( included_transactions.count( transaction_hashes[ i ] )
                 || ( get_transaction_info( tinfo, transaction_hashes[ i ] )
-                && !retagged_transactions.count( transaction_hashes[ i ] ) ) )
+                && !reused_transactions.count( transaction_hashes[ i ] ) ) )
                   throw runtime_error( "transaction " + transaction_hashes[ i ] + " has already been included" );
 
                uint64_t sequence = tinfo.sequence;
@@ -3514,9 +3517,11 @@ string construct_new_block( const string& blockchain,
          p_new_block_info->can_mint = ( balance > cinfo.mint_charge );
 
          if( !cinfo.checkpoint_tolerance || weight < cinfo.checkpoint_tolerance )
-            p_new_block_info->is_optimal = true;
+            p_new_block_info->range = new_block_info::e_target_range_optimal;
+         else if( weight < cinfo.checkpoint_tolerance * 2 )
+            p_new_block_info->range = new_block_info::e_target_range_sub_optimal;
          else
-            p_new_block_info->is_optimal = false;
+            p_new_block_info->range = new_block_info::e_target_range_less_optimal;
       }
    }
 
