@@ -1632,10 +1632,12 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                if( retagged_transactions.count( transaction_hashes[ i ] ) )
                   retagged_transactions.erase( transaction_hashes[ i ] );
-
-               ++non_blob_extras;
-               p_extras->push_back( make_pair(
-                transaction_hashes[ i ], get_hash_tags( transaction_hashes[ i ] ) + "*" ) );
+               else if( !reused_transactions.count( transaction_hashes[ i ] ) )
+               {
+                  ++non_blob_extras;
+                  p_extras->push_back( make_pair(
+                   transaction_hashes[ i ], get_hash_tags( transaction_hashes[ i ] ) + "*" ) );
+               }    
             }
          }
 
