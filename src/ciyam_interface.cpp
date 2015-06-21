@@ -1390,8 +1390,8 @@ void request_handler::process_request( )
                            username = password;
                         else
                         {
-                           if( !simple_command( *p_session_info, "peer_account_lock "
-                            + get_storage_info( ).blockchain + " " + password, &username ) )
+                           if( !simple_command( *p_session_info, "peer_account_mint "
+                            + get_storage_info( ).blockchain + " \"" + escaped( password, "\"" ) + "\"", &username ) )
                               throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
                            // NOTE: The "admin" user is the one whose account id matches the blockchain id.
