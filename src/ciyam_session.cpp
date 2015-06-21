@@ -1528,13 +1528,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = construct_account_info( blockchain, password, exponent, account );
       }
-      else if( command == c_cmd_ciyam_session_peer_account_lock )
+      else if( command == c_cmd_ciyam_session_peer_account_mint )
       {
-         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_blockchain ) );
-         bool release( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_release ) );
-         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_lock_password ) );
+         string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_mint_blockchain ) );
+         bool stop( has_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_mint_stop ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_mint_password ) );
 
-         response = use_peer_account( blockchain, password, release );
+         response = use_peer_account( blockchain, password, stop );
       }
       else if( command == c_cmd_ciyam_session_peer_transactions )
       {
