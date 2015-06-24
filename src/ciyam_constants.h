@@ -6,6 +6,8 @@
 #ifndef CIYAM_CONSTANTS_H
 #  define CIYAM_CONSTANTS_H
 
+const char* const c_block_prefix = "block";
+
 const size_t c_max_file_transfer_size = 102400;
 
 const size_t c_file_transfer_line_timeout = 5000;

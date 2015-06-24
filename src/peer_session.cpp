@@ -150,9 +150,11 @@ string get_peer_to_retry( const string& blockchain )
    return retval;
 }
 
-void process_txs( const string& blockchain )
+string process_txs( const string& blockchain )
 {
    guard g( g_mutex );
+
+   string hash;
 
    system_variable_lock blockchain_lock( blockchain );
 
@@ -176,6 +178,10 @@ void process_txs( const string& blockchain )
          file_remove( applications[ i ] + ".txs.cin" );
       }
    }
+
+   hash = construct_blockchain_info_file( blockchain );
+
+   return hash;
 }
 
 string mint_new_block( const string& blockchain, new_block_info& new_block )
@@ -219,10 +225,7 @@ string store_new_block( const string& blockchain, const string& data )
    verify_core_file( data, true, &extras );
    create_raw_file_with_extras( "", extras );
 
-   process_txs( blockchain );
-   hash = construct_blockchain_info_file( blockchain );
-
-   return hash;
+   return process_txs( blockchain );
 }
 
 void process_file( const string& hash, const string& blockchain )
@@ -266,7 +269,6 @@ void process_file( const string& hash, const string& blockchain )
                create_raw_file_with_extras( "", extras );
 
                process_txs( blockchain );
-               construct_blockchain_info_file( blockchain );
             }
             catch( ... )
             {

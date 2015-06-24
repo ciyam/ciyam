@@ -7,7 +7,7 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 if '%1' == '' goto usage
 
 if '%2' == '' goto skip
-echo %date% %time% [%2] >>%1.log
+echo %date% %time% [%2]>>%1.log
 
 :skip
 ciyam_client -echo -quiet -no_prompt < %1 >>%1.log

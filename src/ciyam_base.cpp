@@ -53,7 +53,6 @@
 #include "crypt_stream.h"
 #include "ciyam_strings.h"
 #include "ciyam_session.h"
-#include "ciyam_constants.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
 #include "module_interface.h"
@@ -64,6 +63,8 @@ using namespace std;
 
 namespace
 {
+
+#include "ciyam_constants.h"
 
 const string c_nul_key( 1, '\0' );
 
@@ -164,8 +165,6 @@ const char* const c_expand_store = "%store%";
 
 const char* const c_uid_anon = "anon";
 const char* const c_uid_unknown = "<unknown>";
-
-const char* const c_block_prefix = "block";
 
 const char* const c_dead_keys_ext = ".dead_keys.lst";
 
@@ -6293,25 +6292,33 @@ void storage_comment( const string& comment )
       storage_handler& handler( *gtp_session->p_storage_handler );
       storable_identity& identity( *handler.get_root( ).o_identity );
 
-      append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
+      // NOTE: During a "restore" the comment does not need to be logged unless it follows initial data
+      // records (as others will be appended to the new log file by the "storage restore" code itself).
+      if( !storage_locked_for_admin( ) || identity.next_id == 2 )
+         append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
 
 #ifndef IS_TRADITIONAL_PLATFORM
       string block_marker( string( c_block_prefix ) + ' ' );
 
       if( comment.find( block_marker ) == 0 )
       {
-         string undo_sql_filename( handler.get_name( ) );
-         undo_sql_filename += ".undo.sql";
+         if( storage_locked_for_admin( ) && identity.next_id + 1 >= 5 )
+            gtp_session->sql_undo_statements.push_back( "#" + comment );
+         else
+         {
+            string undo_sql_filename( handler.get_name( ) );
+            undo_sql_filename += ".undo.sql";
 
-         ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
-         if( !outf )
-            throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
+            ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+            if( !outf )
+               throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
-         outf << "#" << comment << '\n';
+            outf << "#" << comment << '\n';
 
-         outf.flush( );
-         if( !outf.good( ) )
-            throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+            outf.flush( );
+            if( !outf.good( ) )
+               throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+         }
       }
 #endif
    }
@@ -6848,10 +6855,7 @@ void storage_process_undo( uint64_t new_height )
       if( !file_exists( local_txs ) )
          okay = false;
       else
-      {
-         --new_height;
          local_only = true;
-      }
    }
 
    if( okay && gtp_session->ap_db.get( ) )
@@ -6879,7 +6883,7 @@ void storage_process_undo( uint64_t new_height )
             {
                uint64_t height = from_string< uint64_t >( next.substr( pos + block_marker.size( ) ) );
 
-               if( height > new_height )
+               if( height >= new_height )
                   found_rewind_point = true;
             }
          }
@@ -6934,14 +6938,14 @@ void storage_process_undo( uint64_t new_height )
          {
             uint64_t block = from_string< uint64_t >( next.substr( pos + block_marker.length( ) ) );
 
-            if( block > new_height )
+            if( block >= new_height )
                finished = true;
          }
 
          if( finished )
          {
             if( pos != string::npos && !local_only )
-               outf << next.substr( 0, pos + 1 ) << ";rewound\n";
+               outf << next.substr( 0, pos + 1 ) << ";rewind " << to_string( new_height ) << "\n";
             break;
          }
 
@@ -10786,17 +10790,6 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          executing_sql = false;
 
 #ifndef IS_TRADITIONAL_PLATFORM
-         if( storage_locked_for_admin( ) )
-         {
-            string block_height( get_session_variable( c_special_variable_block_height ) );
-
-            if( !block_height.empty( ) )
-            {
-               set_session_variable( c_special_variable_block_height, "" );
-               gtp_session->sql_undo_statements.push_back( "#" + string( c_block_prefix ) + ' ' +  block_height );
-            }
-         }
-
          gtp_session->sql_undo_statements.insert(
           gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
 #endif

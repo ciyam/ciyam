@@ -1396,7 +1396,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   uint64_t total_reward = cinfo.mint_reward
                    + ( cinfo.transaction_reward * old_binfo.transaction_hashes.size( ) );
 
-                  need_to_rewind_storage = ( old_binfo.transaction_hashes.size( ) > 0 );
+                  if( !need_to_rewind_storage )
+                     need_to_rewind_storage = ( old_binfo.transaction_hashes.size( ) > 0 );
 
                   // NOTE: Remember the transaction hashes (and minter) that were part of the previous best chain.
                   for( size_t i = 0; i < old_binfo.transaction_hashes.size( ); i++ )
@@ -1494,10 +1495,10 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      p_extras->push_back( make_pair( i->first, tx_tag ) );
                   }
                }
-
-               if( need_to_rewind_storage )
-                  set_session_variable( get_special_var_name( e_special_var_rewind_height ), to_string( parallel_block_height ) );
             }
+
+            if( need_to_rewind_storage )
+               set_session_variable( get_special_var_name( e_special_var_rewind_height ), to_string( parallel_block_height ) );
          }
 
          string minter_account( "c" + chain + ".a" + account );
@@ -3029,11 +3030,22 @@ void verify_blockchain_info( const string& content,
          blockchain_info_data += "\n" + i->second;
 
       if( p_extras )
-         p_extras->push_back( make_pair( blockchain_info_data, "c" + chain_id + ".info" ) );
+      {
+         string existing_hash;
+         string chain_info_tag( "c" + chain_id + ".info" );
 
-      // NOTE: If there was a previous blockchain info blob then it will be removed.
-      if( p_extras && has_tag( "c" + chain_id + ".info" ) )
-         p_extras->push_back( make_pair( "", tag_file_hash( "c" + chain_id + ".info" ) ) );
+         if( has_tag( chain_info_tag ) )
+            existing_hash = tag_file_hash( chain_info_tag );
+
+         if( existing_hash != sha256( blockchain_info_data ).get_digest_as_string( ) )
+         {
+            p_extras->push_back( make_pair( blockchain_info_data, "c" + chain_id + ".info" ) );
+
+            // NOTE: If there was a previous blockchain info blob then it will be removed.
+            if( !existing_hash.empty( ) )
+               p_extras->push_back( make_pair( "", existing_hash ) );
+         }
+      }
    }
 }
 
@@ -3851,27 +3863,19 @@ string construct_account_info(
    }    
 }
 
-void perform_blockchain_rewind( const string& blockchain, uint64_t block_height )
+void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 {
    guard g( g_mutex );
 
    if( block_height != c_unconfirmed_revision )
    {
-      string data( c_file_type_str_core_blob );
+      chain_info cinfo;
+      get_chain_info( cinfo, blockchain );
 
-      data += string( c_file_type_core_rewind_object ) + ":c" + blockchain + ".b" + to_string( block_height );
-
-      vector< pair< string, string > > extras;
-
-      verify_core_file( data, true, &extras );
-
-      // NOTE: There is no need to create a raw file for the info "request"
-      // so only the extras are passed for raw file creation.
-      create_raw_file_with_extras( "", extras );
-
-      construct_blockchain_info_file( blockchain );
+      if( block_height <= cinfo.checkpoint_start_height )
+         throw runtime_error( "invalid attempt to rewind through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
    }
-
+   
    storage_process_undo( block_height );
 }
 
