@@ -3872,7 +3872,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          blockchain.erase( 0, pos + 1 );
 
-         perform_blockchain_rewind( blockchain, block_height );
+         perform_storage_rewind( blockchain, block_height );
       }
       else if( command == c_cmd_ciyam_session_storage_comment )
       {
@@ -4274,24 +4274,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         next_tran_id = next_transaction_id( );
                   }
 
+                  size_t new_tran_id( next_tran_id );
+
 #ifndef IS_TRADITIONAL_PLATFORM
-                  string block_comment_prefix( ";block " );
+                  string block_comment_prefix( ';' + string( c_block_prefix ) + ' ' );
 
                   if( tran_info.find( block_comment_prefix ) == 0 )
-                  {
-                     set_session_variable(
-                      get_special_var_name( e_special_var_block_height ),
-                      tran_info.substr( block_comment_prefix.length( ) ) );
-                  }    
+                     storage_comment( tran_info.substr( 1 ) );
 #endif
                   if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= next_tran_id ) )
                   {
-                     next_tran_id = set_transaction_id( tran_id );
+                     new_tran_id = next_tran_id = set_transaction_id( tran_id );
                      handler.execute_command( tran_info );
                   }
+                  else if( tran_info[ 0 ] == ';' )
+                     new_tran_id = tran_id;
 
                   if( is_new )
-                     new_logf << '[' << next_tran_id << ']' << tran_info << '\n';
+                     new_logf << '[' << new_tran_id << ']' << tran_info << '\n';
 
                   if( !socket_handler.get_restore_error( ).empty( ) )
                      throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
