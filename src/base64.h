@@ -23,6 +23,8 @@ class base64
       return encode( ( const unsigned char* )input.c_str( ), input.length( ) );
    }
 
+   static void validate( const std::string& input, bool* p_rc = 0 );
+
    static size_t decode_size( const std::string& input );
 
    static size_t decode( const std::string& input, unsigned char* p_data, size_t length );
