@@ -86,6 +86,43 @@ string base64::encode( const unsigned char* p_dat, size_t length )
    return str;
 }
 
+void base64::validate( const string& input, bool* p_rc )
+{
+   bool invalid = false;
+
+   if( !input.length( ) || input.length( ) % 4 != 0 )
+      invalid = true;
+   else
+   {
+      size_t i;
+      string table( g_b64_table );
+
+      for( i = 0; i < input.length( ); i++ )
+      {
+         if( table.find( input[ i ] ) == string::npos )
+            break;
+      }
+
+      if( i < input.length( ) - 2 )
+         invalid = true;
+      else if( i < input.length( ) )
+      {
+         if( input[ i ] != '=' )
+            invalid = true;
+         else if( i == input.length( ) - 2 )
+         {
+            if( input[ i + 1 ] != '=' )
+               invalid = true;
+         }
+      }
+   }
+
+   if( p_rc )
+      *p_rc = invalid;
+   else if( invalid )
+      throw runtime_error( "invalid base64 value: " + input );
+}
+
 size_t base64::decode_size( const string& input )
 {
    string::size_type l = ( input.length( ) / 4 ) * 3;

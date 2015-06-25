@@ -121,6 +121,8 @@ struct account_info
 
    bool is_banned;
 
+   string msg_key;
+
    string block_hash;
    string block_lock;
 
@@ -358,7 +360,13 @@ string get_account_info( account_info& info, const string& account_id )
    if( account_items.size( ) < 3 )
       throw runtime_error( "unexpected invalid account_data '" + account_data + "'" );
 
-   info.exp = from_string< unsigned int >( account_items[ 0 ] );
+   pos = account_items[ 0 ].find( ':' );
+   if( pos == string::npos )
+      throw runtime_error( "missing account message key in " + account_id );
+
+   info.exp = from_string< unsigned int >( account_items[ 0 ].substr( 0, pos ) );
+
+   info.msg_key = account_items[ 0 ].substr( pos + 1 );
 
    info.block_hash = account_items[ 1 ];
    info.block_lock = account_items[ 2 ];
@@ -390,7 +398,7 @@ string get_account_data( const account_info& info,
 {
    string extras( c_file_type_core_account_object );
 
-   extras += ':' + to_string( info.exp );
+   extras += ':' + to_string( info.exp ) + ':' + info.msg_key;
 
    extras += '\n' + ( account_hash.empty( ) ? info.block_hash : account_hash );
    extras += '\n' + ( account_lock.empty( ) ? info.block_lock : account_lock );
@@ -795,10 +803,13 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             if( next_attribute.find( c_file_type_core_block_header_account_hash_prefix ) != 0 )
                throw runtime_error( "unexpected missing account hash in block header '" + header + "'" );
 
-            has_account_hash = true;
+            string value( next_attribute.substr(
+             string( c_file_type_core_block_header_account_hash_prefix ).length( ) ) );
 
-            account_hash = next_attribute.substr(
-             string( c_file_type_core_block_header_account_hash_prefix ).length( ) );
+            base64::validate( value );
+
+            has_account_hash = true;
+            account_hash = value;
          }
          else if( block_height && !has_account_lock )
          {
@@ -1051,10 +1062,11 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          bool has_exp = false;
          bool has_hash = false;
          bool has_lock = false;
+         bool has_msg_key = false;
          bool has_tx_hash = false;
          bool has_tx_lock = false;
 
-         string id, exp, hash, lock, tx_hash, tx_lock;
+         string id, exp, hash, lock, msg_key, tx_hash, tx_lock;
 
          for( size_t j = 0; j < attributes.size( ); j++ )
          {
@@ -1081,9 +1093,13 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_exp_prefix ) )
                   throw runtime_error( "invalid account exp attribute '" + next_attribute + "'" );
 
-               has_exp = true;
+               next_attribute.erase( 0, len );
 
-               exp = next_attribute.substr( len );
+               if( next_attribute.size( ) != 1 || next_attribute[ 0 ] < '1' || next_attribute[ 0 ] > '9' )
+                  throw runtime_error( "invalid account exp value: " + next_attribute );
+
+               has_exp = true;
+               exp = next_attribute;
             }
             else if( !has_hash )
             {
@@ -1092,9 +1108,12 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_hash_prefix ) )
                   throw runtime_error( "invalid account hash attribute '" + next_attribute + "'" );
 
-               has_hash = true;
+               next_attribute.erase( 0, len );
 
-               hash = next_attribute.substr( len );
+               base64::validate( next_attribute );
+
+               has_hash = true;
+               hash = next_attribute;
             }
             else if( !has_lock )
             {
@@ -1114,6 +1133,21 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                has_lock = true;
                lock = next_attribute;
             }
+            else if( !has_msg_key )
+            {
+               size_t len = string( c_file_type_core_block_detail_account_msg_key_prefix ).length( );
+
+               if( next_attribute.length( ) < len + 1
+                || next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_msg_key_prefix ) )
+                  throw runtime_error( "invalid account msg key attribute '" + next_attribute + "'" );
+
+               next_attribute.erase( 0, len );
+
+               base64::validate( next_attribute );
+
+               has_msg_key = true;
+               msg_key = next_attribute;
+            }
             else if( !has_tx_hash )
             {
                size_t len = string( c_file_type_core_block_detail_account_tx_hash_prefix ).length( );
@@ -1121,9 +1155,12 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_account_tx_hash_prefix ) )
                   throw runtime_error( "invalid account tx hash attribute '" + next_attribute + "'" );
 
-               has_tx_hash = true;
+               next_attribute.erase( 0, len );
 
-               tx_hash = next_attribute.substr( len );
+               base64::validate( next_attribute );
+
+               has_tx_hash = true;
+               tx_hash = next_attribute;
             }
             else if( !has_tx_lock )
             {
@@ -1157,7 +1194,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                string extra( c_file_type_str_core_blob );
                extra += string( c_file_type_core_account_object ) + ':';
 
-               extra += exp + '\n' + hash + '\n' + lock;
+               extra += exp + ':' + msg_key + '\n' + hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -1174,7 +1211,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                string extra( c_file_type_str_core_blob );
                extra += string( c_file_type_core_account_object ) + ':';
 
-               extra += exp + '\n' + hash + '\n' + lock;
+               extra += exp + ':' + msg_key + '\n' + hash + '\n' + lock;
 
                if( !tx_hash.empty( ) )
                   extra += '\n' + tx_hash + '\n' + tx_lock;
@@ -3580,6 +3617,7 @@ string construct_new_block( const string& blockchain,
        + "," + string( c_file_type_core_block_detail_account_exp_prefix ) + to_string( c_default_exp )
        + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + key_info.block_hash
        + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + key_info.block_lock
+       + "," + string( c_file_type_core_block_detail_account_msg_key_prefix ) + key_info.msg_pubkey
        + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }
@@ -3736,6 +3774,14 @@ string construct_account_info(
    else if( account_id != get_account_id_from_password( password ) )
       throw runtime_error( "invalid password for account '" + account + "'" );
 
+   sha256 message_hash( password + "." + password );
+   key_info.msg_secret = get_hash_secret( message_hash );
+
+#ifdef SSL_SUPPORT
+   private_key message_privkey( key_info.msg_secret );
+   key_info.msg_pubkey = message_privkey.get_public( true, true );
+#endif
+
    sha256 block_hash( account_id + password );
    sha256 trans_hash( password + account_id );
 
@@ -3858,6 +3904,7 @@ string construct_account_info(
        + "," + string( c_file_type_core_block_detail_account_exp_prefix ) + to_string( exponent )
        + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + key_info.block_hash
        + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + key_info.block_lock
+       + "," + string( c_file_type_core_block_detail_account_msg_key_prefix ) + key_info.msg_pubkey
        + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }    

@@ -72,6 +72,9 @@ struct transactions_info
 
 struct account_key_info
 {
+   std::string msg_pubkey;
+   std::string msg_secret;
+
    std::string block_hash;
    std::string block_lock;
    std::string block_secret;
