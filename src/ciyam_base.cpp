@@ -3061,6 +3061,8 @@ void append_undo_sql_statements( storage_handler& handler )
       outf.flush( );
       if( !outf.good( ) )
          throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+
+      outf.close( );
    }
 }
 #endif
@@ -6919,6 +6921,9 @@ void storage_process_undo( uint64_t new_height )
       remove_file( undo_sql );
       rename_file( new_undo_sql, undo_sql );
 
+      if( handler.get_log_file( ).is_open( ) )
+         handler.get_log_file( ).close( );
+
       ifstream inpf( log_name.c_str( ) );
       if( !inpf )
          throw runtime_error( "unable to open '" + log_name + "' for input" );
@@ -6962,8 +6967,32 @@ void storage_process_undo( uint64_t new_height )
 
    if( file_exists( new_log_name ) )
    {
+#ifdef _WIN32
+      // NOTE: Due to file locking inheritence in Win32 if this function is called from a script
+      // then it may not be possible to delete or rename the application log file so instead the
+      // file is truncated then the new content copied.
+      ofstream outf( log_name.c_str( ), ios::out | ios::trunc );
+      if( !outf )
+         throw runtime_error( "unable to open '" + log_name + "' for output" );
+
+      ifstream inpf( new_log_name.c_str( ) );
+
+      string next;
+      while( getline( inpf, next ) )
+         outf << next << '\n';
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "*** unexpected error occurred writing to application log ***" );
+
+      inpf.close( );
+      outf.close( );
+
+      remove_file( new_log_name );
+#else
       remove_file( log_name );
       rename_file( new_log_name, log_name );
+#endif
    }
 
    if( file_exists( local_txs ) )

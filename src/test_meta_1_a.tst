@@ -51,8 +51,9 @@ Not_Is_In_Restore,M001C101F116
 Permissions,M001C101F117
 Is_Self_Or_Admin,M001C101F118
 Key,M001C101F119
-No_Email,M001C101F120
-Dummy_Self,M001C101F121
+Message_Key,M001C101F120
+No_Email,M001C101F121
+Dummy_Self,M001C101F122
 
 > perform_fetch Meta Enum "Id " Name,Id -min
 primitive,E000

@@ -85,6 +85,8 @@ enum peer_trust_level
    e_peer_trust_level_normal
 };
 
+set< string > g_blockchain_release;
+
 map< string, set< string > > g_blockchain_passwords;
 
 set< string > g_good_peers;
@@ -145,6 +147,21 @@ string get_peer_to_retry( const string& blockchain )
          break;
       else
          retval.erase( );
+   }
+
+   return retval;
+}
+
+bool was_released( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   if( g_blockchain_release.count( blockchain ) )
+   {
+      retval = true;
+      g_blockchain_release.erase( blockchain );
    }
 
    return retval;
@@ -1260,9 +1277,11 @@ string socket_command_processor::get_cmd_and_args( )
       if( !g_server_shutdown && !is_condemned_session( ) )
       {
          // NOTE: If either a better block at the newly minted block's height or a better previous block than
-         // the one it is currently linked to has been processed then will need to mint another new block.
+         // the one it is currently linked to has been processed then will need to mint another new block. If
+         // a minting account was released then also mint another new block.
          if( !new_block_data.empty( )
           && ( has_better_block( blockchain, new_block.height, new_block.weight )
+          || was_released( blockchain )
           || ( new_block.height > 1
           && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
             new_block_data.erase( );
@@ -1729,7 +1748,10 @@ string use_peer_account( const string& blockchain, const string& password, bool 
             }
          }
          else
+         {
+            g_blockchain_release.insert( blockchain );
             g_blockchain_passwords.erase( blockchain );
+         }
       }
    }
    else
@@ -1737,7 +1759,10 @@ string use_peer_account( const string& blockchain, const string& password, bool 
       if( release )
       {
          if( g_blockchain_passwords.count( blockchain ) )
+         {
+            g_blockchain_release.insert( blockchain );
             g_blockchain_passwords[ blockchain ].erase( password );
+         }
       }
       else
       {
