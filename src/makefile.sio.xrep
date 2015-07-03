@@ -140,6 +140,27 @@
     </cms_files>
    </executable>
    <executable/>
+    <name>calendar
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>calendar.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
     <name>check_source
     <gen_ext>
     <threads>false
