@@ -373,6 +373,9 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
 
       outf << c_line << '\n';
    }
+#ifdef  __GNUG__
+   outf << '\n';
+#endif
 }
 
 }
