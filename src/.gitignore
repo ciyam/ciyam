@@ -18,6 +18,7 @@ tmp
 *.exe
 *.exp
 bundle
+calendar
 check_source
 ciyam_client
 ciyam_interface
