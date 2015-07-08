@@ -2768,11 +2768,10 @@ uint64_t Meta_Application::impl::get_state( ) const
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
 
-#ifdef IS_TRADITIONAL_PLATFORM
-   state |= c_modifier_Is_Traditional;
-#else
-   state |= c_modifier_Is_Non_Traditional;
-#endif
+   if( !get_obj( ).get_key( ).empty( ) && get_obj( ).Blockchain( ).empty( ) )
+      state |= c_modifier_Is_Traditional;
+   else
+      state |= c_modifier_Is_Non_Traditional;
    // [<finish get_state>]
 
    return state;
