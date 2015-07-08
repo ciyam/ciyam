@@ -8,8 +8,6 @@
 #ifndef CONFIG_H
 #  define CONFIG_H
 
-`{`@eq`(`$traditional`,`'false`'`)//`}#  define IS_TRADITIONAL_PLATFORM
-
 `{`!`@eq`(`$port`,`'12345`'`)//`}#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
 
 `{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)//`}#  define SSL_SUPPORT

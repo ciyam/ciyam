@@ -331,47 +331,38 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
 
    if( !month_events.empty( ) )
    {
-      outf << '\n' << put_title_in_line_center( c_line, " Events " ) << '\n';
+      outf << '\n' << put_title_in_line_center( c_dline, " Events " ) << '\n';
+
+      udate ud_mon( ud );
+      while( ( weekday )ud_mon != e_weekday_monday )
+         --ud_mon;
 
       bool todays = false;
       for( multimap< udate, pair< string, string > >::iterator
        i = month_events.begin( ); i != month_events.end( ); ++i )
       {
-         if( !todays && i->first == ud )
-         {
-            todays = true;
-            outf << put_title_in_line_center( c_dline, " Todays " ) << '\n';
-         }
-
-         bool was_todays( todays );
-
-         if( todays )
-         {
-            if( i->first > ud )
-            {
-               todays = false;
-               outf << c_dline << '\n';
-            }
-         }
-
          outf << i->first << ": " << i->second.first << '\n';
 
          if( !i->second.second.empty( ) )
          {
-            if( i->first == ud + ( days )1 )
-               outf << " (tommorow) " << i->second.second << '\n';
+            if( i->first == ud )
+               outf << "** Today ** " << i->second.second << '\n';
+            else if( i->first == ud + ( days )1 )
+               outf << "Tommorow... " << i->second.second << '\n';
             else if( i->first == ud - ( days )1 )
-               outf << "(yesterday) " << i->second.second << '\n';
-            else if( i->first > ud && i->first < ud + ( days )7 )
-               outf << "(next week) " << i->second.second << '\n';
-            else if( i->first < ud && i->first > ud - ( days )7 )
-               outf << "(last week) " << i->second.second << '\n';
+               outf << "(Yesterday) " << i->second.second << '\n';
+            else if( i->first < ud_mon + ( days )7 )
+               outf << "(This Week) " << i->second.second << '\n';
+            else if( i->first > ud && i->first < ud_mon + ( days )14 )
+               outf << "(Next Week) " << i->second.second << '\n';
+            else if( i->first < ud && i->first >= ud_mon - ( days )7 )
+               outf << "(Last Week) " << i->second.second << '\n';
             else
                outf << "            " << i->second.second << '\n';
          }
       }
 
-      outf << c_line << '\n';
+      outf << c_dline << '\n';
    }
 #ifdef  __GNUG__
    outf << '\n';

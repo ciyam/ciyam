@@ -588,10 +588,8 @@ bool output_view_form( ostream& os, const string& act,
    if( sess_info.user_id.empty( ) )
       is_no_edit = true;
 
-#ifndef IS_TRADITIONAL_PLATFORM
-   if( mod_info.name != "Meta" && sess_info.user_id == c_guest_user_key )
+   if( is_blockchain_application( ) && sess_info.user_id == c_guest_user_key )
       is_no_edit = true;
-#endif
 
    if( is_printable )
    {

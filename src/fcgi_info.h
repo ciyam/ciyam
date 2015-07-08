@@ -831,6 +831,8 @@ struct list_source : source
 
 storage_info& get_storage_info( );
 
+inline bool is_blockchain_application( ) { return !get_storage_info( ).blockchain.empty( ); }
+
 void read_storage_info( storage_info& info, std::vector< std::string > log_messages );
 
 bool read_module_info( const std::string& name, module_info& info, storage_info& sinfo );

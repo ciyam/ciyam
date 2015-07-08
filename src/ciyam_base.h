@@ -373,7 +373,7 @@ bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 
 ods CIYAM_BASE_DECL_SPEC& storage_instance( );
 
-std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
+std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool append_slot_num = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid );

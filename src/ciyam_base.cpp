@@ -411,9 +411,7 @@ struct session
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
-#ifndef IS_TRADITIONAL_PLATFORM
    vector< string > sql_undo_statements;
-#endif
 
    string async_or_delayed_temp_file;
 
@@ -753,6 +751,8 @@ class storage_handler
 
    storable_root& get_root( ) { return root; }
    const storable_root& get_root( ) const { return root; }
+
+   bool is_using_blockchain( ) const { return root.identity.find( ':' ) != string::npos; }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -1419,12 +1419,11 @@ void perform_storage_op( storage_op op,
 
             ap_handler->get_root( ).set_new( );
             ap_handler->get_root( ).module_directory = directory;
-#ifndef IS_TRADITIONAL_PLATFORM
+
             string blockchain( get_session_variable( c_special_variable_blockchain ) );
 
             if( !blockchain.empty( ) )
                ap_handler->get_root( ).identity += ":" + blockchain;
-#endif
 
             *ap_ods << ap_handler->get_root( );
 
@@ -3033,7 +3032,6 @@ string construct_sql_select(
    return sql_fields_and_table + sql;
 }
 
-#ifndef IS_TRADITIONAL_PLATFORM
 void append_undo_sql_statements( storage_handler& handler )
 {
    if( !gtp_session->sql_undo_statements.empty( ) )
@@ -3065,7 +3063,6 @@ void append_undo_sql_statements( storage_handler& handler )
       outf.close( );
    }
 }
-#endif
 
 void append_transaction_log_command( storage_handler& handler,
  bool log_even_when_locked = false, size_t load_module_id = 0, int32_t use_tx_id = 0 )
@@ -4064,9 +4061,6 @@ void init_globals( )
 {
    guard g( g_mutex );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-   g_sid = "CIYAM";
-#else
    if( !file_exists( c_server_sid_file ) )
    {
       g_sid = upper( uuid( ).as_string( ) );
@@ -4074,7 +4068,6 @@ void init_globals( )
    }
    else
       g_sid = buffer_file( c_server_sid_file );
-#endif
 
    read_server_configuration( );
 
@@ -4560,11 +4553,9 @@ string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool
 
 string totp_secret_key( const string& unique )
 {
-#ifdef IS_TRADITIONAL_PLATFORM
-   return get_totp_secret( unique, sid_hash( ) );
-#else
-   return get_totp_secret( unique, get_session_variable( c_special_variable_crypt_key ) );
-#endif
+   string crypt_key( get_session_variable( c_special_variable_crypt_key ) );
+
+   return get_totp_secret( unique, crypt_key.empty( ) ? sid_hash( ) : crypt_key );
 }
 
 int exec_system( const string& cmd, bool async, bool delay )
@@ -6299,30 +6290,31 @@ void storage_comment( const string& comment )
       if( !storage_locked_for_admin( ) || identity.next_id == 2 )
          append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-      string block_marker( string( c_block_prefix ) + ' ' );
-
-      if( comment.find( block_marker ) == 0 )
+      if( handler.is_using_blockchain( ) )
       {
-         if( storage_locked_for_admin( ) && identity.next_id + 1 >= 5 )
-            gtp_session->sql_undo_statements.push_back( "#" + comment );
-         else
+         string block_marker( string( c_block_prefix ) + ' ' );
+
+         if( comment.find( block_marker ) == 0 )
          {
-            string undo_sql_filename( handler.get_name( ) );
-            undo_sql_filename += ".undo.sql";
+            if( storage_locked_for_admin( ) && identity.next_id + 1 >= 5 )
+               gtp_session->sql_undo_statements.push_back( "#" + comment );
+            else
+            {
+               string undo_sql_filename( handler.get_name( ) );
+               undo_sql_filename += ".undo.sql";
 
-            ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
-            if( !outf )
-               throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
+               ofstream outf( undo_sql_filename.c_str( ), ios::out | ios::app );
+               if( !outf )
+                  throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
-            outf << "#" << comment << '\n';
+               outf << "#" << comment << '\n';
 
-            outf.flush( );
-            if( !outf.good( ) )
-               throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+               outf.flush( );
+               if( !outf.good( ) )
+                  throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
+            }
          }
       }
-#endif
    }
 }
 
@@ -7068,31 +7060,27 @@ ods& storage_instance( )
    return *ods::instance( );
 }
 
-string gen_key( const char* p_suffix )
+string gen_key( const char* p_suffix, bool append_slot_num )
 {
    string key;
 
    if( gtp_session )
    {
-#ifdef IS_TRADITIONAL_PLATFORM
-      date_time dtm( date_time::local( ) );
-#else
       date_time dtm( date_time::standard( ) );
-#endif
 
-#ifdef IS_TRADITIONAL_PLATFORM
-      // NOTE: Automatically generate a key using the session id and current date/time.
-      size_t num( gtp_session->slot );
+      if( !append_slot_num )
+         key = dtm.as_string( );
+      else
+      {
+         size_t num( gtp_session->slot );
 
-      char sss[ ] = "sss";
-      sss[ 0 ] = '0' + ( num / 100 );
-      sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
-      sss[ 2 ] = '0' + ( num % 10 );
+         char sss[ ] = "sss";
+         sss[ 0 ] = '0' + ( num / 100 );
+         sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
+         sss[ 2 ] = '0' + ( num % 10 );
 
-      key = dtm.as_string( ) + string( sss );
-#else
-      key = dtm.as_string( );
-#endif
+         key = dtm.as_string( ) + string( sss );
+      }
 
       if( p_suffix )
          key += string( p_suffix );
@@ -8393,10 +8381,7 @@ string exec_bulk_ops( const string& module,
       module_id = gtp_session->modules_by_name.find( module )->second;
    }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
-   bool is_standard_module_id = ( module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' ) ? false : true;
-#endif
+   bool is_using_blockchain = gtp_session->p_storage_handler->is_using_blockchain( );
 
    string class_id = get_class_id_for_id_or_name( module_id, mclass );
 
@@ -8751,10 +8736,10 @@ string exec_bulk_ops( const string& module,
 
             if( !destroy_record && !found_instance )
             {
-               if( !has_key_field )
-                  key = gen_key( );
-               else
+               if( has_key_field )
                   key = values[ key_field_num ];
+               else
+                  key = gen_key( "", !is_using_blockchain );
 
                op_create_rc rc;
                op_instance_create( handle, "", key, false, &rc );
@@ -8778,10 +8763,8 @@ string exec_bulk_ops( const string& module,
 
             string class_id_to_log( class_id );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-            if( is_standard_module_id && class_id_to_log.find( module_id ) == 0 )
+            if( is_using_blockchain && class_id_to_log.find( module_id ) == 0 )
                class_id_to_log.erase( 0, module_id.length( ) );
-#endif
 
             next_log_line += " " + uid + " " + dtm + " " + module_id + " " + class_id_to_log + " " + key;
 
@@ -8809,17 +8792,21 @@ string exec_bulk_ops( const string& module,
                         values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
                   }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                  string method_name_and_args( "get " );
-                  method_name_and_args += fields[ i ];
+                  string value;
 
-                  string value = execute_object_command( handle, "", method_name_and_args );
+                  if( is_using_blockchain )
+                  {
+                     string method_name_and_args( "get " );
+                     method_name_and_args += fields[ i ];
+
+                     value = execute_object_command( handle, "", method_name_and_args );
+                  }
 
                   // NOTE: Field values that are unchanged are omitted from the log as are values
                   // for all transient fields (unless used with initial data).
-                  if( ( !is_transient || is_init_uid( ) ) && value != values[ i ] )
+                  if( !is_using_blockchain
+                   || ( ( !is_transient || is_init_uid( ) ) && value != values[ i ] ) )
                   {
-#endif
                      string method_name_and_args( "set " );
                      method_name_and_args += fields[ i ] + " ";
                      method_name_and_args += "\"" + escaped( escaped( values[ i ] ), "\"", c_nul ) + "\"";
@@ -8831,19 +8818,16 @@ string exec_bulk_ops( const string& module,
 
                      string field_id_to_log( fields[ i ] );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                     if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
                      {
                         field_id_to_log.erase( 0, module_id.length( ) );
                         if( field_id_to_log.find( class_id_to_log ) == 0 )
                            field_id_to_log.erase( 0, class_id_to_log.length( ) );
                      }
-#endif
+
                      log_field_value_pairs += field_id_to_log + "="
                       + search_replace( escaped( escaped( values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
-#ifndef IS_TRADITIONAL_PLATFORM
                   }
-#endif
                }
 
                for( size_t i = 0; i < fixed_fields.size( ); i++ )
@@ -8857,14 +8841,12 @@ string exec_bulk_ops( const string& module,
 
                   string field_id_to_log( fixed_fields[ i ] );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                  if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                  if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
                   {
                      field_id_to_log.erase( 0, module_id.length( ) );
                      if( field_id_to_log.find( class_id_to_log ) == 0 )
                         field_id_to_log.erase( 0, class_id_to_log.length( ) );
                   }
-#endif
 
                   log_field_value_pairs += field_id_to_log + "="
                    + search_replace( escaped( escaped( fixed_values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
@@ -9254,10 +9236,7 @@ void import_package( const string& module,
       module_id = gtp_session->modules_by_name.find( module )->second;
    }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-   // KLUDGE: If the module starts with a number assume it is Meta (which doesn't support field shortening).
-   bool is_standard_module_id = ( module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' ) ? false : true;
-#endif
+   bool is_using_blockchain = gtp_session->p_storage_handler->is_using_blockchain( );
 
    map< string, map< string, string > > skip_fields;
    if( !skip_field_info.empty( ) )
@@ -9379,7 +9358,7 @@ void import_package( const string& module,
          }
 
          if( replace_with == c_key_field )
-            replace_with = gen_key( );
+            replace_with = gen_key( "", !is_using_blockchain );
          else
          {
             while( search_replaces_map.count( replace_with ) )
@@ -9625,10 +9604,8 @@ void import_package( const string& module,
 
                      string class_id_to_log( mclass );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( is_standard_module_id && class_id_to_log.find( module_id ) == 0 )
+                     if( is_using_blockchain && class_id_to_log.find( module_id ) == 0 )
                         class_id_to_log.erase( 0, module_id.length( ) );
-#endif
 
                      next_log_line += " " + uid + " " + dtm + " "
                       + module_id + " " + class_id_to_log + " " + key_value + " \"";
@@ -9659,14 +9636,18 @@ void import_package( const string& module,
                          && prefixed_class_keys[ foreign_field_and_class_ids[ fields[ i ] ] ].count( field_values[ i ] ) )
                            field_values[ i ] = key_prefix + field_values[ i ];
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                        string method_name_and_args( "get " );
-                        method_name_and_args += fields[ i ];
+                        string value;
 
-                        string value = execute_object_command( handle, "", method_name_and_args );
-                        if( value != field_values[ i ] )
+                        if( is_using_blockchain )
                         {
-#endif
+                           string method_name_and_args( "get " );
+                           method_name_and_args += fields[ i ];
+
+                           value = execute_object_command( handle, "", method_name_and_args );
+                        }
+
+                        if( !is_using_blockchain || value != field_values[ i ] )
+                        {
                            string method_name_and_args( "set " );
                            method_name_and_args += fields[ i ] + " ";
                            method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
@@ -9676,22 +9657,18 @@ void import_package( const string& module,
 
                            string field_id_to_log( fields[ i ] );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                           if( is_standard_module_id && field_id_to_log.find( module_id ) == 0 )
+                           if( is_using_blockchain && field_id_to_log.find( module_id ) == 0 )
                            {
                               field_id_to_log.erase( 0, module_id.length( ) );
                               if( field_id_to_log.find( class_id_to_log ) == 0 )
                                  field_id_to_log.erase( 0, class_id_to_log.length( ) );
                            }
-#endif
 
                            log_field_value_pairs += field_id_to_log
                             + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
 
                            execute_object_command( handle, "", method_name_and_args );
-#ifndef IS_TRADITIONAL_PLATFORM
                         }
-#endif
                      }
 
                      next_log_line += log_field_value_pairs + "\"";
@@ -10080,6 +10057,8 @@ void transaction_commit( )
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
+   bool is_using_blockchain = handler.is_using_blockchain( );
+
    // NOTE: Scope for guard object.
    {
       guard g( g_mutex );
@@ -10088,9 +10067,9 @@ void transaction_commit( )
 
       if( gtp_session->transactions.size( ) == 1 )
       {
-#ifndef IS_TRADITIONAL_PLATFORM
-         append_undo_sql_statements( handler );
-#endif
+         if( is_using_blockchain )
+            append_undo_sql_statements( handler );
+
          append_transaction_log_command( handler );
 
          if( gtp_session->ap_db.get( ) )
@@ -10108,9 +10087,7 @@ void transaction_commit( )
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
 
-#ifndef IS_TRADITIONAL_PLATFORM
    gtp_session->sql_undo_statements.clear( );
-#endif
 
    if( gtp_session->transactions.empty( ) )
    {
@@ -10137,9 +10114,7 @@ void transaction_rollback( )
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
 
-#ifndef IS_TRADITIONAL_PLATFORM
    gtp_session->sql_undo_statements.clear( );
-#endif
 
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
@@ -10222,7 +10197,6 @@ void transaction_log_command( const string& log_command )
       gtp_session->transaction_log_command.erase( );
    else
    {
-#ifndef IS_TRADITIONAL_PLATFORM
       string blockchain( get_session_variable( c_special_variable_blockchain ) );
 
       if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
@@ -10232,7 +10206,7 @@ void transaction_log_command( const string& log_command )
          if( !file_exists( filename ) )
             gtp_session->transaction_log_command = ";block " + to_string( c_unconfirmed_revision );
       }
-#endif
+
       if( !gtp_session->transaction_log_command.empty( ) )
          gtp_session->transaction_log_command += '\n';
 
@@ -10778,21 +10752,17 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
          }
 
-#ifdef IS_TRADITIONAL_PLATFORM
-         vector< string > sql_stmts;
-         if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info ) )
-#else
+         bool is_using_blockchain = handler.is_using_blockchain( );
+
          vector< string > sql_stmts;
          vector< string > sql_undo_stmts;
 
          vector< string >* p_sql_undo_stmts = 0;
 
-         if( gtp_session->p_storage_handler->get_name( ) != "Meta"
-          && gtp_session->p_storage_handler->get_name( ) != "ciyam" )
+         if( is_using_blockchain )
             p_sql_undo_stmts = &sql_undo_stmts;
 
          if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
-#endif
             throw runtime_error( "unexpected get_sql_stmts failure" );
 
          // NOTE: If updating but no fields apart from the revision one were changed (by any
@@ -10818,10 +10788,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          executing_sql = false;
 
-#ifndef IS_TRADITIONAL_PLATFORM
-         gtp_session->sql_undo_statements.insert(
-          gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
-#endif
+         if( is_using_blockchain )
+            gtp_session->sql_undo_statements.insert(
+             gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
          // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to

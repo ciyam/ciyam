@@ -87,10 +87,6 @@
 
 #define USE_MULTIPLE_REQUEST_HANDLERS
 
-#ifdef IS_TRADITIONAL_PLATFORM
-#  define RELEASE_SOCKET_AFTER_EACH_REQUEST
-#endif
-
 using namespace std;
 
 namespace
@@ -174,6 +170,8 @@ tcp_socket g_socket;
 #endif
 
 bool g_has_connected = false;
+
+bool g_is_blockchain_application = false;
 
 string g_activate_html;
 
@@ -459,6 +457,8 @@ void read_global_storage_info( )
    vector< string > log_messages;
    read_storage_info( get_storage_info( ), log_messages );
 
+   g_is_blockchain_application = !get_storage_info( ).blockchain.empty( );
+
    for( size_t i = 0; i < log_messages.size( ); i++ )
       LOG_TRACE( log_messages[ i ] );
 }
@@ -572,11 +572,12 @@ void timeout_handler::on_start( )
             }
 
             if( si->second->p_socket )
-#ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
-               release_socket( si->second->p_socket );
-#else
-               disconnect_socket( si->second->p_socket );
-#endif
+            {
+               if( !g_is_blockchain_application )
+                  release_socket( si->second->p_socket );
+               else
+                  disconnect_socket( si->second->p_socket );
+            }
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -1112,10 +1113,8 @@ void request_handler::process_request( )
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-            if( module_name != "Meta" )
+            if( g_is_blockchain_application )
                login_html = g_login_password_html;
-#endif
 
             output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
 
@@ -1209,18 +1208,19 @@ void request_handler::process_request( )
 
                      string server_id( identity_info.substr( 0, pos ) );
 
-#ifdef IS_TRADITIONAL_PLATFORM
-                     string reg_key;
-                     string::size_type npos = server_id.find( '-' );
-                     if( npos != string::npos )
+                     if( !g_is_blockchain_application )
                      {
-                        reg_key = server_id.substr( npos + 1, pos - npos );
-                        server_id.erase( npos );
-                     }
+                        string reg_key;
+                        string::size_type npos = server_id.find( '-' );
+                        if( npos != string::npos )
+                        {
+                           reg_key = server_id.substr( npos + 1, pos - npos );
+                           server_id.erase( npos );
+                        }
 
-                     if( reg_key != get_storage_info( ).reg_key )
-                        throw runtime_error( GDS( c_display_system_is_under_maintenance ) );
-#endif
+                        if( reg_key != get_storage_info( ).reg_key )
+                           throw runtime_error( GDS( c_display_system_is_under_maintenance ) );
+                     }
 
                      if( get_server_id( ) != server_id )
                      {
@@ -1239,10 +1239,12 @@ void request_handler::process_request( )
                            extra_content_func += "refresh( false );\n";
                      }
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( !simple_command( *p_session_info, "session_variable @identity " + server_id ) )
-                        throw runtime_error( "unexpected failure to set identity session_variable" );
-#endif
+                     if( g_is_blockchain_application )
+                     {
+                        if( !simple_command( *p_session_info, "session_variable @identity " + server_id ) )
+                           throw runtime_error( "unexpected failure to set identity session_variable" );
+                     }
+
                      g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
                      if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
@@ -1383,8 +1385,7 @@ void request_handler::process_request( )
                   {
                      bool has_fetched = false;
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( module_name != "Meta" )
+                     if( g_is_blockchain_application )
                      {
                         if( password == c_guest_user_key )
                            username = password;
@@ -1408,7 +1409,7 @@ void request_handler::process_request( )
 
                         has_fetched = true;
                      }
-#endif
+
                      if( !has_fetched )
                         fetch_user_record( id_for_login, module_id, module_name, mod_info,
                          *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
@@ -1416,8 +1417,7 @@ void request_handler::process_request( )
 
                      pwd_hash = p_session_info->user_pwd_hash;
 
-#ifndef IS_TRADITIONAL_PLATFORM
-                     if( module_name != "Meta" )
+                     if( g_is_blockchain_application )
                      {
                         pwd_hash = p_session_info->user_pwd_hash = sha256( password ).get_digest_as_string( );
 
@@ -1425,7 +1425,6 @@ void request_handler::process_request( )
                          "session_variable @crypt_key " + p_session_info->user_pwd_hash ) )
                            throw runtime_error( "unexpected error setting crypt_key session variable" );
                      }
-#endif
                   }
 
                   if( !is_authorised )
@@ -1861,17 +1860,15 @@ void request_handler::process_request( )
          if( p_session_info->needs_pin && cmd != c_cmd_quit )
             cmd = c_cmd_home;
 
-#ifdef IS_TRADITIONAL_PLATFORM
          // NOTE: If a new password hash is passed from the client after logging in then
          // encrypt and store it in the application server "files area" for later usage.
-         if( p_session_info->logged_in && !newhash.empty( ) )
+         if( !g_is_blockchain_application && p_session_info->logged_in && !newhash.empty( ) )
          {
             string data( password_encrypt( newhash, get_server_id( ) ) );
 
             string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
             simple_command( *p_session_info, cmd );
          }
-#endif
 
          // NOTE: For a save or continue edit action it is expected that a field list and
          // a corresponding set of user values will be provided. If a "view" contains one
@@ -2380,13 +2377,13 @@ void request_handler::process_request( )
          extra_content_func += " serverId = '" + g_id + "';";
 
          bool needs_unique = true;
-#ifndef IS_TRADITIONAL_PLATFORM
-         if( module_name != "Meta" )
+
+         if( g_is_blockchain_application )
          {
             needs_unique = false;
             extra_content_func += " uniqueId = '';";
          }
-#endif
+
          if( needs_unique )
             extra_content_func += " uniqueId = '" + unique_id + "';";
       }
@@ -2445,10 +2442,8 @@ void request_handler::process_request( )
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-#ifndef IS_TRADITIONAL_PLATFORM
-         if( module_name != "Meta" )
+         if( g_is_blockchain_application )
             login_html = g_login_password_html;
-#endif
 
          if( created_session && p_session_info->logged_in )
          {
@@ -2471,11 +2466,12 @@ void request_handler::process_request( )
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
       else
-#ifndef IS_TRADITIONAL_PLATFORM
-         extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '';\" id=\"extra_content_func\"/>\n";
-#else
-         extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
-#endif
+      {
+         if( g_is_blockchain_application )
+            extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '';\" id=\"extra_content_func\"/>\n";
+         else
+            extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
+      }
    }
    catch( ... )
    {
@@ -2512,11 +2508,12 @@ void request_handler::process_request( )
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          if( p_session_info->p_socket )
-#  ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
-            release_socket( p_session_info->p_socket );
-#  else
-            disconnect_socket( p_session_info->p_socket );
-#  endif
+         {
+            if( !g_is_blockchain_application )
+               release_socket( p_session_info->p_socket );
+            else
+               disconnect_socket( p_session_info->p_socket );
+         }
 #endif
          remove_non_persistent( session_id );
 
@@ -2625,21 +2622,18 @@ void request_handler::process_request( )
 #endif
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-#  ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
-   if( p_session_info && p_session_info->p_socket )
+   if( p_session_info && p_session_info->p_socket && !g_is_blockchain_application )
    {
       release_socket( p_session_info->p_socket );
       p_session_info->p_socket = 0;
    }
-#  endif
 #endif
 
    if( finished_session )
    {
-#ifndef RELEASE_SOCKET_AFTER_EACH_REQUEST
-      if( p_session_info && p_session_info->p_socket )
+      if( p_session_info && p_session_info->p_socket && g_is_blockchain_application )
          disconnect_socket( p_session_info->p_socket );
-#endif
+
       destroy_session( session_id );
    }
    else if( p_session_info )
