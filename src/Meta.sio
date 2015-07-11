@@ -25,6 +25,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600530
+      <item>class
+     </specification>
+     <specification/>
       <id>602900
       <item>class
      </specification>
@@ -152,6 +156,10 @@
        </modifier>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600530
+        <item>field
+       </specification>
        <specification/>
         <id>602910
         <item>field
@@ -572,6 +580,28 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>127136
+      <name>Type
+      <type>bool
+      <mandatory>true
+      <enum_id>907
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600530
+        <item>cfield
+       </specification>
        <specification/>
         <id>602910
         <item>field
@@ -9414,6 +9444,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600014
+      <item>class
+     </specification>
+     <specification/>
       <id>600037
       <item>pclass
      </specification>
@@ -9512,6 +9546,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500575
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -9831,6 +9869,28 @@
       </specifications>
      </field>
      <field/>
+      <id>105118
+      <name>Type
+      <type>bool
+      <mandatory>true
+      <enum_id>850
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600014
+        <item>field
+       </specification>
+       <specification/>
+        <id>601510
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>105115
       <name>Use_Package_Demo_Data
       <type>bool
@@ -9895,6 +9955,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500575
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -9943,6 +10007,10 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>500575
+      <name>Is_Non_Traditional
+     </modifier>
      <modifier/>
       <id>500431
       <name>Is_Not_Busy
@@ -28934,6 +29002,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600530
+    <name>{Application}_Blockchain_non_null
+    <type>check_cond_non_null
+    <data/>
+     <class_id>127100
+     <field_id>127135
+     <cfield_id>127136
+     <is_negative>true
+    </data>
+   </specification>
+   <specification/>
     <id>600510
     <name>{Application}_Generate_Details
     <type>transient_field_from_file
@@ -28991,15 +29070,16 @@
      <extra>can_copy
      <class_id>127100
      <field_info>127101;new_edit
+     <field_info>127136;new_edit+force+enum=907
      <field_info>127135;new_edit
-     <field_info>127120;always_editable+force+enum=905
-     <field_info>127105;no_edit
+     <field_info>127120;non_new+always_editable+force+enum=905
+     <field_info>127105;non_new+no_edit
      <field_info>127129;non_new+always_editable
      <field_info>127125;new_only
      <field_info>127128;new_only
      <field_info>@tab:Generate_Details
      <field_info>127102
-     <field_info>127106;show+no_edit+full_height
+     <field_info>127106;show+non_new+no_edit+full_height
      <field_info>@tab:Display_Settings
      <field_info>127109
      <field_info>127110
@@ -31542,6 +31622,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600014
+    <name>{Model}_Is_Non_Traditional
+    <type>modifier_field_value
+    <data/>
+     <class_id>105100
+     <modifier_id>500575
+     <field_id>105118
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
     <id>610010
     <name>{Model}_Next_Class_Id_default
     <type>default_to_field
@@ -31668,12 +31759,13 @@
      <field_info>105102
      <field_info>105117
      <field_info>105103;show
+     <field_info>105118;new_edit+force+enum=850
      <field_info>301600:116101!@group:301500+116101
      <field_info>105112;new_only+enum=575
      <field_info>105115
      <field_info>105116
-     <field_info>105110
-     <field_info>105111
+     <field_info>105110;non_new
+     <field_info>105111;non_new
      <field_info>105109
     </data>
    </specification>
@@ -37003,6 +37095,12 @@
     <key_values>10=10,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100
    </user_defined_enum>
    <user_defined_enum/>
+    <id>907
+    <name>app_type
+    <type>bool
+    <key_values>0=Blockchain,1=Traditional
+   </user_defined_enum>
+   <user_defined_enum/>
     <id>570
     <name>arg_type
     <type>int
@@ -37193,6 +37291,12 @@
     <name>list_text_match_highlight
     <type>int
     <key_values>0=none,1=highlight,2=highlight1
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>850
+    <name>model_type
+    <type>bool
+    <key_values>0=Blockchain,1=Traditional
    </user_defined_enum>
    <user_defined_enum/>
     <id>560

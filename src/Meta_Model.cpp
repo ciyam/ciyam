@@ -129,6 +129,7 @@ const char* const c_field_id_Next_View_Id = "105108";
 const char* const c_field_id_Permission = "301600";
 const char* const c_field_id_Source_File = "105110";
 const char* const c_field_id_Status = "105114";
+const char* const c_field_id_Type = "105118";
 const char* const c_field_id_Use_Package_Demo_Data = "105115";
 const char* const c_field_id_Version = "105102";
 const char* const c_field_id_Workgroup = "300500";
@@ -149,6 +150,7 @@ const char* const c_field_name_Next_View_Id = "Next_View_Id";
 const char* const c_field_name_Permission = "Permission";
 const char* const c_field_name_Source_File = "Source_File";
 const char* const c_field_name_Status = "Status";
+const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Use_Package_Demo_Data = "Use_Package_Demo_Data";
 const char* const c_field_name_Version = "Version";
 const char* const c_field_name_Workgroup = "Workgroup";
@@ -169,12 +171,13 @@ const char* const c_field_display_name_Next_View_Id = "field_model_next_view_id"
 const char* const c_field_display_name_Permission = "field_model_permission";
 const char* const c_field_display_name_Source_File = "field_model_source_file";
 const char* const c_field_display_name_Status = "field_model_status";
+const char* const c_field_display_name_Type = "field_model_type";
 const char* const c_field_display_name_Use_Package_Demo_Data = "field_model_use_package_demo_data";
 const char* const c_field_display_name_Version = "field_model_version";
 const char* const c_field_display_name_Workgroup = "field_model_workgroup";
 const char* const c_field_display_name_Year_Created = "field_model_year_created";
 
-const int c_num_fields = 19;
+const int c_num_fields = 20;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -195,6 +198,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "105115",
    "105116",
    "105117",
+   "105118",
    "300500",
    "301600"
 };
@@ -216,6 +220,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Permission",
    "Source_File",
    "Status",
+   "Type",
    "Use_Package_Demo_Data",
    "Version",
    "Workgroup",
@@ -265,7 +270,8 @@ const char* const c_procedure_id_Get_Acyclic_Class_List = "105440";
 const char* const c_procedure_id_Remove_All_Packages = "105450";
 const char* const c_procedure_id_Remove_Module = "105430";
 
-const uint64_t c_modifier_Is_Not_Busy = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Not_Busy = UINT64_C( 0x200 );
 
 domain_string_max_size< 100 > g_Home_Title_domain;
 aggregate_domain< string,
@@ -321,12 +327,14 @@ string g_default_Next_View_Id = string( );
 string g_default_Permission = string( );
 string g_default_Source_File = string( );
 string g_default_Status = string( );
+bool g_default_Type = bool( 1 );
 bool g_default_Use_Package_Demo_Data = bool( 1 );
 string g_default_Version = string( "0.1" );
 string g_default_Workgroup = string( );
 int g_default_Year_Created = int( );
 
 set< int > g_add_packages_enum;
+set< bool > g_model_type_enum;
 
 const int c_enum_add_packages_none( 0 );
 const int c_enum_add_packages_Standard( 1 );
@@ -349,6 +357,25 @@ string get_enum_string_add_packages( int val )
       string_name = "enum_add_packages_Standard_User_Group";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for add_packages" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const bool c_enum_model_type_Blockchain( 0 );
+const bool c_enum_model_type_Traditional( 1 );
+
+string get_enum_string_model_type( bool val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for model_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_model_type_Blockchain";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_model_type_Traditional";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for model_type" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -587,6 +614,12 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          string_getter< string >( cmd_handler.p_Meta_Model->Status( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Model->Type( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
       {
          handled = true;
@@ -726,6 +759,13 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Status, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
+         func_string_setter< Meta_Model, bool >(
+          *cmd_handler.p_Meta_Model, &Meta_Model::Type, field_value );
       }
 
       if( !handled && field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
@@ -881,6 +921,9 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    const string& impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
    void impl_Status( const string& Status ) { sanity_check( Status ); v_Status = Status; }
+
+   bool impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
+   void impl_Type( bool Type ) { v_Type = Type; }
 
    bool impl_Use_Package_Demo_Data( ) const { return lazy_fetch( p_obj ), v_Use_Package_Demo_Data; }
    void impl_Use_Package_Demo_Data( bool Use_Package_Demo_Data ) { v_Use_Package_Demo_Data = Use_Package_Demo_Data; }
@@ -1232,6 +1275,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    string v_Next_View_Id;
    string v_Source_File;
    string v_Status;
+   bool v_Type;
    bool v_Use_Package_Demo_Data;
    string v_Version;
    int v_Year_Created;
@@ -6295,18 +6339,22 @@ string Meta_Model::impl::get_field_value( int field ) const
       break;
 
       case 15:
-      retval = to_string( impl_Use_Package_Demo_Data( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Package_Demo_Data( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_Version( ) );
       break;
 
       case 18:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 19:
       retval = to_string( impl_Year_Created( ) );
       break;
 
@@ -6382,18 +6430,22 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
       break;
 
       case 15:
-      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Type, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
       break;
 
       case 18:
+      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      break;
+
+      case 19:
       func_string_setter< Meta_Model::impl, int >( *this, &Meta_Model::impl::impl_Year_Created, value );
       break;
 
@@ -6469,18 +6521,22 @@ bool Meta_Model::impl::is_field_default( int field ) const
       break;
 
       case 15:
-      retval = ( v_Use_Package_Demo_Data == g_default_Use_Package_Demo_Data );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 16:
-      retval = ( v_Version == g_default_Version );
+      retval = ( v_Use_Package_Demo_Data == g_default_Use_Package_Demo_Data );
       break;
 
       case 17:
-      retval = ( v_Workgroup == g_default_Workgroup );
+      retval = ( v_Version == g_default_Version );
       break;
 
       case 18:
+      retval = ( v_Workgroup == g_default_Workgroup );
+      break;
+
+      case 19:
       retval = ( v_Year_Created == g_default_Year_Created );
       break;
 
@@ -6494,6 +6550,11 @@ bool Meta_Model::impl::is_field_default( int field ) const
 uint64_t Meta_Model::impl::get_state( ) const
 {
    uint64_t state = 0;
+
+   // [(start modifier_field_value)] 600014
+   if( get_obj( ).Type( ) == 0 )
+      state |= c_modifier_Is_Non_Traditional;
+   // [(finish modifier_field_value)] 600014
 
    // [<start get_state>]
 //nyi
@@ -6586,6 +6647,7 @@ void Meta_Model::impl::clear( )
    v_Next_View_Id = g_default_Next_View_Id;
    v_Source_File = g_default_Source_File;
    v_Status = g_default_Status;
+   v_Type = g_default_Type;
    v_Use_Package_Demo_Data = g_default_Use_Package_Demo_Data;
    v_Version = g_default_Version;
    v_Year_Created = g_default_Year_Created;
@@ -6711,6 +6773,11 @@ void Meta_Model::impl::validate( unsigned state, bool is_internal, validation_er
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Add_Packages ) ) ) ) );
 
+   if( !g_model_type_enum.count( v_Type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
+
    // [<start validate>]
    // [<finish validate>]
 }
@@ -6823,6 +6890,9 @@ void Meta_Model::impl::after_fetch( )
    }
    else
       get_obj( ).Status( get_system_variable( model_key ) );
+
+   if( get_obj( ).get_key( ).empty( ) )
+      get_obj( ).Type( 0 );
    // [<finish after_fetch>]
 }
 
@@ -6999,8 +7069,13 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
          {
             if( cp_type->Name( ) == "Standard" )
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
-            else if( cp_type->Name( ) == "User" && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User )
+            else if( ( cp_type->Name( ) == "User"
+             && get_obj( ).Type( ) && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User )
+             || ( cp_type->Name( ) == "User_B"
+             && !get_obj( ).Type( ) && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User ) )
+            {
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
+            }
             else if( cp_type->Name( ) == "Group" && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User_Group )
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
          } while( cp_type->iterate_next( ) );
@@ -7016,6 +7091,12 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
 
          string name( name_and_plural.substr( 0, pos ) );
          string plural( pos == string::npos ? name_and_plural : name_and_plural.substr( pos + 1 ) );
+
+         if( name.length( ) > 3 && name.substr( name.length( ) - 2 ) == "_B" )
+            name.erase( name.length( ) - 2 );
+
+         if( plural.length( ) > 3 && plural.substr( plural.length( ) - 2 ) == "_B" )
+            plural.erase( plural.length( ) - 2 );
 
          get_obj( ).child_Package( ).Model( get_obj( ).get_key( ) );
          get_obj( ).child_Package( ).Package_Type( single_types[ i ].first );
@@ -7318,6 +7399,16 @@ const string& Meta_Model::Status( ) const
 void Meta_Model::Status( const string& Status )
 {
    p_impl->impl_Status( Status );
+}
+
+bool Meta_Model::Type( ) const
+{
+   return p_impl->impl_Type( );
+}
+
+void Meta_Model::Type( bool Type )
+{
+   p_impl->impl_Type( Type );
 }
 
 bool Meta_Model::Use_Package_Demo_Data( ) const
@@ -7801,6 +7892,16 @@ const char* Meta_Model::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Type )
+   {
+      p_id = c_field_id_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Use_Package_Demo_Data )
    {
       p_id = c_field_id_Use_Package_Demo_Data;
@@ -8002,6 +8103,16 @@ const char* Meta_Model::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Type )
+   {
+      p_name = c_field_name_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Use_Package_Demo_Data )
    {
       p_name = c_field_name_Use_Package_Demo_Data;
@@ -8151,6 +8262,11 @@ string Meta_Model::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Status );
       get_module_string( c_field_display_name_Status, &next );
    }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
    else if( id_or_name == c_field_id_Use_Package_Demo_Data || id_or_name == c_field_name_Use_Package_Demo_Data )
    {
       name = string( c_field_display_name_Use_Package_Demo_Data );
@@ -8216,6 +8332,8 @@ string Meta_Model::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Source_File );
    else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
       display_name = get_module_string( c_field_display_name_Status );
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+      display_name = get_module_string( c_field_display_name_Type );
    else if( id_or_name == c_field_id_Use_Package_Demo_Data || id_or_name == c_field_name_Use_Package_Demo_Data )
       display_name = get_module_string( c_field_display_name_Use_Package_Demo_Data );
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
@@ -8600,6 +8718,7 @@ void Meta_Model::get_sql_column_names(
    names.push_back( "C_Next_View_Id" );
    names.push_back( "C_Permission" );
    names.push_back( "C_Source_File" );
+   names.push_back( "C_Type" );
    names.push_back( "C_Use_Package_Demo_Data" );
    names.push_back( "C_Version" );
    names.push_back( "C_Workgroup" );
@@ -8627,6 +8746,7 @@ void Meta_Model::get_sql_column_values(
    values.push_back( sql_quote( to_string( Next_View_Id( ) ) ) );
    values.push_back( sql_quote( to_string( Permission( ) ) ) );
    values.push_back( sql_quote( to_string( Source_File( ) ) ) );
+   values.push_back( to_string( Type( ) ) );
    values.push_back( to_string( Use_Package_Demo_Data( ) ) );
    values.push_back( sql_quote( to_string( Version( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
@@ -8654,6 +8774,14 @@ void Meta_Model::get_always_required_field_names(
    ( void )names;
    ( void )dependents;
    ( void )use_transients;
+
+   // [(start modifier_field_value)] 600014
+   dependents.insert( "Type" ); // (for Is_Non_Traditional modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 600014
 
    // [<start get_always_required_field_names>]
 //nyi
@@ -8733,6 +8861,7 @@ void Meta_Model::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "301600", "Permission", "Meta_Permission", false, "", "" ) );
    all_field_info.push_back( field_info( "105110", "Source_File", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "105114", "Status", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105118", "Type", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "105115", "Use_Package_Demo_Data", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "105102", "Version", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "300500", "Workgroup", "Meta_Workgroup", true, "", "" ) );
@@ -8832,18 +8961,22 @@ const char* Meta_Model::static_get_field_id( field_id id )
       break;
 
       case 16:
-      p_id = "105115";
+      p_id = "105118";
       break;
 
       case 17:
-      p_id = "105102";
+      p_id = "105115";
       break;
 
       case 18:
-      p_id = "300500";
+      p_id = "105102";
       break;
 
       case 19:
+      p_id = "300500";
+      break;
+
+      case 20:
       p_id = "105103";
       break;
    }
@@ -8921,18 +9054,22 @@ const char* Meta_Model::static_get_field_name( field_id id )
       break;
 
       case 16:
-      p_id = "Use_Package_Demo_Data";
+      p_id = "Type";
       break;
 
       case 17:
-      p_id = "Version";
+      p_id = "Use_Package_Demo_Data";
       break;
 
       case 18:
-      p_id = "Workgroup";
+      p_id = "Version";
       break;
 
       case 19:
+      p_id = "Workgroup";
+      break;
+
+      case 20:
       p_id = "Year_Created";
       break;
    }
@@ -8979,14 +9116,16 @@ int Meta_Model::static_get_field_num( const string& field )
       rc += 14;
    else if( field == c_field_id_Status || field == c_field_name_Status )
       rc += 15;
-   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 16;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
       rc += 17;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 18;
-   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 19;
+   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+      rc += 20;
 
    return rc - 1;
 }
@@ -9031,6 +9170,7 @@ string Meta_Model::static_get_sql_columns( )
     "C_Next_View_Id VARCHAR(200) NOT NULL,"
     "C_Permission VARCHAR(75) NOT NULL,"
     "C_Source_File VARCHAR(200) NOT NULL,"
+    "C_Type INTEGER NOT NULL,"
     "C_Use_Package_Demo_Data INTEGER NOT NULL,"
     "C_Version VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(75) NOT NULL,"
@@ -9051,6 +9191,9 @@ void Meta_Model::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_add_packages_1", get_enum_string_add_packages( 1 ) ) );
    pairs.push_back( make_pair( "enum_add_packages_2", get_enum_string_add_packages( 2 ) ) );
    pairs.push_back( make_pair( "enum_add_packages_3", get_enum_string_add_packages( 3 ) ) );
+
+   pairs.push_back( make_pair( "enum_model_type_0", get_enum_string_model_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_model_type_1", get_enum_string_model_type( 1 ) ) );
 }
 
 void Meta_Model::static_get_sql_indexes( vector< string >& indexes )
@@ -9099,6 +9242,9 @@ void Meta_Model::static_class_init( const char* p_module_name )
    g_add_packages_enum.insert( 1 );
    g_add_packages_enum.insert( 2 );
    g_add_packages_enum.insert( 3 );
+
+   g_model_type_enum.insert( 0 );
+   g_model_type_enum.insert( 1 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

@@ -61,13 +61,14 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Print_Lists_With_Row_Numbers = 26,
       e_field_id_Registration_Key = 27,
       e_field_id_Show_Inaccessible_Modules = 28,
-      e_field_id_Use_Check_Boxes_for_Bools = 29,
-      e_field_id_Use_Embedded_Images = 30,
-      e_field_id_Use_TLS_Sessions = 31,
-      e_field_id_Use_URL_Checksum = 32,
-      e_field_id_Use_Vertical_Menu = 33,
-      e_field_id_Version = 34,
-      e_field_id_Workgroup = 35
+      e_field_id_Type = 29,
+      e_field_id_Use_Check_Boxes_for_Bools = 30,
+      e_field_id_Use_Embedded_Images = 31,
+      e_field_id_Use_TLS_Sessions = 32,
+      e_field_id_Use_URL_Checksum = 33,
+      e_field_id_Use_Vertical_Menu = 34,
+      e_field_id_Version = 35,
+      e_field_id_Workgroup = 36
    };
 
    Meta_Application( );
@@ -156,6 +157,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    bool Show_Inaccessible_Modules( ) const;
    void Show_Inaccessible_Modules( bool Show_Inaccessible_Modules );
+
+   bool Type( ) const;
+   void Type( bool Type );
 
    bool Use_Check_Boxes_for_Bools( ) const;
    void Use_Check_Boxes_for_Bools( bool Use_Check_Boxes_for_Bools );

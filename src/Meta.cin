@@ -86,6 +86,7 @@ user_defined_enum_add -id=700 list_field_view_parent_extra int 0=none,1=vext1,2=
 user_defined_enum_add -id=800 field_action_create_type int 0=standard,1=confirmation,2=edit\\_and\\_save
 user_defined_enum_add -id=801 field_action_create_access_restriction int 0=none,1=owner,2=admin,3=non\\_admin
 user_defined_enum_add -id=802 field_action_type int 0=create\\_record,1=procedure\\_call
+user_defined_enum_add -id=850 model_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=900 app_list_row_limit int 10=10,15=15,20=20,25=25,30=30,40=40,50=50,100=100
 user_defined_enum_add -id=901 app_text_rows int 5=5,10=10,15=15,20=20,25=25,30=30,40=40,50=50,100=100
 user_defined_enum_add -id=902 app_text_limit int 1000=1000,1500=1500,2000=2000,2500=2500,3000=3000,4000=4000,5000=5000,10000=10000,20000=20000,30000=30000,40000=40000,50000=50000,60000=60000
@@ -93,6 +94,7 @@ user_defined_enum_add -id=903 app_print_row_limit int 1000=1000,2000=2000,3000=3
 user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100
 user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
+user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -214,6 +216,7 @@ field_add -id=105114 Model Status string opt -transient
 field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=1
 field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=1
 field_add -id=105117 Model Home_Title str100 opt
+field_add -id=105118 Model Type bool mand -def=1 -e=model_type
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module
@@ -743,6 +746,7 @@ field_add -id=127132 Application Registration_Key str100 opt
 field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 field_add -id=127135 Application Blockchain str30 opt
+field_add -id=127136 Application Type bool mand -def=1 -e=app_type
 modifier_add -id=127310 Application Is_Traditional Blockchain:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\
 ,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate,Registration_Key:relegate
@@ -1084,6 +1088,7 @@ modifier_add -id=500560 Procedure_Arg Is_Internal @class:lowlight
 modifier_add -id=500580 Relationship Is_Internal @class:lowlight
 modifier_add -id=500581 Relationship Hide_Parent_Field_For_View Parent_Field_For_View:relegate
 modifier_add -id=500582 Relationship Hide_Parent_Field_For_List Parent_Field_For_List:relegate
+modifier_add -id=500575 Model Is_Non_Traditional {Permission}:relegate,Add_Packages:relegate
 modifier_add -id=500590 Specification Is_Comment @class:extralight1;list
 modifier_add -id=500600 Specification Hide_Field {Field}:relegate
 modifier_add -id=500601 Specification Hide_Other_Source_Child Other_Source_Child:relegate
@@ -1317,6 +1322,7 @@ specification_add -id=600013 {Model}_Next_Class_Id_required field_required "Mode
 specification_add -id=610013 {Model}_Next_Specification_Id_required field_required "Model Next_Specification_Id"
 specification_add -id=620013 {Model}_Next_View_Id_required field_required "Model Next_View_Id"
 specification_add -id=630013 {Model}_Next_List_Id_required field_required "Model Next_List_Id"
+specification_add -id=600014 {Model}_Is_Non_Traditional modifier_field_value "Model Is_Non_Traditional Type 0"
 specification_add -id=600015 {Enum}_Is_Internal modifier_field_value "Enum Is_Internal Internal true"
 specification_add -id=600016 {Enum}_Internal_protect state_protect "equal Enum Internal true"
 specification_add -id=600017 {Enum}_clone_{Enum_Item}_children clone_children "Enum Enum_Item {Enum}"
@@ -1890,6 +1896,7 @@ specification_add -id=600499a {List_Field}_Is_Non_Instance_Procedure modifier_fi
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
+specification_add -id=600530 {Application}_Blockchain_non_null check_cond_non_null "Application Blockchain Type -negative"
 specification_add -id=600600 {Initial_Record}_copy_{Class}_{Field}_children copy_child_links_from_fk\
  "Initial_Record Initial_Record_Value Class Field Value-Default -child_field={Field} -combine_keys"
 specification_add -id=600601 {Initial_Record}_Order_default default_from_key "Initial_Record Order -check_null"
@@ -1950,8 +1957,9 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
  -act=+!104410+@rfields+@rvalues,+!^104420+@rfields+@rvalues {Enum}"
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
- Name,Id;no_edit+non_new,Status;view_only,Version,Home_Title,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
-,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File,Commands_File,Actions"
+ Name,Id;no_edit+non_new,Status;view_only,Version,Home_Title\
+,Year_Created;show,Type;new_edit+force,{Permission}:Name!@group:{Workgroup}+Name\
+,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File;non_new,Commands_File;non_new,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child:no_limit Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
@@ -2130,9 +2138,10 @@ specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_l
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"
 specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version,Generate_Status {Workgroup}"
 specification_add -id=602910 {Application}_view view "? standard:can_copy Application\
- Name;new_edit,Blockchain;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
+ Name;new_edit,Type;new_edit+force,Blockchain;new_edit,Generate_Type;non_new+always_editable+force\
+,Generate_Status;non_new+no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
-,@tab:Generate_Details,Version,Generate_Details;show+no_edit+full_height\
+,@tab:Generate_Details,Version,Generate_Details;show+non_new+no_edit+full_height\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
 ,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\

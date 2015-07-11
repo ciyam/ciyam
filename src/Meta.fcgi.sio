@@ -332,6 +332,20 @@
    </values>
   </enum>
   <enum/>
+   <id>907
+   <name>enum_app_type
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_app_type_blockchain
+    </value>
+    <value/>
+     <data>1
+     <name>enum_app_type_traditional
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>570
    <name>enum_arg_type
    <values/>
@@ -1332,6 +1346,20 @@
     <value/>
      <data>2
      <name>enum_list_text_match_highlight_highlight1
+    </value>
+   </values>
+  </enum>
+  <enum/>
+   <id>850
+   <name>enum_model_type
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_model_type_blockchain
+    </value>
+    <value/>
+     <data>1
+     <name>enum_model_type_traditional
     </value>
    </values>
   </enum>
@@ -2371,6 +2399,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_type
+     <field>127136
+     <ftype>bool
+     <extra>new_edit+force+enum=907
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_blockchain
      <field>127135
      <ftype>string
@@ -2382,7 +2418,7 @@
      <name>field_application_generate_type
      <field>127120
      <ftype>int
-     <extra>always_editable+force+enum=905
+     <extra>non_new+always_editable+force+enum=905
      <mandatory>true
      <modifiers>
     </field>
@@ -2390,7 +2426,7 @@
      <name>field_application_generate_status
      <field>127105
      <ftype>string
-     <extra>no_edit
+     <extra>non_new+no_edit
      <mandatory>false
      <modifiers>
     </field>
@@ -2438,7 +2474,7 @@
      <name>field_application_generate_details
      <field>127106
      <ftype>string
-     <extra>show+no_edit+full_height+notes
+     <extra>show+non_new+no_edit+full_height+notes
      <mandatory>false
      <modifiers>1000:relegate
     </field>
@@ -4385,7 +4421,7 @@
      <ftype>string
      <extra>view_only
      <mandatory>false
-     <modifiers>100:relegate
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_model_version
@@ -4412,12 +4448,20 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_model_type
+     <field>105118
+     <ftype>bool
+     <extra>new_edit+force+enum=850
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_model_permission
      <field>301600
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>
+     <modifiers>100:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -4429,7 +4473,7 @@
      <ftype>int
      <extra>new_only+enum=575
      <mandatory>true
-     <modifiers>
+     <modifiers>100:relegate
     </field>
     <field/>
      <name>field_model_use_package_demo_data
@@ -4451,7 +4495,7 @@
      <name>field_model_source_file
      <field>105110
      <ftype>string
-     <extra>flink
+     <extra>non_new+flink
      <mandatory>false
      <modifiers>
     </field>
@@ -4459,7 +4503,7 @@
      <name>field_model_commands_file
      <field>105111
      <ftype>string
-     <extra>flink
+     <extra>non_new+flink
      <mandatory>false
      <modifiers>
     </field>
