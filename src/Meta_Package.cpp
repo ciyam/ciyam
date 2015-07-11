@@ -1098,11 +1098,11 @@ void Meta_Package::impl::impl_Install( )
                outf << lines[ j ] << '\n';
          }
 
-         if( get_obj( ).Plural( ) != get_obj( ).Package_Type( ).Plural( ) )
-            outf << get_obj( ).Package_Type( ).Plural( ) << "=" << get_obj( ).Plural( ) << '\n';
-
          if( get_obj( ).Name( ) != get_obj( ).Package_Type( ).Single( ) )
             outf << get_obj( ).Package_Type( ).Single( ) << "=" << get_obj( ).Name( ) << '\n';
+
+         if( get_obj( ).Plural( ) != get_obj( ).Package_Type( ).Plural( ) )
+            outf << get_obj( ).Package_Type( ).Plural( ) << "=" << get_obj( ).Plural( ) << '\n';
 
          map< string, string > extras;
          map< string, string > options;
@@ -1187,7 +1187,11 @@ void Meta_Package::impl::impl_Install( )
             } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
          }
 
-         string opt_prefix( "opt_" + lower( get_obj( ).Package_Type( ).Name( ) ) + "_" );
+         string opt_type_name( type_name );
+         if( opt_type_name.length( ) > 3 && opt_type_name.substr( opt_type_name.length( ) - 2 ) == "_B" )
+            opt_type_name.erase( opt_type_name.length( ) - 2 );
+
+         string opt_prefix( "opt_" + lower( opt_type_name ) + "_" );
 
          // NOTE: The "extras" need to preceed the normal keys so they can be used in conditional
          // expressions.
@@ -2096,8 +2100,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
       set< string > options;
 
-      string ext_prefix( "ext_" + lower( get_obj( ).Package_Type( ).Name( ) ) + "_" );
-      string opt_prefix( "opt_" + lower( get_obj( ).Package_Type( ).Name( ) ) + "_" );
+      string name( lower( get_obj( ).Package_Type( ).Name( ) ) );
+
+      if( name.length( ) && 3 && name.substr( name.length( ) - 2 ) == "_b" )
+         name.erase( name.length( ) - 2 );
+
+      string ext_prefix( "ext_" + name + "_" );
+      string opt_prefix( "opt_" + name + "_" );
 
       map< string, string > package_types;
       class_pointer< Meta_Package_Type > cp_type( e_create_instance );

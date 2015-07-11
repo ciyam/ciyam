@@ -112,6 +112,7 @@ const char* const c_field_id_Print_Lists_With_Check_Boxes = "127111";
 const char* const c_field_id_Print_Lists_With_Row_Numbers = "127112";
 const char* const c_field_id_Registration_Key = "127132";
 const char* const c_field_id_Show_Inaccessible_Modules = "127110";
+const char* const c_field_id_Type = "127136";
 const char* const c_field_id_Use_Check_Boxes_for_Bools = "127121";
 const char* const c_field_id_Use_Embedded_Images = "127131";
 const char* const c_field_id_Use_TLS_Sessions = "127134";
@@ -148,6 +149,7 @@ const char* const c_field_name_Print_Lists_With_Check_Boxes = "Print_Lists_With_
 const char* const c_field_name_Print_Lists_With_Row_Numbers = "Print_Lists_With_Row_Numbers";
 const char* const c_field_name_Registration_Key = "Registration_Key";
 const char* const c_field_name_Show_Inaccessible_Modules = "Show_Inaccessible_Modules";
+const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Use_Check_Boxes_for_Bools = "Use_Check_Boxes_for_Bools";
 const char* const c_field_name_Use_Embedded_Images = "Use_Embedded_Images";
 const char* const c_field_name_Use_TLS_Sessions = "Use_TLS_Sessions";
@@ -184,6 +186,7 @@ const char* const c_field_display_name_Print_Lists_With_Check_Boxes = "field_app
 const char* const c_field_display_name_Print_Lists_With_Row_Numbers = "field_application_print_lists_with_row_numbers";
 const char* const c_field_display_name_Registration_Key = "field_application_registration_key";
 const char* const c_field_display_name_Show_Inaccessible_Modules = "field_application_show_inaccessible_modules";
+const char* const c_field_display_name_Type = "field_application_type";
 const char* const c_field_display_name_Use_Check_Boxes_for_Bools = "field_application_use_check_boxes_for_bools";
 const char* const c_field_display_name_Use_Embedded_Images = "field_application_use_embedded_images";
 const char* const c_field_display_name_Use_TLS_Sessions = "field_application_use_tls_sessions";
@@ -192,7 +195,7 @@ const char* const c_field_display_name_Use_Vertical_Menu = "field_application_us
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 
-const int c_num_fields = 35;
+const int c_num_fields = 36;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -230,6 +233,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127133",
    "127134",
    "127135",
+   "127136",
    "302220"
 };
 
@@ -263,6 +267,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Print_Lists_With_Row_Numbers",
    "Registration_Key",
    "Show_Inaccessible_Modules",
+   "Type",
    "Use_Check_Boxes_for_Bools",
    "Use_Embedded_Images",
    "Use_TLS_Sessions",
@@ -376,6 +381,7 @@ bool g_default_Print_Lists_With_Check_Boxes = bool( 0 );
 bool g_default_Print_Lists_With_Row_Numbers = bool( 0 );
 string g_default_Registration_Key = string( );
 bool g_default_Show_Inaccessible_Modules = bool( 0 );
+bool g_default_Type = bool( 1 );
 bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool g_default_Use_Embedded_Images = bool( 0 );
 bool g_default_Use_TLS_Sessions = bool( 0 );
@@ -391,6 +397,7 @@ set< int > g_app_text_rows_enum;
 set< int > g_app_text_limit_enum;
 set< int > g_app_text_trunc_limit_enum;
 set< int > g_app_generate_type_enum;
+set< bool > g_app_type_enum;
 
 const int c_enum_app_auto_days_0( 0 );
 const int c_enum_app_auto_days_1( 1 );
@@ -666,6 +673,25 @@ string get_enum_string_app_generate_type( int val )
    return get_module_string( lower( string_name ) );
 }
 
+const bool c_enum_app_type_Blockchain( 0 );
+const bool c_enum_app_type_Traditional( 1 );
+
+string get_enum_string_app_type( bool val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for app_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_app_type_Blockchain";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_app_type_Traditional";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for app_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
 // [<start anonymous>]
 // [<finish anonymous>]
 
@@ -913,6 +939,12 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       {
          handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Show_Inaccessible_Modules( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Application->Type( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
@@ -1165,6 +1197,13 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
           *cmd_handler.p_Meta_Application, &Meta_Application::Show_Inaccessible_Modules, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
+         func_string_setter< Meta_Application, bool >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Type, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
       {
          handled = true;
@@ -1379,6 +1418,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool impl_Show_Inaccessible_Modules( ) const { return lazy_fetch( p_obj ), v_Show_Inaccessible_Modules; }
    void impl_Show_Inaccessible_Modules( bool Show_Inaccessible_Modules ) { v_Show_Inaccessible_Modules = Show_Inaccessible_Modules; }
 
+   bool impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
+   void impl_Type( bool Type ) { v_Type = Type; }
+
    bool impl_Use_Check_Boxes_for_Bools( ) const { return lazy_fetch( p_obj ), v_Use_Check_Boxes_for_Bools; }
    void impl_Use_Check_Boxes_for_Bools( bool Use_Check_Boxes_for_Bools ) { v_Use_Check_Boxes_for_Bools = Use_Check_Boxes_for_Bools; }
 
@@ -1546,6 +1588,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Print_Lists_With_Row_Numbers;
    string v_Registration_Key;
    bool v_Show_Inaccessible_Modules;
+   bool v_Type;
    bool v_Use_Check_Boxes_for_Bools;
    bool v_Use_Embedded_Images;
    bool v_Use_TLS_Sessions;
@@ -2409,30 +2452,34 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 28:
-      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Use_Embedded_Images( ) );
+      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Use_TLS_Sessions( ) );
+      retval = to_string( impl_Use_Embedded_Images( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_TLS_Sessions( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Use_Vertical_Menu( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Vertical_Menu( ) );
       break;
 
       case 34:
+      retval = to_string( impl_Version( ) );
+      break;
+
+      case 35:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -2560,30 +2607,34 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 28:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Type, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
       break;
 
       case 30:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
       break;
 
       case 31:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_TLS_Sessions, value );
       break;
 
       case 32:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 33:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Vertical_Menu, value );
       break;
 
       case 34:
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      break;
+
+      case 35:
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
@@ -2711,30 +2762,34 @@ bool Meta_Application::impl::is_field_default( int field ) const
       break;
 
       case 28:
-      retval = ( v_Use_Check_Boxes_for_Bools == g_default_Use_Check_Boxes_for_Bools );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 29:
-      retval = ( v_Use_Embedded_Images == g_default_Use_Embedded_Images );
+      retval = ( v_Use_Check_Boxes_for_Bools == g_default_Use_Check_Boxes_for_Bools );
       break;
 
       case 30:
-      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
+      retval = ( v_Use_Embedded_Images == g_default_Use_Embedded_Images );
       break;
 
       case 31:
-      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
+      retval = ( v_Use_TLS_Sessions == g_default_Use_TLS_Sessions );
       break;
 
       case 32:
-      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
+      retval = ( v_Use_URL_Checksum == g_default_Use_URL_Checksum );
       break;
 
       case 33:
-      retval = ( v_Version == g_default_Version );
+      retval = ( v_Use_Vertical_Menu == g_default_Use_Vertical_Menu );
       break;
 
       case 34:
+      retval = ( v_Version == g_default_Version );
+      break;
+
+      case 35:
       retval = ( v_Workgroup == g_default_Workgroup );
       break;
 
@@ -2768,7 +2823,7 @@ uint64_t Meta_Application::impl::get_state( ) const
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
 
-   if( !get_obj( ).get_key( ).empty( ) && get_obj( ).Blockchain( ).empty( ) )
+   if( get_obj( ).Type( ) )
       state |= c_modifier_Is_Traditional;
    else
       state |= c_modifier_Is_Non_Traditional;
@@ -2864,6 +2919,7 @@ void Meta_Application::impl::clear( )
    v_Print_Lists_With_Row_Numbers = g_default_Print_Lists_With_Row_Numbers;
    v_Registration_Key = g_default_Registration_Key;
    v_Show_Inaccessible_Modules = g_default_Show_Inaccessible_Modules;
+   v_Type = g_default_Type;
    v_Use_Check_Boxes_for_Bools = g_default_Use_Check_Boxes_for_Bools;
    v_Use_Embedded_Images = g_default_Use_Embedded_Images;
    v_Use_TLS_Sessions = g_default_Use_TLS_Sessions;
@@ -2985,6 +3041,18 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Generate_Type ) ) ) ) );
 
+   if( !g_app_type_enum.count( v_Type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
+
+   // [(start check_cond_non_null)] 600530
+   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain ) ) ) ) );
+   // [(finish check_cond_non_null)] 600530
+
    // [<start validate>]
    // [<finish validate>]
 }
@@ -3050,6 +3118,9 @@ void Meta_Application::impl::after_fetch( )
    // [(finish transient_field_from_file)] 600510
 
    // [<start after_fetch>]
+//nyi
+   if( get_obj( ).get_key( ).empty( ) )
+      get_obj( ).Type( 0 );
    // [<finish after_fetch>]
 }
 
@@ -3618,6 +3689,16 @@ void Meta_Application::Show_Inaccessible_Modules( bool Show_Inaccessible_Modules
    p_impl->impl_Show_Inaccessible_Modules( Show_Inaccessible_Modules );
 }
 
+bool Meta_Application::Type( ) const
+{
+   return p_impl->impl_Type( );
+}
+
+void Meta_Application::Type( bool Type )
+{
+   p_impl->impl_Type( Type );
+}
+
 bool Meta_Application::Use_Check_Boxes_for_Bools( ) const
 {
    return p_impl->impl_Use_Check_Boxes_for_Bools( );
@@ -4164,6 +4245,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Type )
+   {
+      p_id = c_field_id_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Use_Check_Boxes_for_Bools )
    {
       p_id = c_field_id_Use_Check_Boxes_for_Bools;
@@ -4525,6 +4616,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Type )
+   {
+      p_name = c_field_name_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Use_Check_Boxes_for_Bools )
    {
       p_name = c_field_name_Use_Check_Boxes_for_Bools;
@@ -4769,6 +4870,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Show_Inaccessible_Modules );
       get_module_string( c_field_display_name_Show_Inaccessible_Modules, &next );
    }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
    else if( id_or_name == c_field_id_Use_Check_Boxes_for_Bools || id_or_name == c_field_name_Use_Check_Boxes_for_Bools )
    {
       name = string( c_field_display_name_Use_Check_Boxes_for_Bools );
@@ -4875,6 +4981,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Registration_Key );
    else if( id_or_name == c_field_id_Show_Inaccessible_Modules || id_or_name == c_field_name_Show_Inaccessible_Modules )
       display_name = get_module_string( c_field_display_name_Show_Inaccessible_Modules );
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+      display_name = get_module_string( c_field_display_name_Type );
    else if( id_or_name == c_field_id_Use_Check_Boxes_for_Bools || id_or_name == c_field_name_Use_Check_Boxes_for_Bools )
       display_name = get_module_string( c_field_display_name_Use_Check_Boxes_for_Bools );
    else if( id_or_name == c_field_id_Use_Embedded_Images || id_or_name == c_field_name_Use_Embedded_Images )
@@ -5149,6 +5257,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Print_Lists_With_Row_Numbers" );
    names.push_back( "C_Registration_Key" );
    names.push_back( "C_Show_Inaccessible_Modules" );
+   names.push_back( "C_Type" );
    names.push_back( "C_Use_Check_Boxes_for_Bools" );
    names.push_back( "C_Use_Embedded_Images" );
    names.push_back( "C_Use_TLS_Sessions" );
@@ -5192,6 +5301,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Print_Lists_With_Row_Numbers( ) ) );
    values.push_back( sql_quote( to_string( Registration_Key( ) ) ) );
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
+   values.push_back( to_string( Type( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_Embedded_Images( ) ) );
    values.push_back( to_string( Use_TLS_Sessions( ) ) );
@@ -5318,6 +5428,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127112", "Print_Lists_With_Row_Numbers", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127132", "Registration_Key", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127136", "Type", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127134", "Use_TLS_Sessions", "bool", false, "", "" ) );
@@ -5471,30 +5582,34 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 29:
-      p_id = "127121";
+      p_id = "127136";
       break;
 
       case 30:
-      p_id = "127131";
+      p_id = "127121";
       break;
 
       case 31:
-      p_id = "127134";
+      p_id = "127131";
       break;
 
       case 32:
-      p_id = "127107";
+      p_id = "127134";
       break;
 
       case 33:
-      p_id = "127133";
+      p_id = "127107";
       break;
 
       case 34:
-      p_id = "127102";
+      p_id = "127133";
       break;
 
       case 35:
+      p_id = "127102";
+      break;
+
+      case 36:
       p_id = "302220";
       break;
    }
@@ -5624,30 +5739,34 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 29:
-      p_id = "Use_Check_Boxes_for_Bools";
+      p_id = "Type";
       break;
 
       case 30:
-      p_id = "Use_Embedded_Images";
+      p_id = "Use_Check_Boxes_for_Bools";
       break;
 
       case 31:
-      p_id = "Use_TLS_Sessions";
+      p_id = "Use_Embedded_Images";
       break;
 
       case 32:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_TLS_Sessions";
       break;
 
       case 33:
-      p_id = "Use_Vertical_Menu";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 34:
-      p_id = "Version";
+      p_id = "Use_Vertical_Menu";
       break;
 
       case 35:
+      p_id = "Version";
+      break;
+
+      case 36:
       p_id = "Workgroup";
       break;
    }
@@ -5720,20 +5839,22 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 27;
    else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
       rc += 28;
-   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 29;
-   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
+   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
       rc += 30;
-   else if( field == c_field_id_Use_TLS_Sessions || field == c_field_name_Use_TLS_Sessions )
+   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
       rc += 31;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( field == c_field_id_Use_TLS_Sessions || field == c_field_name_Use_TLS_Sessions )
       rc += 32;
-   else if( field == c_field_id_Use_Vertical_Menu || field == c_field_name_Use_Vertical_Menu )
+   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
       rc += 33;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_Vertical_Menu || field == c_field_name_Use_Vertical_Menu )
       rc += 34;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 35;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 36;
 
    return rc - 1;
 }
@@ -5791,6 +5912,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Print_Lists_With_Row_Numbers INTEGER NOT NULL,"
     "C_Registration_Key VARCHAR(200) NOT NULL,"
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
+    "C_Type INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"
     "C_Use_TLS_Sessions INTEGER NOT NULL,"
@@ -5877,6 +5999,9 @@ void Meta_Application::static_get_all_enum_pairs( vector< pair< string, string >
    pairs.push_back( make_pair( "enum_app_generate_type_0", get_enum_string_app_generate_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_app_generate_type_1", get_enum_string_app_generate_type( 1 ) ) );
    pairs.push_back( make_pair( "enum_app_generate_type_2", get_enum_string_app_generate_type( 2 ) ) );
+
+   pairs.push_back( make_pair( "enum_app_type_0", get_enum_string_app_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_app_type_1", get_enum_string_app_type( 1 ) ) );
 }
 
 void Meta_Application::static_get_sql_indexes( vector< string >& indexes )
@@ -5986,6 +6111,9 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_generate_type_enum.insert( 0 );
    g_app_generate_type_enum.insert( 1 );
    g_app_generate_type_enum.insert( 2 );
+
+   g_app_type_enum.insert( 0 );
+   g_app_type_enum.insert( 1 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]
