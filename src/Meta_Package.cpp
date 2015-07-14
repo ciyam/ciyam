@@ -954,8 +954,15 @@ void Meta_Package::impl::impl_Install( )
                 && get_obj( ).Model( ).child_Package( ).Package_Type( ).Name( ) == "Standard" )
                   installed_types.insert( make_pair( "Standard", std_package_key ) );
                else
+               {
+                  string type_name( get_obj( ).Model( ).child_Package( ).Package_Type( ).Name( ) );
+
+                  if( type_name.length( ) > 2 && type_name.substr( type_name.length( ) - 2 ) == "_B" )
+                     type_name.erase( type_name.length( ) - 2 );
+
                   installed_types.insert( make_pair(
-                   get_obj( ).Model( ).child_Package( ).Package_Type( ).Name( ), get_obj( ).Model( ).child_Package( ).get_key( ) ) );
+                   type_name, get_obj( ).Model( ).child_Package( ).get_key( ) ) );
+               }
             }
          } while( get_obj( ).Model( ).child_Package( ).iterate_next( ) );
       }
@@ -1045,7 +1052,9 @@ void Meta_Package::impl::impl_Install( )
             else if( get_obj( ).child_Package_Option( ).Is_Other_Package( )
              && !is_null( get_obj( ).child_Package_Option( ).Other_Package( ) ) )
             {
-               if( !installed_types.count( get_obj( ).child_Package_Option( ).Other_Package( ).Package_Type( ).Name( ) ) )
+               string other_type_name( get_obj( ).child_Package_Option( ).Other_Package( ).Package_Type( ).Name( ) );
+
+               if( !installed_types.count( other_type_name ) )
                   throw runtime_error( "This package requires '"
                    + get_obj( ).child_Package_Option( ).Other_Package( ).Name( ) + "' to first be installed." ); // FUTURE: Should be a module string...
 

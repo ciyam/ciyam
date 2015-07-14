@@ -49,7 +49,8 @@
 `}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
 `}`}
-      get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}get_obj( ).`{`$arg_sfield`}( )\
+      get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `{`!`@eq`(`$arg_field1`,`'`'`)\
+get_obj( ).`{`$arg_field1`}( ), `}`{`!`@eq`(`$arg_field2`,`'`'`)get_obj( ).`{`$arg_field2`}( ), `}`}get_obj( ).`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`}`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}\
 `{`!`@eq`(`$arg_func`,`'`'`)`{`!`@eq`(`$lit1`,`'`'`), `{`$lit1`}`}`{`!`@eq`(`$lit2`,`'`'`), `{`$lit2`}`} )`} );
    // [(finish transient_field_alias)] `{`$arg_id`}
@@ -63,6 +64,25 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
+`{`!`@eq`(`$arg_field1`,`'`'`)
+      dependents.insert( "`{`$arg_field1`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field1`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field1`} ) ) )
+         names.insert( "`{`$arg_field1`}" );
+`}`{`!`@eq`(`$arg_field2`,`'`'`)
+      dependents.insert( "`{`$arg_field2`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field2`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field2`} ) ) )
+         names.insert( "`{`$arg_field2`}" );
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+`}\
    }
    // [(finish transient_field_alias)] `{`$arg_id`}
 `}
