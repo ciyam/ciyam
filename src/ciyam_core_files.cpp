@@ -3910,6 +3910,26 @@ string construct_account_info(
    }    
 }
 
+string get_account_msg_secret( const string& blockchain, const string& password, const string& account )
+{
+   string acct;
+
+   string id( get_account_id_from_password( password ) );
+   if( !list_file_tags( "c" + blockchain + ".a" + id + ".h*" ).empty( ) )
+      acct = id;
+
+   if( acct.empty( ) )
+      throw runtime_error( "unknown account: " + id );
+
+   if( !account.empty( ) && acct != account )
+      throw runtime_error( "invalid password for account: " + account );
+
+   account_key_info key_info;
+   string account_id( construct_account_info( blockchain, password, c_default_exp, acct, &key_info ) );
+
+   return key_info.msg_secret;
+}
+
 void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 {
    guard g( g_mutex );

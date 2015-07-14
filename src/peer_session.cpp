@@ -1774,13 +1774,38 @@ string use_peer_account( const string& blockchain, const string& password, bool 
    return retval;
 }
 
+string get_account_password( const string& blockchain, const string& account )
+{
+   guard g( g_mutex );
+
+   if( !g_blockchain_passwords.count( blockchain ) )
+      throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );
+
+   string password;
+   set< string >& passwords = g_blockchain_passwords[ blockchain ];
+
+   for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
+   {
+      if( check_account( blockchain, *i ) == account )
+      {
+         password = *i;
+         break;
+      }
+   }
+
+   if( password.empty( ) )
+      throw runtime_error( "invalid account " + account + " for blockchain " + blockchain );
+
+   return password;
+}
+
 void create_blockchain_transaction(
  const string& blockchain, const string& application, const string& log_command )
 {
    guard g( g_mutex );
 
    if( !g_blockchain_passwords.count( blockchain ) )
-      throw runtime_error( "blockchain '" + blockchain + "' has not been unlocked" );
+      throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );
 
    string::size_type pos = log_command.find( ' ' );
    if( pos == string::npos )
@@ -1796,20 +1821,7 @@ void create_blockchain_transaction(
    string account = remaining.substr( 0, pos );
    remaining.erase( 0, pos );
 
-   string password;
-   set< string >& passwords = g_blockchain_passwords[ blockchain ];
-
-   for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-   {
-      if( check_account( blockchain, *i ) == account )
-      {
-         password = *i;
-         break;
-      }
-   }
-
-   if( password.empty( ) )
-      throw runtime_error( "invalid account for blockchain transaction" );
+   string password( get_account_password( blockchain, account ) );
 
    string tx_hash;
 

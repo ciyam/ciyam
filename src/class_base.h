@@ -1095,6 +1095,9 @@ std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& pw, const std::string& s );
 std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& pw, const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC shared_decrypt( const std::string& pk, const std::string& s );
+std::string CLASS_BASE_DECL_SPEC shared_encrypt( const std::string& pk, const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC totp_pin( const std::string& secret );
 std::string CLASS_BASE_DECL_SPEC totp_secret( const std::string& unique );
 

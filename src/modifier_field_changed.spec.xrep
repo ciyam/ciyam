@@ -1,7 +1,7 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start modifier_field_changed)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
-   if( get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )\
+   if( `{`!`@eq`(`$arg_not_changed`,`'`'`)!`}get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )\
 `,\
    if( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
 `{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )\

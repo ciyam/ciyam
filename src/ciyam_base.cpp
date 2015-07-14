@@ -195,6 +195,7 @@ const char* const c_special_variable_cloned = "@cloned";
 const char* const c_special_variable_images = "@images";
 const char* const c_special_variable_module = "@module";
 const char* const c_special_variable_return = "@return";
+const char* const c_special_variable_secret = "@secret";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
@@ -5664,6 +5665,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_return );
       break;
 
+      case e_special_var_secret:
+      s = string( c_special_variable_secret );
+      break;
+
       case e_special_var_do_exec:
       s = string( c_special_variable_do_exec );
       break;
@@ -7147,6 +7152,11 @@ void set_uid( const string& uid )
 bool is_sys_uid( )
 {
    return get_uid( ) == c_sys;
+}
+
+bool is_anon_uid( )
+{
+   return get_uid( ).empty( );
 }
 
 bool is_auto_uid( )

@@ -70,6 +70,7 @@ enum special_var
    e_special_var_images,
    e_special_var_module,
    e_special_var_return,
+   e_special_var_secret,
    e_special_var_do_exec,
    e_special_var_is_last,
    e_special_var_message,

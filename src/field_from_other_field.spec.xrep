@@ -101,7 +101,21 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
    // [(start field_from_other_field)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
    {
-`{`!`@eq`(`$arg_pfield`,`'`'`)\
+`{`!`@eq`(`$arg_field1`,`'`'`)\
+      dependents.insert( "`{`$arg_field1`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field1`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field1`} ) ) )
+         names.insert( "`{`$arg_field1`}" );
+
+`}`{`!`@eq`(`$arg_field2`,`'`'`)\
+      dependents.insert( "`{`$arg_field2`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field2`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field2`} ) ) )
+         names.insert( "`{`$arg_field2`}" );
+
+`}`{`!`@eq`(`$arg_pfield`,`'`'`)\
       dependents.insert( "`{`$arg_pfield`}" );
 
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
@@ -113,16 +127,14 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
-`}`{`!`@eq`(`$arg_tpfield`,`'`'`)\
-
+`}`{`!`@eq`(`$arg_tpfield`,`'`'`)
       dependents.insert( "`{`$arg_tpfield`}" );
 
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tpfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tpfield`} ) ) )
          names.insert( "`{`$arg_tpfield`}" );
 `,\
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
-
+`{`!`@eq`(`$arg_tfield`,`'`'`)
       dependents.insert( "`{`$arg_tfield`}" );
 
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )

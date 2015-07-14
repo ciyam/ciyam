@@ -2,7 +2,7 @@
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`{`$value`=`'"`{`$arg_value`}"`'`}`}\
    // [(start field_bool_has_changed)] `{`$arg_id`}
-   if( get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`{`@eq`(`$arg_not_null`,`'true`'`)
+   if( `{`!`@eq`(`$arg_not_changed`,`'`'`)!`}get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`{`@eq`(`$arg_not_null`,`'true`'`)
     && !is_null( get_obj( ).`{`$arg_sfield`}( ) )`}`{`!`@eq`(`$arg_value`,`'`'`)
     && get_obj( ).`{`$arg_sfield`}( ) == `{`$value`}`}`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)

@@ -3116,6 +3116,30 @@ string encrypt( const string& pw, const string& s )
    return retval;
 }
 
+string shared_decrypt( const string& pk, const string& s )
+{
+#ifdef SSL_SUPPORT
+   public_key pub_key( pk, true );
+   private_key priv_key( get_session_variable( get_special_var_name( e_special_var_secret ) ) );
+
+   return priv_key.decrypt_message( pub_key, s );
+#else
+   throw runtime_error( "SSL support is needed in order to use shared_decrypt" );
+#endif
+}
+
+string shared_encrypt( const string& pk, const string& s )
+{
+#ifdef SSL_SUPPORT
+   public_key pub_key( pk, true );
+   private_key priv_key( get_session_variable( get_special_var_name( e_special_var_secret ) ) );
+
+   return priv_key.encrypt_message( pub_key, s, 0, true );
+#else
+   throw runtime_error( "SSL support is needed in order to use shared_encrypt" );
+#endif
+}
+
 string totp_pin( const string& secret )
 {
    return get_totp( secret );
