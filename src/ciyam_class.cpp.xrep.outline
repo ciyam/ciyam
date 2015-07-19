@@ -1881,6 +1881,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
 
 void `{`$full_class_name`}::impl::finalise_fetch( )
 {
+   if( !get_obj( ).get_key( ).empty( ) )
+      get_obj( ).set_new_original_values( );
+
 `{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
    get_obj( ).set_variable(
     get_special_var_name( e_special_var_permission ), get_obj( ).`{`$permission_field`}( ) );
