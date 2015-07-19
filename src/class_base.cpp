@@ -782,14 +782,7 @@ void class_base::init( bool for_create )
    if( is_create || for_create )
       at_create( );
 
-   original_values.clear( );
-
-   int num_fields = get_num_fields( );
-   for( size_t i = 0; i < num_fields; i++ )
-      original_values.push_back( get_field_value( i ) );
-
-   p_impl->foreign_key_values.clear( );
-   get_foreign_key_values( p_impl->foreign_key_values );
+   cache_original_values( );
 }
 
 void class_base::prepare( bool for_create, bool call_to_store )
@@ -1494,16 +1487,20 @@ void class_base::after_fetch_from_db( )
    if( !key.empty( ) && key[ 0 ] != ' ' )
    {
       lazy_fetch_key.erase( );
-
-      p_impl->foreign_key_values.clear( );
-      get_foreign_key_values( p_impl->foreign_key_values );
-
-      original_values.clear( );
-
-      int num_fields = get_num_fields( );
-      for( size_t i = 0; i < num_fields; i++ )
-         original_values.push_back( get_field_value( i ) );
+      cache_original_values( );
    }
+}
+
+void class_base::cache_original_values( )
+{
+   original_values.clear( );
+
+   int num_fields = get_num_fields( );
+   for( size_t i = 0; i < num_fields; i++ )
+      original_values.push_back( get_field_value( i ) );
+
+   p_impl->foreign_key_values.clear( );
+   get_foreign_key_values( p_impl->foreign_key_values );
 }
 
 void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
@@ -1990,6 +1987,11 @@ void class_base::fetch_updated_instance( )
    perform_fetch( );
 
    set_ver_exp( get_version_info( ) );
+}
+
+void class_base::set_new_original_values( )
+{
+   cache_original_values( );
 }
 
 void class_base::add_required_transients( set< string >& required_transients )

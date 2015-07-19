@@ -566,6 +566,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual void validate_set_fields( std::set< std::string >& fields_set ) = 0;
 
    void after_fetch_from_db( );
+   void cache_original_values( );
 
    virtual void after_fetch( ) = 0;
    virtual void finalise_fetch( ) = 0;
@@ -664,6 +665,8 @@ class CLASS_BASE_DECL_SPEC class_base
    void fetch_updated_instance( );
 
    void add_required_transients( std::set< std::string >& required_transients );
+
+   void set_new_original_values( );
 
    void set_key( const std::string& new_key, bool skip_fk_handling = false );
    void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }

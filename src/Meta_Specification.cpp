@@ -7030,6 +7030,9 @@ void Meta_Specification::impl::after_fetch( )
 
 void Meta_Specification::impl::finalise_fetch( )
 {
+   if( !get_obj( ).get_key( ).empty( ) )
+      get_obj( ).set_new_original_values( );
+
    // [(start field_from_procedure_call)] 600209
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "All_Vars" )

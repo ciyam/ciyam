@@ -10128,6 +10128,8 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, "" ) );
    spec_data.data_pairs.push_back( make_pair( "func", "" ) );
    spec_data.data_pairs.push_back( make_pair( "mfunc", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "field1", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "field2", "" ) );
    spec_data.data_pairs.push_back( make_pair( "tfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "def_value", "" ) );
    spec_data.data_pairs.push_back( make_pair( "iter_only", "" ) );
