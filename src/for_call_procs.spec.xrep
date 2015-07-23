@@ -1,15 +1,15 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_procs)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}\
 `{`$proc_arg`=`$arg_output_arg`}`{`!`@eq`(`$arg_message`,`'`'`)`$proc_arg`=`'`'`}\
-`{`@eq`(`$arg_no_trans`,`'`'`)\
+`{`@eq`(`$arg_use_trans`,`'true`'`)\
    transaction_start( );
    try
    {
 `}\
 `{`$i`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
 `{`$i`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
-`{`@eq`(`$arg_no_trans`,`'`'`)
+`{`@eq`(`$arg_use_trans`,`'true`'`)
       transaction_commit( );
 `}\
 `{`!`@eq`(`$arg_output_arg`,`'`'`)
@@ -19,7 +19,7 @@
       // FUTURE: The return message itself should be a module string.
 `{`$i`}   `{`$arg_output_arg`} = get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
-`{`@eq`(`$arg_no_trans`,`'`'`)\
+`{`@eq`(`$arg_use_trans`,`'true`'`)\
    }
    catch( ... )
    {

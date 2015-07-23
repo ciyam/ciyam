@@ -1,11 +1,11 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_each_record)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}\
 `{`$j`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$j`=`'   `'`}\
 `{`@eq`(`$arg_skip_restore`,`'true`'`)\
    if( !storage_locked_for_admin( ) )
    {
-`}`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+`}`{`@eq`(`$arg_use_trans`,`'true`'`)\
 `{`$j`}   transaction_start( );
 `{`$j`}   try
 `{`$j`}   {
@@ -79,7 +79,7 @@
 
 `{`$i`}`{`$j`}      } while( get_obj( ).iterate_next( ) );
 `{`$i`}`{`$j`}   }
-`}`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+`}`{`@eq`(`$arg_use_trans`,`'true`'`)\
 
 `{`$j`}      transaction_commit( );
 `{`$j`}   }

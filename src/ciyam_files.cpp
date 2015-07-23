@@ -1132,6 +1132,27 @@ void delete_file( const string& hash, bool even_if_tagged )
    }   
 }
 
+void delete_files_for_tags( const string& pat )
+{
+   guard g( g_mutex );
+
+   string all_tags( list_file_tags( pat ) );
+
+   if( !all_tags.empty( ) )
+   {
+      vector< string > tags;
+      split( all_tags, tags, '\n' );
+
+      set< string > hashes;
+
+      for( size_t i = 0; i < tags.size( ); i++ )
+         hashes.insert( tag_file_hash( tags[ i ] ) );
+
+      for( set< string >::iterator i = hashes.begin( ); i != hashes.end( ); ++i )
+         delete_file( *i );
+   }
+}
+
 void copy_raw_file( const string& hash, const string& dest_filename )
 {
    guard g( g_mutex );

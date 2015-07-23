@@ -1449,9 +1449,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_kill )
       {
+         string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_pat ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_hash ) );
 
-         delete_file( hash );
+         if( !hash.empty( ) )
+            delete_file( hash );
+         else
+            delete_files_for_tags( pat );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {

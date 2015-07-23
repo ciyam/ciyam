@@ -946,7 +946,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#for_call_procs.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_output_arg=$specification_\\0_output_arg arg_procedure=$specification_\\0_procedure\
  arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2\
- arg_no_trans=$specification_\\0_no_trans arg_message=$specification_\\0_message arg_id=$specification_\\0_id`}\
+ arg_use_trans=$specification_\\0_use_trans arg_message=$specification_\\0_message arg_id=$specification_\\0_id`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
@@ -954,7 +954,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_sfield=$specification_\\0_sfield arg_svalue=$specification_\\0_svalue arg_spfield=$specification_\\0_spfield\
  arg_scfield=$specification_\\0_scfield arg_proc_arg=$specification_\\0_proc_arg arg_tfield=$specification_\\0_tfield\
  arg_procedure=$specification_\\0_procedure arg_use_proc_name=$specification_\\0_use_proc_name\
- arg_key_suffix=$specification_\\0_key_suffix arg_no_trans=$specification_\\0_no_trans\
+ arg_key_suffix=$specification_\\0_key_suffix arg_use_trans=$specification_\\0_use_trans\
  arg_clone_only=$specification_\\0_clone_only arg_proc_arg_is_key_suffix=$specification_\\0_proc_arg_is_key_suffix\
  arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source`}\
 `,\
@@ -969,13 +969,13 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_each`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_each.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_separator=$specification_\\0_separator\
- arg_oprocedure=$specification_\\0_oprocedure arg_no_trans=$specification_\\0_no_trans arg_func=$specification_\\0_func`}\
+ arg_oprocedure=$specification_\\0_oprocedure arg_use_trans=$specification_\\0_use_trans arg_func=$specification_\\0_func`}\
 `,\
 `@eq`(`'\\1`'`,`'for_each_record`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_each_record.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_rfield=$specification_\\0_rfield arg_rvalue=$specification_\\0_rvalue\
  arg_oprocedure=$specification_\\0_oprocedure arg_tfield=$specification_\\0_tfield arg_value=$specification_\\0_value\
- arg_var=$specification_\\0_var arg_quiet=$specification_\\0_quiet arg_no_trans=$specification_\\0_no_trans\
+ arg_var=$specification_\\0_var arg_quiet=$specification_\\0_quiet arg_use_trans=$specification_\\0_use_trans\
  arg_ofield=$specification_\\0_ofield arg_reverse=$specification_\\0_reverse arg_else_break=$specification_\\0_else_break\
  arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
