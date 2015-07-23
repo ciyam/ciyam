@@ -351,7 +351,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
                outf << "Tommorow... " << i->second.second << '\n';
             else if( i->first == ud - ( days )1 )
                outf << "(Yesterday) " << i->second.second << '\n';
-            else if( i->first < ud_mon + ( days )7 )
+            else if( i->first >= ud_mon && i->first < ud_mon + ( days )7 )
                outf << "(This Week) " << i->second.second << '\n';
             else if( i->first > ud && i->first < ud_mon + ( days )14 )
                outf << "(Next Week) " << i->second.second << '\n';

@@ -2049,6 +2049,8 @@ void Meta_Application::impl::impl_Generate( )
       outss4 << "quit\n";
 
       outupg << "#Starting DB Rebuild...\n";
+      if( !get_obj( ).Keep_Existing_Data( ) && !is_null( get_obj( ).Blockchain( ) ) )
+         outupg << "file_kill -p=c" << get_obj( ).Blockchain( ) << "*\n";
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
       outupg << "#Finished DB Rebuild...\n";
       outupg << ".quit\n";
@@ -2060,6 +2062,8 @@ void Meta_Application::impl::impl_Generate( )
          if( !get_obj( ).Keep_Existing_Data( ) )
          {
             outs << "if exist " << get_obj( ).Name( ) << ".log del " << get_obj( ).Name( ) << ".log\n";
+            if( !is_null( get_obj( ).Blockchain( ) ) )
+               outs << "if exist " << get_obj( ).Name( ) << ".txs.log del " << get_obj( ).Name( ) << ".txs.log\n";
             outs << "if exist " << get_obj( ).Name( ) << ".dead_keys.lst del " << get_obj( ).Name( ) << ".dead_keys.lst\n";
          }
          outs << "if not exist " << get_obj( ).Name( ) << ".log copy app.log " << get_obj( ).Name( ) << ".log >nul\n";
@@ -2073,6 +2077,12 @@ void Meta_Application::impl::impl_Generate( )
             outs << " if [ -f " << get_obj( ).Name( ) << ".log ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".log\n";
             outs << " fi\n";
+            if( !is_null( get_obj( ).Blockchain( ) ) )
+            {
+               outs << " if [ -f " << get_obj( ).Name( ) << ".txs.log ]; then\n";
+               outs << "  rm " << get_obj( ).Name( ) << ".txs.log\n";
+               outs << " fi\n";
+            }   
             outs << " if [ -f " << get_obj( ).Name( ) << ".dead_keys.lst ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".dead_keys.lst\n";
             outs << " fi\n";

@@ -1,7 +1,7 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_clone)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
-`{`@eq`(`$arg_no_trans`,`'`'`)\
+`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}\
+`{`@eq`(`$arg_use_trans`,`'true`'`)\
    transaction_start( );
    try
    {
@@ -57,7 +57,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`@eq`(`$arg_clone_only`,`'`'`)\
 `{`$i`}   get_obj( ).op_apply( );
 `}`}\
-`{`@eq`(`$arg_no_trans`,`'`'`)\
+`{`@eq`(`$arg_use_trans`,`'true`'`)\
 
       transaction_commit( );
 
@@ -70,7 +70,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`$i`}   `{`$arg_proc_arg`} = get_obj( ).get_display_name( ) + " "
 `{`$i`}    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
-`{`@eq`(`$arg_no_trans`,`'`'`)\
+`{`@eq`(`$arg_use_trans`,`'true`'`)\
    }
    catch( ... )
    {
