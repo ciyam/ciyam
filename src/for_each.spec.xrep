@@ -2,7 +2,7 @@
    // [(start for_each)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_field`}( ) ) )
    {
-`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}\
 `{`@eq`(`$arg_use_trans`,`'true`'`)\
       transaction_start( );
       try
