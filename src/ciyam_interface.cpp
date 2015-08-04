@@ -60,6 +60,7 @@
 #include "sockets.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
+#  include "crypto_keys.h"
 #  ifdef _WIN32
 #     include <openssl/applink.c>
 #  endif
@@ -1391,9 +1392,23 @@ void request_handler::process_request( )
                            username = password;
                         else
                         {
+#ifdef SSL_SUPPORT
+                           string pubkey;
+                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
+                              throw runtime_error( "unexpected failure to get @pubkey value" );
+
+                           public_key pub_key( pubkey );
+                           private_key priv_key;
+
+                           if( !simple_command( *p_session_info, "peer_account_mint "
+                            + get_storage_info( ).blockchain + " -k=" + priv_key.get_public( )
+                            + " " + priv_key.encrypt_message( pub_key, password ), &username ) )
+                              throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+#else
                            if( !simple_command( *p_session_info, "peer_account_mint "
                             + get_storage_info( ).blockchain + " \"" + escaped( password, "\"" ) + "\"", &username ) )
                               throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+#endif
 
                            // NOTE: The "admin" user is the one whose account id matches the blockchain id.
                            if( username == get_storage_info( ).blockchain )
@@ -1418,13 +1433,7 @@ void request_handler::process_request( )
                      pwd_hash = p_session_info->user_pwd_hash;
 
                      if( g_is_blockchain_application )
-                     {
                         pwd_hash = p_session_info->user_pwd_hash = sha256( password ).get_digest_as_string( );
-
-                        if( !simple_command( *p_session_info,
-                         "session_variable @crypt_key " + p_session_info->user_pwd_hash ) )
-                           throw runtime_error( "unexpected error setting crypt_key session variable" );
-                     }
                   }
 
                   if( !is_authorised )

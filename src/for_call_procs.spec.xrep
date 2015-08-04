@@ -1,22 +1,35 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_procs)] `{`$arg_id`}
-`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}\
+`{`$i`=`'`'`}`{`@eq`(`$arg_use_trans`,`'true`'`)`$i`=`'   `'`}`{`$j`=`$i`}\
 `{`$proc_arg`=`$arg_output_arg`}`{`!`@eq`(`$arg_message`,`'`'`)`$proc_arg`=`'`'`}\
 `{`@eq`(`$arg_use_trans`,`'true`'`)\
    transaction_start( );
    try
    {
 `}\
-`{`$i`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
-`{`$i`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
-`{`@eq`(`$arg_use_trans`,`'true`'`)
+`{`!`@eq`(`$arg_fname`,`'`'`)`&`!`@eq`(`$arg_fvalue`,`'`'`)\
+`{`$i`}   get_obj( ).op_update( );
+`{`$i`}   get_obj( ).`{`$arg_fname`}( get_obj( ).`{`$arg_fvalue`}( ) );
+`{`$i`}   get_obj( ).op_apply( );
+
+`}`{`!`@eq`(`$arg_session_var`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$j`^`'   `'`}\
+`{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_skip_restore`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`}`{`!`@eq`(`$arg_session_var`,`'`'`)\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)
+`{`$i`}    && `}!get_session_variable( "`{`$arg_session_var`}" ).empty( )`} )
+`{`$i`}   {
+`}`{`$j`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
+`{`$j`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`$i`}   }
+`}`{`@eq`(`$arg_use_trans`,`'true`'`)
       transaction_commit( );
 `}\
 `{`!`@eq`(`$arg_output_arg`,`'`'`)
 `{`!`@eq`(`$arg_message`,`'`'`)\
 `{`$i`}   `{`$arg_output_arg`} = get_module_string( "`{`$arg_id`}_message" );
 `,\
-      // FUTURE: The return message itself should be a module string.
+`{`$i`}   // FUTURE: The return message itself should be a module string.
 `{`$i`}   `{`$arg_output_arg`} = get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
 `{`@eq`(`$arg_use_trans`,`'true`'`)\

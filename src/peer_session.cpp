@@ -1749,6 +1749,9 @@ string use_peer_account( const string& blockchain, const string& password, bool 
          }
          else
          {
+            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
+               set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, *i ), "" );
+
             g_blockchain_release.insert( blockchain );
             g_blockchain_passwords.erase( blockchain );
          }
@@ -1760,6 +1763,8 @@ string use_peer_account( const string& blockchain, const string& password, bool 
       {
          if( g_blockchain_passwords.count( blockchain ) )
          {
+            set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, password ), "" );
+
             g_blockchain_release.insert( blockchain );
             g_blockchain_passwords[ blockchain ].erase( password );
          }
@@ -1768,6 +1773,9 @@ string use_peer_account( const string& blockchain, const string& password, bool 
       {
          retval = check_account( blockchain, password );
          g_blockchain_passwords[ blockchain ].insert( password );
+
+         set_crypt_key_for_blockchain_account( blockchain,
+          retval, sha256( password ).get_digest_as_string( ) );
       }
    }
 
@@ -1794,7 +1802,7 @@ string get_account_password( const string& blockchain, const string& account )
    }
 
    if( password.empty( ) )
-      throw runtime_error( "invalid account " + account + " for blockchain " + blockchain );
+      throw runtime_error( "invalid or non-minting account " + account + " for blockchain " + blockchain );
 
    return password;
 }

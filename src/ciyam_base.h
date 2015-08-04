@@ -319,6 +319,12 @@ std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name );
 void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
 
+bool CIYAM_BASE_DECL_SPEC has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
+std::string CIYAM_BASE_DECL_SPEC get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
+
+void CIYAM_BASE_DECL_SPEC set_crypt_key_for_blockchain_account(
+ const std::string& blockchain, const std::string& account, const std::string& crypt_key );
+
 void CIYAM_BASE_DECL_SPEC init_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
 void CIYAM_BASE_DECL_SPEC create_storage( const std::string& name,
@@ -410,6 +416,14 @@ void CIYAM_BASE_DECL_SPEC set_perms( const std::set< std::string >& perms );
 
 std::string CIYAM_BASE_DECL_SPEC get_tmp_directory( );
 void CIYAM_BASE_DECL_SPEC set_tmp_directory( const std::string& tmp_directory );
+
+std::string CIYAM_BASE_DECL_SPEC get_session_secret( );
+void CIYAM_BASE_DECL_SPEC set_session_secret( const std::string& secret );
+
+void CIYAM_BASE_DECL_SPEC set_session_mint_account( const std::string& account );
+bool CIYAM_BASE_DECL_SPEC uid_matches_session_mint_account( );
+
+std::string CIYAM_BASE_DECL_SPEC session_shared_decrypt( const std::string& pubkey, const std::string& message );
 
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 
@@ -622,8 +636,15 @@ size_t CIYAM_BASE_DECL_SPEC transaction_level( );
 size_t CIYAM_BASE_DECL_SPEC set_transaction_id( size_t tx_id );
 size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
 
+struct transaction_commit_helper
+{
+   virtual void at_commit( ) = 0;
+};
+
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
-void CIYAM_BASE_DECL_SPEC transaction_log_command( const std::string& log_command );
+
+void CIYAM_BASE_DECL_SPEC transaction_log_command(
+ const std::string& log_command, transaction_commit_helper* p_tx_helper = 0 );
 
 void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
  const std::string& application, const std::string& transaction_hash );

@@ -1,17 +1,17 @@
-; Copyright (c) 2012-2015 CIYAM Developers
+; Copyright (c) 2015 CIYAM Developers
 ;
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 ; NOTE: The following needs to be included in 'manuscript.sio':
 ; <script/>
-;  <name>`{`$model`}_`{`$class`}_`{`$field`}
+;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @uid @module @class @key @fields_and_values @blockchain
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @key_info @fields_and_values @blockchain
 ; </script>
 .storage_init %1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
 .session_variable @blockchain "%7"
 .session_variable @skip_blockchain_lock 1
-.pu %2 @now %3 %4 %5 "%6"
+.pc %2 @now %3 %4 "%5" "%6"
 .quit

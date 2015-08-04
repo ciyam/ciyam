@@ -4801,7 +4801,8 @@ void Meta_Model::impl::impl_Generate( )
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
 
-                     if( get_obj( ).child_List( ).child_List_Field( ).Sort_Manually( ) )
+                     if( p_field->Extra( ) == 25 // i.e. encrypted
+                      || get_obj( ).child_List( ).child_List_Field( ).Sort_Manually( ) )
                      {
                         if( !pextras.empty( ) )
                            pextras += '+';

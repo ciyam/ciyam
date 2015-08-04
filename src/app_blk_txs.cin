@@ -6,6 +6,6 @@
 .storage_init %1
 .storage_rewind %2
 .storage_comment "block %3"
-.session_variable @in_block_txs_script 1
+.session_variable @skip_blockchain_lock 1
 <%1.txs.cin %3
 .quit

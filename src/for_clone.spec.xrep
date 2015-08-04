@@ -35,6 +35,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`}, next_copy_num ) );
 `{`!`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`) + `{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
 cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).get_key( ) );
 `}
+`{`@eq`(`$arg_fldval`,`'`'`)\
 `{`$i`}   class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
 `{`$i`}   cp_source->op_create( key_info );
@@ -49,6 +50,22 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`$i`}   cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
 `}\
 `{`$i`}   cp_source->op_apply( );
+`,\
+`{`$i`}   set_session_variable( get_special_var_name( e_special_var_key_info ), key_info );
+`{`!`@eq`(`$arg_extra`,`'`'`)\
+`{`$i`}   set_session_variable( get_special_var_name( e_special_var_extra_info ), cp_key_source->`{`$arg_extra`}( ) );
+`}\
+
+`{`$i`}   get_obj( ).`{`$arg_fldval`}( to_string( c_field_id_`{`$arg_field`} ) + "=" + to_string( "`{`$arg_value`}" ) );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_tfield`} ) + "=" );
+`}\
+`{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
+
+`{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + ","
+`{`$i`}    + to_string( c_field_id_`{`$arg_spfield`} ) + "=" + cp_key_source->get_key( ) );
+`}\
+`}\
 
 `{`@eq`(`$arg_sfield`,`'`'`)`|`@eq`(`$arg_clone_only`,`'true`'`)\
 `{`$i`}   get_obj( ).finish_review( );

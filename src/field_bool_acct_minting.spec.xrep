@@ -1,0 +1,7 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+   // [(start field_bool_acct_minting)] `{`$arg_id`}
+   get_obj( ).`{`$arg_field`}(
+    has_crypt_key_for_blockchain_account(
+    storage_blockchain( ), get_obj( ).`{`$arg_spfield`}( ).get_key( ) ) );
+   // [(finish field_bool_acct_minting)] `{`$arg_id`}
+`}

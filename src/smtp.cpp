@@ -111,7 +111,7 @@ const char* const c_smtp_prefix_data = "354";
 
 const char* c_response_multi_terminator = ".";
 
-const size_t c_initial_timeout = 15000;
+const size_t c_initial_timeout = 5000;
 const size_t c_subsequent_timeout = 1500;
 const size_t c_final_response_timeout = 500;
 

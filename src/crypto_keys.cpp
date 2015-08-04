@@ -555,6 +555,9 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
 
    unsigned char buf[ c_num_secret_bytes ];
 
+   if( secret.length( ) < 30 )
+      throw runtime_error( "invalid secret '" + secret + "' for private key contruction" );
+
    if( !is_wif_format )
    {
       if( secret.length( ) > 50 )
