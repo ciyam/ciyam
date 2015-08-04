@@ -348,7 +348,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
             if( i->first == ud )
                outf << "** Today ** " << i->second.second << '\n';
             else if( i->first == ud + ( days )1 )
-               outf << "Tommorow... " << i->second.second << '\n';
+               outf << "Tomorrow... " << i->second.second << '\n';
             else if( i->first == ud - ( days )1 )
                outf << "(Yesterday) " << i->second.second << '\n';
             else if( i->first >= ud_mon && i->first < ud_mon + ( days )7 )

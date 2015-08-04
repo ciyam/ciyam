@@ -7,10 +7,12 @@
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @blockchain
 ; </script>
 .storage_init %1
 .system_variable `{`$model`}_`{`$class`}_`{`$procedure`} @increment
+.session_variable @blockchain "%5"
+.session_variable @skip_blockchain_lock 1
 .perform_bulk_ops %2 @now %3 %4 `{`$model`}_`{`$class`}_`{`$procedure`}.csv
 .system_variable `{`$model`}_`{`$class`}_`{`$procedure`} @decrement
 .quit

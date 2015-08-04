@@ -541,16 +541,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
                   has_always_editable = true;
 
-               // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
-               if( item_values[ field_num ].length( ) >= 20
+               // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted and
+               // for blockchain applications the decryption is expected to occur in the application server.
+               if( !is_blockchain_application( )
+                && item_values[ field_num ].length( ) >= 20
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && ( view.encrypted_fields.count( view.field_ids[ i ] )
                 || view.hpassword_fields.count( view.field_ids[ i ] ) ) )
                {
                   if( !is_blockchain_application( ) )
                      item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
-                  else
-                     item_values[ field_num ] = password_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
                }
 
                if( view.field_ids[ i ] == view.filename_field )

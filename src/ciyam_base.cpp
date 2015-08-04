@@ -47,6 +47,7 @@
 #include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
+#  include "crypto_keys.h"
 #endif
 #include "fs_iterator.h"
 #include "oid_pointer.h"
@@ -185,6 +186,7 @@ const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_name = "@name";
 const char* const c_special_variable_none = "@none";
 const char* const c_special_variable_peer = "@peer";
+const char* const c_special_variable_uuid = "@uuid";
 const char* const c_special_variable_async = "@async";
 const char* const c_special_variable_class = "@class";
 const char* const c_special_variable_embed = "@embed";
@@ -194,8 +196,8 @@ const char* const c_special_variable_title = "@title";
 const char* const c_special_variable_cloned = "@cloned";
 const char* const c_special_variable_images = "@images";
 const char* const c_special_variable_module = "@module";
+const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
-const char* const c_special_variable_secret = "@secret";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
@@ -205,6 +207,7 @@ const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_cmd_hash = "@cmd_hash";
+const char* const c_special_variable_key_info = "@key_info";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_progress = "@progress";
@@ -212,6 +215,7 @@ const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
+const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
@@ -229,9 +233,9 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
-const char* const c_special_variable_in_block_txs_script = "@in_block_txs_script";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
+const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
@@ -320,6 +324,7 @@ struct session
     sql_count( 0 ),
     cache_count( 0 ),
     next_handle( 0 ),
+    p_tx_helper( 0 ),
     is_captured( false ),
     running_script( false ),
     skip_fk_fetches( false ),
@@ -343,7 +348,13 @@ struct session
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
 
-      variables.insert( make_pair( "@uuid", uuid( ).as_string( ) ) );
+      variables.insert( make_pair( c_special_variable_uuid, uuid( ).as_string( ) ) );
+
+#ifndef SSL_SUPPORT
+      variables.insert( make_pair( c_special_variable_pubkey, "n/a" ) );
+#else
+      variables.insert( make_pair( c_special_variable_pubkey, priv_key.get_public( ) ) );
+#endif
    }
 
    size_t id;
@@ -358,6 +369,9 @@ struct session
    string tz_name;
 
    string last_cmd;
+
+   string secret;
+   string account;
    string blockchain;
 
    set< string > perms;
@@ -391,6 +405,10 @@ struct session
 
    auto_ptr< sql_db > ap_db;
 
+#ifdef SSL_SUPPORT
+   private_key priv_key;
+#endif
+
    bool buffer_is_locked;
    auto_ptr< unsigned char > ap_buffer;
 
@@ -403,6 +421,7 @@ struct session
    vector< string > storage_controlled_modules;
 
    string transaction_log_command;
+   transaction_commit_helper* p_tx_helper;
 
    map< string, string > variables;
 
@@ -1311,9 +1330,10 @@ const char* const c_default_storage_identity = "<default>";
 
 const char* const c_ignore_field = "@ignore";
 
-size_t g_next_session_id;
-
 map< string, string > g_variables;
+map< string, map< string, string > > g_crypt_keys;
+
+size_t g_next_session_id;
 
 typedef vector< session* > session_container;
 
@@ -4594,7 +4614,7 @@ int exec_system( const string& cmd, bool async, bool delay )
       // to be issued synchronously then use "delay".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
-         gtp_session->async_or_delayed_system_commands.push_back( delay ? os : s );
+         gtp_session->async_or_delayed_system_commands.push_back( async ? s  : os );
 
          if( !gtp_session->async_or_delayed_temp_file.empty( ) )
             gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
@@ -5452,6 +5472,16 @@ string get_session_variable( const string& name )
          retval = " ";
       else if( name == c_special_variable_storage )
          retval = get_default_storage( );
+      else if( name == c_special_variable_crypt_key )
+      {
+         if( gtp_session
+          && gtp_session->variables.count( c_special_variable_uid )
+          && gtp_session->variables.count( c_special_variable_blockchain )
+          && has_crypt_key_for_blockchain_account(
+          gtp_session->variables[ c_special_variable_blockchain ],
+          gtp_session->variables[ c_special_variable_uid ] ) )
+            retval = "1";
+      }
    }
 
    return retval;
@@ -5625,6 +5655,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_peer );
       break;
 
+      case e_special_var_uuid:
+      s = string( c_special_variable_uuid );
+      break;
+
       case e_special_var_async:
       s = string( c_special_variable_async );
       break;
@@ -5661,12 +5695,12 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_module );
       break;
 
-      case e_special_var_return:
-      s = string( c_special_variable_return );
+      case e_special_var_pubkey:
+      s = string( c_special_variable_pubkey );
       break;
 
-      case e_special_var_secret:
-      s = string( c_special_variable_secret );
+      case e_special_var_return:
+      s = string( c_special_variable_return );
       break;
 
       case e_special_var_do_exec:
@@ -5705,6 +5739,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_cmd_hash );
       break;
 
+      case e_special_var_key_info:
+      s = string( c_special_variable_key_info );
+      break;
+
       case e_special_var_executed:
       s = string( c_special_variable_executed );
       break;
@@ -5731,6 +5769,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain:
       s = string( c_special_variable_blockchain );
+      break;
+
+      case e_special_var_extra_info:
+      s = string( c_special_variable_extra_info );
       break;
 
       case e_special_var_permission:
@@ -5801,16 +5843,16 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_attached_file_path );
       break;
 
-      case e_special_var_in_block_txs_script:
-      s = string( c_special_variable_in_block_txs_script );
-      break;
-
       case e_special_var_blockchain_info_hash:
       s = string( c_special_variable_blockchain_info_hash );
       break;
 
       case e_special_var_secondary_validation:
       s = string( c_special_variable_secondary_validation );
+      break;
+
+      case e_special_var_skip_blockchain_lock:
+      s = string( c_special_variable_skip_blockchain_lock );
       break;
 
       case e_special_var_peer_is_synchronising:
@@ -5830,7 +5872,6 @@ string get_special_var_name( special_var var )
 
 void set_default_session_variables( )
 {
-   set_session_variable( c_special_variable_restore, "0" );
    set_session_variable( c_special_variable_storage, get_default_storage( ) );
 }
 
@@ -5957,6 +5998,31 @@ bool set_system_variable( const string& name, const string& value, const string&
    }
 
    return retval;
+}
+
+bool has_crypt_key_for_blockchain_account( const string& blockchain, const string& account )
+{
+   guard g( g_mutex );
+
+   return g_crypt_keys[ blockchain ].count( account );
+}
+
+string get_crypt_key_for_blockchain_account( const string& blockchain, const string& account )
+{
+   guard g( g_mutex );
+
+   return g_crypt_keys[ blockchain ][ account ];
+}
+
+void set_crypt_key_for_blockchain_account(
+ const string& blockchain, const string& account, const string& crypt_key )
+{
+   guard g( g_mutex );
+
+   if( crypt_key.empty( ) && g_crypt_keys[ blockchain ].count( account ) )
+      g_crypt_keys[ blockchain ].erase( account );
+
+   g_crypt_keys[ blockchain ][ account ] = crypt_key;
 }
 
 void init_storage( const string& name,
@@ -7296,6 +7362,42 @@ void set_tmp_directory( const string& tmp_directory )
    gtp_session->tmp_directory = tmp_directory;
 }
 
+string get_session_secret( )
+{
+   return gtp_session->secret;
+}
+
+void set_session_secret( const string& secret )
+{
+   gtp_session->secret = secret;
+}
+
+void set_session_mint_account( const string& account )
+{
+   gtp_session->account = account;
+}
+
+bool uid_matches_session_mint_account( )
+{
+   if( get_uid( ) == gtp_session->account )
+      return true;
+   else
+      return false;
+}
+
+string session_shared_decrypt( const string& pubkey, const string& message )
+{
+   if( pubkey.empty( ) )
+      return message;
+
+#ifdef SSL_SUPPORT
+   public_key pub_key( pubkey );
+   return gtp_session->priv_key.decrypt_message( pub_key, message );
+#else
+   throw runtime_error( "session_shared_decrypt requires SSL support" );
+#endif
+}
+
 size_t get_next_handle( )
 {
    return ++gtp_session->next_handle;
@@ -8174,7 +8276,14 @@ string get_field_values( size_t handle,
 
          if( field != c_key_field && !next_value.empty( ) )
          {
-            string type_name = get_field_type_name( handle, context, field );
+            bool is_encrypted = false;
+            string type_name = get_field_type_name( handle, context, field, &is_encrypted );
+
+            if( is_encrypted
+             && uid_matches_session_mint_account( )
+             && !get_session_variable( c_special_variable_blockchain ).empty( ) )
+               next_value = decrypt( next_value );
+
             if( type_name == "date_time" || type_name == "tdatetime" )
             {
                date_time dt( next_value );
@@ -10077,6 +10186,14 @@ void transaction_commit( )
 
       if( gtp_session->transactions.size( ) == 1 )
       {
+         if( gtp_session->p_tx_helper )
+         {
+            gtp_session->p_tx_helper->at_commit( );
+
+            delete gtp_session->p_tx_helper;
+            gtp_session->p_tx_helper = 0;
+         }
+
          if( is_using_blockchain )
             append_undo_sql_statements( handler );
 
@@ -10089,15 +10206,16 @@ void transaction_commit( )
          }
 
          remove_tx_info_from_cache( );
+
          gtp_session->tx_key_info.clear( );
+         gtp_session->sql_undo_statements.clear( );
+
          handler.release_locks_for_commit( gtp_session );
       }
    }
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
-
-   gtp_session->sql_undo_statements.clear( );
 
    if( gtp_session->transactions.empty( ) )
    {
@@ -10124,8 +10242,6 @@ void transaction_rollback( )
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
 
-   gtp_session->sql_undo_statements.clear( );
-
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
       TRACE_LOG( TRACE_SQLSTMTS, "ROLLBACK" );
@@ -10136,7 +10252,15 @@ void transaction_rollback( )
 
    if( gtp_session->transactions.empty( ) )
    {
+      if( gtp_session->p_tx_helper )
+      {
+         delete gtp_session->p_tx_helper;
+         gtp_session->p_tx_helper = 0;
+      }
+
       gtp_session->tx_key_info.clear( );
+      gtp_session->sql_undo_statements.clear( );
+
       gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
 
       for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
@@ -10201,10 +10325,18 @@ string transaction_log_command( )
    return gtp_session->transaction_log_command;
 }
 
-void transaction_log_command( const string& log_command )
+void transaction_log_command( const string& log_command, transaction_commit_helper* p_tx_helper )
 {
    if( log_command.empty( ) )
+   {
       gtp_session->transaction_log_command.erase( );
+
+      if( gtp_session->p_tx_helper )
+      {
+         delete gtp_session->p_tx_helper;
+         gtp_session->p_tx_helper = 0;
+      }
+   }
    else
    {
       string blockchain( get_session_variable( c_special_variable_blockchain ) );
@@ -10221,6 +10353,14 @@ void transaction_log_command( const string& log_command )
          gtp_session->transaction_log_command += '\n';
 
       gtp_session->transaction_log_command += log_command;
+
+      if( p_tx_helper )
+      {
+         if( gtp_session->p_tx_helper )
+            delete gtp_session->p_tx_helper;
+
+         gtp_session->p_tx_helper = p_tx_helper;
+      }
    }
 }
 

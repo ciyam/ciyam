@@ -3072,22 +3072,42 @@ string decrypt( const string& s )
    else
    {
       string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+      string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
       if( crypt_key.empty( ) )
-         return decrypt_password( s, false, false, true );
+      {
+         if( !blockchain.empty( ) )
+            return string( );
+         else
+            return decrypt_password( s, false, false, true );
+      }
       else
-         return decrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
+      {
+         string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+
+         return decrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
+      }
    }
 }
 
 string encrypt( const string& s )
 {
    string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+   string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
    if( crypt_key.empty( ) )
-      return encrypt_password( s, false, false, true );
+   {
+      if( !blockchain.empty( ) )
+         return string( );
+      else
+         return encrypt_password( s, false, false, true );
+   }
    else
-      return encrypt( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ), s );
+   {
+      string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+
+      return encrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
+   }
 }
 
 string decrypt( const string& pw, const string& s )
@@ -3095,11 +3115,9 @@ string decrypt( const string& pw, const string& s )
    string retval( s );
 
    if( !s.empty( ) && !pw.empty( ) )
-   {
       retval = password_decrypt( s, pw );
-      if( retval.empty( ) )
-         retval = "*** bad password ***";
-   }
+   else
+      retval.erase( );
 
    return retval;
 }
@@ -3111,9 +3129,12 @@ string encrypt( const string& pw, const string& s )
    if( !s.empty( ) && !pw.empty( ) )
    {
       retval = password_encrypt( s, pw );
+
       if( retval.empty( ) )
          throw runtime_error( "unexpected empty encrypted data returned" );
    }
+   else
+      retval.erase( );
 
    return retval;
 }
@@ -3121,8 +3142,13 @@ string encrypt( const string& pw, const string& s )
 string shared_decrypt( const string& pk, const string& s )
 {
 #ifdef SSL_SUPPORT
+   string secret( get_session_secret( ) );
+
+   if( secret.empty( ) )
+      return string( );
+
    public_key pub_key( pk, true );
-   private_key priv_key( get_session_variable( get_special_var_name( e_special_var_secret ) ) );
+   private_key priv_key( secret );
 
    return priv_key.decrypt_message( pub_key, s );
 #else
@@ -3133,8 +3159,13 @@ string shared_decrypt( const string& pk, const string& s )
 string shared_encrypt( const string& pk, const string& s )
 {
 #ifdef SSL_SUPPORT
+   string secret( get_session_secret( ) );
+
+   if( secret.empty( ) )
+      return string( );
+
    public_key pub_key( pk, true );
-   private_key priv_key( get_session_variable( get_special_var_name( e_special_var_secret ) ) );
+   private_key priv_key( secret );
 
    return priv_key.encrypt_message( pub_key, s, 0, true );
 #else

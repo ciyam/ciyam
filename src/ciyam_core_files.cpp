@@ -2654,12 +2654,16 @@ void verify_transaction( const string& content, bool check_sigs,
             throw runtime_error( "invalid transaction log line '" + next_line + "'" );
 
          string cmd( next_line.substr( 0, pos ) );
+
          if( cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
             throw runtime_error( "invalid cmd '" + cmd + "' in log line '" + next_line + "'" );
 
-         pos = next_line.find( '"' );
-         if( pos == string::npos )
-            throw runtime_error( "invalid transaction log line '" + next_line + "'" );
+         if( cmd == "pc" || cmd == "pu" )
+         {
+            pos = next_line.find( '"' );
+            if( pos == string::npos )
+               throw runtime_error( "invalid transaction log line '" + next_line + "'" );
+         }
       }
       else if( !had_signature
        && prefix == string( c_file_type_core_transaction_detail_signature_prefix ) )
@@ -2725,7 +2729,8 @@ void verify_transaction( const string& content, bool check_sigs,
 
          while( !is_in_best_chain && error_message.empty( ) )
          {
-            if( ++transactions_not_in_best_chain > min( c_tx_min_non_confirmed, ( uint16_t )( cinfo.checkpoint_length * 2 ) ) )
+            if( ++transactions_not_in_best_chain
+             > max( c_tx_min_non_confirmed, ( uint16_t )( cinfo.checkpoint_length * 2 ) ) )
                throw runtime_error( "already has maximum non-confirmed transactions for account: " + account );
 
             next_transaction_id = tinfo.previous_transaction;
