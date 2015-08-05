@@ -422,7 +422,7 @@ bool perform_action( const string& module_name,
          if( !sess_info.tz_name.empty( ) )
             act_cmd += " -tz=" + sess_info.tz_name;
 
-         if( act == c_act_exec && !fieldlist.empty( ) )
+         if( act == c_act_exec && ( !fieldlist.empty( ) || is_blockchain_application( ) ) )
             act_cmd += " \"-v=" + fields_and_values + "\"";
 
          act_cmd += " " + key_list;
@@ -442,7 +442,7 @@ bool perform_action( const string& module_name,
             if( !sess_info.tz_name.empty( ) )
                act_cmd += " -tz=" + sess_info.tz_name;
 
-            if( act == c_act_exec && !fieldlist.empty( ) )
+            if( act == c_act_exec && ( !fieldlist.empty( ) || is_blockchain_application( ) ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
 
             act_cmd += " " + code_and_versions[ i ];
@@ -462,7 +462,7 @@ bool perform_action( const string& module_name,
             if( !sess_info.tz_name.empty( ) )
                act_cmd += " -tz=" + sess_info.tz_name;
 
-            if( !fieldlist.empty( ) )
+            if( !fieldlist.empty( ) || is_blockchain_application( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
 
             act_cmd += " " + next_code_and_version;
