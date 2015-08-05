@@ -1807,7 +1807,7 @@ string get_account_password( const string& blockchain, const string& account )
    return password;
 }
 
-void create_blockchain_transaction(
+string create_blockchain_transaction(
  const string& blockchain, const string& application, const string& log_command )
 {
    guard g( g_mutex );
@@ -1843,7 +1843,7 @@ void create_blockchain_transaction(
 
    construct_blockchain_info_file( blockchain );
 
-   append_transaction_for_blockchain_application( application, tx_hash );
+   return tx_hash;
 }
 
 void create_peer_listener( int port, const string& blockchain )
