@@ -147,26 +147,20 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
-void set_variable( size_t handle,
- const string& vname, const string& value, bool has_identified_local_session = true,
- string* p_field_values_to_log = 0, auto_ptr< temporary_session_variable >* p_ap_tmp_bh = 0 )
+void set_variable( size_t handle, const string& vname,
+ const string& value, auto_ptr< temporary_session_variable >* p_ap_tmp_bh = 0 )
 {
-   if( !has_identified_local_session && vname != get_special_var_name( e_special_var_bh )
+   if( !storage_blockchain( ).empty( )
+    && vname != get_special_var_name( e_special_var_bh )
     && get_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
       throw runtime_error( "invalid field '" + vname + "'" );
 
    // NOTE: The special variable used for block height is set as a session variable as it
    // needs to apply to any other records created or updated in the same operation scope.
-   if( p_ap_tmp_bh && p_field_values_to_log
-    && vname == get_special_var_name( e_special_var_bh ) )
+   if( vname == get_special_var_name( e_special_var_bh ) )
    {
-      if( !p_ap_tmp_bh->get( ) )
+      if( p_ap_tmp_bh && !p_ap_tmp_bh->get( ) )
          p_ap_tmp_bh->reset( new temporary_session_variable( vname, value ) );
-
-      if( !p_field_values_to_log->empty( ) )
-         *p_field_values_to_log += ',';
-
-      *p_field_values_to_log += vname + '=' + value;
    }
    else
       instance_set_variable( handle, "", vname, value );
@@ -2487,11 +2481,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                   {
-                     if( blockchain.empty( ) )
+                     if( !blockchain.empty( ) )
                         set_variable( handle, i->first, i->second );
                      else
-                        set_variable( handle, i->first, i->second,
-                         has_identified_local_session, &field_values_to_log, &ap_tmp_bh );
+                        set_variable( handle, i->first, i->second, &ap_tmp_bh );
                   }
                }
 
@@ -2777,11 +2770,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                   {
-                     if( blockchain.empty( ) )
+                     if( !blockchain.empty( ) )
                         set_variable( handle, i->first, i->second );
                      else
-                        set_variable( handle, i->first, i->second,
-                         has_identified_local_session, &field_values_to_log, &ap_tmp_bh );
+                        set_variable( handle, i->first, i->second, &ap_tmp_bh );
                   }
                   else
                   {
@@ -3238,11 +3230,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                {
-                  if( blockchain.empty( ) )
+                  if( !blockchain.empty( ) )
                      set_variable( handle, i->first, i->second );
                   else
-                     set_variable( handle, i->first, i->second,
-                      has_identified_local_session, &field_values_to_log, &ap_tmp_bh );
+                     set_variable( handle, i->first, i->second, &ap_tmp_bh );
                }
                else
                   has_any_set_flds = true;
@@ -3339,9 +3330,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
                   {
                      // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                     if( !j->first.empty( ) && j->first[ 0 ] == '@' )
-                        instance_set_variable( handle, "", j->first, j->second );
-                     else
+                     if( !j->first.empty( ) && j->first[ 0 ] != '@' )
                      {
                         bool is_encrypted = false;
                         bool is_transient = false;

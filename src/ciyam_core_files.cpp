@@ -553,6 +553,25 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
    next_log_line.insert( pos + 1, account + ' ' );
 
    pos = next_log_line.find( '"' );
+
+   if( pos != string::npos )
+   {
+      string::size_type npos = next_log_line.find( '"', pos + 1 );
+
+      if( npos == string::npos )
+         throw runtime_error( "invalid next log line '"
+          + next_log_line + "' when attempting to construct script" );
+      else
+      {
+         string key_or_val_assign( next_log_line.substr( pos, npos - pos ) );
+
+         if( key_or_val_assign.find( '=' ) == string::npos )
+            pos = next_log_line.find( '"', npos + 1 );
+         else if( key_or_val_assign.length( ) > 4 && key_or_val_assign.substr( 0, 4 ) == "\"-v=" )
+            pos += 3;
+      }
+   }
+
    if( pos == string::npos )
       throw runtime_error( "invalid next log line '"
        + next_log_line + "' when attempting to construct script" );
@@ -3984,6 +4003,8 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
       vector< string > lines;
       buffer_file_lines( filename, lines );
 
+      string block_height_marker( get_special_var_name( e_special_var_bh ) );
+
       map< string, vector< string > > app_log_lines;
 
       for( size_t i = 0; i < lines.size( ); i++ )
@@ -4012,7 +4033,7 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
                string next_log_line( tinfo.log_lines[ j ] );
                string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-               next_log_line.insert( pos + 1, "@bh=%1," );
+               next_log_line.insert( pos + 1, block_height_marker + "=%1," );
                app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
