@@ -570,9 +570,15 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
 
    void at_commit( )
    {
-      create_blockchain_transaction( blockchain, storage_name, transaction_cmd );
+      tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd );
    }
 
+   void after_commit( )
+   {
+      append_transaction_for_blockchain_application( storage_name, tx_hash );
+   }
+
+   string tx_hash;
    string blockchain;
    string storage_name;
    string transaction_cmd;

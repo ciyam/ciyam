@@ -6960,7 +6960,7 @@ void storage_process_undo( uint64_t new_height )
       }
 
       if( !found_rewind_point )
-         throw runtime_error( "unexpected rewind point not found" );
+         throw runtime_error( "unexpected rewind point " + to_string( new_height ) + " not found" );
 
       outf.flush( );
       if( !outf.good( ) )
@@ -10187,12 +10187,7 @@ void transaction_commit( )
       if( gtp_session->transactions.size( ) == 1 )
       {
          if( gtp_session->p_tx_helper )
-         {
             gtp_session->p_tx_helper->at_commit( );
-
-            delete gtp_session->p_tx_helper;
-            gtp_session->p_tx_helper = 0;
-         }
 
          if( is_using_blockchain )
             append_undo_sql_statements( handler );
@@ -10203,6 +10198,14 @@ void transaction_commit( )
          {
             TRACE_LOG( TRACE_SQLSTMTS, "COMMIT" );
             exec_sql( *gtp_session->ap_db, "COMMIT" );
+         }
+
+         if( gtp_session->p_tx_helper )
+         {
+            gtp_session->p_tx_helper->after_commit( );
+
+            delete gtp_session->p_tx_helper;
+            gtp_session->p_tx_helper = 0;
          }
 
          remove_tx_info_from_cache( );
@@ -10378,6 +10381,8 @@ void append_transaction_for_blockchain_application(
    outf << transaction_hash << '\n';
 
    outf.flush( );
+   if( !outf.good( ) )
+      throw runtime_error( "*** unexpected error occurred appending local tx hash ***" );
 }
 
 transaction::transaction( bool is_not_dummy )

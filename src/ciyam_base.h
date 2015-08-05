@@ -638,7 +638,8 @@ size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
 
 struct transaction_commit_helper
 {
-   virtual void at_commit( ) = 0;
+   virtual void at_commit( ) { }
+   virtual void after_commit( ) { }
 };
 
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
