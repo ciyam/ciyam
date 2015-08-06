@@ -2339,16 +2339,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                new_key += append.substr( 0, min( append.length( ), c_max_key_append_chars ) );
             }
 
-            size_t remove_length = 2;
-            string::size_type spos = next_command.find( uid ) + uid.length( );
+            size_t remove_length = 2; // i.e. To remove "" if that is how the key was provided.
+            string::size_type spos = next_command.find( uid ) + uid.length( ) + 1;
 
             // NOTE: The generated key is inserted into the "next_command" so an actual key value
             // will appear in the transaction log (otherwise log operations could not be restored).
             string::size_type ipos = next_command.find( "\"\"", spos );
             if( ipos == string::npos )
             {
-               remove_length = 3;
-               ipos = next_command.find( "\" \"", spos );
+               remove_length = 3; // i.e. Includes the trailing quote if the key was provided as " ".
+               ipos = next_command.find( "\" ", spos );
             }
 
             if( ipos == string::npos )

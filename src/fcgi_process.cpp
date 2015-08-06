@@ -409,7 +409,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                set_field_values += "=" + escaped( escaped( user_field_info[ userfetch ], "," ), ",\"", c_nul, "rn\r\n" );
 
                // NOTE: Set an instance variable so the application server can identify the trigger field.
-               if( !is_blockchain_application( ) )
+               if( is_new_record || !is_blockchain_application( ) )
                   set_field_values += ",@trigger=" + userfetch;
             }
          }
