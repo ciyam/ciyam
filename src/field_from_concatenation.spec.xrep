@@ -6,7 +6,9 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_concatenation)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   if( `{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )\
+`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`}`{`@eq`(`$arg_non_trigger`,`'true`'`)
+    && is_null( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) )`} )
    {
       string value;
 
