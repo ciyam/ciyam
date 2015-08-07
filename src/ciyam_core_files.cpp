@@ -563,7 +563,7 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
           + next_log_line + "' when attempting to construct script" );
       else
       {
-         string key_or_val_assign( next_log_line.substr( pos, npos - pos ) );
+         string key_or_val_assign( next_log_line.substr( pos, npos - pos + 1 ) );
 
          if( key_or_val_assign.find( '=' ) == string::npos )
             pos = next_log_line.find( '"', npos + 1 );
@@ -4033,7 +4033,11 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
                string next_log_line( tinfo.log_lines[ j ] );
                string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-               next_log_line.insert( pos + 1, block_height_marker + "=%1," );
+               if( next_log_line[ pos + 1 ] == '"' )
+                  next_log_line.insert( pos + 1, block_height_marker + "=%1" );
+               else
+                  next_log_line.insert( pos + 1, block_height_marker + "=%1," );
+
                app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
