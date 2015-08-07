@@ -84,7 +84,7 @@ const size_t c_default_cache_limit = 1000;
 const size_t c_iteration_row_cache_limit = 100;
 
 const int c_max_lock_attempts = 20;
-const int c_lock_attempt_sleep_time = 100;
+const int c_lock_attempt_sleep_time = 200;
 
 const int c_loop_variable_digits = 8;
 
