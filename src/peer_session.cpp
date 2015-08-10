@@ -1296,11 +1296,13 @@ string socket_command_processor::get_cmd_and_args( )
                   --new_block_wait;
                else
                {
-                  if( !has_better_block( blockchain, new_block.height, new_block.weight )
-                   && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
-                     store_new_block( blockchain, new_block_data );
+                  string tmp_new_block_data( new_block_data );
 
                   new_block_data.erase( );
+
+                  if( !has_better_block( blockchain, new_block.height, new_block.weight )
+                   && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
+                     store_new_block( blockchain, tmp_new_block_data );
                }
             }
          }
