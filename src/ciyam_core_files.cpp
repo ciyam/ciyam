@@ -13,6 +13,7 @@
 #  include <map>
 #  include <set>
 #  include <deque>
+#  include <limits>
 #  include <fstream>
 #  include <stdexcept>
 #endif
@@ -1357,7 +1358,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             throw runtime_error( "secondary account creation not permitted" );
 
          map< string, uint64_t > account_balances;
-         map< string, uint64_t > account_heights;
 
          set< string > reused_transactions;
          set< string > retagged_transactions;
@@ -1387,7 +1387,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                else if( !parallel_block_minted_had_secondary_account )
                   previous_balance -= total_reward;
 
-               account_heights.insert( make_pair( parallel_block_minted_minter_id, block_height ) );
                account_balances.insert( make_pair( parallel_block_minted_minter_id, previous_balance ) );
 
                ++non_blob_extras;
@@ -1431,20 +1430,20 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             // balance of the parallel minters back to the last block they both had in common.
             if( new_previous_block != old_previous_block )
             {
-               parallel_block_height = block_height;
+               parallel_block_height = block_height - 1;
 
                while( parallel_block_height
                 && new_previous_block != old_previous_block )
                {
                   TRACE_LOG( TRACE_CORE_FLS, "chain " + chain
                    + " replacing " + old_previous_block.substr( 0, c_id_length ) + " with "
-                   + new_previous_block.substr( 0, c_id_length ) + " at height " + to_string( parallel_block_height - 1 ) );
+                   + new_previous_block.substr( 0, c_id_length ) + " at height " + to_string( parallel_block_height ) );
 
-                  new_chain_height_blocks.insert( make_pair( parallel_block_height - 1, new_previous_block ) );
+                  new_chain_height_blocks.insert( make_pair( parallel_block_height, new_previous_block ) );
 
                   ++non_blob_extras;
                   p_extras->push_back( make_pair( new_previous_block,
-                   "c" + chain + ".b" + to_string( parallel_block_height - 1 ) ) );
+                   "c" + chain + ".b" + to_string( parallel_block_height ) ) );
 
                   block_info old_binfo;
                   get_block_info( old_binfo, old_previous_block );
@@ -1475,13 +1474,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   else if( !old_binfo.had_secondary_account )
                      previous_balance -= total_reward;
 
-                  uint64_t old_block_height = parallel_block_height;
-                  if( account_heights.count( old_binfo.minter_id ) )
-                     old_block_height = account_heights[ old_binfo.minter_id ];
-
                   old_previous_block = old_binfo.previous_block;
 
-                  account_heights[ old_binfo.minter_id ] = old_block_height;
                   account_balances[ old_binfo.minter_id ] = previous_balance;
 
                   string::size_type pos = old_minter_tag.find( ".b" );
@@ -1512,13 +1506,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   if( !new_binfo.had_secondary_account )
                      new_account_balance += total_reward;
 
-                  uint64_t new_block_height = parallel_block_height;
-                  if( account_heights.count( new_binfo.minter_id ) )
-                     new_block_height = account_heights[ new_binfo.minter_id ];
-
                   new_previous_block = new_binfo.previous_block;
 
-                  account_heights[ new_binfo.minter_id ] = new_block_height;
                   account_balances[ new_binfo.minter_id ] = new_account_balance;
 
                   pos = new_minter_tag.find( ".b" );
@@ -1554,7 +1543,10 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             }
 
             if( need_to_rewind_storage )
-               set_session_variable( get_special_var_name( e_special_var_rewind_height ), to_string( parallel_block_height ) );
+            {
+               set_session_variable(
+                get_special_var_name( e_special_var_rewind_height ), to_string( parallel_block_height ) );
+            }
          }
 
          string minter_account( "c" + chain + ".a" + account );
@@ -1776,15 +1768,11 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          if( !outf )
             throw runtime_error( "unable to open '" + filename + "' for append" );
 
-         outf << block_height;
-
-         if( parallel_block_height )
-            outf << ':' << parallel_block_height;
-
-         outf << '\n';
-
          for( size_t i = all_transaction_hashes.size( ) - 1; ; )
          {
+            if( all_transaction_hashes[ i ].size( ) )
+               outf << ( block_height - i ) << '\n';
+
             for( size_t j = 0; j < all_transaction_hashes[ i ].size( ); j++ )
                outf << all_transaction_hashes[ i ][ j ] << '\n';
 
@@ -4005,40 +3993,52 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
 
       string block_height_marker( get_special_var_name( e_special_var_bh ) );
 
+      uint64_t height = 0;
+      bool has_new_height = false;
       map< string, vector< string > > app_log_lines;
 
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          string next( lines[ i ] );
 
-         if( i == 0 )
+         if( next.length( ) < numeric_limits< uint64_t >::digits10 )
          {
-            block_height = from_string< uint64_t >( next );
-            continue;
+            has_new_height = true;
+            height = from_string< uint64_t >( next );
          }
-
-         transaction_info tinfo;
-         if( get_transaction_info( tinfo, next ) )
+         else
          {
-            txs.insert( next );
-
-            string account( tinfo.account_id );
-            string::size_type pos = account.find( ".a" );
-
-            if( pos != string::npos )
-               account.erase( 0, pos + 2 );
-
-            for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+            transaction_info tinfo;
+            if( get_transaction_info( tinfo, next ) )
             {
-               string next_log_line( tinfo.log_lines[ j ] );
-               string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
+               if( has_new_height )
+               {
+                  has_new_height = false;
 
-               if( next_log_line[ pos + 1 ] == '"' )
-                  next_log_line.insert( pos + 1, block_height_marker + "=%1" );
-               else
-                  next_log_line.insert( pos + 1, block_height_marker + "=%1," );
+                  app_log_lines[ tinfo.application ].push_back(
+                   "storage_comment \"" + string( c_block_prefix ) + " " + to_string( height ) + "\"" );
+               }
 
-               app_log_lines[ tinfo.application ].push_back( next_log_line );
+               txs.insert( next );
+
+               string account( tinfo.account_id );
+               string::size_type pos = account.find( ".a" );
+
+               if( pos != string::npos )
+                  account.erase( 0, pos + 2 );
+
+               for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+               {
+                  string next_log_line( tinfo.log_lines[ j ] );
+                  string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
+
+                  if( next_log_line[ pos + 1 ] == '"' )
+                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) );
+                  else
+                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) + "," );
+
+                  app_log_lines[ tinfo.application ].push_back( next_log_line );
+               }
             }
          }
       }
