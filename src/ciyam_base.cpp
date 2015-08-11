@@ -4657,12 +4657,18 @@ int run_script( const string& script_name, bool async, bool delay )
    {
       string script_args( "~" + uuid( ).as_string( ) );
 
-      ofstream outf( script_args.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open '" + script_args + "' for output" );
+      // NOTE: Empty code block for scope purposes.
+      {
+         ofstream outf( script_args.c_str( ) );
+         if( !outf )
+            throw runtime_error( "unable to open '" + script_args + "' for output" );
 
-      outf << "<" << arguments << endl;
-      outf.close( );
+         outf << "<" << arguments << endl;
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred writing to script args file ***" );
+      }
 
       if( gtp_session )
          gtp_session->async_or_delayed_temp_file = script_args;
