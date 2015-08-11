@@ -1457,7 +1457,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   // NOTE: Remember the transaction hashes (and minter) that were part of the previous best chain.
                   for( size_t i = 0; i < old_binfo.transaction_hashes.size( ); i++ )
                   {
-                     if( !new_transaction_hashes.count( old_binfo.transaction_hashes[ i ] ) )
+                     if( new_transaction_hashes.count( old_binfo.transaction_hashes[ i ] ) )
+                        reused_transactions.insert( old_binfo.transaction_hashes[ i ] );
+                     else
                         old_transaction_hashes.insert( make_pair( old_binfo.transaction_hashes[ i ], old_binfo.minter_id ) );
                   }
 
@@ -1498,7 +1500,13 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   all_transaction_hashes.push_back( new_binfo.transaction_hashes );
 
                   for( size_t i = 0; i < new_binfo.transaction_hashes.size( ); i++ )
-                     new_transaction_hashes.insert( new_binfo.transaction_hashes[ i ] );
+                  {
+                     if( !new_transaction_hashes.count( new_binfo.transaction_hashes[ i ] ) )
+                        new_transaction_hashes.insert( new_binfo.transaction_hashes[ i ] );
+                     else
+                        throw runtime_error( "transaction " + new_binfo.transaction_hashes[ i ]
+                         + " has been repeated in the new block at height " + to_string( block_height ) );
+                  }
 
                   if( account_balances.count( new_binfo.minter_id ) )
                      new_account_balance = account_balances[ new_binfo.minter_id ];
@@ -1527,7 +1535,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                // NOTE: Any old best chain transactions that did not end up in the new best chain are now re-tagged.
                for( map< string, string >::iterator i = old_transaction_hashes.begin( ); i != old_transaction_hashes.end( ); ++i )
                {
-                  if( !new_transaction_hashes.count( i->first ) )
+                  if( new_transaction_hashes.count( i->first ) )
+                     reused_transactions.insert( i->first );
+                  else
                   {
                      retagged_transactions.insert( i->first );
 
