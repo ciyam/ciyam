@@ -346,7 +346,7 @@ int64_t file_size( const char* p_name )
     GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
 
    if( hFile == INVALID_HANDLE_VALUE )
-      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input" );
+      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
 
    LARGE_INTEGER pos, npos;
    pos.QuadPart = INT64_C( 0 );
@@ -360,7 +360,7 @@ int64_t file_size( const char* p_name )
 #else
    int fd = _open( p_name, O_RDONLY );
    if( fd <= 0 )
-      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input" );
+      throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
 
    retval = lseek64( fd, INT64_C( 0 ), SEEK_END );
    if( retval < 0 )
@@ -1589,7 +1589,7 @@ string buffer_file( const string& file_name )
    FILE* fp = fopen( file_name.c_str( ), "rb, ccs=UTF-8" );
 #endif
    if( !fp )
-      throw runtime_error( "unable to open file '" + file_name + "' for input" );
+      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file" );
 
    fseek( fp, 0, SEEK_END );
    long size = ftell( fp );
@@ -1609,7 +1609,7 @@ void write_file( const string& file_name, unsigned char* p_data, size_t length )
 {
    FILE* fp = fopen( file_name.c_str( ), "wb" );
    if( !fp )
-      throw runtime_error( "unable to open file '" + file_name + "' for output" );
+      throw runtime_error( "unable to open file '" + file_name + "' for output in write_file" );
 
    if( fwrite( p_data, 1, length, fp ) != length )
       throw runtime_error( "writing to output file '" + file_name + "'" );
@@ -1622,7 +1622,7 @@ void buffer_file_lines( const string& file_name,
 {
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + file_name + "' for input" );
+      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
 
    string next;
    size_t line_num = 0;
@@ -1638,14 +1638,15 @@ void buffer_file_lines( const string& file_name,
    }
 
    if( !inpf.eof( ) )
-      throw runtime_error( "unexpected error occurred whilst reading '" + file_name + "' for input" );
+      throw runtime_error(
+       "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_lines" );
 }
 
 void buffer_file_lines( const string& file_name, set< string >& lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + file_name + "' for input" );
+      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
 
    string next;
    size_t line_num = 0;
@@ -1661,7 +1662,8 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
    }
 
    if( !inpf.eof( ) )
-      throw runtime_error( "unexpected error occurred whilst reading '" + file_name + "' for input" );
+      throw runtime_error(
+       "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_lines" );
 }
 
 void buffer_file_items( const string& file_name,
@@ -1669,7 +1671,7 @@ void buffer_file_items( const string& file_name,
 {
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + file_name + "' for input" );
+      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_items" );
 
    string next;
    size_t line_num = 0;
@@ -1692,7 +1694,8 @@ void buffer_file_items( const string& file_name,
    }
 
    if( !inpf.eof( ) )
-      throw runtime_error( "unexpected error occurred whilst reading '" + file_name + "' for input" );
+      throw runtime_error(
+       "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_items" );
 }
 
 bool absolute_path( const string& relative_path, string& absolute_path )
@@ -1956,7 +1959,7 @@ void read_strings( const string& filename, map< string, string >& strings,
 {
    ifstream inpf( filename.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + filename + "' for input" );
+      throw runtime_error( "unable to open file '" + filename + "' for input in read_strings" );
 
    string next;
    bool is_first = true;
@@ -1994,13 +1997,14 @@ void read_strings( const string& filename, map< string, string >& strings,
          unescape( data, p_specials, esc );
 
       if( strings.count( key ) )
-         throw runtime_error( "duplicate string key '" + key + "' found reading strings" );
+         throw runtime_error( "duplicate string key '" + key + "' found reading strings in read_strings" );
 
       strings.insert( string_value_type( key, data ) );
    }
 
    if( !inpf.eof( ) )
-      throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
+      throw runtime_error(
+       "unexpected error occurred whilst reading '" + filename + "' for input in read_strings" );
 }
 
 void write_strings( const string& filename,
@@ -2008,7 +2012,7 @@ void write_strings( const string& filename,
 {
    ofstream outf( filename.c_str( ) );
    if( !outf )
-      throw runtime_error( "unable to open file '" + filename + "' for output" );
+      throw runtime_error( "unable to open file '" + filename + "' for output in write_strings" );
 
    for( string_const_iterator i = strings.begin( ); i != strings.end( ); ++i )
    {
@@ -2022,7 +2026,7 @@ void write_strings( const string& filename,
    outf.flush( );
 
    if( !outf.good( ) )
-      throw runtime_error( "output stream is bad for '" + filename + "'" );
+      throw runtime_error( "output stream is bad for '" + filename + "' in write_strings" );
 }
 
 string extract_text_from_html( const string& html )

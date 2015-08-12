@@ -6067,7 +6067,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count )
 
       ofstream outf( sql_file_name.c_str( ) );
       if( !outf )
-         throw runtime_error( "unable to open file '" + sql_file_name + "' for output" );
+         throw runtime_error( "unable to open file '" + sql_file_name + "' for output in backup_storage" );
 
       vector< string >::const_iterator mci;
       for( mci = handler.get_root( ).module_list.begin( ); mci != handler.get_root( ).module_list.end( ); ++mci )
@@ -6635,7 +6635,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
 
       ofstream ltfs( new_ltf_file_name.c_str( ), ios::out | ios::app );
       if( !ltfs )
-         throw runtime_error( "unable to open file '" + new_ltf_file_name + "' for output" );
+         throw runtime_error( "unable to open file '" + new_ltf_file_name + "' for output in splice_storage_log" );
 
       // NOTE: Append any .ltf files for the new modules to the main .ltf file.
       for( size_t i = 0; i < module_list.size( ); i++ )
@@ -6652,7 +6652,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
 
       ltfs.flush( );
       if( !ltfs.good( ) )
-         throw runtime_error( "unexpected error occurred writing to '" + new_ltf_file_name + "'" );
+         throw runtime_error( "unexpected error occurred writing to '" + new_ltf_file_name + "' in splice_storage_log" );
 
       ltfs.close( );
       if( !has_ltf_entries )
@@ -6663,11 +6663,11 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
 
       ifstream logs( log_file_name.c_str( ) );
       if( !logs )
-         throw runtime_error( "unable to open file '" + log_file_name + "' for input" );
+         throw runtime_error( "unable to open file '" + log_file_name + "' for input in splice_storage_log" );
 
       ofstream new_logs( new_log_file_name.c_str( ) );
       if( !new_logs )
-         throw runtime_error( "unable to open file '" + new_log_file_name + "' for output" );
+         throw runtime_error( "unable to open file '" + new_log_file_name + "' for output in splice_storage_log" );
 
       new_logs << "[0]" << uuid( ).as_string( ) << '\n';
 
@@ -6933,11 +6933,11 @@ void storage_process_undo( uint64_t new_height )
    {
       ifstream inpf( undo_sql.c_str( ) );
       if( !inpf )
-         throw runtime_error( "unable to open file '" + undo_sql + "' for input" );
+         throw runtime_error( "unable to open file '" + undo_sql + "' for input in storage_process_undo" );
 
       ofstream outf( new_undo_sql.c_str( ) );
       if( !outf )
-         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output" );
+         throw runtime_error( "unable to open file '" + new_undo_sql + "' for output in storage_process_undo" );
 
       deque< string > undo_statements;
 
@@ -7561,11 +7561,13 @@ void module_load( const string& module_name,
 
                ofstream out1( sql_file_name.c_str( ), ios::out | ios::app );
                if( !out1 )
-                  throw runtime_error( "unable to open file '" + sql_file_name + "' for output/append" );
+                  throw runtime_error(
+                   "unable to open file '" + sql_file_name + "' for output/append in module_load" );
 
                ofstream out2( temp_sql_file_name.c_str( ) );
                if( !out2 )
-                  throw runtime_error( "unable to open file '" + temp_sql_file_name + "' for output" );
+                  throw runtime_error(
+                   "unable to open file '" + temp_sql_file_name + "' for output in module_load" );
 
                if( file_existed )
                   out1 << '\n';
@@ -9112,7 +9114,7 @@ void export_package( const string& module,
 
    ofstream outf( filename.c_str( ) );
    if( !outf )
-      throw runtime_error( "unable to open file '" + filename + "' for output" );
+      throw runtime_error( "unable to open file '" + filename + "' for output in export_package" );
 
    map< string, map< string, string > > tests;
    if( !test_info.empty( ) )
@@ -9345,7 +9347,7 @@ void export_package( const string& module,
 
    outf.flush( );
    if( !outf.good( ) )
-      throw runtime_error( "unexpected bad stream for '" + filename + "'" );
+      throw runtime_error( "unexpected bad stream for '" + filename + "' in export_package" );
 }
 
 void import_package( const string& module,
@@ -9408,7 +9410,7 @@ void import_package( const string& module,
 
    ifstream inpf( filename.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + filename + "' for input" );
+      throw runtime_error( "unable to open file '" + filename + "' for input in import_package" );
 
    set_uid( uid );
    set_dtm( dtm );

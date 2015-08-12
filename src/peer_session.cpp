@@ -1039,12 +1039,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
          else
          {
+            socket_handler.get_blockchain_info( ).first.erase( );
+
             fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket );
             increment_peer_files_uploaded( file_size( socket_handler.get_blockchain_info( ).second ) );
 
             file_remove( socket_handler.get_blockchain_info( ).second );
 
-            socket_handler.get_blockchain_info( ).first.erase( );
             socket_handler.get_blockchain_info( ).second.erase( );
          }
 
