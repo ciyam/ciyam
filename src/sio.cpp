@@ -352,7 +352,7 @@ void dump_sio_file( const string& filename, ostream* p_ostream )
 
    ifstream inpf( filename.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + filename + "' for input" );
+      throw runtime_error( "unable to open file '" + filename + "' for input in dump_sio_file" );
 
    sio_reader reader( inpf );
    dump_sio( reader, p_ostream );

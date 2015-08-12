@@ -1986,7 +1986,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             ifstream inpf( path.c_str( ) );
             if( !inpf )
-               throw runtime_error( "unable to open file '" + path + "' for input" );
+               throw runtime_error( "unable to open file '" + path + "' for input in perform_fetch" );
 
             string next;
             while( getline( inpf, next ) )
