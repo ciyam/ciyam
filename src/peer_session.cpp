@@ -220,6 +220,10 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
 
          next_data = construct_new_block( blockchain, next_password, &next_block );
 
+         // NOTE: If no txs have been included then don't bother continuing.
+         if( !next_block.num_txs )
+            break;
+
          if( i == passwords.begin( ) || next_block.weight < new_block.weight )
          {
             data = next_data;

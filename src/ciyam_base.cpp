@@ -289,7 +289,9 @@ typedef module_commands_registry_container::value_type module_commands_registry_
 class storage_handler;
 
 mutex g_mutex;
+mutex g_var_mutex;
 mutex g_trace_mutex;
+mutex g_app_log_mutex;
 
 string g_storage_name_lock;
 
@@ -5444,7 +5446,7 @@ bool any_peer_still_has_file_hash_to_put(
 
 string get_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    string retval;
 
@@ -5495,7 +5497,7 @@ string get_session_variable( const string& name )
 
 void set_session_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    if( gtp_session )
    {
@@ -5516,7 +5518,7 @@ void set_session_variable( const string& name, const string& value )
 
 bool set_session_variable( const string& name, const string& value, const string& current )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    bool retval = false;
 
@@ -5547,7 +5549,7 @@ bool set_session_variable( const string& name, const string& value, const string
 
 bool any_has_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5561,7 +5563,7 @@ bool any_has_session_variable( const string& name )
 
 bool any_has_session_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5576,7 +5578,7 @@ bool any_has_session_variable( const string& name, const string& value )
 
 bool is_first_using_session_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5590,7 +5592,7 @@ bool is_first_using_session_variable( const string& name )
 
 bool is_first_using_session_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5891,7 +5893,7 @@ system_variable_lock::system_variable_lock( const string& name )
    {
       // NOTE: Empty code block for scope purposes.
       {
-         guard g( g_mutex );
+         guard g( g_var_mutex );
 
          if( set_system_variable( name, "<locked>", "" ) )
          {
@@ -5914,7 +5916,7 @@ system_variable_lock::~system_variable_lock( )
 
 string get_system_variable( const string& name )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    string retval;
 
@@ -5939,7 +5941,7 @@ string get_system_variable( const string& name )
 
 void set_system_variable( const string& name, const string& value )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    string val( value );
 
@@ -5975,7 +5977,7 @@ void set_system_variable( const string& name, const string& value )
 
 bool set_system_variable( const string& name, const string& value, const string& current )
 {
-   guard g( g_mutex );
+   guard g( g_var_mutex );
 
    bool retval = false;
 
@@ -10378,7 +10380,7 @@ void transaction_log_command( const string& log_command, transaction_commit_help
 void append_transaction_for_blockchain_application(
  const string& application, const string& transaction_hash )
 {
-   guard g( g_mutex );
+   guard g( g_app_log_mutex );
 
    string filename( application + ".txs.log" );
 

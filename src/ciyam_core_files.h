@@ -31,6 +31,7 @@ struct new_block_info
    new_block_info( )
     :
     can_mint( false ),
+    num_txs( 0 ),
     weight( 0 ),
     range( e_target_range_less_optimal ),
     height( 0 ),
@@ -40,6 +41,8 @@ struct new_block_info
    }
 
    bool can_mint;
+
+   size_t num_txs;
 
    uint64_t weight;
    target_range range;
