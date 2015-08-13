@@ -1652,8 +1652,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
          // NOTE: If is the new chain head then remove the transaction file tag for all transactions included
          // (after verifying that the transaction hasn't already been included and that it has no unconfirmed
-         // previous transaction).
-         if( is_new_chain_head && !transaction_hashes.empty( ) )
+         // previous transaction). After processing all the transactions in the block itself any transactions
+         // that were included from parallel blocks will have their tag (if present) removed also.
+         if( is_new_chain_head && !new_transaction_hashes.empty( ) )
          {
             set< string > included_transactions;
 
@@ -1673,30 +1674,28 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                if( previous_transaction.empty( ) && sequence != 1 )
                   throw runtime_error( "initial transaction " + transaction_hashes[ i ] + " has incorrect sequence" );
 
-               if( !cinfo.is_test
-                && !previous_transaction.empty( ) && has_file( previous_transaction ) )
-               {
-                  bool included = get_transaction_info( tinfo, previous_transaction );
-
-                  if( !included
-                   && ( included_transactions.count( previous_transaction )
-                   || retagged_transactions.count( previous_transaction ) ) )
-                     included = true;
-
-                  if( !included || sequence != tinfo.sequence + 1 )
-                     throw runtime_error( "transaction " + transaction_hashes[ i ] + " is not in sequence" );
-               }
-
                included_transactions.insert( transaction_hashes[ i ] );
 
-               if( retagged_transactions.count( transaction_hashes[ i ] ) )
-                  retagged_transactions.erase( transaction_hashes[ i ] );
-               else if( !reused_transactions.count( transaction_hashes[ i ] ) )
+               if( !reused_transactions.count( transaction_hashes[ i ] ) )
                {
                   ++non_blob_extras;
                   p_extras->push_back( make_pair(
                    transaction_hashes[ i ], get_hash_tags( transaction_hashes[ i ] ) + "*" ) );
                }    
+            }
+
+            for( set< string >::iterator i = new_transaction_hashes.begin( ); i != new_transaction_hashes.end( ); ++i )
+            {
+               if( !included_transactions.count( *i ) )
+               {
+                  string hash_tags( get_hash_tags( *i ) );
+
+                  if( !hash_tags.empty( ) )
+                  {
+                     ++non_blob_extras;
+                     p_extras->push_back( make_pair( *i, hash_tags + "*" ) );
+                  }
+               }
             }
          }
 
@@ -3528,8 +3527,6 @@ string check_account( const string& blockchain, const string& password )
 string construct_new_block( const string& blockchain,
  const string& password, const string& account, bool use_core_file_format, new_block_info* p_new_block_info )
 {
-   guard g( g_mutex );
-
    string acct( account );
    string accts_file;
 
@@ -3660,6 +3657,9 @@ string construct_new_block( const string& blockchain,
       data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + i->second;
    }
 
+   if( p_new_block_info )
+      p_new_block_info->num_txs = num_txs;
+
 #ifdef SSL_SUPPORT
    data += "\n" + string( c_file_type_core_block_detail_signature_prefix ) + priv_key.construct_signature( data, true );
 #endif
@@ -3754,8 +3754,6 @@ string construct_account_info(
  unsigned int exp, const string& account, account_key_info* p_key_info,
  uint64_t* p_balance, uint64_t* p_num_transactions, string* p_last_transaction_id )
 {
-   guard g( g_mutex );
-
    string account_id( account );
 
    string last_block_hash;
@@ -4019,36 +4017,35 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          else
          {
             transaction_info tinfo;
-            if( get_transaction_info( tinfo, next ) )
+            get_transaction_info( tinfo, next );
+
+            if( has_new_height )
             {
-               if( has_new_height )
-               {
-                  has_new_height = false;
+               has_new_height = false;
 
-                  app_log_lines[ tinfo.application ].push_back(
-                   "storage_comment \"" + string( c_block_prefix ) + " " + to_string( height ) + "\"" );
-               }
+               app_log_lines[ tinfo.application ].push_back(
+                "storage_comment \"" + string( c_block_prefix ) + " " + to_string( height ) + "\"" );
+            }
 
-               txs.insert( next );
+            txs.insert( next );
 
-               string account( tinfo.account_id );
-               string::size_type pos = account.find( ".a" );
+            string account( tinfo.account_id );
+            string::size_type pos = account.find( ".a" );
 
-               if( pos != string::npos )
-                  account.erase( 0, pos + 2 );
+            if( pos != string::npos )
+               account.erase( 0, pos + 2 );
 
-               for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
-               {
-                  string next_log_line( tinfo.log_lines[ j ] );
-                  string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
+            for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+            {
+               string next_log_line( tinfo.log_lines[ j ] );
+               string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-                  if( next_log_line[ pos + 1 ] == '"' )
-                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) );
-                  else
-                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) + "," );
+               if( next_log_line[ pos + 1 ] == '"' )
+                  next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) );
+               else
+                  next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) + "," );
 
-                  app_log_lines[ tinfo.application ].push_back( next_log_line );
-               }
+               app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
       }
