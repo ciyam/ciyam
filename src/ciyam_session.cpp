@@ -571,6 +571,7 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
    void after_commit( )
    {
       append_transaction_for_blockchain_application( storage_name, tx_hash );
+      ap_guard.reset( );
    }
 
    auto_ptr< guard > ap_guard;
