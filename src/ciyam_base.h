@@ -18,6 +18,7 @@
 
 #  include "macros.h"
 #  include "ptypes.h"
+#  include "threads.h"
 #  include "ciyam_common.h"
 
 #  ifdef CIYAM_BASE_IMPL
@@ -45,6 +46,7 @@ class command_handler;
 #  define TRACE_PDF_VALS   0x00000400
 #  define TRACE_SOCK_OPS   0x00000800
 #  define TRACE_CORE_FLS   0x00001000
+#  define TRACE_SYNC_OPS   0x00002000
 #  define TRACE_ANYTHING   0xffffffff
 
 #  define IF_IS_TRACING( flags )\
@@ -62,6 +64,15 @@ void CIYAM_BASE_DECL_SPEC set_trace_flags( size_t flags );
 void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
 
 void CIYAM_BASE_DECL_SPEC log_trace_message( int flag, const std::string& message );
+
+class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
+{
+   protected:
+   void pre_acquire( const guard* p_guard, const char* p_msg );
+   void post_acquire( const guard* p_guard, const char* p_msg );
+
+   void has_released( const guard* p_guard, const char* p_msg );
+};
 
 void CIYAM_BASE_DECL_SPEC check_timezone_info( );
 

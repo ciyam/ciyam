@@ -39,7 +39,6 @@
 #include "sql_db.h"
 #include "config.h"
 #include "format.h"
-#include "threads.h"
 #include "pointers.h"
 #include "utilities.h"
 #include "date_time.h"
@@ -289,9 +288,7 @@ typedef module_commands_registry_container::value_type module_commands_registry_
 class storage_handler;
 
 mutex g_mutex;
-mutex g_var_mutex;
 mutex g_trace_mutex;
-mutex g_app_log_mutex;
 
 string g_storage_name_lock;
 
@@ -4002,6 +3999,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "pdf_vals" ); // TRACE_PDF_VALS
    flag_names.push_back( "sock_ops" ); // TRACE_SOCK_OPS
    flag_names.push_back( "core_fls" ); // TRACE_CORE_FLS
+   flag_names.push_back( "sync_ops" ); // TRACE_SYNC_OPS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -4063,6 +4061,10 @@ void log_trace_message( int flag, const string& message )
       type = "core_fs";
       break;
 
+      case TRACE_SYNC_OPS:
+      type = "sync_op";
+      break;
+
       case TRACE_ANYTHING:
       type = "general";
       break;
@@ -4072,6 +4074,39 @@ void log_trace_message( int flag, const string& message )
 
    outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
     << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+}
+
+void trace_mutex::pre_acquire( const guard* p_guard, const char* p_msg )
+{
+   string extra;
+
+   if( p_msg )
+      extra = " " + string( p_msg );
+
+   TRACE_LOG( TRACE_SYNC_OPS, "pre_acquire: mutex = "
+    + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
+}
+
+void trace_mutex::post_acquire( const guard* p_guard, const char* p_msg )
+{
+   string extra;
+
+   if( p_msg )
+      extra = " " + string( p_msg );
+
+   TRACE_LOG( TRACE_SYNC_OPS, "post_acquire: mutex = "
+    + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
+}
+
+void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
+{
+   string extra;
+
+   if( p_msg )
+      extra = " " + string( p_msg );
+
+   TRACE_LOG( TRACE_SYNC_OPS, "has_released: mutex = "
+    + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
 void check_timezone_info( )
@@ -5446,7 +5481,7 @@ bool any_peer_still_has_file_hash_to_put(
 
 string get_session_variable( const string& name )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    string retval;
 
@@ -5497,7 +5532,7 @@ string get_session_variable( const string& name )
 
 void set_session_variable( const string& name, const string& value )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    if( gtp_session )
    {
@@ -5518,7 +5553,7 @@ void set_session_variable( const string& name, const string& value )
 
 bool set_session_variable( const string& name, const string& value, const string& current )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -5549,7 +5584,7 @@ bool set_session_variable( const string& name, const string& value, const string
 
 bool any_has_session_variable( const string& name )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5563,7 +5598,7 @@ bool any_has_session_variable( const string& name )
 
 bool any_has_session_variable( const string& name, const string& value )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5578,7 +5613,7 @@ bool any_has_session_variable( const string& name, const string& value )
 
 bool is_first_using_session_variable( const string& name )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5592,7 +5627,7 @@ bool is_first_using_session_variable( const string& name )
 
 bool is_first_using_session_variable( const string& name, const string& value )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
@@ -5893,7 +5928,7 @@ system_variable_lock::system_variable_lock( const string& name )
    {
       // NOTE: Empty code block for scope purposes.
       {
-         guard g( g_var_mutex );
+         guard g( g_mutex );
 
          if( set_system_variable( name, "<locked>", "" ) )
          {
@@ -5916,7 +5951,7 @@ system_variable_lock::~system_variable_lock( )
 
 string get_system_variable( const string& name )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    string retval;
 
@@ -5941,7 +5976,7 @@ string get_system_variable( const string& name )
 
 void set_system_variable( const string& name, const string& value )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    string val( value );
 
@@ -5977,7 +6012,7 @@ void set_system_variable( const string& name, const string& value )
 
 bool set_system_variable( const string& name, const string& value, const string& current )
 {
-   guard g( g_var_mutex );
+   guard g( g_mutex );
 
    bool retval = false;
 
@@ -10213,8 +10248,6 @@ void transaction_commit( )
          if( gtp_session->p_tx_helper )
          {
             gtp_session->p_tx_helper->after_commit( );
-
-            delete gtp_session->p_tx_helper;
             gtp_session->p_tx_helper = 0;
          }
 
@@ -10266,10 +10299,7 @@ void transaction_rollback( )
    if( gtp_session->transactions.empty( ) )
    {
       if( gtp_session->p_tx_helper )
-      {
-         delete gtp_session->p_tx_helper;
          gtp_session->p_tx_helper = 0;
-      }
 
       gtp_session->tx_key_info.clear( );
       gtp_session->sql_undo_statements.clear( );
@@ -10380,7 +10410,7 @@ void transaction_log_command( const string& log_command, transaction_commit_help
 void append_transaction_for_blockchain_application(
  const string& application, const string& transaction_hash )
 {
-   guard g( g_app_log_mutex );
+   guard g( g_mutex );
 
    string filename( application + ".txs.log" );
 

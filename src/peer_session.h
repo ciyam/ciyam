@@ -7,6 +7,7 @@
 #  define PEER_SESSION_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <memory>
 #     include <string>
 #  endif
 
@@ -65,6 +66,8 @@ std::string use_peer_account(
  const std::string& blockchain, const std::string& password, bool release = false );
 
 std::string get_account_password( const std::string& blockchain, const std::string& account );
+
+void lock_blockchain_transaction( std::auto_ptr< guard >& ap_guard );
 
 std::string create_blockchain_transaction(
  const std::string& blockchain, const std::string& application, const std::string& log_command );
