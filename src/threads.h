@@ -8,6 +8,7 @@
 #  define THREADS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <string>
 #     include <iostream>
 #  endif
 
@@ -68,6 +69,8 @@ inline thread_id current_thread_id( )
    return tid;
 }
 
+class guard;
+
 class mutex
 {
    public:
@@ -90,25 +93,29 @@ class mutex
    }
 #  endif
 
-   void acquire( )
+   void acquire( const guard* p_guard, const char* p_msg )
    {
+      pre_acquire( p_guard, p_msg );
+
 #  ifndef _WIN32
       pthread_t self = ::pthread_self( );
       if( tid == self )
-      {
          ++count;
-         return;
-      }
+      else
+      {
+         ::pthread_mutex_lock( &ptm );
 
-      ::pthread_mutex_lock( &ptm );
-      tid = self;
-      count = 1;
+         count = 1;
+         tid = self;
+      }
 #  else
       ::EnterCriticalSection( &cs );
 #  endif
+
+      post_acquire( p_guard, p_msg );
    }
 
-   void release( )
+   void release( const guard* p_guard, const char* p_msg )
    {
 #  ifndef _WIN32
       if( !--count )
@@ -119,6 +126,8 @@ class mutex
 #  else
       ::LeaveCriticalSection( &cs );
 #  endif
+
+      has_released( p_guard, p_msg );
    }
 
    private:
@@ -129,25 +138,35 @@ class mutex
    pthread_t tid;
    pthread_mutex_t ptm;
 #  endif
+
+   protected:
+   virtual void pre_acquire( const guard* p_guard, const char* p_msg ) { }
+   virtual void post_acquire( const guard* p_guard, const char* p_msg ) { }
+
+   virtual void has_released( const guard* p_guard, const char* p_msg ) { }
 };
 
 class guard
 {
    public:
-   guard( mutex& m )
+   guard( mutex& m, const char* p_msg = 0 )
     :
     m( m )
    {
-      m.acquire( );
+      m.acquire( this, p_msg );
+
+      if( p_msg )
+         msg = std::string( p_msg );
    }
 
    ~guard( )
    {
-      m.release( );
+      m.release( this, msg.c_str( ) );
    }
 
    private:
    mutex& m;
+   std::string msg;
 };
 
 #  ifdef _WIN32

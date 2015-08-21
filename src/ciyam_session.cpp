@@ -560,6 +560,7 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
     storage_name( storage_name ),
     transaction_cmd( transaction_cmd )
    {
+      lock_blockchain_transaction( ap_guard );
    }
 
    void at_commit( )
@@ -571,6 +572,8 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
    {
       append_transaction_for_blockchain_application( storage_name, tx_hash );
    }
+
+   auto_ptr< guard > ap_guard;
 
    string tx_hash;
    string blockchain;
@@ -2744,6 +2747,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                auto_ptr< temporary_session_variable > ap_tmp_bh;
                auto_ptr< system_variable_lock > ap_blockchain_lock;
+               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
 
                bool skip_blockchain_lock =
                 !get_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
@@ -2898,12 +2902,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      replace_field_values_to_log( next_command, field_values_to_log );
                      replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
-                     blockchain_transaction_commit_helper* p_commit_helper = 0;
-
                      if( !storage_locked_for_admin( ) )
-                        p_commit_helper = new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command );
+                        ap_commit_helper.reset( new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
 
-                     transaction_log_command( next_command, p_commit_helper );
+                     transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
                }
                else
@@ -3015,6 +3017,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
                auto_ptr< system_variable_lock > ap_blockchain_lock;
+               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
 
                bool skip_blockchain_lock =
                 !get_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
@@ -3056,12 +3059,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
-                     blockchain_transaction_commit_helper* p_commit_helper = 0;
-
                      if( !storage_locked_for_admin( ) )
-                        p_commit_helper = new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command );
+                        ap_commit_helper.reset( new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
 
-                     transaction_log_command( next_command, p_commit_helper );
+                     transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
 
                   op_instance_apply( handle, "", false );
@@ -3274,6 +3275,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_tz_name( tz_name );
 
                auto_ptr< system_variable_lock > ap_blockchain_lock;
+               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
+
                string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
                bool skip_blockchain_lock =
@@ -3380,8 +3383,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      remove_uid_extra_from_log_command( next_command, blockchain.empty( ) );
 
-                     blockchain_transaction_commit_helper* p_commit_helper = 0;
-
                      if( !blockchain.empty( ) )
                      {
                         string::size_type rpos = 0;
@@ -3394,10 +3395,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
                         if( !storage_locked_for_admin( ) )
-                           p_commit_helper = new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command );
+                           ap_commit_helper.reset( new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
                      }
 
-                     transaction_log_command( next_command, p_commit_helper );
+                     transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
 
                   if( has_any_set_flds )

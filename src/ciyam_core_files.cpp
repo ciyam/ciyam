@@ -30,7 +30,6 @@
 #include "base64.h"
 #include "config.h"
 #include "sha256.h"
-#include "threads.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #ifdef SSL_SUPPORT
@@ -54,7 +53,7 @@ const unsigned int c_max_core_line_size = 4096;
 
 const uint16_t c_tx_min_non_confirmed = 5;
 
-mutex g_mutex;
+trace_mutex g_trace_mutex;
 
 #include "ciyam_constants.h"
 
@@ -703,7 +702,7 @@ string get_block_hash_for_account_and_height( const string& chain_id,
 pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_block" );
 
    vector< string > lines;
    split( content, lines, '\n' );
@@ -2242,7 +2241,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
 void verify_rewind( const string& content, vector< pair< string, string > >* p_extras )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_rewind" );
 
    if( !p_extras )
       throw runtime_error( "unexpected null extras in verify_rewind" );
@@ -2479,7 +2478,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 void verify_transaction( const string& content, bool check_sigs,
  vector< pair< string, string > >* p_extras, transaction_info* p_transaction_info )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_transaction" );
 
    vector< string > lines;
    split( content, lines, '\n' );
@@ -2831,7 +2830,7 @@ void verify_transaction( const string& content, bool check_sigs,
 void verify_blockchain_info( const string& content,
  vector< pair< string, string > >* p_extras, blockchain_info* p_blockchain_info )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_blockchain_info" );
 
    bool construct_info = false;
    if( content.find( ".info" ) != string::npos )
@@ -3110,7 +3109,7 @@ void verify_blockchain_info( const string& content,
 void verify_checkpoint_info( const string& content,
  vector< pair< string, string > >* p_extras, checkpoint_info* p_checkpoint_info )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_checkpoint_info" );
 
    chain_info cinfo;
 
@@ -3226,7 +3225,7 @@ void verify_checkpoint_info( const string& content,
 
 void verify_checkpoint_prune( const string& content, vector< pair< string, string > >* p_extras )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_checkpoint_prune" );
 
    if( content.find( ".checkpoint.h" ) == string::npos )
       throw runtime_error( "invalid checkpoint prune content '" + content + "'" );
@@ -3301,7 +3300,7 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
 void verify_transactions_info( const string& content,
  vector< pair< string, string > >* p_extras, transactions_info* p_transactions_info )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "verify_transactions_info" );
 
    chain_info cinfo;
 
@@ -3473,8 +3472,6 @@ void get_checkpoint_info( const string& blockchain, const string& content, check
 
 bool has_better_block( const string& blockchain, uint64_t height, uint64_t weight )
 {
-   guard g( g_mutex );
-
    bool retval = false;
 
    string all_tags( list_file_tags( "c" + blockchain + ".b" + to_string( height ) + "-*" ) );
@@ -3952,7 +3949,7 @@ string get_account_msg_secret( const string& blockchain, const string& password,
 
 void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "perform_storage_rewind" );
 
    if( block_height != c_unconfirmed_revision )
    {
@@ -3968,7 +3965,7 @@ void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 
 string construct_blockchain_info_file( const string& blockchain )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "construct_blockchain_info_file" );
 
    string data( c_file_type_str_core_blob );
 
@@ -3987,7 +3984,7 @@ string construct_blockchain_info_file( const string& blockchain )
 
 uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain, vector< string >& applications )
 {
-   guard g( g_mutex );
+   guard g( g_trace_mutex, "construct_transaction_scripts_for_blockchain" );
 
    string filename( blockchain + ".txs" );
 
