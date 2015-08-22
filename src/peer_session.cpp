@@ -52,8 +52,6 @@ namespace
 
 mutex g_mutex;
 
-trace_mutex g_trace_mutex;
-
 const char c_reprocess_prefix = '*';
 
 const char* const c_hello = "hello";
@@ -155,7 +153,7 @@ string get_peer_to_retry( const string& blockchain )
 
 bool was_released( const string& blockchain )
 {
-   guard g( g_trace_mutex );
+   guard g( get_core_files_trace_mutex( ) );
 
    bool retval = false;
 
@@ -170,7 +168,7 @@ bool was_released( const string& blockchain )
 
 string process_txs( const string& blockchain )
 {
-   guard g( g_trace_mutex, "process_txs" );
+   guard g( g_mutex );
 
    string hash;
 
@@ -204,7 +202,7 @@ string process_txs( const string& blockchain )
 
 string mint_new_block( const string& blockchain, new_block_info& new_block )
 {
-   guard g( g_trace_mutex, "mint_new_block" );
+   guard g( get_core_files_trace_mutex( ), "mint_new_block" );
 
    string data;
 
@@ -238,7 +236,7 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
 
 string store_new_block( const string& blockchain, const string& data )
 {
-   guard g( g_trace_mutex, "store_new_block" );
+   guard g( g_mutex );
 
    string hash;
 
@@ -252,7 +250,7 @@ string store_new_block( const string& blockchain, const string& data )
 
 void process_file( const string& hash, const string& blockchain )
 {
-   guard g( g_trace_mutex, "process_file" );
+   guard g( g_mutex );
 
    string::size_type pos = hash.find( ':' );
 
@@ -1730,7 +1728,7 @@ void peer_listener::on_start( )
 
 string use_peer_account( const string& blockchain, const string& password, bool release )
 {
-   guard g( g_trace_mutex, "use_peer_account" );
+   guard g( get_core_files_trace_mutex( ), "use_peer_account" );
 
    string retval;
 
@@ -1792,7 +1790,7 @@ string use_peer_account( const string& blockchain, const string& password, bool 
 
 string get_account_password( const string& blockchain, const string& account )
 {
-   guard g( g_trace_mutex, "get_account_password" );
+   guard g( get_core_files_trace_mutex( ), "get_account_password" );
 
    if( !g_blockchain_passwords.count( blockchain ) )
       throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );
@@ -1817,13 +1815,13 @@ string get_account_password( const string& blockchain, const string& account )
 
 void lock_blockchain_transaction( auto_ptr< guard >& ap_guard )
 {
-   ap_guard.reset( new guard( g_trace_mutex, "lock_blockchain_transaction" ) );
+   ap_guard.reset( new guard( get_core_files_trace_mutex( ), "lock_blockchain_transaction" ) );
 }
 
 string create_blockchain_transaction(
  const string& blockchain, const string& application, const string& log_command )
 {
-   guard g( g_trace_mutex, "create_blockchain_transaction" );
+   guard g( get_core_files_trace_mutex( ), "create_blockchain_transaction" );
 
    if( !g_blockchain_passwords.count( blockchain ) )
       throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );

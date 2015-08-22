@@ -40,6 +40,8 @@
 
 using namespace std;
 
+trace_mutex g_trace_mutex;
+
 namespace
 {
 
@@ -52,8 +54,6 @@ const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 4096;
 
 const uint16_t c_tx_min_non_confirmed = 5;
-
-trace_mutex g_trace_mutex;
 
 #include "ciyam_constants.h"
 
@@ -3374,6 +3374,11 @@ void verify_transactions_info( const string& content,
    }
 }
 
+}
+
+trace_mutex& get_core_files_trace_mutex( )
+{
+   return g_trace_mutex;
 }
 
 void verify_core_file( const string& content, bool check_sigs, vector< pair< string, string > >* p_extras )

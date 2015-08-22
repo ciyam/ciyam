@@ -87,6 +87,10 @@ struct account_key_info
    std::string trans_secret;
 };
 
+class trace_mutex;
+
+trace_mutex CLASS_BASE_DECL_SPEC& get_core_files_trace_mutex( );
+
 void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 
