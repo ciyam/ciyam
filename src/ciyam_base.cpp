@@ -7103,6 +7103,9 @@ void storage_process_undo( uint64_t new_height )
 
    if( file_exists( local_txs ) )
       remove_file( local_txs );
+
+   if( file_exists( local_txs + ".new" ) )
+      rename_file( local_txs + ".new", local_txs );
 }
 
 void storage_lock_all_tables( )

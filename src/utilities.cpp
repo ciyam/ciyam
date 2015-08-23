@@ -1617,6 +1617,16 @@ void write_file( const string& file_name, unsigned char* p_data, size_t length )
    fclose( fp );
 }
 
+void write_file_lines( const string& file_name, const vector< string >& lines )
+{
+   ofstream outf( file_name.c_str( ) );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+      outf << lines[ i ] << '\n';
+
+   outf.flush( );
+}
+
 void buffer_file_lines( const string& file_name,
  vector< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
 {
@@ -1715,12 +1725,12 @@ bool absolute_path( const string& relative_path, string& absolute_path )
    return found;
 }
 
-time_t last_modification_time( const string& filename )
+time_t last_modification_time( const string& file_name )
 {
    struct stat statbuf;
 
-   if( stat( filename.c_str( ), &statbuf ) != 0 )
-      throw runtime_error( "cannot stat '" + filename + "' (errno = " + to_string( errno ) + ")" );
+   if( stat( file_name.c_str( ), &statbuf ) != 0 )
+      throw runtime_error( "cannot stat '" + file_name + "' (errno = " + to_string( errno ) + ")" );
 
    return statbuf.st_mtime;
 }
@@ -1954,12 +1964,12 @@ string encode_quoted_printable( const string& data, int max_chars_per_line )
    return s;
 }
 
-void read_strings( const string& filename, map< string, string >& strings,
+void read_strings( const string& file_name, map< string, string >& strings,
  const char* p_prefix, bool unescape_data, char esc, const char* p_specials )
 {
-   ifstream inpf( filename.c_str( ) );
+   ifstream inpf( file_name.c_str( ) );
    if( !inpf )
-      throw runtime_error( "unable to open file '" + filename + "' for input in read_strings" );
+      throw runtime_error( "unable to open file '" + file_name + "' for input in read_strings" );
 
    string next;
    bool is_first = true;
@@ -2004,15 +2014,15 @@ void read_strings( const string& filename, map< string, string >& strings,
 
    if( !inpf.eof( ) )
       throw runtime_error(
-       "unexpected error occurred whilst reading '" + filename + "' for input in read_strings" );
+       "unexpected error occurred whilst reading '" + file_name + "' for input in read_strings" );
 }
 
-void write_strings( const string& filename,
+void write_strings( const string& file_name,
  const string_container& strings, bool escape_data, char esc, const char* p_specials )
 {
-   ofstream outf( filename.c_str( ) );
+   ofstream outf( file_name.c_str( ) );
    if( !outf )
-      throw runtime_error( "unable to open file '" + filename + "' for output in write_strings" );
+      throw runtime_error( "unable to open file '" + file_name + "' for output in write_strings" );
 
    for( string_const_iterator i = strings.begin( ); i != strings.end( ); ++i )
    {
@@ -2026,7 +2036,7 @@ void write_strings( const string& filename,
    outf.flush( );
 
    if( !outf.good( ) )
-      throw runtime_error( "output stream is bad for '" + filename + "' in write_strings" );
+      throw runtime_error( "output stream is bad for '" + file_name + "' in write_strings" );
 }
 
 string extract_text_from_html( const string& html )
