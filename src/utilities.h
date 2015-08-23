@@ -725,6 +725,8 @@ inline void write_file( const std::string& file_name, const std::string& file_bu
    write_file( file_name, ( unsigned char* )file_buffer.data( ), file_buffer.length( ) );
 }
 
+void write_file_lines( const std::string& file_name, const std::vector< std::string >& lines );
+
 void buffer_file_lines( const std::string& file_name,
  std::vector< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );
 
@@ -736,7 +738,7 @@ void buffer_file_items( const std::string& file_name,
 
 bool absolute_path( const std::string& relative_path, std::string& absolute_path );
 
-time_t last_modification_time( const std::string& filename );
+time_t last_modification_time( const std::string& file_name );
 
 void output_string_as_text_lines( const std::string& str, std::ostream& os,
  size_t max_length, const char* p_prefix = 0, const char* p_suffix = "\n" );
@@ -768,11 +770,11 @@ inline std::string hex_encode( const std::string& data, int max_chars_per_line =
 std::string decode_quoted_printable( const std::string& data );
 std::string encode_quoted_printable( const std::string& data, int max_chars_per_line );
 
-void read_strings( const std::string& filename,
+void read_strings( const std::string& file_name,
  string_container& strings, const char* p_prefix = 0,
  bool unescape_data = true, char esc = c_esc, const char* p_specials = c_special_characters );
 
-void write_strings( const std::string& filename, const string_container& strings,
+void write_strings( const std::string& file_name, const string_container& strings,
  bool escape_data = true, char esc = c_esc, const char* p_specials = c_special_characters );
 
 std::string extract_text_from_html( const std::string& html );

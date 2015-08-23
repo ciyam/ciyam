@@ -4081,27 +4081,32 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          // NOTE: If any previous local txs have not been processed then issue them again.
          if( !new_local_txs.empty( ) )
          {
-            outf << ".session_variable " <<
-             get_special_var_name( e_special_var_blockchain ) << " " << blockchain << '\n';
+            outf << ".storage_comment \"" + string( c_block_prefix )
+             + " " + to_string( c_unconfirmed_revision ) + "\"\n";
 
             for( size_t j = 0; j < new_local_txs.size( ); j++ )
             {
                string next( new_local_txs[ j ] );
 
                transaction_info tinfo;
-               if( get_transaction_info( tinfo, next ) )
+               get_transaction_info( tinfo, next );
+
+               string account( tinfo.account_id );
+               string::size_type pos = account.find( ".a" );
+
+               if( pos != string::npos )
+                  account.erase( 0, pos + 2 );
+
+               for( size_t k = 0; k < tinfo.log_lines.size( ); k++ )
                {
-                  string account( tinfo.account_id );
+                  string next_log_line( tinfo.log_lines[ k ] );
+                  insert_account_into_transaction_log_line( account, next_log_line );
 
-                  for( size_t k = 0; k < tinfo.log_lines.size( ); k++ )
-                  {
-                     string next_log_line( tinfo.log_lines[ k ] );
-                     insert_account_into_transaction_log_line( account, next_log_line );
-
-                     outf << '.' << next_log_line << '\n';
-                  }
+                  outf << '.' << next_log_line << '\n';
                }
             }
+
+            write_file_lines( i->first + ".txs.log.new", new_local_txs );
          }
 
          outf.flush( );

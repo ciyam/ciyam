@@ -168,8 +168,6 @@ bool was_released( const string& blockchain )
 
 string process_txs( const string& blockchain )
 {
-   guard g( g_mutex );
-
    string hash;
 
    system_variable_lock blockchain_lock( blockchain );

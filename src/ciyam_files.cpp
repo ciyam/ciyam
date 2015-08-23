@@ -87,13 +87,13 @@ string construct_file_name_from_hash( const string& hash,
    string filename( c_files_directory );
 
    filename += '/';
-   filename += hash.substr( 0, 2 );
+   filename += lower( hash.substr( 0, 2 ) );
 
    if( create_directory )
       create_directory_if_not_exists( filename );
 
    filename += '/';
-   filename += hash.substr( 2 );
+   filename += lower( hash.substr( 2 ) );
 
    return filename;
 }
@@ -168,7 +168,7 @@ void validate_hash_with_uncompressed_content( const string& hash, unsigned char*
       sha256 test_hash;
       test_hash.update( p_data, length );
 
-      if( hash == test_hash.get_digest_as_string( ) )
+      if( lower( hash ) == test_hash.get_digest_as_string( ) )
          okay = true;
 
       if( is_compressed )
@@ -423,7 +423,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
 
    if( expansion == e_file_expansion_none )
    {
-      retval += " " + hash;
+      retval += " " + lower( hash );
 
       if( is_core )
       {
@@ -439,9 +439,9 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          string blob_info( final_data.substr( 1 ) );
 
          if( is_valid_utf8( blob_info ) )
-            retval += " utf8 " + hash + "\n" + utf8_replace( blob_info, "\r", "" );
+            retval += " utf8 " + lower( hash ) + "\n" + utf8_replace( blob_info, "\r", "" );
          else
-            retval += " base64 " + hash + "\n" + base64::encode( blob_info );
+            retval += " base64 " + lower( hash ) + "\n" + base64::encode( blob_info );
       }
       else if( file_type == c_file_type_val_item )
       {
@@ -454,11 +454,12 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          retval += ' ' + item_info.substr( 0, pos );
 
          if( expansion == e_file_expansion_content )
-            retval += " " + hash + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
+            retval += " " + lower( hash ) + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
          else if( max_depth && indent >= max_depth )
-            retval += " " + hash + "\n" + string( indent, ' ' ) + "...";
+            retval += " " + lower( hash ) + "\n" + string( indent, ' ' ) + "...";
          else
-            retval += " " + hash + "\n" + file_type_info( item_info.substr( pos + 1 ), expansion, max_depth, indent + 1 );
+            retval += " " + lower( hash ) + "\n"
+             + file_type_info( item_info.substr( pos + 1 ), expansion, max_depth, indent + 1 );
       }
       else if( file_type == c_file_type_val_tree )
       {
@@ -467,7 +468,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          vector< string > tree_items;
          split( tree_info, tree_items, '\n' );
 
-         retval += " " + hash;
+         retval += " " + lower( hash );
 
          for( size_t i = 0; i < tree_items.size( ); i++ )
          {
