@@ -4793,7 +4793,7 @@ string socket_command_processor::get_cmd_and_args( )
    if( is_first_command )
    {
       is_first_command = false;
-      TRACE_LOG( TRACE_SESSIONS, "started session" );
+      TRACE_LOG( TRACE_SESSIONS, "started session (tid = " + to_string( current_thread_id( ) ) + ")" );
    }
 
    while( true )
