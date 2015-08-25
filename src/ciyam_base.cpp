@@ -6043,6 +6043,11 @@ bool set_system_variable( const string& name, const string& value, const string&
    return retval;
 }
 
+void list_mutex_lock_ids_for_ciyam_base( ostream& outs )
+{
+   outs << "ciyam_base::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+}
+
 bool has_crypt_key_for_blockchain_account( const string& blockchain, const string& account )
 {
    guard g( g_mutex );

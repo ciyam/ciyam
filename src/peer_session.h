@@ -7,6 +7,7 @@
 #  define PEER_SESSION_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <memory>
 #     include <string>
 #  endif
@@ -61,6 +62,8 @@ class peer_listener : public thread
    int port;
    std::string blockchain;
 };
+
+void list_mutex_lock_ids_for_peer_session( std::ostream& outs );
 
 std::string use_peer_account(
  const std::string& blockchain, const std::string& password, bool release = false );

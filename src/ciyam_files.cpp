@@ -181,6 +181,11 @@ void validate_hash_with_uncompressed_content( const string& hash, unsigned char*
 
 }
 
+void list_mutex_lock_ids_for_ciyam_files( ostream& outs )
+{
+   outs << "ciyam_files::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+}
+
 size_t get_total_files( )
 {
    guard g( g_mutex );

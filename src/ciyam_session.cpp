@@ -4502,6 +4502,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          transaction_commit( );
       else if( command == c_cmd_ciyam_session_storage_trans_rollback )
          transaction_rollback( );
+      else if( command == c_cmd_ciyam_session_system_mutexes )
+      {
+         ostringstream osstr;
+
+         list_mutex_lock_ids_for_ciyam_base( osstr );
+         list_mutex_lock_ids_for_ciyam_files( osstr );
+         list_mutex_lock_ids_for_peer_session( osstr );
+
+         osstr << "ciyam_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
+
+         list_mutex_lock_ids_for_ciyam_core_files( osstr );
+
+         response = osstr.str( );
+      }
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string var_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_system_variable_var_name ) );

@@ -7,6 +7,7 @@
 #  define CIYAM_FILES_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <string>
 #     include <vector>
 #  endif
@@ -20,6 +21,8 @@
 #  endif
 
 class tcp_socket;
+
+void CLASS_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_files( std::ostream& outs );
 
 size_t CLASS_BASE_DECL_SPEC get_total_files( );
 int64_t CLASS_BASE_DECL_SPEC get_total_bytes( );

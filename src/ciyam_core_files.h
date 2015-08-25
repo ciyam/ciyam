@@ -7,6 +7,7 @@
 #  define CIYAM_CORE_FILES_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <string>
 #     include <vector>
 #  endif
@@ -88,6 +89,8 @@ struct account_key_info
 };
 
 class trace_mutex;
+
+void CLASS_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_core_files( std::ostream& outs );
 
 trace_mutex CLASS_BASE_DECL_SPEC& get_core_files_trace_mutex( );
 

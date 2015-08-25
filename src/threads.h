@@ -112,6 +112,8 @@ class mutex
       ::EnterCriticalSection( &cs );
 #  endif
 
+      lock_id = current_thread_id( );
+
       post_acquire( p_guard, p_msg );
    }
 
@@ -121,14 +123,18 @@ class mutex
       if( !--count )
       {
          tid = 0;
+         lock_id = 0;
          ::pthread_mutex_unlock( &ptm );
       }
 #  else
+      lock_id = 0;
       ::LeaveCriticalSection( &cs );
 #  endif
 
       has_released( p_guard, p_msg );
    }
+
+   thread_id get_lock_id( ) const { return lock_id; }
 
    private:
 #  ifdef _WIN32
@@ -138,6 +144,8 @@ class mutex
    pthread_t tid;
    pthread_mutex_t ptm;
 #  endif
+
+   thread_id lock_id;
 
    protected:
    virtual void pre_acquire( const guard* p_guard, const char* p_msg ) { }

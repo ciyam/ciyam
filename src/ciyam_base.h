@@ -330,6 +330,8 @@ std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name );
 void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
 
+void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_base( std::ostream& outs );
+
 bool CIYAM_BASE_DECL_SPEC has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
 std::string CIYAM_BASE_DECL_SPEC get_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
 
