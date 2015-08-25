@@ -1114,20 +1114,22 @@ void delete_file( const string& hash, bool even_if_tagged )
 {
    guard g( g_mutex );
 
+   string tags( get_hash_tags( hash ) );
    string filename( construct_file_name_from_hash( hash ) );
 
-   if( even_if_tagged || get_hash_tags( hash ).empty( ) )
+   if( tags.empty( ) || even_if_tagged )
    {
       if( !file_exists( filename ) )
          throw runtime_error( "file '" + filename + "' not found" );
 
-      string tags = get_hash_tags( hash );
+      if( !tags.empty( ) )
+      {
+         vector< string > all_tags;
+         split( tags, all_tags, '\n' );
 
-      vector< string > all_tags;
-      split( tags, all_tags, '\n' );
-
-      for( size_t i = 0; i < all_tags.size( ); i++ )
-         tag_del( all_tags[ i ] );
+         for( size_t i = 0; i < all_tags.size( ); i++ )
+            tag_del( all_tags[ i ] );
+      }
 
       int64_t existing_bytes = file_size( filename );
 
