@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "sha256.h"
+#include "threads.h"
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
@@ -1546,7 +1547,8 @@ void peer_session::on_start( )
          TRACE_LOG( TRACE_SESSIONS,
           string( "started peer session " )
           + ( !responder ? "(as initiator)" : "(as responder)" )
-          + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+          + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain )
+          + " (tid = " + to_string( current_thread_id( ) ) + ")" );
 
          socket_command_processor processor( *ap_socket, cmd_handler, is_local, responder );
          processor.process_commands( );
