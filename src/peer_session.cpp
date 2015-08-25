@@ -1405,7 +1405,6 @@ peer_session* construct_session( bool responder, auto_ptr< ssl_socket >& ap_sock
 peer_session* construct_session( bool responder, auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
 #endif
 {
-   guard g( g_mutex );
    peer_session* p_session = 0;
 
    string::size_type pos = ip_addr.find( '=' );
@@ -1722,6 +1721,11 @@ void peer_listener::on_start( )
     + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
    delete this;
+}
+
+void list_mutex_lock_ids_for_peer_session( std::ostream& outs )
+{
+   outs << "peer_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
 }
 
 string use_peer_account( const string& blockchain, const string& password, bool release )

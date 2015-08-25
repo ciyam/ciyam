@@ -80,6 +80,7 @@ storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
 storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"
+system_mutexes "list system mutexes and their session lock ids"
 system_variable "get/set a system variable" <val//var_name>[<oval//new_value>]
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
