@@ -199,7 +199,7 @@ string process_txs( const string& blockchain )
    return hash;
 }
 
-string mint_new_block( const string& blockchain, new_block_info& new_block )
+string mint_new_block( const string& blockchain, new_block_info& new_block, string& password_hash )
 {
    guard g( get_core_files_trace_mutex( ), "mint_new_block" );
 
@@ -212,9 +212,14 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
       string next_data;
       new_block_info next_block;
 
+      bool is_reminting = !password_hash.empty( );
+
       for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
       {
          string next_password( *i );
+
+         if( is_reminting && sha256( next_password ).get_digest_as_string( ) != password_hash )
+            continue;
 
          next_data = construct_new_block( blockchain, next_password, &next_block );
 
@@ -222,10 +227,15 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
          if( !next_block.num_txs )
             break;
 
-         if( i == passwords.begin( ) || next_block.weight < new_block.weight )
+         if( i == passwords.begin( ) || is_reminting || next_block.weight < new_block.weight )
          {
             data = next_data;
             new_block = next_block;
+
+            if( is_reminting )
+               break;
+
+            password_hash = sha256( next_password ).get_digest_as_string( );
          }
       }
    }
@@ -233,11 +243,21 @@ string mint_new_block( const string& blockchain, new_block_info& new_block )
    return data;
 }
 
-string store_new_block( const string& blockchain, const string& data )
+string store_new_block( const string& blockchain, const string& password_hash )
 {
    guard g( g_mutex );
 
-   string hash;
+   if( password_hash.empty( ) )
+      return string( );
+
+   string hash( password_hash );
+
+   // NOTE: Before storing now re-mint the block just in case further txs can be added to it.
+   new_block_info new_block;
+   string data( mint_new_block( blockchain, new_block, hash ) );
+
+   if( data.empty( ) || !new_block.num_txs )
+      return string( );
 
    vector< pair< string, string > > extras;
 
@@ -1246,8 +1266,8 @@ class socket_command_processor : public command_processor
    string responder_special_variable;
 
    int new_block_wait;
-   string new_block_data;
    new_block_info new_block;
+   string new_block_pwd_hash;
 
    bool is_local;
    bool is_responder;
@@ -1282,30 +1302,30 @@ string socket_command_processor::get_cmd_and_args( )
          // NOTE: If either a better block at the newly minted block's height or a better previous block than
          // the one it is currently linked to has been processed then will need to mint another new block. If
          // a minting account was released then also mint another new block.
-         if( !new_block_data.empty( )
+         if( !new_block_pwd_hash.empty( )
           && ( has_better_block( blockchain, new_block.height, new_block.weight )
           || was_released( blockchain )
           || ( new_block.height > 1
           && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
-            new_block_data.erase( );
+            new_block_pwd_hash.erase( );
 
-         if( !new_block_data.empty( ) )
+         if( !new_block_pwd_hash.empty( ) )
          {
             if( !new_block.can_mint )
-               new_block_data.erase( );
+               new_block_pwd_hash.erase( );
             else
             {
                if( new_block_wait > 0 )
                   --new_block_wait;
                else
                {
-                  string tmp_new_block_data( new_block_data );
+                  string tmp_new_block_pwd_hash( new_block_pwd_hash );
 
-                  new_block_data.erase( );
+                  new_block_pwd_hash.erase( );
 
                   if( !has_better_block( blockchain, new_block.height, new_block.weight )
                    && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
-                     store_new_block( blockchain, tmp_new_block_data );
+                     store_new_block( blockchain, tmp_new_block_pwd_hash );
                }
             }
          }
@@ -1313,7 +1333,7 @@ string socket_command_processor::get_cmd_and_args( )
           && is_first_using_session_variable( peer_special_variable, blockchain )
           && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
          {
-            new_block_data = mint_new_block( blockchain, new_block );
+            mint_new_block( blockchain, new_block, new_block_pwd_hash );
             new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );
          }
       }
