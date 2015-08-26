@@ -2087,6 +2087,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                split( perms, perm_set );
             set_perms( perm_set );
 
+            auto_ptr< system_variable_lock > ap_blockchain_lock;
+
             if( !is_anon_uid( ) && !blockchain.empty( )
              && !storage_locked_for_admin( ) && uid_matches_session_mint_account( ) )
             {
@@ -2094,6 +2096,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                set_session_secret(
                 get_account_msg_secret( blockchain, get_account_password( blockchain, account ), account ) );
+
+               ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
             }
 
             // NOTE: If a space is provided as the key then fetch the default record values or if the
