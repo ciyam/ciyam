@@ -53,7 +53,7 @@ const size_t c_tx_soft_limit = 100;
 const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 4096;
 
-const uint16_t c_tx_min_non_confirmed = 5;
+const uint16_t c_tx_max_unconfirmed = 5;
 
 #include "ciyam_constants.h"
 
@@ -481,64 +481,37 @@ void get_ordered_checkpoint_hashes( const string& chain_id, map< uint64_t, strin
    }
 }
 
-void get_sequenced_transactions( const string& chain_id,
- multimap< uint64_t, string >& sequenced_transactions,
- bool is_test, bool no_sigs, transactions_info* p_txs_info = 0 )
+void get_unconfirmed_transactions(
+ const transactions_info& tx_info, vector< string >& txs, bool is_test, bool exclude_sigs = false )
 {
-   string all_transaction_tags( list_file_tags( "c" + chain_id + ".a*.t*" ) );
+   map< string, unsigned int > account_txs;
 
-   if( !all_transaction_tags.empty( ) )
+   for( size_t i = 0; i < tx_info.transaction_hashes_with_sigs.size( ); i++ )
    {
-      vector< string > transaction_tags;
-      split( all_transaction_tags, transaction_tags, '\n' );
+      string next_tx( tx_info.transaction_hashes_with_sigs[ i ] );
 
-      map< string, string > tx_sigs;
-      if( p_txs_info )
+      string::size_type pos = next_tx.find( ':' );
+
+      string signature_with_sep;
+      if( pos != string::npos )
       {
-         for( size_t i = 0; i < p_txs_info->transaction_hashes_with_sigs.size( ); i++ )
-         {
-            string next_tx( p_txs_info->transaction_hashes_with_sigs[ i ] );
-
-            string::size_type pos = next_tx.find( ':' );
-            if( pos != string::npos )
-               tx_sigs.insert( make_pair( next_tx.substr( 0, pos ), next_tx.substr( pos + 1 ) ) );
-         }
+         signature_with_sep = next_tx.substr( pos );
+         next_tx.erase( pos );
       }
 
-      // NOTE: Use the transaction sequence numbers to order all transactions to be added (this will
-      // ensure the ordering is correct and will also naturally favour the accounts that create less
-      // transacions).
-      for( size_t i = 0; i < transaction_tags.size( ); i++ )
+      string tags( get_hash_tags( next_tx ) );
+      string encoded_hash( hex_to_base64( next_tx ) );
+
+      if( !tags.empty( ) )
       {
-         string next_transaction_tag( transaction_tags[ i ] );
-         string next_transaction_hash( tag_file_hash( next_transaction_tag ) );
+         pos = tags.find( ".t" );
 
-         string encoded_hash( hex_to_base64( next_transaction_hash ) );
+         if( ++account_txs[ tags.substr( 0, pos ) ] > c_tx_max_unconfirmed )
+            break;
 
-         string::size_type pos = next_transaction_tag.find( ".t" );
+         string s( is_test ? next_tx : encoded_hash );
 
-         if( pos != string::npos )
-         {
-            next_transaction_tag.erase( 0, pos + 2 );
-            pos = next_transaction_tag.find( ".s" );
-
-            string sig_suffix;
-
-            if( pos != string::npos )
-            {
-               sig_suffix = ':' + tag_name_to_base64( next_transaction_tag.substr( pos + 2 ) );
-               next_transaction_tag.erase( pos );
-            }
-            else if( tx_sigs.count( next_transaction_hash ) )
-               sig_suffix = ':' + tx_sigs[ next_transaction_hash ];
-
-            if( !no_sigs )
-               encoded_hash += sig_suffix;
-
-            sequenced_transactions.insert( make_pair(
-             from_string< uint64_t >( next_transaction_tag ),
-             !is_test ? encoded_hash : next_transaction_hash ) );
-         }
+         txs.push_back( ( is_test || exclude_sigs ) ? s : s + signature_with_sep );
       }
    }
 }
@@ -643,8 +616,8 @@ void get_transactions_info( transactions_info& txs_info, const string& transacti
    verify_transactions_info( transactions_info_data.substr( pos + 1 ), 0, &txs_info );
 }
 
-void get_transactions_and_hash_offsets( const string& chain_id,
- transactions_info& txs_info, map< string, size_t >& tx_hash_offsets )
+void get_transactions_from_transactions_info( const string& chain_id,
+ transactions_info& txs_info, map< string, size_t >* p_tx_hash_offsets = 0 )
 {
    string txs_info_tag( "c" + chain_id + ".txinfo" );
 
@@ -653,12 +626,15 @@ void get_transactions_and_hash_offsets( const string& chain_id,
       string txs_info_hash( tag_file_hash( txs_info_tag ) );
       get_transactions_info( txs_info, txs_info_hash );
 
-      for( size_t i = 0; i < txs_info.transaction_hashes_with_sigs.size( ); i++ )
+      if( p_tx_hash_offsets )
       {
-         string next_hash_with_sig( txs_info.transaction_hashes_with_sigs[ i ] );
+         for( size_t i = 0; i < txs_info.transaction_hashes_with_sigs.size( ); i++ )
+         {
+            string next_hash_with_sig( txs_info.transaction_hashes_with_sigs[ i ] );
 
-         string::size_type pos = next_hash_with_sig.find( ':' );
-         tx_hash_offsets.insert( make_pair( next_hash_with_sig.substr( 0, pos ), i ) );
+            string::size_type pos = next_hash_with_sig.find( ':' );
+            p_tx_hash_offsets->insert( make_pair( next_hash_with_sig.substr( 0, pos ), i ) );
+         }
       }
    }
 }
@@ -2108,7 +2084,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             transactions_info txs_info;
             map< string, size_t > tx_hash_offsets;
 
-            get_transactions_and_hash_offsets( chain, txs_info, tx_hash_offsets );
+            get_transactions_from_transactions_info( chain, txs_info, &tx_hash_offsets );
 
             for( uint64_t i = cinfo.checkpoint_start_height + 1; i <= checkpoint_height; i++ )
             {
@@ -2736,23 +2712,21 @@ void verify_transaction( const string& content, bool check_sigs,
          transaction_info tinfo;
          string next_transaction_id( previous_transaction );
 
-         bool is_in_best_chain = get_transaction_info( tinfo, next_transaction_id );
+         get_transaction_info( tinfo, next_transaction_id );
          if( sequence != tinfo.sequence + 1 )
             error_message = "sequence number does not follow that of the previous transaction";
 
-         uint16_t transactions_not_in_best_chain = 0;
-
-         while( !is_in_best_chain && error_message.empty( ) )
+         // NOTE: If isn't a local tx then need to ensure the max. number of unconfirmed (ignoring
+         // those that have become unconfirmed again due to a rewind) transactions for the account
+         // has not been exceeded.
+         if( !get_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
          {
-            if( ++transactions_not_in_best_chain
-             > max( c_tx_min_non_confirmed, ( uint16_t )( cinfo.checkpoint_length * 2 ) ) )
-               throw runtime_error( "already has maximum non-confirmed transactions for account: " + account );
-
-            next_transaction_id = tinfo.previous_transaction;
-            if( next_transaction_id.empty( ) || !has_file( next_transaction_id ) )
-               break;
-
-            is_in_best_chain = get_transaction_info( tinfo, next_transaction_id );
+            string all_unconfirmed( list_file_tags( tinfo.account_id + ".t*.s*" ) );
+            if( !all_unconfirmed.empty( ) )
+            {
+               if( split_size( all_unconfirmed, '\n' ) > c_tx_max_unconfirmed )
+                  throw runtime_error( "already has maximum unconfirmed transactions for account: " + account );
+            }
          }
       }
 
@@ -3014,7 +2988,7 @@ void verify_blockchain_info( const string& content,
       transactions_info txs_info;
       map< string, size_t > tx_hash_offsets;
 
-      get_transactions_and_hash_offsets( chain_id, txs_info, tx_hash_offsets );
+      get_transactions_from_transactions_info( chain_id, txs_info, &tx_hash_offsets );
 
       while( true )
       {
@@ -3079,12 +3053,11 @@ void verify_blockchain_info( const string& content,
             break;
       }
 
-      multimap< uint64_t, string > sequenced_transactions;
-      get_sequenced_transactions( chain_id, sequenced_transactions, cinfo.is_test, false, &txs_info );
+      vector< string > unconfirmed_txs;
+      get_unconfirmed_transactions( txs_info, unconfirmed_txs, cinfo.is_test );
 
-      for( multimap< uint64_t, string >::iterator
-       i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
-         blockchain_info_data += "\n" + i->second;
+      for( size_t i = 0; i < unconfirmed_txs.size( ); i++ )
+         blockchain_info_data += "\n" + unconfirmed_txs[ i ];
 
       if( p_extras )
       {
@@ -3648,20 +3621,22 @@ string construct_new_block( const string& blockchain,
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
    }
 
-   multimap< uint64_t, string > sequenced_transactions;
-   get_sequenced_transactions( blockchain, sequenced_transactions, cinfo.is_test, true );
+   transactions_info txs_info;
+   get_transactions_from_transactions_info( chain, txs_info );
 
    size_t num_txs = 0;
 
-   for( multimap< uint64_t, string >::iterator
-    i = sequenced_transactions.begin( ); i!= sequenced_transactions.end( ); ++i )
+   vector< string > unconfirmed_txs;
+   get_unconfirmed_transactions( txs_info, unconfirmed_txs, cinfo.is_test, true );
+
+   for( size_t i = 0; i < unconfirmed_txs.size( ); i++ )
    {
       // NOTE: The "hard limit" for the number of txs per block is determined by the actual
       // file item size limit but a smaller "soft limit" is being used here.
       if( ++num_txs > c_tx_soft_limit )
          break;
 
-      data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + i->second;
+      data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + unconfirmed_txs[ i ];
    }
 
    if( p_new_block_info )
