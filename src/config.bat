@@ -8,6 +8,7 @@ if not exist config.h copy config.h.default config.h
 if not exist config.info copy config.info.default config.info
 if not exist modules.lst copy modules.lst.default modules.lst
 if not exist autoscript.sio copy autoscript.sio.default autoscript.sio
+if not exist manuscript.sio copy manuscript.sio.default manuscript.sio
 if not exist ciyam_server.sio copy ciyam_server.sio.default ciyam_server.sio
 
 if exist xrep.exe goto has_tools
@@ -17,7 +18,6 @@ call make.bat xrep xvars
 
 :has_tools
 if not exist salt.h xrep @salt.h.xrep >salt.h
-if not exist manuscript.sio xrep @makefile.sio.xrep >makefile.sio
 
 xrep @config.h.xrep >config.h.new
 call update.bat config.h config.h.new
