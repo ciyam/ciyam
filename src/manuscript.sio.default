@@ -1,17 +1,14 @@
-`{`#config.info @`}
 <sio/>
  <script/>
   <name>ext_request
   <filename>ext_request
   <arguments>@arg1 @output_file
  </script>
-`{`@eq`(`$traditional`,`'false`'`)\
  <script/>
   <name>app_blk_txs
   <filename>*script*
   <arguments>app_blk_txs.cin @application @rewind_height @block_height
- </script>\
-`}
+ </script>
  <script/>
   <name>install_package
   <filename>*script*

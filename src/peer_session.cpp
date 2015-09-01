@@ -404,7 +404,7 @@ void process_file( const string& hash, const string& blockchain )
 
             if( needs_checkpoint )
                set_session_variable(
-                get_special_var_name( e_special_var_peer_is_synchronising ), "1" );
+                get_special_var_name( e_special_var_peer_is_synchronising ), blockchain );
             else
             {
                set_session_variable(
@@ -1324,14 +1324,16 @@ string socket_command_processor::get_cmd_and_args( )
                   new_block_pwd_hash.erase( );
 
                   if( !has_better_block( blockchain, new_block.height, new_block.weight )
-                   && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
+                   && !any_has_session_variable(
+                   get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
                      store_new_block( blockchain, tmp_new_block_pwd_hash );
                }
             }
          }
          else if( !blockchain.empty( )
           && is_first_using_session_variable( peer_special_variable, blockchain )
-          && !any_has_session_variable( get_special_var_name( e_special_var_peer_is_synchronising ) ) )
+          && !any_has_session_variable(
+          get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
          {
             mint_new_block( blockchain, new_block, new_block_pwd_hash );
             new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );

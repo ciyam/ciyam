@@ -3370,8 +3370,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         execute_object_command( handle, "", method_name_and_args );
 
-                        if( i == 0 && !blockchain.empty( )
-                         && ( !is_transient || is_init_uid( ) ) && log_transaction )
+                        if( i == 0 && !blockchain.empty( ) && log_transaction )
                         {
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";

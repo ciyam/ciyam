@@ -16,6 +16,9 @@ fi
 if [ ! -f autoscript.sio ]; then
  cp autoscript.sio.default autoscript.sio
 fi
+if [ ! -f manuscript.sio ]; then
+ cp manuscript.sio.default manuscript.sio
+fi
 if [ ! -f ciyam_server.sio ]; then
  cp ciyam_server.sio.default ciyam_server.sio
 fi
@@ -29,9 +32,6 @@ fi
 
 if [ ! -f salt.h ]; then
  ./xrep @salt.h.xrep >salt.h
-fi
-if [ ! -f manuscript.sio ]; then
- ./xrep @manuscript.sio.xrep >manuscript.sio
 fi
 
 ./xrep @config.h.xrep >config.h.new
