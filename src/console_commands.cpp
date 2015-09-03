@@ -288,12 +288,14 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-      if( isatty( STDIN_FILENO ) && !is_executing_commands )
+      if( isatty( STDIN_FILENO ) && !is_executing_commands && !str.empty( ) && str != last_command )
          add_history( str.c_str( ) );
 #  endif
 #endif
 
       string str_for_history( str );
+
+      last_command = str_for_history;
 
       string error_context;
       if( !script_file.empty( ) )

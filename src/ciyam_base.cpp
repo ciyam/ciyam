@@ -10383,10 +10383,7 @@ void transaction_log_command( const string& log_command, transaction_commit_help
       gtp_session->transaction_log_command.erase( );
 
       if( gtp_session->p_tx_helper )
-      {
-         delete gtp_session->p_tx_helper;
          gtp_session->p_tx_helper = 0;
-      }
    }
    else
    {
@@ -10406,12 +10403,7 @@ void transaction_log_command( const string& log_command, transaction_commit_help
       gtp_session->transaction_log_command += log_command;
 
       if( p_tx_helper )
-      {
-         if( gtp_session->p_tx_helper )
-            delete gtp_session->p_tx_helper;
-
          gtp_session->p_tx_helper = p_tx_helper;
-      }
    }
 }
 

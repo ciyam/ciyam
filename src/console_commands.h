@@ -62,6 +62,7 @@ class console_command_handler : public command_handler
    std::vector< bool > conditions;
    std::vector< bool > dummy_conditions;
 
+   std::string last_command;
    std::string prompt_prefix;
    std::deque< std::string > command_history;
 
