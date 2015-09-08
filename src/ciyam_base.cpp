@@ -222,6 +222,7 @@ const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_skip_update = "@skip_update";
+const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_update_fields = "@update_fields";
@@ -5844,6 +5845,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_update:
       s = string( c_special_variable_skip_update );
+      break;
+
+      case e_special_var_transaction:
+      s = string( c_special_variable_transaction );
       break;
 
       case e_special_var_block_height:

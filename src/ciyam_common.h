@@ -97,6 +97,7 @@ enum special_var
    e_special_var_path_prefix,
    e_special_var_permissions,
    e_special_var_skip_update,
+   e_special_var_transaction,
    e_special_var_block_height,
    e_special_var_rewind_height,
    e_special_var_update_fields,

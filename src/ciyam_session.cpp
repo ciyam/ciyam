@@ -565,7 +565,10 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
 
    void at_commit( )
    {
-      tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd );
+      tx_hash = get_session_variable( get_special_var_name( e_special_var_transaction ) );
+
+      if( tx_hash.empty( ) )
+         tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd );
    }
 
    void after_commit( )
@@ -1578,7 +1581,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw runtime_error( "no unprocessed txs found for blockchain: " + blockchain );
 
          vector< string > applications;
-         uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, applications );
+         uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, "", applications );
 
          set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
 

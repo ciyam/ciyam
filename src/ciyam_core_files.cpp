@@ -702,12 +702,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    string block_signature, past_previous_block, parallel_block_minted_minter_id, parallel_block_minted_previous_block;
 
-   set< string > parallel_block_minted_transaction_hashes;
-
-   unsigned int parallel_block_minted_num_transactions = 0;
-
-   bool parallel_block_minted_had_secondary_account = false;
-
    string chain_info_hash;
 
    bool had_zero_explicit_account_charge = false;
@@ -982,10 +976,15 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    string verify( string( c_file_type_core_block_object ) + ':' + header );
 
+   string mint_address;
+
    bool is_new_chain_head = false;
    bool is_better_chain_head = false;
 
-   string mint_address;
+   unsigned int parallel_block_minted_num_transactions = 0;
+   vector< string > parallel_block_minted_transaction_hashes;
+
+   bool parallel_block_minted_had_secondary_account = false;
 
    if( p_extras && block_height )
    {
@@ -1015,8 +1014,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                parallel_block_minted_num_transactions = binfo.transaction_hashes.size( );
                parallel_block_minted_had_secondary_account = binfo.had_secondary_account;
 
-               parallel_block_minted_transaction_hashes.insert(
-                binfo.transaction_hashes.begin( ), binfo.transaction_hashes.end( ) );
+               parallel_block_minted_transaction_hashes = binfo.transaction_hashes;
             }
          }   
       }
@@ -1298,7 +1296,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       p_extras->push_back( make_pair( raw_block_data, tags ) );
 
       map< uint64_t, string > new_chain_height_blocks;
+
       vector< vector< string > > all_transaction_hashes;
+      vector< vector< string > > retagged_transaction_hashes;
 
       uint64_t parallel_block_height = 0;
       all_transaction_hashes.push_back( transaction_hashes );
@@ -1335,7 +1335,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          map< string, uint64_t > account_balances;
 
          set< string > reused_transactions;
-         set< string > retagged_transactions;
 
          map< string, string > old_transaction_hashes;
          set< string > new_transaction_hashes( transaction_hashes.begin( ), transaction_hashes.end( ) );
@@ -1371,8 +1370,10 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                need_to_rewind_storage = ( parallel_block_minted_transaction_hashes.size( ) > 0 );
 
+               vector< string > retagged_transactions;
+
                // NOTE: Retag any txs from the previous best block that aren't included in the new block.
-               for( set< string >::iterator i =
+               for( vector< string >::iterator i =
                 parallel_block_minted_transaction_hashes.begin( );
                 i != parallel_block_minted_transaction_hashes.end( ); ++i )
                {
@@ -1380,7 +1381,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      reused_transactions.insert( *i );
                   else
                   {
-                     retagged_transactions.insert( *i );
+                     retagged_transactions.push_back( *i );
 
                      transaction_info tinfo;
                      get_transaction_info( tinfo, *i );
@@ -1391,6 +1392,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      p_extras->push_back( make_pair( *i, tx_tag ) );
                   }
                }
+
+               if( !retagged_transactions.empty( ) )
+                  retagged_transaction_hashes.push_back( retagged_transactions );
 
                new_previous_block = previous_block;
                old_previous_block = parallel_block_minted_previous_block;
@@ -1507,6 +1511,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      --parallel_block_height;
                }
 
+               vector< string > retagged_transactions;
+
                // NOTE: Any old best chain transactions that did not end up in the new best chain are now re-tagged.
                for( map< string, string >::iterator i = old_transaction_hashes.begin( ); i != old_transaction_hashes.end( ); ++i )
                {
@@ -1514,7 +1520,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      reused_transactions.insert( i->first );
                   else
                   {
-                     retagged_transactions.insert( i->first );
+                     retagged_transactions.push_back( i->first );
 
                      transaction_info tinfo;
                      get_transaction_info( tinfo, i->first );
@@ -1525,6 +1531,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      p_extras->push_back( make_pair( i->first, tx_tag ) );
                   }
                }
+
+               if( !retagged_transactions.empty( ) )
+                  retagged_transaction_hashes.push_back( retagged_transactions );
             }
 
             if( need_to_rewind_storage )
@@ -1768,7 +1777,34 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
          outf.flush( );
          if( !outf.good( ) )
-            throw runtime_error( "*** unexpected error occurred appending tx hash for blockchain ***" );
+            throw runtime_error( "*** unexpected error occurred appending .txs for blockchain ***" );
+      }
+
+      // NOTE: Any transactions that have ended up being retagged will be appended
+      // in their original order to a <blockchain>.txs.new file so that they later
+      // will be able to be appended in the same manner that local txs are.
+      if( is_new_chain_head && !retagged_transaction_hashes.empty( ) )
+      {
+         string filename( chain + ".txs.new" );
+
+         ofstream outf( filename.c_str( ), ios::out | ios::app );
+         if( !outf )
+            throw runtime_error( "unable to open '" + filename + "' for append" );
+
+         for( size_t i = retagged_transaction_hashes.size( ) - 1; ; )
+         {
+            for( size_t j = 0; j < retagged_transaction_hashes[ i ].size( ); j++ )
+               outf << retagged_transaction_hashes[ i ][ j ] << '\n';
+
+            if( i == 0 )
+               break;
+            else
+               --i;
+         }
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "*** unexpected error occurred appending .txs.new for blockchain ***" );
       }
 
       uint64_t checkpoint_height = 0;
@@ -3967,23 +4003,27 @@ string construct_blockchain_info_file( const string& blockchain )
    return tag_file_hash( "c" + blockchain + ".info" );
 }
 
-uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain, vector< string >& applications )
+uint64_t construct_transaction_scripts_for_blockchain(
+ const string& blockchain, const string& tx_hash, vector< string >& applications )
 {
    guard g( g_mutex, "construct_transaction_scripts_for_blockchain" );
 
    string filename( blockchain + ".txs" );
 
-   uint64_t block_height = 0;
+   uint64_t block_height = tx_hash.empty( ) ? 0 : c_unconfirmed_revision;
 
-   if( file_exists( filename ) )
+   if( !tx_hash.empty( ) || file_exists( filename ) )
    {
       set< string > txs;
       vector< string > lines;
-      buffer_file_lines( filename, lines );
+
+      if( !tx_hash.empty( ) )
+         lines.push_back( tx_hash );
+      else
+         buffer_file_lines( filename, lines );
 
       string block_height_marker( get_special_var_name( e_special_var_bh ) );
 
-      uint64_t height = 0;
       bool has_new_height = false;
       map< string, vector< string > > app_log_lines;
 
@@ -3994,19 +4034,27 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          if( next.length( ) < numeric_limits< uint64_t >::digits10 )
          {
             has_new_height = true;
-            height = from_string< uint64_t >( next );
+            block_height = from_string< uint64_t >( next );
          }
          else
          {
             transaction_info tinfo;
             get_transaction_info( tinfo, next );
 
-            if( has_new_height )
+            if( !tx_hash.empty( ) )
+            {
+               app_log_lines[ tinfo.application ].push_back( "session_variable "
+                + get_special_var_name( e_special_var_blockchain ) + " " + blockchain );
+
+               app_log_lines[ tinfo.application ].push_back( "session_variable "
+                + get_special_var_name( e_special_var_transaction ) + " " + tx_hash );
+            }
+            else if( has_new_height )
             {
                has_new_height = false;
 
                app_log_lines[ tinfo.application ].push_back(
-                "storage_comment \"" + string( c_block_prefix ) + " " + to_string( height ) + "\"" );
+                "storage_comment \"" + string( c_block_prefix ) + " " + to_string( block_height ) + "\"" );
             }
 
             txs.insert( next );
@@ -4022,14 +4070,41 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
                string next_log_line( tinfo.log_lines[ j ] );
                string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-               if( next_log_line[ pos + 1 ] == '"' )
-                  next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) );
-               else
-                  next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( height ) + "," );
+               if( tx_hash.empty( ) )
+               {
+                  if( next_log_line[ pos + 1 ] == '"' )
+                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) );
+                  else
+                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) + "," );
+               }
 
                app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
+      }
+
+      map< string, vector< string > > retagged_txs;
+
+      string retagged_txs_filename( filename + ".new" );
+
+      // NOTE: If any retagged txs exist then buffer them
+      // according to each application that they belong to.
+      if( file_exists( retagged_txs_filename ) )
+      {
+         vector< string > new_txs;
+         buffer_file_lines( retagged_txs_filename, new_txs );
+
+         for( size_t i = 0; i < new_txs.size( ); i++ )
+         {
+            string next( new_txs[ i ] );
+
+            transaction_info tinfo;
+            get_transaction_info( tinfo, next );
+
+            retagged_txs[ tinfo.application ].push_back( next );
+         }
+
+         file_remove( retagged_txs_filename );
       }
 
       for( map< string, vector< string > >::iterator i = app_log_lines.begin( ); i!= app_log_lines.end( ); ++i )
@@ -4040,7 +4115,13 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          vector< string > old_local_txs;
          vector< string > new_local_txs;
 
-         if( file_exists( local_txs ) )
+         if( retagged_txs.count( i->first ) )
+         {
+            for( size_t j = 0; j < retagged_txs[ i->first ].size( ); j++ )
+               new_local_txs.push_back( retagged_txs[ i->first ][ j ] );
+         }
+
+         if( tx_hash.empty( ) && file_exists( local_txs ) )
          {
             buffer_file_lines( local_txs, old_local_txs );
 
@@ -4058,7 +4139,8 @@ uint64_t construct_transaction_scripts_for_blockchain( const string& blockchain,
          for( size_t j = 0; j < ( i->second ).size( ); j++ )
             outf << '.' << ( i->second )[ j ] << '\n';
 
-         // NOTE: If any previous local txs have not been processed then issue them again.
+         // NOTE: If any transactions had ended up being retagged then they along
+         // with any previous local txs that have not been included are reissued.
          if( !new_local_txs.empty( ) )
          {
             outf << ".storage_comment \"" + string( c_block_prefix )
