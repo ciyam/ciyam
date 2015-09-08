@@ -167,16 +167,19 @@ bool was_released( const string& blockchain )
    return retval;
 }
 
-string process_txs( const string& blockchain )
+string process_txs( const string& blockchain, const string& tx_hash )
 {
    string hash;
 
    system_variable_lock blockchain_lock( blockchain );
 
-   if( file_exists( blockchain + ".txs" ) )
+   if( !tx_hash.empty( ) || file_exists( blockchain + ".txs" ) )
    {
       vector< string > applications;
-      uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, applications );
+      uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, tx_hash, applications );
+
+      if( !tx_hash.empty( ) )
+         set_session_variable( get_special_var_name( e_special_var_rewind_height ), "" );
 
       set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
 
@@ -264,7 +267,7 @@ string store_new_block( const string& blockchain, const string& password_hash )
    verify_core_file( data, true, &extras );
    create_raw_file_with_extras( "", extras );
 
-   return process_txs( blockchain );
+   return process_txs( blockchain, "" );
 }
 
 void process_file( const string& hash, const string& blockchain )
@@ -307,7 +310,7 @@ void process_file( const string& hash, const string& blockchain )
 
                create_raw_file_with_extras( "", extras );
 
-               process_txs( blockchain );
+               process_txs( blockchain, "" );
             }
             catch( ... )
             {
@@ -330,6 +333,10 @@ void process_file( const string& hash, const string& blockchain )
                verify_core_file( transaction_content, true, &extras );
 
                create_raw_file_with_extras( "", extras );
+
+               if( !any_has_session_variable(
+                get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
+                  process_txs( blockchain, hash.substr( 0, pos ) );
             }
             catch( ... )
             {

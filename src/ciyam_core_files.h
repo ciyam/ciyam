@@ -149,7 +149,7 @@ void CLASS_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain,
 std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 
 uint64_t CLASS_BASE_DECL_SPEC construct_transaction_scripts_for_blockchain(
- const std::string& blockchain, std::vector< std::string >& applications );
+ const std::string& blockchain, const std::string& tx_hash, std::vector< std::string >& applications );
 
 #endif
 
