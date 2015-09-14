@@ -539,7 +539,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                string symbol;
                if( pos != string::npos )
+               {
                   symbol = expression.substr( pos + 1 );
+                  if( symbol == "\"\"" )
+                     symbol.erase( );
+               }      
 
                if( token == "ifdef" )
                {
@@ -601,6 +605,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                else
                   throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
             }
+
             str.erase( );
          }
          else if( str[ 0 ] == c_message_command_prefix )

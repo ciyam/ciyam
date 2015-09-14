@@ -349,8 +349,10 @@ class CLASS_BASE_DECL_SPEC class_base
 
    const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
-   std::string get_variable( const std::string& vname ) const;
-   void set_variable( const std::string& vname, const std::string& value );
+   std::string get_raw_variable( const std::string& name ) const;
+   std::string get_variable( const std::string& name_or_expr ) const;
+
+   void set_variable( const std::string& name, const std::string& value );
 
    bool has_field_changed( int field ) const;
 
@@ -694,6 +696,116 @@ inline std::string construct_class_identity( const class_base& cb )
 }
 #  endif
 
+struct variable_getter
+{
+   virtual std::string get_value( const std::string& name ) const = 0;
+};
+
+struct class_variable_getter : variable_getter
+{
+   class_variable_getter( const class_base& cb ) : cb( cb ) { }
+
+   std::string get_value( const std::string& name ) const { return cb.get_raw_variable( name ); }
+
+   const class_base& cb;
+};
+
+struct variable_expression
+{
+   variable_expression( const std::string& expr, const variable_getter& getter )
+    :
+    getter( getter ),
+    invert_1( false ),
+    invert_2( false ),
+    binary_type( '\0' ),
+    is_binary_expression( false ),
+    is_logical_expression( false )
+   {
+      std::string::size_type pos = expr.find_first_of( "&|" );
+
+      if( pos != std::string::npos )
+      {
+         binary_type = expr[ pos ];
+         is_binary_expression = is_logical_expression = true;
+
+         var1 = expr.substr( 0, pos );
+         var2 = expr.substr( pos + 1 );
+      }
+      else
+         var1 = expr;
+
+      if( !var1.empty( ) && ( var1[ 0 ] == '!' || var1[ 0 ] == '?' ) )
+      {
+         if( var1[ 0 ] == '!' )
+            invert_1 = true;
+
+         var1.erase( 0, 1 );
+         is_logical_expression = true;
+      }
+
+      if( !var2.empty( ) && ( var2[ 0 ] == '!' || var2[ 0 ] == '?' ) )
+      {
+         if( var2[ 0 ] == '!' )
+            invert_2 = true;
+
+         var2.erase( 0, 1 );
+         is_logical_expression = true;
+      }
+   }
+
+   std::string get_value( )
+   {
+      if( !is_logical_expression )
+         return getter.get_value( var1 );
+      else if( !is_binary_expression )
+      {
+         if( invert_1 )
+            return getter.get_value( var1 ).empty( ) ? "1" : "";
+         else
+            return !getter.get_value( var1 ).empty( ) ? "1" : "";
+      }
+      else
+      {
+         bool result = false;
+
+         if( invert_1 )
+            result = getter.get_value( var1 ).empty( );
+         else
+            result = !getter.get_value( var1 ).empty( );
+
+         if( binary_type == '&' )
+         {
+            if( invert_2 )
+               result = result && getter.get_value( var2 ).empty( );
+            else
+               result = result && !getter.get_value( var2 ).empty( );
+         }
+         else
+         {
+            if( invert_2 )
+               result = result || getter.get_value( var2 ).empty( );
+            else
+               result = result || !getter.get_value( var2 ).empty( );
+         }
+
+         return ( result ? "1" : "" );
+      }
+   }
+
+   std::string var1;
+   std::string var2;
+
+   bool invert_1;
+   bool invert_2;
+
+   char binary_type;
+
+   bool is_binary_expression;
+   bool is_logical_expression;
+
+   const variable_getter& getter;
+};
+
 struct temporary_object_variable
 {
    temporary_object_variable( class_base& cb, const std::string& name, const std::string& value )
@@ -701,7 +813,7 @@ struct temporary_object_variable
     cb( cb ),
     name( name )
    {
-      original_value = cb.get_variable( name );
+      original_value = cb.get_raw_variable( name );
       cb.set_variable( name, value );
    }
 

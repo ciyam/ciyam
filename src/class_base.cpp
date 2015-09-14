@@ -1162,7 +1162,7 @@ string get_app_file( const string& module_name )
 
 string class_base::get_attached_file_path( const string& file_name ) const
 {
-   string path( get_session_variable( attached_file_path_var_name( ) ) );
+   string path( get_raw_session_variable( attached_file_path_var_name( ) ) );
 
    if( path.empty( ) )
    {
@@ -1214,24 +1214,32 @@ bool class_base::has_field_changed( int field ) const
    return has_changed;
 }
 
-string class_base::get_variable( const string& vname ) const
+string class_base::get_raw_variable( const string& name ) const
 {
-   return p_impl->variables[ vname ];
+   return p_impl->variables[ name ];
 }
 
-void class_base::set_variable( const string& vname, const string& value )
+string class_base::get_variable( const string& name_or_expr ) const
+{
+   class_variable_getter class_getter( *this );
+   variable_expression expr( name_or_expr, class_getter );
+
+   return expr.get_value( );
+}
+
+void class_base::set_variable( const string& name, const string& value )
 {
    if( value.empty( ) )
    {
-      if( p_impl->variables.count( vname ) )
-         p_impl->variables.erase( vname );
+      if( p_impl->variables.count( name ) )
+         p_impl->variables.erase( name );
    }
    else
    {
-      if( p_impl->variables.count( vname ) )
-         p_impl->variables[ vname ] = value;
+      if( p_impl->variables.count( name ) )
+         p_impl->variables[ name ] = value;
       else
-         p_impl->variables.insert( make_pair( vname, value ) );
+         p_impl->variables.insert( make_pair( name, value ) );
    }
 }
 
@@ -1261,7 +1269,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts,
    bool retval = false;
    sql_stmts.clear( );
 
-   string block_height( get_session_variable( get_special_var_name( e_special_var_bh ) ) );
+   string block_height( get_raw_session_variable( get_special_var_name( e_special_var_bh ) ) );
 
    switch( op )
    {
@@ -1315,7 +1323,7 @@ bool class_base::has_skipped_empty_update( )
 {
    if( p_impl->has_changed_user_fields )
       return false;
-   else if( !get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+   else if( !get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
       return false;
    else
    {
@@ -1418,7 +1426,7 @@ void class_base::destroy( )
       time_t ts = time( 0 );
       bool output_progress = false;
 
-      if( !get_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
+      if( !get_raw_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
          output_progress = true;
 
       for( int pass = 0; pass < 2; ++pass )
@@ -1815,7 +1823,7 @@ string class_base::generate_sql_insert( const string& class_name, string* p_undo
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( )
-    && get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+    && get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
       sql_stmt.erase( );
    else
    {
@@ -1872,7 +1880,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
    get_sql_column_names( sql_column_names, &done, &class_name );
 
    if( sql_column_names.empty( )
-    && get_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
+    && get_raw_session_variable( get_special_var_name( e_special_var_bh ) ).empty( ) )
    {
       sql_stmt.erase( );
 
@@ -2009,7 +2017,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
    // is created in the "after_store" function needs to be linked to the creating
    // parent's record. The variable is immediately cleared to ensure that it will
    // not accidently be left set (so needs to be set before each such usage).
-   if( !get_variable( c_object_variable_skip_fk_handling ).empty( ) )
+   if( !get_raw_variable( c_object_variable_skip_fk_handling ).empty( ) )
    {
       skip_fk_handling = true;
       set_variable( c_object_variable_skip_fk_handling, "" );
@@ -3071,8 +3079,8 @@ string decrypt( const string& s )
       return s;
    else
    {
-      string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
-      string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+      string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+      string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
       if( crypt_key.empty( ) )
       {
@@ -3083,7 +3091,7 @@ string decrypt( const string& s )
       }
       else
       {
-         string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+         string uid( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
 
          return decrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
       }
@@ -3092,8 +3100,8 @@ string decrypt( const string& s )
 
 string encrypt( const string& s )
 {
-   string crypt_key( get_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
-   string blockchain( get_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
+   string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
+   string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
    if( crypt_key.empty( ) )
    {
@@ -3104,7 +3112,7 @@ string encrypt( const string& s )
    }
    else
    {
-      string uid( get_session_variable( get_special_var_name( e_special_var_uid ) ) );
+      string uid( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
 
       return encrypt( get_crypt_key_for_blockchain_account( blockchain, uid ), s );
    }
@@ -3894,7 +3902,7 @@ void send_email_message(
 
    string to( recipient );
    if( !to.empty( ) && to[ 0 ] == '@' )
-      to = get_session_variable( to );
+      to = get_raw_session_variable( to );
 
    recipients.push_back( to );
 
