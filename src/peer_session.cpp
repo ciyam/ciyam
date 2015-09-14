@@ -282,7 +282,7 @@ void process_file( const string& hash, const string& blockchain )
    split( file_info, info_parts, ' ' );
 
    string last_blockchain_info(
-    get_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
+    get_raw_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
 
    // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).

@@ -2755,7 +2755,7 @@ void verify_transaction( const string& content, bool check_sigs,
          // NOTE: If isn't a local tx then need to ensure the max. number of unconfirmed (ignoring
          // those that have become unconfirmed again due to a rewind) transactions for the account
          // has not been exceeded.
-         if( !get_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
+         if( !get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
          {
             string all_unconfirmed( list_file_tags( tinfo.account_id + ".t*.s*" ) );
             if( !all_unconfirmed.empty( ) )

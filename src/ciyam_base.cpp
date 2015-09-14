@@ -1441,7 +1441,7 @@ void perform_storage_op( storage_op op,
             ap_handler->get_root( ).set_new( );
             ap_handler->get_root( ).module_directory = directory;
 
-            string blockchain( get_session_variable( c_special_variable_blockchain ) );
+            string blockchain( get_raw_session_variable( c_special_variable_blockchain ) );
 
             if( !blockchain.empty( ) )
                ap_handler->get_root( ).identity += ":" + blockchain;
@@ -1644,7 +1644,8 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
 
          instance_accessor.after_fetch_from_db( );
 
-         string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+         string skip_after_fetch_var(
+          instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
          if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
             ; // i.e. do nothing
@@ -1803,7 +1804,8 @@ bool fetch_instance_from_db( class_base& instance,
 
             instance_accessor.after_fetch_from_db( );
 
-            string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+            string skip_after_fetch_var(
+             instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
             if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
                ; // i.e. do nothing
@@ -2943,7 +2945,7 @@ string construct_sql_select(
       // value separated by a colon.
       string::size_type pos = security_info.find( ':' );
 
-      string security_level( get_session_variable( c_special_variable_sec ) );
+      string security_level( get_raw_session_variable( c_special_variable_sec ) );
       if( pos != string::npos )
          security_level = security_info.substr( pos + 1 );
 
@@ -3064,7 +3066,7 @@ void append_undo_sql_statements( storage_handler& handler )
       if( !outf )
          throw runtime_error( "unable to open '" + undo_sql_filename + "' for output" );
 
-      string blockchain( get_session_variable( c_special_variable_blockchain ) );
+      string blockchain( get_raw_session_variable( c_special_variable_blockchain ) );
 
       if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
       {
@@ -4612,7 +4614,7 @@ string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool
 
 string totp_secret_key( const string& unique )
 {
-   string crypt_key( get_session_variable( c_special_variable_crypt_key ) );
+   string crypt_key( get_raw_session_variable( c_special_variable_crypt_key ) );
 
    return get_totp_secret( unique, crypt_key.empty( ) ? sid_hash( ) : crypt_key );
 }
@@ -4630,7 +4632,7 @@ int exec_system( const string& cmd, bool async, bool delay )
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 
-   string async_var( get_session_variable( c_special_variable_allow_async ) );
+   string async_var( get_raw_session_variable( c_special_variable_allow_async ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
    if( async_var == "0" || async_var == c_false )
@@ -4711,7 +4713,7 @@ int run_script( const string& script_name, bool async, bool delay )
       if( gtp_session )
          gtp_session->async_or_delayed_temp_file = script_args;
 
-      string is_quiet( get_session_variable( c_special_variable_quiet ) );
+      string is_quiet( get_raw_session_variable( c_special_variable_quiet ) );
 
       // NOTE: For cases where one script may end up calling numerous others (i.e.
       // such as a scan across records) this special session variable is available
@@ -4756,7 +4758,7 @@ string process_script_args( const string& raw_args, bool is_script_arg )
          string next_arg( all_args[ i ] );
 
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
-            next_arg = get_session_variable( next_arg );
+            next_arg = get_raw_session_variable( next_arg );
 
          if( !next_arg.empty( ) )
             next_arg = escaped_shell_arg( next_arg );
@@ -5480,10 +5482,8 @@ bool any_peer_still_has_file_hash_to_put(
    return false;
 }
 
-string get_session_variable( const string& name )
+string get_raw_session_variable( const string& name )
 {
-   guard g( g_mutex );
-
    string retval;
 
    bool found = false;
@@ -5529,6 +5529,19 @@ string get_session_variable( const string& name )
    }
 
    return retval;
+}
+
+struct raw_session_variable_getter : variable_getter
+{
+   string get_value( const string& name ) const { return get_raw_session_variable( name ); }
+};
+
+string get_session_variable( const string& name_or_expr )
+{
+   raw_session_variable_getter raw_getter;
+   variable_expression expr( name_or_expr, raw_getter );
+
+   return expr.get_value( );
 }
 
 void set_session_variable( const string& name, const string& value )
@@ -5954,7 +5967,7 @@ system_variable_lock::~system_variable_lock( )
    set_system_variable( name, "" );
 }
 
-string get_system_variable( const string& name )
+string get_raw_system_variable( const string& name )
 {
    guard g( g_mutex );
 
@@ -5977,6 +5990,19 @@ string get_system_variable( const string& name )
    }
 
    return retval;
+}
+
+struct raw_system_variable_getter : variable_getter
+{
+   string get_value( const string& name ) const { return get_raw_system_variable( name ); }
+};
+
+string get_system_variable( const string& name_or_expr )
+{
+   raw_system_variable_getter raw_getter;
+   variable_expression expr( name_or_expr, raw_getter );
+
+   return expr.get_value( );
 }
 
 void set_system_variable( const string& name, const string& value )
@@ -8339,7 +8365,7 @@ string get_field_values( size_t handle,
 
             if( is_encrypted
              && uid_matches_session_mint_account( )
-             && !get_session_variable( c_special_variable_blockchain ).empty( ) )
+             && !get_raw_session_variable( c_special_variable_blockchain ).empty( ) )
                next_value = decrypt( next_value );
 
             if( type_name == "date_time" || type_name == "tdatetime" )
@@ -9937,7 +9963,7 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
       // NOTE: In order to prevent potential issues during a "generate" in Meta
       // a "system variable" is being used to prevent editing/deleting records.
       if( gtp_session->p_storage_handler->get_name( ) == "Meta"
-       && !get_system_variable( "@Meta_protect" ).empty( ) )
+       && !get_raw_system_variable( "@Meta_protect" ).empty( ) )
       {
          state |= c_state_uneditable;
          state |= c_state_undeletable;
@@ -10392,7 +10418,7 @@ void transaction_log_command( const string& log_command, transaction_commit_help
    }
    else
    {
-      string blockchain( get_session_variable( c_special_variable_blockchain ) );
+      string blockchain( get_raw_session_variable( c_special_variable_blockchain ) );
 
       if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
       {
@@ -11484,7 +11510,8 @@ bool perform_instance_iterate( class_base& instance,
       }
 
       bool skip_after_fetch = false;
-      string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+      string skip_after_fetch_var(
+       instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
       if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
          skip_after_fetch = true;
@@ -11630,7 +11657,8 @@ bool perform_instance_iterate_next( class_base& instance )
          found = true;
 
          bool skip_after_fetch = false;
-         string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+         string skip_after_fetch_var(
+          instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
          if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
             skip_after_fetch = true;
@@ -11639,7 +11667,7 @@ bool perform_instance_iterate_next( class_base& instance )
       }
    }
 
-   int loop_num = atoi( instance.get_variable( c_special_variable_loop ).c_str( ) );
+   int loop_num = atoi( instance.get_raw_variable( c_special_variable_loop ).c_str( ) );
    instance.set_variable( c_special_variable_loop, int_to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
 
    if( found || cache_depleted )

@@ -36,7 +36,7 @@ object_create "create an object instance" [<opt/-dynamic/dynamic>]<val//module><
 object_destroy "destroy an existing object instance" <val//handle>
 object_execute "execute a method for an existing object instance" <val//handle>[<val/./context>]<val//method>[<val//args>]
 object_validate "validate an existing object instance" <val//handle>[<val/./context>]
-object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//var_name>[<oval//new_value>]
+object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//name_or_expr>[<oval//new_value>]
 object_op_create "begin a create op on a persistent instance" <val//handle>[<val/./context>][<val//key>]
 object_op_update "begin an update op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
 object_op_destroy "begin a destroy op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
@@ -60,7 +60,7 @@ session_list "list active sessions" [<opt/-min/minimal>]
 session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_term>]{<opt/*/all>|<list//sess_ids>}[<val//seconds>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
 session_timeout "get/set server session timeout" [<val//seconds>]
-session_variable "get/set a session variable" <val//var_name>[<oval//new_value>]
+session_variable "get/set a session variable" <val//name_or_expr>[<oval//new_value>]
 storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_term "unlink from the currently linked storage"
@@ -81,7 +81,7 @@ storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"
 system_mutexes "list system mutexes and their session lock ids"
-system_variable "get/set a system variable" <val//var_name>[<oval//new_value>]
+system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>]
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>

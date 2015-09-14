@@ -286,7 +286,9 @@ void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
 bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name );
+std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
+std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
+
 void CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value, const std::string& current );
 
@@ -302,7 +304,7 @@ struct temporary_session_variable
     :
     name( name )
    {
-      original_value = get_session_variable( name );
+      original_value = get_raw_session_variable( name );
       set_session_variable( name, value );
    }
 
@@ -327,7 +329,9 @@ struct CIYAM_BASE_DECL_SPEC system_variable_lock
    std::string name;
 };
 
-std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name );
+std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name );
+std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
+
 void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
 
