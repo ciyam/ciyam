@@ -45,6 +45,8 @@ trace_mutex g_mutex;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const size_t c_id_length = 10;
 const size_t c_hash_buf_size = 32;
 
@@ -54,8 +56,6 @@ const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 4096;
 
 const uint16_t c_tx_max_unconfirmed = 5;
-
-#include "ciyam_constants.h"
 
 struct block_info
 {
@@ -481,41 +481,6 @@ void get_ordered_checkpoint_hashes( const string& chain_id, map< uint64_t, strin
    }
 }
 
-void get_unconfirmed_transactions(
- const transactions_info& tx_info, vector< string >& txs, bool is_test, bool exclude_sigs = false )
-{
-   map< string, unsigned int > account_txs;
-
-   for( size_t i = 0; i < tx_info.transaction_hashes_with_sigs.size( ); i++ )
-   {
-      string next_tx( tx_info.transaction_hashes_with_sigs[ i ] );
-
-      string::size_type pos = next_tx.find( ':' );
-
-      string signature_with_sep;
-      if( pos != string::npos )
-      {
-         signature_with_sep = next_tx.substr( pos );
-         next_tx.erase( pos );
-      }
-
-      string tags( get_hash_tags( next_tx ) );
-      string encoded_hash( hex_to_base64( next_tx ) );
-
-      if( !tags.empty( ) )
-      {
-         pos = tags.find( ".t" );
-
-         if( ++account_txs[ tags.substr( 0, pos ) ] > c_tx_max_unconfirmed )
-            break;
-
-         string s( is_test ? next_tx : encoded_hash );
-
-         txs.push_back( ( is_test || exclude_sigs ) ? s : s + signature_with_sep );
-      }
-   }
-}
-
 string::size_type insert_account_into_transaction_log_line( const string& account, string& next_log_line )
 {
    string::size_type pos = next_log_line.find( ' ' );
@@ -614,6 +579,62 @@ void get_transactions_info( transactions_info& txs_info, const string& transacti
       throw runtime_error( "invalid transactions info file " + transactions_info_hash );
 
    verify_transactions_info( transactions_info_data.substr( pos + 1 ), 0, &txs_info );
+}
+
+void get_unconfirmed_transactions(
+ const transactions_info& tx_info, vector< string >& txs,
+ bool is_test, bool exclude_sigs = false, bool add_file_hashes = false )
+{
+   map< string, unsigned int > account_txs;
+
+   for( size_t i = 0; i < tx_info.transaction_hashes_with_sigs.size( ); i++ )
+   {
+      string next_tx( tx_info.transaction_hashes_with_sigs[ i ] );
+
+      string::size_type pos = next_tx.find( ':' );
+
+      string signature_with_sep;
+      if( pos != string::npos )
+      {
+         signature_with_sep = next_tx.substr( pos );
+         next_tx.erase( pos );
+      }
+
+      string tags( get_hash_tags( next_tx ) );
+      string encoded_hash( hex_to_base64( next_tx ) );
+
+      if( !tags.empty( ) )
+      {
+         pos = tags.find( ".t" );
+
+         if( ++account_txs[ tags.substr( 0, pos ) ] > c_tx_max_unconfirmed )
+            break;
+
+         if( add_file_hashes )
+         {
+            transaction_info tinfo;
+            get_transaction_info( tinfo, next_tx );
+
+            for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+            {
+               string next_log_line( tinfo.log_lines[ j ] );
+
+               if( next_log_line.find( "fe " ) == 0 )
+               {
+                  vector< string > parts;
+                  split( next_log_line, parts, ' ' );
+
+                  if( parts.size( ) > 1 )
+                     txs.push_back( is_test ? parts[ 1 ] : hex_to_base64( parts[ 1 ] ) );
+               }
+            }
+         }
+
+         string s( is_test ? next_tx : encoded_hash );
+
+         txs.push_back( ( is_test || exclude_sigs ) ? s : s + signature_with_sep );
+      }
+   }
 }
 
 void get_transactions_from_transactions_info( const string& chain_id,
@@ -2682,7 +2703,7 @@ void verify_transaction( const string& content, bool check_sigs,
 
          string cmd( next_line.substr( 0, pos ) );
 
-         if( cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
+         if( cmd != "fe" && cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
             throw runtime_error( "invalid cmd '" + cmd + "' in log line '" + next_line + "'" );
 
          if( cmd == "pc" || cmd == "pu" )
@@ -2755,7 +2776,7 @@ void verify_transaction( const string& content, bool check_sigs,
          // NOTE: If isn't a local tx then need to ensure the max. number of unconfirmed (ignoring
          // those that have become unconfirmed again due to a rewind) transactions for the account
          // has not been exceeded.
-         if( !get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
+         if( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
          {
             string all_unconfirmed( list_file_tags( tinfo.account_id + ".t*.s*" ) );
             if( !all_unconfirmed.empty( ) )
@@ -3058,6 +3079,23 @@ void verify_blockchain_info( const string& content,
                if( !tx_hash_offsets.count( next_tx_hash ) )
                   throw runtime_error( "unable to find tx hash " + next_tx_hash + " in verify_blockchain_info" );
 
+               transaction_info tinfo;
+               get_transaction_info( tinfo, next_tx_hash );
+
+               for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
+               {
+                  string next_log_line( tinfo.log_lines[ j ] );
+
+                  if( next_log_line.find( "fe " ) == 0 )
+                  {
+                     vector< string > parts;
+                     split( next_log_line, parts, ' ' );
+
+                     if( parts.size( ) > 1 )
+                        blockchain_info_data += '\n' + ( cinfo.is_test ? parts[ 1 ] : hex_to_base64( parts[ 1 ] ) );
+                  }
+               }
+
                if( cinfo.is_test )
                   blockchain_info_data += '\n'
                    + txs_info.transaction_hashes_with_sigs[ tx_hash_offsets[ next_tx_hash ] ];
@@ -3090,7 +3128,7 @@ void verify_blockchain_info( const string& content,
       }
 
       vector< string > unconfirmed_txs;
-      get_unconfirmed_transactions( txs_info, unconfirmed_txs, cinfo.is_test );
+      get_unconfirmed_transactions( txs_info, unconfirmed_txs, cinfo.is_test, false, true );
 
       for( size_t i = 0; i < unconfirmed_txs.size( ); i++ )
          blockchain_info_data += "\n" + unconfirmed_txs[ i ];
@@ -3688,9 +3726,9 @@ string construct_new_block( const string& blockchain,
    return data;
 }
 
-string construct_new_transaction( const string& blockchain,
- const string& password, const string& account, const string& application,
- const string& transaction_log_lines, bool use_core_file_format, string* p_tx_hash )
+string construct_new_transaction( const string& blockchain, const string& password,
+ const string& account, const string& application, const string& transaction_log_lines,
+ bool use_core_file_format, string* p_tx_hash, const vector< string >* p_file_info )
 {
    string acct;
 
@@ -3731,6 +3769,12 @@ string construct_new_transaction( const string& blockchain,
 
    data += "," + string( c_file_type_core_transaction_header_transaction_hash_prefix ) + key_info.trans_hash;
    data += "," + string( c_file_type_core_transaction_header_transaction_lock_prefix ) + key_info.trans_lock;
+
+   if( p_file_info && !p_file_info->empty( ) )
+   {
+      for( size_t i = 0; i < p_file_info->size( ); i++ )
+         data += "\n" + string( c_file_type_core_transaction_detail_log_prefix ) + ( *p_file_info )[ i ];
+   }
 
    if( !transaction_log_lines.empty( ) )
    {
@@ -3980,8 +4024,32 @@ void perform_storage_rewind( const string& blockchain, uint64_t block_height )
       if( block_height <= cinfo.checkpoint_start_height )
          throw runtime_error( "invalid attempt to rewind through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
    }
-   
-   storage_process_undo( block_height );
+
+   map< string, string > file_info;
+   storage_process_undo( block_height, file_info );
+
+   // NOTE: Remove or extract and tag any relevant file attachments that were in the undo.
+   for( map< string, string >::iterator i = file_info.begin( ); i != file_info.end( ); ++i )
+   {
+      string path( i->first );
+
+      if( i->second.empty( ) )
+         file_remove( path );
+      else
+      {
+         extract_file( i->second, path );
+
+         string::size_type pos = path.find( c_files_directory );
+         if( pos == string::npos )
+            throw runtime_error( "invalid path: " + path );
+
+         string remainder( path.substr( pos + strlen( c_files_directory ) ) );
+
+         string tag( "c" + blockchain + ".f" + storage_name( ) + replace( remainder, "/", "." ) );
+
+         tag_file( tag, i->second );
+      }
+   }
 }
 
 string construct_blockchain_info_file( const string& blockchain )
@@ -4068,14 +4136,62 @@ uint64_t construct_transaction_scripts_for_blockchain(
             for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
             {
                string next_log_line( tinfo.log_lines[ j ] );
-               string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
 
-               if( tx_hash.empty( ) )
+               if( next_log_line.find( "fe " ) == 0 )
                {
-                  if( next_log_line[ pos + 1 ] == '"' )
-                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) );
-                  else
-                     next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) + "," );
+                  vector< string > parts;
+                  split( next_log_line, parts, ' ' );
+
+                  if( parts.size( ) != 3 )
+                     throw runtime_error( "unexpected log line: " + next_log_line );
+
+                  string filename( parts[ 2 ] );
+                  string::size_type pos = filename.find( '-' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected filename '" + filename + "' in log line: " + next_log_line );
+
+                  string module_and_class( filename.substr( pos + 1 ) );
+
+                  pos = module_and_class.find( '.' );
+                  if( pos != string::npos )
+                     module_and_class.erase( pos );
+
+                  pos = module_and_class.find( 'F' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected class name '" + module_and_class + "' in log line: " + next_log_line );
+
+                  module_and_class.erase( pos );
+
+                  pos = module_and_class.find( 'C' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected class name '" + module_and_class + "' in log line: " + next_log_line );
+
+                  string module( module_and_class.substr( 0, pos ) );
+
+                  next_log_line = "file_tag " + parts[ 1 ] + " c" + blockchain
+                   + ".f" + tinfo.application + "." + module + "." + module_and_class + "." + parts[ 2 ];
+
+                  app_log_lines[ tinfo.application ].push_back( next_log_line );
+
+                  next_log_line = "storage_file_export " + parts[ 1 ];
+                  next_log_line += ' ' + module + ' ' + module_and_class + ' ' + filename;
+
+                  app_log_lines[ tinfo.application ].push_back( next_log_line );
+               }
+               else
+               {
+                  string::size_type pos = insert_account_into_transaction_log_line( account, next_log_line );
+
+                  if( tx_hash.empty( ) )
+                  {
+                     if( next_log_line[ pos + 1 ] == '"' )
+                        next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) );
+                     else
+                        next_log_line.insert( pos + 1, block_height_marker + "=" + to_string( block_height ) + "," );
+                  }
+
+                  app_log_lines[ tinfo.application ].push_back( next_log_line );
                }
 
                app_log_lines[ tinfo.application ].push_back( next_log_line );

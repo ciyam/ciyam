@@ -74,14 +74,14 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const string g_empty_fixed_key;
 
 const int c_max_graph_depth = 50;
 const int c_max_email_text_line = 8192;
 
 const size_t c_cascade_progress_seconds = 10;
-
-const char* const c_files_directory = "files";
 
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
@@ -1810,7 +1810,73 @@ void class_base::generate_sql( const string& class_name, generate_sql_type type,
       throw runtime_error( "unexpected generate_sql_type #" + to_string( type ) );
    }
 
-   if( !undo_stmt.empty( ) )
+   string file_hash( get_raw_session_variable( get_special_var_name( e_special_var_file_hash ) ) );
+   string file_name( get_raw_session_variable( get_special_var_name( e_special_var_file_name ) ) );
+
+   if( !file_hash.empty( ) )
+   {
+      string old_log_cmd( transaction_log_command( ) );
+      string new_log_cmd;
+
+      if( p_sql_undo_stmts )
+      {
+         vector< string > file_names;
+         vector< string > file_hashes;
+
+         split( file_name, file_names, '\n' );
+         split( file_hash, file_hashes, '\n' );
+
+         if( file_names.size( ) != file_hashes.size( ) )
+            throw runtime_error( "unexpected file_names.size( ) != file_hashes.size( )" );
+
+         for( size_t i = 0; i < file_hashes.size( ); i++ )
+         {
+            string next_name( file_names[ i ] );
+            string next_hash( file_hashes[ i ] );
+
+            string copy_cmd( c_file_copy_command );
+            string kill_cmd( c_file_kill_command );
+
+            bool was_kill = false;
+
+            if( next_hash[ 0 ] == '~' )
+            {
+               was_kill = true;
+               next_hash.erase( 0, 1 );
+            }
+
+            copy_cmd += " " + next_hash + " " + get_module_id( ) + " " + get_class_id( ) + " " + next_name;
+            kill_cmd += " " + next_hash + " " + get_module_id( ) + " " + get_class_id( ) + " " + next_name;
+
+            if( was_kill )
+            {
+               new_log_cmd += ";" + kill_cmd + '\n';
+               p_sql_undo_stmts->push_back( "#" + copy_cmd );
+            }
+            else
+            {
+               new_log_cmd += ";" + copy_cmd + '\n';
+               p_sql_undo_stmts->push_back( "#" + kill_cmd );
+            }
+         }
+      }
+
+      string::size_type pos = old_log_cmd.find( '\n' );
+      if( pos != string::npos && old_log_cmd.find( ';' + c_block_prefix + ' ' ) == 0 )
+      {
+         new_log_cmd = old_log_cmd.substr( 0, pos + 1 ) + new_log_cmd;
+         old_log_cmd.erase( 0, pos + 1 );
+      }
+
+      new_log_cmd += old_log_cmd;
+
+      transaction_log_command( new_log_cmd, 0, true );
+
+      set_session_variable( get_special_var_name( e_special_var_file_hash ), "" );
+      set_session_variable( get_special_var_name( e_special_var_file_name ), "" );
+   }
+
+   if( p_sql_undo_stmts && !undo_stmt.empty( ) )
       p_sql_undo_stmts->push_back( undo_stmt );
 }
 
@@ -2645,6 +2711,17 @@ string get_attached_file_path( const string& module_id, const string& class_id )
 {
    string path( storage_web_root( true ) );
    path += "/" + string( c_files_directory ) + "/" + module_id + "/" + class_id;
+
+   return path;
+}
+
+string get_attached_file_path( const string& module_id, const string& class_id, const string& file_name )
+{
+   string path( storage_web_root( true ) );
+   path += "/" + string( c_files_directory ) + "/" + module_id + "/" + class_id;
+
+   if( !file_name.empty( ) )
+      path += "/" + file_name;
 
    return path;
 }

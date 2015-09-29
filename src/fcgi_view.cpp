@@ -32,6 +32,8 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const char* const c_nbsp = "&nbsp;";
 
 string g_nbsp( c_nbsp );
@@ -612,7 +614,9 @@ bool output_view_form( ostream& os, const string& act,
 
    if( !source.is_effective_owner_field.empty( ) )
    {
-      int is_effective_owner_field = atoi( source.field_values.find( source.is_effective_owner_field )->second.c_str( ) );
+      int is_effective_owner_field = atoi(
+       source.field_values.find( source.is_effective_owner_field )->second.c_str( ) );
+
       if( is_effective_owner_field )
          is_record_owner = true;
    }
@@ -2217,10 +2221,10 @@ bool output_view_form( ostream& os, const string& act,
             if( is_admin_edit && !sess_info.is_admin_user )
                can_attach_or_remove_file = false;
 
-            if( is_owner_edit && owner != sess_info.user_key )
+            if( is_owner_edit && !is_record_owner )
                can_attach_or_remove_file = false;
 
-            if( is_admin_owner_edit && !( sess_info.is_admin_user || owner == sess_info.user_key ) )
+            if( is_admin_owner_edit && !( sess_info.is_admin_user || is_record_owner ) )
                can_attach_or_remove_file = false;
 
             if( !extra_data.count( c_field_extra_file ) && !extra_data.count( c_field_extra_image ) )
@@ -2230,9 +2234,6 @@ bool output_view_form( ostream& os, const string& act,
                can_attach_or_remove_file = false;
 
             if( is_in_edit || ( source.state & c_state_uneditable ) || ( source.state & c_state_is_changing ) )
-               can_attach_or_remove_file = false;
-
-            if( !sess_info.is_admin_user && mod_info.user_info_view_id == source.vici->second->id && data != sess_info.user_key )
                can_attach_or_remove_file = false;
 
             // NOTE: If an instance can be identified as having been created by the currently logged in

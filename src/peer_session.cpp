@@ -14,8 +14,6 @@
 #  include <cstdlib>
 #  include <deque>
 #  include <memory>
-#  include <vector>
-#  include <string>
 #  include <sstream>
 #  include <iostream>
 #  include <algorithm>
@@ -1851,8 +1849,8 @@ void lock_blockchain_transaction( auto_ptr< guard >& ap_guard )
    ap_guard.reset( new guard( get_core_files_trace_mutex( ), "lock_blockchain_transaction" ) );
 }
 
-string create_blockchain_transaction(
- const string& blockchain, const string& application, const string& log_command )
+string create_blockchain_transaction( const string& blockchain,
+ const string& application, const string& log_command, const vector< string >* p_file_info )
 {
    guard g( get_core_files_trace_mutex( ), "create_blockchain_transaction" );
 
@@ -1878,7 +1876,7 @@ string create_blockchain_transaction(
    string tx_hash;
 
    string tx_data( construct_new_transaction( blockchain,
-    password, account, application, cmd + remaining, true, &tx_hash ) );
+    password, account, application, cmd + remaining, true, &tx_hash, p_file_info ) );
 
    vector< pair< string, string > > extras;
 

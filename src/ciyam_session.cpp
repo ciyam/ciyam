@@ -554,11 +554,13 @@ string resolve_method_name( const string& module, const string& mclass,
 struct blockchain_transaction_commit_helper : public transaction_commit_helper
 {
    blockchain_transaction_commit_helper(
-    const string& blockchain, const string& storage_name, const string& transaction_cmd )
+    const string& blockchain, const string& storage_name,
+    const string& transaction_cmd, const vector< string >* p_file_info = 0 )
     :
     blockchain( blockchain ),
     storage_name( storage_name ),
-    transaction_cmd( transaction_cmd )
+    transaction_cmd( transaction_cmd ),
+    p_file_info( p_file_info )
    {
       lock_blockchain_transaction( ap_guard );
    }
@@ -568,7 +570,7 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
       tx_hash = get_raw_session_variable( get_special_var_name( e_special_var_transaction ) );
 
       if( tx_hash.empty( ) )
-         tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd );
+         tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd, p_file_info );
    }
 
    void after_commit( )
@@ -583,6 +585,8 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
    string blockchain;
    string storage_name;
    string transaction_cmd;
+
+   const vector< string >* p_file_info;
 };
 
 struct summary_info
@@ -1453,12 +1457,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tag )
       {
-         bool is_del( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_del ) );
+         bool is_delete( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_delete ) );
+         bool is_unlink( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_unlink ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_hash ) );
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_name ) );
 
-         if( is_del )
-            tag_del( name );
+         if( is_delete || is_unlink )
+            tag_del( name, is_unlink );
          else
             tag_file( name, hash );
       }
@@ -2758,6 +2763,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+               string file_to_remove;
+
+               vector< string > file_info;
+               vector< string > file_names;
+               vector< string > file_hashes;
+
                auto_ptr< temporary_session_variable > ap_tmp_bh;
                auto_ptr< system_variable_lock > ap_blockchain_lock;
                auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
@@ -2834,9 +2845,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      bool is_encrypted = false;
                      bool is_transient = false;
+                     bool is_file_field = false;
                      bool was_date_time = false;
 
-                     string type_name( get_field_type_name( handle, "", i->first, &is_encrypted, &is_transient ) );
+                     string type_name( get_field_type_name(
+                      handle, "", i->first, &is_encrypted, &is_transient, &is_file_field ) );
 
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
@@ -2903,6 +2916,44 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            if( !field_values_to_log.empty( ) )
                               field_values_to_log += ",";
 
+                           if( !storage_locked_for_admin( ) )
+                           {
+                              if( is_file_field && !i->second.empty( ) )
+                              {
+                                 string tag( "c" + blockchain + ".f"
+                                  + storage_name( ) + "." + module + "." + mclass + "." + i->second );
+
+                                 string hash;
+                                 if( has_transaction_hash && has_tag( tag ) )
+                                    hash = tag_file_hash( tag );
+                                 else
+                                 {
+                                    string filepath( get_attached_file_path( module, mclass, i->second ) );
+
+                                    string data( c_file_type_str_blob );
+                                    data += buffer_file( filepath );
+
+                                    hash = create_raw_file( data, true, tag.c_str( ) );
+                                 }
+
+                                 file_names.push_back( i->second );
+                                 file_hashes.push_back( hash );
+
+                                 file_info.push_back( "fe " + hash + " " + i->second );
+                              }
+                              else if( is_file_field )
+                              {
+                                 string tag( "c" + blockchain + ".f"
+                                  + storage_name( ) + "." + module + "." + mclass + "." + value );
+
+                                 file_names.push_back( value );
+                                 file_hashes.push_back( "~" + tag_file_hash( tag ) );
+
+                                 tag_del( tag );
+                                 file_to_remove = get_attached_file_path( module, mclass, value );
+                              }
+                           }
+
                            string field_id( get_shortened_field_id( module, mclass, i->first ) );
 
                            field_values_to_log += field_id + '=';
@@ -2921,8 +2972,38 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      replace_field_values_to_log( next_command, field_values_to_log );
                      replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
 
+                     if( !file_names.empty( ) )
+                     {
+                        string file_name;
+
+                        for( size_t i = 0; i < file_names.size( ); i++ )
+                        {
+                           if( !file_name.empty( ) )
+                              file_name += "\n";
+                           file_name += file_names[ i ];
+                        }
+
+                        set_session_variable( get_special_var_name( e_special_var_file_name ), file_name );
+                     }
+
+                     if( !file_hashes.empty( ) )
+                     {
+                        string file_hash;
+
+                        for( size_t i = 0; i < file_hashes.size( ); i++ )
+                        {
+                           if( !file_hash.empty( ) )
+                              file_hash += "\n";
+                           file_hash += file_hashes[ i ];
+                        }
+
+                        set_session_variable( get_special_var_name( e_special_var_file_hash ), file_hash );
+                     }
+
                      if( !storage_locked_for_admin( ) )
-                        ap_commit_helper.reset( new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
+                        ap_commit_helper.reset(
+                         new blockchain_transaction_commit_helper(
+                         blockchain, storage_name( ), next_command, &file_info ) );
 
                      transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
@@ -2941,6 +3022,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   response = instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
+
+               if( !file_to_remove.empty( ) )
+                  file_remove( file_to_remove );
 
                destroy_object_instance( handle );
             }
@@ -4363,13 +4447,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   size_t new_tran_id( next_tran_id );
 
-                  if( ap_blockchain.get( ) )
-                  {
-                     string block_comment_prefix( ';' + string( c_block_prefix ) + ' ' );
-
-                     if( tran_info.find( block_comment_prefix ) == 0 )
-                        storage_comment( tran_info.substr( 1 ) );
-                  }
+                  if( tran_info[ 0 ] == ';' )
+                     storage_comment( tran_info.substr( 1 ) );
 
                   if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= next_tran_id ) )
                   {
@@ -4510,6 +4589,37 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          dump_storage_locks( osstr );
          output_response_lines( socket, osstr.str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_file_export )
+      {
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_export_hash ) );
+         string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_export_module ) );
+         string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_export_mclass ) );
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_export_filename ) );
+
+         module = resolve_module_id( module );
+         mclass = resolve_class_id( module, mclass );
+
+         string filepath( get_attached_file_path( module, mclass, filename ) );
+
+         extract_file( hash, filepath );
+      }
+      else if( command == c_cmd_ciyam_session_storage_file_import )
+      {
+         string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_import_module ) );
+         string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_import_mclass ) );
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_import_filename ) );
+         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_file_import_tag ) );
+
+         module = resolve_module_id( module );
+         mclass = resolve_class_id( module, mclass );
+
+         string filepath( get_attached_file_path( module, mclass, filename ) );
+
+         string data( c_file_type_str_blob );
+         data += buffer_file( filepath );
+
+         response = create_raw_file( data, true, tag.empty( ) ? 0 : tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_storage_cache_clear )
          storage_cache_clear( );

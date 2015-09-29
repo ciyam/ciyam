@@ -385,10 +385,11 @@ std::string CIYAM_BASE_DECL_SPEC storage_identity( );
 std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
 std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 
-std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand );
+std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand, bool check_is_linked = false );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );
 
-void CIYAM_BASE_DECL_SPEC storage_process_undo( uint64_t new_height );
+void CIYAM_BASE_DECL_SPEC storage_process_undo(
+ uint64_t new_height, std::map< std::string, std::string >& file_info );
 
 void CIYAM_BASE_DECL_SPEC storage_lock_all_tables( );
 void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
@@ -512,8 +513,9 @@ std::string CIYAM_BASE_DECL_SPEC get_field_name_for_id(
 std::string CIYAM_BASE_DECL_SPEC get_field_id_for_name(
  size_t handle, const std::string& context, const std::string& name, bool no_throw = false );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_type_name( size_t handle,
- const std::string& context, const std::string& id_or_name, bool* p_is_encrypted = 0, bool* p_is_transient = 0 );
+std::string CIYAM_BASE_DECL_SPEC get_field_type_name(
+ size_t handle, const std::string& context, const std::string& id_or_name,
+ bool* p_is_encrypted = 0, bool* p_is_transient = 0, bool* p_is_file_field = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol( size_t handle, const std::string& context, const std::string& id_or_name );
 std::string CIYAM_BASE_DECL_SPEC get_field_display_name( size_t handle, const std::string& context, const std::string& id_or_name );
@@ -663,7 +665,7 @@ struct transaction_commit_helper
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
 
 void CIYAM_BASE_DECL_SPEC transaction_log_command(
- const std::string& log_command, transaction_commit_helper* p_tx_helper = 0 );
+ const std::string& log_command, transaction_commit_helper* p_tx_helper = 0, bool replace_current = false );
 
 void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
  const std::string& application, const std::string& transaction_hash );

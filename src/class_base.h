@@ -72,9 +72,9 @@ struct field_info
    field_info( ) { }
 
    field_info( const std::string& id,
-    const std::string& name, const std::string& type_name,
-    bool mandatory, const char* p_scope = 0, const char* p_change = 0,
-    bool is_owner_fk = false, bool is_encrypted = false, bool is_transient = false )
+    const std::string& name, const std::string& type_name, bool mandatory,
+    const char* p_scope = 0, const char* p_change = 0, bool is_owner_fk = false,
+    bool is_encrypted = false, bool is_transient = false, bool is_attachment = false )
     :
     id( id ),
     name( name ),
@@ -82,7 +82,8 @@ struct field_info
     mandatory( mandatory ),
     is_owner_fk( is_owner_fk ),
     is_encrypted( is_encrypted ),
-    is_transient( is_transient )
+    is_transient( is_transient ),
+    is_attachment( is_attachment )
    {
       if( p_scope )
          scope = std::string( p_scope );
@@ -102,6 +103,7 @@ struct field_info
    bool is_owner_fk;
    bool is_encrypted;
    bool is_transient;
+   bool is_attachment;
 };
 
 typedef std::vector< field_info > field_info_container;
@@ -425,7 +427,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual std::string& get_order_field_name( ) const = 0;
    virtual std::string& get_owner_field_name( ) const = 0;
 
-   virtual bool is_file_field_name( const std::string& name ) const = 0;
+   virtual bool is_file_field( const std::string& id_or_name ) const = 0;
    virtual void get_file_field_names( std::vector< std::string >& file_field_names ) const = 0;
 
    virtual std::string get_field_uom_symbol( const std::string& id_or_name ) const = 0;
@@ -1138,7 +1140,7 @@ std::string CLASS_BASE_DECL_SPEC copy_class_file( const std::string& src_path,
 inline void copy_field_or_file_and_field( class_base& dest, const std::string& dest_key,
  const std::string& dest_field_name, const class_base& src, const std::string& src_field_name, bool return_name_only )
 {
-   if( dest.is_file_field_name( dest_field_name ) )
+   if( dest.is_file_field( dest_field_name ) )
       dest.set_field_value(
        dest.get_field_num( dest_field_name ), copy_class_file( src.get_field_value(
        src.get_field_num( src_field_name ) ), dest.get_class_id( ), dest_key, return_name_only ) );
@@ -1156,7 +1158,12 @@ std::string CLASS_BASE_DECL_SPEC get_app_dir( );
 std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 
 std::string CLASS_BASE_DECL_SPEC get_attached_file_dir( );
-std::string CLASS_BASE_DECL_SPEC get_attached_file_path( const std::string& module_id, const std::string& class_id );
+
+std::string CLASS_BASE_DECL_SPEC get_attached_file_path(
+ const std::string& module_id, const std::string& class_id );
+
+std::string CLASS_BASE_DECL_SPEC get_attached_file_path(
+ const std::string& module_id, const std::string& class_id, const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 

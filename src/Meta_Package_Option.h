@@ -359,7 +359,7 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    std::string& get_order_field_name( ) const;
    std::string& get_owner_field_name( ) const;
 
-   bool is_file_field_name( const std::string& name ) const;
+   bool is_file_field( const std::string& id_or_name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_uom_symbol( const std::string& id_or_name ) const;

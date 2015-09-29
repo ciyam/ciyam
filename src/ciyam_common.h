@@ -86,6 +86,8 @@ enum special_var
    e_special_var_identity,
    e_special_var_progress,
    e_special_var_crypt_key,
+   e_special_var_file_hash,
+   e_special_var_file_name,
    e_special_var_image_dir,
    e_special_var_val_error,
    e_special_var_blockchain,
