@@ -1862,7 +1862,7 @@ void class_base::generate_sql( const string& class_name, generate_sql_type type,
       }
 
       string::size_type pos = old_log_cmd.find( '\n' );
-      if( pos != string::npos && old_log_cmd.find( ';' + c_block_prefix + ' ' ) == 0 )
+      if( pos != string::npos && old_log_cmd.find( ';' + string( c_block_prefix ) + ' ' ) == 0 )
       {
          new_log_cmd = old_log_cmd.substr( 0, pos + 1 ) + new_log_cmd;
          old_log_cmd.erase( 0, pos + 1 );
