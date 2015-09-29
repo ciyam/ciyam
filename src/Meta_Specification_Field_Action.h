@@ -163,7 +163,7 @@ class META_SPECIFICATION_FIELD_ACTION_DECL_SPEC Meta_Specification_Field_Action 
    std::string& get_order_field_name( ) const;
    std::string& get_owner_field_name( ) const;
 
-   bool is_file_field_name( const std::string& name ) const;
+   bool is_file_field( const std::string& id_or_name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_uom_symbol( const std::string& id_or_name ) const;

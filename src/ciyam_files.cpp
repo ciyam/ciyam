@@ -44,17 +44,15 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 mutex g_mutex;
 
 map< string, string > g_tag_hashes;
 multimap< string, string > g_hash_tags;
 
-#include "ciyam_constants.h"
-
 size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
-
-const char* const c_files_directory = "files";
 
 void create_directory_if_not_exists( const string& dir_name )
 {
@@ -711,11 +709,12 @@ string create_raw_file_with_extras( const string& data,
    return retval;
 }
 
-void tag_del( const string& name )
+void tag_del( const string& name, bool unlink )
 {
    guard g( g_mutex );
 
    string::size_type pos = name.find_first_of( "*?" );
+
    if( pos == string::npos )
    {
       string tag_filename( c_files_directory );
@@ -730,6 +729,7 @@ void tag_del( const string& name )
          string hash = g_tag_hashes[ name ];
          g_tag_hashes.erase( name );
 
+         // NOTE: Need to also remove the matching entry in the hash tags multimap.
          multimap< string, string >::iterator i;
          for( i = g_hash_tags.lower_bound( hash ); i != g_hash_tags.end( ); ++i )
          {
@@ -742,6 +742,9 @@ void tag_del( const string& name )
                break;
             }
          }
+
+         if( unlink && !g_hash_tags.count( hash ) )
+            delete_file( hash );
       }
    }
    else
@@ -760,7 +763,7 @@ void tag_del( const string& name )
       }
 
       for( size_t i = 0; i < matching_tag_names.size( ); i++ )
-         tag_del( matching_tag_names[ i ] );
+         tag_del( matching_tag_names[ i ], unlink );
    }
 }
 

@@ -45,6 +45,8 @@ extern string g_footer_html;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 mutex g_mutex;
 
 string g_sid;

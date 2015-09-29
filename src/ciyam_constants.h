@@ -7,6 +7,10 @@
 #  define CIYAM_CONSTANTS_H
 
 const char* const c_block_prefix = "block";
+const char* const c_files_directory = "files";
+
+const char* const c_file_copy_command = "file_copy";
+const char* const c_file_kill_command = "file_kill";
 
 const size_t c_max_file_transfer_size = 102400;
 

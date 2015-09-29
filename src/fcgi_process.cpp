@@ -1032,8 +1032,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // part of the "info" file data by including it in the "name" attribute (as is done for the class).
             if( !had_send_or_recv_error && view.has_file_attachments )
             {
-               string relative_prefix( string( c_files_directory )
-                + "/" + get_module_id_for_attached_file( view ) + "/" + ( vici->second )->cid + "/" );
+               string class_id( ( vici->second )->cid );
+               string module_id( get_module_id_for_attached_file( view ) );
+
+               string relative_prefix( string( c_files_directory ) + "/" + module_id + "/" + class_id + "/" );
 
                string new_file_info( relative_prefix + "/" + session_id );
 
@@ -1095,15 +1097,18 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         field_value_pairs.push_back(
                          make_pair( view.modify_datetime_field, "U" + date_time::standard( ).as_string( ) ) );
 
-                     // FUTURE: Need to and report an error if the update fails.
+                     // FUTURE: Need to report an error if the update fails.
                      if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
                      {
                         performed_file_attach_or_detach = true;
 
-                        string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
+                        if( !view.field_values[ file_field_id ].empty( ) )
+                        {
+                           string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
 
-                        if( file_exists( old_file.c_str( ) ) )
-                           remove( old_file.c_str( ) );
+                           if( file_exists( old_file.c_str( ) ) )
+                              remove( old_file.c_str( ) );
+                        }      
 
                         if( !new_file.empty( ) )
                         {

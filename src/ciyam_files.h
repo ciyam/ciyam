@@ -55,7 +55,7 @@ std::string CLASS_BASE_DECL_SPEC create_raw_file(
 std::string CLASS_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
 
-void CLASS_BASE_DECL_SPEC tag_del( const std::string& name );
+void CLASS_BASE_DECL_SPEC tag_del( const std::string& name, bool unlink = false );
 void CLASS_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
 
 std::string CLASS_BASE_DECL_SPEC get_hash_tags( const std::string& hash );

@@ -140,6 +140,7 @@ string g_owner_field_name;
 
 set< string > g_derivations;
 
+set< string > g_file_field_ids;
 set< string > g_file_field_names;
 
 typedef map< string, Meta_Initial_Record* > external_aliases_container;
@@ -1382,9 +1383,9 @@ string& Meta_Initial_Record::get_owner_field_name( ) const
    return g_owner_field_name;
 }
 
-bool Meta_Initial_Record::is_file_field_name( const string& name ) const
+bool Meta_Initial_Record::is_file_field( const string& id_or_name ) const
 {
-   return g_file_field_names.count( name );
+   return g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name );
 }
 
 void Meta_Initial_Record::get_file_field_names( vector< string >& file_field_names ) const

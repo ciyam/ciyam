@@ -142,7 +142,7 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
    std::string& get_order_field_name( ) const;
    std::string& get_owner_field_name( ) const;
 
-   bool is_file_field_name( const std::string& name ) const;
+   bool is_file_field( const std::string& id_or_name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_uom_symbol( const std::string& id_or_name ) const;

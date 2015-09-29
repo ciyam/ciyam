@@ -458,6 +458,7 @@ string g_owner_field_name`{`(`?`$owner_field`)( "`{`$owner_field`}" )`};
 
 set< string > g_derivations;
 
+set< string > g_file_field_ids;
 set< string > g_file_field_names;
 
 typedef map< string, `{`$full_class_name`}* > external_aliases_container;
@@ -3446,12 +3447,13 @@ string& `{`$full_class_name`}::get_owner_field_name( ) const
 `}
 }
 
-bool `{`$full_class_name`}::is_file_field_name( const string& name ) const
+bool `{`$full_class_name`}::is_file_field( const string& id_or_name ) const
 {
 `{`(`?`$parent_class`)\
-   return parent_class_type::is_file_field_name( name ) || g_file_field_names.count( name );\
+   return parent_class_type::is_file_field( id_or_name )
+    || g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name );\
 `,\
-   return g_file_field_names.count( name );\
+   return g_file_field_ids.count( id_or_name ) || g_file_field_names.count( id_or_name );\
 `}
 }
 
@@ -4502,8 +4504,9 @@ void `{`$full_class_name`}::static_class_init( const char* p_module_name )
 `{`(`?`$parent_class`)\
    `{`$parent_class`}::static_insert_derivation( "`{`$full_class_name`}" );
 `}`}`{`(`?`$file_field_names`)`[`$file_field_names`,\
-   g_file_field_names.insert( "\$" );
-`]`}`{`(`?`$file_field_names`&`?`$all_enums`)\n`}`{`(`?`$all_enums`)`[`$all_enums`%,`,\
+   g_file_field_ids.insert( c_field_id_\$ );
+   g_file_field_names.insert( c_field_name_\$ );
+`+\n`]`}`{`(`?`$file_field_names`&`?`$all_enums`)\n`}`{`(`?`$all_enums`)`[`$all_enums`%,`,\
 `{`[`$enum_\0`%=`,\
    g_\0_enum.insert( `{`@eq`(`'\2`'`,`'numlit`'`)\\0`,"\\0"`} );
 `]`}`+\n`]`}`{`?`$all_static_class_init_specifications`[`$all_static_class_init_specifications`%,`,\

@@ -9,6 +9,7 @@
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <iosfwd>
 #     include <memory>
+#     include <vector>
 #     include <string>
 #  endif
 
@@ -73,7 +74,8 @@ std::string get_account_password( const std::string& blockchain, const std::stri
 void lock_blockchain_transaction( std::auto_ptr< guard >& ap_guard );
 
 std::string create_blockchain_transaction(
- const std::string& blockchain, const std::string& application, const std::string& log_command );
+ const std::string& blockchain, const std::string& application,
+ const std::string& log_command, const std::vector< std::string >* p_file_info = 0 );
 
 void create_peer_listener( int port, const std::string& blockchain );
 

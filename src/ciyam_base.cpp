@@ -211,6 +211,8 @@ const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_crypt_key = "@crypt_key";
+const char* const c_special_variable_file_hash = "@file_hash";
+const char* const c_special_variable_file_name = "@file_name";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
@@ -5816,6 +5818,14 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_crypt_key );
       break;
 
+      case e_special_var_file_hash:
+      s = string( c_special_variable_file_hash );
+      break;
+
+      case e_special_var_file_name:
+      s = string( c_special_variable_file_name );
+      break;
+
       case e_special_var_image_dir:
       s = string( c_special_variable_image_dir );
       break;
@@ -6442,9 +6452,13 @@ void storage_comment( const string& comment )
 
       if( handler.is_using_blockchain( ) )
       {
-         string block_marker( string( c_block_prefix ) + ' ' );
+         string block_comment( string( c_block_prefix ) + ' ' );
+         string file_copy_comment( string( c_file_copy_command ) + ' ' );
+         string file_kill_comment( string( c_file_kill_command ) + ' ' );
 
-         if( comment.find( block_marker ) == 0 )
+         string new_comment( comment );
+
+         if( comment.find( block_comment ) == 0 )
          {
             if( storage_locked_for_admin( ) && identity.next_id + 1 >= 5 )
                gtp_session->sql_undo_statements.push_back( "#" + comment );
@@ -6463,6 +6477,16 @@ void storage_comment( const string& comment )
                if( !outf.good( ) )
                   throw runtime_error( "*** unexpected error occurred writing to undo sql ***" );
             }
+         }
+         else if( comment.find( file_copy_comment ) == 0 )
+         {
+            gtp_session->sql_undo_statements.push_back( "#"
+             + replace( new_comment, file_copy_comment, file_kill_comment ) );
+         }
+         else if( comment.find( file_kill_comment ) == 0 )
+         {
+            gtp_session->sql_undo_statements.push_back( "#"
+             + replace( new_comment, file_kill_comment, file_copy_comment ) );
          }
       }
    }
@@ -6931,13 +6955,12 @@ string storage_identity( )
 
 string storage_blockchain( )
 {
-   // FUTURE: For now this is just returning the first blockchain id
-   // but the blockchain id should actually be tied into the storage
-   // via its application.
-   string s;
+   string s, identity( storage_identity( ) );
 
-   if( !g_blockchains.empty( ) )
-      s = g_blockchains.begin( )->second;
+   string::size_type pos = identity.find( ':' );
+
+   if( pos != string::npos )
+      s = identity.substr( pos + 1 );
 
    return s;
 }
@@ -6947,11 +6970,15 @@ string storage_module_directory( )
    return gtp_session->p_storage_handler->get_root( ).module_directory;
 }
 
-string storage_web_root( bool expand )
+string storage_web_root( bool expand, bool check_is_linked )
 {
    guard g( g_mutex );
 
+   if( check_is_linked && !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
    string path( gtp_session->p_storage_handler->get_root( ).web_root );
+
    if( expand )
    {
       path = search_replace( path, c_expand_root, get_web_root( ) );
@@ -6979,7 +7006,7 @@ void storage_web_root( const string& new_root )
    }
 }
 
-void storage_process_undo( uint64_t new_height )
+void storage_process_undo( uint64_t new_height, map< string, string >& file_info )
 {
    guard g( g_mutex );
 
@@ -7048,10 +7075,43 @@ void storage_process_undo( uint64_t new_height )
       inpf.close( );
       outf.close( );
 
+      string storage_files_dir( get_web_root( ) );
+      storage_files_dir += '/' + gtp_session->p_storage_handler->get_name( ) + '/' + string( c_files_directory );
+
       for( size_t i = 0; i < undo_statements.size( ); i++ )
       {
-         TRACE_LOG( TRACE_SQLSTMTS, undo_statements[ i ] );
-         exec_sql( *gtp_session->ap_db, undo_statements[ i ] );
+         string next_statement( undo_statements[ i ] );
+
+         if( !next_statement.empty( ) && next_statement[ 0 ] == '#' )
+         {
+            if( next_statement.find( c_file_kill_command ) == 1 )
+            {
+               // NOTE: Expected format is: #file_kill <hash> <module_id> <class_id> <filename>
+               vector< string > parts;
+               split( next_statement, parts, ' ' );
+
+               if( parts.size( ) != 4 )
+                  throw runtime_error( "invalid file_kill: " + next_statement );
+
+               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = string( );
+            }
+            else if( next_statement.find( c_file_copy_command ) == 1 )
+            {
+               // NOTE: Expected format is: #file_copy <hash> <module_id> <class_id> <filename>
+               vector< string > parts;
+               split( next_statement, parts, ' ' );
+
+               if( parts.size( ) != 5 )
+                  throw runtime_error( "invalid file_copy: " + next_statement );
+
+               file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = parts[ 1 ];
+            }
+
+            continue;
+         }
+
+         TRACE_LOG( TRACE_SQLSTMTS, next_statement );
+         exec_sql( *gtp_session->ap_db, next_statement );
       }
    }
 
@@ -8194,7 +8254,8 @@ string get_field_id_for_name( size_t handle, const string& context, const string
 }
 
 string get_field_type_name( size_t handle,
- const string& context, const string& id_or_name, bool* p_is_encrypted, bool* p_is_transient )
+ const string& context, const string& id_or_name,
+ bool* p_is_encrypted, bool* p_is_transient, bool* p_is_file_field )
 {
    string type_name;
 
@@ -8214,6 +8275,9 @@ string get_field_type_name( size_t handle,
 
          if( p_is_transient )
             *p_is_transient = field_info[ i ].is_transient;
+
+         if( p_is_file_field )
+            *p_is_file_field = instance.is_file_field( id_or_name );
 
          break;
       }
@@ -10212,7 +10276,8 @@ void op_instance_destroy( size_t handle,
 void op_instance_apply( size_t handle, const string& context,
  bool internal_operation, op_apply_rc* p_rc, set< string >* p_fields_set )
 {
-   class_base& instance( get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_create_update_destroy ) );
+   class_base& instance(
+    get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_create_update_destroy ) );
 
    op_apply_rc rc;
    instance.op_apply( &rc, internal_operation, p_fields_set );
@@ -10268,7 +10333,10 @@ void transaction_commit( )
 
       gtp_session->transactions.top( )->commit( );
 
-      if( gtp_session->transactions.size( ) == 1 )
+      delete gtp_session->transactions.top( );
+      gtp_session->transactions.pop( );
+
+      if( !gtp_session->transactions.size( ) )
       {
          if( gtp_session->p_tx_helper )
             gtp_session->p_tx_helper->at_commit( );
@@ -10299,9 +10367,6 @@ void transaction_commit( )
       }
    }
 
-   delete gtp_session->transactions.top( );
-   gtp_session->transactions.pop( );
-
    if( gtp_session->transactions.empty( ) )
    {
       for( size_t i = 0; i < gtp_session->async_or_delayed_system_commands.size( ); i++ )
@@ -10319,40 +10384,40 @@ void transaction_commit( )
 
 void transaction_rollback( )
 {
-   if( gtp_session->transactions.empty( ) )
-      throw runtime_error( "no active transaction exists" );
-
-   gtp_session->transactions.top( )->rollback( );
-
-   delete gtp_session->transactions.top( );
-   gtp_session->transactions.pop( );
-
-   if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
+   if( !gtp_session->transactions.empty( ) )
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "ROLLBACK" );
-      exec_sql( *gtp_session->ap_db, "ROLLBACK" );
+      gtp_session->transactions.top( )->rollback( );
 
-      gtp_session->transaction_log_command.erase( );
-   }
+      delete gtp_session->transactions.top( );
+      gtp_session->transactions.pop( );
 
-   if( gtp_session->transactions.empty( ) )
-   {
-      if( gtp_session->p_tx_helper )
-         gtp_session->p_tx_helper = 0;
-
-      gtp_session->tx_key_info.clear( );
-      gtp_session->sql_undo_statements.clear( );
-
-      gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
-
-      for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
+      if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
       {
-         if( file_exists( gtp_session->async_or_delayed_temp_files[ i ] ) )
-            file_remove( gtp_session->async_or_delayed_temp_files[ i ] );
+         TRACE_LOG( TRACE_SQLSTMTS, "ROLLBACK" );
+         exec_sql( *gtp_session->ap_db, "ROLLBACK" );
+
+         gtp_session->transaction_log_command.erase( );
       }
 
-      gtp_session->async_or_delayed_temp_files.clear( );
-      gtp_session->async_or_delayed_system_commands.clear( );
+      if( gtp_session->transactions.empty( ) )
+      {
+         if( gtp_session->p_tx_helper )
+            gtp_session->p_tx_helper = 0;
+
+         gtp_session->tx_key_info.clear( );
+         gtp_session->sql_undo_statements.clear( );
+
+         gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
+
+         for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
+         {
+            if( file_exists( gtp_session->async_or_delayed_temp_files[ i ] ) )
+               file_remove( gtp_session->async_or_delayed_temp_files[ i ] );
+         }
+
+         gtp_session->async_or_delayed_temp_files.clear( );
+         gtp_session->async_or_delayed_system_commands.clear( );
+      }
    }
 }
 
@@ -10407,7 +10472,8 @@ string transaction_log_command( )
    return gtp_session->transaction_log_command;
 }
 
-void transaction_log_command( const string& log_command, transaction_commit_helper* p_tx_helper )
+void transaction_log_command( const string& log_command,
+ transaction_commit_helper* p_tx_helper, bool replace_current )
 {
    if( log_command.empty( ) )
    {
@@ -10425,13 +10491,19 @@ void transaction_log_command( const string& log_command, transaction_commit_help
          string filename( gtp_session->p_storage_handler->get_name( ) + ".txs.log" );
 
          if( !file_exists( filename ) )
-            gtp_session->transaction_log_command = ";block " + to_string( c_unconfirmed_revision );
+            gtp_session->transaction_log_command = ';'
+             + string( c_block_prefix ) + ' ' + to_string( c_unconfirmed_revision );
       }
 
-      if( !gtp_session->transaction_log_command.empty( ) )
-         gtp_session->transaction_log_command += '\n';
+      if( replace_current )
+         gtp_session->transaction_log_command = log_command;
+      else
+      {
+         if( !gtp_session->transaction_log_command.empty( ) )
+            gtp_session->transaction_log_command += '\n';
 
-      gtp_session->transaction_log_command += log_command;
+         gtp_session->transaction_log_command += log_command;
+      }   
 
       if( p_tx_helper )
          gtp_session->p_tx_helper = p_tx_helper;

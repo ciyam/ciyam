@@ -4,7 +4,7 @@ file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//hash>[<val//tag>]
 file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>][<opt/-text/text>]<opt/blob>|<opt/item>|<opt/tree><val//data>[<val//tag>]
-file_tag "set/delete a tag for a file in the files area" <opt/-del/del>|<val//hash><val//name>
+file_tag "set/delete/unlink a tag for a file in the files area" <opt/-delete/delete>|<opt/-unlink/unlink>|<val//hash><val//name>
 file_hash "get the hash for a tag in the files area" <val//tag>
 file_info "get information for a file in the files area" [<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>]}]<val//tag_or_hash>
 file_kill "remove file(s) for a hash or wildcard pattern" <val/-p=/pat>|<val//hash>
@@ -75,6 +75,8 @@ storage_log_slice "slice a storage log into individual module logs" <val//name>[
 storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_dump_cache "dump storage cached records"
 storage_dump_locks "dump storage lock information"
+storage_file_export "export an attached file from the files area" <val//hash><val//module><val//mclass><val//filename>
+storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
 storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
 storage_trans_start "start a transaction in the current storage"
