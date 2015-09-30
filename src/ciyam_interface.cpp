@@ -1240,12 +1240,6 @@ void request_handler::process_request( )
                            extra_content_func += "refresh( false );\n";
                      }
 
-                     if( g_is_blockchain_application )
-                     {
-                        if( !simple_command( *p_session_info, "session_variable @identity " + server_id ) )
-                           throw runtime_error( "unexpected failure to set identity session_variable" );
-                     }
-
                      g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
                      if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
