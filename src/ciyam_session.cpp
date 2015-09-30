@@ -4602,6 +4602,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string filepath( get_attached_file_path( module, mclass, filename ) );
 
+         create_directories_for_file_name( filepath );
+
          extract_file( hash, filepath );
       }
       else if( command == c_cmd_ciyam_session_storage_file_import )
