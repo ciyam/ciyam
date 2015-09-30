@@ -7090,7 +7090,7 @@ void storage_process_undo( uint64_t new_height, map< string, string >& file_info
                vector< string > parts;
                split( next_statement, parts, ' ' );
 
-               if( parts.size( ) != 4 )
+               if( parts.size( ) != 5 )
                   throw runtime_error( "invalid file_kill: " + next_statement );
 
                file_info[ storage_files_dir + '/' + parts[ 2 ] + '/' + parts[ 3 ] + '/' + parts[ 4 ] ] = string( );

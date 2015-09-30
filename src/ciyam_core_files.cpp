@@ -2967,15 +2967,12 @@ void verify_blockchain_info( const string& content,
          }
          else
          {
-            string::size_type pos = next_line.find( ':' );
-
-            if( !cinfo.is_test && pos == string::npos )
-               throw runtime_error( "unexpected missing signature from '" + next_line + "' in verify_blockchain_info" );
-
             string blob_hash_with_sig;
 
+            string::size_type pos = next_line.find( ':' );
+
             if( pos == string::npos )
-               blob_hash_with_sig = next_line;
+               blob_hash_with_sig = cinfo.is_test ? next_line : base64_to_hex( next_line );
             else
                blob_hash_with_sig = base64_to_hex( next_line.substr( 0, pos ) ) + next_line.substr( pos );
 
