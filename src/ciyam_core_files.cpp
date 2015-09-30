@@ -4190,8 +4190,6 @@ uint64_t construct_transaction_scripts_for_blockchain(
 
                   app_log_lines[ tinfo.application ].push_back( next_log_line );
                }
-
-               app_log_lines[ tinfo.application ].push_back( next_log_line );
             }
          }
       }
