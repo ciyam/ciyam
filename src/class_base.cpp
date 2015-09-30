@@ -2685,7 +2685,8 @@ void copy_class_files( const class_base& src, class_base& dest )
 
       if( !next_file.empty( ) )
          dest.set_field_value( dest.get_field_num( file_field_names[ i ] ),
-          copy_class_file( src.get_attached_file_path( next_file ), dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+          copy_class_file( src.get_attached_file_path( next_file ),
+          dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
    }
 }
 
@@ -2698,7 +2699,8 @@ void copy_class_files_for_clone(
 
       if( !next_file.empty( ) )
          dest.set_field_value( dest.get_field_num( file_field_name_and_values[ i ].first ),
-          copy_class_file( dest.get_attached_file_path( next_file ), dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+          copy_class_file( dest.get_attached_file_path( next_file ),
+          dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
    }
 }
 

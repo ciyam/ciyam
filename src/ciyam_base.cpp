@@ -7076,7 +7076,7 @@ void storage_process_undo( uint64_t new_height, map< string, string >& file_info
       outf.close( );
 
       string storage_files_dir( get_web_root( ) );
-      storage_files_dir += '/' + gtp_session->p_storage_handler->get_name( ) + '/' + string( c_files_directory );
+      storage_files_dir += '/' + lower( gtp_session->p_storage_handler->get_name( ) ) + '/' + string( c_files_directory );
 
       for( size_t i = 0; i < undo_statements.size( ); i++ )
       {

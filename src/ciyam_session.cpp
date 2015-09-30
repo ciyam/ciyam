@@ -2922,7 +2922,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               file_names.push_back( value );
                               file_hashes.push_back( "~" + tag_file_hash( tag ) );
 
-                              tag_del( tag );
+                              if( has_tag( tag ) )
+                                 tag_del( tag );
+
                               file_to_remove = get_attached_file_path( module, mclass, value );
                            }
                         }
@@ -2971,7 +2973,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               file_names.push_back( value );
                               file_hashes.push_back( "~" + tag_file_hash( tag ) );
 
-                              tag_del( tag );
+                              if( has_tag( tag ) )
+                                 tag_del( tag );
+
                               file_to_remove = get_attached_file_path( module, mclass, value );
                            }
 
