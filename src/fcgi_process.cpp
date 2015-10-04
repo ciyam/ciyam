@@ -1097,6 +1097,40 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         field_value_pairs.push_back(
                          make_pair( view.modify_datetime_field, "U" + date_time::standard( ).as_string( ) ) );
 
+                     if( !new_file.empty( ) && is_blockchain_application( ) )
+                     {
+                        bool is_owner_only_file = false;
+                        for( size_t i = 0; i < view.field_ids.size( ); i++ )
+                        {
+                           if( view.field_ids[ i ] == file_field_id )
+                           {
+                              map< string, string > extra_data;
+                              if( !view.vici->second->fields[ i ].extra.empty( ) )
+                                 parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
+
+                              if( extra_data.count( c_view_field_extra_owner_only ) )
+                                 is_owner_only_file = true;
+
+                              break;
+                           }
+                        }
+
+                        // NOTE: For blockchain applications encrypt "owner only" file attachments.
+                        if( is_owner_only_file )
+                        {
+                           fstream fs;
+                           fs.open( new_file.c_str( ), ios::in | ios::out | ios::binary );
+
+                           if( fs )
+                           {
+                              crypt_stream( fs, p_session_info->user_pwd_hash );
+
+                              fs.flush( );
+                              fs.close( );
+                           }   
+                        }
+                     }
+
                      // FUTURE: Need to report an error if the update fails.
                      if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
                      {
@@ -1106,7 +1140,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         {
                            string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
 
-                           if( file_exists( old_file.c_str( ) ) )
+                           if( old_file != new_file && file_exists( old_file.c_str( ) ) )
                               remove( old_file.c_str( ) );
                         }      
 

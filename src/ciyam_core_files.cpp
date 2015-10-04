@@ -619,7 +619,7 @@ void get_unconfirmed_transactions(
             {
                string next_log_line( tinfo.log_lines[ j ] );
 
-               if( next_log_line.find( "fe " ) == 0 )
+               if( next_log_line.find( c_file_type_core_transaction_special_file_extract_prefix ) == 0 )
                {
                   vector< string > parts;
                   split( next_log_line, parts, ' ' );
@@ -2162,14 +2162,32 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   block_info binfo;
                   get_block_info( binfo, next_hash );
 
-                  // NOTE: Put all transaction hashes with signatures for each block
-                  // before appending the block hash and signature.
+                  // NOTE: Put all transaction hashes (with signatures) for each block
+                  // before appending the block hash and signature. Any attached files
+                  // that a transaction will have their hashes included as well.
                   for( size_t k = 0; k < binfo.transaction_hashes.size( ); k++ )
                   {
                      string next_tx_hash( binfo.transaction_hashes[ k ] );
 
                      if( !tx_hash_offsets.count( next_tx_hash ) )
                         throw runtime_error( "unable to find tx hash " + next_tx_hash + " in verify_block" );
+
+                     transaction_info tinfo;
+                     get_transaction_info( tinfo, next_tx_hash );
+
+                     for( size_t l = 0; l < tinfo.log_lines.size( ); l++ )
+                     {
+                        string next_log_line( tinfo.log_lines[ l ] );
+
+                        if( next_log_line.find( c_file_type_core_transaction_special_file_extract_prefix ) == 0 )
+                        {
+                           vector< string > parts;
+                           split( next_log_line, parts, ' ' );
+
+                           if( parts.size( ) > 1 )
+                              checkpoint_info_data += '\n' + ( cinfo.is_test ? parts[ 1 ] : hex_to_base64( parts[ 1 ] ) );
+                        }
+                     }
 
                      checkpoint_info_data += '\n';
 
@@ -2676,6 +2694,9 @@ void verify_transaction( const string& content, bool check_sigs,
    int num_log_lines = 0;
    bool had_signature = false;
 
+   string file_extract_lines;
+   string create_and_update_lines;
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -2706,11 +2727,22 @@ void verify_transaction( const string& content, bool check_sigs,
          if( cmd != "fe" && cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
             throw runtime_error( "invalid cmd '" + cmd + "' in log line '" + next_line + "'" );
 
+         if( cmd == "fe" )
+         {
+            if( !file_extract_lines.empty( ) )
+               file_extract_lines += '\n';
+            file_extract_lines += next_line;
+         }
+
          if( cmd == "pc" || cmd == "pu" )
          {
             pos = next_line.find( '"' );
             if( pos == string::npos )
                throw runtime_error( "invalid transaction log line '" + next_line + "'" );
+
+            if( !create_and_update_lines.empty( ) )
+               create_and_update_lines += '\n';
+            create_and_update_lines += next_line;
          }
       }
       else if( !had_signature
@@ -2729,11 +2761,47 @@ void verify_transaction( const string& content, bool check_sigs,
 #endif
       }
       else
-         throw runtime_error( "unexpected line '" + lines[ i ] + "' in verify_block" );
+         throw runtime_error( "unexpected line '" + lines[ i ] + "' in verify_transaction" );
    }
 
    if( p_extras && !had_signature )
       throw runtime_error( "transaction signature missing" );
+
+   if( !file_extract_lines.empty( ) )
+   {
+      vector< string > file_extracts;
+      split( file_extract_lines, file_extracts, '\n' );
+
+      for( size_t i = 0; i < file_extracts.size( ); i++ )
+      {
+         string next_file_extract( file_extracts[ i ] );
+
+         vector< string > parts;
+         split( next_file_extract, parts, ' ' );
+
+         if( parts.size( ) != 3 )
+            throw runtime_error( "invalid line '" + next_file_extract + "' in verify_transaction" );
+
+         string filename( parts[ 2 ] );
+
+         string::size_type spos = filename.find( '-' );
+         string::size_type xpos = filename.find( '.' );
+         string::size_type fpos = filename.find( 'F', spos );
+
+         if( spos == string::npos || xpos == string::npos || fpos == string::npos || fpos < spos )
+            throw runtime_error( "invalid format for line '" + next_file_extract + "' in verify_transaction" );
+
+         string field( filename.substr( fpos, xpos - fpos ) );
+
+         string field_and_value( field + '=' + filename );
+
+         string::size_type pos = create_and_update_lines.find( field_and_value );
+         if( pos == string::npos )
+            throw runtime_error( "did not find '" + field_and_value + "' in transaction create/update lines" );
+
+         create_and_update_lines.erase( pos, field_and_value.length( ) );
+      }
+   }
 
    string error_message;
 
@@ -3083,7 +3151,7 @@ void verify_blockchain_info( const string& content,
                {
                   string next_log_line( tinfo.log_lines[ j ] );
 
-                  if( next_log_line.find( "fe " ) == 0 )
+                  if( next_log_line.find( c_file_type_core_transaction_special_file_extract_prefix ) == 0 )
                   {
                      vector< string > parts;
                      split( next_log_line, parts, ' ' );
@@ -4130,11 +4198,13 @@ uint64_t construct_transaction_scripts_for_blockchain(
             if( pos != string::npos )
                account.erase( 0, pos + 2 );
 
+            vector< string > file_tags_and_exports;
+
             for( size_t j = 0; j < tinfo.log_lines.size( ); j++ )
             {
                string next_log_line( tinfo.log_lines[ j ] );
 
-               if( next_log_line.find( "fe " ) == 0 )
+               if( next_log_line.find( c_file_type_core_transaction_special_file_extract_prefix ) == 0 )
                {
                   vector< string > parts;
                   split( next_log_line, parts, ' ' );
@@ -4167,14 +4237,14 @@ uint64_t construct_transaction_scripts_for_blockchain(
                   string module( module_and_class.substr( 0, pos ) );
 
                   next_log_line = "file_tag " + parts[ 1 ] + " c" + blockchain
-                   + ".f" + tinfo.application + "." + module + "." + module_and_class + "." + parts[ 2 ];
+                   + ".f" + tinfo.application + "." + module + "." + module_and_class + "." + filename;
 
-                  app_log_lines[ tinfo.application ].push_back( next_log_line );
+                  file_tags_and_exports.push_back( next_log_line );
 
                   next_log_line = "storage_file_export " + parts[ 1 ];
                   next_log_line += ' ' + module + ' ' + module_and_class + ' ' + filename;
 
-                  app_log_lines[ tinfo.application ].push_back( next_log_line );
+                  file_tags_and_exports.push_back( next_log_line );
                }
                else
                {
@@ -4190,6 +4260,18 @@ uint64_t construct_transaction_scripts_for_blockchain(
 
                   app_log_lines[ tinfo.application ].push_back( next_log_line );
                }
+            }
+
+            // NOTE: The file tag and export commands are placed after the normal commands within
+            // an error check conditional (so they are not executed if any normal commands fail).
+            if( !file_tags_and_exports.empty( ) )
+            {
+               app_log_lines[ tinfo.application ].push_back( "@ifndef %ERROR%" );
+
+               for( size_t j = 0; j < file_tags_and_exports.size( ); j++ )
+                  app_log_lines[ tinfo.application ].push_back( file_tags_and_exports[ j ] );
+
+               app_log_lines[ tinfo.application ].push_back( "@endif" );
             }
          }
       }
@@ -4273,9 +4355,13 @@ uint64_t construct_transaction_scripts_for_blockchain(
                for( size_t k = 0; k < tinfo.log_lines.size( ); k++ )
                {
                   string next_log_line( tinfo.log_lines[ k ] );
-                  insert_account_into_transaction_log_line( account, next_log_line );
+                  if( !next_log_line.empty( ) )
+                  {
+                     insert_account_into_transaction_log_line( account, next_log_line );
 
-                  outf << '.' << next_log_line << '\n';
+                     if( next_log_line[ 0 ] != '@' )
+                        outf << '.' << next_log_line << '\n';
+                  }
                }
             }
 

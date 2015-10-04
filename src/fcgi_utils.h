@@ -122,8 +122,9 @@ std::string replace_crlfs_and_spaces( const std::string& input, const char* p_re
 
 void force_html_tags_to_lower_case( std::string& html );
 
-void create_tmp_file_link( std::string& tmp_link_path,
- const std::string& file_name, const std::string& file_ext, const std::string& dest_file_name );
+void create_tmp_file_link_or_copy( std::string& tmp_path,
+ const std::string& file_name, const std::string& file_ext,
+ const std::string& dest_file_name, const char* p_decryption_key = 0 );
 
 std::string exec_args( const std::string& input );
 

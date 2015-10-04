@@ -2302,7 +2302,9 @@ bool output_view_form( ostream& os, const string& act,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link( tmp_link_path, file_name, file_full_ext, link_file_name );
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
+                      is_blockchain_application( ) && has_perm_extra( c_view_field_extra_owner_only,
+                      extra_data, sess_info ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
 
                   bool has_image = false;
                   if( !is_in_edit && !is_printable )

@@ -36,6 +36,7 @@
 #include "utilities.h"
 #include "file_utils.h"
 #include "fs_iterator.h"
+#include "crypt_stream.h"
 #include "ciyam_interface.h"
 
 using namespace std;
@@ -839,10 +840,11 @@ void force_html_tags_to_lower_case( string& html )
    html = new_html;
 }
 
-void create_tmp_file_link( string& tmp_link_path,
- const string& file_name, const string& file_ext, const string& dest_file_name )
+void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
+ const string& file_ext, const string& dest_file_name, const char* p_decryption_key )
 {
    string link_file_name( dest_file_name );
+
    if( dest_file_name.empty( ) )
       link_file_name = file_ext;
       
@@ -854,38 +856,56 @@ void create_tmp_file_link( string& tmp_link_path,
 #endif
 
    if( dest_file_name.empty( ) )
-      tmp_link_path += "/" + link_file_name;
+      tmp_path += "/" + link_file_name;
    else
-      tmp_link_path += "/" + link_file_name + "." + file_ext;
+      tmp_path += "/" + link_file_name + "." + file_ext;
 
+   if( p_decryption_key )
+   {
+      file_copy( get_storage_info( ).web_root + "/" + file_name, tmp_path );
+
+      fstream fs;
+      fs.open( tmp_path.c_str( ), ios::in | ios::out | ios::binary );
+
+      if( fs )
+      {
+         crypt_stream( fs, string( p_decryption_key ) );
+
+         fs.flush( );
+         fs.close( );
+      }   
+   }
+   else
+   {
 #ifndef _WIN32
-   file_remove( tmp_link_path );
-   file_link( get_storage_info( ).web_root + "/" + file_name, tmp_link_path );
+      file_remove( tmp_path );
+      file_link( get_storage_info( ).web_root + "/" + file_name, tmp_path );
 #else
-   if( !has_wide_chars )
-   {
-      file_remove( tmp_link_path );
-      file_link( get_storage_info( ).web_root + "/" + file_name, tmp_link_path );
-   }
-   else
-   {
-      wstring wsrc;
-      wchar_t buffer[ 256 ];
-      memset( buffer, '\0', sizeof( buffer ) );
+      if( !has_wide_chars )
+      {
+         file_remove( tmp_path );
+         file_link( get_storage_info( ).web_root + "/" + file_name, tmp_path );
+      }
+      else
+      {
+         wstring wsrc;
+         wchar_t buffer[ 256 ];
+         memset( buffer, '\0', sizeof( buffer ) );
 
-      string s( get_storage_info( ).web_root + "/" + file_name );
-      for( size_t i = 0; i < s.size( ); i++ )
-         wsrc += ( wchar_t )s[ i ];
+         string s( get_storage_info( ).web_root + "/" + file_name );
+         for( size_t i = 0; i < s.size( ); i++ )
+            wsrc += ( wchar_t )s[ i ];
 
-      ::MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS,
-       tmp_link_path.c_str( ), tmp_link_path.length( ), buffer, 255 );
+         ::MultiByteToWideChar( CP_UTF8, MB_ERR_INVALID_CHARS,
+          tmp_path.c_str( ), tmp_path.length( ), buffer, 255 );
 
-      wstring wname( buffer );
+         wstring wname( buffer );
 
-      file_remove( wname );
-      file_linkw( wsrc.c_str( ), wname.c_str( ) );
-   }
+         file_remove( wname );
+         file_linkw( wsrc.c_str( ), wname.c_str( ) );
+      }
 #endif
+   }
 }
 
 string exec_args( const string& input )

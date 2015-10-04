@@ -1424,9 +1424,9 @@ void request_handler::process_request( )
                          *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
                          true, username, userhash, password, unique_id );
 
-                     pwd_hash = p_session_info->user_pwd_hash;
-
-                     if( g_is_blockchain_application )
+                     if( !g_is_blockchain_application )
+                        pwd_hash = p_session_info->user_pwd_hash;
+                     else
                         pwd_hash = p_session_info->user_pwd_hash = sha256( password ).get_digest_as_string( );
                   }
 

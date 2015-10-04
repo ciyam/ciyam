@@ -668,8 +668,6 @@ string private_key::encrypt_message(
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_shared_secret( buf, pub.p_impl->p_key );
 
-   string encrypted_message( message );
-
    if( p_id )
    {
       sha256 hash( p_id );
