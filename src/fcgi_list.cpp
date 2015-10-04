@@ -2715,6 +2715,10 @@ void output_list_form( ostream& os,
          string source_field_id( source.field_ids[ j ] );
          string source_value_id( source.value_ids[ j ] );
 
+         map< string, string > extra_data;
+         if( !( source.lici->second )->fields[ j ].extra.empty( ) )
+            parse_field_extra( ( source.lici->second )->fields[ j ].extra, extra_data );
+
          if( source_field_id == c_key_field )
             cell_data = key;
          else if( source_field_id == c_row_field )
@@ -3310,7 +3314,9 @@ void output_list_form( ostream& os,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link( tmp_link_path, file_name, file_full_ext, link_file_name );
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
+                     is_blockchain_application( ) && extra_data.count( c_field_extra_owner_only )
+                     ? sess_info.user_pwd_hash.c_str( ) : 0 );
 
                   if( !is_href && !is_printable
                    && ( !embed_images || source.file_fields.count( source_value_id ) ) )

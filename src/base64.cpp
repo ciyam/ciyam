@@ -118,7 +118,7 @@ void base64::validate( const string& input, bool* p_rc )
    }
 
    if( p_rc )
-      *p_rc = invalid;
+      *p_rc = !invalid;
    else if( invalid )
       throw runtime_error( "invalid base64 value: " + input );
 }

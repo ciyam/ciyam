@@ -16,6 +16,11 @@
 
 void crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
+inline void crypt_stream( std::iostream& io, const std::string& key )
+{
+   crypt_stream( io, key.c_str( ), key.length( ) );
+}
+
 #  ifdef SSL_SUPPORT
 enum crypt_op
 {

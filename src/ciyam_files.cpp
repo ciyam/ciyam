@@ -360,8 +360,12 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    }
    else
    {
-      hash = tag_or_hash;
-      filename = construct_file_name_from_hash( tag_or_hash, false, false );
+      bool is_base64;
+      base64::validate( tag_or_hash, &is_base64 );
+
+      hash = !is_base64 ? tag_or_hash : base64_to_hex( tag_or_hash );
+
+      filename = construct_file_name_from_hash( hash, false, false );
    }
 
    if( !file_exists( filename ) )

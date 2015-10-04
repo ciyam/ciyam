@@ -108,6 +108,7 @@ const char* const c_file_type_core_transaction_header_transaction_lock_prefix = 
 
 const char* const c_file_type_core_transaction_detail_log_prefix = "l:";
 const char* const c_file_type_core_transaction_detail_signature_prefix = "s:";
+const char* const c_file_type_core_transaction_special_file_extract_prefix = "fe ";
 
 const char* const c_file_type_core_blockchain_info_header_chain_prefix = "c=";
 const char* const c_file_type_core_blockchain_info_header_height_prefix = "h=";
