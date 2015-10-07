@@ -488,7 +488,15 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
       throw runtime_error( "invalid next log line '"
        + next_log_line + "' when attempting to construct script" );
 
-   next_log_line.insert( pos + 1, account + ' ' );
+   string cmd( next_log_line.substr( 0, pos ) );
+
+   bool is_perform_command = false;
+
+   if( cmd == "pc" || cmd == "pu" || cmd == "pd" || cmd == "pe" )
+   {
+      is_perform_command = true;
+      next_log_line.insert( pos + 1, account + ' ' );
+   }
 
    pos = next_log_line.find( '"' );
 
@@ -510,7 +518,7 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
       }
    }
 
-   if( pos == string::npos )
+   if( pos == string::npos && is_perform_command )
       throw runtime_error( "invalid next log line '"
        + next_log_line + "' when attempting to construct script" );
 
@@ -4330,7 +4338,17 @@ uint64_t construct_transaction_scripts_for_blockchain(
             throw runtime_error( "unable to open file '" + filename + "' for output" );
 
          for( size_t j = 0; j < ( i->second ).size( ); j++ )
-            outf << '.' << ( i->second )[ j ] << '\n';
+         {
+            string next( ( i->second )[ j ] );
+
+            if( !next.empty( ) )
+            {
+               if( next[ 0 ] != '@' )
+                  outf << '.' ;
+
+               outf << next << '\n';
+            }
+         }
 
          // NOTE: If any transactions had ended up being retagged then they along
          // with any previous local txs that have not been included are reissued.
@@ -4355,12 +4373,15 @@ uint64_t construct_transaction_scripts_for_blockchain(
                for( size_t k = 0; k < tinfo.log_lines.size( ); k++ )
                {
                   string next_log_line( tinfo.log_lines[ k ] );
+
                   if( !next_log_line.empty( ) )
                   {
                      insert_account_into_transaction_log_line( account, next_log_line );
 
                      if( next_log_line[ 0 ] != '@' )
-                        outf << '.' << next_log_line << '\n';
+                        outf << '.';
+
+                     outf << next_log_line << '\n';
                   }
                }
             }
