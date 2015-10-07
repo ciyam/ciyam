@@ -2762,11 +2762,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               string file_to_remove;
-
                vector< string > file_info;
                vector< string > file_names;
                vector< string > file_hashes;
+               vector< string > files_to_remove;
 
                auto_ptr< temporary_session_variable > ap_tmp_bh;
                auto_ptr< system_variable_lock > ap_blockchain_lock;
@@ -2925,7 +2924,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               if( has_tag( tag ) )
                                  tag_del( tag );
 
-                              file_to_remove = get_attached_file_path( module, mclass, value );
+                              files_to_remove.push_back( get_attached_file_path( module, mclass, value ) );
                            }
                         }
                      }
@@ -2950,7 +2949,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               string hash;
                               if( has_transaction_hash && has_tag( tag ) )
                                  hash = tag_file_hash( tag );
-                              else
+                              else if( !has_transaction_hash )
                               {
                                  string filepath( get_attached_file_path( module, mclass, i->second ) );
 
@@ -2960,10 +2959,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                                  hash = create_raw_file( data, true, tag.c_str( ) );
                               }
 
-                              file_names.push_back( i->second );
-                              file_hashes.push_back( hash );
+                              if( !hash.empty( ) )
+                              {
+                                 file_names.push_back( i->second );
+                                 file_hashes.push_back( hash );
 
-                              file_info.push_back( "fe " + hash + " " + i->second );
+                                 file_info.push_back( "fe " + hash + " " + i->second );
+                              }   
                            }
                            else if( is_file_field )
                            {
@@ -2976,7 +2978,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               if( has_tag( tag ) )
                                  tag_del( tag );
 
-                              file_to_remove = get_attached_file_path( module, mclass, value );
+                              files_to_remove.push_back( get_attached_file_path( module, mclass, value ) );
                            }
 
                            string field_id( get_shortened_field_id( module, mclass, i->first ) );
@@ -3048,8 +3050,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   transaction_commit( );
                }
 
-               if( !file_to_remove.empty( ) )
-                  file_remove( file_to_remove );
+               for( size_t i = 0; i < files_to_remove.size( ); i++ )
+                  file_remove( files_to_remove[ i ] );
 
                destroy_object_instance( handle );
             }
