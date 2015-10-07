@@ -360,8 +360,10 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    }
    else
    {
-      bool is_base64;
-      base64::validate( tag_or_hash, &is_base64 );
+      bool is_base64 = false;
+
+      if( tag_or_hash.length( ) != 64 )
+          base64::validate( tag_or_hash, &is_base64 );
 
       hash = !is_base64 ? tag_or_hash : base64_to_hex( tag_or_hash );
 
