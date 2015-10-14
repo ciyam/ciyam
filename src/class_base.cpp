@@ -3166,7 +3166,7 @@ string decrypt( const string& s )
          if( !blockchain.empty( ) )
             return string( );
          else
-            return decrypt_password( s, false, false, true );
+            return decrypt_data( s, false, false, true );
       }
       else
       {
@@ -3187,7 +3187,7 @@ string encrypt( const string& s )
       if( !blockchain.empty( ) )
          return string( );
       else
-         return encrypt_password( s, false, false, true );
+         return encrypt_data( s, false, false, true );
    }
    else
    {
@@ -3202,7 +3202,7 @@ string decrypt( const string& pw, const string& s )
    string retval( s );
 
    if( !s.empty( ) && !pw.empty( ) )
-      retval = password_decrypt( s, pw );
+      retval = data_decrypt( s, pw );
    else
       retval.erase( );
 
@@ -3215,7 +3215,7 @@ string encrypt( const string& pw, const string& s )
 
    if( !s.empty( ) && !pw.empty( ) )
    {
-      retval = password_encrypt( s, pw );
+      retval = data_encrypt( s, pw );
 
       if( retval.empty( ) )
          throw runtime_error( "unexpected empty encrypted data returned" );
@@ -5638,8 +5638,9 @@ string meta_field_domain_type( const string& enum_id, int primitive, int max_siz
    return domain_type;
 }
 
-string meta_field_extras( int uom, const string& uom_name,
- int extra, bool transient, int max_size, const string& enum_id, int primitive,
+string meta_field_extras( int uom,
+ const string& uom_name, int extra, bool encrypted, bool transient,
+ int max_size, const string& enum_id, const string& enum_filter_id, int primitive,
  const string& min_value, const string& max_value, int numeric_digits, int numeric_decimals,
  int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
  int int_type, int numeric_type )
@@ -5854,6 +5855,9 @@ string meta_field_extras( int uom, const string& uom_name,
    if( !enum_id.empty( ) )
       all_extras.push_back( "enum=" + enum_id );
 
+   if( !enum_filter_id.empty( ) )
+      all_extras.push_back( "enum_filter=" + enum_filter_id );
+
    if( max_size > 0 )
       all_extras.push_back( "max_size=" + to_string( max_size ) );
 
@@ -5906,6 +5910,9 @@ string meta_field_extras( int uom, const string& uom_name,
       default:
       throw runtime_error( "unknown numeric_type #" + to_string( numeric_type ) + " in meta_field_extras" );
    }
+
+   if( encrypted )
+      all_extras.push_back( "encrypted" );
 
    if( transient )
       all_extras.push_back( "transient" );

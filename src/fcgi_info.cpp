@@ -95,6 +95,7 @@ const char* const c_attribute_nextra = "nextra";
 const char* const c_attribute_dfenum = "dfenum";
 const char* const c_attribute_dfield = "dfield";
 const char* const c_attribute_dvalue = "dvalue";
+const char* const c_attribute_filter = "filter";
 const char* const c_attribute_module = "module";
 const char* const c_attribute_unique = "unique";
 const char* const c_attribute_actions = "actions";
@@ -786,8 +787,12 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             {
                string data( reader.read_attribute( c_attribute_data ) );
                string name( reader.read_attribute( c_attribute_name ) );
+               string filter( reader.read_opt_attribute( c_attribute_filter ) );
 
                e.values.push_back( make_pair( data, name ) );
+
+               if( !filter.empty( ) )
+                  e.filters.insert( make_pair( data, filter ) );
 
                reader.finish_section( c_section_value );
             }

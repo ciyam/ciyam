@@ -2085,7 +2085,7 @@ bool fetch_user_record(
          user_password = hash_password( gid + user_data[ 1 ] + ( userhash.empty( ) ? username : user_data[ 0 ] ) );
       }
       else
-         user_password = password_decrypt( user_password, get_server_id( ) );
+         user_password = data_decrypt( user_password, get_server_id( ) );
 
       string final_password( user_password );
 
@@ -2532,9 +2532,9 @@ void save_record( const string& module_id,
          if( !next.empty( ) )
          {
             if( !is_blockchain_application( ) )
-               next = password_encrypt( next, get_server_id( ) );
+               next = data_encrypt( next, get_server_id( ) );
             else
-               next = password_encrypt( next, sess_info.user_pwd_hash );
+               next = data_encrypt( next, sess_info.user_pwd_hash );
          }
       }
       else

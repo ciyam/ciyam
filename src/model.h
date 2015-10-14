@@ -71,9 +71,9 @@ struct field_data
    field_data( ) { }
 
    field_data( const std::string& id,
-    const std::string& name, const std::string& type,
-    const std::string& sys_type, bool is_mandatory, bool is_transient,
-    bool is_foreign_key, bool for_text_search, bool is_external_field, const std::string& enum_name,
+    const std::string& name, const std::string& type, const std::string& sys_type,
+    bool is_mandatory, bool is_transient, bool is_foreign_key, bool for_text_search,
+    bool is_external_field, const std::string& enum_name, const std::string& enum_filter,
     const std::string& extra, const std::string& modifiers, const std::string& default_value,
     const std::string& class_name, const std::string& decorated_name )
     :
@@ -87,6 +87,7 @@ struct field_data
     for_text_search( for_text_search ),
     is_external_field( is_external_field ),
     enum_name( enum_name ),
+    enum_filter( enum_filter ),
     extra( extra ),
     modifiers( modifiers ),
     default_value( default_value ),
@@ -107,6 +108,7 @@ struct field_data
    bool is_external_field;
 
    std::string enum_name;
+   std::string enum_filter;
 
    std::string extra;
    std::string modifiers;
@@ -355,13 +357,16 @@ class model
    void class_add( const std::string& id,
     const std::string& class_name, const std::string& plural_name,
     const std::string& fixed_key_val, const std::string& extra, const std::string& base_class_name );
+
    void class_list( std::ostream& outs ) const;
    void class_remove( const std::string& class_name );
    void class_rename( const std::string& old_class_name, const std::string& new_class_name );
 
    void field_add( const std::string& field_id, const std::string& class_name,
-    const std::string& field_name, const std::string& field_type, bool is_mandatory, bool is_transient,
-    bool for_text_search, const std::string& enum_name, const std::string& extra, const std::string& default_value );
+    const std::string& field_name, const std::string& field_type, bool is_mandatory,
+    bool is_transient, bool for_text_search, const std::string& enum_name, const std::string& enum_filter,
+    const std::string& extra, const std::string& default_value );
+
    void field_list( const std::string& class_name, std::ostream& outs ) const;
    void field_remove( const std::string& class_name, const std::string& field_name );
    void field_rename( const std::string& class_name, const std::string& old_field_name, const std::string& new_field_name );
@@ -372,6 +377,7 @@ class model
 
    void modifier_add( const std::string& modifier_id,
     const std::string& class_name, const std::string& modifier_name, const std::string& field_info );
+
    void modifier_list( const std::string& class_name, std::ostream& outs ) const;
    void modifier_remove( const std::string& class_name, const std::string& modifier_name );
    void modifier_rename( const std::string& class_name, const std::string& old_modifier_name, const std::string& new_modifier_name );
@@ -383,6 +389,7 @@ class model
 
    void procedure_arg_add( const std::string& arg_id, const std::string& class_name,
     const std::string& procedure_name, const std::string& arg_name, const std::string& arg_type, bool is_output );
+
    void procedure_arg_list( const std::string& class_name, const std::string& procedure_name, std::ostream& outs ) const;
    void procedure_arg_remove( const std::string& class_name, const std::string& procedure_name, const std::string& arg_name );
    void procedure_arg_rename( const std::string& class_name,
@@ -391,6 +398,7 @@ class model
    void relationship_add( const std::string& relationship_id,
     const std::string& field_id, const std::string& child_class_name, const std::string& child_field_name,
     const std::string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const std::string& extra );
+
    void relationship_list( std::ostream& outs ) const;
    void relationship_list_parents( const std::string& child_class_name, std::ostream& outs ) const;
    void relationship_list_children( const std::string& parent_class_name, std::ostream& outs ) const;
@@ -399,18 +407,21 @@ class model
 
    void specification_add( const std::string& specification_id,
     const std::string& specification_name, const std::string& specification_type, const std::string& specification_args );
+
    void specification_list( std::ostream& outs ) const;
    void specification_remove( const std::string& specification_name );
    void specification_rename( const std::string& old_specification_name, const std::string& new_specification_name );
 
    void user_defined_enum_add( const std::string& ude_id,
     const std::string& ude_name, const std::string& type_name, const std::string& key_values );
+
    void user_defined_enum_list( std::ostream& outs ) const;
    void user_defined_enum_remove( const std::string& ude_name );
    void user_defined_enum_rename( const std::string& old_ude_name, const std::string& new_ude_name );
 
    void user_defined_type_add( const std::string& udt_id,
     const std::string& udt_name, const std::string& type_name, const std::string& type_domain_info );
+
    void user_defined_type_list( std::ostream& outs ) const;
    void user_defined_type_remove( const std::string& udt_name );
    void user_defined_type_rename( const std::string& old_udt_name, const std::string& new_udt_name );

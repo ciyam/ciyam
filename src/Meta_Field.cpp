@@ -158,8 +158,11 @@ const char* const c_field_id_Create_View_Field = "107119";
 const char* const c_field_id_Def_Value = "107115";
 const char* const c_field_id_Default = "107102";
 const char* const c_field_id_Dummy_1 = "107118";
+const char* const c_field_id_Encrypted = "107125";
 const char* const c_field_id_Enum = "300720";
+const char* const c_field_id_Enum_Filter = "300725";
 const char* const c_field_id_Extra = "107103";
+const char* const c_field_id_Extra_Filter = "107126";
 const char* const c_field_id_Id = "107110";
 const char* const c_field_id_Internal = "107106";
 const char* const c_field_id_Is_Foreign_Key = "107108";
@@ -190,8 +193,11 @@ const char* const c_field_name_Create_View_Field = "Create_View_Field";
 const char* const c_field_name_Def_Value = "Def_Value";
 const char* const c_field_name_Default = "Default";
 const char* const c_field_name_Dummy_1 = "Dummy_1";
+const char* const c_field_name_Encrypted = "Encrypted";
 const char* const c_field_name_Enum = "Enum";
+const char* const c_field_name_Enum_Filter = "Enum_Filter";
 const char* const c_field_name_Extra = "Extra";
+const char* const c_field_name_Extra_Filter = "Extra_Filter";
 const char* const c_field_name_Id = "Id";
 const char* const c_field_name_Internal = "Internal";
 const char* const c_field_name_Is_Foreign_Key = "Is_Foreign_Key";
@@ -222,8 +228,11 @@ const char* const c_field_display_name_Create_View_Field = "field_field_create_v
 const char* const c_field_display_name_Def_Value = "field_field_def_value";
 const char* const c_field_display_name_Default = "field_field_default";
 const char* const c_field_display_name_Dummy_1 = "field_field_dummy_1";
+const char* const c_field_display_name_Encrypted = "field_field_encrypted";
 const char* const c_field_display_name_Enum = "field_field_enum";
+const char* const c_field_display_name_Enum_Filter = "field_field_enum_filter";
 const char* const c_field_display_name_Extra = "field_field_extra";
+const char* const c_field_display_name_Extra_Filter = "field_field_extra_filter";
 const char* const c_field_display_name_Id = "field_field_id";
 const char* const c_field_display_name_Internal = "field_field_internal";
 const char* const c_field_display_name_Is_Foreign_Key = "field_field_is_foreign_key";
@@ -242,7 +251,7 @@ const char* const c_field_display_name_UOM_Name = "field_field_uom_name";
 const char* const c_field_display_name_UOM_Symbol = "field_field_uom_symbol";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 31;
+const int c_num_fields = 34;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -270,9 +279,12 @@ const char* const c_all_sorted_field_ids[ ] =
    "107122",
    "107123",
    "107124",
+   "107125",
+   "107126",
    "300700",
    "300710",
    "300720",
+   "300725",
    "300730",
    "300740",
    "300750",
@@ -293,8 +305,11 @@ const char* const c_all_sorted_field_names[ ] =
    "Def_Value",
    "Default",
    "Dummy_1",
+   "Encrypted",
    "Enum",
+   "Enum_Filter",
    "Extra",
+   "Extra_Filter",
    "Id",
    "Internal",
    "Is_Foreign_Key",
@@ -326,7 +341,7 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 6;
+const int c_num_transient_fields = 7;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
@@ -335,7 +350,8 @@ const char* const c_transient_sorted_field_ids[ ] =
    "107115",
    "107118",
    "107119",
-   "107120"
+   "107120",
+   "107126"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
@@ -344,6 +360,7 @@ const char* const c_transient_sorted_field_names[ ] =
    "Create_View_Field",
    "Def_Value",
    "Dummy_1",
+   "Extra_Filter",
    "Numeric_Decimals",
    "Parent_Class_Name"
 };
@@ -358,13 +375,19 @@ inline bool is_transient_field( const string& field )
 
 const char* const c_procedure_id_Get_Text_Type = "107410";
 
-const uint64_t c_modifier_Hide_Create_List_Field = UINT64_C( 0x100 );
-const uint64_t c_modifier_Hide_Create_View_Field = UINT64_C( 0x200 );
-const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x400 );
-const uint64_t c_modifier_Is_Internal = UINT64_C( 0x800 );
-const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Transient = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Has_Enum = UINT64_C( 0x100 );
+const uint64_t c_modifier_Hide_Create_List_Field = UINT64_C( 0x200 );
+const uint64_t c_modifier_Hide_Create_View_Field = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Internal = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Not_Type_string = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Transient = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Is_Type_date = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Type_datetime = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Is_Type_string = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Is_Type_time = UINT64_C( 0x100000 );
 
 domain_string_max_size< 200 > g_Default_domain;
 aggregate_domain< string,
@@ -409,8 +432,11 @@ bool g_default_Create_View_Field = bool( 0 );
 string g_default_Def_Value = string( );
 string g_default_Default = string( );
 bool g_default_Dummy_1 = bool( 1 );
+bool g_default_Encrypted = bool( 0 );
 string g_default_Enum = string( );
+string g_default_Enum_Filter = string( );
 int g_default_Extra = int( 0 );
+string g_default_Extra_Filter = string( );
 string g_default_Id = string( );
 bool g_default_Internal = bool( 0 );
 bool g_default_Is_Foreign_Key = bool( 0 );
@@ -903,16 +929,34 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          string_getter< bool >( cmd_handler.p_Meta_Field->Dummy_1( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Encrypted || field_name == c_field_name_Encrypted )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Field->Encrypted( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
       {
          handled = true;
          string_getter< Meta_Enum >( cmd_handler.p_Meta_Field->Enum( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Enum_Filter || field_name == c_field_name_Enum_Filter )
+      {
+         handled = true;
+         string_getter< Meta_Enum >( cmd_handler.p_Meta_Field->Enum_Filter( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
       {
          handled = true;
          string_getter< int >( cmd_handler.p_Meta_Field->Extra( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Extra_Filter || field_name == c_field_name_Extra_Filter )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Field->Extra_Filter( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
@@ -1113,6 +1157,13 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
           *cmd_handler.p_Meta_Field, &Meta_Field::Dummy_1, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Encrypted || field_name == c_field_name_Encrypted )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, bool >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Encrypted, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
       {
          handled = true;
@@ -1120,11 +1171,25 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
           *cmd_handler.p_Meta_Field, &Meta_Field::Enum, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Enum_Filter || field_name == c_field_name_Enum_Filter )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, Meta_Enum >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Enum_Filter, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
       {
          handled = true;
          func_string_setter< Meta_Field, int >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Extra, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Extra_Filter || field_name == c_field_name_Extra_Filter )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, string >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Extra_Filter, field_value );
       }
 
       if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
@@ -1274,6 +1339,8 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          cmd_handler.retval = cmd_handler.p_Meta_Field->Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
          cmd_handler.retval = cmd_handler.p_Meta_Field->Enum( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Enum_Filter || field_name == c_field_name_Enum_Filter )
+         cmd_handler.retval = cmd_handler.p_Meta_Field->Enum_Filter( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Field->Parent_Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
@@ -1339,8 +1406,14 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    bool impl_Dummy_1( ) const { return lazy_fetch( p_obj ), v_Dummy_1; }
    void impl_Dummy_1( bool Dummy_1 ) { v_Dummy_1 = Dummy_1; }
 
+   bool impl_Encrypted( ) const { return lazy_fetch( p_obj ), v_Encrypted; }
+   void impl_Encrypted( bool Encrypted ) { v_Encrypted = Encrypted; }
+
    int impl_Extra( ) const { return lazy_fetch( p_obj ), v_Extra; }
    void impl_Extra( int Extra ) { v_Extra = Extra; }
+
+   const string& impl_Extra_Filter( ) const { return lazy_fetch( p_obj ), v_Extra_Filter; }
+   void impl_Extra_Filter( const string& Extra_Filter ) { sanity_check( Extra_Filter ); v_Extra_Filter = Extra_Filter; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
    void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
@@ -1501,6 +1574,36 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void impl_Enum( const string& key )
    {
       class_base_accessor cba( impl_Enum( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Enum& impl_Enum_Filter( )
+   {
+      if( !cp_Enum_Filter )
+      {
+         cp_Enum_Filter.init( );
+
+         p_obj->setup_graph_parent( *cp_Enum_Filter, c_field_id_Enum_Filter, v_Enum_Filter );
+      }
+      return *cp_Enum_Filter;
+   }
+
+   const Meta_Enum& impl_Enum_Filter( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Enum_Filter )
+      {
+         cp_Enum_Filter.init( );
+
+         p_obj->setup_graph_parent( *cp_Enum_Filter, c_field_id_Enum_Filter, v_Enum_Filter );
+      }
+      return *cp_Enum_Filter;
+   }
+
+   void impl_Enum_Filter( const string& key )
+   {
+      class_base_accessor cba( impl_Enum_Filter( ) );
       cba.set_key( key );
    }
 
@@ -2630,7 +2733,9 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    string v_Def_Value;
    string v_Default;
    bool v_Dummy_1;
+   bool v_Encrypted;
    int v_Extra;
+   string v_Extra_Filter;
    string v_Id;
    bool v_Internal;
    bool v_Is_Foreign_Key;
@@ -2657,6 +2762,9 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    string v_Enum;
    mutable class_pointer< Meta_Enum > cp_Enum;
+
+   string v_Enum_Filter;
+   mutable class_pointer< Meta_Enum > cp_Enum_Filter;
 
    string v_Parent_Class;
    mutable class_pointer< Meta_Class > cp_Parent_Class;
@@ -2801,78 +2909,90 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       case 12:
-      retval = to_string( impl_Enum( ) );
+      retval = to_string( impl_Encrypted( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Enum( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Enum_Filter( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Is_Foreign_Key( ) );
+      retval = to_string( impl_Extra_Filter( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Is_Text_Type( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Mandatory( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Is_Foreign_Key( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Is_Text_Type( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Mandatory( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Parent_Class_Name( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Transient( ) );
+      retval = to_string( impl_Parent_Class_Name( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 27:
-      retval = to_string( impl_UOM( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 28:
-      retval = to_string( impl_UOM_Name( ) );
+      retval = to_string( impl_Transient( ) );
       break;
 
       case 29:
-      retval = to_string( impl_UOM_Symbol( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 30:
+      retval = to_string( impl_UOM( ) );
+      break;
+
+      case 31:
+      retval = to_string( impl_UOM_Name( ) );
+      break;
+
+      case 32:
+      retval = to_string( impl_UOM_Symbol( ) );
+      break;
+
+      case 33:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -2936,78 +3056,90 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 12:
-      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Encrypted, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
+      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
+      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum_Filter, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Extra_Filter, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
+      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
       break;
 
       case 30:
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      break;
+
+      case 31:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      break;
+
+      case 32:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      break;
+
+      case 33:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -3071,78 +3203,90 @@ bool Meta_Field::impl::is_field_default( int field ) const
       break;
 
       case 12:
-      retval = ( v_Enum == g_default_Enum );
+      retval = ( v_Encrypted == g_default_Encrypted );
       break;
 
       case 13:
-      retval = ( v_Extra == g_default_Extra );
+      retval = ( v_Enum == g_default_Enum );
       break;
 
       case 14:
-      retval = ( v_Id == g_default_Id );
+      retval = ( v_Enum_Filter == g_default_Enum_Filter );
       break;
 
       case 15:
-      retval = ( v_Internal == g_default_Internal );
+      retval = ( v_Extra == g_default_Extra );
       break;
 
       case 16:
-      retval = ( v_Is_Foreign_Key == g_default_Is_Foreign_Key );
+      retval = ( v_Extra_Filter == g_default_Extra_Filter );
       break;
 
       case 17:
-      retval = ( v_Is_Text_Type == g_default_Is_Text_Type );
+      retval = ( v_Id == g_default_Id );
       break;
 
       case 18:
-      retval = ( v_Mandatory == g_default_Mandatory );
+      retval = ( v_Internal == g_default_Internal );
       break;
 
       case 19:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_Is_Foreign_Key == g_default_Is_Foreign_Key );
       break;
 
       case 20:
-      retval = ( v_Numeric_Decimals == g_default_Numeric_Decimals );
+      retval = ( v_Is_Text_Type == g_default_Is_Text_Type );
       break;
 
       case 21:
-      retval = ( v_Parent_Class == g_default_Parent_Class );
+      retval = ( v_Mandatory == g_default_Mandatory );
       break;
 
       case 22:
-      retval = ( v_Parent_Class_Name == g_default_Parent_Class_Name );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 23:
-      retval = ( v_Primitive == g_default_Primitive );
+      retval = ( v_Numeric_Decimals == g_default_Numeric_Decimals );
       break;
 
       case 24:
-      retval = ( v_Source_Field == g_default_Source_Field );
+      retval = ( v_Parent_Class == g_default_Parent_Class );
       break;
 
       case 25:
-      retval = ( v_Transient == g_default_Transient );
+      retval = ( v_Parent_Class_Name == g_default_Parent_Class_Name );
       break;
 
       case 26:
-      retval = ( v_Type == g_default_Type );
+      retval = ( v_Primitive == g_default_Primitive );
       break;
 
       case 27:
-      retval = ( v_UOM == g_default_UOM );
+      retval = ( v_Source_Field == g_default_Source_Field );
       break;
 
       case 28:
-      retval = ( v_UOM_Name == g_default_UOM_Name );
+      retval = ( v_Transient == g_default_Transient );
       break;
 
       case 29:
-      retval = ( v_UOM_Symbol == g_default_UOM_Symbol );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 30:
+      retval = ( v_UOM == g_default_UOM );
+      break;
+
+      case 31:
+      retval = ( v_UOM_Name == g_default_UOM_Name );
+      break;
+
+      case 32:
+      retval = ( v_UOM_Symbol == g_default_UOM_Symbol );
+      break;
+
+      case 33:
       retval = ( v_Use_In_Text_Search == g_default_Use_In_Text_Search );
       break;
 
@@ -3207,6 +3351,36 @@ uint64_t Meta_Field::impl::get_state( ) const
       state |= c_modifier_Is_Type_bool;
    // [(finish modifier_field_value)] 620050
 
+   // [(start modifier_field_value)] 630050
+   if( get_obj( ).Type( ).Primitive( ) == 2 ) // i.e. date
+      state |= c_modifier_Is_Type_date;
+   // [(finish modifier_field_value)] 630050
+
+   // [(start modifier_field_value)] 640050
+   if( get_obj( ).Type( ).Primitive( ) == 3 ) // i.e. time
+      state |= c_modifier_Is_Type_time;
+   // [(finish modifier_field_value)] 640050
+
+   // [(start modifier_field_value)] 650050
+   if( get_obj( ).Type( ).Primitive( ) == 1 ) // i.e. datetime
+      state |= c_modifier_Is_Type_datetime;
+   // [(finish modifier_field_value)] 650050
+
+   // [(start modifier_field_value)] 660050
+   if( get_obj( ).Type( ).Primitive( ) == 0 ) // i.e. string
+      state |= c_modifier_Is_Type_string;
+   // [(finish modifier_field_value)] 660050
+
+   // [(start modifier_field_value)] 670050
+   if( get_obj( ).Type( ).Primitive( ) != 0 ) // i.e. string
+      state |= c_modifier_Is_Not_Type_string;
+   // [(finish modifier_field_value)] 670050
+
+   // [(start modifier_field_null)] 680050
+   if( !is_null( get_obj( ).Enum( ) ) )
+      state |= c_modifier_Has_Enum;
+   // [(finish modifier_field_null)] 680050
+
    // [<start get_state>]
    // [<finish get_state>]
 
@@ -3231,6 +3405,8 @@ void Meta_Field::impl::clear_foreign_key( const string& field )
       impl_Class( "" );
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
       impl_Enum( "" );
+   else if( field == c_field_id_Enum_Filter || field == c_field_name_Enum_Filter )
+      impl_Enum_Filter( "" );
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       impl_Parent_Class( "" );
    else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
@@ -3253,6 +3429,8 @@ void Meta_Field::impl::set_foreign_key_value( const string& field, const string&
       v_Class = value;
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
       v_Enum = value;
+   else if( field == c_field_id_Enum_Filter || field == c_field_name_Enum_Filter )
+      v_Enum_Filter = value;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       v_Parent_Class = value;
    else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
@@ -3275,6 +3453,8 @@ const string& Meta_Field::impl::get_foreign_key_value( const string& field )
       return v_Class;
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
       return v_Enum;
+   else if( field == c_field_id_Enum_Filter || field == c_field_name_Enum_Filter )
+      return v_Enum_Filter;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       return v_Parent_Class;
    else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
@@ -3291,6 +3471,7 @@ void Meta_Field::impl::get_foreign_key_values( foreign_key_data_container& forei
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Change_Permission, v_Change_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Class, v_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Enum, v_Enum ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Enum_Filter, v_Enum_Filter ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Class, v_Parent_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Field, v_Source_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Type, v_Type ) );
@@ -3323,7 +3504,9 @@ void Meta_Field::impl::clear( )
    v_Def_Value = g_default_Def_Value;
    v_Default = g_default_Default;
    v_Dummy_1 = g_default_Dummy_1;
+   v_Encrypted = g_default_Encrypted;
    v_Extra = g_default_Extra;
+   v_Extra_Filter = g_default_Extra_Filter;
    v_Id = g_default_Id;
    v_Internal = g_default_Internal;
    v_Is_Foreign_Key = g_default_Is_Foreign_Key;
@@ -3354,6 +3537,10 @@ void Meta_Field::impl::clear( )
    v_Enum = string( );
    if( cp_Enum )
       p_obj->setup_foreign_key( *cp_Enum, v_Enum );
+
+   v_Enum_Filter = string( );
+   if( cp_Enum_Filter )
+      p_obj->setup_foreign_key( *cp_Enum_Filter, v_Enum_Filter );
 
    v_Parent_Class = string( );
    if( cp_Parent_Class )
@@ -3616,6 +3803,9 @@ void Meta_Field::impl::after_fetch( )
    if( cp_Enum )
       p_obj->setup_foreign_key( *cp_Enum, v_Enum );
 
+   if( cp_Enum_Filter )
+      p_obj->setup_foreign_key( *cp_Enum_Filter, v_Enum_Filter );
+
    if( cp_Parent_Class )
       p_obj->setup_foreign_key( *cp_Parent_Class, v_Parent_Class );
 
@@ -3670,6 +3860,21 @@ void Meta_Field::impl::after_fetch( )
 
       get_obj( ).Def_Value( str );
    }
+
+   if( get_obj( ).Primitive( ) == 0 )
+      get_obj( ).Extra_Filter( "str" );
+   else if( get_obj( ).Primitive( ) == 1 )
+      get_obj( ).Extra_Filter( "dtm" );
+   else if( get_obj( ).Primitive( ) == 2 )
+      get_obj( ).Extra_Filter( "dte" );
+   else if( get_obj( ).Primitive( ) == 3 )
+      get_obj( ).Extra_Filter( "tme" );
+   else if( get_obj( ).Primitive( ) == 4 )
+      get_obj( ).Extra_Filter( "num" );
+   else if( get_obj( ).Primitive( ) == 5 )
+      get_obj( ).Extra_Filter( "int" );
+   else if( get_obj( ).Primitive( ) == 6 )
+      get_obj( ).Extra_Filter( "bln" );
    // [<finish after_fetch>]
 }
 
@@ -3761,6 +3966,24 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
 //nyi
    if( !( state & c_modifier_Is_Any_Non_Text_Type ) )
       get_obj( ).Is_Text_Type( true );
+
+   if( is_create )
+   {
+      if( get_obj( ).Primitive( ) == 0 )
+         get_obj( ).Extra_Filter( "str" );
+      else if( get_obj( ).Primitive( ) == 1 )
+         get_obj( ).Extra_Filter( "dtm" );
+      else if( get_obj( ).Primitive( ) == 2 )
+         get_obj( ).Extra_Filter( "dte" );
+      else if( get_obj( ).Primitive( ) == 3 )
+         get_obj( ).Extra_Filter( "tme" );
+      else if( get_obj( ).Primitive( ) == 4 )
+         get_obj( ).Extra_Filter( "num" );
+      else if( get_obj( ).Primitive( ) == 5 )
+         get_obj( ).Extra_Filter( "int" );
+      else if( get_obj( ).Primitive( ) == 6 )
+         get_obj( ).Extra_Filter( "bln" );
+   }
    // [<finish to_store>]
 }
 
@@ -4362,6 +4585,16 @@ void Meta_Field::Dummy_1( bool Dummy_1 )
    p_impl->impl_Dummy_1( Dummy_1 );
 }
 
+bool Meta_Field::Encrypted( ) const
+{
+   return p_impl->impl_Encrypted( );
+}
+
+void Meta_Field::Encrypted( bool Encrypted )
+{
+   p_impl->impl_Encrypted( Encrypted );
+}
+
 int Meta_Field::Extra( ) const
 {
    return p_impl->impl_Extra( );
@@ -4370,6 +4603,16 @@ int Meta_Field::Extra( ) const
 void Meta_Field::Extra( int Extra )
 {
    p_impl->impl_Extra( Extra );
+}
+
+const string& Meta_Field::Extra_Filter( ) const
+{
+   return p_impl->impl_Extra_Filter( );
+}
+
+void Meta_Field::Extra_Filter( const string& Extra_Filter )
+{
+   p_impl->impl_Extra_Filter( Extra_Filter );
 }
 
 const string& Meta_Field::Id( ) const
@@ -4570,6 +4813,21 @@ const Meta_Enum& Meta_Field::Enum( ) const
 void Meta_Field::Enum( const string& key )
 {
    p_impl->impl_Enum( key );
+}
+
+Meta_Enum& Meta_Field::Enum_Filter( )
+{
+   return p_impl->impl_Enum_Filter( );
+}
+
+const Meta_Enum& Meta_Field::Enum_Filter( ) const
+{
+   return p_impl->impl_Enum_Filter( );
+}
+
+void Meta_Field::Enum_Filter( const string& key )
+{
+   p_impl->impl_Enum_Filter( key );
 }
 
 Meta_Class& Meta_Field::Parent_Class( )
@@ -5333,9 +5591,29 @@ const char* Meta_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Encrypted )
+   {
+      p_id = c_field_id_Encrypted;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Enum )
    {
       p_id = c_field_id_Enum;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Enum";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Enum_Filter )
+   {
+      p_id = c_field_id_Enum_Filter;
 
       if( p_type_name )
          *p_type_name = "Meta_Enum";
@@ -5352,6 +5630,16 @@ const char* Meta_Field::get_field_id(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Extra_Filter )
+   {
+      p_id = c_field_id_Extra_Filter;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
    }
    else if( name == c_field_name_Id )
    {
@@ -5654,9 +5942,29 @@ const char* Meta_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Encrypted )
+   {
+      p_name = c_field_name_Encrypted;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Enum )
    {
       p_name = c_field_name_Enum;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Enum";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Enum_Filter )
+   {
+      p_name = c_field_name_Enum_Filter;
 
       if( p_type_name )
          *p_type_name = "Meta_Enum";
@@ -5673,6 +5981,16 @@ const char* Meta_Field::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Extra_Filter )
+   {
+      p_name = c_field_name_Extra_Filter;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Id )
    {
@@ -5938,15 +6256,30 @@ string Meta_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Dummy_1 );
       get_module_string( c_field_display_name_Dummy_1, &next );
    }
+   else if( id_or_name == c_field_id_Encrypted || id_or_name == c_field_name_Encrypted )
+   {
+      name = string( c_field_display_name_Encrypted );
+      get_module_string( c_field_display_name_Encrypted, &next );
+   }
    else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
    {
       name = string( c_field_display_name_Enum );
       get_module_string( c_field_display_name_Enum, &next );
    }
+   else if( id_or_name == c_field_id_Enum_Filter || id_or_name == c_field_name_Enum_Filter )
+   {
+      name = string( c_field_display_name_Enum_Filter );
+      get_module_string( c_field_display_name_Enum_Filter, &next );
+   }
    else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
    {
       name = string( c_field_display_name_Extra );
       get_module_string( c_field_display_name_Extra, &next );
+   }
+   else if( id_or_name == c_field_id_Extra_Filter || id_or_name == c_field_name_Extra_Filter )
+   {
+      name = string( c_field_display_name_Extra_Filter );
+      get_module_string( c_field_display_name_Extra_Filter, &next );
    }
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
    {
@@ -6072,10 +6405,16 @@ string Meta_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Default );
    else if( id_or_name == c_field_id_Dummy_1 || id_or_name == c_field_name_Dummy_1 )
       display_name = get_module_string( c_field_display_name_Dummy_1 );
+   else if( id_or_name == c_field_id_Encrypted || id_or_name == c_field_name_Encrypted )
+      display_name = get_module_string( c_field_display_name_Encrypted );
    else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
       display_name = get_module_string( c_field_display_name_Enum );
+   else if( id_or_name == c_field_id_Enum_Filter || id_or_name == c_field_name_Enum_Filter )
+      display_name = get_module_string( c_field_display_name_Enum_Filter );
    else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
       display_name = get_module_string( c_field_display_name_Extra );
+   else if( id_or_name == c_field_id_Extra_Filter || id_or_name == c_field_name_Extra_Filter )
+      display_name = get_module_string( c_field_display_name_Extra_Filter );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
    else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
@@ -6858,6 +7197,8 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &Class( );
    else if( sub_context == c_field_id_Enum || sub_context == c_field_name_Enum )
       p_class_base = &Enum( );
+   else if( sub_context == c_field_id_Enum_Filter || sub_context == c_field_name_Enum_Filter )
+      p_class_base = &Enum_Filter( );
    else if( sub_context == c_field_id_Parent_Class || sub_context == c_field_name_Parent_Class )
       p_class_base = &Parent_Class( );
    else if( sub_context == c_field_id_Source_Field || sub_context == c_field_name_Source_Field )
@@ -6888,7 +7229,9 @@ void Meta_Field::get_sql_column_names(
    names.push_back( "C_Change_Scope" );
    names.push_back( "C_Class" );
    names.push_back( "C_Default" );
+   names.push_back( "C_Encrypted" );
    names.push_back( "C_Enum" );
+   names.push_back( "C_Enum_Filter" );
    names.push_back( "C_Extra" );
    names.push_back( "C_Id" );
    names.push_back( "C_Internal" );
@@ -6924,7 +7267,9 @@ void Meta_Field::get_sql_column_values(
    values.push_back( to_string( Change_Scope( ) ) );
    values.push_back( sql_quote( to_string( Class( ) ) ) );
    values.push_back( sql_quote( to_string( Default( ) ) ) );
+   values.push_back( to_string( Encrypted( ) ) );
    values.push_back( sql_quote( to_string( Enum( ) ) ) );
+   values.push_back( sql_quote( to_string( Enum_Filter( ) ) ) );
    values.push_back( to_string( Extra( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( to_string( Internal( ) ) );
@@ -7100,6 +7445,54 @@ void Meta_Field::get_always_required_field_names(
       names.insert( "Type" );
    // [(finish modifier_field_value)] 620050
 
+   // [(start modifier_field_value)] 630050
+   dependents.insert( "Type" ); // (for Is_Type_date modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 630050
+
+   // [(start modifier_field_value)] 640050
+   dependents.insert( "Type" ); // (for Is_Type_time modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 640050
+
+   // [(start modifier_field_value)] 650050
+   dependents.insert( "Type" ); // (for Is_Type_datetime modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 650050
+
+   // [(start modifier_field_value)] 660050
+   dependents.insert( "Type" ); // (for Is_Type_string modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 660050
+
+   // [(start modifier_field_value)] 670050
+   dependents.insert( "Type" ); // (for Is_Not_Type_string modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 670050
+
+   // [(start modifier_field_null)] 680050
+   dependents.insert( "Enum" ); // (for Has_Enum modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Enum ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Enum ) ) )
+      names.insert( "Enum" );
+   // [(finish modifier_field_null)] 680050
+
    // [<start get_always_required_field_names>]
 //nyi
    dependents.insert( "Primitive" );
@@ -7169,8 +7562,11 @@ void Meta_Field::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "107115", "Def_Value", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "107102", "Default", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "107118", "Dummy_1", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107125", "Encrypted", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "300720", "Enum", "Meta_Enum", false, "", "" ) );
+   all_field_info.push_back( field_info( "300725", "Enum_Filter", "Meta_Enum", false, "", "" ) );
    all_field_info.push_back( field_info( "107103", "Extra", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "107126", "Extra_Filter", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "107110", "Id", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "107106", "Internal", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "107108", "Is_Foreign_Key", "bool", false, "", "" ) );
@@ -7198,6 +7594,7 @@ void Meta_Field::static_get_foreign_key_info( foreign_key_info_container& foreig
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Change_Permission, make_pair( "Meta.107100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Class, make_pair( "Meta.107100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Enum, make_pair( "Meta.107100", "Meta_Enum" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Enum_Filter, make_pair( "Meta.107100", "Meta_Enum" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Class, make_pair( "Meta.107100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Field, make_pair( "Meta.107100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Type, make_pair( "Meta.107100", "Meta_Type" ) ) );
@@ -7276,78 +7673,90 @@ const char* Meta_Field::static_get_field_id( field_id id )
       break;
 
       case 13:
-      p_id = "300720";
+      p_id = "107125";
       break;
 
       case 14:
-      p_id = "107103";
+      p_id = "300720";
       break;
 
       case 15:
-      p_id = "107110";
+      p_id = "300725";
       break;
 
       case 16:
-      p_id = "107106";
+      p_id = "107103";
       break;
 
       case 17:
-      p_id = "107108";
+      p_id = "107126";
       break;
 
       case 18:
-      p_id = "107109";
+      p_id = "107110";
       break;
 
       case 19:
-      p_id = "107105";
+      p_id = "107106";
       break;
 
       case 20:
-      p_id = "107101";
+      p_id = "107108";
       break;
 
       case 21:
-      p_id = "107114";
+      p_id = "107109";
       break;
 
       case 22:
-      p_id = "300730";
+      p_id = "107105";
       break;
 
       case 23:
-      p_id = "107113";
+      p_id = "107101";
       break;
 
       case 24:
-      p_id = "107107";
+      p_id = "107114";
       break;
 
       case 25:
-      p_id = "300740";
+      p_id = "300730";
       break;
 
       case 26:
-      p_id = "107112";
+      p_id = "107113";
       break;
 
       case 27:
-      p_id = "300710";
+      p_id = "107107";
       break;
 
       case 28:
-      p_id = "107104";
+      p_id = "300740";
       break;
 
       case 29:
-      p_id = "107116";
+      p_id = "107112";
       break;
 
       case 30:
-      p_id = "107117";
+      p_id = "300710";
       break;
 
       case 31:
+      p_id = "107104";
+      break;
+
+      case 32:
+      p_id = "107116";
+      break;
+
+      case 33:
+      p_id = "107117";
+      break;
+
+      case 34:
       p_id = "107111";
       break;
    }
@@ -7413,78 +7822,90 @@ const char* Meta_Field::static_get_field_name( field_id id )
       break;
 
       case 13:
-      p_id = "Enum";
+      p_id = "Encrypted";
       break;
 
       case 14:
-      p_id = "Extra";
+      p_id = "Enum";
       break;
 
       case 15:
-      p_id = "Id";
+      p_id = "Enum_Filter";
       break;
 
       case 16:
-      p_id = "Internal";
+      p_id = "Extra";
       break;
 
       case 17:
-      p_id = "Is_Foreign_Key";
+      p_id = "Extra_Filter";
       break;
 
       case 18:
-      p_id = "Is_Text_Type";
+      p_id = "Id";
       break;
 
       case 19:
-      p_id = "Mandatory";
+      p_id = "Internal";
       break;
 
       case 20:
-      p_id = "Name";
+      p_id = "Is_Foreign_Key";
       break;
 
       case 21:
-      p_id = "Numeric_Decimals";
+      p_id = "Is_Text_Type";
       break;
 
       case 22:
-      p_id = "Parent_Class";
+      p_id = "Mandatory";
       break;
 
       case 23:
-      p_id = "Parent_Class_Name";
+      p_id = "Name";
       break;
 
       case 24:
-      p_id = "Primitive";
+      p_id = "Numeric_Decimals";
       break;
 
       case 25:
-      p_id = "Source_Field";
+      p_id = "Parent_Class";
       break;
 
       case 26:
-      p_id = "Transient";
+      p_id = "Parent_Class_Name";
       break;
 
       case 27:
-      p_id = "Type";
+      p_id = "Primitive";
       break;
 
       case 28:
-      p_id = "UOM";
+      p_id = "Source_Field";
       break;
 
       case 29:
-      p_id = "UOM_Name";
+      p_id = "Transient";
       break;
 
       case 30:
-      p_id = "UOM_Symbol";
+      p_id = "Type";
       break;
 
       case 31:
+      p_id = "UOM";
+      break;
+
+      case 32:
+      p_id = "UOM_Name";
+      break;
+
+      case 33:
+      p_id = "UOM_Symbol";
+      break;
+
+      case 34:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -7525,44 +7946,50 @@ int Meta_Field::static_get_field_num( const string& field )
       rc += 11;
    else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
       rc += 12;
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( field == c_field_id_Encrypted || field == c_field_name_Encrypted )
       rc += 13;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
       rc += 14;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Enum_Filter || field == c_field_name_Enum_Filter )
       rc += 15;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 16;
-   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
+   else if( field == c_field_id_Extra_Filter || field == c_field_name_Extra_Filter )
       rc += 17;
-   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 18;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 19;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
       rc += 20;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
       rc += 21;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
       rc += 22;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 23;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 24;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 25;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
       rc += 26;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 27;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 28;
-   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
       rc += 29;
-   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 30;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_UOM || field == c_field_name_UOM )
       rc += 31;
+   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+      rc += 32;
+   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+      rc += 33;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 34;
 
    return rc - 1;
 }
@@ -7598,7 +8025,9 @@ string Meta_Field::static_get_sql_columns( )
     "C_Change_Scope INTEGER NOT NULL,"
     "C_Class VARCHAR(75) NOT NULL,"
     "C_Default VARCHAR(200) NOT NULL,"
+    "C_Encrypted INTEGER NOT NULL,"
     "C_Enum VARCHAR(75) NOT NULL,"
+    "C_Enum_Filter VARCHAR(75) NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"

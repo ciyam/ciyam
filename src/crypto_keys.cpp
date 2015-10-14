@@ -659,7 +659,7 @@ string private_key::decrypt_message( const public_key& pub, const string& base64
          buf[ i ] ^= buf2[ i ];
    }
 
-   return password_decrypt( base64, hex_encode( buf, c_num_secret_bytes ), true );
+   return data_decrypt( base64, hex_encode( buf, c_num_secret_bytes ), true );
 }
 
 string private_key::encrypt_message(
@@ -679,7 +679,7 @@ string private_key::encrypt_message(
          buf[ i ] ^= buf2[ i ];
    }
 
-   return password_encrypt( message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
+   return data_encrypt( message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
 }
 
 string private_key::construct_shared( const public_key& pub ) const

@@ -1592,10 +1592,12 @@ std::string CLASS_BASE_DECL_SPEC meta_field_domain_type( const std::string& enum
  int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
  bool show_plus_sign, int zero_padding, int fraction_limit, std::string& mask, std::string* p_tmask = 0 );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_extras( int uom, const std::string& uom_name, int extra,
- bool transient, int max_size, const std::string& enum_id, int primitive, const std::string& min_value,
- const std::string& max_value, int numeric_digits, int numeric_decimals, int string_domain, int date_precision,
- int time_precision, bool show_plus_sign, int zero_padding, int int_type, int numeric_type );
+std::string CLASS_BASE_DECL_SPEC meta_field_extras( int uom,
+ const std::string& uom_name, int extra, bool encrypted, bool transient,
+ int max_size, const std::string& enum_id, const std::string& enum_filter_id, int primitive,
+ const std::string& min_value, const std::string& max_value, int numeric_digits, int numeric_decimals,
+ int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
+ int int_type, int numeric_type );
 
 std::string CLASS_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
 

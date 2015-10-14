@@ -60,6 +60,9 @@
     <value/>
      <data>\\0
      <name>enum_`{`@lower`(`'\1`'`)`}_`{`$val`=`@lower`(`'\\1`'`)`}`{`$val`}
+`{`!`@eq`(`'\\2`'`,`'`'`)\
+     <filter>\\2
+`}\
     </value>
 `]`}\
    </values>

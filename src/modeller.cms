@@ -2,7 +2,7 @@ class_add "add a new class" [<val/-id=/id>]<val//class_name><val//plural_name>[<
 class_list "list classes"
 class_remove "remove an existing class" <val//class_name>
 class_rename "rename an existing class" <val//old_class_name><val//new_class_name>
-field_add "add a new class field" [<val/-id=/id>]<val//class_name><val//field_name><val//type_name><opt/opt>|<opt/mand>[<val/-e=/enum>][<val/-x=/extra>][<val/-def=/default>][<opt/-transient/transient>|<opt/-text_search/text_search>]
+field_add "add a new class field" [<val/-id=/id>]<val//class_name><val//field_name><val//type_name><opt/opt>|<opt/mand>[<val/-e=/enum>][<val/-f=/enum_filter>][<val/-x=/extra>][<val/-def=/default>][<opt/-transient/transient>|<opt/-text_search/text_search>]
 field_list "list class fields" <val//class_name>
 field_remove "remove an existing class field" <val//class_name><val//field_name>
 field_rename "rename an existing class field" <val//class_name><val//old_field_name><val//new_field_name>

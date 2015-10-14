@@ -34,14 +34,18 @@ class META_ENUM_ITEM_DECL_SPEC Meta_Enum_Item : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Enum = 1,
-      e_field_id_Internal = 2,
-      e_field_id_Label = 3,
-      e_field_id_Order = 4,
-      e_field_id_Value = 5
+      e_field_id_Filter = 2,
+      e_field_id_Internal = 3,
+      e_field_id_Label = 4,
+      e_field_id_Order = 5,
+      e_field_id_Value = 6
    };
 
    Meta_Enum_Item( );
    ~Meta_Enum_Item( );
+
+   const std::string& Filter( ) const;
+   void Filter( const std::string& Filter );
 
    bool Internal( ) const;
    void Internal( bool Internal );

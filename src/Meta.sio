@@ -144,7 +144,7 @@
      </field>
      <field/>
       <id>127135
-      <name>Blockchain
+      <name>Blockchain_Id
       <type>1010
       <mandatory>false
       <indexes/>
@@ -2417,6 +2417,26 @@
     </specifications>
     <fields/>
      <field/>
+      <id>104105
+      <name>Filter
+      <type>1010
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601410
+        <item>field
+       </specification>
+       <specification/>
+        <id>601420
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>104104
       <name>Internal
       <type>bool
@@ -2946,6 +2966,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>630050
+      <item>class
+     </specification>
+     <specification/>
       <id>630058
       <item>class
      </specification>
@@ -2958,7 +2982,27 @@
       <item>pclass
      </specification>
      <specification/>
+      <id>640050
+      <item>class
+     </specification>
+     <specification/>
       <id>640065
+      <item>class
+     </specification>
+     <specification/>
+      <id>650050
+      <item>class
+     </specification>
+     <specification/>
+      <id>660050
+      <item>class
+     </specification>
+     <specification/>
+      <id>670050
+      <item>class
+     </specification>
+     <specification/>
+      <id>680050
       <item>class
      </specification>
     </specifications>
@@ -3215,6 +3259,31 @@
       </specifications>
      </field>
      <field/>
+      <id>107125
+      <name>Encrypted
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>107313
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500403
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>107103
       <name>Extra
       <type>int
@@ -3234,6 +3303,24 @@
         <id>600147
         <item>efield
        </specification>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>107126
+      <name>Extra_Filter
+      <type>string
+      <mandatory>false
+      <transient>true
+      <enum_filter_id>530
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>601710
         <item>field
@@ -3429,7 +3516,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>107315
+        <id>107314
         <affect>protect
        </modifier>
       </modifiers>
@@ -3960,6 +4047,22 @@
         <id>107310
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>107311a
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>107311b
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>107311c
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>107311d
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -3989,7 +4092,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>107311
+        <id>107312
         <affect>relegate
        </modifier>
       </modifiers>
@@ -4013,7 +4116,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>107311
+        <id>107312
         <affect>relegate
        </modifier>
       </modifiers>
@@ -4034,7 +4137,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>107315
+        <id>107314
         <affect>relegate
        </modifier>
        <modifier/>
@@ -4147,6 +4250,32 @@
         <id>601710
         <item>field
        </specification>
+       <specification/>
+        <id>680050
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300725
+      <name>{Enum}_Filter
+      <type>@class
+      <mandatory>false
+      <class_id>103100
+      <relationship_id>200725
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500403
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -4198,8 +4327,28 @@
         <item>field
        </specification>
        <specification/>
+        <id>630050
+        <item>field
+       </specification>
+       <specification/>
+        <id>640050
+        <item>field
+       </specification>
+       <specification/>
         <id>640065
         <item>sfield
+       </specification>
+       <specification/>
+        <id>650050
+        <item>field
+       </specification>
+       <specification/>
+        <id>660050
+        <item>field
+       </specification>
+       <specification/>
+        <id>670050
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -4218,6 +4367,10 @@
     </indexes>
     <modifiers/>
      <modifier/>
+      <id>107313
+      <name>Has_Enum
+     </modifier>
+     <modifier/>
       <id>500402
       <name>Hide_Create_List_Field
      </modifier>
@@ -4226,7 +4379,7 @@
       <name>Hide_Create_View_Field
      </modifier>
      <modifier/>
-      <id>107315
+      <id>107314
       <name>Is_Any_Non_Text_Type
      </modifier>
      <modifier/>
@@ -4235,8 +4388,12 @@
       <affect>lowlight
      </modifier>
      <modifier/>
-      <id>107311
+      <id>107312
       <name>Is_Non_Custom_UOM
+     </modifier>
+     <modifier/>
+      <id>500403
+      <name>Is_Not_Type_string
      </modifier>
      <modifier/>
       <id>107320
@@ -4246,6 +4403,22 @@
      <modifier/>
       <id>107310
       <name>Is_Type_bool
+     </modifier>
+     <modifier/>
+      <id>107311b
+      <name>Is_Type_date
+     </modifier>
+     <modifier/>
+      <id>107311d
+      <name>Is_Type_datetime
+     </modifier>
+     <modifier/>
+      <id>107311a
+      <name>Is_Type_string
+     </modifier>
+     <modifier/>
+      <id>107311c
+      <name>Is_Type_time
      </modifier>
     </modifiers>
     <procedures/>
@@ -23519,8 +23692,16 @@
       <item>class
      </specification>
      <specification/>
+      <id>630050
+      <item>pclass
+     </specification>
+     <specification/>
       <id>640009
       <item>class
+     </specification>
+     <specification/>
+      <id>640050
+      <item>pclass
      </specification>
      <specification/>
       <id>640065
@@ -23531,12 +23712,24 @@
       <item>class
      </specification>
      <specification/>
+      <id>650050
+      <item>pclass
+     </specification>
+     <specification/>
       <id>660009
       <item>class
      </specification>
      <specification/>
+      <id>660050
+      <item>pclass
+     </specification>
+     <specification/>
       <id>670009
       <item>class
+     </specification>
+     <specification/>
+      <id>670050
+      <item>pclass
      </specification>
      <specification/>
       <id>680009
@@ -24169,6 +24362,26 @@
        </specification>
        <specification/>
         <id>620050
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>630050
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>640050
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>650050
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>660050
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>670050
         <item>pfield
        </specification>
       </specifications>
@@ -28626,6 +28839,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>200725
+    <name>{Enum}_Filter_{Field}
+    <parent_id>103100
+    <child_id>107100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>200400
     <name>{Enum}_{Enum_Item}
     <parent_id>103100
@@ -29003,7 +29225,7 @@
    </specification>
    <specification/>
     <id>600530
-    <name>{Application}_Blockchain_non_null
+    <name>{Application}_Blockchain_Id_non_null
     <type>check_cond_non_null
     <data/>
      <class_id>127100
@@ -29568,6 +29790,7 @@
      <field_info>104103;hidden
      <field_info>104102
      <field_info>104101
+     <field_info>104105
     </data>
    </specification>
    <specification/>
@@ -29596,6 +29819,7 @@
      <field_info>300400:103101;no_edit+max_size=30
      <field_info>104102
      <field_info>104101
+     <field_info>104105
     </data>
    </specification>
    <specification/>
@@ -29722,6 +29946,17 @@
     </data>
    </specification>
    <specification/>
+    <id>680050
+    <name>{Field}_Has_Enum
+    <type>modifier_field_null
+    <data/>
+     <class_id>107100
+     <modifier_id>107313
+     <field_id>300720
+     <is_negative>true
+    </data>
+   </specification>
+   <specification/>
     <id>600052b
     <name>{Field}_Hide_Create_List_Field
     <type>modifier_field_null
@@ -29786,7 +30021,7 @@
     <data/>
      <class_id>107100
      <pclass_id>102100
-     <modifier_id>107315
+     <modifier_id>107314
      <enum_id>500
      <field_id>300710
      <pfield_id>102102
@@ -29801,7 +30036,7 @@
     <data/>
      <class_id>107100
      <pclass_id>102100
-     <modifier_id>107315
+     <modifier_id>107314
      <enum_id>500
      <field_id>300710
      <pfield_id>102102
@@ -29816,7 +30051,7 @@
     <data/>
      <class_id>107100
      <pclass_id>102100
-     <modifier_id>107315
+     <modifier_id>107314
      <enum_id>500
      <field_id>300710
      <pfield_id>102102
@@ -29855,9 +30090,25 @@
     <type>modifier_field_value
     <data/>
      <class_id>107100
-     <modifier_id>107311
+     <modifier_id>107312
      <field_id>107104
      <field_value>999
+     <not_equal>true
+    </data>
+   </specification>
+   <specification/>
+    <id>670050
+    <name>{Field}_Is_Not_Type_string
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <pclass_id>102100
+     <modifier_id>500403
+     <enum_id>500
+     <field_id>300710
+     <pfield_id>102102
+     <field_value>string
+     <enum_value_name>string
      <not_equal>true
     </data>
    </specification>
@@ -29867,7 +30118,7 @@
     <type>modifier_set_field
     <data/>
      <class_id>107100
-     <modifier_id>107315
+     <modifier_id>107314
      <field_id>107109
      <field_value>false
     </data>
@@ -29899,12 +30150,72 @@
     </data>
    </specification>
    <specification/>
+    <id>630050
+    <name>{Field}_Is_Type_date
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <pclass_id>102100
+     <modifier_id>107311b
+     <enum_id>500
+     <field_id>300710
+     <pfield_id>102102
+     <field_value>date
+     <enum_value_name>date
+    </data>
+   </specification>
+   <specification/>
+    <id>650050
+    <name>{Field}_Is_Type_datetime
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <pclass_id>102100
+     <modifier_id>107311d
+     <enum_id>500
+     <field_id>300710
+     <pfield_id>102102
+     <field_value>datetime
+     <enum_value_name>datetime
+    </data>
+   </specification>
+   <specification/>
+    <id>660050
+    <name>{Field}_Is_Type_string
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <pclass_id>102100
+     <modifier_id>107311a
+     <enum_id>500
+     <field_id>300710
+     <pfield_id>102102
+     <field_value>string
+     <enum_value_name>string
+    </data>
+   </specification>
+   <specification/>
+    <id>640050
+    <name>{Field}_Is_Type_time
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <pclass_id>102100
+     <modifier_id>107311c
+     <enum_id>500
+     <field_id>300710
+     <pfield_id>102102
+     <field_value>time
+     <enum_value_name>time
+    </data>
+   </specification>
+   <specification/>
     <id>600062
     <name>{Field}_Mandatory_if_Is_Any_Non_Text_Type
     <type>modifier_set_field
     <data/>
      <class_id>107100
-     <modifier_id>107315
+     <modifier_id>107314
      <field_id>107105
      <field_value>true
     </data>
@@ -30047,12 +30358,15 @@
      <field_info>107105
      <field_info>107102
      <field_info>107107;hidden+key1+enum=500
+     <field_info>107126;hidden+enum_filter=530
      <field_info>300730:106101;no_edit+link+filename+max_size=30
-     <field_info>300720:103101!@group:300300+@key1:103102;link
      <field_info>107103;enum=530
      <field_info>107104;force+enum=535
      <field_info>107116
      <field_info>107117
+     <field_info>300720:103101!@group:300300+@key1:103102;link
+     <field_info>300725:103101!@group:300300;link
+     <field_info>107125
      <field_info>107111
      <field_info>107119;new_only
      <field_info>107120;new_only
@@ -37158,7 +37472,7 @@
     <id>530
     <name>field_extra
     <type>int
-    <key_values>0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active,3=image,7=mailto,21=file\_link,8=actions,29=qr\_code,22=filename,10=password,25=encrypted,11=defcurrent,17=permission,24=orientation,26=hpassword,13=manual\_link,12=user\_perms,14=current\_year,18=security\_level,27=hpassword\_salt,15=create\_datetime,16=modify\_datetime,28=is\_effective\_owner,19=replace\_underbars,20=enforce\_uppercase,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
+    <key_values>0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln,3=image=str,7=mailto=str,21=file\_link=str,8=actions=str,29=qr\_code=str,22=filename=str,10=password=str,25=encrypted,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\_link=str,12=user\_perms=str,14=current\_year=int,18=security\_level=str,27=hpassword\_salt=str,15=create\_datetime=dtm,16=modify\_datetime=dtm,28=is\_effective\_owner=str,19=replace\_underbars=str,20=enforce\_uppercase=str,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
    </user_defined_enum>
    <user_defined_enum/>
     <id>600

@@ -1778,6 +1778,13 @@ void view_specification::add( model& m, const vector< string >& args, vector< sp
                   extra += "enum=" + get_id_for_enum_name( m, all_field_data[ j ].enum_name );
                }
 
+               if( !all_field_data[ j ].enum_filter.empty( ) )
+               {
+                  if( !extra.empty( ) )
+                     extra += '+';
+                  extra += "enum_filter=" + get_id_for_enum_name( m, all_field_data[ j ].enum_filter );
+               }
+
                break;
             }
          }

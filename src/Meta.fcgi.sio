@@ -530,58 +530,72 @@
     <value/>
      <data>1
      <name>enum_field_extra_file
+     <filter>str
     </value>
     <value/>
      <data>2
      <name>enum_field_extra_href
+     <filter>str
     </value>
     <value/>
      <data>9
      <name>enum_field_extra_html
+     <filter>str
     </value>
     <value/>
      <data>23
      <name>enum_field_extra_text
+     <filter>str
     </value>
     <value/>
      <data>4
      <name>enum_field_extra_notes
+     <filter>str
     </value>
     <value/>
      <data>5
      <name>enum_field_extra_order
+     <filter>str
     </value>
     <value/>
      <data>6
      <name>enum_field_extra_active
+     <filter>bln
     </value>
     <value/>
      <data>3
      <name>enum_field_extra_image
+     <filter>str
     </value>
     <value/>
      <data>7
      <name>enum_field_extra_mailto
+     <filter>str
     </value>
     <value/>
      <data>21
      <name>enum_field_extra_file_link
+     <filter>str
     </value>
     <value/>
      <data>8
      <name>enum_field_extra_actions
+     <filter>str
     </value>
     <value/>
      <data>29
      <name>enum_field_extra_qr_code
+     <filter>str
     </value>
     <value/>
      <data>22
      <name>enum_field_extra_filename
+     <filter>str
     </value>
     <value/>
      <data>10
      <name>enum_field_extra_password
+     <filter>str
     </value>
     <value/>
      <data>25
@@ -590,58 +604,72 @@
     <value/>
      <data>11
      <name>enum_field_extra_defcurrent
+     <filter>dtm|dte|tme
     </value>
     <value/>
      <data>17
      <name>enum_field_extra_permission
+     <filter>str
     </value>
     <value/>
      <data>24
      <name>enum_field_extra_orientation
+     <filter>int
     </value>
     <value/>
      <data>26
      <name>enum_field_extra_hpassword
+     <filter>str
     </value>
     <value/>
      <data>13
      <name>enum_field_extra_manual_link
+     <filter>str
     </value>
     <value/>
      <data>12
      <name>enum_field_extra_user_perms
+     <filter>str
     </value>
     <value/>
      <data>14
      <name>enum_field_extra_current_year
+     <filter>int
     </value>
     <value/>
      <data>18
      <name>enum_field_extra_security_level
+     <filter>str
     </value>
     <value/>
      <data>27
      <name>enum_field_extra_hpassword_salt
+     <filter>str
     </value>
     <value/>
      <data>15
      <name>enum_field_extra_create_datetime
+     <filter>dtm
     </value>
     <value/>
      <data>16
      <name>enum_field_extra_modify_datetime
+     <filter>dtm
     </value>
     <value/>
      <data>28
      <name>enum_field_extra_is_effective_owner
+     <filter>str
     </value>
     <value/>
      <data>19
      <name>enum_field_extra_replace_underbars
+     <filter>str
     </value>
     <value/>
      <data>20
      <name>enum_field_extra_enforce_uppercase
+     <filter>str
     </value>
     <value/>
      <data>-2
@@ -2407,7 +2435,7 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_application_blockchain
+     <name>field_application_blockchain_id
      <field>127135
      <ftype>string
      <extra>new_edit+max_size=30
@@ -3001,6 +3029,14 @@
      <mandatory>true
      <modifiers>
     </field>
+    <field/>
+     <name>field_enum_item_filter
+     <field>104105
+     <ftype>string
+     <extra>max_size=30
+     <mandatory>false
+     <modifiers>
+    </field>
    </fields>
   </view>
   <view/>
@@ -3009,7 +3045,7 @@
    <name>601710_name
    <type>standard
    <extra>
-   <modifiers>2000:lowlight1,800:lowlight
+   <modifiers>8000:lowlight1,1000:lowlight
    <class>Field
    <bclass>
    <module>Meta
@@ -3068,7 +3104,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>400:protect
+     <modifiers>800:protect
     </field>
     <field/>
      <name>field_field_default
@@ -3087,6 +3123,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_field_extra_filter
+     <field>107126
+     <ftype>string
+     <extra>hidden+enum_filter=530
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
      <name>field_field_parent_class
      <field>300730
      <ftype>@class
@@ -3097,18 +3141,6 @@
      <pfield>106101
      <pfname>field_class_name
      <pextra>
-    </field>
-    <field/>
-     <name>field_field_enum
-     <field>300720
-     <ftype>@class
-     <extra>link
-     <mandatory>false
-     <modifiers>
-     <pclass>103100
-     <pfield>103101
-     <pfname>field_enum_name
-     <pextra>@group:300300+@key1:103102
     </field>
     <field/>
      <name>field_field_extra
@@ -3124,7 +3156,7 @@
      <ftype>int
      <extra>force+enum=535
      <mandatory>true
-     <modifiers>4000:relegate
+     <modifiers>10000:relegate,80000:relegate,20000:relegate,100000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_field_uom_name
@@ -3132,7 +3164,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>2000:relegate
     </field>
     <field/>
      <name>field_field_uom_symbol
@@ -3140,7 +3172,39 @@
      <ftype>string
      <extra>max_size=10
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>2000:relegate
+    </field>
+    <field/>
+     <name>field_field_enum
+     <field>300720
+     <ftype>@class
+     <extra>link
+     <mandatory>false
+     <modifiers>
+     <pclass>103100
+     <pfield>103101
+     <pfname>field_enum_name
+     <pextra>@group:300300+@key1:103102
+    </field>
+    <field/>
+     <name>field_field_enum_filter
+     <field>300725
+     <ftype>@class
+     <extra>link
+     <mandatory>false
+     <modifiers>4000:relegate
+     <pclass>103100
+     <pfield>103101
+     <pfname>field_enum_name
+     <pextra>@group:300300
+    </field>
+    <field/>
+     <name>field_field_encrypted
+     <field>107125
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>100:relegate,4000:relegate
     </field>
     <field/>
      <name>field_field_use_in_text_search
@@ -3148,7 +3212,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>400:relegate,2000:relegate
+     <modifiers>800:relegate,8000:relegate
     </field>
     <field/>
      <name>field_field_create_view_field
@@ -3156,7 +3220,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_field_create_list_field
@@ -3164,7 +3228,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>100:relegate
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_field_access_scope
@@ -8223,6 +8287,15 @@
      <unique>false
      <indexed>false
     </column>
+    <column/>
+     <name>field_enum_item_filter
+     <field>104105
+     <ftype>string
+     <extra>max_size=30
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
    </columns>
    <parents/>
    </parents>
@@ -8236,7 +8309,7 @@
    <type>child
    <extra>no_limit
    <actions>
-   <modifiers>2000:lowlight1,800:lowlight
+   <modifiers>8000:lowlight1,1000:lowlight
    <view>601710
    <class>Field
    <bclass>
@@ -8281,7 +8354,7 @@
      <field>107105
      <ftype>bool
      <extra>
-     <modifiers>400:protect
+     <modifiers>800:protect
      <unique>false
      <indexed>false
     </column>

@@ -591,7 +591,14 @@ string get_key_for_enum_value( model& m, const string& enum_id, const string& en
          for( size_t j = 0; j < key_values.size( ); j++ )
          {
             string::size_type pos = key_values[ j ].find( '=' );
-            if( unescaped( key_values[ j ].substr( pos + 1 ) ) == enum_value )
+
+            string value( key_values[ j ].substr( pos + 1 ) );
+
+            string::size_type rpos = value.find( '=' );
+            if( rpos != string::npos )
+               value.erase( rpos );
+
+            if( unescaped( value ) == enum_value )
             {
                enum_key = key_values[ j ].substr( 0, pos );
                break;

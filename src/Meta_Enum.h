@@ -19,15 +19,15 @@
 #     define META_ENUM_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-class Meta_Enum_Item;
 class Meta_Field;
+class Meta_Enum_Item;
 class Meta_Specification;
 class Meta_Workgroup;
 
 class META_ENUM_DECL_SPEC Meta_Enum : public class_base
 {
-   friend class Meta_Enum_Item;
    friend class Meta_Field;
+   friend class Meta_Enum_Item;
    friend class Meta_Specification;
    friend class Meta_Workgroup;
 
@@ -62,6 +62,9 @@ class META_ENUM_DECL_SPEC Meta_Enum : public class_base
    Meta_Workgroup& Workgroup( );
    const Meta_Workgroup& Workgroup( ) const;
    void Workgroup( const std::string& key );
+
+   Meta_Field& child_Field_Enum_Filter( );
+   const Meta_Field& child_Field_Enum_Filter( ) const;
 
    Meta_Enum_Item& child_Enum_Item( );
    const Meta_Enum_Item& child_Enum_Item( ) const;
@@ -261,8 +264,8 @@ class META_ENUM_DECL_SPEC Meta_Enum : public class_base
 
    virtual void setup_foreign_key( Meta_Workgroup& o, const std::string& value );
 
-   virtual void setup_graph_parent( Meta_Enum_Item& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Field& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Enum_Item& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Workgroup& o,

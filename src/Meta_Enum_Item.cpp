@@ -75,24 +75,27 @@ const int32_t c_version = 1;
 const char* const c_okay = "okay";
 
 const char* const c_field_id_Enum = "300400";
+const char* const c_field_id_Filter = "104105";
 const char* const c_field_id_Internal = "104104";
 const char* const c_field_id_Label = "104101";
 const char* const c_field_id_Order = "104103";
 const char* const c_field_id_Value = "104102";
 
 const char* const c_field_name_Enum = "Enum";
+const char* const c_field_name_Filter = "Filter";
 const char* const c_field_name_Internal = "Internal";
 const char* const c_field_name_Label = "Label";
 const char* const c_field_name_Order = "Order";
 const char* const c_field_name_Value = "Value";
 
 const char* const c_field_display_name_Enum = "field_enum_item_enum";
+const char* const c_field_display_name_Filter = "field_enum_item_filter";
 const char* const c_field_display_name_Internal = "field_enum_item_internal";
 const char* const c_field_display_name_Label = "field_enum_item_label";
 const char* const c_field_display_name_Order = "field_enum_item_order";
 const char* const c_field_display_name_Value = "field_enum_item_value";
 
-const int c_num_fields = 5;
+const int c_num_fields = 6;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -100,12 +103,14 @@ const char* const c_all_sorted_field_ids[ ] =
    "104102",
    "104103",
    "104104",
+   "104105",
    "300400"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
    "Enum",
+   "Filter",
    "Internal",
    "Label",
    "Order",
@@ -133,6 +138,7 @@ const char* const c_procedure_id_Move_Up = "104410";
 
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x100 );
 
+domain_string_max_size< 30 > g_Filter_domain;
 aggregate_domain< string,
  domain_string_label_format,
  domain_string_max_size< 30 > > g_Label_domain;
@@ -157,6 +163,7 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string g_default_Enum = string( );
+string g_default_Filter = string( );
 bool g_default_Internal = bool( 0 );
 string g_default_Label = string( );
 string g_default_Order = string( );
@@ -249,6 +256,12 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
          string_getter< Meta_Enum >( cmd_handler.p_Meta_Enum_Item->Enum( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Filter || field_name == c_field_name_Filter )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Enum_Item->Filter( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
       {
          handled = true;
@@ -290,6 +303,13 @@ void Meta_Enum_Item_command_functor::operator ( )( const string& command, const 
          handled = true;
          func_string_setter< Meta_Enum_Item, Meta_Enum >(
           *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Enum, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Filter || field_name == c_field_name_Filter )
+      {
+         handled = true;
+         func_string_setter< Meta_Enum_Item, string >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Filter, field_value );
       }
 
       if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
@@ -375,6 +395,9 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    {
       return *cp_obj;
    }
+
+   const string& impl_Filter( ) const { return lazy_fetch( p_obj ), v_Filter; }
+   void impl_Filter( const string& Filter ) { sanity_check( Filter ); v_Filter = Filter; }
 
    bool impl_Internal( ) const { return lazy_fetch( p_obj ), v_Internal; }
    void impl_Internal( bool Internal ) { v_Internal = Internal; }
@@ -589,6 +612,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
    size_t total_child_relationships;
 
+   string v_Filter;
    bool v_Internal;
    string v_Label;
    string v_Order;
@@ -751,18 +775,22 @@ string Meta_Enum_Item::impl::get_field_value( int field ) const
       break;
 
       case 1:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Filter( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Label( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Order( ) );
+      retval = to_string( impl_Label( ) );
       break;
 
       case 4:
+      retval = to_string( impl_Order( ) );
+      break;
+
+      case 5:
       retval = to_string( impl_Value( ) );
       break;
 
@@ -782,18 +810,22 @@ void Meta_Enum_Item::impl::set_field_value( int field, const string& value )
       break;
 
       case 1:
-      func_string_setter< Meta_Enum_Item::impl, bool >( *this, &Meta_Enum_Item::impl::impl_Internal, value );
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Filter, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Label, value );
+      func_string_setter< Meta_Enum_Item::impl, bool >( *this, &Meta_Enum_Item::impl::impl_Internal, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Order, value );
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Label, value );
       break;
 
       case 4:
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Order, value );
+      break;
+
+      case 5:
       func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Value, value );
       break;
 
@@ -813,18 +845,22 @@ bool Meta_Enum_Item::impl::is_field_default( int field ) const
       break;
 
       case 1:
-      retval = ( v_Internal == g_default_Internal );
+      retval = ( v_Filter == g_default_Filter );
       break;
 
       case 2:
-      retval = ( v_Label == g_default_Label );
+      retval = ( v_Internal == g_default_Internal );
       break;
 
       case 3:
-      retval = ( v_Order == g_default_Order );
+      retval = ( v_Label == g_default_Label );
       break;
 
       case 4:
+      retval = ( v_Order == g_default_Order );
+      break;
+
+      case 5:
       retval = ( v_Value == g_default_Value );
       break;
 
@@ -914,6 +950,7 @@ void Meta_Enum_Item::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_Enum_Item::impl::clear( )
 {
+   v_Filter = g_default_Filter;
    v_Internal = g_default_Internal;
    v_Label = g_default_Label;
    v_Order = g_default_Order;
@@ -963,6 +1000,13 @@ void Meta_Enum_Item::impl::validate( unsigned state, bool is_internal, validatio
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
 
    string error_message;
+   if( !is_null( v_Filter )
+    && ( v_Filter != g_default_Filter
+    || !value_will_be_provided( c_field_name_Filter ) )
+    && !g_Filter_domain.is_valid( v_Filter, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Filter,
+       get_module_string( c_field_display_name_Filter ) + " " + error_message ) );
+
    if( !is_null( v_Label )
     && ( v_Label != g_default_Label
     || !value_will_be_provided( c_field_name_Label ) )
@@ -989,6 +1033,12 @@ void Meta_Enum_Item::impl::validate_set_fields( set< string >& fields_set, valid
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+
+   if( !is_null( v_Filter )
+    && ( fields_set.count( c_field_id_Filter ) || fields_set.count( c_field_name_Filter ) )
+    && !g_Filter_domain.is_valid( v_Filter, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Filter,
+       get_module_string( c_field_display_name_Filter ) + " " + error_message ) );
 
    if( !is_null( v_Label )
     && ( fields_set.count( c_field_id_Label ) || fields_set.count( c_field_name_Label ) )
@@ -1198,6 +1248,16 @@ Meta_Enum_Item::~Meta_Enum_Item( )
 {
    cleanup( );
    delete p_impl;
+}
+
+const string& Meta_Enum_Item::Filter( ) const
+{
+   return p_impl->impl_Filter( );
+}
+
+void Meta_Enum_Item::Filter( const string& Filter )
+{
+   p_impl->impl_Filter( Filter );
 }
 
 bool Meta_Enum_Item::Internal( ) const
@@ -1476,6 +1536,16 @@ const char* Meta_Enum_Item::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Filter )
+   {
+      p_id = c_field_id_Filter;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Internal )
    {
       p_id = c_field_id_Internal;
@@ -1533,6 +1603,16 @@ const char* Meta_Enum_Item::get_field_name(
 
       if( p_type_name )
          *p_type_name = "Meta_Enum";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Filter )
+   {
+      p_name = c_field_name_Filter;
+
+      if( p_type_name )
+         *p_type_name = "string";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -1616,6 +1696,11 @@ string Meta_Enum_Item::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Enum );
       get_module_string( c_field_display_name_Enum, &next );
    }
+   else if( id_or_name == c_field_id_Filter || id_or_name == c_field_name_Filter )
+   {
+      name = string( c_field_display_name_Filter );
+      get_module_string( c_field_display_name_Filter, &next );
+   }
    else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
    {
       name = string( c_field_display_name_Internal );
@@ -1653,6 +1738,8 @@ string Meta_Enum_Item::get_field_display_name( const string& id_or_name ) const
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
    else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
       display_name = get_module_string( c_field_display_name_Enum );
+   else if( id_or_name == c_field_id_Filter || id_or_name == c_field_name_Filter )
+      display_name = get_module_string( c_field_display_name_Filter );
    else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
       display_name = get_module_string( c_field_display_name_Internal );
    else if( id_or_name == c_field_id_Label || id_or_name == c_field_name_Label )
@@ -1929,6 +2016,7 @@ void Meta_Enum_Item::get_sql_column_names(
       return;
 
    names.push_back( "C_Enum" );
+   names.push_back( "C_Filter" );
    names.push_back( "C_Internal" );
    names.push_back( "C_Label" );
    names.push_back( "C_Order" );
@@ -1945,6 +2033,7 @@ void Meta_Enum_Item::get_sql_column_values(
       return;
 
    values.push_back( sql_quote( to_string( Enum( ) ) ) );
+   values.push_back( sql_quote( to_string( Filter( ) ) ) );
    values.push_back( to_string( Internal( ) ) );
    values.push_back( sql_quote( to_string( Label( ) ) ) );
    values.push_back( sql_quote( to_string( Order( ) ) ) );
@@ -2049,6 +2138,7 @@ void Meta_Enum_Item::static_get_class_info( class_info_container& class_info )
 void Meta_Enum_Item::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "300400", "Enum", "Meta_Enum", true, "", "" ) );
+   all_field_info.push_back( field_info( "104105", "Filter", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "104104", "Internal", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "104101", "Label", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "104103", "Order", "string", false, "", "" ) );
@@ -2091,18 +2181,22 @@ const char* Meta_Enum_Item::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "104104";
+      p_id = "104105";
       break;
 
       case 3:
-      p_id = "104101";
+      p_id = "104104";
       break;
 
       case 4:
-      p_id = "104103";
+      p_id = "104101";
       break;
 
       case 5:
+      p_id = "104103";
+      break;
+
+      case 6:
       p_id = "104102";
       break;
    }
@@ -2124,18 +2218,22 @@ const char* Meta_Enum_Item::static_get_field_name( field_id id )
       break;
 
       case 2:
-      p_id = "Internal";
+      p_id = "Filter";
       break;
 
       case 3:
-      p_id = "Label";
+      p_id = "Internal";
       break;
 
       case 4:
-      p_id = "Order";
+      p_id = "Label";
       break;
 
       case 5:
+      p_id = "Order";
+      break;
+
+      case 6:
       p_id = "Value";
       break;
    }
@@ -2154,14 +2252,16 @@ int Meta_Enum_Item::static_get_field_num( const string& field )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
       rc += 1;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Filter || field == c_field_name_Filter )
       rc += 2;
-   else if( field == c_field_id_Label || field == c_field_name_Label )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 3;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
+   else if( field == c_field_id_Label || field == c_field_name_Label )
       rc += 4;
-   else if( field == c_field_id_Value || field == c_field_name_Value )
+   else if( field == c_field_id_Order || field == c_field_name_Order )
       rc += 5;
+   else if( field == c_field_id_Value || field == c_field_name_Value )
+      rc += 6;
 
    return rc - 1;
 }
@@ -2191,6 +2291,7 @@ string Meta_Enum_Item::static_get_sql_columns( )
     "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Enum VARCHAR(75) NOT NULL,"
+    "C_Filter VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
     "C_Label VARCHAR(200) NOT NULL,"
     "C_Order VARCHAR(200) NOT NULL,"

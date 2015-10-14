@@ -1354,7 +1354,7 @@ void request_handler::process_request( )
 
                      vector< pair< string, string > > field_value_pairs;
 
-                     string encrypted_password( password_encrypt( activate_password, get_server_id( ) ) );
+                     string encrypted_password( data_encrypt( activate_password, get_server_id( ) ) );
 
                      field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_password ) );
                      field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
@@ -1867,7 +1867,7 @@ void request_handler::process_request( )
          // encrypt and store it in the application server "files area" for later usage.
          if( !g_is_blockchain_application && p_session_info->logged_in && !newhash.empty( ) )
          {
-            string data( password_encrypt( newhash, get_server_id( ) ) );
+            string data( data_encrypt( newhash, get_server_id( ) ) );
 
             string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
             simple_command( *p_session_info, cmd );
@@ -2306,7 +2306,7 @@ void request_handler::process_request( )
                   error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                else
                {
-                  string encrypted_new_password( password_encrypt( new_password, get_server_id( ) ) );
+                  string encrypted_new_password( data_encrypt( new_password, get_server_id( ) ) );
 
                   vector< pair< string, string > > pwd_field_value_pairs;
                   pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
@@ -2320,9 +2320,9 @@ void request_handler::process_request( )
                      if( p_session_info->user_crypt.empty( ) )
                         user_crypt_key = uuid( ).as_string( );
                      else
-                        user_crypt_key = password_decrypt( p_session_info->user_crypt, old_password );
+                        user_crypt_key = data_decrypt( p_session_info->user_crypt, old_password );
 
-                     user_crypt_key = password_encrypt( user_crypt_key, new_password );
+                     user_crypt_key = data_encrypt( user_crypt_key, new_password );
 
                      pwd_field_value_pairs.push_back( make_pair( mod_info.user_crypt_field_id, user_crypt_key ) );
                   }

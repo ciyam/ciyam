@@ -541,16 +541,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
                   has_always_editable = true;
 
-               // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted and
-               // for blockchain applications the decryption is expected to occur in the application server.
-               if( !is_blockchain_application( )
-                && item_values[ field_num ].length( ) >= 20
+               // NOTE: Encrypted fields that are < 20 characters are assumed to not have been encrypted.
+               if( item_values[ field_num ].length( ) >= 20
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && ( view.encrypted_fields.count( view.field_ids[ i ] )
                 || view.hpassword_fields.count( view.field_ids[ i ] ) ) )
                {
                   if( !is_blockchain_application( ) )
-                     item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
+                     item_values[ field_num ] = data_decrypt( item_values[ field_num ], get_server_id( ) );
+                  else
+                     item_values[ field_num ] = data_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
                }
 
                if( view.field_ids[ i ] == view.filename_field )
@@ -2327,7 +2327,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( !simple_command( *p_session_info, "password gpg", &gpg_password ) )
                      throw runtime_error( "unable to access GPG password" );
 
-                  gpg_password = password_decrypt( gpg_password, get_server_id( ) + string( c_salt_value ) );
+                  gpg_password = data_decrypt( gpg_password, get_server_id( ) + string( c_salt_value ) );
 
                   string smtp_sender;
                   if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
@@ -2353,9 +2353,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      password = hash_password( g_id + password + req_username );
 
                      if( is_blockchain_application( ) )
-                        password = password_encrypt( password, password );
+                        password = data_encrypt( password, password );
                      else
-                        password = password_encrypt( password, get_server_id( ) );
+                        password = data_encrypt( password, get_server_id( ) );
 
                      bool is_anon_email_addr = false;
                      string::size_type pos = email_addr.find( "@" );
@@ -2371,7 +2371,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                         if( !is_anon_email_addr )
                         {
-                           email = password_encrypt( email_addr, get_server_id( ) );
+                           email = data_encrypt( email_addr, get_server_id( ) );
                            gpg_key_file = get_storage_info( ).web_root + "/x.gpg";
                         }
 
@@ -2451,7 +2451,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
             else if( error_message.empty( ) && !email.empty( ) )
             {
-               string encrypted_email( password_encrypt( email, get_server_id( ) ) );
+               string encrypted_email( data_encrypt( email, get_server_id( ) ) );
 
                string new_key;
                add_user( req_username, req_username, encrypted_email,
@@ -2554,7 +2554,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             string encrypted_email;
 
             if( !email.empty( ) )
-               encrypted_email = password_encrypt( email, get_server_id( ) );
+               encrypted_email = data_encrypt( email, get_server_id( ) );
 
             add_user( userhash, req_username, encrypted_email,
              clone_key, "", error_message, mod_info, *p_session_info );
