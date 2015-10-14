@@ -29,6 +29,7 @@
 #include "date_time.h"
 #include "ciyam_base.h"
 #include "ciyam_files.h"
+#include "ciyam_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
 #include "command_handler.h"
@@ -1627,7 +1628,7 @@ void peer_session::increment_session_count( )
    guard g( g_mutex );
 
    ++g_num_peers;
-   ++g_active_sessions;
+   ciyam_session::increment_session_count( );
 }
 
 void peer_session::decrement_session_count( )
@@ -1635,7 +1636,7 @@ void peer_session::decrement_session_count( )
    guard g( g_mutex );
 
    --g_num_peers;
-   --g_active_sessions;
+   ciyam_session::decrement_session_count( );
 }
 
 void peer_listener::on_start( )

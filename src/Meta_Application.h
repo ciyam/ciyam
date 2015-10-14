@@ -38,7 +38,7 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Allow_Duplicate_Logins = 3,
       e_field_id_Allow_Module_Switching = 4,
       e_field_id_Auto_Login_Days = 5,
-      e_field_id_Blockchain = 6,
+      e_field_id_Blockchain_Id = 6,
       e_field_id_Create_Database = 7,
       e_field_id_Created_Database = 8,
       e_field_id_Default_Image_Height = 9,
@@ -89,8 +89,8 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    int Auto_Login_Days( ) const;
    void Auto_Login_Days( int Auto_Login_Days );
 
-   const std::string& Blockchain( ) const;
-   void Blockchain( const std::string& Blockchain );
+   const std::string& Blockchain_Id( ) const;
+   void Blockchain_Id( const std::string& Blockchain_Id );
 
    bool Create_Database( ) const;
    void Create_Database( bool Create_Database );

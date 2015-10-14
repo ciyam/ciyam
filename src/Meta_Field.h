@@ -72,25 +72,28 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
       e_field_id_Def_Value = 10,
       e_field_id_Default = 11,
       e_field_id_Dummy_1 = 12,
-      e_field_id_Enum = 13,
-      e_field_id_Extra = 14,
-      e_field_id_Id = 15,
-      e_field_id_Internal = 16,
-      e_field_id_Is_Foreign_Key = 17,
-      e_field_id_Is_Text_Type = 18,
-      e_field_id_Mandatory = 19,
-      e_field_id_Name = 20,
-      e_field_id_Numeric_Decimals = 21,
-      e_field_id_Parent_Class = 22,
-      e_field_id_Parent_Class_Name = 23,
-      e_field_id_Primitive = 24,
-      e_field_id_Source_Field = 25,
-      e_field_id_Transient = 26,
-      e_field_id_Type = 27,
-      e_field_id_UOM = 28,
-      e_field_id_UOM_Name = 29,
-      e_field_id_UOM_Symbol = 30,
-      e_field_id_Use_In_Text_Search = 31
+      e_field_id_Encrypted = 13,
+      e_field_id_Enum = 14,
+      e_field_id_Enum_Filter = 15,
+      e_field_id_Extra = 16,
+      e_field_id_Extra_Filter = 17,
+      e_field_id_Id = 18,
+      e_field_id_Internal = 19,
+      e_field_id_Is_Foreign_Key = 20,
+      e_field_id_Is_Text_Type = 21,
+      e_field_id_Mandatory = 22,
+      e_field_id_Name = 23,
+      e_field_id_Numeric_Decimals = 24,
+      e_field_id_Parent_Class = 25,
+      e_field_id_Parent_Class_Name = 26,
+      e_field_id_Primitive = 27,
+      e_field_id_Source_Field = 28,
+      e_field_id_Transient = 29,
+      e_field_id_Type = 30,
+      e_field_id_UOM = 31,
+      e_field_id_UOM_Name = 32,
+      e_field_id_UOM_Symbol = 33,
+      e_field_id_Use_In_Text_Search = 34
    };
 
    Meta_Field( );
@@ -123,8 +126,14 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    bool Dummy_1( ) const;
    void Dummy_1( bool Dummy_1 );
 
+   bool Encrypted( ) const;
+   void Encrypted( bool Encrypted );
+
    int Extra( ) const;
    void Extra( int Extra );
+
+   const std::string& Extra_Filter( ) const;
+   void Extra_Filter( const std::string& Extra_Filter );
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );
@@ -183,6 +192,10 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Enum& Enum( );
    const Meta_Enum& Enum( ) const;
    void Enum( const std::string& key );
+
+   Meta_Enum& Enum_Filter( );
+   const Meta_Enum& Enum_Filter( ) const;
+   void Enum_Filter( const std::string& key );
 
    Meta_Class& Parent_Class( );
    const Meta_Class& Parent_Class( ) const;

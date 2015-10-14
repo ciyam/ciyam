@@ -25,8 +25,8 @@
 
 #include "Meta_Enum.h"
 
-#include "Meta_Enum_Item.h"
 #include "Meta_Field.h"
+#include "Meta_Enum_Item.h"
 #include "Meta_Specification.h"
 #include "Meta_Workgroup.h"
 
@@ -439,6 +439,28 @@ struct Meta_Enum::impl : public Meta_Enum_command_handler
       cba.set_key( key );
    }
 
+   Meta_Field& impl_child_Field_Enum_Filter( )
+   {
+      if( !cp_child_Field_Enum_Filter )
+      {
+         cp_child_Field_Enum_Filter.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Field_Enum_Filter, "300725" );
+      }
+      return *cp_child_Field_Enum_Filter;
+   }
+
+   const Meta_Field& impl_child_Field_Enum_Filter( ) const
+   {
+      if( !cp_child_Field_Enum_Filter )
+      {
+         cp_child_Field_Enum_Filter.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Field_Enum_Filter, "300725" );
+      }
+      return *cp_child_Field_Enum_Filter;
+   }
+
    Meta_Enum_Item& impl_child_Enum_Item( )
    {
       if( !cp_child_Enum_Item )
@@ -570,6 +592,7 @@ struct Meta_Enum::impl : public Meta_Enum_command_handler
    string v_Workgroup;
    mutable class_pointer< Meta_Workgroup > cp_Workgroup;
 
+   mutable class_pointer< Meta_Field > cp_child_Field_Enum_Filter;
    mutable class_pointer< Meta_Enum_Item > cp_child_Enum_Item;
    mutable class_pointer< Meta_Field > cp_child_Field;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
@@ -1125,6 +1148,16 @@ void Meta_Enum::Workgroup( const string& key )
    p_impl->impl_Workgroup( key );
 }
 
+Meta_Field& Meta_Enum::child_Field_Enum_Filter( )
+{
+   return p_impl->impl_child_Field_Enum_Filter( );
+}
+
+const Meta_Field& Meta_Enum::child_Field_Enum_Filter( ) const
+{
+   return p_impl->impl_child_Field_Enum_Filter( );
+}
+
 Meta_Enum_Item& Meta_Enum::child_Enum_Item( )
 {
    return p_impl->impl_child_Enum_Item( );
@@ -1530,14 +1563,14 @@ void Meta_Enum::setup_foreign_key( Meta_Workgroup& o, const string& value )
    static_cast< Meta_Workgroup& >( o ).set_key( value );
 }
 
-void Meta_Enum::setup_graph_parent( Meta_Enum_Item& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Enum_Item& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
 void Meta_Enum::setup_graph_parent( Meta_Field& o, const string& foreign_key_field )
 {
    static_cast< Meta_Field& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Enum::setup_graph_parent( Meta_Enum_Item& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Enum_Item& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
 void Meta_Enum::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
@@ -1564,7 +1597,7 @@ void Meta_Enum::set_total_child_relationships( size_t new_total_child_relationsh
 
 size_t Meta_Enum::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 3;
+   size_t rc = 4;
 
    if( !is_internal )
    {
@@ -1597,7 +1630,7 @@ class_base* Meta_Enum::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 3 )
+   if( child_num >= 4 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1610,6 +1643,14 @@ class_base* Meta_Enum::get_next_foreign_key_child(
       switch( child_num )
       {
          case 0:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "300725";
+            p_class_base = &child_Field_Enum_Filter( );
+         }
+         break;
+
+         case 1:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300400";
@@ -1617,7 +1658,7 @@ class_base* Meta_Enum::get_next_foreign_key_child(
          }
          break;
 
-         case 1:
+         case 2:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300720";
@@ -1625,7 +1666,7 @@ class_base* Meta_Enum::get_next_foreign_key_child(
          }
          break;
 
-         case 2:
+         case 3:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301460";
@@ -1730,6 +1771,8 @@ class_base& Meta_Enum::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_300725" || sub_context == "child_Field_Enum_Filter" )
+      p_class_base = &child_Field_Enum_Filter( );
    else if( sub_context == "_300400" || sub_context == "child_Enum_Item" )
       p_class_base = &child_Enum_Item( );
    else if( sub_context == "_300720" || sub_context == "child_Field" )

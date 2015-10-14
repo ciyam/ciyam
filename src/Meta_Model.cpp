@@ -1478,8 +1478,14 @@ void Meta_Model::impl::impl_Generate( )
 
                            if( !next_enum_info.empty( ) )
                               next_enum_info += ' ';
+
                            next_enum_info += get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).Value( )
                             + '=' + get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).Label( );
+
+                           if( !get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).Filter( ).empty( ) )
+                              next_enum_info += '='
+                               + get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).Filter( );
+
                         } while( get_obj( ).Workgroup( ).child_Enum( ).child_Enum_Item( ).iterate_next( ) );
 
                         all_enum_info.push_back( make_pair( name, next_enum_info ) );
@@ -3140,7 +3146,8 @@ void Meta_Model::impl::impl_Generate( )
                         p_xfield = p_field;
 
                      string other_extras( meta_field_extras( p_xfield->UOM( ), p_xfield->UOM_Name( ),
-                      p_xfield->Extra( ), p_xfield->Transient( ), p_xfield->Type( ).Max_Size( ), p_xfield->Enum( ).Id( ),
+                      p_xfield->Extra( ), p_xfield->Encrypted( ), p_xfield->Transient( ),
+                      p_xfield->Type( ).Max_Size( ), p_xfield->Enum( ).Id( ), p_xfield->Enum_Filter( ).Id( ),
                       p_xfield->Type( ).Primitive( ), p_xfield->Type( ).Min_Value( ), p_xfield->Type( ).Max_Value( ),
                       p_xfield->Type( ).Numeric_Digits( ), p_xfield->Type( ).Numeric_Decimals( ),
                       p_xfield->Type( ).String_Domain( ), has_date_precision ? 0 : p_xfield->Type( ).Date_Precision( ),
@@ -4451,9 +4458,11 @@ void Meta_Model::impl::impl_Generate( )
                          p_type_field->UOM( ),
                          p_type_field->UOM_Name( ),
                          p_type_field->Extra( ),
+                         p_type_field->Encrypted( ),
                          p_type_field->Transient( ),
                          p_type_field->Type( ).Max_Size( ),
                          p_type_field->Enum( ).Id( ),
+                         p_type_field->Enum_Filter( ).Id( ),
                          p_type_field->Type( ).Primitive( ),
                          p_type_field->Type( ).Min_Value( ),
                          p_type_field->Type( ).Max_Value( ),
@@ -4514,9 +4523,11 @@ void Meta_Model::impl::impl_Generate( )
                             p_type_field->UOM( ),
                             p_type_field->UOM_Name( ),
                             p_type_field->Extra( ),
+                            p_type_field->Encrypted( ),
                             p_type_field->Transient( ),
                             p_type_field->Type( ).Max_Size( ),
                             p_type_field->Enum( ).Id( ),
+                            p_type_field->Enum_Filter( ).Id( ),
                             p_type_field->Type( ).Primitive( ),
                             p_type_field->Type( ).Min_Value( ),
                             p_type_field->Type( ).Max_Value( ),
@@ -4560,9 +4571,11 @@ void Meta_Model::impl::impl_Generate( )
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM_Name( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Extra( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Encrypted( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Transient( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Max_Size( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Enum( ).Id( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Enum_Filter( ).Id( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Primitive( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Min_Value( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Max_Value( ),
@@ -5049,7 +5062,8 @@ void Meta_Model::impl::impl_Generate( )
                       p_field->Primitive( ), p_field->Mandatory( ), "", "" ) );
 
                      string field_extras( meta_field_extras( p_field->UOM( ), p_field->UOM_Name( ),
-                      p_field->Extra( ), p_field->Transient( ), p_field->Type( ).Max_Size( ), p_field->Enum( ).Id( ),
+                      p_field->Extra( ), p_field->Encrypted( ), p_field->Transient( ),
+                      p_field->Type( ).Max_Size( ), p_field->Enum( ).Id( ), p_field->Enum_Filter( ).Id( ),
                       p_field->Type( ).Primitive( ), p_field->Type( ).Min_Value( ), p_field->Type( ).Max_Value( ),
                       p_field->Type( ).Numeric_Digits( ), p_field->Type( ).Numeric_Decimals( ),
                       p_field->Type( ).String_Domain( ), p_field->Type( ).Date_Precision( ),

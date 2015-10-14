@@ -93,6 +93,7 @@ const char* const c_attribute_field_mandatory = "mandatory";
 const char* const c_attribute_field_transient = "transient";
 const char* const c_attribute_field_text_search = "text_search";
 const char* const c_attribute_field_enum_id = "enum_id";
+const char* const c_attribute_field_enum_filter_id = "enum_filter_id";
 const char* const c_attribute_field_extra = "extra";
 const char* const c_attribute_field_default_value = "default_value";
 const char* const c_attribute_field_class_id = "class_id";
@@ -188,8 +189,8 @@ struct field_info
 {
    field_info( ) : is_mandatory( false ) { }
 
-   field_info( const string& name, const string& type,
-    bool is_mandatory, bool is_transient, bool for_text_search, const string& enum_id,
+   field_info( const string& name, const string& type, bool is_mandatory,
+    bool is_transient, bool for_text_search, const string& enum_id, const string& enum_filter_id,
     const string& extra, const string& default_value, const string& class_id, const string& relationship_id )
     :
     name( name ),
@@ -198,6 +199,7 @@ struct field_info
     is_transient( is_transient ),
     for_text_search( for_text_search ),
     enum_id( enum_id ),
+    enum_filter_id( enum_filter_id ),
     extra( extra ),
     default_value( default_value ),
     class_id( class_id ),
@@ -213,6 +215,7 @@ struct field_info
    bool for_text_search;
 
    string enum_id;
+   string enum_filter_id;
 
    string extra;
    string default_value;
@@ -619,18 +622,21 @@ struct model::impl
    void class_add( const string& class_id,
     const string& class_name, const string& plural_name,
     const string& fixed_key_val, const string& extra, const string& base_class_name );
+
    void class_list( ostream& outs ) const;
    void class_remove( const string& class_name );
    void class_rename( const string& old_class_name, const string& new_class_name );
 
    void field_add( const string& field_id, const string& class_name,
     const string& field_name, const string& field_type, bool is_mandatory,
-    bool is_transient, bool for_text_search, const string& enum_name, const string& extra,
-    const string& default_value, const string& field_class_id = "", const string& relationship_id = "" );
+    bool is_transient, bool for_text_search, const string& enum_name, const string& enum_filter,
+    const string& extra, const string& default_value, const string& field_class_id = "", const string& relationship_id = "" );
+
    void field_add_impl( const string& field_id, const string& class_id,
     const string& field_name, const string& field_type, bool is_mandatory,
-    bool is_transient, bool for_text_search, const string& enum_name, const string& extra,
-    const string& default_value, const string& field_class_id = "", const string& relationship_id = "" );
+    bool is_transient, bool for_text_search, const string& enum_name, const string& enum_filter,
+    const string& extra, const string& default_value, const string& field_class_id = "", const string& relationship_id = "" );
+
    void field_list( const string& class_name, ostream& outs ) const;
    void field_remove( const string& class_name, const string& field_name, bool internal = false );
    void field_rename( const string& class_name, const string& old_field_name, const string& new_field_name, bool internal = false );
@@ -651,6 +657,7 @@ struct model::impl
 
    void procedure_arg_add( const string& arg_id, const string& class_name,
     const string& procedure_name, const string& arg_name, const string& arg_type, bool is_output );
+
    void procedure_arg_list( const string& class_name, const string& procedure_name, ostream& outs ) const;
    void procedure_arg_remove( const string& class_name, const string& procedure_name, const string& arg_name );
    void procedure_arg_rename( const string& class_name,
@@ -659,6 +666,7 @@ struct model::impl
    void relationship_add( const string& relationship_id,
     const string& field_id, const string& child_class_name, const string& child_field_name,
     const string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const string& extra );
+
    void relationship_list( ostream& outs ) const;
    void relationship_list_parents( const string& child_class_name, ostream& outs ) const;
    void relationship_list_children( const string& parent_class_name, ostream& outs ) const;
@@ -667,18 +675,21 @@ struct model::impl
 
    void specification_add( const string& specification_id,
     const string& specification_name, const string& specification_type, const string& specification_args );
+
    void specification_list( ostream& outs ) const;
    void specification_remove( const string& specification_name );
    void specification_rename( const string& old_specification_name, const string& new_specification_name );
 
    void user_defined_enum_add( const string& ude_id,
     const string& ude_name, const string& type_name, const string& key_values );
+
    void user_defined_enum_list( ostream& outs ) const;
    void user_defined_enum_remove( const string& ude_name );
    void user_defined_enum_rename( const string& old_ude_name, const string& new_ude_name );
 
    void user_defined_type_add( const string& udt_id,
     const string& udt_name, const string& type_name, const string& type_domain_info );
+
    void user_defined_type_list( ostream& outs ) const;
    void user_defined_type_remove( const string& udt_name );
    void user_defined_type_rename( const string& old_udt_name, const string& new_udt_name );
@@ -1289,6 +1300,7 @@ void model::impl::save( const string& filename )
             writer.write_opt_attribute( c_attribute_field_text_search, c_true );
 
          writer.write_opt_attribute( c_attribute_field_enum_id, ( fci->second ).enum_id );
+         writer.write_opt_attribute( c_attribute_field_enum_filter_id, ( fci->second ).enum_filter_id );
 
          writer.write_opt_attribute( c_attribute_field_extra, ( fci->second ).extra );
          writer.write_opt_attribute( c_attribute_field_default_value, ( fci->second ).default_value );
@@ -1607,6 +1619,7 @@ void model::impl::load( const string& filename )
                fi.for_text_search = true;
 
             fi.enum_id = reader.read_opt_attribute( c_attribute_field_enum_id );
+            fi.enum_filter_id = reader.read_opt_attribute( c_attribute_field_enum_filter_id );
 
             fi.extra = reader.read_opt_attribute( c_attribute_field_extra );
             fi.default_value = reader.read_opt_attribute( c_attribute_field_default_value );
@@ -2086,7 +2099,7 @@ void model::impl::class_rename( const string& old_class_name, const string& new_
 
 void model::impl::field_add( const string& field_id,
  const string& class_name, const string& field_name, const string& field_type,
- bool is_mandatory, bool is_transient, bool for_text_search, const string& enum_name,
+ bool is_mandatory, bool is_transient, bool for_text_search, const string& enum_name, const string& enum_filter,
  const string& extra, const string& default_value, const string& field_class_id, const string& relationship_id )
 {
    class_index_const_iterator cici = classes_index.find( class_name );
@@ -2095,12 +2108,12 @@ void model::impl::field_add( const string& field_id,
 
    field_add_impl( field_id, cici->second, field_name,
     field_type, is_mandatory, is_transient, for_text_search,
-    enum_name, extra, default_value, field_class_id, relationship_id );
+    enum_name, enum_filter, extra, default_value, field_class_id, relationship_id );
 }
 
 void model::impl::field_add_impl( const string& field_id,
  const string& class_id, const string& field_name, const string& field_type,
- bool is_mandatory, bool is_transient, bool for_text_search, const string& enum_name,
+ bool is_mandatory, bool is_transient, bool for_text_search, const string& enum_name, const string& enum_filter,
  const string& extra, const string& default_value, const string& field_class_id, const string& relationship_id )
 {
    class_iterator ci = classes.find( class_id );
@@ -2159,8 +2172,25 @@ void model::impl::field_add_impl( const string& field_id,
          }
       }
 
+      string enum_filter_id;
+      if( !enum_filter.empty( ) )
+      {
+         // NOTE: An enum can either be locally defined or from an externally referenced module.
+         vector< user_defined_enum_data > all_ude_data;
+         get_user_defined_enum_data( all_ude_data, true );
+
+         for( size_t i = 0; i < all_ude_data.size( ); i++ )
+         {
+            if( enum_filter == all_ude_data[ i ].name )
+            {
+               enum_filter_id = all_ude_data[ i ].id;
+               break;
+            }
+         }
+      }
+
       field_info fi( field_name, type, is_mandatory, is_transient,
-       for_text_search, enum_id, extra, default_value, field_class_id, relationship_id );
+       for_text_search, enum_id, enum_filter_id, extra, default_value, field_class_id, relationship_id );
 
       ( ci->second ).fields.insert( field_value_type( field_id, fi ) );
    }
@@ -2817,8 +2847,8 @@ void model::impl::relationship_add( const string& relationship_id,
       throw;
    }
 
-   field_add( field_id, child_class_name,
-    child_field_name, c_relationship_type, is_mandatory, is_transient, false, "", extra, "", parent_id, relationship_id );
+   field_add( field_id, child_class_name, child_field_name, c_relationship_type,
+    is_mandatory, is_transient, false, "", "", extra, "", parent_id, relationship_id );
 }
 
 void model::impl::relationship_list( ostream& outs ) const
@@ -3605,6 +3635,17 @@ void model::impl::setup_fields( vector< field_data >& all_field_data, get_field_
          }
       }
 
+      string enum_filter, enum_filter_id( ( fci->second ).enum_filter_id );
+
+      for( size_t i = 0; i < all_ude_data.size( ); i++ )
+      {
+         if( all_ude_data[ i ].id == enum_filter_id )
+         {
+            enum_filter = all_ude_data[ i ].name;
+            break;
+         }
+      }
+
       string default_value( ( fci->second ).default_value );
 
       string decorated_name( name );
@@ -3648,8 +3689,8 @@ void model::impl::setup_fields( vector< field_data >& all_field_data, get_field_
       if( field_type == e_get_field_type_any
        || ( field_type == e_get_field_type_relationships && is_foreign_key ) )
          all_field_data.push_back( field_data( fci->first, name,
-          type, sys_type, is_mandatory, is_transient, is_foreign_key, for_text_search,
-          is_external_field, enum_name, extra, modifiers, default_value, ( cci->second ).name, decorated_name ) );
+          type, sys_type, is_mandatory, is_transient, is_foreign_key, for_text_search, is_external_field,
+          enum_name, enum_filter, extra, modifiers, default_value, ( cci->second ).name, decorated_name ) );
    }
 }
 
@@ -4207,11 +4248,11 @@ void model::class_rename( const string& old_class_name, const string& new_class_
 
 void model::field_add( const string& field_id,
  const string& class_name, const string& field_name,
- const string& field_type, bool is_mandatory, bool is_transient,
- bool for_text_search, const string& enum_name, const string& extra, const string& default_value )
+ const string& field_type, bool is_mandatory, bool is_transient, bool for_text_search,
+ const string& enum_name, const string& enum_filter, const string& extra, const string& default_value )
 {
-   p_impl->field_add( field_id, class_name,
-    field_name, field_type, is_mandatory, is_transient, for_text_search, enum_name, extra, default_value );
+   p_impl->field_add( field_id, class_name, field_name,
+    field_type, is_mandatory, is_transient, for_text_search, enum_name, enum_filter, extra, default_value );
 }
 
 void model::field_list( const string& class_name, ostream& outs ) const

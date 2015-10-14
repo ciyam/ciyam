@@ -445,6 +445,9 @@ void setup_view_fields( view_source& view,
             if( extra_data.count( c_view_field_extra_modify_datetime ) )
                view.modify_datetime_field = field_id;
 
+            if( extra_data.count( c_view_field_extra_enum_filter ) )
+               view.enum_filter_fields.insert( make_pair( extra_data[ c_view_field_extra_enum_filter ], value_id ) );
+
             if( extra_data.count( c_view_field_extra_key0 ) )
                view.key_ids.id0 = field_id;
             else if( extra_data.count( c_view_field_extra_key1 ) )
@@ -2579,6 +2582,11 @@ bool output_view_form( ostream& os, const string& act,
                   }
                }
 
+               string enum_filter_value;
+               if( source.enum_filter_fields.count( info.id ) )
+                  enum_filter_value = source.field_values.find(
+                   source.enum_filter_fields.find( info.id )->second )->second;
+
                bool found_start = false;
                for( size_t i = 0; i < info.values.size( ); i++ )
                {
@@ -2586,6 +2594,19 @@ bool output_view_form( ostream& os, const string& act,
                   // as they are deemed as being only available for internal application purposes.
                   if( info.values[ i ].first[ 0 ] == '-' )
                      continue;
+
+                  // NOTE: If there is an applicable enum filter then need to check that each value
+                  // should be included in the selection.
+                  if( !enum_filter_value.empty( ) && info.filters.count( info.values[ i ].first ) )
+                  {
+                     string all_filters( info.filters.find( info.values[ i ].first )->second );
+                     set< string > filters;
+
+                     split( all_filters, filters, '|' );
+
+                     if( !filters.count( enum_filter_value ) )
+                        continue;
+                  }
 
                   if( !estart.empty( ) && !found_start )
                   {

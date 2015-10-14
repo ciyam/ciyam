@@ -173,10 +173,10 @@ bool CIYAM_BASE_DECL_SPEC is_local_external_client( const std::string& key );
 
 void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
 
-std::string CIYAM_BASE_DECL_SPEC encrypt_password(
+std::string CIYAM_BASE_DECL_SPEC encrypt_data(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
-std::string CIYAM_BASE_DECL_SPEC decrypt_password(
+std::string CIYAM_BASE_DECL_SPEC decrypt_data(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
 std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
@@ -525,7 +525,7 @@ std::string CIYAM_BASE_DECL_SPEC get_field_values(
  const std::vector< std::string >& field_list, const std::string& tz_name,
  bool is_default = false, bool as_csv = false, std::vector< std::string >* p_raw_values = 0,
  const std::map< int, std::string >* p_inserts = 0, const std::map< std::string, std::string >* p_replace_map = 0,
- const std::vector< std::string >* p_omit_matching = 0 );
+ const std::vector< std::string >* p_omit_matching = 0, bool decrypt_for_blockchain_minter = false );
 
 void CIYAM_BASE_DECL_SPEC set_any_field_ids_to_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields );
@@ -660,6 +660,7 @@ struct transaction_commit_helper
 {
    virtual void at_commit( ) { }
    virtual void after_commit( ) { }
+   virtual void after_rollback( ) { }
 };
 
 std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );

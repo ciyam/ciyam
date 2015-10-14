@@ -217,6 +217,8 @@ struct enum_info
    std::string id;
    std::string name;
 
+   std::map< std::string, std::string > filters;
+
    std::vector< std::pair< std::string, std::string > > values;
 };
 
@@ -731,6 +733,8 @@ struct view_source : source
    std::set< std::string > defcurrent_fields;
    std::set< std::string > self_relationships;
    std::set< std::string > defcurrentyear_fields;
+
+   std::map< std::string, std::string > enum_filter_fields;
 
    rel_data_container parent_lists;
 

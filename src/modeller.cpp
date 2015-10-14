@@ -371,6 +371,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          string type_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_type_name ) );
          bool is_mandatory( has_parm_val( parameters, c_cmd_parm_modeller_field_add_mand ) );
          string enum_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_enum ) );
+         string enum_filter( get_parm_val( parameters, c_cmd_parm_modeller_field_add_enum_filter ) );
          string extra( get_parm_val( parameters, c_cmd_parm_modeller_field_add_extra ) );
          string default_value( get_parm_val( parameters, c_cmd_parm_modeller_field_add_default ) );
          bool is_transient( has_parm_val( parameters, c_cmd_parm_modeller_field_add_transient ) );
@@ -403,7 +404,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             id = unique_id( );
 
          g_model.field_add( id, class_name, field_name, type_name,
-          is_mandatory, is_transient, for_text_search, enum_name, extra, default_value );
+          is_mandatory, is_transient, for_text_search, enum_name, enum_filter, extra, default_value );
       }
       else if( command == c_cmd_modeller_field_list )
       {
@@ -873,6 +874,10 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                   {
                      string::size_type pos = key_data_pairs[ j ].find( '=' );
                      string label = key_data_pairs[ j ].substr( pos + 1 );
+
+                     pos = label.find( '=' );
+                     if( pos != string::npos )
+                        label.erase( pos );
 
                      string label_string( label );
                      replace_char_occurences( label_string, '_', ' ', '\\' );

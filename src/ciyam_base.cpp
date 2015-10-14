@@ -4514,7 +4514,7 @@ string get_pop3_username( )
 
 string get_pop3_password( )
 {
-   return decrypt_password( g_pop3_password );
+   return decrypt_data( g_pop3_password );
 }
 
 string get_pop3_security( )
@@ -4544,7 +4544,7 @@ string get_smtp_username( )
 
 string get_smtp_password( )
 {
-   return decrypt_password( g_smtp_password );
+   return decrypt_data( g_smtp_password );
 }
 
 string get_smtp_security( )
@@ -4594,24 +4594,24 @@ void get_external_client_info( const string& key, external_client& info )
    info = g_external_client_info[ key ];
 }
 
-string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
+string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
 
    if( !no_salt )
       salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
-   return password_encrypt( password, salt, !no_ssl, !no_salt );
+   return data_encrypt( data, salt, !no_ssl, !no_salt );
 }
 
-string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
+string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
 
    if( !no_salt )
       salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
-   return password_decrypt( password, salt, !no_ssl );
+   return data_decrypt( data, salt, !no_ssl );
 }
 
 string totp_secret_key( const string& unique )
@@ -5295,7 +5295,7 @@ bool get_script_reconfig( )
 string get_pem_password( )
 {
    guard g( g_mutex );
-   return decrypt_password( g_pem_password );
+   return decrypt_data( g_pem_password );
 }
 
 string get_sql_password( )
@@ -5310,7 +5310,7 @@ string get_sql_password( )
       if( g_sql_password.empty( ) )
          pwd = "."; // i.e. used to give batch scripts a non-empty password argument
       else
-         pwd = decrypt_password( g_sql_password );
+         pwd = decrypt_data( g_sql_password );
    }
 
    return pwd;
@@ -8341,7 +8341,7 @@ string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  const string& tz_name, bool is_default, bool as_csv, vector< string >* p_raw_values,
  const map< int, string >* p_inserts, const map< string, string >* p_replace_map,
- const vector< string >* p_omit_matching )
+ const vector< string >* p_omit_matching, bool decrypt_for_blockchain_minter )
 {
    string field_values;
    string key_value( instance_key_info( handle, parent_context, true ) );
@@ -8428,8 +8428,8 @@ string get_field_values( size_t handle,
             string type_name = get_field_type_name( handle, context, field, &is_encrypted );
 
             if( is_encrypted
-             && uid_matches_session_mint_account( )
-             && !get_raw_session_variable( c_special_variable_blockchain ).empty( ) )
+             && decrypt_for_blockchain_minter
+             && uid_matches_session_mint_account( ) )
                next_value = decrypt( next_value );
 
             if( type_name == "date_time" || type_name == "tdatetime" )
@@ -10402,7 +10402,10 @@ void transaction_rollback( )
       if( gtp_session->transactions.empty( ) )
       {
          if( gtp_session->p_tx_helper )
+         {
+            gtp_session->p_tx_helper->after_rollback( );
             gtp_session->p_tx_helper = 0;
+         }   
 
          gtp_session->tx_key_info.clear( );
          gtp_session->sql_undo_statements.clear( );

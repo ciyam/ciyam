@@ -89,7 +89,7 @@ const char* const c_field_id_Add_Modules_Automatically = "127128";
 const char* const c_field_id_Allow_Duplicate_Logins = "127108";
 const char* const c_field_id_Allow_Module_Switching = "127109";
 const char* const c_field_id_Auto_Login_Days = "127124";
-const char* const c_field_id_Blockchain = "127135";
+const char* const c_field_id_Blockchain_Id = "127135";
 const char* const c_field_id_Create_Database = "127125";
 const char* const c_field_id_Created_Database = "127126";
 const char* const c_field_id_Default_Image_Height = "127114";
@@ -126,7 +126,7 @@ const char* const c_field_name_Add_Modules_Automatically = "Add_Modules_Automati
 const char* const c_field_name_Allow_Duplicate_Logins = "Allow_Duplicate_Logins";
 const char* const c_field_name_Allow_Module_Switching = "Allow_Module_Switching";
 const char* const c_field_name_Auto_Login_Days = "Auto_Login_Days";
-const char* const c_field_name_Blockchain = "Blockchain";
+const char* const c_field_name_Blockchain_Id = "Blockchain_Id";
 const char* const c_field_name_Create_Database = "Create_Database";
 const char* const c_field_name_Created_Database = "Created_Database";
 const char* const c_field_name_Default_Image_Height = "Default_Image_Height";
@@ -163,7 +163,7 @@ const char* const c_field_display_name_Add_Modules_Automatically = "field_applic
 const char* const c_field_display_name_Allow_Duplicate_Logins = "field_application_allow_duplicate_logins";
 const char* const c_field_display_name_Allow_Module_Switching = "field_application_allow_module_switching";
 const char* const c_field_display_name_Auto_Login_Days = "field_application_auto_login_days";
-const char* const c_field_display_name_Blockchain = "field_application_blockchain";
+const char* const c_field_display_name_Blockchain_Id = "field_application_blockchain_id";
 const char* const c_field_display_name_Create_Database = "field_application_create_database";
 const char* const c_field_display_name_Created_Database = "field_application_created_database";
 const char* const c_field_display_name_Default_Image_Height = "field_application_default_image_height";
@@ -244,7 +244,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Allow_Duplicate_Logins",
    "Allow_Module_Switching",
    "Auto_Login_Days",
-   "Blockchain",
+   "Blockchain_Id",
    "Create_Database",
    "Created_Database",
    "Default_Image_Height",
@@ -326,7 +326,7 @@ const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Traditional = UINT64_C( 0x800 );
 const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x1000 );
 
-domain_string_max_size< 30 > g_Blockchain_domain;
+domain_string_max_size< 30 > g_Blockchain_Id_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Module_Prefix_domain;
@@ -359,7 +359,7 @@ bool g_default_Add_Modules_Automatically = bool( 1 );
 bool g_default_Allow_Duplicate_Logins = bool( 0 );
 bool g_default_Allow_Module_Switching = bool( 1 );
 int g_default_Auto_Login_Days = int( 0 );
-string g_default_Blockchain = string( );
+string g_default_Blockchain_Id = string( );
 bool g_default_Create_Database = bool( 1 );
 bool g_default_Created_Database = bool( 0 );
 int g_default_Default_Image_Height = int( 75 );
@@ -804,10 +804,10 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< int >( cmd_handler.p_Meta_Application->Auto_Login_Days( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Blockchain || field_name == c_field_name_Blockchain )
+      if( !handled && field_name == c_field_id_Blockchain_Id || field_name == c_field_name_Blockchain_Id )
       {
          handled = true;
-         string_getter< string >( cmd_handler.p_Meta_Application->Blockchain( ), cmd_handler.retval );
+         string_getter< string >( cmd_handler.p_Meta_Application->Blockchain_Id( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
@@ -1037,11 +1037,11 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
           *cmd_handler.p_Meta_Application, &Meta_Application::Auto_Login_Days, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Blockchain || field_name == c_field_name_Blockchain )
+      if( !handled && field_name == c_field_id_Blockchain_Id || field_name == c_field_name_Blockchain_Id )
       {
          handled = true;
          func_string_setter< Meta_Application, string >(
-          *cmd_handler.p_Meta_Application, &Meta_Application::Blockchain, field_value );
+          *cmd_handler.p_Meta_Application, &Meta_Application::Blockchain_Id, field_value );
       }
 
       if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
@@ -1350,8 +1350,8 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    int impl_Auto_Login_Days( ) const { return lazy_fetch( p_obj ), v_Auto_Login_Days; }
    void impl_Auto_Login_Days( int Auto_Login_Days ) { v_Auto_Login_Days = Auto_Login_Days; }
 
-   const string& impl_Blockchain( ) const { return lazy_fetch( p_obj ), v_Blockchain; }
-   void impl_Blockchain( const string& Blockchain ) { sanity_check( Blockchain ); v_Blockchain = Blockchain; }
+   const string& impl_Blockchain_Id( ) const { return lazy_fetch( p_obj ), v_Blockchain_Id; }
+   void impl_Blockchain_Id( const string& Blockchain_Id ) { sanity_check( Blockchain_Id ); v_Blockchain_Id = Blockchain_Id; }
 
    bool impl_Create_Database( ) const { return lazy_fetch( p_obj ), v_Create_Database; }
    void impl_Create_Database( bool Create_Database ) { v_Create_Database = Create_Database; }
@@ -1566,7 +1566,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Allow_Duplicate_Logins;
    bool v_Allow_Module_Switching;
    int v_Auto_Login_Days;
-   string v_Blockchain;
+   string v_Blockchain_Id;
    bool v_Create_Database;
    bool v_Created_Database;
    int v_Default_Image_Height;
@@ -1666,8 +1666,8 @@ void Meta_Application::impl::impl_Generate( )
          throw runtime_error( "unexpected error opening '" + modules_list + "' for output" );
 
       // NOTE: Treat the blockchain attribute as a module name.
-      if( !get_obj( ).Blockchain( ).empty( ) )
-         outm << get_obj( ).Blockchain( ) << '\n';
+      if( !get_obj( ).Blockchain_Id( ).empty( ) )
+         outm << get_obj( ).Blockchain_Id( ) << '\n';
 
       ofstream outs( generate_script.c_str( ) );
       if( !outs )
@@ -1801,7 +1801,7 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$reg_key\x60=\x60'" << get_obj( ).Registration_Key( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$use_tls\x60=\x60'" << use_tls << "\x60'\x60}\n";
 
-      outv << "\x60{\x60$blockchain\x60=\x60'" << get_obj( ).Blockchain( ) << "\x60'\x60}\n";
+      outv << "\x60{\x60$blockchain\x60=\x60'" << get_obj( ).Blockchain_Id( ) << "\x60'\x60}\n";
 
       outv << "\x60{\x60$image_width\x60=\x60'" << get_obj( ).Default_Image_Width( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$image_height\x60=\x60'" << get_obj( ).Default_Image_Height( ) << "\x60'\x60}\n";
@@ -2050,8 +2050,8 @@ void Meta_Application::impl::impl_Generate( )
       outss4 << "quit\n";
 
       outupg << "#Starting DB Rebuild...\n";
-      if( !get_obj( ).Keep_Existing_Data( ) && !is_null( get_obj( ).Blockchain( ) ) )
-         outupg << "file_kill -p=c" << get_obj( ).Blockchain( ) << "*\n";
+      if( !get_obj( ).Keep_Existing_Data( ) && !is_null( get_obj( ).Blockchain_Id( ) ) )
+         outupg << "file_kill -p=c" << get_obj( ).Blockchain_Id( ) << "*\n";
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
       outupg << "#Finished DB Rebuild...\n";
       outupg << ".quit\n";
@@ -2063,7 +2063,7 @@ void Meta_Application::impl::impl_Generate( )
          if( !get_obj( ).Keep_Existing_Data( ) )
          {
             outs << "if exist " << get_obj( ).Name( ) << ".log del " << get_obj( ).Name( ) << ".log\n";
-            if( !is_null( get_obj( ).Blockchain( ) ) )
+            if( !is_null( get_obj( ).Blockchain_Id( ) ) )
                outs << "if exist " << get_obj( ).Name( ) << ".txs.log del " << get_obj( ).Name( ) << ".txs.log\n";
             outs << "if exist " << get_obj( ).Name( ) << ".dead_keys.lst del " << get_obj( ).Name( ) << ".dead_keys.lst\n";
          }
@@ -2078,7 +2078,7 @@ void Meta_Application::impl::impl_Generate( )
             outs << " if [ -f " << get_obj( ).Name( ) << ".log ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".log\n";
             outs << " fi\n";
-            if( !is_null( get_obj( ).Blockchain( ) ) )
+            if( !is_null( get_obj( ).Blockchain_Id( ) ) )
             {
                outs << " if [ -f " << get_obj( ).Name( ) << ".txs.log ]; then\n";
                outs << "  rm " << get_obj( ).Name( ) << ".txs.log\n";
@@ -2371,7 +2371,7 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 5:
-      retval = to_string( impl_Blockchain( ) );
+      retval = to_string( impl_Blockchain_Id( ) );
       break;
 
       case 6:
@@ -2526,7 +2526,7 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 5:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Blockchain, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Blockchain_Id, value );
       break;
 
       case 6:
@@ -2681,7 +2681,7 @@ bool Meta_Application::impl::is_field_default( int field ) const
       break;
 
       case 5:
-      retval = ( v_Blockchain == g_default_Blockchain );
+      retval = ( v_Blockchain_Id == g_default_Blockchain_Id );
       break;
 
       case 6:
@@ -2907,7 +2907,7 @@ void Meta_Application::impl::clear( )
    v_Allow_Duplicate_Logins = g_default_Allow_Duplicate_Logins;
    v_Allow_Module_Switching = g_default_Allow_Module_Switching;
    v_Auto_Login_Days = g_default_Auto_Login_Days;
-   v_Blockchain = g_default_Blockchain;
+   v_Blockchain_Id = g_default_Blockchain_Id;
    v_Create_Database = g_default_Create_Database;
    v_Created_Database = g_default_Created_Database;
    v_Default_Image_Height = g_default_Default_Image_Height;
@@ -2977,12 +2977,12 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
 
    string error_message;
-   if( !is_null( v_Blockchain )
-    && ( v_Blockchain != g_default_Blockchain
-    || !value_will_be_provided( c_field_name_Blockchain ) )
-    && !g_Blockchain_domain.is_valid( v_Blockchain, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
-       get_module_string( c_field_display_name_Blockchain ) + " " + error_message ) );
+   if( !is_null( v_Blockchain_Id )
+    && ( v_Blockchain_Id != g_default_Blockchain_Id
+    || !value_will_be_provided( c_field_name_Blockchain_Id ) )
+    && !g_Blockchain_Id_domain.is_valid( v_Blockchain_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain_Id,
+       get_module_string( c_field_display_name_Blockchain_Id ) + " " + error_message ) );
 
    if( !is_null( v_Module_Prefix )
     && ( v_Module_Prefix != g_default_Module_Prefix
@@ -3058,10 +3058,10 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
    // [(start check_cond_non_null)] 600530
-   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
+   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain ) ) ) ) );
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain_Id ) ) ) ) );
    // [(finish check_cond_non_null)] 600530
 
    // [<start validate>]
@@ -3077,11 +3077,11 @@ void Meta_Application::impl::validate_set_fields( set< string >& fields_set, val
 
    string error_message;
 
-   if( !is_null( v_Blockchain )
-    && ( fields_set.count( c_field_id_Blockchain ) || fields_set.count( c_field_name_Blockchain ) )
-    && !g_Blockchain_domain.is_valid( v_Blockchain, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain,
-       get_module_string( c_field_display_name_Blockchain ) + " " + error_message ) );
+   if( !is_null( v_Blockchain_Id )
+    && ( fields_set.count( c_field_id_Blockchain_Id ) || fields_set.count( c_field_name_Blockchain_Id ) )
+    && !g_Blockchain_Id_domain.is_valid( v_Blockchain_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain_Id,
+       get_module_string( c_field_display_name_Blockchain_Id ) + " " + error_message ) );
 
    if( !is_null( v_Module_Prefix )
     && ( fields_set.count( c_field_id_Module_Prefix ) || fields_set.count( c_field_name_Module_Prefix ) )
@@ -3473,14 +3473,14 @@ void Meta_Application::Auto_Login_Days( int Auto_Login_Days )
    p_impl->impl_Auto_Login_Days( Auto_Login_Days );
 }
 
-const string& Meta_Application::Blockchain( ) const
+const string& Meta_Application::Blockchain_Id( ) const
 {
-   return p_impl->impl_Blockchain( );
+   return p_impl->impl_Blockchain_Id( );
 }
 
-void Meta_Application::Blockchain( const string& Blockchain )
+void Meta_Application::Blockchain_Id( const string& Blockchain_Id )
 {
-   p_impl->impl_Blockchain( Blockchain );
+   p_impl->impl_Blockchain_Id( Blockchain_Id );
 }
 
 bool Meta_Application::Create_Database( ) const
@@ -4029,9 +4029,9 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Blockchain )
+   else if( name == c_field_name_Blockchain_Id )
    {
-      p_id = c_field_id_Blockchain;
+      p_id = c_field_id_Blockchain_Id;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -4400,9 +4400,9 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Blockchain )
+   else if( id == c_field_id_Blockchain_Id )
    {
-      p_name = c_field_name_Blockchain;
+      p_name = c_field_name_Blockchain_Id;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -4769,10 +4769,10 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Auto_Login_Days );
       get_module_string( c_field_display_name_Auto_Login_Days, &next );
    }
-   else if( id_or_name == c_field_id_Blockchain || id_or_name == c_field_name_Blockchain )
+   else if( id_or_name == c_field_id_Blockchain_Id || id_or_name == c_field_name_Blockchain_Id )
    {
-      name = string( c_field_display_name_Blockchain );
-      get_module_string( c_field_display_name_Blockchain, &next );
+      name = string( c_field_display_name_Blockchain_Id );
+      get_module_string( c_field_display_name_Blockchain_Id, &next );
    }
    else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
    {
@@ -4949,8 +4949,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Allow_Module_Switching );
    else if( id_or_name == c_field_id_Auto_Login_Days || id_or_name == c_field_name_Auto_Login_Days )
       display_name = get_module_string( c_field_display_name_Auto_Login_Days );
-   else if( id_or_name == c_field_id_Blockchain || id_or_name == c_field_name_Blockchain )
-      display_name = get_module_string( c_field_display_name_Blockchain );
+   else if( id_or_name == c_field_id_Blockchain_Id || id_or_name == c_field_name_Blockchain_Id )
+      display_name = get_module_string( c_field_display_name_Blockchain_Id );
    else if( id_or_name == c_field_id_Create_Database || id_or_name == c_field_name_Create_Database )
       display_name = get_module_string( c_field_display_name_Create_Database );
    else if( id_or_name == c_field_id_Created_Database || id_or_name == c_field_name_Created_Database )
@@ -5250,7 +5250,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Allow_Duplicate_Logins" );
    names.push_back( "C_Allow_Module_Switching" );
    names.push_back( "C_Auto_Login_Days" );
-   names.push_back( "C_Blockchain" );
+   names.push_back( "C_Blockchain_Id" );
    names.push_back( "C_Created_Database" );
    names.push_back( "C_Default_Image_Height" );
    names.push_back( "C_Default_Image_Width" );
@@ -5294,7 +5294,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Allow_Duplicate_Logins( ) ) );
    values.push_back( to_string( Allow_Module_Switching( ) ) );
    values.push_back( to_string( Auto_Login_Days( ) ) );
-   values.push_back( sql_quote( to_string( Blockchain( ) ) ) );
+   values.push_back( sql_quote( to_string( Blockchain_Id( ) ) ) );
    values.push_back( to_string( Created_Database( ) ) );
    values.push_back( to_string( Default_Image_Height( ) ) );
    values.push_back( to_string( Default_Image_Width( ) ) );
@@ -5419,7 +5419,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127108", "Allow_Duplicate_Logins", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127109", "Allow_Module_Switching", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127124", "Auto_Login_Days", "int", false, "", "" ) );
-   all_field_info.push_back( field_info( "127135", "Blockchain", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127135", "Blockchain_Id", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "127125", "Create_Database", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127126", "Created_Database", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "127114", "Default_Image_Height", "int", false, "", "" ) );
@@ -5661,7 +5661,7 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 6:
-      p_id = "Blockchain";
+      p_id = "Blockchain_Id";
       break;
 
       case 7:
@@ -5807,7 +5807,7 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 4;
    else if( field == c_field_id_Auto_Login_Days || field == c_field_name_Auto_Login_Days )
       rc += 5;
-   else if( field == c_field_id_Blockchain || field == c_field_name_Blockchain )
+   else if( field == c_field_id_Blockchain_Id || field == c_field_name_Blockchain_Id )
       rc += 6;
    else if( field == c_field_id_Create_Database || field == c_field_name_Create_Database )
       rc += 7;
@@ -5905,7 +5905,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Allow_Duplicate_Logins INTEGER NOT NULL,"
     "C_Allow_Module_Switching INTEGER NOT NULL,"
     "C_Auto_Login_Days INTEGER NOT NULL,"
-    "C_Blockchain VARCHAR(200) NOT NULL,"
+    "C_Blockchain_Id VARCHAR(200) NOT NULL,"
     "C_Created_Database INTEGER NOT NULL,"
     "C_Default_Image_Height INTEGER NOT NULL,"
     "C_Default_Image_Width INTEGER NOT NULL,"

@@ -579,6 +579,27 @@ struct blockchain_transaction_commit_helper : public transaction_commit_helper
       ap_guard.reset( );
    }
 
+   void after_rollback( )
+   {
+      if( p_file_info )
+      {
+         // NOTE: Remove any files that had been imported into the files area.
+         for( size_t i = 0; i < p_file_info->size( ); i++ )
+         {
+            string next( ( *p_file_info )[ i ] );
+
+            vector< string > parts;
+            split( next, parts, ' ' );
+
+            if( parts.size( ) > 1 )
+            {
+               if( has_file( parts[ 1 ] ) )
+                  delete_file( parts[ 1 ] );
+            }
+         }
+      }
+   }
+
    auto_ptr< guard > ap_guard;
 
    string tx_hash;
@@ -2888,10 +2909,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      else
                         method_name_and_args = string( "set " );
 
-                     method_name_and_args += i->first + " ";
-                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+                     if( blockchain.empty( ) || !is_encrypted
+                      || value.empty( ) != i->second.empty( ) || decrypt( value ) != decrypt( i->second ) )
+                     {
+                        method_name_and_args += i->first + " ";
+                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
-                     execute_object_command( handle, "", method_name_and_args );
+                        execute_object_command( handle, "", method_name_and_args );
+                     }
 
                      fields_set.insert( i->first );
 
@@ -4745,7 +4770,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool no_salt( has_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_no_salt ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_password ) );
 
-         response = encrypt_password( password, no_ssl, no_salt );
+         response = encrypt_data( password, no_ssl, no_salt );
       }
       else if( command == c_cmd_ciyam_session_password )
       {

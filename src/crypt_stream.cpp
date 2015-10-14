@@ -209,7 +209,7 @@ string get_totp_secret( const string& user_unique, const string& system_unique )
    return base32::encode( sha256( user_unique + system_unique ).get_digest_as_string( ).substr( 0, 20 ) );
 }
 
-string password_decrypt( const string& dat, const string& key, bool use_ssl )
+string data_decrypt( const string& dat, const string& key, bool use_ssl )
 {
    string s;
    if( dat.empty( ) )
@@ -274,7 +274,7 @@ string password_decrypt( const string& dat, const string& key, bool use_ssl )
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
 }
 
-string password_encrypt( const string& dat, const string& key, bool use_ssl, bool add_salt )
+string data_encrypt( const string& dat, const string& key, bool use_ssl, bool add_salt )
 {
    string s( dat );
    if( dat.empty( ) )
