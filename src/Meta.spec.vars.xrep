@@ -25,7 +25,7 @@
 `{`$enum_field_action_create_type`=`'0=standard 1=confirmation 2=edit_and_save`'`}
 `{`$enum_field_action_type`=`'0=create_record 1=procedure_call`'`}
 `{`$enum_field_alignment`=`'0=default 1=left 2=right 3=center 4=justify`'`}
-`{`$enum_field_extra`=`'0=none 1=file=str 2=href=str 9=html=str 23=text=str 4=notes=str 5=order=str 6=active=bln 3=image=str 7=mailto=str 21=file_link=str 8=actions=str 29=qr_code=str 22=filename=str 10=password=str 25=encrypted 11=defcurrent=dtm|dte|tme 17=permission=str 24=orientation=int 26=hpassword=str 13=manual_link=str 12=user_perms=str 14=current_year=int 18=security_level=str 27=hpassword_salt=str 15=create_datetime=dtm 16=modify_datetime=dtm 28=is_effective_owner=str 19=replace_underbars=str 20=enforce_uppercase=str -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
+`{`$enum_field_extra`=`'0=none 1=file=str 2=href=str 9=html=str 23=text=str 4=notes=str 5=order=str 6=active=bln 3=image=str 7=mailto=str 21=file_link=str 8=actions=str 29=qr_code=str 22=filename=str 10=password=str 25=not_in_use 11=defcurrent=dtm|dte|tme 17=permission=str 24=orientation=int 26=hpassword=str 13=manual_link=str 12=user_perms=str 14=current_year=int 18=security_level=str 27=hpassword_salt=str 15=create_datetime=dtm 16=modify_datetime=dtm 28=is_effective_owner=bln 19=replace_underbars=str 20=enforce_uppercase=str -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
 `{`$enum_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 31=Any_Math_Type 39=Any_Non_Text_Type 40=Date_Or_Time 41=Calendar_Type 45=Any_Date_Or_Time_Type 49=Any_Primitive 50=Any_Relationship 51=Self_Relationship 52=Non_Self_Relationship 99=Any_Type`'`}
 `{`$enum_font_size`=`'0=default 1=large 2=larger 5=small 6=smaller`'`}
 `{`$enum_fraction_limit`=`'0=none 2=halves 4=quarters`'`}
@@ -730,7 +730,7 @@
 `{`$specification_Field_view_name`=`'Field`'`}
 `{`$specification_Field_view_type`=`'standard`'`}
 `{`$specification_Field_view_extra`=`'`'`}
-`{`$specification_Field_view_mods`=`'8000:lowlight1,1000:lowlight`'`}
+`{`$specification_Field_view_mods`=`'10000:lowlight1,2000:lowlight`'`}
 `{`$specification_Field_view_binfo`=`'`'`}
 `{`$specification_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025`'`}
 `{`$specification_Field_view_field000`=`'300700`'`}
@@ -820,19 +820,19 @@
 `{`$specification_Field_view_field011`=`'107104`'`}
 `{`$specification_Field_view_ftype011`=`'int`'`}
 `{`$specification_Field_view_extra011`=`'force+enum=535`'`}
-`{`$specification_Field_view_fmods011`=`'10000:relegate,80000:relegate,20000:relegate,100000:relegate,40000:relegate`'`}
+`{`$specification_Field_view_fmods011`=`'20000:relegate,100000:relegate,40000:relegate,200000:relegate,80000:relegate`'`}
 `{`$specification_Field_view_fname011`=`'field_field_uom`'`}
 `{`$specification_Field_view_fmand011`=`'true`'`}
 `{`$specification_Field_view_field012`=`'107116`'`}
 `{`$specification_Field_view_ftype012`=`'string`'`}
 `{`$specification_Field_view_extra012`=`'max_size=100`'`}
-`{`$specification_Field_view_fmods012`=`'2000:relegate`'`}
+`{`$specification_Field_view_fmods012`=`'4000:relegate`'`}
 `{`$specification_Field_view_fname012`=`'field_field_uom_name`'`}
 `{`$specification_Field_view_fmand012`=`'false`'`}
 `{`$specification_Field_view_field013`=`'107117`'`}
 `{`$specification_Field_view_ftype013`=`'string`'`}
 `{`$specification_Field_view_extra013`=`'max_size=10`'`}
-`{`$specification_Field_view_fmods013`=`'2000:relegate`'`}
+`{`$specification_Field_view_fmods013`=`'4000:relegate`'`}
 `{`$specification_Field_view_fname013`=`'field_field_uom_symbol`'`}
 `{`$specification_Field_view_fmand013`=`'false`'`}
 `{`$specification_Field_view_field014`=`'300720`'`}
@@ -850,7 +850,7 @@
 `{`$specification_Field_view_field015`=`'300725`'`}
 `{`$specification_Field_view_ftype015`=`'@class`'`}
 `{`$specification_Field_view_extra015`=`'link`'`}
-`{`$specification_Field_view_fmods015`=`'4000:relegate`'`}
+`{`$specification_Field_view_fmods015`=`'8000:relegate`'`}
 `{`$specification_Field_view_fname015`=`'field_field_enum_filter`'`}
 `{`$specification_Field_view_fmand015`=`'false`'`}
 `{`$specification_Field_view_prcls015`=`'103100`'`}
@@ -861,14 +861,14 @@
 `{`$specification_Field_view_pridx015`=`'false`'`}
 `{`$specification_Field_view_field016`=`'107125`'`}
 `{`$specification_Field_view_ftype016`=`'bool`'`}
-`{`$specification_Field_view_extra016`=`'`'`}
-`{`$specification_Field_view_fmods016`=`'100:relegate,4000:relegate`'`}
+`{`$specification_Field_view_extra016`=`'force`'`}
+`{`$specification_Field_view_fmods016`=`'100:relegate,8000:relegate`'`}
 `{`$specification_Field_view_fname016`=`'field_field_encrypted`'`}
 `{`$specification_Field_view_fmand016`=`'true`'`}
 `{`$specification_Field_view_field017`=`'107111`'`}
 `{`$specification_Field_view_ftype017`=`'bool`'`}
 `{`$specification_Field_view_extra017`=`'`'`}
-`{`$specification_Field_view_fmods017`=`'800:relegate,8000:relegate`'`}
+`{`$specification_Field_view_fmods017`=`'800:relegate,1000:relegate,10000:relegate`'`}
 `{`$specification_Field_view_fname017`=`'field_field_use_in_text_search`'`}
 `{`$specification_Field_view_fmand017`=`'true`'`}
 `{`$specification_Field_view_field018`=`'107119`'`}
@@ -937,7 +937,7 @@
 `{`$specification_Field_child_list0_name`=`'@601720_Fields`'`}
 `{`$specification_Field_child_list0_type`=`'child`'`}
 `{`$specification_Field_child_list0_acts`=`'`'`}
-`{`$specification_Field_child_list0_mods`=`'8000:lowlight1,1000:lowlight`'`}
+`{`$specification_Field_child_list0_mods`=`'10000:lowlight1,2000:lowlight`'`}
 `{`$specification_Field_child_list0_extra`=`'no_limit`'`}
 `{`$specification_Field_child_list0_order`=`'forward`'`}
 `{`$specification_Field_child_list0_binfo`=`'`'`}
@@ -5530,7 +5530,7 @@
 `{`$specification_User_view_fmand001`=`'true`'`}
 `{`$specification_User_view_field002`=`'100103`'`}
 `{`$specification_User_view_ftype002`=`'string`'`}
-`{`$specification_User_view_extra002`=`'hpassword+max_size=200`'`}
+`{`$specification_User_view_extra002`=`'hpassword+encrypted+max_size=200`'`}
 `{`$specification_User_view_fmods002`=`'`'`}
 `{`$specification_User_view_fname002`=`'field_user_password`'`}
 `{`$specification_User_view_fmand002`=`'true`'`}

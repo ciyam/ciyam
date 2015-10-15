@@ -2527,7 +2527,7 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
-      else if( view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
+      else if( view.encrypted_fields.count( field_id ) )
       {
          if( !next.empty( ) )
          {

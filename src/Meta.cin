@@ -18,9 +18,9 @@ user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_gro
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
 user_defined_enum_add -id=522 field_alignment int 0=default,1=left,2=right,3=center,4=justify
 user_defined_enum_add -id=530 field_extra int 0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln\
-,3=image=str,7=mailto=str,21=file\\_link=str,8=actions=str,29=qr\\_code=str,22=filename=str,10=password=str,25=encrypted,11=defcurrent=dtm|dte|tme\
+,3=image=str,7=mailto=str,21=file\\_link=str,8=actions=str,29=qr\\_code=str,22=filename=str,10=password=str,25=not\\_in\\_use,11=defcurrent=dtm|dte|tme\
 ,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\\_link=str,12=user\\_perms=str,14=current\\_year=int,18=security\\_level=str\
-,27=hpassword\\_salt=str,15=create\\_datetime=dtm,16=modify\\_datetime=dtm,28=is\\_effective\\_owner=str,19=replace\\_underbars=str,20=enforce\\_uppercase=str\
+,27=hpassword\\_salt=str,15=create\\_datetime=dtm,16=modify\\_datetime=dtm,28=is\\_effective\\_owner=bln,19=replace\\_underbars=str,20=enforce\\_uppercase=str\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key
 user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg,900=number,901=dollars,902=percent,999=customised
 user_defined_enum_add -id=540 modifier_affect_scope int 0=field,1=class
@@ -111,7 +111,7 @@ user_defined_type_add -id=1060 year_created int "range 2005 2020"
 class_add -id=100100 User Users
 field_add -id=100101 User User_Id str30 mand -x=hpassword_salt
 field_add -id=100102 User Active bool mand -def=1
-field_add -id=100103 User Password str200 mand -x=hpassword
+field_add -id=100103 User Password str200 mand -x=hpassword+encrypted
 field_add -id=100104 User Description str100 mand
 field_add -id=100105 User Email string opt -x=mailto
 field_add -id=100106 User Permissions string opt
@@ -282,6 +282,7 @@ modifier_add -id=107311d Field Is_Type_datetime UOM:relegate
 modifier_add -id=107312 Field Is_Non_Custom_UOM UOM_Name:relegate,UOM_Symbol:relegate
 modifier_add -id=107313 Field Has_Enum Encrypted:relegate
 modifier_add -id=107314 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
+modifier_add -id=107315 Field Is_Encrypted Use_In_Text_Search:relegate
 modifier_add -id=107320 Field Is_Transient Use_In_Text_Search:relegate,@class:lowlight1
 procedure_add -id=107410 Field Get_Text_Type
 procedure_arg_add -id=107411 Field Get_Text_Type Result int out
@@ -754,7 +755,7 @@ field_add -id=127132 Application Registration_Key str100 opt
 field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 field_add -id=127135 Application Blockchain_Id str30 opt
-field_add -id=127136 Application Type bool mand -def=1 -e=app_type
+field_add -id=127136 Application Type bool mand -def=0 -e=app_type
 modifier_add -id=127310 Application Is_Traditional Blockchain_Id:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\
 ,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate,Registration_Key:relegate
@@ -1387,6 +1388,7 @@ specification_add -id=650050 {Field}_Is_Type_datetime modifier_field_value "Fiel
 specification_add -id=660050 {Field}_Is_Type_string modifier_field_value "Field Is_Type_string {Type}:Primitive string -enum=primitive"
 specification_add -id=670050 {Field}_Is_Not_Type_string modifier_field_value "Field Is_Not_Type_string {Type}:Primitive string -enum=primitive -not_equal"
 specification_add -id=680050 {Field}_Has_Enum modifier_field_null "Field Has_Enum {Enum} -negative"
+specification_add -id=690050 {Field}_Is_Encrypted modifier_field_value "Field Is_Encrypted Encrypted true"
 specification_add -id=600051 {Field}_Internal_protect state_protect "equal Field Internal true"
 specification_add -id=600052 {Field}_Is_Internal modifier_field_value "Field Is_Internal Internal true"
 specification_add -id=600052a {Field}_Hide_Create_View_Field modifier_field_null "Field Hide_Create_View_Field {Class}:Created_View"
@@ -1912,6 +1914,8 @@ specification_add -id=600499a {List_Field}_Is_Non_Instance_Procedure modifier_fi
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
+specification_add -id=600525 {Application}_Is_Traditional modifier_field_value "Application Is_Traditional Type 1"
+specification_add -id=600526 {Application}_Is_Non_Traditional modifier_field_value "Application Is_Non_Traditional Type 0"
 specification_add -id=600530 {Application}_Blockchain_Id_non_null check_cond_non_null "Application Blockchain_Id Type -negative"
 specification_add -id=600600 {Initial_Record}_copy_{Class}_{Field}_children copy_child_links_from_fk\
  "Initial_Record Initial_Record_Value Class Field Value-Default -child_field={Field} -combine_keys"
@@ -2003,7 +2007,7 @@ specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no
 ,Id;no_edit+non_new,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
 ,Primitive;hidden+key1,Extra_Filter;hidden,Parent_Class:Name;no_edit+link,Extra,UOM;force,UOM_Name,UOM_Symbol\
 ,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link,{Enum}_Filter:Name!@group:{Workgroup};link\
-,Encrypted,Use_In_Text_Search,Create_View_Field;new_only,Create_List_Field;new_only\
+,Encrypted;force,Use_In_Text_Search,Create_View_Field;new_only,Create_List_Field;new_only\
 ,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\

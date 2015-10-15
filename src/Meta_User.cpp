@@ -141,18 +141,16 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_encrypted_fields = 2;
+const int c_num_encrypted_fields = 1;
 
 const char* const c_encrypted_sorted_field_ids[ ] =
 {
-   "100101",
    "100103"
 };
 
 const char* const c_encrypted_sorted_field_names[ ] =
 {
-   "Password",
-   "User_Id"
+   "Password"
 };
 
 inline bool is_encrypted_field( const string& field )
