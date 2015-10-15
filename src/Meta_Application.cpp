@@ -382,7 +382,7 @@ bool g_default_Print_Lists_With_Check_Boxes = bool( 0 );
 bool g_default_Print_Lists_With_Row_Numbers = bool( 0 );
 string g_default_Registration_Key = string( );
 bool g_default_Show_Inaccessible_Modules = bool( 0 );
-bool g_default_Type = bool( 1 );
+bool g_default_Type = bool( 0 );
 bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool g_default_Use_Embedded_Images = bool( 0 );
 bool g_default_Use_TLS_Sessions = bool( 0 );
@@ -2825,6 +2825,16 @@ uint64_t Meta_Application::impl::get_state( ) const
       state |= c_modifier_Is_Not_Full_Generate;
    // [(finish modifier_field_value)] 600520
 
+   // [(start modifier_field_value)] 600525
+   if( get_obj( ).Type( ) == 1 )
+      state |= c_modifier_Is_Traditional;
+   // [(finish modifier_field_value)] 600525
+
+   // [(start modifier_field_value)] 600526
+   if( get_obj( ).Type( ) == 0 )
+      state |= c_modifier_Is_Non_Traditional;
+   // [(finish modifier_field_value)] 600526
+
    // [<start get_state>]
 //nyi
    if( !get_obj( ).get_clone_key( ).empty( )
@@ -2833,11 +2843,6 @@ uint64_t Meta_Application::impl::get_state( ) const
 
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
-
-   if( get_obj( ).Type( ) )
-      state |= c_modifier_Is_Traditional;
-   else
-      state |= c_modifier_Is_Non_Traditional;
    // [<finish get_state>]
 
    return state;
@@ -3129,9 +3134,6 @@ void Meta_Application::impl::after_fetch( )
    // [(finish transient_field_from_file)] 600510
 
    // [<start after_fetch>]
-//nyi
-   if( get_obj( ).get_key( ).empty( ) )
-      get_obj( ).Type( 0 );
    // [<finish after_fetch>]
 }
 
@@ -5362,6 +5364,22 @@ void Meta_Application::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Generate_Type ) ) )
       names.insert( "Generate_Type" );
    // [(finish modifier_field_value)] 600520
+
+   // [(start modifier_field_value)] 600525
+   dependents.insert( "Type" ); // (for Is_Traditional modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 600525
+
+   // [(start modifier_field_value)] 600526
+   dependents.insert( "Type" ); // (for Is_Non_Traditional modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)] 600526
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -1209,9 +1209,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
 
                   string enum_name( all_field_data[ i ].enum_name );
 
-                  if( all_field_data[ i ].extra.find( "password" ) != string::npos
-                   || all_field_data[ i ].extra.find( "encrypted" ) != string::npos
-                   || all_field_data[ i ].extra.find( "hpassword" ) != string::npos )
+                  if( all_field_data[ i ].extra.find( "encrypted" ) != string::npos )
                      encrypted_fields.push_back( field_id + "," + field_name );
 
                   if( all_field_data[ i ].is_transient )

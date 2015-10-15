@@ -25,6 +25,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600525
+      <item>class
+     </specification>
+     <specification/>
+      <id>600526
+      <item>class
+     </specification>
+     <specification/>
       <id>600530
       <item>class
      </specification>
@@ -592,12 +600,20 @@
       <type>bool
       <mandatory>true
       <enum_id>907
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600525
+        <item>field
+       </specification>
+       <specification/>
+        <id>600526
+        <item>field
+       </specification>
        <specification/>
         <id>600530
         <item>cfield
@@ -3005,6 +3021,10 @@
       <id>680050
       <item>class
      </specification>
+     <specification/>
+      <id>690050
+      <item>class
+     </specification>
     </specifications>
     <fields/>
      <field/>
@@ -3279,6 +3299,10 @@
       <specifications/>
        <specification/>
         <id>601710
+        <item>field
+       </specification>
+       <specification/>
+        <id>690050
         <item>field
        </specification>
       </specifications>
@@ -4141,6 +4165,10 @@
         <affect>relegate
        </modifier>
        <modifier/>
+        <id>107315
+        <affect>relegate
+       </modifier>
+       <modifier/>
         <id>107320
         <affect>relegate
        </modifier>
@@ -4381,6 +4409,10 @@
      <modifier/>
       <id>107314
       <name>Is_Any_Non_Text_Type
+     </modifier>
+     <modifier/>
+      <id>107315
+      <name>Is_Encrypted
      </modifier>
      <modifier/>
       <id>500400
@@ -24843,7 +24875,7 @@
       <name>Password
       <type>1025
       <mandatory>true
-      <extra>hpassword
+      <extra>hpassword+encrypted
       <indexes/>
       </indexes>
       <modifiers/>
@@ -29254,6 +29286,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600526
+    <name>{Application}_Is_Non_Traditional
+    <type>modifier_field_value
+    <data/>
+     <class_id>127100
+     <modifier_id>127311
+     <field_id>127136
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
     <id>600520
     <name>{Application}_Is_Not_Full_Generate
     <type>modifier_field_value
@@ -29263,6 +29306,17 @@
      <field_id>127120
      <field_value>0
      <not_equal>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600525
+    <name>{Application}_Is_Traditional
+    <type>modifier_field_value
+    <data/>
+     <class_id>127100
+     <modifier_id>127310
+     <field_id>127136
+     <field_value>1
     </data>
    </specification>
    <specification/>
@@ -30060,6 +30114,17 @@
     </data>
    </specification>
    <specification/>
+    <id>690050
+    <name>{Field}_Is_Encrypted
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <modifier_id>107315
+     <field_id>107125
+     <field_value>true
+    </data>
+   </specification>
+   <specification/>
     <id>600054
     <name>{Field}_Is_Foreign_Key_from_other_field
     <type>field_from_other_field
@@ -30366,7 +30431,7 @@
      <field_info>107117
      <field_info>300720:103101!@group:300300+@key1:103102;link
      <field_info>300725:103101!@group:300300;link
-     <field_info>107125
+     <field_info>107125;force
      <field_info>107111
      <field_info>107119;new_only
      <field_info>107120;new_only
@@ -37472,7 +37537,7 @@
     <id>530
     <name>field_extra
     <type>int
-    <key_values>0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln,3=image=str,7=mailto=str,21=file\_link=str,8=actions=str,29=qr\_code=str,22=filename=str,10=password=str,25=encrypted,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\_link=str,12=user\_perms=str,14=current\_year=int,18=security\_level=str,27=hpassword\_salt=str,15=create\_datetime=dtm,16=modify\_datetime=dtm,28=is\_effective\_owner=str,19=replace\_underbars=str,20=enforce\_uppercase=str,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
+    <key_values>0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln,3=image=str,7=mailto=str,21=file\_link=str,8=actions=str,29=qr\_code=str,22=filename=str,10=password=str,25=not\_in\_use,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\_link=str,12=user\_perms=str,14=current\_year=int,18=security\_level=str,27=hpassword\_salt=str,15=create\_datetime=dtm,16=modify\_datetime=dtm,28=is\_effective\_owner=bln,19=replace\_underbars=str,20=enforce\_uppercase=str,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
    </user_defined_enum>
    <user_defined_enum/>
     <id>600

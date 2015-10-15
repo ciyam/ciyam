@@ -379,15 +379,16 @@ const uint64_t c_modifier_Has_Enum = UINT64_C( 0x100 );
 const uint64_t c_modifier_Hide_Create_List_Field = UINT64_C( 0x200 );
 const uint64_t c_modifier_Hide_Create_View_Field = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x800 );
-const uint64_t c_modifier_Is_Internal = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Not_Type_string = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Is_Transient = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Is_Type_date = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Is_Type_datetime = UINT64_C( 0x40000 );
-const uint64_t c_modifier_Is_Type_string = UINT64_C( 0x80000 );
-const uint64_t c_modifier_Is_Type_time = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Is_Encrypted = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Internal = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Not_Type_string = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Is_Transient = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Type_date = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Is_Type_datetime = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Is_Type_string = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Is_Type_time = UINT64_C( 0x200000 );
 
 domain_string_max_size< 200 > g_Default_domain;
 aggregate_domain< string,
@@ -587,7 +588,7 @@ const int c_enum_field_extra_actions( 8 );
 const int c_enum_field_extra_qr_code( 29 );
 const int c_enum_field_extra_filename( 22 );
 const int c_enum_field_extra_password( 10 );
-const int c_enum_field_extra_encrypted( 25 );
+const int c_enum_field_extra_not_in_use( 25 );
 const int c_enum_field_extra_defcurrent( 11 );
 const int c_enum_field_extra_permission( 17 );
 const int c_enum_field_extra_orientation( 24 );
@@ -645,7 +646,7 @@ string get_enum_string_field_extra( int val )
    else if( to_string( val ) == to_string( "10" ) )
       string_name = "enum_field_extra_password";
    else if( to_string( val ) == to_string( "25" ) )
-      string_name = "enum_field_extra_encrypted";
+      string_name = "enum_field_extra_not_in_use";
    else if( to_string( val ) == to_string( "11" ) )
       string_name = "enum_field_extra_defcurrent";
    else if( to_string( val ) == to_string( "17" ) )
@@ -3380,6 +3381,11 @@ uint64_t Meta_Field::impl::get_state( ) const
    if( !is_null( get_obj( ).Enum( ) ) )
       state |= c_modifier_Has_Enum;
    // [(finish modifier_field_null)] 680050
+
+   // [(start modifier_field_value)] 690050
+   if( get_obj( ).Encrypted( ) == true )
+      state |= c_modifier_Is_Encrypted;
+   // [(finish modifier_field_value)] 690050
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -7492,6 +7498,14 @@ void Meta_Field::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Enum ) ) )
       names.insert( "Enum" );
    // [(finish modifier_field_null)] 680050
+
+   // [(start modifier_field_value)] 690050
+   dependents.insert( "Encrypted" ); // (for Is_Encrypted modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Encrypted ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Encrypted ) ) )
+      names.insert( "Encrypted" );
+   // [(finish modifier_field_value)] 690050
 
    // [<start get_always_required_field_names>]
 //nyi

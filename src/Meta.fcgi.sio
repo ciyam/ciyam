@@ -599,7 +599,7 @@
     </value>
     <value/>
      <data>25
-     <name>enum_field_extra_encrypted
+     <name>enum_field_extra_not_in_use
     </value>
     <value/>
      <data>11
@@ -659,7 +659,7 @@
     <value/>
      <data>28
      <name>enum_field_extra_is_effective_owner
-     <filter>str
+     <filter>bln
     </value>
     <value/>
      <data>19
@@ -3045,7 +3045,7 @@
    <name>601710_name
    <type>standard
    <extra>
-   <modifiers>8000:lowlight1,1000:lowlight
+   <modifiers>10000:lowlight1,2000:lowlight
    <class>Field
    <bclass>
    <module>Meta
@@ -3156,7 +3156,7 @@
      <ftype>int
      <extra>force+enum=535
      <mandatory>true
-     <modifiers>10000:relegate,80000:relegate,20000:relegate,100000:relegate,40000:relegate
+     <modifiers>20000:relegate,100000:relegate,40000:relegate,200000:relegate,80000:relegate
     </field>
     <field/>
      <name>field_field_uom_name
@@ -3164,7 +3164,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>2000:relegate
+     <modifiers>4000:relegate
     </field>
     <field/>
      <name>field_field_uom_symbol
@@ -3172,7 +3172,7 @@
      <ftype>string
      <extra>max_size=10
      <mandatory>false
-     <modifiers>2000:relegate
+     <modifiers>4000:relegate
     </field>
     <field/>
      <name>field_field_enum
@@ -3192,7 +3192,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>4000:relegate
+     <modifiers>8000:relegate
      <pclass>103100
      <pfield>103101
      <pfname>field_enum_name
@@ -3202,9 +3202,9 @@
      <name>field_field_encrypted
      <field>107125
      <ftype>bool
-     <extra>
+     <extra>force
      <mandatory>true
-     <modifiers>100:relegate,4000:relegate
+     <modifiers>100:relegate,8000:relegate
     </field>
     <field/>
      <name>field_field_use_in_text_search
@@ -3212,7 +3212,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate,8000:relegate
+     <modifiers>800:relegate,1000:relegate,10000:relegate
     </field>
     <field/>
      <name>field_field_create_view_field
@@ -7420,7 +7420,7 @@
      <name>field_user_password
      <field>100103
      <ftype>string
-     <extra>hpassword+max_size=200
+     <extra>hpassword+encrypted+max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -8309,7 +8309,7 @@
    <type>child
    <extra>no_limit
    <actions>
-   <modifiers>8000:lowlight1,1000:lowlight
+   <modifiers>10000:lowlight1,2000:lowlight
    <view>601710
    <class>Field
    <bclass>
