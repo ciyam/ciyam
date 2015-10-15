@@ -600,7 +600,7 @@
       <type>bool
       <mandatory>true
       <enum_id>907
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>

@@ -382,7 +382,7 @@ bool g_default_Print_Lists_With_Check_Boxes = bool( 0 );
 bool g_default_Print_Lists_With_Row_Numbers = bool( 0 );
 string g_default_Registration_Key = string( );
 bool g_default_Show_Inaccessible_Modules = bool( 0 );
-bool g_default_Type = bool( 0 );
+bool g_default_Type = bool( 1 );
 bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool g_default_Use_Embedded_Images = bool( 0 );
 bool g_default_Use_TLS_Sessions = bool( 0 );
@@ -3134,6 +3134,9 @@ void Meta_Application::impl::after_fetch( )
    // [(finish transient_field_from_file)] 600510
 
    // [<start after_fetch>]
+//nyi
+   if( get_obj( ).get_key( ).empty( ) && get_obj( ).get_variable( "@trigger" ).empty( ) )
+      get_obj( ).Type( 0 );
    // [<finish after_fetch>]
 }
 
