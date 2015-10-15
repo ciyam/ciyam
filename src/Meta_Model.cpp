@@ -6907,7 +6907,7 @@ void Meta_Model::impl::after_fetch( )
    else
       get_obj( ).Status( get_system_variable( model_key ) );
 
-   if( get_obj( ).get_key( ).empty( ) )
+   if( get_obj( ).get_key( ).empty( ) && get_obj( ).get_variable( "@trigger" ).empty( ) )
       get_obj( ).Type( 0 );
    // [<finish after_fetch>]
 }
