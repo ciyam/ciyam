@@ -5769,7 +5769,7 @@ string meta_field_extras( int uom,
       break;
 
       case 25:
-      all_extras.push_back( "not_in_use" ); // i.e. should be re-used
+      all_extras.push_back( "field_hash" );
       break;
 
       case 26:

@@ -634,6 +634,7 @@ struct source
    std::set< std::string > qr_code_fields;
    std::set< std::string > smaller_fields;
    std::set< std::string > non_link_fields;
+   std::set< std::string > encrypted_fields;
    std::set< std::string > non_print_fields;
    std::set< std::string > admin_link_fields;
    std::set< std::string > owner_link_fields;
@@ -726,11 +727,11 @@ struct view_source : source
 
    std::set< std::string > upper_fields;
    std::set< std::string > password_fields;
-   std::set< std::string > encrypted_fields;
    std::set< std::string > hpassword_fields;
    std::set< std::string > protected_fields;
    std::set< std::string > mandatory_fields;
    std::set< std::string > defcurrent_fields;
+   std::set< std::string > field_hash_fields;
    std::set< std::string > self_relationships;
    std::set< std::string > defcurrentyear_fields;
 

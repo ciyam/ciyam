@@ -2657,10 +2657,10 @@ void Meta_Class::impl::impl_Generate( )
 
             bool is_encrypted = false;
 
-            if( get_obj( ).child_Field( ).Extra( ) == 10 // i.e. "password"
-             || get_obj( ).child_Field( ).Extra( ) == 25 // i.e. "encrypted"
-             || get_obj( ).child_Field( ).Extra( ) == 26 ) // i.e. "hpassword"
-               is_encrypted = true;
+            if( get_obj( ).child_Field( ).Extra( ) != 1 // i.e. "file"
+             && get_obj( ).child_Field( ).Extra( ) != 3 // i.e. "image"
+             && get_obj( ).child_Field( ).Extra( ) != 21 ) // i.e. "file_link"
+               is_encrypted = get_obj( ).child_Field( ).Encrypted( );
 
             bool is_transient = get_obj( ).child_Field( ).Transient( );
 
@@ -2671,9 +2671,11 @@ void Meta_Class::impl::impl_Generate( )
             if( !get_obj( ).child_Field( ).Default( ).empty( ) )
             {
                if( get_obj( ).child_Field( ).Primitive( ) >= 4 )
-                  default_values.push_back( make_pair( get_obj( ).child_Field( ).Name( ), get_obj( ).child_Field( ).Default( ) ) );
+                  default_values.push_back( make_pair(
+                   get_obj( ).child_Field( ).Name( ), get_obj( ).child_Field( ).Default( ) ) );
                else
-                  default_values.push_back( make_pair( get_obj( ).child_Field( ).Name( ), "\"" + get_obj( ).child_Field( ).Default( ) + "\"" ) );
+                  default_values.push_back( make_pair(
+                   get_obj( ).child_Field( ).Name( ), "\"" + get_obj( ).child_Field( ).Default( ) + "\"" ) );
             }
 
             if( get_obj( ).child_Field( ).Primitive( ) == 1 || get_obj( ).child_Field( ).Primitive( ) == 4 )
@@ -2730,9 +2732,7 @@ void Meta_Class::impl::impl_Generate( )
              || get_obj( ).child_Field( ).Extra( ) == 21 ) // i.e. "file_link"
                file_field_names.push_back( get_obj( ).child_Field( ).Name( ) );
 
-            if( get_obj( ).child_Field( ).Extra( ) == 10 // i.e. "password"
-             || get_obj( ).child_Field( ).Extra( ) == 25 // i.e. "encrypted"
-             || get_obj( ).child_Field( ).Extra( ) == 26 ) // i.e. "hpassword"
+            if( get_obj( ).child_Field( ).Encrypted( ) )
                encrypted_fields.push_back( get_obj( ).child_Field( ).Id( ) + "," + get_obj( ).child_Field( ).Name( ) );
 
             // NOTE: The "int" and "bool" types are the only basic primitives.
