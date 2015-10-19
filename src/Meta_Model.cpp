@@ -3000,6 +3000,13 @@ void Meta_Model::impl::impl_Generate( )
                            } while( p_field->Class( ).child_Field( ).iterate_next( ) );
                         }
 
+                        if( p_field->Encrypted( ) )
+                        {
+                           if( !field_extra.empty( ) )
+                              field_extra += '+';
+                           field_extra += "@decrypt";
+                        }
+
                         if( get_obj( ).child_View( ).child_View_Field( ).Sort_Manually( ) )
                         {
                            if( !field_extra.empty( ) )
@@ -4815,8 +4822,14 @@ void Meta_Model::impl::impl_Generate( )
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
 
-                     if( p_field->Extra( ) == 25 // i.e. encrypted
-                      || get_obj( ).child_List( ).child_List_Field( ).Sort_Manually( ) )
+                     if( p_field->Encrypted( ) )
+                     {
+                        if( !pextras.empty( ) )
+                           pextras += '+';
+                        pextras += "@decrypt";
+                     }
+
+                     if( get_obj( ).child_List( ).child_List_Field( ).Sort_Manually( ) )
                      {
                         if( !pextras.empty( ) )
                            pextras += '+';

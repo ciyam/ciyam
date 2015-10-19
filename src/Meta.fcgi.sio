@@ -593,13 +593,14 @@
      <filter>str
     </value>
     <value/>
-     <data>10
-     <name>enum_field_extra_password
+     <data>25
+     <name>enum_field_extra_field_hash
      <filter>str
     </value>
     <value/>
-     <data>25
-     <name>enum_field_extra_not_in_use
+     <data>10
+     <name>enum_field_extra_password
+     <filter>str
     </value>
     <value/>
      <data>11

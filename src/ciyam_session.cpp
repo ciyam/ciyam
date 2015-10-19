@@ -700,7 +700,7 @@ void add_pdf_variables( size_t handle,
          if( !value.empty( ) && !tz_name.empty( ) )
          {
             bool is_encrypted = false;
-            string type_name = get_field_type_name( handle, context, field );
+            string type_name = get_field_type_name( handle, context, field, &is_encrypted );
 
             if( is_encrypted
              && uid_matches_session_mint_account( )

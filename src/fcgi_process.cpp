@@ -543,6 +543,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                // NOTE: Encrypted fields that are < 20 characters are assumed to not have been encrypted.
                if( item_values[ field_num ].length( ) >= 20
+                && !view.file_fields.count( view.field_ids[ i ] )
+                && !view.image_fields.count( view.field_ids[ i ] )
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && view.encrypted_fields.count( view.field_ids[ i ] ) )
                {
@@ -1098,24 +1100,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      if( !new_file.empty( ) && is_blockchain_application( ) )
                      {
-                        bool is_owner_only_file = false;
-                        for( size_t i = 0; i < view.field_ids.size( ); i++ )
-                        {
-                           if( view.field_ids[ i ] == file_field_id )
-                           {
-                              map< string, string > extra_data;
-                              if( !view.vici->second->fields[ i ].extra.empty( ) )
-                                 parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
-
-                              if( extra_data.count( c_view_field_extra_owner_only ) )
-                                 is_owner_only_file = true;
-
-                              break;
-                           }
-                        }
-
-                        // NOTE: For blockchain applications encrypt "owner only" file attachments.
-                        if( is_owner_only_file )
+                        // NOTE: For blockchain applications encrypt file attachments if required.
+                        if( view.encrypted_fields.count( file_field_id ) )
                         {
                            fstream fs;
                            fs.open( new_file.c_str( ), ios::in | ios::out | ios::binary );

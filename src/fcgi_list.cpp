@@ -439,6 +439,9 @@ void setup_list_fields( list_source& list,
             list.index_fields.push_back( make_pair( field_ids, fld.unique ) );
          }
 
+         if( extra_data.count( c_field_extra_encrypted ) )
+            list.encrypted_fields.insert( value_id );
+
          if( extra_data.count( c_field_extra_non_print ) )
             list.non_print_fields.insert( value_id );
 
@@ -3314,9 +3317,9 @@ void output_list_form( ostream& os,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
-                     is_blockchain_application( ) && extra_data.count( c_field_extra_owner_only )
-                     ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                     create_tmp_file_link_or_copy( tmp_link_path,
+                      file_name, file_full_ext, link_file_name, is_blockchain_application( )
+                      && source.encrypted_fields.count( source_value_id )? sess_info.user_pwd_hash.c_str( ) : 0 );
 
                   if( !is_href && !is_printable
                    && ( !embed_images || source.file_fields.count( source_value_id ) ) )

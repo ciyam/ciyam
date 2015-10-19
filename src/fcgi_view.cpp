@@ -25,6 +25,7 @@
 #include "fcgi_info.h"
 #include "utilities.h"
 #include "fcgi_utils.h"
+#include "crypt_stream.h"
 #include "ciyam_interface.h"
 
 using namespace std;
@@ -292,6 +293,12 @@ void setup_view_fields( view_source& view,
                view.owner_link_fields.insert( value_id );
          }
 
+         if( extra_data.count( c_field_extra_encrypted ) )
+            view.encrypted_fields.insert( value_id );
+
+         if( extra_data.count( c_field_extra_field_hash ) )
+            view.field_hash_fields.insert( value_id );
+
          if( extra_data.count( c_field_extra_manual_link ) )
             view.manual_link_fields.insert( value_id );
 
@@ -314,8 +321,6 @@ void setup_view_fields( view_source& view,
 
             if( extra_data.count( c_view_field_extra_password ) )
                view.password_fields.insert( value_id );
-            else if( extra_data.count( c_view_field_extra_encrypted ) )
-               view.encrypted_fields.insert( value_id );
             else if( extra_data.count( c_view_field_extra_hpassword ) )
                view.hpassword_fields.insert( value_id );
 
@@ -1552,6 +1557,19 @@ bool output_view_form( ostream& os, const string& act,
             cell_data = source.new_field_values.find( source_field_id )->second;
          }
 
+         // NOTE: If a foreign key display value is encrypted then decrypt it.
+         set< string > parent_extras;
+         if( !source.vici->second->fields[ i ].pextra.empty( ) )
+            split( source.vici->second->fields[ i ].pextra, parent_extras, '+' );
+
+         if( !cell_data.empty( ) && parent_extras.count( c_parent_extra_decrypt ) )
+         {
+            if( !is_blockchain_application( ) )
+               cell_data = data_decrypt( cell_data, get_server_id( ) );
+            else
+               cell_data = data_decrypt( cell_data, sess_info.user_pwd_hash );
+         }
+
          if( !field_list.empty( ) )
             field_list += ',';
 
@@ -2305,9 +2323,9 @@ bool output_view_form( ostream& os, const string& act,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
-                      is_blockchain_application( ) && has_perm_extra( c_view_field_extra_owner_only,
-                      extra_data, sess_info ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                     create_tmp_file_link_or_copy( tmp_link_path,
+                      file_name, file_full_ext, link_file_name, is_blockchain_application( )
+                      && source.encrypted_fields.count( source_value_id ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
 
                   bool has_image = false;
                   if( !is_in_edit && !is_printable )

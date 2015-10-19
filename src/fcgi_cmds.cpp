@@ -910,6 +910,7 @@ bool fetch_parent_row_data( const string& module,
       split( parent_extras, extras, '+' );
 
    bool sort_manually = false;
+   bool needs_decrypting = false;
    bool remove_manual_links = false;
 
    for( size_t i = 0; i < extras.size( ); i++ )
@@ -1297,6 +1298,11 @@ bool fetch_parent_row_data( const string& module,
                exclude_key_info = sess_info.user_key + "," + to_string( c_admin_user_key );
                continue;
             }
+            else if( key == c_parent_extra_decrypt )
+            {
+               needs_decrypting = true;
+               continue;
+            }
             else if( key == c_parent_extra_sort || key == c_parent_extra_sortlinks )
             {
                sort_manually = true;
@@ -1364,6 +1370,20 @@ bool fetch_parent_row_data( const string& module,
 
    okay = fetch_list_info( module, mod_info, pclass_id, sess_info, false, 0, key_info, pfield, filters,
     "", "", "", parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
+
+   if( needs_decrypting )
+   {
+      for( size_t i = 0; i < parent_row_data.size( ); i++ )
+      {
+         if( parent_row_data[ i ].second.empty( ) )
+            continue;
+
+         if( !is_blockchain_application( ) )
+            parent_row_data[ i ].second = data_decrypt( parent_row_data[ i ].second, get_server_id( ) );
+         else
+            parent_row_data[ i ].second = data_decrypt( parent_row_data[ i ].second, sess_info.user_pwd_hash );
+      }
+   }
 
    if( sort_manually )
       sort_row_data_manually( parent_row_data, remove_manual_links );
@@ -1833,6 +1853,39 @@ bool populate_list_info( list_source& list,
             }
 
             list.row_data.pop_back( );
+         }
+
+         vector< size_t > encrypted_columns;
+         for( size_t i = 0; i < list.value_ids.size( ); i++ )
+         {
+            if( list.encrypted_fields.count( list.value_ids[ i ] ) )
+               encrypted_columns.push_back( i );
+         }
+
+         // NOTE: Any encrypted columns are now decrypted. This is being done
+         // before manual sorting (as they'll very likely affect the sorting).
+         if( !encrypted_columns.empty( ) )
+         {
+            for( size_t i = 0; i < list.row_data.size( ); i++ )
+            {
+               vector< string > columns;
+               raw_split( list.row_data[ i ].second, columns );
+
+               for( size_t j = 0; j < encrypted_columns.size( ); j++ )
+               {
+                  if( columns[ encrypted_columns[ j ] ].empty( ) )
+                     continue;
+
+                  if( !is_blockchain_application( ) )
+                     columns[ encrypted_columns[ j ] ]
+                      = data_decrypt( columns[ encrypted_columns[ j ] ], get_server_id( ) );
+                  else
+                     columns[ encrypted_columns[ j ] ]
+                      = data_decrypt( columns[ encrypted_columns[ j ] ], sess_info.user_pwd_hash );
+               }
+
+               list.row_data[ i ].second = join( columns );
+            }
          }
 
          if( sort_manually )
@@ -2448,12 +2501,16 @@ void save_record( const string& module_id,
    string field_values;
    bool found_field = false;
 
+   map< string, string > original_field_values;
+
    set< string > found_new_fields;
    set< string > sorted_fields( fields.begin( ), fields.end( ) );
 
    for( size_t i = 0; i < fields.size( ); i++ )
    {
       string field_id( fields[ i ] );
+
+      original_field_values.insert( make_pair( field_id, values.at( num ) ) );
 
       string next( escaped( values.at( num++ ), "," ) );
 
@@ -2527,7 +2584,8 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
-      else if( view.encrypted_fields.count( field_id ) )
+      else if( view.encrypted_fields.count( field_id )
+       && !view.file_fields.count( field_id ) && !view.image_fields.count( field_id ) )
       {
          if( !next.empty( ) )
          {
@@ -2684,8 +2742,33 @@ void save_record( const string& module_id,
          if( i->first != field )
          {
             field_values += ',';
-            field_values += i->first + '=';
-            field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+
+            // NOTE: The 'field_hash' extra is only expected to be used as a hidden extra field when
+            // a field that would normally be indexed (such as a name field) is being encrypted (for
+            // use in blockchain application). By creating a hash of the field value (along with the
+            // user's password hash to prevent dictionary attacks to decrypt the values) it is still
+            // possible to effectively create a unique index for the field value that it applies to.
+            if( view.field_hash_fields.count( i->first ) )
+            {
+               string src_and_dest( i->second );
+               string::size_type pos = src_and_dest.find( ':' );
+
+               string src_field( src_and_dest.substr( 0, pos ) );
+               string dest_field( pos == string::npos ? src_field : src_and_dest.substr( pos + 1 ) );
+
+               if( original_field_values.count( src_field ) )
+               {
+                  field_values += dest_field + '=';
+
+                  field_values += sha256(
+                   original_field_values[ src_field ] + sess_info.user_pwd_hash ).get_digest_as_string( );
+               }
+            }
+            else
+            {
+               field_values += i->first + '=';
+               field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+            }
          }
       }
    }
