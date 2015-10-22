@@ -804,7 +804,7 @@ struct \$::impl : public \$_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( );
+   void finalise_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -1049,7 +1049,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_fvalue=$specification_\\0_fvalue arg_sfield=$specification_\\0_sfield arg_tfield=$specification_\\0_tfield\
  arg_script=$specification_\\0_script arg_async=$specification_\\0_async arg_delay=$specification_\\0_delay\
  arg_skip_restore=$specification_\\0_skip_restore arg_has_key_already=$specification_\\0_has_key_already\
- arg_func=$specification_\\0_func arg_session_var=$specification_\\0_session_var`}\
+ arg_func=$specification_\\0_func arg_session_var=$specification_\\0_session_var\
+ arg_src_is_for_func=$specification_\\0_src_is_for_func`}\
 ### procedure
 `}`]`}
    // [<start \$_impl>]
@@ -1890,9 +1891,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `+\n`]`}
 }
 
-void `{`$full_class_name`}::impl::finalise_fetch( )
+void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
 {
-   if( !get_obj( ).get_key( ).empty( ) )
+   if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
 
 `{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
@@ -2115,7 +2116,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_sfield=$specification_\0_sfield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_not_null=$specification_\0_not_null arg_var=$specification_\0_var arg_tfield=$specification_\0_tfield\
- arg_modifier=$specification_\0_modifier arg_not_changed=$specification_\0_not_changed`}\
+ arg_modifier=$specification_\0_modifier arg_not_changed=$specification_\0_not_changed\
+ arg_skip_restore=$specification_\0_skip_restore arg_object_var=$specification_\0_object_var`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -2453,7 +2455,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_sfield=$specification_\0_sfield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_not_null=$specification_\0_not_null arg_var=$specification_\0_var arg_tfield=$specification_\0_tfield\
- arg_modifier=$specification_\0_modifier arg_not_changed=$specification_\0_not_changed`}\
+ arg_modifier=$specification_\0_modifier arg_not_changed=$specification_\0_not_changed\
+ arg_skip_restore=$specification_\0_skip_restore arg_object_var=$specification_\0_object_var`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -2695,7 +2698,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_fvalue=$specification_\0_fvalue arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
- arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var`}\
+ arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
+ arg_src_is_for_func=$specification_\0_src_is_for_func`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -2830,7 +2834,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_fvalue=$specification_\0_fvalue arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
- arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var`}\
+ arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
+ arg_src_is_for_func=$specification_\0_src_is_for_func`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -3290,12 +3295,12 @@ void `{`$full_class_name`}::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void `{`$full_class_name`}::finalise_fetch( )
+void `{`$full_class_name`}::finalise_fetch( bool skip_set_original )
 {
 `{`(`?`$parent_class`)\
-   parent_class_type::finalise_fetch( );\
+   parent_class_type::finalise_fetch( skip_set_original );\
 `}
-   p_impl->finalise_fetch( );
+   p_impl->finalise_fetch( skip_set_original );
 }
 
 void `{`$full_class_name`}::at_create( )

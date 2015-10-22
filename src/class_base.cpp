@@ -1528,7 +1528,7 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
       after_fetch( );
       perform_field_search_replacements( );
 
-      finalise_fetch( );
+      finalise_fetch( is_for_prepare );
    }
 }
 
