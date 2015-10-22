@@ -573,7 +573,8 @@ class CLASS_BASE_DECL_SPEC class_base
    void cache_original_values( );
 
    virtual void after_fetch( ) = 0;
-   virtual void finalise_fetch( ) = 0;
+   virtual void finalise_fetch( bool skip_set_original = false ) = 0;
+
    void perform_after_fetch( bool is_minimal = false, bool is_for_prepare = false );
 
    virtual void at_create( ) = 0;

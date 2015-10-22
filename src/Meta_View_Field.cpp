@@ -2191,7 +2191,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
-   void finalise_fetch( );
+   void finalise_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );
@@ -3553,9 +3553,9 @@ void Meta_View_Field::impl::after_fetch( )
    // [<finish after_fetch>]
 }
 
-void Meta_View_Field::impl::finalise_fetch( )
+void Meta_View_Field::impl::finalise_fetch( bool skip_set_original )
 {
-   if( !get_obj( ).get_key( ).empty( ) )
+   if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
 
    // [<start finalise_fetch>]
@@ -4355,9 +4355,9 @@ void Meta_View_Field::after_fetch( )
    p_impl->after_fetch( );
 }
 
-void Meta_View_Field::finalise_fetch( )
+void Meta_View_Field::finalise_fetch( bool skip_set_original )
 {
-   p_impl->finalise_fetch( );
+   p_impl->finalise_fetch( skip_set_original );
 }
 
 void Meta_View_Field::at_create( )

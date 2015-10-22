@@ -227,7 +227,7 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
-   void finalise_fetch( );
+   void finalise_fetch( bool skip_set_original );
 
    void at_create( );
    void post_init( );

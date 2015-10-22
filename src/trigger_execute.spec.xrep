@@ -10,20 +10,25 @@
 `{`!`@eq`(`$arg_field`,`'`'`)`&`!`@eq`(`$arg_fname`,`'`'`)`&`!`@eq`(`$arg_fvalue`,`'`'`)\
       string field_and_values( get_obj( ).`{`$arg_field`}( ) );
 
-      if( !field_and_values.empty( ) )
-         field_and_values += ',';
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_src_is_for_func`,`'true`'`)`{`$i`=`'   `'`}\
+      if( get_obj( ).`{`$arg_sfield`}( ) )
+      {
+`}\
+`{`$i`}      if( !field_and_values.empty( ) )
+`{`$i`}         field_and_values += ',';
 
-      field_and_values += string( c_field_id_`{`$arg_fname`} )
-       + "=" + `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `{`!`@eq`(`$arg_session_var`,`'`'`)\
+`{`$i`}      field_and_values += string( c_field_id_`{`$arg_fname`} )
+`{`$i`}       + "=" + `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `{`!`@eq`(`$arg_session_var`,`'`'`)\
 get_session_variable( "`{`$arg_session_var`}" ), `}`}get_obj( ).`{`$arg_fvalue`}( )`{`!`@eq`(`$arg_func`,`'`'`) )`};
-
+`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_src_is_for_func`,`'true`'`)\
+      }
+`}
       get_obj( ).`{`$arg_field`}( field_and_values );
 
 `}\
 `{`!`@eq`(`$arg_has_key_already`,`'true`'`)\
       temporary_session_variable tmp_session_key_var( "@key", get_obj( ).get_key( ) );
-`}\
-`{`!`@eq`(`$arg_sfield`,`'`'`)\
+`}`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_src_is_for_func`,`'`'`)\
       temporary_session_variable tmp_session_uid_var( "@uid", get_obj( ).`{`$arg_sfield`}( ) );
 `}\
       temporary_session_variable tmp_session_class_var( "@class", get_obj( ).get_class_id( ) );

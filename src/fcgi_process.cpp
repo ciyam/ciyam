@@ -409,7 +409,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                set_field_values += "=" + escaped( escaped( user_field_info[ userfetch ], "," ), ",\"", c_nul, "rn\r\n" );
 
                // NOTE: Set an instance variable so the application server can identify the trigger field.
-               if( is_new_record || !is_blockchain_application( ) )
+               if( is_new_record || act == c_act_edit || !is_blockchain_application( ) )
                   set_field_values += ",@trigger=" + userfetch;
             }
          }
@@ -429,7 +429,20 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      if( !set_field_values.empty( ) )
                         set_field_values += ",";
                      set_field_values += view.user_force_fields[ i ];
-                     set_field_values += "=" + escaped( escaped( user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
+
+                     // NOTE: If the "force" field is flagged as an encrypted field then encrypt it now.
+                     if( view.encrypted_fields.count( view.user_force_fields[ i ] ) )
+                     {
+                        if( !is_blockchain_application( ) )
+                          set_field_values += "=" + data_encrypt(
+                           user_field_info[ view.user_force_fields[ i ] ], get_server_id( ) );
+                        else
+                          set_field_values += "=" + data_encrypt(
+                           user_field_info[ view.user_force_fields[ i ] ], p_session_info->user_pwd_hash );
+                     }
+                     else
+                        set_field_values += "=" + escaped( escaped(
+                         user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
                   }
                }
             }
