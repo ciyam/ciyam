@@ -2050,8 +2050,26 @@ void Meta_Application::impl::impl_Generate( )
       outss4 << "quit\n";
 
       outupg << "#Starting DB Rebuild...\n";
-      if( !get_obj( ).Keep_Existing_Data( ) && !is_null( get_obj( ).Blockchain_Id( ) ) )
-         outupg << "file_kill -p=c" << get_obj( ).Blockchain_Id( ) << "*\n";
+
+      // NOTE: If discarding data then remove all blockchain files and if there is an
+      // "init" script found for the blockchain and it needs to be run the execute it.
+      if( !is_null( get_obj( ).Blockchain_Id( ) ) )
+      {
+         string blockchain_init_script( get_obj( ).Blockchain_Id( ) + ".bc_init.cin" );
+
+         if( !get_obj( ).Keep_Existing_Data( ) || is_null( get_obj( ).Generate_Status( ) ) )
+         {
+            if( exists_file( blockchain_init_script ) )
+               outupg << ".";
+            outupg << "file_kill -p=c" << get_obj( ).Blockchain_Id( ) << "*\n";
+         }
+
+         if( ( !get_obj( ).Keep_Existing_Data( )
+          || is_null( get_obj( ).Generate_Status( ) ) )
+          && exists_file( blockchain_init_script ) )
+            outupg << "<" << blockchain_init_script << "\n";
+      }
+
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
       outupg << "#Finished DB Rebuild...\n";
       outupg << ".quit\n";

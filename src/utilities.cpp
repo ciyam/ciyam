@@ -1533,7 +1533,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
       else if( *p_finish == '\0' || isspace( static_cast< unsigned char >( *p_finish ) ) )
       {
          if( in_quotes && *p_finish == '\0' )
-            throw runtime_error( "missing expected end-quote" );
+            throw runtime_error( "missing expected end-quote in: " + string( p_input ) );
 
          if( in_quotes )
             ++p_finish;
@@ -1567,7 +1567,8 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
    return arguments.size( );
 }
 
-void setup_arguments( int argc, const char* argv[ ], vector< string >& arguments, char esc, const char* p_specials )
+void setup_arguments( int argc, const char* argv[ ],
+ vector< string >& arguments, char esc, const char* p_specials )
 {
    arguments.clear( );
 
