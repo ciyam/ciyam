@@ -1,0 +1,5 @@
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+   // [(start transient_field_bool_is_in_op)] `{`$arg_id`}
+   get_obj( ).`{`$arg_field`}( get_obj( ).get_is_`{`$arg_value`}( ) );
+   // [(finish transient_field_bool_is_in_op)] `{`$arg_id`}
+`}
