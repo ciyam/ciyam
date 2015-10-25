@@ -4746,7 +4746,7 @@ int run_script( const string& script_name, bool async, bool delay )
    return rc;
 }
 
-string process_script_args( const string& raw_args, bool is_script_arg )
+string process_script_args( const string& raw_args, bool is_for_client_script )
 {
    string retval;
 
@@ -4770,9 +4770,9 @@ string process_script_args( const string& raw_args, bool is_script_arg )
 
          if( next_arg.empty( ) )
 #ifndef _WIN32
-            next_arg = "''";
+            next_arg = "\"\"";
 #else
-            next_arg = is_script_arg ? "\\\"\\\"" : "\"\"";
+            next_arg = is_for_client_script ? "\\\"\\\"" : "\"\"";
 #endif
 
          retval += next_arg;
