@@ -4095,7 +4095,8 @@ void perform_storage_rewind( const string& blockchain, uint64_t block_height )
       get_chain_info( cinfo, blockchain );
 
       if( block_height <= cinfo.checkpoint_start_height )
-         throw runtime_error( "invalid attempt to rewind through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
+         throw runtime_error( "invalid attempt to rewind to " + to_string( block_height )
+          + " through checkpoint at height " + to_string( cinfo.checkpoint_start_height ) );
    }
 
    map< string, string > file_info;
