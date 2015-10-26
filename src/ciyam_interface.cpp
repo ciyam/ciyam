@@ -2302,7 +2302,7 @@ void request_handler::process_request( )
 
                if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
                   error_message = string( c_response_error_prefix ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
-               else if( old_password != p_session_info->user_pwd_hash )
+               else if( old_password != p_session_info->user_pwd_hash && p_session_info->pwd_encrypted )
                   error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                else
                {

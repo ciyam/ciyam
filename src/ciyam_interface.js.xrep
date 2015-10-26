@@ -1070,10 +1070,14 @@ function hash_value( s, n )
 function hash_password( salt, pwd, skip_id )
 {
    var retval = '';
+   var rounds = hashRounds;
 
    // NOTE: (see NOTE in hash_username below)
    if( salt.length && salt.charAt( 0 ) == '!' )
+   {
+      rounds = 100;
       salt = salt.substring( 1 );
+   }
 
    // NOTE: If the password length is > 50 then it is being assumed that it has been
    // already hashed (this occurs for record editing when it has not been changed).
@@ -1081,9 +1085,9 @@ function hash_password( salt, pwd, skip_id )
       retval = pwd;
    else
    {
-      retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
+      retval = hash_value( serverId + pwd + salt, rounds ).toLowerCase( );
 
-      if( !loggedIn && hashRounds != newHashRounds && can_write_to_session_storage( ) )
+      if( !loggedIn && rounds == hashRounds && hashRounds != newHashRounds && can_write_to_session_storage( ) )
          sessionStorage.setItem( 'newhash', hash_value( serverId + pwd + salt, newHashRounds ).toLowerCase( ) );
    }
 
