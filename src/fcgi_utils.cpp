@@ -370,11 +370,14 @@ void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& 
       sess_info.gmt_offset = atoi( gmt_offcur.c_str( ) ) * -60;
 }
 
-string hash_password( const string& salted_password )
+string hash_password( const string& salted_password, unsigned int specific_rounds )
 {
    string s( salted_password );
 
-   for( size_t i = 0; i < c_password_hash_rounds; i++ )
+   if( !specific_rounds )
+      specific_rounds = c_password_hash_rounds;
+
+   for( size_t i = 0; i < specific_rounds; i++ )
       s = sha256( s + salted_password ).get_digest_as_string( );
 
    return s;

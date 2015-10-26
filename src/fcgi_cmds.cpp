@@ -2135,7 +2135,8 @@ bool fetch_user_record(
       if( user_password.length( ) < 20 )
       {
          sess_info.pwd_encrypted = false;
-         user_password = hash_password( gid + user_data[ 1 ] + ( userhash.empty( ) ? username : user_data[ 0 ] ) );
+         user_password = hash_password( gid + user_data[ 1 ]
+          + ( userhash.empty( ) ? username : user_data[ 0 ] ), 100 );
       }
       else
          user_password = data_decrypt( user_password, get_server_id( ) );
