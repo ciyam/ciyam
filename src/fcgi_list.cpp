@@ -584,6 +584,8 @@ void output_list_form( ostream& os,
     || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) ) )
       allow_new_record = false;
 
+   bool has_owner_parent_or_is_user_list = ( has_owner_parent || list_type == c_list_type_user );
+
    if( extras.count( c_list_type_extra_cpstate ) )
    {
       istringstream isstr( extras.find( c_list_type_extra_cpstate )->second );
@@ -1553,9 +1555,9 @@ void output_list_form( ostream& os,
             }
 
             if( !is_no_erase && source.can_delete_any
-             && ( !is_owner_erase || has_owner_parent )
              && ( !is_admin_erase || sess_info.is_admin_user )
-             && ( !is_admin_owner_erase || has_owner_parent || sess_info.is_admin_user ) )
+             && ( !is_owner_erase || has_owner_parent_or_is_user_list )
+             && ( !is_admin_owner_erase || sess_info.is_admin_user || has_owner_parent_or_is_user_list ) )
             {
                had_data = true;
 

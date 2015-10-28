@@ -508,11 +508,31 @@ struct private_key::impl
       BN_clear_free( &bn );
    }
 
+   // NOTE: This function was sourced from the Bitcoin project.
    void sign_message( const unsigned char hash[ c_num_hash_bytes ], vector< unsigned char >& signature )
    {
       ECDSA_SIG* p_sig = ECDSA_do_sign( &hash[ 0 ], c_num_hash_bytes, p_pub_impl->p_key );
       if( !p_sig )
          throw runtime_error( "unexpected failure for ECDSA_do_sign in sign_message" );
+
+      BN_CTX* p_ctx = BN_CTX_new( );
+      BN_CTX_start( p_ctx );
+
+      const EC_GROUP* p_group = EC_KEY_get0_group( p_pub_impl->p_key );
+
+      BIGNUM* p_order = BN_CTX_get( p_ctx );
+      BIGNUM* p_halforder = BN_CTX_get( p_ctx );
+
+      EC_GROUP_get_order( p_group, p_order, p_ctx );
+
+      BN_rshift1( p_halforder, p_order );
+
+      // NOTE: Enforce low S values, by negating the value (modulo the order) if above order / 2.
+      if( BN_cmp( p_sig->s, p_halforder ) > 0 )
+         BN_sub( p_sig->s, p_order, p_sig->s );
+
+      BN_CTX_end( p_ctx );
+      BN_CTX_free( p_ctx );
 
       signature.clear( );
 
