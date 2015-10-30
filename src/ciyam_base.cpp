@@ -10689,88 +10689,6 @@ void begin_instance_op( instance_op op, class_base& instance,
          else
             throw runtime_error( "unable to obtain lock for '" + key_for_op + "'" );
       }
-
-      scoped_lock_holder lock_holder( handler, lock_handle );
-
-      if( op == e_instance_op_destroy )
-      {
-         // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
-         instance_accessor.set_key( key_for_op, true );
-
-         instance_accessor.fetch( sql, false );
-         bool found = fetch_instance_from_db( instance, sql );
-
-         if( !found )
-         {
-            if( p_rc )
-            {
-               *p_rc = e_instance_op_rc_not_found;
-               return;
-            }
-            else
-               throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
-                make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
-         }
-
-         string ver_expected( instance_accessor.get_ver_exp( ) );
-         if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
-            throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
-             make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
-             make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
-
-         if( !instance_accessor.can_destroy( internal_modification ) )
-            throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
-             make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
-
-         if( instance.get_current_identity( ) != instance.get_original_identity( ) )
-            throw runtime_error( "cannot destroy '" + instance.get_original_identity( )
-             + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
-
-         string constraining_class;
-         bool is_constrained = false;
-
-         // NOTE: Unless performing the cascade obtain locks to all children (which are held in
-         // each child's graph parent) and then check for the existence of restricting children.
-         if( !is_cascade_op )
-         {
-            map< string, set< string > > instance_keys;
-            if( !obtain_cascade_locks_for_destroy( instance, instance, instance_keys ) )
-            {
-               handler.release_locks_for_owner( instance, true );
-
-               if( p_rc )
-               {
-                  *p_rc = e_instance_op_rc_child_locked;
-                  return;
-               }
-               else
-                  throw runtime_error( "instance '" + key_for_op
-                   + "' cannot be destroyed as a lock to a dependent child could not be obtained" );
-            }
-
-            instance_keys.clear( );
-
-            if( !session_skip_is_constained( ) )
-               is_constrained = is_child_constrained( instance, instance, constraining_class, instance_keys );
-         }
-
-         if( is_constrained )
-         {
-            handler.release_locks_for_owner( instance, true );
-
-            if( p_rc )
-            {
-               *p_rc = e_instance_op_rc_constrained;
-               return;
-            }
-            else
-               throw runtime_error( get_string_message( GS( c_str_record_constrained ),
-                make_pair( c_str_parm_record_constrained_class, constraining_class ) ) );
-         }
-      }
-
-      lock_holder.release( );
    }
 
    if( op == e_instance_op_create )
@@ -10878,7 +10796,9 @@ void begin_instance_op( instance_op op, class_base& instance,
          string sql;
 
          instance_accessor.fetch( sql, false, false );
-         bool found = fetch_instance_from_db( instance, sql, false, is_minimal_update );
+
+         bool found = fetch_instance_from_db( instance, sql,
+          false, is_minimal_update && op == e_instance_op_update );
 
          if( !found )
          {
@@ -10910,6 +10830,81 @@ void begin_instance_op( instance_op op, class_base& instance,
           && instance.get_current_identity( ) != instance.get_original_identity( ) )
             throw runtime_error( "cannot update '" + instance.get_original_identity( )
              + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
+      }
+      else if( op == e_instance_op_destroy )
+      {
+         // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
+         instance_accessor.fetch( sql, false );
+         bool found = fetch_instance_from_db( instance, sql );
+
+         if( !found )
+         {
+            if( p_rc )
+            {
+               *p_rc = e_instance_op_rc_not_found;
+               return;
+            }
+            else
+               throw runtime_error( get_string_message( GS( c_str_record_not_found ),
+                make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
+                make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
+         }
+
+         string ver_expected( instance_accessor.get_ver_exp( ) );
+         if( !ver_expected.empty( ) && ver_expected != instance.get_version_info( ) )
+            throw runtime_error( get_string_message( GS( c_str_version_mismatch ),
+             make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
+             make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
+
+         if( !instance_accessor.can_destroy( internal_modification ) )
+            throw runtime_error( get_string_message( GS( c_str_cannot_destroy ),
+             make_pair( c_str_parm_cannot_destroy_class, instance.get_display_name( ) ) ) );
+
+         if( instance.get_current_identity( ) != instance.get_original_identity( ) )
+            throw runtime_error( "cannot destroy '" + instance.get_original_identity( )
+             + "' stored instance using '" + instance.get_current_identity( ) + "' object instance" );
+
+         string constraining_class;
+         bool is_constrained = false;
+
+         // NOTE: Unless performing the cascade obtain locks to all children (which are held in
+         // each child's graph parent) and then check for the existence of restricting children.
+         if( !is_cascade_op )
+         {
+            map< string, set< string > > instance_keys;
+            if( !obtain_cascade_locks_for_destroy( instance, instance, instance_keys ) )
+            {
+               handler.release_locks_for_owner( instance, true );
+
+               if( p_rc )
+               {
+                  *p_rc = e_instance_op_rc_child_locked;
+                  return;
+               }
+               else
+                  throw runtime_error( "instance '" + key_for_op
+                   + "' cannot be destroyed as a lock to a dependent child could not be obtained" );
+            }
+
+            instance_keys.clear( );
+
+            if( !session_skip_is_constained( ) )
+               is_constrained = is_child_constrained( instance, instance, constraining_class, instance_keys );
+         }
+
+         if( is_constrained )
+         {
+            handler.release_locks_for_owner( instance, true );
+
+            if( p_rc )
+            {
+               *p_rc = e_instance_op_rc_constrained;
+               return;
+            }
+            else
+               throw runtime_error( get_string_message( GS( c_str_record_constrained ),
+                make_pair( c_str_parm_record_constrained_class, constraining_class ) ) );
+         }
       }
 
       lock_holder.release( );
