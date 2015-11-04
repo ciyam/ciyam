@@ -419,6 +419,7 @@ const char* const c_view_type_extra_admin_owner_edit = "admin_owner_edit";
 const char* const c_view_type_extra_print_no_highlight = "print_no_highlight";
 const char* const c_view_type_extra_ignore_unactionable = "ignore_unactionable";
 const char* const c_view_type_extra_static_instance_key = "static_instance_key";
+const char* const c_view_type_extra_ignore_parent_record = "ignore_parent_record";
 const char* const c_view_type_extra_use_first_row_as_header = "first_row_as_header";
 const char* const c_view_type_extra_file_links_always_as_single = "file_links_always_as_single";
 

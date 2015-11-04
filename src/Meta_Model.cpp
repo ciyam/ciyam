@@ -1923,6 +1923,13 @@ void Meta_Model::impl::impl_Generate( )
                extras += "first_row_as_header";
             }
 
+            if( get_obj( ).child_View( ).Ignore_Parent_Record( ) )
+            {
+               if( !extras.empty( ) )
+                  extras += ",";
+               extras += "ignore_parent_record";
+            }
+
             if( get_obj( ).child_View( ).Ignore_Unactionable_Records( ) )
             {
                if( !extras.empty( ) )

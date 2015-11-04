@@ -7647,6 +7647,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_view_ignore_parent_record
+     <field>118118
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_view_ignore_unactionable_records
      <field>118116
      <ftype>bool

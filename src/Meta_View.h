@@ -51,16 +51,17 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Class = 8,
       e_field_id_File_Links_Always_As_Single = 9,
       e_field_id_Id = 10,
-      e_field_id_Ignore_Unactionable_Records = 11,
-      e_field_id_Model = 12,
-      e_field_id_Name = 13,
-      e_field_id_PDF_Font_Type = 14,
-      e_field_id_PDF_View_Type = 15,
-      e_field_id_Print_Without_Highlight = 16,
-      e_field_id_Title = 17,
-      e_field_id_Type = 18,
-      e_field_id_Type_Key = 19,
-      e_field_id_Use_First_Row_As_Header = 20
+      e_field_id_Ignore_Parent_Record = 11,
+      e_field_id_Ignore_Unactionable_Records = 12,
+      e_field_id_Model = 13,
+      e_field_id_Name = 14,
+      e_field_id_PDF_Font_Type = 15,
+      e_field_id_PDF_View_Type = 16,
+      e_field_id_Print_Without_Highlight = 17,
+      e_field_id_Title = 18,
+      e_field_id_Type = 19,
+      e_field_id_Type_Key = 20,
+      e_field_id_Use_First_Row_As_Header = 21
    };
 
    Meta_View( );
@@ -86,6 +87,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );
+
+   bool Ignore_Parent_Record( ) const;
+   void Ignore_Parent_Record( bool Ignore_Parent_Record );
 
    bool Ignore_Unactionable_Records( ) const;
    void Ignore_Unactionable_Records( bool Ignore_Unactionable_Records );
