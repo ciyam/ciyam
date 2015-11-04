@@ -3774,7 +3774,13 @@ void output_list_form( ostream& os,
                if( source.new_record_list_has_view_id && !columns[ 1 ].empty( ) )
                   view_id = columns[ 1 ];
 
-               string new_data( " " );
+               view_info_const_iterator vici = mod_info.view_info.find( view_id );
+               if( vici == mod_info.view_info.end( ) )
+                  throw runtime_error( "unknown view '" + view_id + "'" );
+
+               const map< string, string >& view_extras( vici->second->extras );
+
+               string new_data( c_new_record );
 
                bool is_clone = false;
                if( ( source.lici->second )->nclass == ( source.lici->second )->cid )
@@ -3785,7 +3791,8 @@ void output_list_form( ostream& os,
 
                os << "<option value=\"" << get_module_page_name( source.module_ref ) << "?cmd=" << c_cmd_view << "&data=" << new_data;
 
-               if( !source.new_pfield.empty( ) )
+               if( !source.new_pfield.empty( )
+                && !view_extras.count( c_view_type_extra_ignore_parent_record ) )
                   os << "&extra=" << source.new_pkey << "&field=" << source.new_pfield;
 
                os << "&ident=" << view_id;
@@ -3825,9 +3832,17 @@ void output_list_form( ostream& os,
          }
          else
          {
-            os << "<a class=\"newrecord\" href=\"" << get_module_page_name( source.module_ref ) << "?cmd=" << c_cmd_view << "&data= ";
+            os << "<a class=\"newrecord\" href=\""
+             << get_module_page_name( source.module_ref )
+             << "?cmd=" << c_cmd_view << "&data=" << string( c_new_record );
 
-            if( !source.new_pfield.empty( ) )
+            view_info_const_iterator vici = mod_info.view_info.find( source.view );
+            if( vici == mod_info.view_info.end( ) )
+               throw runtime_error( "unknown view '" + source.view + "'" );
+
+            const map< string, string >& view_extras( vici->second->extras );
+
+            if( !source.new_pfield.empty( ) && !view_extras.count( c_view_type_extra_ignore_parent_record ) )
                os << "&extra=" << source.new_pkey << "&field=" << source.new_pfield;
 
             os << "&ident=" << source.view << "&serial=" << to_string( sess_info.checksum_serial );

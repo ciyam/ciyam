@@ -465,33 +465,90 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_in )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_test_ods_in_name ) );
+      string name_or_path( get_parm_val( parameters, c_cmd_parm_test_ods_in_name_or_path ) );
 
       bool found = false;
-      o >> node;
+      bool had_error = false;
 
-      for( node.iter( ); node.more( ); node.next( ) )
+      string error_name;
+
+      outline next_node( node );
+      outline next_child_node;
+
+      stack< oid, vector< oid > > old_oid_stack( oid_stack );
+      vector< pathchar_buffer > old_path_strings( path_strings );
+
+      if( !name_or_path.empty( ) && name_or_path[ 0 ] == '/' )
       {
-         temp_node.set_id( node.child( ) );
-         o >> temp_node;
-         if( temp_node.get_description( ) == name )
+         next_node.set_id( 0 );
+
+         error_name += name_or_path;
+         name_or_path.erase( 0, 1 );
+
+         while( oid_stack.size( ) > 1 )
          {
-            if( !temp_node.get_file( ).get_id( ).is_new( ) )
+            oid_stack.pop( );
+            path_strings.pop_back( );
+         }
+
+         if( name_or_path.empty( ) )
+            found = true;
+      }
+      else
+      {
+         for( size_t i = 0; i < path_strings.size( ); i++ )
+            error_name += path_strings[ i ].data( ) + '/';
+
+         error_name += name_or_path;
+      }
+
+      vector< string > parts;
+      split( name_or_path, parts, '/' );
+
+      for( size_t i = 0; i < parts.size( ); i++ )
+      {
+         string next_name( parts[ i ] );
+
+         o >> next_node;
+
+         for( next_node.iter( ); next_node.more( ); next_node.next( ) )
+         {
+            next_child_node.set_id( next_node.child( ) );
+
+            o >> next_child_node;
+
+            if( next_child_node.get_description( ) == next_name )
             {
-               cout << "'" << name << "' is a file not a folder" << endl;
+               if( !next_child_node.get_file( ).get_id( ).is_new( ) )
+               {
+                  cout << "'" << error_name << "' is a file not a folder" << endl;
+                  had_error = true;
+                  break;
+               }
+
+               next_node.set_id( next_child_node.get_id( ) );
+
+               oid_stack.push( next_child_node.get_id( ) );
+               path_strings.push_back( next_child_node.get_description( ) );
                found = true;
                break;
             }
-
-            oid_stack.push( temp_node.get_id( ) );
-            path_strings.push_back( temp_node.get_description( ) );
-            found = true;
-            break;
          }
+
+         if( !found || had_error )
+            break;
+         else if( i < parts.size( ) - 1 )
+            found = false;
       }
 
-      if( !found )
-         cout << "could not find folder: " << name << endl;
+      if( !found && !had_error )
+         cout << "could not find folder: " << error_name << endl;
+
+      if( !found || had_error )
+      {
+         oid_stack = old_oid_stack;
+         path_strings = old_path_strings;
+      }
    }
    else if( command == c_cmd_test_ods_out )
    {
@@ -505,47 +562,52 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    {
       string name( get_parm_val( parameters, c_cmd_parm_test_ods_add_name ) );
 
-      ods::bulk_write bulk( o );
-      o >> node;
-
-      // NOTE: If not in a transaction then will need to ensure that no read locks
-      // are currently active for this node (before creating any new child nodes).
-      // Therefore attempt to re-write the node's description - if it is currently
-      // being read then this attempt will fail. The "bulk write" lock itself will
-      // prevent any further attempts from commencing until it goes out of scope.
-      if( !trans_level )
+      if( name.find( '/' ) != string::npos )
+         cout << "cannot use '" << name << "' for a folder name (contains special characters)" << endl;
+      else
       {
-         temp_write_outline_description tmp_description( temp_node );
+         ods::bulk_write bulk( o );
+         o >> node;
+
+         // NOTE: If not in a transaction then will need to ensure that no read locks
+         // are currently active for this node (before creating any new child nodes).
+         // Therefore attempt to re-write the node's description - if it is currently
+         // being read then this attempt will fail. The "bulk write" lock itself will
+         // prevent any further attempts from commencing until it goes out of scope.
+         if( !trans_level )
+         {
+            temp_write_outline_description tmp_description( temp_node );
+            o << node;
+         }
+
+         int num = 1;
+         bool is_multi = false;
+         pos = name.find( '*' );
+         if( pos != string::npos )
+         {
+            is_multi = true;
+            num = atoi( name.substr( pos + 1 ).c_str( ) );
+            name = name.substr( 0, pos );
+         }
+
+         for( int i = 0; i < num; i++ )
+         {
+            temp_node.set_new( );
+            if( is_multi )
+            {
+               ostringstream str;
+               str << name << "#" << i;
+               temp_node.set_description( str.str( ) );
+            }
+            else
+               temp_node.set_description( name );
+
+            o << temp_node;
+            node.add_child( temp_node );
+         }
+
          o << node;
       }
-
-      int num = 1;
-      bool is_multi = false;
-      pos = name.find( '*' );
-      if( pos != string::npos )
-      {
-         is_multi = true;
-         num = atoi( name.substr( pos + 1 ).c_str( ) );
-         name = name.substr( 0, pos );
-      }
-
-      for( int i = 0; i < num; i++ )
-      {
-         temp_node.set_new( );
-         if( is_multi )
-         {
-            ostringstream str;
-            str << name << "#" << i;
-            temp_node.set_description( str.str( ) );
-         }
-         else
-            temp_node.set_description( name );
-
-         o << temp_node;
-         node.add_child( temp_node );
-      }
-
-      o << node;
    }
    else if( command == c_cmd_test_ods_del )
    {
@@ -654,9 +716,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             cout << "cannot find folder: " << name << endl;
       }
    }
-   else if( command == c_cmd_test_ods_store )
+   else if( command == c_cmd_test_ods_import )
    {
-      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_store_file_name ) );
+      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_import_file_name ) );
 
       ods::bulk_write bulk( o );
       o >> node;
@@ -693,10 +755,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       node.add_child( temp_node );
       o << node;
    }
-   else if( command == c_cmd_test_ods_fetch )
+   else if( command == c_cmd_test_ods_export )
    {
-      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_file_name ) );
-      string output_name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_output_name ) );
+      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_export_file_name ) );
+      string output_name( get_parm_val( parameters, c_cmd_parm_test_ods_export_output_name ) );
 
       if( output_name.empty( ) )
          output_name = file_name;
@@ -704,6 +766,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       o >> node;
 
       bool found = false;
+      string error_extra;
       for( node.iter( ); node.more( ); node.next( ) )
       {
          temp_node.set_id( node.child( ) );
@@ -711,7 +774,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( temp_node.get_description( ) == file_name )
          {
             if( temp_node.get_file( ).get_id( ).is_new( ) )
-               cout << "no file data was stored in this folder" << endl;
+            {
+               error_extra = " ('" + file_name + "' is a folder)";
+               break;
+            }
             else
             {
                scoped_ods_instance so( o );
@@ -728,7 +794,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       }
 
       if( !found )
-         cout << "file '" << file_name << "' not found" << endl;
+         cout << "file '" << file_name << "' not found" << error_extra << endl;
    }
    else if( command == c_cmd_test_ods_trans )
    {
@@ -768,7 +834,12 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          cout << "no transaction to rollback" << endl;
    }
    else if( command == c_cmd_test_ods_trans_id )
-      cout << o.get_transaction_id( ) << endl;
+   {
+      if( !o.get_transaction_level( ) )
+         cout << "0" << endl;
+      else
+         cout << o.get_transaction_id( ) << endl;
+   }      
    else if( command == c_cmd_test_ods_trans_level )
       cout << o.get_transaction_level( ) << endl;
    else if( command == c_cmd_test_ods_compress )
@@ -792,9 +863,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       test_handler.set_finished( );
    }
 
-   pathchar_buffer path;
-   for( vector< pathchar_buffer >::size_type i = 0; i < path_strings.size( ); i++ )
-      path += "/" + path_strings[ i ];
+   pathchar_buffer path( "/" );
+   for( vector< pathchar_buffer >::size_type i = 1; i < path_strings.size( ); i++ )
+   {
+      if( i > 1 )
+         path += "/";
+      path += path_strings[ i ];
+   }
 
    test_handler.set_prompt_prefix( string( path.data( ), path.length( ) ) );
 }
@@ -830,6 +905,7 @@ int main( int argc, char* argv[ ] )
       if( cmd_handler.get_ods( ).is_new( ) )
       {
          outline root( c_root_node_description );
+
          try
          {
             cmd_handler.get_ods( ) << root;
@@ -848,10 +924,7 @@ int main( int argc, char* argv[ ] )
       cmd_handler.get_oid_stack( ).push( cmd_handler.get_node( ).get_id( ) );
       cmd_handler.get_path_strings( ).push_back( cmd_handler.get_node( ).get_description( ) );
 
-      string path( "/" );
-      path += string( cmd_handler.get_path_strings( ).back( ).data( ) );
-
-      cmd_handler.set_prompt_prefix( path );
+      cmd_handler.set_prompt_prefix( "/" );
 
       cmd_handler.add_commands( 0,
        test_ods_command_functor_factory, ARRAY_PTR_AND_SIZE( test_ods_command_definitions ) );

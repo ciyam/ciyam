@@ -1,71 +1,71 @@
 
-/root> 
-/root> 
-/root> 
-/root> 
-/root> 
-/root> begin transaction (level = 1)
+/> 
+/> 
+/> 
+/> 
+/> 
+/> begin transaction (level = 1)
 
-/root> 
-/root> 
-/root> begin transaction (level = 2)
+/> 
+/> 
+/> begin transaction (level = 2)
 
-/root> 
-/root/one> 
-/root/one> begin transaction (level = 3)
+/> 
+/one> 
+/one> begin transaction (level = 3)
 
-/root/one> 
-/root/one> commit transaction (level = 3)
+/one> 
+/one> commit transaction (level = 3)
 
-/root/one> 
-/root> 
-/root> rollback transaction (level = 2)
+/one> 
+/> 
+/> rollback transaction (level = 2)
 
-/root> 
-/root/one> 
-/root/one> 
-/root/one> 
-/root/one> 
-/root> begin transaction (level = 2)
+/> 
+/one> 
+/one> 
+/one> 
+/one> 
+/> begin transaction (level = 2)
 
-/root> 
-/root/two> 
-/root/two> 
-/root/two> 
-/root/two> begin transaction (level = 3)
+/> 
+/two> 
+/two> 
+/two> 
+/two> begin transaction (level = 3)
 
-/root/two> 
-/root/two> 
-/root/two> 
-/root/two> begin transaction (level = 4)
+/two> 
+/two> 
+/two> 
+/two> begin transaction (level = 4)
 
-/root/two> 
-/root/two> 
-/root/two> 
-/root/two> commit transaction (level = 4)
+/two> 
+/two> 
+/two> 
+/two> commit transaction (level = 4)
 
-/root/two> rollback transaction (level = 3)
+/two> rollback transaction (level = 3)
 
-/root/two> commit transaction (level = 2)
+/two> commit transaction (level = 2)
 
-/root/two> 
-/root> commit transaction (level = 1)
+/two> 
+/> commit transaction (level = 1)
 
-/root> 
-/root/three> 
-/root/three> 
-/root/three> 
-/root> begin transaction (level = 1)
+/> 
+/three> 
+/three> 
+/three> 
+/> begin transaction (level = 1)
 
-/root> 
-/root> 
-/root> rollback transaction (level = 1)
+/> 
+/> 
+/> rollback transaction (level = 1)
 
-/root> one
+/> one
 two
 three
 
-/root> moving free data to end...
+/> moving free data to end...
 completed
 
-/root> 
+/> 

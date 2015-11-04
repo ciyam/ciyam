@@ -2461,8 +2461,9 @@ void save_record( const string& module_id,
  const string& flags, const string& app, const string& chk,
  const string& field, const string& extra, const string& exec, const string& cont,
  const string& fieldlist, bool is_new_record, const map< string, string >& new_field_and_values,
- const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view, int vtab_num,
- session_info& sess_info, string& act, string& data, string& new_key, string& error_message, bool& was_invalid, bool& had_send_or_recv_error )
+ const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view,
+ int vtab_num, session_info& sess_info, string& act, string& data, string& new_key, string& error_message,
+ bool& was_invalid, bool& had_send_or_recv_error )
 {
    string key_info;
    if( !is_new_record )
@@ -2472,6 +2473,8 @@ void save_record( const string& module_id,
 
    date_time dt( date_time::standard( ) );
    string current_dtm( dt.as_string( ) );
+
+   const map< string, string >& view_extras( view.vici->second->extras );
 
    const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
 

@@ -122,6 +122,7 @@ const char* const c_field_id_Change_Restriction = "118103";
 const char* const c_field_id_Class = "301820";
 const char* const c_field_id_File_Links_Always_As_Single = "118117";
 const char* const c_field_id_Id = "118105";
+const char* const c_field_id_Ignore_Parent_Record = "118118";
 const char* const c_field_id_Ignore_Unactionable_Records = "118116";
 const char* const c_field_id_Model = "301800";
 const char* const c_field_id_Name = "118101";
@@ -143,6 +144,7 @@ const char* const c_field_name_Change_Restriction = "Change_Restriction";
 const char* const c_field_name_Class = "Class";
 const char* const c_field_name_File_Links_Always_As_Single = "File_Links_Always_As_Single";
 const char* const c_field_name_Id = "Id";
+const char* const c_field_name_Ignore_Parent_Record = "Ignore_Parent_Record";
 const char* const c_field_name_Ignore_Unactionable_Records = "Ignore_Unactionable_Records";
 const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
@@ -164,6 +166,7 @@ const char* const c_field_display_name_Change_Restriction = "field_view_change_r
 const char* const c_field_display_name_Class = "field_view_class";
 const char* const c_field_display_name_File_Links_Always_As_Single = "field_view_file_links_always_as_single";
 const char* const c_field_display_name_Id = "field_view_id";
+const char* const c_field_display_name_Ignore_Parent_Record = "field_view_ignore_parent_record";
 const char* const c_field_display_name_Ignore_Unactionable_Records = "field_view_ignore_unactionable_records";
 const char* const c_field_display_name_Model = "field_view_model";
 const char* const c_field_display_name_Name = "field_view_name";
@@ -175,7 +178,7 @@ const char* const c_field_display_name_Type = "field_view_type";
 const char* const c_field_display_name_Type_Key = "field_view_type_key";
 const char* const c_field_display_name_Use_First_Row_As_Header = "field_view_use_first_row_as_header";
 
-const int c_num_fields = 20;
+const int c_num_fields = 21;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -194,6 +197,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "118115",
    "118116",
    "118117",
+   "118118",
    "301800",
    "301810",
    "301820",
@@ -213,6 +217,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Class",
    "File_Links_Always_As_Single",
    "Id",
+   "Ignore_Parent_Record",
    "Ignore_Unactionable_Records",
    "Model",
    "Name",
@@ -301,6 +306,7 @@ int g_default_Change_Restriction = int( 0 );
 string g_default_Class = string( );
 bool g_default_File_Links_Always_As_Single = bool( 0 );
 string g_default_Id = string( );
+bool g_default_Ignore_Parent_Record = bool( 0 );
 bool g_default_Ignore_Unactionable_Records = bool( 0 );
 string g_default_Model = string( );
 string g_default_Name = string( );
@@ -558,6 +564,12 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
          string_getter< string >( cmd_handler.p_Meta_View->Id( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Ignore_Parent_Record || field_name == c_field_name_Ignore_Parent_Record )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_View->Ignore_Parent_Record( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
       {
          handled = true;
@@ -698,6 +710,13 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
          handled = true;
          func_string_setter< Meta_View, string >(
           *cmd_handler.p_Meta_View, &Meta_View::Id, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Parent_Record || field_name == c_field_name_Ignore_Parent_Record )
+      {
+         handled = true;
+         func_string_setter< Meta_View, bool >(
+          *cmd_handler.p_Meta_View, &Meta_View::Ignore_Parent_Record, field_value );
       }
 
       if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
@@ -844,6 +863,9 @@ struct Meta_View::impl : public Meta_View_command_handler
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
    void impl_Id( const string& Id ) { sanity_check( Id ); v_Id = Id; }
+
+   bool impl_Ignore_Parent_Record( ) const { return lazy_fetch( p_obj ), v_Ignore_Parent_Record; }
+   void impl_Ignore_Parent_Record( bool Ignore_Parent_Record ) { v_Ignore_Parent_Record = Ignore_Parent_Record; }
 
    bool impl_Ignore_Unactionable_Records( ) const { return lazy_fetch( p_obj ), v_Ignore_Unactionable_Records; }
    void impl_Ignore_Unactionable_Records( bool Ignore_Unactionable_Records ) { v_Ignore_Unactionable_Records = Ignore_Unactionable_Records; }
@@ -1151,6 +1173,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    int v_Change_Restriction;
    bool v_File_Links_Always_As_Single;
    string v_Id;
+   bool v_Ignore_Parent_Record;
    bool v_Ignore_Unactionable_Records;
    string v_Name;
    int v_PDF_Font_Type;
@@ -1726,42 +1749,46 @@ string Meta_View::impl::get_field_value( int field ) const
       break;
 
       case 10:
-      retval = to_string( impl_Ignore_Unactionable_Records( ) );
+      retval = to_string( impl_Ignore_Parent_Record( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Ignore_Unactionable_Records( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 13:
-      retval = to_string( impl_PDF_Font_Type( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 14:
-      retval = to_string( impl_PDF_View_Type( ) );
+      retval = to_string( impl_PDF_Font_Type( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Print_Without_Highlight( ) );
+      retval = to_string( impl_PDF_View_Type( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Title( ) );
+      retval = to_string( impl_Print_Without_Highlight( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Title( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Type_Key( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 19:
+      retval = to_string( impl_Type_Key( ) );
+      break;
+
+      case 20:
       retval = to_string( impl_Use_First_Row_As_Header( ) );
       break;
 
@@ -1817,42 +1844,46 @@ void Meta_View::impl::set_field_value( int field, const string& value )
       break;
 
       case 10:
-      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Ignore_Unactionable_Records, value );
+      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Ignore_Parent_Record, value );
       break;
 
       case 11:
-      func_string_setter< Meta_View::impl, Meta_Model >( *this, &Meta_View::impl::impl_Model, value );
+      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Ignore_Unactionable_Records, value );
       break;
 
       case 12:
-      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Name, value );
+      func_string_setter< Meta_View::impl, Meta_Model >( *this, &Meta_View::impl::impl_Model, value );
       break;
 
       case 13:
-      func_string_setter< Meta_View::impl, int >( *this, &Meta_View::impl::impl_PDF_Font_Type, value );
+      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Name, value );
       break;
 
       case 14:
-      func_string_setter< Meta_View::impl, int >( *this, &Meta_View::impl::impl_PDF_View_Type, value );
+      func_string_setter< Meta_View::impl, int >( *this, &Meta_View::impl::impl_PDF_Font_Type, value );
       break;
 
       case 15:
-      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Print_Without_Highlight, value );
+      func_string_setter< Meta_View::impl, int >( *this, &Meta_View::impl::impl_PDF_View_Type, value );
       break;
 
       case 16:
-      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Title, value );
+      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Print_Without_Highlight, value );
       break;
 
       case 17:
-      func_string_setter< Meta_View::impl, Meta_View_Type >( *this, &Meta_View::impl::impl_Type, value );
+      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Title, value );
       break;
 
       case 18:
-      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Type_Key, value );
+      func_string_setter< Meta_View::impl, Meta_View_Type >( *this, &Meta_View::impl::impl_Type, value );
       break;
 
       case 19:
+      func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Type_Key, value );
+      break;
+
+      case 20:
       func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Use_First_Row_As_Header, value );
       break;
 
@@ -1908,42 +1939,46 @@ bool Meta_View::impl::is_field_default( int field ) const
       break;
 
       case 10:
-      retval = ( v_Ignore_Unactionable_Records == g_default_Ignore_Unactionable_Records );
+      retval = ( v_Ignore_Parent_Record == g_default_Ignore_Parent_Record );
       break;
 
       case 11:
-      retval = ( v_Model == g_default_Model );
+      retval = ( v_Ignore_Unactionable_Records == g_default_Ignore_Unactionable_Records );
       break;
 
       case 12:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_Model == g_default_Model );
       break;
 
       case 13:
-      retval = ( v_PDF_Font_Type == g_default_PDF_Font_Type );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 14:
-      retval = ( v_PDF_View_Type == g_default_PDF_View_Type );
+      retval = ( v_PDF_Font_Type == g_default_PDF_Font_Type );
       break;
 
       case 15:
-      retval = ( v_Print_Without_Highlight == g_default_Print_Without_Highlight );
+      retval = ( v_PDF_View_Type == g_default_PDF_View_Type );
       break;
 
       case 16:
-      retval = ( v_Title == g_default_Title );
+      retval = ( v_Print_Without_Highlight == g_default_Print_Without_Highlight );
       break;
 
       case 17:
-      retval = ( v_Type == g_default_Type );
+      retval = ( v_Title == g_default_Title );
       break;
 
       case 18:
-      retval = ( v_Type_Key == g_default_Type_Key );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 19:
+      retval = ( v_Type_Key == g_default_Type_Key );
+      break;
+
+      case 20:
       retval = ( v_Use_First_Row_As_Header == g_default_Use_First_Row_As_Header );
       break;
 
@@ -2091,6 +2126,7 @@ void Meta_View::impl::clear( )
    v_Change_Restriction = g_default_Change_Restriction;
    v_File_Links_Always_As_Single = g_default_File_Links_Always_As_Single;
    v_Id = g_default_Id;
+   v_Ignore_Parent_Record = g_default_Ignore_Parent_Record;
    v_Ignore_Unactionable_Records = g_default_Ignore_Unactionable_Records;
    v_Name = g_default_Name;
    v_PDF_Font_Type = g_default_PDF_Font_Type;
@@ -2586,6 +2622,16 @@ void Meta_View::Id( const string& Id )
    p_impl->impl_Id( Id );
 }
 
+bool Meta_View::Ignore_Parent_Record( ) const
+{
+   return p_impl->impl_Ignore_Parent_Record( );
+}
+
+void Meta_View::Ignore_Parent_Record( bool Ignore_Parent_Record )
+{
+   p_impl->impl_Ignore_Parent_Record( Ignore_Parent_Record );
+}
+
 bool Meta_View::Ignore_Unactionable_Records( ) const
 {
    return p_impl->impl_Ignore_Unactionable_Records( );
@@ -3027,6 +3073,16 @@ const char* Meta_View::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Ignore_Parent_Record )
+   {
+      p_id = c_field_id_Ignore_Parent_Record;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Ignore_Unactionable_Records )
    {
       p_id = c_field_id_Ignore_Unactionable_Records;
@@ -3238,6 +3294,16 @@ const char* Meta_View::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Ignore_Parent_Record )
+   {
+      p_name = c_field_name_Ignore_Parent_Record;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Ignore_Unactionable_Records )
    {
       p_name = c_field_name_Ignore_Unactionable_Records;
@@ -3422,6 +3488,11 @@ string Meta_View::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Id );
       get_module_string( c_field_display_name_Id, &next );
    }
+   else if( id_or_name == c_field_id_Ignore_Parent_Record || id_or_name == c_field_name_Ignore_Parent_Record )
+   {
+      name = string( c_field_display_name_Ignore_Parent_Record );
+      get_module_string( c_field_display_name_Ignore_Parent_Record, &next );
+   }
    else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
    {
       name = string( c_field_display_name_Ignore_Unactionable_Records );
@@ -3507,6 +3578,8 @@ string Meta_View::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_File_Links_Always_As_Single );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
+   else if( id_or_name == c_field_id_Ignore_Parent_Record || id_or_name == c_field_name_Ignore_Parent_Record )
+      display_name = get_module_string( c_field_display_name_Ignore_Parent_Record );
    else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
       display_name = get_module_string( c_field_display_name_Ignore_Unactionable_Records );
    else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
@@ -3836,6 +3909,7 @@ void Meta_View::get_sql_column_names(
    names.push_back( "C_Class" );
    names.push_back( "C_File_Links_Always_As_Single" );
    names.push_back( "C_Id" );
+   names.push_back( "C_Ignore_Parent_Record" );
    names.push_back( "C_Ignore_Unactionable_Records" );
    names.push_back( "C_Model" );
    names.push_back( "C_PDF_Font_Type" );
@@ -3866,6 +3940,7 @@ void Meta_View::get_sql_column_values(
    values.push_back( sql_quote( to_string( Class( ) ) ) );
    values.push_back( to_string( File_Links_Always_As_Single( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
+   values.push_back( to_string( Ignore_Parent_Record( ) ) );
    values.push_back( to_string( Ignore_Unactionable_Records( ) ) );
    values.push_back( sql_quote( to_string( Model( ) ) ) );
    values.push_back( to_string( PDF_Font_Type( ) ) );
@@ -4031,6 +4106,7 @@ void Meta_View::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "301820", "Class", "Meta_Class", true, "", "" ) );
    all_field_info.push_back( field_info( "118117", "File_Links_Always_As_Single", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "118105", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "118118", "Ignore_Parent_Record", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "118116", "Ignore_Unactionable_Records", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "301800", "Model", "Meta_Model", true, "", "" ) );
    all_field_info.push_back( field_info( "118101", "Name", "string", false, "", "" ) );
@@ -4119,42 +4195,46 @@ const char* Meta_View::static_get_field_id( field_id id )
       break;
 
       case 11:
-      p_id = "118116";
+      p_id = "118118";
       break;
 
       case 12:
-      p_id = "301800";
+      p_id = "118116";
       break;
 
       case 13:
-      p_id = "118101";
+      p_id = "301800";
       break;
 
       case 14:
-      p_id = "118112";
+      p_id = "118101";
       break;
 
       case 15:
-      p_id = "118111";
+      p_id = "118112";
       break;
 
       case 16:
-      p_id = "118106";
+      p_id = "118111";
       break;
 
       case 17:
-      p_id = "118104";
+      p_id = "118106";
       break;
 
       case 18:
-      p_id = "301810";
+      p_id = "118104";
       break;
 
       case 19:
-      p_id = "118110";
+      p_id = "301810";
       break;
 
       case 20:
+      p_id = "118110";
+      break;
+
+      case 21:
       p_id = "118114";
       break;
    }
@@ -4212,42 +4292,46 @@ const char* Meta_View::static_get_field_name( field_id id )
       break;
 
       case 11:
-      p_id = "Ignore_Unactionable_Records";
+      p_id = "Ignore_Parent_Record";
       break;
 
       case 12:
-      p_id = "Model";
+      p_id = "Ignore_Unactionable_Records";
       break;
 
       case 13:
-      p_id = "Name";
+      p_id = "Model";
       break;
 
       case 14:
-      p_id = "PDF_Font_Type";
+      p_id = "Name";
       break;
 
       case 15:
-      p_id = "PDF_View_Type";
+      p_id = "PDF_Font_Type";
       break;
 
       case 16:
-      p_id = "Print_Without_Highlight";
+      p_id = "PDF_View_Type";
       break;
 
       case 17:
-      p_id = "Title";
+      p_id = "Print_Without_Highlight";
       break;
 
       case 18:
-      p_id = "Type";
+      p_id = "Title";
       break;
 
       case 19:
-      p_id = "Type_Key";
+      p_id = "Type";
       break;
 
       case 20:
+      p_id = "Type_Key";
+      break;
+
+      case 21:
       p_id = "Use_First_Row_As_Header";
       break;
    }
@@ -4284,26 +4368,28 @@ int Meta_View::static_get_field_num( const string& field )
       rc += 9;
    else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 10;
-   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
+   else if( field == c_field_id_Ignore_Parent_Record || field == c_field_name_Ignore_Parent_Record )
       rc += 11;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
       rc += 12;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 13;
-   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 14;
-   else if( field == c_field_id_PDF_View_Type || field == c_field_name_PDF_View_Type )
+   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
       rc += 15;
-   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
+   else if( field == c_field_id_PDF_View_Type || field == c_field_name_PDF_View_Type )
       rc += 16;
-   else if( field == c_field_id_Title || field == c_field_name_Title )
+   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
       rc += 17;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Title || field == c_field_name_Title )
       rc += 18;
-   else if( field == c_field_id_Type_Key || field == c_field_name_Type_Key )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 19;
-   else if( field == c_field_id_Use_First_Row_As_Header || field == c_field_name_Use_First_Row_As_Header )
+   else if( field == c_field_id_Type_Key || field == c_field_name_Type_Key )
       rc += 20;
+   else if( field == c_field_id_Use_First_Row_As_Header || field == c_field_name_Use_First_Row_As_Header )
+      rc += 21;
 
    return rc - 1;
 }
@@ -4341,6 +4427,7 @@ string Meta_View::static_get_sql_columns( )
     "C_Class VARCHAR(75) NOT NULL,"
     "C_File_Links_Always_As_Single INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
+    "C_Ignore_Parent_Record INTEGER NOT NULL,"
     "C_Ignore_Unactionable_Records INTEGER NOT NULL,"
     "C_Model VARCHAR(75) NOT NULL,"
     "C_PDF_Font_Type INTEGER NOT NULL,"
