@@ -772,7 +772,8 @@ bool output_view_form( ostream& os, const string& act,
             if( !sess_info.user_id.empty( )
              && !source.actions_value.empty( )
              && ( !( source.state & c_state_unactionable )
-             || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
+             || view_extras.count( c_view_type_extra_ignore_unactionable ) )
+             && ( !is_blockchain_application( ) || sess_info.user_id != c_guest_user_key ) )
             {
                if( had_any )
                   os << c_nbsp;
