@@ -62,6 +62,8 @@ group_package - Optional "group" package to divide blogs between groups.
 use_comments - Use this option to allow other users to leave comments.
 use_comments_publishing - Use this option to only display comments the author chooses to publish.
 
+use_permissions - Use this option to require user permissions for blog maintenance.
+
 use_tags - Use this option to add "tags" to blog entries useful for searching.
 
 use_user_access_level - Use this to apply the user access level to blogs and blog entries. *
