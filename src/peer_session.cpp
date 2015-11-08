@@ -1830,9 +1830,11 @@ string get_account_password( const string& blockchain, const string& account )
    string password;
    set< string >& passwords = g_blockchain_passwords[ blockchain ];
 
+   string test_account( account == string( c_admin ) ? blockchain : account );
+
    for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
    {
-      if( check_account( blockchain, *i ) == account )
+      if( check_account( blockchain, *i ) == test_account )
       {
          password = *i;
          break;
