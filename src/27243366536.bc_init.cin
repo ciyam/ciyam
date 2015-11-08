@@ -1,7 +1,9 @@
 #Creating genesis block for 27243366536...
-.file_raw -core blob blk:a=27243366536,h=0,cm=r:1100-100+10!500~5<50000000000,pk=Am6qWKrxRmqgWMtMWfPjyGu2pUyXXSkwRAyf7ZXUmYQG\n\
+.file_raw -core blob blk:a=27243366536,h=0,cm=r:1100-100+10!500~5<50000000000,pk=AhGYzbaAibP6aRtYyg48IYRjelqz/PufjQcGQEZ0LFvn\n\
+a:27243366536,e=5,h=ozC58KhNnaPx2DSSz1DqIhe3bAme3xNZZjvuFRxHLQw=,l=n4WfozUAJpkZRNfszhQczggVXyLowKuE7H\
+,mk=AtIVmiMTL3zNze+OuEe5FABRRnsi8+YJixRtI4zPoQun,th=MJDMR0OLePPzLcJYRG+UEF9MUSbNU7uBkBfql6heNsY=,tl=mxyijGSmMUPLzBWfYvhXCaQQfxC8mSqaq7\n\
 a:43927774761,e=5,h=AaqCEYwJ72GR6n6Z/KSGk0eTjenQ3GVvnUwKkVBa58M=,l=mqR6dnhMdga8y81WgA6iz9q5yDwc74Nd1d\
 ,mk=A3QnAMg7xvsZu4xb7tOvFkejMO5iE1Swct/YLpBzDi8O,th=ML4/J1Wri3p6ifLyIdSS7AMkizCGeamCGbwQNdsOnF4=,tl=mtWWqbWoiPFYEf5Lcn5BiKYqFopzzMrJKV\n\
 a:18720796232,e=5,h=7VDy7ZLA7k8IWp7kO/LJgVD1Sm9ZDnn4JH6miM5MeVo=,l=msYkdmRFhCcswd8aDXBdQt3ec4vDwbuHNP\
 ,mk=AsikIsrsxNegQPrnQY1Kiaf6B/Wth5VGfXMHwwHF2kXv,th=pV+crnPpkkVZN9ybmXqYsjNcgG1i7Md3cVuWap3XW7c=,tl=n4L3RNaThT1XVkaJLC1skRHHoxY587YaZh\n\
-s:MEYCIQD1WauyEJIgj0LQLTVXZWPzwI+2Hr+KqQ52wVHu+FBO2wIhAJCzYvtvaDxGCLlkrpgTtAgq/Yn05+eDtwXpFpNMVUyB
+s:MEUCIQCa9BwKxXMhQN3/0NuJy3f4/g7SIJkklVjlvyBjHo3CvwIgBIsNyOp4ePjJH9PFH2tWbwYV+xwt/wMmjE7oQL18l+s=

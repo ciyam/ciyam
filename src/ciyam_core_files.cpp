@@ -710,7 +710,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    guard g( g_mutex, "verify_block" );
 
    vector< string > lines;
-   split( content, lines, '\n' );
+   split( content, lines, '\n', c_esc, false );
 
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty block content" );
@@ -2540,7 +2540,7 @@ void verify_transaction( const string& content, bool check_sigs,
    guard g( g_mutex, "verify_transaction" );
 
    vector< string > lines;
-   split( content, lines, '\n' );
+   split( content, lines, '\n', c_esc, false );
 
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty transaction content" );
@@ -2722,6 +2722,7 @@ void verify_transaction( const string& content, bool check_sigs,
       if( prefix == string( c_file_type_core_transaction_detail_log_prefix ) )
       {
          ++num_log_lines;
+
          verify += "\n" + lines[ i ];
 
          log_lines.push_back( lines[ i ].substr( 2 ) );
@@ -3812,7 +3813,9 @@ string construct_new_transaction( const string& blockchain, const string& passwo
    if( acct.empty( ) )
       throw runtime_error( "unknown account: " + id );
 
-   if( !account.empty( ) && acct != account )
+   string test_account( account == string( c_admin ) ? blockchain : account );
+
+   if( !test_account.empty( ) && acct != test_account )
       throw runtime_error( "invalid password for account: " + account );
 
    string data( string( c_file_type_core_transaction_object )
@@ -3852,7 +3855,7 @@ string construct_new_transaction( const string& blockchain, const string& passwo
    if( !transaction_log_lines.empty( ) )
    {
       vector< string > tx_log_lines;
-      split( transaction_log_lines, tx_log_lines, '\n' );
+      split( transaction_log_lines, tx_log_lines, '\n', c_esc, false );
 
       for( size_t i = 0; i < tx_log_lines.size( ); i++ )
          data += "\n" + string( c_file_type_core_transaction_detail_log_prefix ) + tx_log_lines[ i ];
@@ -3923,6 +3926,9 @@ string construct_account_info(
       last_block_lock = ainfo.block_lock;
       last_trans_lock = ainfo.transaction_lock;
    }
+
+   if( account_id == string( c_admin ) )
+      account_id = blockchain;
 
    if( account_id.empty( ) )
       account_id = get_account_id_from_password( password );
@@ -4076,7 +4082,9 @@ string get_account_msg_secret( const string& blockchain, const string& password,
    if( acct.empty( ) )
       throw runtime_error( "unknown account: " + id );
 
-   if( !account.empty( ) && acct != account )
+   string test_account( account == string( c_admin ) ? blockchain : account );
+
+   if( !test_account.empty( ) && acct != test_account )
       throw runtime_error( "invalid password for account: " + account );
 
    account_key_info key_info;
