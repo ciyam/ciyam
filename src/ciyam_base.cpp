@@ -3079,7 +3079,7 @@ void append_undo_sql_statements( storage_handler& handler )
       }
 
       for( size_t i = 0; i < gtp_session->sql_undo_statements.size( ); i++ )
-         outf << gtp_session->sql_undo_statements[ i ] << '\n';
+         outf << escaped( gtp_session->sql_undo_statements[ i ], "\"", c_nul, "rn\r\n" ) << '\n';
 
       outf.flush( );
       if( !outf.good( ) )
@@ -7080,7 +7080,7 @@ void storage_process_undo( uint64_t new_height, map< string, string >& file_info
 
       for( size_t i = 0; i < undo_statements.size( ); i++ )
       {
-         string next_statement( undo_statements[ i ] );
+         string next_statement( unescaped( undo_statements[ i ], "rn\r\n" ) );
 
          if( !next_statement.empty( ) && next_statement[ 0 ] == '#' )
          {
@@ -10341,7 +10341,7 @@ void transaction_commit( )
          if( gtp_session->p_tx_helper )
             gtp_session->p_tx_helper->at_commit( );
 
-         if( is_using_blockchain )
+         if( is_using_blockchain && !is_init_uid( ) )
             append_undo_sql_statements( handler );
 
          append_transaction_log_command( handler );
