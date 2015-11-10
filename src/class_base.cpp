@@ -1942,6 +1942,7 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
       *p_undo_stmt += " SET C_Rev_=" + to_string( original_revision );
 
    bool done = false;
+
    vector< string > sql_column_names;
    get_sql_column_names( sql_column_names, &done, &class_name );
 
@@ -1983,13 +1984,14 @@ string class_base::generate_sql_update( const string& class_name, string* p_undo
             if( p_undo_stmt )
             {
                bool is_text = false;
-               if( !sql_column_values[ j ].empty( ) && sql_column_values[ j ][ 0 ] == 0x27 ) // i.e. '
+
+               if( !sql_column_values[ j ].empty( ) && sql_column_values[ j ][ 0 ] == '\'' )
                   is_text = true;
 
                *p_undo_stmt += ",";
                *p_undo_stmt += sql_column_names[ j ];
                *p_undo_stmt += '=';
-               *p_undo_stmt += is_text ? sql_quote( get_original_field_value( i ) ) : get_original_field_value( i );
+               *p_undo_stmt += !is_text ? get_original_field_value( i ) : sql_quote( get_original_field_value( i ) );
             }
          }
 
