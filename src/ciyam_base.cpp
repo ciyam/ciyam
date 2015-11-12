@@ -10214,8 +10214,8 @@ bool instance_iterate( size_t handle, const string& context,
  bool inclusive, int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
 {
    return perform_instance_iterate(
-    get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_none,
-    false ), key_info, fields, text, query, security_info, direction, inclusive, row_limit, optimisation, p_filters );
+    get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_none, false ),
+    key_info, fields, text, query, security_info, direction, inclusive, row_limit, optimisation, p_filters );
 }
 
 bool instance_iterate_next( size_t handle, const string& context )
@@ -10780,6 +10780,10 @@ void begin_instance_op( instance_op op, class_base& instance,
                if( p_rc )
                {
                   *p_rc = e_instance_op_rc_already_exists;
+
+                  instance_accessor.set_op( old_op, false );
+                  instance_accessor.set_in_op_begin( false );
+
                   return;
                }
                else
@@ -10805,6 +10809,10 @@ void begin_instance_op( instance_op op, class_base& instance,
             if( p_rc )
             {
                *p_rc = e_instance_op_rc_not_found;
+
+               instance_accessor.set_op( old_op, false );
+               instance_accessor.set_in_op_begin( false );
+
                return;
             }
             else
@@ -10842,6 +10850,10 @@ void begin_instance_op( instance_op op, class_base& instance,
             if( p_rc )
             {
                *p_rc = e_instance_op_rc_not_found;
+
+               instance_accessor.set_op( old_op, false );
+               instance_accessor.set_in_op_begin( false );
+
                return;
             }
             else
@@ -10879,6 +10891,10 @@ void begin_instance_op( instance_op op, class_base& instance,
                if( p_rc )
                {
                   *p_rc = e_instance_op_rc_child_locked;
+
+                  instance_accessor.set_op( old_op, false );
+                  instance_accessor.set_in_op_begin( false );
+
                   return;
                }
                else
@@ -10899,6 +10915,10 @@ void begin_instance_op( instance_op op, class_base& instance,
             if( p_rc )
             {
                *p_rc = e_instance_op_rc_constrained;
+
+               instance_accessor.set_op( old_op, false );
+               instance_accessor.set_in_op_begin( false );
+
                return;
             }
             else
