@@ -59,6 +59,11 @@ Package Options:
 group_for_home - If using the "group" package then this will determine the group to use for the "home" list.
 group_package - Optional "group" package to divide blogs between groups.
 
+max_blogs_per_user - Use this option to set the upper limit for the number of blogs a user can create. *
+max_entries_per_blog - Use this option to set the upper limit of blog entries that a blog can contain. *
+max_blog_tags_per_user - Use this option to set the upper limit of blog tags a user can create. *
+max_tags_per_blog_entry - Use this option to set the upper limit of blog tags a blog entry can contain. *
+
 use_comments - Use this option to allow other users to leave comments.
 use_comments_publishing - Use this option to only display comments the author chooses to publish.
 
@@ -66,10 +71,12 @@ use_permissions - Use this option to require user permissions for blog maintenan
 
 use_tags - Use this option to add "tags" to blog entries useful for searching.
 
-use_user_access_level - Use this to apply the user access level to blogs and blog entries. *
-use_user_ignore_users - Use this option to filter blog and blog entries from users in the ignore set. *
+use_user_access_level - Use this to apply the user access level to blogs and blog entries. **
+use_user_ignore_users - Use this option to filter blog and blog entries from users in the ignore set. **
 
-* It should be noted that these options will have no effect if the relevant options were not set for the User
+* These options only pertain to the blockchain version of this package.
+
+** It should be noted that these options will have no effect if the relevant options were not set in the User
 package before it was installed.
 
 -------------------------------------------------------------------------------------------------------------
