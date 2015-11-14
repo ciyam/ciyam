@@ -59,9 +59,10 @@ Package Options:
 group_for_home - If using the "group" package then this will determine the group to use for the "home" list.
 group_package - Optional "group" package to divide blogs between groups.
 
+max_blog_tags_per_user - Use this option to set the upper limit of blog tags a user can create. *
 max_blogs_per_user - Use this option to set the upper limit for the number of blogs a user can create. *
 max_entries_per_blog - Use this option to set the upper limit of blog entries that a blog can contain. *
-max_blog_tags_per_user - Use this option to set the upper limit of blog tags a user can create. *
+max_entry_parts_per_entry - Use this option to set the upper limit of entry parts a blog entry can contain. *
 max_tags_per_blog_entry - Use this option to set the upper limit of blog tags a blog entry can contain. *
 
 use_comments - Use this option to allow other users to leave comments.
