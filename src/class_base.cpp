@@ -5869,14 +5869,31 @@ string meta_field_extras( int uom,
    if( numeric_digits > 0 )
       all_extras.push_back( "format=" + to_string( numeric_digits ) + '.' + to_string( numeric_decimals ) );
 
-   if( enum_id.empty( ) && ( primitive == 4 || primitive == 5 ) ) // i.e. numeric or int
+   if( enum_id.empty( ) && primitive == 4 ) // i.e. numeric
    {
       all_extras.push_back( "mask="
-       + get_mask( numeric_digits, numeric_decimals, ( primitive == 4 ), show_plus_sign, zero_padding ) );
+       + get_mask( numeric_digits, numeric_decimals, true, show_plus_sign, zero_padding ) );
 
-      all_extras.push_back( "pmask="
-       + get_mask( numeric_digits == 0 ? 0 : numeric_digits + 4,
-       numeric_decimals, ( primitive == 4 ), show_plus_sign, zero_padding ) );
+      all_extras.push_back( "pmask=" + get_mask(
+       numeric_digits == 0 ? 0 : numeric_digits + 4, numeric_decimals, true, show_plus_sign, zero_padding ) );
+   }
+
+   if( enum_id.empty( ) && primitive == 5 ) // i.e. int
+   {
+      if( extra == 14 ) // i.e. defcurrentyear
+      {
+         all_extras.push_back( "mask=####" );
+         all_extras.push_back( "pmask=####" );
+      }
+      else
+      {
+         all_extras.push_back( "mask="
+          + get_mask( numeric_digits, numeric_decimals, false, show_plus_sign, zero_padding, false ) );
+
+         all_extras.push_back( "pmask=" + get_mask(
+          numeric_digits == 0 ? 0 : numeric_digits + 4,
+          numeric_decimals, false, show_plus_sign, zero_padding, false ) );
+      }
    }
 
    switch( int_type )
