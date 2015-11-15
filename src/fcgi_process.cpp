@@ -1121,7 +1121,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                            if( fs )
                            {
-                              crypt_stream( fs, p_session_info->user_pwd_hash );
+                              crypt_stream( fs, harden_key_with_salt(
+                               p_session_info->user_pwd_hash, file_name_without_path( new_file, true ) ) );
 
                               fs.flush( );
                               fs.close( );

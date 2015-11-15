@@ -41,4 +41,6 @@ std::string data_decrypt( const std::string& dat, const std::string& key, bool u
 std::string data_encrypt( const std::string& dat,
  const std::string& key, bool use_ssl = true, bool add_salt = true );
 
+std::string harden_key_with_salt( const std::string& key, const std::string& salt );
+
 #endif

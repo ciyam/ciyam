@@ -69,19 +69,17 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 
 `{`@eq`(`$arg_sfield`,`'`'`)`|`@eq`(`$arg_clone_only`,`'true`'`)\
 `{`$i`}   get_obj( ).finish_review( );
-
 `,\
 `{`$i`}   get_obj( ).`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
 `{`@eq`(`$arg_clone_only`,`'`'`)\
 `{`$i`}   get_obj( ).op_apply( );
-
 `}`}\
 `{`@eq`(`$arg_use_trans`,`'true`'`)\
 
       transaction_commit( );
-
 `}\
 `{`!`@eq`(`$arg_proc_arg`,`'`'`)`&`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`)\
+
 `{`$i`}   // FUTURE: The return message itself should be a module string.
 `{`@eq`(`$arg_use_proc_name`,`'`'`)\
 `{`$i`}   `{`$arg_proc_arg`} = "Created New " + get_obj( ).get_display_name( );

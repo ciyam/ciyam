@@ -332,3 +332,17 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
    return s;
 }
 
+string harden_key_with_salt( const string& key, const string& salt )
+{
+   sha256 hash;
+   string salted_key( key + salt );
+
+   for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
+   {
+      hash.update( salted_key + key );
+      hash.get_digest_as_string( salted_key );
+   }
+
+   return salted_key;
+}
+

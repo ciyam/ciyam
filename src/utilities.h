@@ -738,6 +738,8 @@ void buffer_file_items( const std::string& file_name,
 
 bool absolute_path( const std::string& relative_path, std::string& absolute_path );
 
+std::string file_name_without_path( const std::string& path, bool remove_extension = false );
+
 time_t last_modification_time( const std::string& file_name );
 
 void output_string_as_text_lines( const std::string& str, std::ostream& os,
