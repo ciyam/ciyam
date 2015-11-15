@@ -1726,6 +1726,26 @@ bool absolute_path( const string& relative_path, string& absolute_path )
    return found;
 }
 
+string file_name_without_path( const string& path, bool remove_extension )
+{
+   string file_name( path );
+
+   string::size_type pos = path.find_last_of( ":/\\" );
+
+   if( pos != string::npos )
+      file_name.erase( 0, pos + 1 );
+
+   if( remove_extension )
+   {
+      pos = file_name.find( '.' );
+
+      if( pos != string::npos )
+         file_name.erase( pos );
+   }
+
+   return file_name;
+}
+
 time_t last_modification_time( const string& file_name )
 {
    struct stat statbuf;

@@ -872,7 +872,8 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
 
       if( fs )
       {
-         crypt_stream( fs, string( p_decryption_key ) );
+         crypt_stream( fs, harden_key_with_salt(
+          p_decryption_key, file_name_without_path( file_name, true ) ) );
 
          fs.flush( );
          fs.close( );
