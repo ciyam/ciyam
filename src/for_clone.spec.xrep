@@ -51,11 +51,10 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `}\
 `{`$i`}   cp_source->op_apply( );
 `,\
-`{`$i`}   set_session_variable( get_special_var_name( e_special_var_key_info ), key_info );
+`{`$i`}   temporary_session_variable tmp_session_var( get_special_var_name( e_special_var_key_info ), key_info );
 `{`!`@eq`(`$arg_extra`,`'`'`)\
-`{`$i`}   set_session_variable( get_special_var_name( e_special_var_extra_info ), cp_key_source->`{`$arg_extra`}( ) );
-`}\
-
+`{`$i`}   temporary_session_variable tmp_session_extra( get_special_var_name( e_special_var_extra_info ), cp_key_source->`{`$arg_extra`}( ) );
+`}
 `{`$i`}   get_obj( ).`{`$arg_fldval`}( to_string( c_field_id_`{`$arg_field`} ) + "=" + to_string( "`{`$arg_value`}" ) );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_tfield`} ) + "=" );
