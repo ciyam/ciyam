@@ -76,32 +76,33 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Notes_Truncation = 27,
       e_field_id_Omit_Versions = 28,
       e_field_id_Order = 29,
-      e_field_id_Parent_Class = 30,
-      e_field_id_Print_Type = 31,
-      e_field_id_Procedure = 32,
-      e_field_id_Procedure_Args = 33,
-      e_field_id_Restriction_Field = 34,
-      e_field_id_Restriction_Spec = 35,
-      e_field_id_Restriction_Value = 36,
-      e_field_id_Retain_Selected_Rows = 37,
-      e_field_id_Reverse_Order = 38,
-      e_field_id_Search_Option_Limit = 39,
-      e_field_id_Select_Key_Exclusions = 40,
-      e_field_id_Sort_Manually = 41,
-      e_field_id_Source_Child = 42,
-      e_field_id_Source_Child_Class = 43,
-      e_field_id_Source_Field = 44,
-      e_field_id_Source_Grandchild = 45,
-      e_field_id_Source_Parent = 46,
-      e_field_id_Source_Parent_Class = 47,
-      e_field_id_Switch_Type = 48,
-      e_field_id_Trigger_Option = 49,
-      e_field_id_Type = 50,
-      e_field_id_Use_Child_Rel_Source_Parent = 51,
-      e_field_id_Use_In_Text_Search_Title = 52,
-      e_field_id_Use_Source_Parent = 53,
-      e_field_id_Use_Type_Field = 54,
-      e_field_id_View_Parent_Extra = 55
+      e_field_id_Orientation = 30,
+      e_field_id_Parent_Class = 31,
+      e_field_id_Print_Type = 32,
+      e_field_id_Procedure = 33,
+      e_field_id_Procedure_Args = 34,
+      e_field_id_Restriction_Field = 35,
+      e_field_id_Restriction_Spec = 36,
+      e_field_id_Restriction_Value = 37,
+      e_field_id_Retain_Selected_Rows = 38,
+      e_field_id_Reverse_Order = 39,
+      e_field_id_Search_Option_Limit = 40,
+      e_field_id_Select_Key_Exclusions = 41,
+      e_field_id_Sort_Manually = 42,
+      e_field_id_Source_Child = 43,
+      e_field_id_Source_Child_Class = 44,
+      e_field_id_Source_Field = 45,
+      e_field_id_Source_Grandchild = 46,
+      e_field_id_Source_Parent = 47,
+      e_field_id_Source_Parent_Class = 48,
+      e_field_id_Switch_Type = 49,
+      e_field_id_Trigger_Option = 50,
+      e_field_id_Type = 51,
+      e_field_id_Use_Child_Rel_Source_Parent = 52,
+      e_field_id_Use_In_Text_Search_Title = 53,
+      e_field_id_Use_Source_Parent = 54,
+      e_field_id_Use_Type_Field = 55,
+      e_field_id_View_Parent_Extra = 56
    };
 
    Meta_List_Field( );
@@ -160,6 +161,9 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
 
    const std::string& Order( ) const;
    void Order( const std::string& Order );
+
+   int Orientation( ) const;
+   void Orientation( int Orientation );
 
    int Print_Type( ) const;
    void Print_Type( int Print_Type );

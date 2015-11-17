@@ -3112,6 +3112,35 @@ void Meta_Model::impl::impl_Generate( )
                          + " in Model::Generate" );
                      }
 
+                     if( get_obj( ).child_View( ).child_View_Field( ).Source_Field( ).Extra( ) == 3 ) // i.e. image
+                     {
+                        switch( get_obj( ).child_View( ).child_View_Field( ).Orientation( ) )
+                        {
+                           case 0:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "landscape";
+                           break;
+
+                           case 1:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "portrait";
+                           break;
+
+                           case 2:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "neither";
+                           break;
+
+                           default:
+                           throw runtime_error( "unexpected Orientation value #"
+                            + to_string( get_obj( ).child_View( ).child_View_Field( ).Orientation( ) )
+                            + " in Model::Generate" );
+                        }
+                     }
+
                      if( get_obj( ).child_View( ).child_View_Field( ).Use_Full_Width( ) )
                      {
                         if( !extras.empty( ) )
@@ -4341,6 +4370,35 @@ void Meta_Model::impl::impl_Generate( )
                            throw runtime_error( "unexpected Alignment value #"
                             + to_string( get_obj( ).child_List( ).child_List_Field( ).Alignment( ) )
                             + " in Model::Generate" );
+                        }
+
+                        if( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ) == 3 ) // i.e. image
+                        {
+                           switch( get_obj( ).child_List( ).child_List_Field( ).Orientation( ) )
+                           {
+                              case 0:
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "landscape";
+                              break;
+
+                              case 1:
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "portrait";
+                              break;
+
+                              case 2:
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "neither";
+                              break;
+
+                              default:
+                              throw runtime_error( "unexpected Orientation value #"
+                               + to_string( get_obj( ).child_List( ).child_List_Field( ).Orientation( ) )
+                               + " in Model::Generate" );
+                           }
                         }
 
                         switch( get_obj( ).child_List( ).child_List_Field( ).Print_Type( ) )

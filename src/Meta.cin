@@ -42,6 +42,7 @@ user_defined_enum_add -id=620 source_type int 0=string,1=datetime,2=date,3=time,
 user_defined_enum_add -id=630 test_field_type int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool\
 ,20=Any_Text_Type,30=Any_Scalar_Type,35=Any_Conditional,38=Any_Value_Or_Conditional,99=Any_Type
 user_defined_enum_add -id=635 font_size int 0=default,1=large,2=larger,5=small,6=smaller
+user_defined_enum_add -id=638 orientation int 0=landscape,1=portrait,2=neither
 user_defined_enum_add -id=640 procedure_arg_type int 0=in,1=out,99=Any_Type
 user_defined_enum_add -id=650 procedure_arg_primitive int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool,99=Any_Primitive
 user_defined_enum_add -id=654 pdf_font_type int 0=Times_Roman,1=Helvetica,20=SimSun,21=SimHei
@@ -74,15 +75,15 @@ user_defined_enum_add -id=687 list_display_row_limit int 0=default,1=1,2=2,3=3,4
 user_defined_enum_add -id=688 list_direction int 0=forward,1=reverse
 user_defined_enum_add -id=689 list_text_match_highlight int 0=none,1=highlight,2=highlight1
 user_defined_enum_add -id=690 list_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=692 list_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=693 list_field_label_source int 0=field,1=list,2=omit_label
-user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
-user_defined_enum_add -id=695 list_field_switch_type int 0=checked,1=unchecked,2=checked\\_reversing,3=unchecked\\_reversing
-user_defined_enum_add -id=696 list_field_print_type int 0=standard,1=non\\_print,2=print\\_only,3=print\\_total,4=print\\_summary,5=print\\_only\\_total,6=print\\_only\\_summary
-user_defined_enum_add -id=697 list_field_notes_truncation int 1=none,0=standard,30=30,40=40,50=50,80=80,100=100
-user_defined_enum_add -id=698 list_field_link_type int 0=foreign,1=non\\_foreign
-user_defined_enum_add -id=699 list_field_label_class int 0=child,1=parent
-user_defined_enum_add -id=700 list_field_view_parent_extra int 0=none,1=vext1,2=vext2,3=vext3,4=vext4,5=vext5,6=vext6,7=vext7,8=vext8,9=vext9,10=vext0
+user_defined_enum_add -id=691 list_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
+user_defined_enum_add -id=692 list_field_label_source int 0=field,1=list,2=omit_label
+user_defined_enum_add -id=693 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
+user_defined_enum_add -id=694 list_field_switch_type int 0=checked,1=unchecked,2=checked\\_reversing,3=unchecked\\_reversing
+user_defined_enum_add -id=695 list_field_print_type int 0=standard,1=non\\_print,2=print\\_only,3=print\\_total,4=print\\_summary,5=print\\_only\\_total,6=print\\_only\\_summary
+user_defined_enum_add -id=696 list_field_notes_truncation int 1=none,0=standard,30=30,40=40,50=50,80=80,100=100
+user_defined_enum_add -id=697 list_field_link_type int 0=foreign,1=non\\_foreign
+user_defined_enum_add -id=698 list_field_label_class int 0=child,1=parent
+user_defined_enum_add -id=699 list_field_view_parent_extra int 0=none,1=vext1,2=vext2,3=vext3,4=vext4,5=vext5,6=vext6,7=vext7,8=vext8,9=vext9,10=vext0
 user_defined_enum_add -id=800 field_action_create_type int 0=standard,1=confirmation,2=edit\\_and\\_save
 user_defined_enum_add -id=801 field_action_create_access_restriction int 0=none,1=owner,2=admin,3=non\\_admin
 user_defined_enum_add -id=802 field_action_type int 0=create\\_record,1=procedure\\_call
@@ -585,6 +586,7 @@ field_add -id=120128 View_Field Label_Without_Prefix bool mand -def=0
 field_add -id=120129 View_Field Allow_Anonymous_Access bool mand -def=1
 field_add -id=120130 View_Field Use_Full_Height bool mand -def=0
 field_add -id=120131 View_Field Alignment int mand -def=0 -e=field_alignment
+field_add -id=120132 View_Field Orientation int mand -def=0 -e=orientation
 procedure_add -id=120410 View_Field Move_Up
 procedure_arg_add -id=120411 View_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=120412 View_Field Move_Up Restrict_Values string in
@@ -701,6 +703,7 @@ field_add -id=124132 List_Field View_Parent_Extra int mand -def=0 -e=list_field_
 field_add -id=124133 List_Field Allow_Anonymous_Access bool mand -def=1
 field_add -id=124134 List_Field Link_Empty_Restriction int mand -def=0 -e=list_field_link_restrict
 field_add -id=124135 List_Field Sort_Manually bool mand -def=0
+field_add -id=124136 List_Field Orientation int mand -def=0 -e=orientation
 procedure_add -id=124410 List_Field Move_Up
 procedure_arg_add -id=124411 List_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=124412 List_Field Move_Up Restrict_Values string in
@@ -1191,6 +1194,10 @@ modifier_add -id=500741 View_Field Protect_Access_Scope Access_Scope:protect
 modifier_add -id=500742 View_Field Protect_Access_Restriction Access_Restriction:protect,Access_{Permission}:protect
 modifier_add -id=500743 View_Field Protect_Change_Scope Change_Scope:protect
 modifier_add -id=500744 View_Field Protect_Change_Restriction Change_Restriction:protect,Change_{Permission}:protect
+modifier_add -id=500745 View_Field Is_Not_Image Orientation:relegate
+modifier_add -id=500746 View_Field Is_File_Or_Image Trigger_Option:relegate,Trigger_Behaviour:relegate\
+,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate,Font_Size:relegate\
+,Use_Full_Height:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
 modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate\
 ,Create_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate,Destroy_Parent_Modifier:relegate
@@ -1216,6 +1223,9 @@ modifier_add -id=500836 List Protect_Create Create_Restriction:protect,Create_{P
 modifier_add -id=500837 List Protect_Destroy Destroy_Restriction:protect,Destroy_{Permission}:protect
 modifier_add -id=500850 List_Field Hide_Non_FK_Field Source_Field:relegate
 modifier_add -id=500855 List_Field Hide_Child_Rel_Non_FK_Field Child_Rel_Source_Field:relegate
+modifier_add -id=500856 List_Field Is_Not_Image Orientation:relegate
+modifier_add -id=500857 List_Field Is_File_Or_Image Font_Size:relegate,Notes_Truncation:relegate,Print_Type:relegate\
+,Use_Type_Field:relegate,Use_In_Text_Search_Title:relegate,Link_Restriction:relegate,Link_{Permission}:relegate
 modifier_add -id=500860 List_Field Hide_FK_Fields Source_Parent:relegate\
 ,Source_Child:relegate,Source_Grandchild:relegate,Link_Type:relegate
 modifier_add -id=500865 List_Field Hide_Child_Rel_FK_Fields\
@@ -2118,8 +2128,8 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Alignment,Use_Full_Width,Use_Full_Height,Ignore_Manual_Links\
-,Label_Without_Prefix,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
+,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Alignment,Orientation,Use_Full_Width,Use_Full_Height\
+,Ignore_Manual_Links,Label_Without_Prefix,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
 ,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name,Allow_Anonymous_Access"
 specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_limit\
@@ -2153,7 +2163,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name;link\
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure;force\
-,Font_Size,Alignment,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
+,Font_Size,Alignment,Orientation,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
 ,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Link_Empty_Restriction,Allow_Anonymous_Access"

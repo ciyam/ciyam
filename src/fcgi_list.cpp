@@ -3274,6 +3274,9 @@ void output_list_form( ostream& os,
 
                string width( image_width );
                string height( image_height );
+
+               bool do_not_size_image = false;
+
                if( !source.orientation_field.empty( ) )
                {
                   int orientation = atoi( columns[ orientation_col ].c_str( ) );
@@ -3281,7 +3284,7 @@ void output_list_form( ostream& os,
                   if( orientation == 1 ) // i.e. Portrait
                      swap( height, width );
                   else if( orientation == 2 ) // i.e. Neither
-                     height = width;
+                     do_not_size_image = true;
                }
 
                if( file_exists( file_name ) )
@@ -3345,9 +3348,20 @@ void output_list_form( ostream& os,
                         image_src = "data:image/" + file_last_ext + ";base64," + base64::encode( buffer );
                      }
 
-                     os << "<img src=\"" << image_src
-                      << "\" width=\"" << width << "\" height=\""
-                      << height << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+                     if( source.orientation_field.empty( ) )
+                     {
+                        if( extra_data.count( c_field_extra_portrait ) )
+                           swap( height, width );
+                        else if( extra_data.count( c_field_extra_neither ) )
+                           do_not_size_image = true;
+                     }
+
+                     os << "<img src=\"" << image_src;
+
+                     if( !embed_images && !do_not_size_image )
+                        os << "\" width=\"" << width << "\" height=\"" << height;
+
+                     os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
                   }
                }
             }
