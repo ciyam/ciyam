@@ -66,23 +66,24 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_New_Source = 23,
       e_field_id_New_Value = 24,
       e_field_id_Order = 25,
-      e_field_id_Restriction_Spec = 26,
-      e_field_id_Show_Hide_Start_Point = 27,
-      e_field_id_Sort_Manually = 28,
-      e_field_id_Source_Child = 29,
-      e_field_id_Source_Edit_Child = 30,
-      e_field_id_Source_Field = 31,
-      e_field_id_Source_Parent = 32,
-      e_field_id_Source_Parent_Class = 33,
-      e_field_id_Tab_Name = 34,
-      e_field_id_Trigger_Behaviour = 35,
-      e_field_id_Trigger_For_State = 36,
-      e_field_id_Trigger_Option = 37,
-      e_field_id_Type = 38,
-      e_field_id_Use_Full_Height = 39,
-      e_field_id_Use_Full_Width = 40,
-      e_field_id_Use_Source_Parent = 41,
-      e_field_id_View = 42
+      e_field_id_Orientation = 26,
+      e_field_id_Restriction_Spec = 27,
+      e_field_id_Show_Hide_Start_Point = 28,
+      e_field_id_Sort_Manually = 29,
+      e_field_id_Source_Child = 30,
+      e_field_id_Source_Edit_Child = 31,
+      e_field_id_Source_Field = 32,
+      e_field_id_Source_Parent = 33,
+      e_field_id_Source_Parent_Class = 34,
+      e_field_id_Tab_Name = 35,
+      e_field_id_Trigger_Behaviour = 36,
+      e_field_id_Trigger_For_State = 37,
+      e_field_id_Trigger_Option = 38,
+      e_field_id_Type = 39,
+      e_field_id_Use_Full_Height = 40,
+      e_field_id_Use_Full_Width = 41,
+      e_field_id_Use_Source_Parent = 42,
+      e_field_id_View = 43
    };
 
    Meta_View_Field( );
@@ -150,6 +151,9 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    const std::string& Order( ) const;
    void Order( const std::string& Order );
+
+   int Orientation( ) const;
+   void Orientation( int Orientation );
 
    bool Show_Hide_Start_Point( ) const;
    void Show_Hide_Start_Point( bool Show_Hide_Start_Point );

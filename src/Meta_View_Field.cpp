@@ -159,6 +159,7 @@ const char* const c_field_id_Name = "120102";
 const char* const c_field_id_New_Source = "120109";
 const char* const c_field_id_New_Value = "120117";
 const char* const c_field_id_Order = "120101";
+const char* const c_field_id_Orientation = "120132";
 const char* const c_field_id_Restriction_Spec = "301980";
 const char* const c_field_id_Show_Hide_Start_Point = "120116";
 const char* const c_field_id_Sort_Manually = "120115";
@@ -202,6 +203,7 @@ const char* const c_field_name_Name = "Name";
 const char* const c_field_name_New_Source = "New_Source";
 const char* const c_field_name_New_Value = "New_Value";
 const char* const c_field_name_Order = "Order";
+const char* const c_field_name_Orientation = "Orientation";
 const char* const c_field_name_Restriction_Spec = "Restriction_Spec";
 const char* const c_field_name_Show_Hide_Start_Point = "Show_Hide_Start_Point";
 const char* const c_field_name_Sort_Manually = "Sort_Manually";
@@ -245,6 +247,7 @@ const char* const c_field_display_name_Name = "field_view_field_name";
 const char* const c_field_display_name_New_Source = "field_view_field_new_source";
 const char* const c_field_display_name_New_Value = "field_view_field_new_value";
 const char* const c_field_display_name_Order = "field_view_field_order";
+const char* const c_field_display_name_Orientation = "field_view_field_orientation";
 const char* const c_field_display_name_Restriction_Spec = "field_view_field_restriction_spec";
 const char* const c_field_display_name_Show_Hide_Start_Point = "field_view_field_show_hide_start_point";
 const char* const c_field_display_name_Sort_Manually = "field_view_field_sort_manually";
@@ -263,7 +266,7 @@ const char* const c_field_display_name_Use_Full_Width = "field_view_field_use_fu
 const char* const c_field_display_name_Use_Source_Parent = "field_view_field_use_source_parent";
 const char* const c_field_display_name_View = "field_view_field_view";
 
-const int c_num_fields = 42;
+const int c_num_fields = 43;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -297,6 +300,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "120129",
    "120130",
    "120131",
+   "120132",
    "301900",
    "301905",
    "301910",
@@ -338,6 +342,7 @@ const char* const c_all_sorted_field_names[ ] =
    "New_Source",
    "New_Value",
    "Order",
+   "Orientation",
    "Restriction_Spec",
    "Show_Hide_Start_Point",
    "Sort_Manually",
@@ -396,15 +401,17 @@ const uint64_t c_modifier_Hide_FK_Fields = UINT64_C( 0x100 );
 const uint64_t c_modifier_Hide_New_Value = UINT64_C( 0x200 );
 const uint64_t c_modifier_Hide_Non_FK_Fields = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Field = UINT64_C( 0x800 );
-const uint64_t c_modifier_Is_Key = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Not_Date = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Not_Enum = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Is_Tab = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Protect_Access_Restriction = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Protect_Access_Scope = UINT64_C( 0x40000 );
-const uint64_t c_modifier_Protect_Change_Restriction = UINT64_C( 0x80000 );
-const uint64_t c_modifier_Protect_Change_Scope = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Is_File_Or_Image = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Key = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Not_Date = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Not_Enum = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Is_Not_Image = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Tab = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Protect_Access_Restriction = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Protect_Access_Scope = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Protect_Change_Restriction = UINT64_C( 0x200000 );
+const uint64_t c_modifier_Protect_Change_Scope = UINT64_C( 0x400000 );
 
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_New_Value_domain;
@@ -455,6 +462,7 @@ string g_default_Name = string( );
 int g_default_New_Source = int( 0 );
 string g_default_New_Value = string( );
 string g_default_Order = string( );
+int g_default_Orientation = int( 0 );
 string g_default_Restriction_Spec = string( );
 bool g_default_Show_Hide_Start_Point = bool( 0 );
 bool g_default_Sort_Manually = bool( 0 );
@@ -486,6 +494,7 @@ set< int > g_font_size_enum;
 set< int > g_view_field_link_restrict_enum;
 set< int > g_view_field_mandatory_option_enum;
 set< int > g_view_field_new_source_enum;
+set< int > g_orientation_enum;
 set< int > g_view_field_trigger_behaviour_enum;
 set< int > g_view_field_trigger_for_state_enum;
 set< int > g_view_field_trigger_option_enum;
@@ -899,6 +908,28 @@ string get_enum_string_view_field_new_source( int val )
    return get_module_string( lower( string_name ) );
 }
 
+const int c_enum_orientation_landscape( 0 );
+const int c_enum_orientation_portrait( 1 );
+const int c_enum_orientation_neither( 2 );
+
+string get_enum_string_orientation( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for orientation" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_orientation_landscape";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_orientation_portrait";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_orientation_neither";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for orientation" );
+
+   return get_module_string( lower( string_name ) );
+}
+
 const int c_enum_view_field_trigger_behaviour_normal( 0 );
 const int c_enum_view_field_trigger_behaviour_send_always( 1 );
 const int c_enum_view_field_trigger_behaviour_fetch_always( 2 );
@@ -1223,6 +1254,12 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
          string_getter< string >( cmd_handler.p_Meta_View_Field->Order( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Orientation || field_name == c_field_name_Orientation )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_View_Field->Orientation( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
       {
          handled = true;
@@ -1512,6 +1549,13 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
           *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Order, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Orientation || field_name == c_field_name_Orientation )
+      {
+         handled = true;
+         func_string_setter< Meta_View_Field, int >(
+          *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Orientation, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
       {
          handled = true;
@@ -1771,6 +1815,9 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
    void impl_Order( const string& Order ) { sanity_check( Order ); v_Order = Order; }
+
+   int impl_Orientation( ) const { return lazy_fetch( p_obj ), v_Orientation; }
+   void impl_Orientation( int Orientation ) { v_Orientation = Orientation; }
 
    bool impl_Show_Hide_Start_Point( ) const { return lazy_fetch( p_obj ), v_Show_Hide_Start_Point; }
    void impl_Show_Hide_Start_Point( bool Show_Hide_Start_Point ) { v_Show_Hide_Start_Point = Show_Hide_Start_Point; }
@@ -2241,6 +2288,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    int v_New_Source;
    string v_New_Value;
    string v_Order;
+   int v_Orientation;
    bool v_Show_Hide_Start_Point;
    bool v_Sort_Manually;
    string v_Tab_Name;
@@ -2531,70 +2579,74 @@ string Meta_View_Field::impl::get_field_value( int field ) const
       break;
 
       case 25:
-      retval = to_string( impl_Restriction_Spec( ) );
+      retval = to_string( impl_Orientation( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Show_Hide_Start_Point( ) );
+      retval = to_string( impl_Restriction_Spec( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Sort_Manually( ) );
+      retval = to_string( impl_Show_Hide_Start_Point( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Source_Child( ) );
+      retval = to_string( impl_Sort_Manually( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Source_Edit_Child( ) );
+      retval = to_string( impl_Source_Child( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Source_Edit_Child( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Source_Parent( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Source_Parent_Class( ) );
+      retval = to_string( impl_Source_Parent( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Tab_Name( ) );
+      retval = to_string( impl_Source_Parent_Class( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Trigger_Behaviour( ) );
+      retval = to_string( impl_Tab_Name( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Trigger_For_State( ) );
+      retval = to_string( impl_Trigger_Behaviour( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Trigger_Option( ) );
+      retval = to_string( impl_Trigger_For_State( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Trigger_Option( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Use_Full_Height( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 39:
-      retval = to_string( impl_Use_Full_Width( ) );
+      retval = to_string( impl_Use_Full_Height( ) );
       break;
 
       case 40:
-      retval = to_string( impl_Use_Source_Parent( ) );
+      retval = to_string( impl_Use_Full_Width( ) );
       break;
 
       case 41:
+      retval = to_string( impl_Use_Source_Parent( ) );
+      break;
+
+      case 42:
       retval = to_string( impl_View( ) );
       break;
 
@@ -2710,70 +2762,74 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 25:
-      func_string_setter< Meta_View_Field::impl, Meta_Specification >( *this, &Meta_View_Field::impl::impl_Restriction_Spec, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Orientation, value );
       break;
 
       case 26:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Show_Hide_Start_Point, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Specification >( *this, &Meta_View_Field::impl::impl_Restriction_Spec, value );
       break;
 
       case 27:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Sort_Manually, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Show_Hide_Start_Point, value );
       break;
 
       case 28:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Child, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Sort_Manually, value );
       break;
 
       case 29:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Edit_Child, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Child, value );
       break;
 
       case 30:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Edit_Child, value );
       break;
 
       case 31:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Parent, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Field, value );
       break;
 
       case 32:
-      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Source_Parent_Class, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Parent, value );
       break;
 
       case 33:
-      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Tab_Name, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Source_Parent_Class, value );
       break;
 
       case 34:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Behaviour, value );
+      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Tab_Name, value );
       break;
 
       case 35:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_For_State, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Behaviour, value );
       break;
 
       case 36:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Option, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_For_State, value );
       break;
 
       case 37:
-      func_string_setter< Meta_View_Field::impl, Meta_View_Field_Type >( *this, &Meta_View_Field::impl::impl_Type, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Option, value );
       break;
 
       case 38:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Height, value );
+      func_string_setter< Meta_View_Field::impl, Meta_View_Field_Type >( *this, &Meta_View_Field::impl::impl_Type, value );
       break;
 
       case 39:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Height, value );
       break;
 
       case 40:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
       break;
 
       case 41:
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      break;
+
+      case 42:
       func_string_setter< Meta_View_Field::impl, Meta_View >( *this, &Meta_View_Field::impl::impl_View, value );
       break;
 
@@ -2889,70 +2945,74 @@ bool Meta_View_Field::impl::is_field_default( int field ) const
       break;
 
       case 25:
-      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
+      retval = ( v_Orientation == g_default_Orientation );
       break;
 
       case 26:
-      retval = ( v_Show_Hide_Start_Point == g_default_Show_Hide_Start_Point );
+      retval = ( v_Restriction_Spec == g_default_Restriction_Spec );
       break;
 
       case 27:
-      retval = ( v_Sort_Manually == g_default_Sort_Manually );
+      retval = ( v_Show_Hide_Start_Point == g_default_Show_Hide_Start_Point );
       break;
 
       case 28:
-      retval = ( v_Source_Child == g_default_Source_Child );
+      retval = ( v_Sort_Manually == g_default_Sort_Manually );
       break;
 
       case 29:
-      retval = ( v_Source_Edit_Child == g_default_Source_Edit_Child );
+      retval = ( v_Source_Child == g_default_Source_Child );
       break;
 
       case 30:
-      retval = ( v_Source_Field == g_default_Source_Field );
+      retval = ( v_Source_Edit_Child == g_default_Source_Edit_Child );
       break;
 
       case 31:
-      retval = ( v_Source_Parent == g_default_Source_Parent );
+      retval = ( v_Source_Field == g_default_Source_Field );
       break;
 
       case 32:
-      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
+      retval = ( v_Source_Parent == g_default_Source_Parent );
       break;
 
       case 33:
-      retval = ( v_Tab_Name == g_default_Tab_Name );
+      retval = ( v_Source_Parent_Class == g_default_Source_Parent_Class );
       break;
 
       case 34:
-      retval = ( v_Trigger_Behaviour == g_default_Trigger_Behaviour );
+      retval = ( v_Tab_Name == g_default_Tab_Name );
       break;
 
       case 35:
-      retval = ( v_Trigger_For_State == g_default_Trigger_For_State );
+      retval = ( v_Trigger_Behaviour == g_default_Trigger_Behaviour );
       break;
 
       case 36:
-      retval = ( v_Trigger_Option == g_default_Trigger_Option );
+      retval = ( v_Trigger_For_State == g_default_Trigger_For_State );
       break;
 
       case 37:
-      retval = ( v_Type == g_default_Type );
+      retval = ( v_Trigger_Option == g_default_Trigger_Option );
       break;
 
       case 38:
-      retval = ( v_Use_Full_Height == g_default_Use_Full_Height );
+      retval = ( v_Type == g_default_Type );
       break;
 
       case 39:
-      retval = ( v_Use_Full_Width == g_default_Use_Full_Width );
+      retval = ( v_Use_Full_Height == g_default_Use_Full_Height );
       break;
 
       case 40:
-      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      retval = ( v_Use_Full_Width == g_default_Use_Full_Width );
       break;
 
       case 41:
+      retval = ( v_Use_Source_Parent == g_default_Use_Source_Parent );
+      break;
+
+      case 42:
       retval = ( v_View == g_default_View );
       break;
 
@@ -3034,6 +3094,13 @@ uint64_t Meta_View_Field::impl::get_state( ) const
    if( get_obj( ).Source_Field( ).Change_Restriction( ) != 0
     || get_obj( ).Source_Parent( ).Change_Restriction( ) != 0 )
       state |= c_modifier_Protect_Change_Restriction;
+
+   if( get_obj( ).Source_Field( ).Extra( ) != 3 ) // i.e. image
+      state |= c_modifier_Is_Not_Image;
+
+   if( get_obj( ).Source_Field( ).Extra( ) == 1 // i.e. file
+    || get_obj( ).Source_Field( ).Extra( ) == 3 ) // i.e. image
+      state |= c_modifier_Is_File_Or_Image;
    // [<finish get_state>]
 
    return state;
@@ -3196,6 +3263,7 @@ void Meta_View_Field::impl::clear( )
    v_New_Source = g_default_New_Source;
    v_New_Value = g_default_New_Value;
    v_Order = g_default_Order;
+   v_Orientation = g_default_Orientation;
    v_Show_Hide_Start_Point = g_default_Show_Hide_Start_Point;
    v_Sort_Manually = g_default_Sort_Manually;
    v_Tab_Name = g_default_Tab_Name;
@@ -3389,6 +3457,11 @@ void Meta_View_Field::impl::validate( unsigned state, bool is_internal, validati
       p_validation_errors->insert( validation_error_value_type( c_field_name_New_Source,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_New_Source ) ) ) ) );
+
+   if( !g_orientation_enum.count( v_Orientation ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Orientation,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Orientation ) ) ) ) );
 
    if( !g_view_field_trigger_behaviour_enum.count( v_Trigger_Behaviour ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Trigger_Behaviour,
@@ -3984,6 +4057,16 @@ const string& Meta_View_Field::Order( ) const
 void Meta_View_Field::Order( const string& Order )
 {
    p_impl->impl_Order( Order );
+}
+
+int Meta_View_Field::Orientation( ) const
+{
+   return p_impl->impl_Orientation( );
+}
+
+void Meta_View_Field::Orientation( int Orientation )
+{
+   p_impl->impl_Orientation( Orientation );
 }
 
 bool Meta_View_Field::Show_Hide_Start_Point( ) const
@@ -4667,6 +4750,16 @@ const char* Meta_View_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Orientation )
+   {
+      p_id = c_field_id_Orientation;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Restriction_Spec )
    {
       p_id = c_field_id_Restriction_Spec;
@@ -5098,6 +5191,16 @@ const char* Meta_View_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Orientation )
+   {
+      p_name = c_field_name_Orientation;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Restriction_Spec )
    {
       p_name = c_field_name_Restriction_Spec;
@@ -5427,6 +5530,11 @@ string Meta_View_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Order );
       get_module_string( c_field_display_name_Order, &next );
    }
+   else if( id_or_name == c_field_id_Orientation || id_or_name == c_field_name_Orientation )
+   {
+      name = string( c_field_display_name_Orientation );
+      get_module_string( c_field_display_name_Orientation, &next );
+   }
    else if( id_or_name == c_field_id_Restriction_Spec || id_or_name == c_field_name_Restriction_Spec )
    {
       name = string( c_field_display_name_Restriction_Spec );
@@ -5577,6 +5685,8 @@ string Meta_View_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_New_Value );
    else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
       display_name = get_module_string( c_field_display_name_Order );
+   else if( id_or_name == c_field_id_Orientation || id_or_name == c_field_name_Orientation )
+      display_name = get_module_string( c_field_display_name_Orientation );
    else if( id_or_name == c_field_id_Restriction_Spec || id_or_name == c_field_name_Restriction_Spec )
       display_name = get_module_string( c_field_display_name_Restriction_Spec );
    else if( id_or_name == c_field_id_Show_Hide_Start_Point || id_or_name == c_field_name_Show_Hide_Start_Point )
@@ -5919,6 +6029,7 @@ void Meta_View_Field::get_sql_column_names(
    names.push_back( "C_New_Source" );
    names.push_back( "C_New_Value" );
    names.push_back( "C_Order" );
+   names.push_back( "C_Orientation" );
    names.push_back( "C_Restriction_Spec" );
    names.push_back( "C_Show_Hide_Start_Point" );
    names.push_back( "C_Sort_Manually" );
@@ -5971,6 +6082,7 @@ void Meta_View_Field::get_sql_column_values(
    values.push_back( to_string( New_Source( ) ) );
    values.push_back( sql_quote( to_string( New_Value( ) ) ) );
    values.push_back( sql_quote( to_string( Order( ) ) ) );
+   values.push_back( to_string( Orientation( ) ) );
    values.push_back( sql_quote( to_string( Restriction_Spec( ) ) ) );
    values.push_back( to_string( Show_Hide_Start_Point( ) ) );
    values.push_back( to_string( Sort_Manually( ) ) );
@@ -6232,6 +6344,7 @@ void Meta_View_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "120109", "New_Source", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "120117", "New_Value", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "120101", "Order", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "120132", "Orientation", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "301980", "Restriction_Spec", "Meta_Specification", false, "", "" ) );
    all_field_info.push_back( field_info( "120116", "Show_Hide_Start_Point", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "120115", "Sort_Manually", "bool", false, "", "" ) );
@@ -6394,70 +6507,74 @@ const char* Meta_View_Field::static_get_field_id( field_id id )
       break;
 
       case 26:
-      p_id = "301980";
+      p_id = "120132";
       break;
 
       case 27:
-      p_id = "120116";
+      p_id = "301980";
       break;
 
       case 28:
-      p_id = "120115";
+      p_id = "120116";
       break;
 
       case 29:
-      p_id = "301960";
+      p_id = "120115";
       break;
 
       case 30:
-      p_id = "301965";
+      p_id = "301960";
       break;
 
       case 31:
-      p_id = "301940";
+      p_id = "301965";
       break;
 
       case 32:
-      p_id = "301950";
+      p_id = "301940";
       break;
 
       case 33:
-      p_id = "301970";
+      p_id = "301950";
       break;
 
       case 34:
-      p_id = "120103";
+      p_id = "301970";
       break;
 
       case 35:
-      p_id = "120110";
+      p_id = "120103";
       break;
 
       case 36:
-      p_id = "120122";
+      p_id = "120110";
       break;
 
       case 37:
-      p_id = "120113";
+      p_id = "120122";
       break;
 
       case 38:
-      p_id = "301910";
+      p_id = "120113";
       break;
 
       case 39:
-      p_id = "120130";
+      p_id = "301910";
       break;
 
       case 40:
-      p_id = "120121";
+      p_id = "120130";
       break;
 
       case 41:
-      p_id = "120107";
+      p_id = "120121";
       break;
 
       case 42:
+      p_id = "120107";
+      break;
+
+      case 43:
       p_id = "301900";
       break;
    }
@@ -6575,70 +6692,74 @@ const char* Meta_View_Field::static_get_field_name( field_id id )
       break;
 
       case 26:
-      p_id = "Restriction_Spec";
+      p_id = "Orientation";
       break;
 
       case 27:
-      p_id = "Show_Hide_Start_Point";
+      p_id = "Restriction_Spec";
       break;
 
       case 28:
-      p_id = "Sort_Manually";
+      p_id = "Show_Hide_Start_Point";
       break;
 
       case 29:
-      p_id = "Source_Child";
+      p_id = "Sort_Manually";
       break;
 
       case 30:
-      p_id = "Source_Edit_Child";
+      p_id = "Source_Child";
       break;
 
       case 31:
-      p_id = "Source_Field";
+      p_id = "Source_Edit_Child";
       break;
 
       case 32:
-      p_id = "Source_Parent";
+      p_id = "Source_Field";
       break;
 
       case 33:
-      p_id = "Source_Parent_Class";
+      p_id = "Source_Parent";
       break;
 
       case 34:
-      p_id = "Tab_Name";
+      p_id = "Source_Parent_Class";
       break;
 
       case 35:
-      p_id = "Trigger_Behaviour";
+      p_id = "Tab_Name";
       break;
 
       case 36:
-      p_id = "Trigger_For_State";
+      p_id = "Trigger_Behaviour";
       break;
 
       case 37:
-      p_id = "Trigger_Option";
+      p_id = "Trigger_For_State";
       break;
 
       case 38:
-      p_id = "Type";
+      p_id = "Trigger_Option";
       break;
 
       case 39:
-      p_id = "Use_Full_Height";
+      p_id = "Type";
       break;
 
       case 40:
-      p_id = "Use_Full_Width";
+      p_id = "Use_Full_Height";
       break;
 
       case 41:
-      p_id = "Use_Source_Parent";
+      p_id = "Use_Full_Width";
       break;
 
       case 42:
+      p_id = "Use_Source_Parent";
+      break;
+
+      case 43:
       p_id = "View";
       break;
    }
@@ -6705,40 +6826,42 @@ int Meta_View_Field::static_get_field_num( const string& field )
       rc += 24;
    else if( field == c_field_id_Order || field == c_field_name_Order )
       rc += 25;
-   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
+   else if( field == c_field_id_Orientation || field == c_field_name_Orientation )
       rc += 26;
-   else if( field == c_field_id_Show_Hide_Start_Point || field == c_field_name_Show_Hide_Start_Point )
+   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
       rc += 27;
-   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
+   else if( field == c_field_id_Show_Hide_Start_Point || field == c_field_name_Show_Hide_Start_Point )
       rc += 28;
-   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
+   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
       rc += 29;
-   else if( field == c_field_id_Source_Edit_Child || field == c_field_name_Source_Edit_Child )
+   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
       rc += 30;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Source_Edit_Child || field == c_field_name_Source_Edit_Child )
       rc += 31;
-   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 32;
-   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
+   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
       rc += 33;
-   else if( field == c_field_id_Tab_Name || field == c_field_name_Tab_Name )
+   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
       rc += 34;
-   else if( field == c_field_id_Trigger_Behaviour || field == c_field_name_Trigger_Behaviour )
+   else if( field == c_field_id_Tab_Name || field == c_field_name_Tab_Name )
       rc += 35;
-   else if( field == c_field_id_Trigger_For_State || field == c_field_name_Trigger_For_State )
+   else if( field == c_field_id_Trigger_Behaviour || field == c_field_name_Trigger_Behaviour )
       rc += 36;
-   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
+   else if( field == c_field_id_Trigger_For_State || field == c_field_name_Trigger_For_State )
       rc += 37;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
       rc += 38;
-   else if( field == c_field_id_Use_Full_Height || field == c_field_name_Use_Full_Height )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 39;
-   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
+   else if( field == c_field_id_Use_Full_Height || field == c_field_name_Use_Full_Height )
       rc += 40;
-   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
+   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
       rc += 41;
-   else if( field == c_field_id_View || field == c_field_name_View )
+   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 42;
+   else if( field == c_field_id_View || field == c_field_name_View )
+      rc += 43;
 
    return rc - 1;
 }
@@ -6791,6 +6914,7 @@ string Meta_View_Field::static_get_sql_columns( )
     "C_New_Source INTEGER NOT NULL,"
     "C_New_Value VARCHAR(200) NOT NULL,"
     "C_Order VARCHAR(200) NOT NULL,"
+    "C_Orientation INTEGER NOT NULL,"
     "C_Restriction_Spec VARCHAR(75) NOT NULL,"
     "C_Show_Hide_Start_Point INTEGER NOT NULL,"
     "C_Sort_Manually INTEGER NOT NULL,"
@@ -6912,6 +7036,10 @@ void Meta_View_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_view_field_new_source_2", get_enum_string_view_field_new_source( 2 ) ) );
    pairs.push_back( make_pair( "enum_view_field_new_source_3", get_enum_string_view_field_new_source( 3 ) ) );
    pairs.push_back( make_pair( "enum_view_field_new_source_4", get_enum_string_view_field_new_source( 4 ) ) );
+
+   pairs.push_back( make_pair( "enum_orientation_0", get_enum_string_orientation( 0 ) ) );
+   pairs.push_back( make_pair( "enum_orientation_1", get_enum_string_orientation( 1 ) ) );
+   pairs.push_back( make_pair( "enum_orientation_2", get_enum_string_orientation( 2 ) ) );
 
    pairs.push_back( make_pair( "enum_view_field_trigger_behaviour_0", get_enum_string_view_field_trigger_behaviour( 0 ) ) );
    pairs.push_back( make_pair( "enum_view_field_trigger_behaviour_1", get_enum_string_view_field_trigger_behaviour( 1 ) ) );
@@ -7067,6 +7195,10 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_view_field_new_source_enum.insert( 2 );
    g_view_field_new_source_enum.insert( 3 );
    g_view_field_new_source_enum.insert( 4 );
+
+   g_orientation_enum.insert( 0 );
+   g_orientation_enum.insert( 1 );
+   g_orientation_enum.insert( 2 );
 
    g_view_field_trigger_behaviour_enum.insert( 0 );
    g_view_field_trigger_behaviour_enum.insert( 1 );

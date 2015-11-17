@@ -640,6 +640,8 @@ bool output_view_form( ostream& os, const string& act,
    string image_width( to_string( sess_info.image_width ) );
    string image_height( to_string( sess_info.image_height ) );
 
+   bool do_not_size_image = false;
+
    if( !source.orientation_field.empty( ) )
    {
       int orientation = atoi( source.field_values.find( source.orientation_field )->second.c_str( ) );
@@ -647,7 +649,7 @@ bool output_view_form( ostream& os, const string& act,
       if( orientation == 1 ) // i.e. Portrait
          swap( image_height, image_width );
       else if( orientation == 2 ) // i.e. Neither
-         image_height = image_width;
+         do_not_size_image = true;
    }
 
    string enter_action = "null";
@@ -2370,8 +2372,21 @@ bool output_view_form( ostream& os, const string& act,
 
                      os << "<img src=\"" << image_src;
 
-                     if( !embed_images )
-                        os << "\" width=\"" << image_width << "\" height=\"" << image_height;
+                     string tmp_image_width( image_width );
+                     string tmp_image_height( image_height );
+
+                     bool tmp_do_not_size_image( do_not_size_image );
+
+                     if( source.orientation_field.empty( ) )
+                     {
+                        if( extra_data.count( c_field_extra_portrait ) )
+                           swap( tmp_image_height, tmp_image_width );
+                        else if( extra_data.count( c_field_extra_neither ) )
+                           tmp_do_not_size_image = true;
+                     }
+
+                     if( !embed_images && !tmp_do_not_size_image )
+                        os << "\" width=\"" << tmp_image_width << "\" height=\"" << tmp_image_height;
 
                      os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
 

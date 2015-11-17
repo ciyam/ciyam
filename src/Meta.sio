@@ -7358,6 +7358,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -7391,7 +7395,7 @@
       <name>Label_Class
       <type>int
       <mandatory>true
-      <enum_id>699
+      <enum_id>698
       <default_value>0
       <indexes/>
       </indexes>
@@ -7425,7 +7429,7 @@
       <name>Label_Source
       <type>int
       <mandatory>true
-      <enum_id>693
+      <enum_id>692
       <default_value>0
       <indexes/>
       </indexes>
@@ -7476,7 +7480,7 @@
       <name>Link_Empty_Restriction
       <type>int
       <mandatory>true
-      <enum_id>692
+      <enum_id>691
       <default_value>0
       <indexes/>
       </indexes>
@@ -7498,11 +7502,15 @@
       <name>Link_Restriction
       <type>int
       <mandatory>true
-      <enum_id>692
+      <enum_id>691
       <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500881
         <affect>relegate
@@ -7528,7 +7536,7 @@
       <name>Link_Type
       <type>int
       <mandatory>true
-      <enum_id>698
+      <enum_id>697
       <default_value>0
       <indexes/>
       </indexes>
@@ -7567,6 +7575,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500881
         <affect>relegate
@@ -7642,11 +7654,15 @@
       <name>Notes_Truncation
       <type>int
       <mandatory>true
-      <enum_id>697
+      <enum_id>696
       <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500877
         <affect>relegate
@@ -7718,6 +7734,28 @@
       </specifications>
      </field>
      <field/>
+      <id>124136
+      <name>Orientation
+      <type>int
+      <mandatory>true
+      <enum_id>638
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500856
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>302115
       <name>Parent_Class
       <type>@class
@@ -7748,11 +7786,15 @@
       <name>Print_Type
       <type>int
       <mandatory>true
-      <enum_id>696
+      <enum_id>695
       <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500877
         <affect>relegate
@@ -8263,7 +8305,7 @@
       <name>Switch_Type
       <type>int
       <mandatory>true
-      <enum_id>695
+      <enum_id>694
       <default_value>0
       <indexes/>
       </indexes>
@@ -8285,7 +8327,7 @@
       <name>Trigger_Option
       <type>int
       <mandatory>true
-      <enum_id>694
+      <enum_id>693
       <default_value>0
       <indexes/>
       </indexes>
@@ -8507,6 +8549,10 @@
       </indexes>
       <modifiers/>
        <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
+       <modifier/>
         <id>500877
         <affect>relegate
        </modifier>
@@ -8618,6 +8664,10 @@
       </indexes>
       <modifiers/>
        <modifier/>
+        <id>500857
+        <affect>relegate
+       </modifier>
+       <modifier/>
         <id>500877
         <affect>relegate
        </modifier>
@@ -8638,7 +8688,7 @@
       <name>View_Parent_Extra
       <type>int
       <mandatory>true
-      <enum_id>700
+      <enum_id>699
       <default_value>0
       <indexes/>
       </indexes>
@@ -8843,8 +8893,16 @@
       <name>Hide_View_Parent_Extra
      </modifier>
      <modifier/>
+      <id>500857
+      <name>Is_File_Or_Image
+     </modifier>
+     <modifier/>
       <id>500889b
       <name>Is_Non_Instance_Procedure
+     </modifier>
+     <modifier/>
+      <id>500856
+      <name>Is_Not_Image
      </modifier>
      <modifier/>
       <id>500888a
@@ -26043,6 +26101,10 @@
         <id>500715
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500746
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -26211,6 +26273,10 @@
         <id>500715
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500746
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -26238,6 +26304,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26361,6 +26431,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26496,6 +26570,28 @@
       </specifications>
      </field>
      <field/>
+      <id>120132
+      <name>Orientation
+      <type>int
+      <mandatory>true
+      <enum_id>638
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500745
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>301980
       <name>Restriction_Spec
       <type>@class
@@ -26548,6 +26644,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26851,6 +26951,10 @@
         <id>500720
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500746
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -26879,6 +26983,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26913,6 +27021,10 @@
        </modifier>
        <modifier/>
         <id>500720
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26984,6 +27096,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500746
         <affect>relegate
        </modifier>
       </modifiers>
@@ -27166,6 +27282,10 @@
       <name>Is_Field
      </modifier>
      <modifier/>
+      <id>500746
+      <name>Is_File_Or_Image
+     </modifier>
+     <modifier/>
       <id>500715
       <name>Is_Key
      </modifier>
@@ -27176,6 +27296,10 @@
      <modifier/>
       <id>500740
       <name>Is_Not_Enum
+     </modifier>
+     <modifier/>
+      <id>500745
+      <name>Is_Not_Image
      </modifier>
      <modifier/>
       <id>500706
@@ -31583,11 +31707,11 @@
      <field_info>302198:107101!@fkey5:300700+107108=0+107101;link
      <field_info>302180:115101!@fkey2:301420+301410=restriction;link
      <field_info>124135
-     <field_info>124105;enum=695
+     <field_info>124105;enum=694
      <field_info>302185:107101!@fkey1:300700+107101;link
      <field_info>124106
-     <field_info>124121;enum=694
-     <field_info>124132;enum=700
+     <field_info>124121;enum=693
+     <field_info>124132;enum=699
      <field_info>124124;enum=686
      <field_info>124117
      <field_info>124122
@@ -31600,22 +31724,23 @@
      <field_info>124127;force
      <field_info>124130;enum=635
      <field_info>124119;enum=522
-     <field_info>124125;enum=697
-     <field_info>124115;enum=696
+     <field_info>124136;enum=638
+     <field_info>124125;enum=696
+     <field_info>124115;enum=695
      <field_info>302176:107101!@fkey1:300700+107108=0+107101;link
-     <field_info>124131;enum=699
-     <field_info>124120;enum=693
+     <field_info>124131;enum=698
+     <field_info>124120;enum=692
      <field_info>124129
      <field_info>124116
      <field_info>124128
-     <field_info>124118;enum=698
-     <field_info>124108;force+forced+enum=692
+     <field_info>124118;enum=697
+     <field_info>124108;force+forced+enum=691
      <field_info>302135:116101!@group:301500+116101
      <field_info>124103;enum=690
      <field_info>302130:116101!@group:301500+116101
      <field_info>302115;hidden+fkey6
      <field_info>302199:109101!@fkey6:300900+109101
-     <field_info>124134;enum=692
+     <field_info>124134;enum=691
      <field_info>124133
     </data>
    </specification>
@@ -37161,6 +37286,7 @@
      <field_info>120118;enum=678
      <field_info>120125;enum=635
      <field_info>120131;enum=522
+     <field_info>120132;enum=638
      <field_info>120121
      <field_info>120130
      <field_info>120126
@@ -37594,37 +37720,37 @@
     <key_values>0=default,1=1,2=2,3=3,4=4,5=5,6=6,7=7,8=8,9=9,10=10,12=12,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100,200=200,500=500,999=unlimited
    </user_defined_enum>
    <user_defined_enum/>
-    <id>699
+    <id>698
     <name>list_field_label_class
     <type>int
     <key_values>0=child,1=parent
    </user_defined_enum>
    <user_defined_enum/>
-    <id>693
+    <id>692
     <name>list_field_label_source
     <type>int
     <key_values>0=field,1=list,2=omit_label
    </user_defined_enum>
    <user_defined_enum/>
-    <id>692
+    <id>691
     <name>list_field_link_restrict
     <type>int
     <key_values>0=none,1=owner\_only,2=admin\_only,3=admin\_owner,4=denied\_always
    </user_defined_enum>
    <user_defined_enum/>
-    <id>698
+    <id>697
     <name>list_field_link_type
     <type>int
     <key_values>0=foreign,1=non\_foreign
    </user_defined_enum>
    <user_defined_enum/>
-    <id>697
+    <id>696
     <name>list_field_notes_truncation
     <type>int
     <key_values>1=none,0=standard,30=30,40=40,50=50,80=80,100=100
    </user_defined_enum>
    <user_defined_enum/>
-    <id>696
+    <id>695
     <name>list_field_print_type
     <type>int
     <key_values>0=standard,1=non\_print,2=print\_only,3=print\_total,4=print\_summary,5=print\_only\_total,6=print\_only\_summary
@@ -37636,19 +37762,19 @@
     <key_values>0=none,1=owner\_only,2=admin\_only,3=admin\_owner,4=denied\_always
    </user_defined_enum>
    <user_defined_enum/>
-    <id>695
+    <id>694
     <name>list_field_switch_type
     <type>int
     <key_values>0=checked,1=unchecked,2=checked\_reversing,3=unchecked\_reversing
    </user_defined_enum>
    <user_defined_enum/>
-    <id>694
+    <id>693
     <name>list_field_trigger_option
     <type>int
     <key_values>0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
    </user_defined_enum>
    <user_defined_enum/>
-    <id>700
+    <id>699
     <name>list_field_view_parent_extra
     <type>int
     <key_values>0=none,1=vext1,2=vext2,3=vext3,4=vext4,5=vext5,6=vext6,7=vext7,8=vext8,9=vext9,10=vext0
@@ -37718,6 +37844,12 @@
     <name>numeric_type
     <type>int
     <key_values>0=normal,1=bytes
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>638
+    <name>orientation
+    <type>int
+    <key_values>0=landscape,1=portrait,2=neither
    </user_defined_enum>
    <user_defined_enum/>
     <id>654
