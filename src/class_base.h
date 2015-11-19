@@ -1206,7 +1206,8 @@ std::string CLASS_BASE_DECL_SPEC search_replace( const std::string& s, const std
 std::string CLASS_BASE_DECL_SPEC search_replace( const std::string& s,
  const std::string& search1, const std::string& replace1, const std::string& search2, const std::string& replace2 );
 
-std::string CLASS_BASE_DECL_SPEC escaped_string( const std::string& s, const char* p_chars = 0, char esc = '\\' );
+std::string CLASS_BASE_DECL_SPEC escaped_string( const std::string& s,
+ const char* p_chars = 0, char esc = '\\', const char* p_specials = 0 );
 
 std::string CLASS_BASE_DECL_SPEC quoted_literal( const std::string& s, char esc = '\\', bool add_quotes = true );
 

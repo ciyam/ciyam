@@ -3044,9 +3044,9 @@ string search_replace( const string& s,
    return search_replace( search_replace( s, search1, replace1 ), search2, replace2 );
 }
 
-string escaped_string( const string& s, const char* p_chars, char esc )
+string escaped_string( const string& s, const char* p_chars, char esc, const char* p_specials )
 {
-   return escaped( s, p_chars, esc );
+   return escaped( s, p_chars, esc, p_specials );
 }
 
 string quoted_literal( const string& s, char esc, bool add_quotes )

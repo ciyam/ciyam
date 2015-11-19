@@ -909,7 +909,7 @@ string escaped_shell_arg( const string& arg )
 {
    string s( arg );
 
-   if( !s.empty( ) )
+   if( !s.empty( ) && s != "\"\"" )
    {
       replace( s, "\"", "\\\"" );
       s = '"' + s + '"';

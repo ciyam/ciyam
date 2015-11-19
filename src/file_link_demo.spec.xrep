@@ -1,6 +1,6 @@
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start file_link_demo)] `{`$arg_id`}
-   if( is_create )
+   if( is_create && is_init_uid( ) )
    {
       string sep( "-" );
       vector< string > exts;

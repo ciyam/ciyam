@@ -1,0 +1,11 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_update_clone_source)] `{`$arg_id`}
+   if( !get_obj( ).get_clone_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   {
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+      cp_source->op_update( get_obj( ).get_clone_key( ) );
+      cp_source->op_apply( );
+   }
+   // [(finish trigger_update_clone_source)] `{`$arg_id`}
+`}
