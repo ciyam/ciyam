@@ -960,7 +960,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_procedure=$specification_\\0_procedure arg_use_proc_name=$specification_\\0_use_proc_name\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_trans=$specification_\\0_use_trans\
  arg_clone_only=$specification_\\0_clone_only arg_proc_arg_is_key_suffix=$specification_\\0_proc_arg_is_key_suffix\
- arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source`}\
+ arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source\
+ arg_others_as_fldvals=$specification_\\0_others_as_fldvals arg_field_value_for_both=$specification_\\0_field_value_for_both`}\
 `,\
 `@eq`(`'\\1`'`,`'for_destroy`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_destroy.spec.xrep section=procedure module_name=$module_name class_name=$class_name arg_id=$specification_\\0_id`}\
@@ -1050,7 +1051,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_script=$specification_\\0_script arg_async=$specification_\\0_async arg_delay=$specification_\\0_delay\
  arg_skip_restore=$specification_\\0_skip_restore arg_has_key_already=$specification_\\0_has_key_already\
  arg_func=$specification_\\0_func arg_session_var=$specification_\\0_session_var\
- arg_src_is_for_func=$specification_\\0_src_is_for_func`}\
+ arg_src_is_for_func=$specification_\\0_src_is_for_func arg_sess_var_is_test=$specification_\\0_sess_var_is_test`}\
 ### procedure
 `}`]`}
    // [<start \$_impl>]
@@ -2719,7 +2720,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
  arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
- arg_src_is_for_func=$specification_\0_src_is_for_func`}\
+ arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -2855,7 +2856,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
  arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
- arg_src_is_for_func=$specification_\0_src_is_for_func`}\
+ arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_for_destroy`,`'`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
 `{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -2872,6 +2873,10 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_cclass=$specification_\0_cclass arg_cfield=$specification_\0_cfield arg_fields=$specification_\0_fields\
  arg_fkcclass=$specification_\0_fkcclass arg_fkcfield=$specification_\0_fkcfield arg_fkclass=$specification_\0_fkclass\
  arg_fkfield=$specification_\0_fkfield arg_fkproc=$specification_\0_fkproc arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_update_clone_source`'`)
+`{`#trigger_update_clone_source.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#update_children.spec.xrep section=for_or_after_store full_class_name=$full_class_name\

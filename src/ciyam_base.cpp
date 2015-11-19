@@ -4686,7 +4686,7 @@ int run_script( const string& script_name, bool async, bool delay )
    string filename( g_scripts[ script_name ].filename );
    bool is_script = ( filename == c_script_dummy_filename );
 
-   string arguments( process_script_args( g_scripts[ script_name ].arguments, is_script ) );
+   string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
 
    auto_ptr< restorable< bool > > ap_running_script;
    if( gtp_session )
@@ -4746,7 +4746,7 @@ int run_script( const string& script_name, bool async, bool delay )
    return rc;
 }
 
-string process_script_args( const string& raw_args, bool is_for_client_script )
+string process_script_args( const string& raw_args )
 {
    string retval;
 
@@ -4769,11 +4769,7 @@ string process_script_args( const string& raw_args, bool is_for_client_script )
             retval += " ";
 
          if( next_arg.empty( ) )
-#ifndef _WIN32
             next_arg = "\"\"";
-#else
-            next_arg = is_for_client_script ? "\\\"\\\"" : "\"\"";
-#endif
 
          retval += next_arg;
       }

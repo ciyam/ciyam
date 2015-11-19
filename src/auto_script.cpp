@@ -403,7 +403,7 @@ void autoscript_session::on_start( )
                   string filename( g_scripts[ j->second ].filename );
                   bool is_script = ( filename == c_script_dummy_filename );
 
-                  string arguments( process_script_args( g_scripts[ j->second ].arguments, is_script ) );
+                  string arguments( process_script_args( g_scripts[ j->second ].arguments ) );
 
                   int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
 
