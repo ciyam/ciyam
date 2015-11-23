@@ -266,6 +266,7 @@ const char* const c_field_extra_security_level = "security_level";
 const char* const c_field_extra_time_precision = "time_precision";
 const char* const c_field_extra_admin_owner_link = "admin_owner_link";
 const char* const c_field_extra_admin_owner_only = "admin_owner_only";
+const char* const c_field_extra_ignore_encrypted = "ignore_encrypted";
 const char* const c_field_extra_print_only_total = "print_only_total";
 const char* const c_field_extra_text_search_title = "text_search_title";
 const char* const c_field_extra_replace_underbars = "replace_underbars";

@@ -366,6 +366,9 @@ void setup_list_fields( list_source& list,
                list.security_level_field = field_id;
          }
 
+         if( extra_data.count( c_field_extra_ignore_encrypted ) )
+            list.ignore_encrypted_field = field_id;
+
          if( extra_data.count( c_field_extra_int_type ) )
             list.int_type_fields.insert( make_pair( value_id, extra_data[ c_field_extra_int_type ] ) );
 
@@ -3324,7 +3327,7 @@ void output_list_form( ostream& os,
                   else
                      create_tmp_file_link_or_copy( tmp_link_path,
                       file_name, file_full_ext, link_file_name, is_blockchain_application( )
-                      && source.encrypted_fields.count( source_value_id )? sess_info.user_pwd_hash.c_str( ) : 0 );
+                      && source.encrypted_fields.count( source_value_id ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
 
                   if( !is_href && !is_printable
                    && ( !embed_images || source.file_fields.count( source_value_id ) ) )

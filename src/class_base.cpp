@@ -5790,6 +5790,10 @@ string meta_field_extras( int uom,
       all_extras.push_back( "qr_code" );
       break;
 
+      case 30:
+      all_extras.push_back( "ignore_encrypted" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }

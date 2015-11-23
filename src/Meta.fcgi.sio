@@ -658,6 +658,10 @@
      <filter>dtm
     </value>
     <value/>
+     <data>30
+     <name>enum_field_extra_ignore_encrypted
+    </value>
+    <value/>
      <data>28
      <name>enum_field_extra_is_effective_owner
      <filter>bln
