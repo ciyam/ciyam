@@ -1855,15 +1855,24 @@ bool populate_list_info( list_source& list,
             list.row_data.pop_back( );
          }
 
+         bool has_ignore_encrypted_field = false;
+         size_t ignore_encryped_field_column = 0;
+
          vector< size_t > encrypted_columns;
          for( size_t i = 0; i < list.value_ids.size( ); i++ )
          {
             if( list.encrypted_fields.count( list.value_ids[ i ] ) )
                encrypted_columns.push_back( i );
+
+            if( list.ignore_encrypted_field == list.value_ids[ i ] )
+            {
+               ignore_encryped_field_column = i;
+               has_ignore_encrypted_field = true;
+            }
          }
 
          // NOTE: Any encrypted columns are now decrypted. This is being done
-         // before manual sorting (as they'll very likely affect the sorting).
+         // before manual sorting (as they clearly might affect the sorting).
          if( !encrypted_columns.empty( ) )
          {
             for( size_t i = 0; i < list.row_data.size( ); i++ )
@@ -1871,20 +1880,24 @@ bool populate_list_info( list_source& list,
                vector< string > columns;
                raw_split( list.row_data[ i ].second, columns );
 
-               for( size_t j = 0; j < encrypted_columns.size( ); j++ )
+               if( !has_ignore_encrypted_field
+                || columns[ ignore_encryped_field_column ] != string( c_true_value ) )
                {
-                  if( columns[ encrypted_columns[ j ] ].empty( ) )
-                     continue;
+                  for( size_t j = 0; j < encrypted_columns.size( ); j++ )
+                  {
+                     if( columns[ encrypted_columns[ j ] ].empty( ) )
+                        continue;
 
-                  if( !is_blockchain_application( ) )
-                     columns[ encrypted_columns[ j ] ]
-                      = data_decrypt( columns[ encrypted_columns[ j ] ], get_server_id( ) );
-                  else
-                     columns[ encrypted_columns[ j ] ]
-                      = data_decrypt( columns[ encrypted_columns[ j ] ], sess_info.user_pwd_hash );
+                     if( !is_blockchain_application( ) )
+                        columns[ encrypted_columns[ j ] ]
+                         = data_decrypt( columns[ encrypted_columns[ j ] ], get_server_id( ) );
+                     else
+                        columns[ encrypted_columns[ j ] ]
+                         = data_decrypt( columns[ encrypted_columns[ j ] ], sess_info.user_pwd_hash );
+                  }
+
+                  list.row_data[ i ].second = join( columns );
                }
-
-               list.row_data[ i ].second = join( columns );
             }
          }
 
@@ -2503,12 +2516,24 @@ void save_record( const string& module_id,
    size_t num = 0;
    size_t used = 0;
    string field_values;
+
    bool found_field = false;
+   bool ignore_encrypted = false;
 
    map< string, string > original_field_values;
 
    set< string > found_new_fields;
    set< string > sorted_fields( fields.begin( ), fields.end( ) );
+
+   if( !extra_field_info.empty( ) && !view.ignore_encrypted_field.empty( ) )
+   {
+      map< string, string >::const_iterator i;
+      for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
+      {
+         if( i->first == view.ignore_encrypted_field )
+            ignore_encrypted = ( i->second == string( c_true_value ) );
+      }
+   }
 
    for( size_t i = 0; i < fields.size( ); i++ )
    {
@@ -2524,6 +2549,11 @@ void save_record( const string& module_id,
             key_info = next;
          continue;
       }
+
+      // NOTE: If an "ignore_encrypted" field is editable then it will need to appear *before*
+      // any actual fields that have the "encrypted" extra.
+      if( field_id == view.ignore_encrypted_field )
+         ignore_encrypted = ( next == string( c_true_value ) );
 
       size_t j;
       for( j = 0; j < view.field_ids.size( ); j++ )
@@ -2588,8 +2618,7 @@ void save_record( const string& module_id,
             next = dt.as_string( );
          }
       }
-      else if( view.encrypted_fields.count( field_id )
-       && !view.file_fields.count( field_id ) && !view.image_fields.count( field_id ) )
+      else if( !ignore_encrypted && view.encrypted_fields.count( field_id ) )
       {
          if( !next.empty( ) )
          {

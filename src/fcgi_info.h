@@ -657,6 +657,7 @@ struct source
 
    std::string permission_field;
    std::string security_level_field;
+   std::string ignore_encrypted_field;
    std::string is_effective_owner_field;
 
    std::set< std::string > bool_fields;

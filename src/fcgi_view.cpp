@@ -436,6 +436,10 @@ void setup_view_fields( view_source& view,
             if( extra_data.count( c_field_extra_security_level ) )
                view.security_level_field = field_id;
 
+            // NOTE: Only one ignore encrypted field is expected to exist in a view.
+            if( extra_data.count( c_field_extra_ignore_encrypted ) )
+               view.ignore_encrypted_field = field_id;
+
             // NOTE: Only one is effective owner field is expected to exist in a view.
             if( extra_data.count( c_field_extra_is_effective_owner ) )
                view.is_effective_owner_field = field_id;
