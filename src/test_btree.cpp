@@ -697,6 +697,8 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       item.val = "";
       iter = bt.end( );
    }
+   else if( command == c_cmd_test_btree_depth )
+      cout << "index depth = " << ( unsigned )bt.depth( ) << endl;
    else if( command == c_cmd_test_btree_size )
       cout << "number of items in container = " << bt.size( ) << endl;
    else if( command == c_cmd_test_btree_goto )
