@@ -9,6 +9,237 @@
 #comment test 2...
 #comment test 3...
   <group/>
+   <name>test_btree
+   <tests/>
+    <test/>
+     <name>1
+     <description>Test inserting of items in various orders.
+     <test_step/>
+      <name>a
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+    </test>
+    <test/>
+     <name>2
+     <description>Test various duplicate item splits.
+     <test_step/>
+      <name>a
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+    </test>
+    <test/>
+     <name>3
+     <description>Test various duplicate item deletes.
+     <test_step/>
+      <name>a
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+    </test>
+    <test/>
+     <name>4
+     <description>Test various append and build operations.
+     <test_step/>
+      <name>a
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>test_btree -quiet
+      <input>true
+      <output>automatic
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_bundle
 #comment test 4...
 #comment test 5...
