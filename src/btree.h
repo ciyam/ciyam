@@ -518,10 +518,10 @@ template< typename T, typename L = std::less< T >,
 
    const_reverse_iterator rend( ) const;
 
-   const_iterator operator [ ]( size_type n ) const;
-
    size_type size( ) const { return state.total_items; }
    size_type max_size( ) const { return UINT_MAX; }
+
+   uchar depth( ) const { return state.num_levels; }
 
    bool empty( ) const { return state.total_items == 0; }
 

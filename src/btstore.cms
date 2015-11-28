@@ -12,6 +12,7 @@ export "export items to a text file" <val//filename>
 append "append items from a text file" <val//filename>
 build "rebuild index nodes"
 clear "clear container"
+depth "index depth"
 size "container size"
 goto "goto position" <opt/top>|<opt/end>|<opt/next>|<opt/prev>
 view "view an item"

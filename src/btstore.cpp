@@ -631,6 +631,13 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       item.val = "";
       iter = ap_btree->end( );
    }
+   else if( command == c_cmd_btstore_depth )
+   {
+      ods::bulk_read bulk( *ap_ods );
+
+      *ap_ods >> *ap_btree;
+      cout << "index depth = " << ( unsigned )ap_btree->depth( ) << endl;
+   }
    else if( command == c_cmd_btstore_size )
    {
       ods::bulk_read bulk( *ap_ods );
