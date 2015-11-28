@@ -11,6 +11,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstdio>
+#  include <cstddef>
 #  include <string>
 #  include <sstream>
 #  include <fstream>
@@ -18,6 +19,10 @@
 #  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
+#  ifdef __GNUG__
+#     include <limits.h>
+#     include <unistd.h>
+#  endif
 #endif
 
 #include <iterator>
@@ -201,7 +206,7 @@ template< typename T > void test_heap_node_manager< T >::load_node_data( ifstrea
       }
 
       node.set_link( i );
-      push_back( node );
+      this->push_back( node );
    }
 }
 
