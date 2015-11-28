@@ -1,0 +1,26 @@
+add "add an item" <val//item>
+find "find an item" <val//item>
+match "perform wildcard match" <val//expr>
+lbound "find lower bound" <val//item>
+ubound "find upper bound" <val//item>
+remove "remove an item" [<val//item>]
+erange "find equal range" <val//item>
+count "count item matches" <val//item>
+mcount "count wildcard matches" <val//expr>
+load "load binary data file" <val//filename>
+save "save binary data file" <val//filename>
+import "import items from a text file" <val//filename>
+export "export items to a text file" <val//filename>
+append "append items from a text file" <val//filename>
+build "rebuild index nodes"
+clear "clear container"
+size "container size"
+goto "goto position" <opt/top>|<opt/end>|<opt/next>|<opt/prev>
+view "view an item"
+list "list items (to a file)" [<val//filename>]
+rlist "list items in reverse (to a file)" [<val//filename>]
+limit "get/set listing limit" [<val//num>]
+dump "dump container details (to a file)" [<val//filename>]
+xml "create xml btree representation" <val//filename>
+mkdirs "create batch file btree representation" <val//filename>
+exit "exit program"
