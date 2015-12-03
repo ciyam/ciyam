@@ -2,7 +2,7 @@
 `{`$is_user`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@user`'`)`$is_user`=`'1`'`}\
 `{`$is_group`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@group`'`)`$is_group`=`'1`'`}\
    // [(start append_opts_for_iter)] `{`$arg_id`}
-   if( !get_obj( ).get_key( ).empty( )`{`@eq`(`$is_user`,`'1`'`) && !get_uid( ).empty( )`}`{`@eq`(`$is_group`,`'1`'`) && !get_grp( ).empty( )`}
+   if( !get_obj( ).get_key( ).empty( )`{`@eq`(`$is_user`,`'1`'`) && !get_uid( ).empty( )`}`{`@eq`(`$is_group`,`'1`'`) && !get_grp( ).empty( )`}`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`}
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" ) || required_transients.count( "`{`$arg_field`}" ) ) )
    {
       map< string, string > parts;

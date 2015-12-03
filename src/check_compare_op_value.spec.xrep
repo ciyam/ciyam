@@ -9,6 +9,7 @@
 `{`$dvalue`=`$arg_value`}\
 `{`!`@eq`(`$arg_enum_item`,`'`'`)`$dvalue`=`$arg_enum_item`}\
 `{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_value`,`'@uid`'`)`$cond`=`'!is_init_uid( )`'`}\
 `{`@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`,\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}`}\
@@ -21,7 +22,7 @@
    if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal && `}\
 `{`@eq`(`$create_or_update`,`'true`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}get_obj( ).get_is_creating( ) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
     && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
-    && `}!( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`$value`} )`{`@eq`(`$arg_primary_only`,`'`'`) )`}`{`!`@eq`(`$arg_enum_item`,`'`'`) // i.e. `{`$arg_enum_item`}`}
+    && `}`{`(`?`$cond`)`{`$cond`} && `}!( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`$value`} )`{`@eq`(`$arg_primary_only`,`'`'`) )`}`{`!`@eq`(`$arg_enum_item`,`'`'`) // i.e. `{`$arg_enum_item`}`}
 `{`!`@eq`(`$arg_primary_only`,`'`'`)\
     && get_obj( ).get_variable( get_special_var_name( e_special_var_secondary_validation ) ).empty( ) )
 `}\

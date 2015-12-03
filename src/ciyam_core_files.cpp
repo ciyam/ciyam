@@ -53,7 +53,7 @@ const size_t c_hash_buf_size = 32;
 const size_t c_tx_soft_limit = 100;
 
 const unsigned int c_default_exp = 5;
-const unsigned int c_max_core_line_size = 4096;
+const unsigned int c_max_core_line_size = 200000;
 
 const uint16_t c_tx_max_unconfirmed = 5;
 

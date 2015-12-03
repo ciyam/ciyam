@@ -534,6 +534,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          string filename_value;
 
+         bool ignore_encrypted = false;
+
          if( !record_not_found_error )
          {
             view.state = state;
@@ -551,11 +553,17 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( !view.vici->second->fields[ i ].extra.empty( ) )
                   parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
 
+               // NOTE: If an "ignore_encrypted" field is present then it will need to appear *before*
+               // any actual fields that have the "encrypted" extra.
+               if( view.field_ids[ i ] == view.ignore_encrypted_field )
+                  ignore_encrypted = ( item_values[ field_num ] == string( c_true_value ) );
+
                if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
                   has_always_editable = true;
 
                // NOTE: Encrypted fields that are < 20 characters are assumed to not have been encrypted.
-               if( item_values[ field_num ].length( ) >= 20
+               if( !ignore_encrypted
+                && item_values[ field_num ].length( ) >= 20
                 && !view.file_fields.count( view.field_ids[ i ] )
                 && !view.image_fields.count( view.field_ids[ i ] )
                 && !view.hidden_fields.count( view.field_ids[ i ] )
