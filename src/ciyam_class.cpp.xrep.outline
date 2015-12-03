@@ -963,6 +963,14 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source\
  arg_others_as_fldvals=$specification_\\0_others_as_fldvals arg_field_value_for_both=$specification_\\0_field_value_for_both`}\
 `,\
+`@eq`(`'\\1`'`,`'for_clone_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_clone_script.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_value=$specification_\\0_value\
+ arg_fldval=$specification_\\0_fldval arg_ofield=$specification_\\0_ofield arg_o2field=$specification_\\0_o2field\
+ arg_spfield=$specification_\\0_spfield arg_scfield=$specification_\\0_scfield arg_oscfield=$specification_\\0_oscfield\
+ arg_tfield=$specification_\\0_tfield arg_procedure=$specification_\\0_procedure arg_proc_arg=$specification_\\0_proc_arg\
+ arg_use_proc_name=$specification_\\0_use_proc_name arg_key_suffix=$specification_\\0_key_suffix`}\
+`,\
 `@eq`(`'\\1`'`,`'for_destroy`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_destroy.spec.xrep section=procedure module_name=$module_name class_name=$class_name arg_id=$specification_\\0_id`}\
 `,\
@@ -1669,7 +1677,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`?`$all_after_fetch_specifications`[`$all_after_fetch_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'append_opts_for_iter`'`)
 `{`#append_opts_for_iter.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_cclass=$specification_\0_cclass arg_child=$specification_\0_child arg_field=$specification_\0_field\
+ arg_id=$specification_\0_id arg_cclass=$specification_\0_cclass arg_child=$specification_\0_child\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_ofield=$specification_\0_ofield arg_cfield=$specification_\0_cfield arg_pfield=$specification_\0_pfield\
  arg_rfield=$specification_\0_rfield arg_rvalue=$specification_\0_rvalue arg_separator=$specification_\0_separator\
  arg_ctfield=$specification_\0_ctfield arg_ctvalue=$specification_\0_ctvalue arg_embed_links=$specification_\0_embed_links`}\
@@ -1695,9 +1704,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#field_from_search_replace.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
  arg_cfield=$specification_\0_cfield arg_tfield=$specification_\0_tfield arg_field_list=$specification_\0_field_list\
- arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
- arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb\
- arg_top_level=$specification_\0_top_level arg_inc_labels=$specification_\0_inc_labels arg_classrep=$specification_\0_classrep`}\
+ arg_keyrep=$specification_\0_keyrep arg_key_suffix=$specification_\0_key_suffix arg_separator=$specification_\0_separator\
+ arg_opt_prefix=$specification_\0_opt_prefix arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb\
+ arg_orightb=$specification_\0_orightb arg_top_level=$specification_\0_top_level arg_inc_labels=$specification_\0_inc_labels\
+ arg_classrep=$specification_\0_classrep arg_modifier=$specification_\0_modifier`}\
 `,\
 `@eq`(`'\1`'`,`'for_tag`'`)
 `{`#for_tag.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
@@ -2260,9 +2270,9 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_from_search_replace.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield arg_top_level=$specification_\0_top_level\
  arg_cfield=$specification_\0_cfield arg_field_list=$specification_\0_field_list arg_classrep=$specification_\0_classrep\
- arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
- arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb\
- arg_tfield=$specification_\0_tfield`}\
+ arg_keyrep=$specification_\0_keyrep arg_key_suffix=$specification_\0_key_suffix arg_separator=$specification_\0_separator\
+ arg_opt_prefix=$specification_\0_opt_prefix arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb\
+ arg_orightb=$specification_\0_orightb arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -4043,6 +4053,10 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_bool_is_default`'`)
+`{`#transient_field_bool_is_default.spec.xrep section=get_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_has_child_for_uid`'`)`&`!`@eq`(`'`'`,`$specification_\0_ufield`)
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=get_required_field_names\
