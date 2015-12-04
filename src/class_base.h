@@ -1415,7 +1415,8 @@ bool CLASS_BASE_DECL_SPEC has_valid_hashcash( const std::string& value );
 std::string CLASS_BASE_DECL_SPEC check_email_headers(
  const std::vector< std::string >& headers, bool create_script_output = false );
 
-void CLASS_BASE_DECL_SPEC fetch_email_messages( const std::string& file_name_prefix, bool skip_scripts = false );
+void CLASS_BASE_DECL_SPEC fetch_email_messages(
+ const std::string& file_name_prefix, bool skip_scripts = false );
 
 void CLASS_BASE_DECL_SPEC fetch_email_messages(
  std::vector< std::pair< bool, std::string > >& messages, bool skip_scripts = false );
@@ -1428,7 +1429,8 @@ std::string CLASS_BASE_DECL_SPEC decode_email_header( const std::string& header 
 void CLASS_BASE_DECL_SPEC decode_mime_message( const std::string& mime, std::string& message,
  std::string& html_message, std::vector< std::pair< std::string, std::string > >& attachments );
 
-void CLASS_BASE_DECL_SPEC parse_email_address( const std::string& address, std::string& name, std::string& email );
+void CLASS_BASE_DECL_SPEC parse_email_address(
+ const std::string& address, std::string& name, std::string& email );
 
 void CLASS_BASE_DECL_SPEC save_attachment(
  const std::string& encoding, const std::string& data, const std::string& output_file );
@@ -1437,7 +1439,8 @@ std::string CLASS_BASE_DECL_SPEC remove_html_scripts( const std::string& html );
 
 std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
 
-std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
+std::string CLASS_BASE_DECL_SPEC create_html_embedded_image(
+ const std::string& source_file, bool is_encrypted = false );
 
 std::string CLASS_BASE_DECL_SPEC crypto_sign( const std::string& secret, const std::string& message );
 

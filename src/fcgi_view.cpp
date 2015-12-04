@@ -2330,9 +2330,19 @@ bool output_view_form( ostream& os, const string& act,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link_or_copy( tmp_link_path,
-                      file_name, file_full_ext, link_file_name, is_blockchain_application( )
-                      && source.encrypted_fields.count( source_value_id ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                  {
+                     bool is_encrypted = source.encrypted_fields.count( source_value_id );
+
+                     if( is_encrypted && !source.ignore_encrypted_field.empty( )
+                      && source.field_values.count( source.ignore_encrypted_field ) )
+                     {
+                        if( source.field_values.find( source.ignore_encrypted_field )->second == string( c_true_value ) )
+                           is_encrypted = false;
+                     }
+
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
+                      is_blockchain_application( ) && is_encrypted ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                  }
 
                   bool has_image = false;
                   if( !is_in_edit && !is_printable )

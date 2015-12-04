@@ -1121,8 +1121,17 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                      if( !new_file.empty( ) && is_blockchain_application( ) )
                      {
+                        bool is_encrypted = view.encrypted_fields.count( file_field_id );
+
+                        if( is_encrypted && !view.ignore_encrypted_field.empty( )
+                         && view.field_values.count( view.ignore_encrypted_field ) )
+                        {
+                           if( view.field_values.find( view.ignore_encrypted_field )->second == string( c_true_value ) )
+                              is_encrypted = false;
+                        }
+
                         // NOTE: For blockchain applications encrypt file attachments if required.
-                        if( view.encrypted_fields.count( file_field_id ) )
+                        if( is_encrypted )
                         {
                            fstream fs;
                            fs.open( new_file.c_str( ), ios::in | ios::out | ios::binary );

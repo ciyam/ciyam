@@ -2463,6 +2463,7 @@ void output_list_form( ostream& os,
    int display_offset = 0;
    int orientation_col = 0;
    int total_display_cols = 0;
+   int ignore_encrypted_col = -1;
 
    map< string, string > display_names;
    vector< numeric > print_total_values;
@@ -2480,6 +2481,9 @@ void output_list_form( ostream& os,
 
       if( source.field_ids[ i ] == source.orientation_field )
          orientation_col = col_num;
+
+      if( source.field_ids[ i ] == source.ignore_encrypted_field )
+         ignore_encrypted_col = col_num;
 
       if( source.field_ids[ i ] != c_key_field && source.field_ids[ i ] != c_row_field )
          col_num++;
@@ -3325,9 +3329,18 @@ void output_list_form( ostream& os,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link_or_copy( tmp_link_path,
-                      file_name, file_full_ext, link_file_name, is_blockchain_application( )
-                      && source.encrypted_fields.count( source_value_id ) ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                  {
+                     bool is_encrypted = source.encrypted_fields.count( source_value_id );
+
+                     if( is_encrypted && ignore_encrypted_col >= 0 )
+                     {
+                        if( columns[ ignore_encrypted_col ] == string( c_true_value ) )
+                           is_encrypted = false;
+                     }
+
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
+                      is_blockchain_application( ) && is_encrypted ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                  }
 
                   if( !is_href && !is_printable
                    && ( !embed_images || source.file_fields.count( source_value_id ) ) )
