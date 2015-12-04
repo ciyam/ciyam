@@ -1,0 +1,36 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_clone_script)] `{`$arg_id`}
+`{`$suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$suffix`=`$arg_key_suffix`}\
+`{`@eq`(`$arg_scfield`,`'`'`)`$osource`=`$arg_ofield`,`$osource`=`$arg_scfield`}\
+`{`@eq`(`$arg_oscfield`,`'`'`)`$o2source`=`$arg_o2field`,`$o2source`=`$arg_oscfield`}\
+   get_obj( ).begin_review( );
+
+   temporary_session_variable tmp_session_key_info(
+    get_special_var_name( e_special_var_key_info ),
+    get_obj( ).get_key( ) + "`{`$suffix`} " + get_obj( ).get_key( ) );
+
+   get_obj( ).`{`$arg_fldval`}( to_string( c_field_id_`{`$arg_field`} ) + "=" + to_string( `{`$arg_value`} ) );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_tfield`} ) + "=" );
+`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_ofield`} )
+    + "=" + escaped_string( escaped_string( escaped_string( get_obj( ).`{`$osource`}( ), "," ), "\=3"", c_esc, "rn\=3r\=3n" ) ) );
+`{`!`@eq`(`$arg_o2field`,`'`'`)
+   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_o2field`} )
+    + "=" + escaped_string( escaped_string( escaped_string( get_obj( ).`{`$o2source`}( ), "," ), "\=4"", c_esc, "rn\=4r\=4n" ) ) );
+`}\
+`}\
+
+   get_obj( ).finish_review( );
+`{`!`@eq`(`$arg_proc_arg`,`'`'`)\
+
+   // FUTURE: The return message itself should be a module string.
+`{`@eq`(`$arg_use_proc_name`,`'`'`)\
+   `{`$arg_proc_arg`} = "Created New " + get_obj( ).get_display_name( );
+`,\
+   `{`$arg_proc_arg`} = get_obj( ).get_display_name( ) + " "
+    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`}`}\
+   // [(finish for_clone_script)] `{`$arg_id`}
+`}
