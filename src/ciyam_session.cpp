@@ -1501,7 +1501,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else if( recurse )
             expansion = e_file_expansion_recursive;
 
-         response = file_type_info( tag_or_hash, expansion, depth_val );
+         response = file_type_info( tag_or_hash, expansion, depth_val, 0, true );
       }
       else if( command == c_cmd_ciyam_session_file_kill )
       {
