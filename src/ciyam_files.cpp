@@ -430,9 +430,11 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
    else if( file_type == c_file_type_val_tree )
       retval += "tree]";
 
+   string size_info( "(" + format_bytes( final_data.size( ) ) + ")" );
+
    if( expansion == e_file_expansion_none )
    {
-      retval += " " + lower( hash );
+      retval += " " + lower( hash ) + " " + size_info;
 
       if( is_core )
       {
@@ -448,9 +450,9 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          string blob_info( final_data.substr( 1 ) );
 
          if( is_valid_utf8( blob_info ) )
-            retval += " utf8 " + lower( hash ) + "\n" + utf8_replace( blob_info, "\r", "" );
+            retval += " utf8 " + lower( hash ) + " " + size_info + "\n" + utf8_replace( blob_info, "\r", "" );
          else
-            retval += " base64 " + lower( hash ) + "\n" + base64::encode( blob_info );
+            retval += " base64 " + lower( hash ) + " " + size_info + "\n" + base64::encode( blob_info );
       }
       else if( file_type == c_file_type_val_item )
       {
@@ -463,11 +465,11 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          retval += ' ' + item_info.substr( 0, pos );
 
          if( expansion == e_file_expansion_content )
-            retval += " " + lower( hash ) + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
+            retval += " " + lower( hash ) + " " + size_info + "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
          else if( max_depth && indent >= max_depth )
-            retval += " " + lower( hash ) + "\n" + string( indent, ' ' ) + "...";
+            retval += " " + lower( hash ) + " " + size_info + "\n" + string( indent, ' ' ) + "...";
          else
-            retval += " " + lower( hash ) + "\n"
+            retval += " " + lower( hash ) + " " + size_info + "\n"
              + file_type_info( item_info.substr( pos + 1 ), expansion, max_depth, indent + 1 );
       }
       else if( file_type == c_file_type_val_tree )
@@ -477,7 +479,7 @@ string file_type_info( const string& tag_or_hash, file_expansion expansion, int 
          vector< string > tree_items;
          split( tree_info, tree_items, '\n' );
 
-         retval += " " + lower( hash );
+         retval += " " + lower( hash ) + " " + size_info;
 
          for( size_t i = 0; i < tree_items.size( ); i++ )
          {

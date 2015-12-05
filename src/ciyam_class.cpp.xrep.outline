@@ -961,7 +961,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_trans=$specification_\\0_use_trans\
  arg_clone_only=$specification_\\0_clone_only arg_proc_arg_is_key_suffix=$specification_\\0_proc_arg_is_key_suffix\
  arg_spclass=$specification_\\0_spclass arg_use_proc_arg_for_source=$specification_\\0_use_proc_arg_for_source\
- arg_others_as_fldvals=$specification_\\0_others_as_fldvals arg_field_value_for_both=$specification_\\0_field_value_for_both`}\
+ arg_field_value_for_both=$specification_\\0_field_value_for_both`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone_script.spec.xrep section=procedure module_name=$module_name class_name=$class_name\

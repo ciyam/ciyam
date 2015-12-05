@@ -46,7 +46,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
 `{`$i`}   cp_source->`{`$arg_spfield`}( cp_key_source->get_key( ) );
 `}\
-`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_clone_only`,`'true`'`)`&`@eq`(`$arg_others_as_fldvals`,`'`'`)\
+`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_clone_only`,`'true`'`)\
 `{`$i`}   cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
 `}\
 `{`$i`}   cp_source->op_apply( );
@@ -58,14 +58,6 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`$i`}   get_obj( ).`{`$arg_fldval`}( to_string( c_field_id_`{`$arg_field`} ) + "=" + to_string( `{`$arg_value`} ) );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_tfield`} ) + "=" );
-`}\
-`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_others_as_fldvals`,`'true`'`)
-`{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_sfield`} )
-`{`$i`}    + "=" + escaped_string( escaped_string( escaped_string( get_obj( ).`{`$arg_sfield`}( ), "," ), "\=4"", c_esc, "rn\=4r\=4n" ) ) );
-`{`!`@eq`(`$arg_svalue`,`'`'`)`&`@eq`(`$arg_others_as_fldvals`,`'true`'`)
-`{`$i`}   get_obj( ).`{`$arg_fldval`}( get_obj( ).`{`$arg_fldval`}( ) + "," + to_string( c_field_id_`{`$arg_svalue`} )
-`{`$i`}    + "=" + escaped_string( escaped_string( escaped_string( get_obj( ).`{`$arg_svalue`}( ), "," ), "\=5"", c_esc, "rn\=5r\=5n" ) ) );
-`}\
 `}\
 `{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
 
@@ -80,7 +72,7 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
 `{`@eq`(`$arg_field_value_for_both`,`'true`'`)\
 `{`$i`}   get_obj( ).`{`$arg_field`}( `{`$arg_value`} );
 `}\
-`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_others_as_fldvals`,`'`'`)\
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
 `{`$i`}   get_obj( ).`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
 `}\
 `{`@eq`(`$arg_clone_only`,`'`'`)\
