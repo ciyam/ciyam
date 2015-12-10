@@ -507,6 +507,7 @@ int main( int argc, char* argv[ ] )
       bool okay = s.open( );
 
       ip_address address( g_port );
+
       if( okay )
       {
          if( !s.set_reuse_addr( ) && !g_is_quiet )
@@ -517,11 +518,13 @@ int main( int argc, char* argv[ ] )
          okay = s.bind( address );
 
          if( okay )
-         {
-            s.listen( );
+            okay = s.listen( );
 
+         if( okay )
+         {
             if( !g_is_quiet )
                cout << "server now listening on port " << g_port << "..." << endl;
+
             TRACE_LOG( TRACE_ANYTHING,
              "server started on port " + to_string( g_port ) + " (pid = " + to_string( get_pid( ) ) + ")" );
 

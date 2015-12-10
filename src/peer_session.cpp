@@ -1641,13 +1641,13 @@ void peer_session::decrement_session_count( )
 
 void peer_listener::on_start( )
 {
-   tcp_socket s;
-
    try
    {
+      tcp_socket s;
       bool okay = s.open( );
 
       ip_address address( port );
+
       if( okay )
       {
          s.set_reuse_addr( );
@@ -1661,9 +1661,10 @@ void peer_listener::on_start( )
          okay = s.bind( address );
 
          if( okay )
-         {
-            s.listen( );
+            okay = s.listen( );
 
+         if( okay )
+         {
             TRACE_LOG( TRACE_ANYTHING,
              "peer listener started on port " + to_string( port )
              + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
@@ -1737,20 +1738,19 @@ void peer_listener::on_start( )
             s.close( );
          }
          else
+         {
             s.close( );
+            issue_error( "unexpected socket error" );
+         }
       }
    }
    catch( exception& x )
    {
       issue_error( x.what( ) );
-
-      s.close( );
    }
    catch( ... )
    {
       issue_error( "unexpected unknown exception occurred" );
-
-      s.close( );
    }
 
    TRACE_LOG( TRACE_SESSIONS,
@@ -1902,6 +1902,10 @@ void create_peer_listener( int port, const string& blockchain )
 {
    if( !has_registered_listener( port ) )
    {
+#ifdef __GNUG__
+      if( port < 1025 )
+         throw runtime_error( "invalid attempt to use port number less than 1025" );
+#endif
       if( !blockchain.empty( ) )
          register_blockchain( port, blockchain );
 
