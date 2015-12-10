@@ -1335,6 +1335,22 @@ const char* const c_ignore_field = "@ignore";
 map< string, string > g_variables;
 map< string, map< string, string > > g_crypt_keys;
 
+typedef map< int, string > listener_container;
+
+typedef listener_container::const_iterator listener_const_iterator;
+
+listener_container g_listeners;
+
+void register_listener( int port, const string& info )
+{
+   g_listeners.insert( make_pair( port, info ) );
+}
+
+void unregister_listener( int port )
+{
+   g_listeners.erase( port );
+}
+
 size_t g_next_session_id;
 
 typedef vector< session* > session_container;
@@ -4114,10 +4130,35 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
-void check_timezone_info( )
+listener_registration::listener_registration( int port, const string& info )
+ :
+ port( port )
 {
-   if( timezones_file_has_changed( ) )
-      setup_timezones( );
+   guard g( g_mutex );
+
+   register_listener( port, info );
+}
+
+listener_registration::~listener_registration( )
+{
+   guard g( g_mutex );
+
+   unregister_listener( port );
+}
+
+bool has_registered_listener( int port )
+{
+   guard g( g_mutex );
+
+   return g_listeners.count( port );
+}
+
+void list_listeners( ostream& os )
+{
+   guard g( g_mutex );
+
+   for( listener_const_iterator lci = g_listeners.begin( ); lci != g_listeners.end( ); ++lci )
+      os << lci->first << ' ' << lci->second << '\n';
 }
 
 void init_globals( )
@@ -4207,6 +4248,12 @@ void term_globals( )
    if( g_using_ssl )
       term_ssl( );
 #endif
+}
+
+void check_timezone_info( )
+{
+   if( timezones_file_has_changed( ) )
+      setup_timezones( );
 }
 
 string get_string( const string& key )

@@ -74,10 +74,24 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
    void has_released( const guard* p_guard, const char* p_msg );
 };
 
-void CIYAM_BASE_DECL_SPEC check_timezone_info( );
+class CIYAM_BASE_DECL_SPEC listener_registration
+{
+   public:
+   listener_registration( int port, const std::string& info );
+   ~listener_registration( );
+
+   private:
+   int port;
+};
+
+bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
+
+void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC init_globals( );
 void CIYAM_BASE_DECL_SPEC term_globals( );
+
+void CIYAM_BASE_DECL_SPEC check_timezone_info( );
 
 std::string CIYAM_BASE_DECL_SPEC get_string( const std::string& key );
 

@@ -512,7 +512,10 @@ int main( int argc, char* argv[ ] )
          if( !s.set_reuse_addr( ) && !g_is_quiet )
             cout << "warning: set_reuse_addr failed..." << endl;
 
+         listener_registration registration( g_port, "main" );
+
          okay = s.bind( address );
+
          if( okay )
          {
             s.listen( );

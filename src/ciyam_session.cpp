@@ -4764,6 +4764,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             response = get_system_variable( name_or_expr );
       }
+      else if( command == c_cmd_ciyam_session_system_listeners )
+      {
+         ostringstream osstr;
+
+         list_listeners( osstr );
+
+         response = osstr.str( );
+      }
       else if( command == c_cmd_ciyam_session_trace )
       {
          string flags( get_parm_val( parameters, c_cmd_parm_ciyam_session_trace_flags ) );
