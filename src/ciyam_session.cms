@@ -84,6 +84,7 @@ storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"
 system_mutexes "list system mutexes and their session lock ids"
 system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>]
+system_listeners "list system listeners"
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>

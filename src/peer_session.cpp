@@ -1652,7 +1652,14 @@ void peer_listener::on_start( )
       {
          s.set_reuse_addr( );
 
+         string listener_name( "peer" );
+         if( !blockchain.empty( ) )
+            listener_name += " (" + blockchain + ")";
+
+         listener_registration registration( port, listener_name );
+
          okay = s.bind( address );
+
          if( okay )
          {
             s.listen( );
@@ -1893,11 +1900,14 @@ string create_blockchain_transaction( const string& blockchain,
 
 void create_peer_listener( int port, const string& blockchain )
 {
-   if( !blockchain.empty( ) )
-      register_blockchain( port, blockchain );
+   if( !has_registered_listener( port ) )
+   {
+      if( !blockchain.empty( ) )
+         register_blockchain( port, blockchain );
 
-   peer_listener* p_peer_listener = new peer_listener( port, blockchain );
-   p_peer_listener->start( );
+      peer_listener* p_peer_listener = new peer_listener( port, blockchain );
+      p_peer_listener->start( );
+   }
 }
 
 void create_peer_initiator( int port, const string& ip_addr, const string& blockchain, bool force )
