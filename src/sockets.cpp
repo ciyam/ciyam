@@ -37,7 +37,7 @@ using namespace std;
 namespace
 {
 
-const int c_buf_size = 128;
+const int c_default_buf_size = 65536;
 
 }
 
@@ -508,7 +508,7 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 void file_transfer( const string& name,
  tcp_socket& s, ft_direction d, size_t max_size,
  const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
- int max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size )
+ size_t max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -519,6 +519,8 @@ void file_transfer( const string& name,
 
    bool use_recv_buffer = ( p_buffer && buffer_size );
    
+   bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
+
    if( d == e_ft_direction_send )
    {
       if( !file_exists( name ) )
@@ -528,22 +530,26 @@ void file_transfer( const string& name,
       if( !inpf )
          throw runtime_error( "file '" + name + "' could not be opened for input" );
 
-      char buf[ c_buf_size ];
+      size_t buf_size = max_line_size
+       ? base64::decode_size( max_line_size + has_prefix_char ) : c_default_buf_size;
+
+      auto_ptr< char > ap_buf( new char[ buf_size ] );
+
       bool is_first = true;
 
       while( true )
       {
-         size_t count = c_buf_size;
+         size_t count = buf_size;
 
-         if( !inpf.read( buf, c_buf_size ) )
+         if( !inpf.read( ap_buf.get( ), buf_size ) )
             count = inpf.gcount( );
 
          if( !count )
             break;
 
-         string next( string( buf, count ) );
+         string next( string( ap_buf.get( ), count ) );
 
-         if( is_first && p_prefix_char && *p_prefix_char )
+         if( is_first && has_prefix_char )
             next = ( char )*p_prefix_char + next;
 
          next = base64::encode( next );

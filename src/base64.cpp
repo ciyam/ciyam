@@ -40,6 +40,11 @@ char get_b64_char_value( char c )
 
 }
 
+size_t base64::encode_size( size_t length )
+{
+   return ( ( length + 2 ) / 3 ) * 4;
+}
+
 string base64::encode( const unsigned char* p_dat, size_t length )
 {
    string str( ( ( length + 2 ) / 3 ) * 4, '\0' );
@@ -121,6 +126,11 @@ void base64::validate( const string& input, bool* p_rc )
       *p_rc = !invalid;
    else if( invalid )
       throw runtime_error( "invalid base64 value: " + input );
+}
+
+size_t base64::decode_size( size_t length )
+{
+   return ( ( length / 4 ) * 3 ) - 2;
 }
 
 size_t base64::decode_size( const string& input )

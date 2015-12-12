@@ -16,6 +16,8 @@
 class base64
 {
    public:
+   static size_t encode_size( size_t length );
+
    static std::string encode( const unsigned char* p_dat, size_t length );
 
    inline static std::string encode( const std::string& input )
@@ -25,6 +27,7 @@ class base64
 
    static void validate( const std::string& input, bool* p_rc = 0 );
 
+   static size_t decode_size( size_t length );
    static size_t decode_size( const std::string& input );
 
    static size_t decode( const std::string& input, unsigned char* p_data, size_t length );
