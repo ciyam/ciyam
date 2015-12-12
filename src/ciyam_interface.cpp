@@ -100,6 +100,7 @@ const int c_num_handlers = 10;
 const size_t c_max_fcgi_input_size = 65536;
 const size_t c_max_param_input_size = 4096;
 
+const int c_pid_timeout = 2500;
 const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 
@@ -1168,6 +1169,17 @@ void request_handler::process_request( )
                   {
                      p_session_info->p_socket->set_no_delay( );
 
+                     if( p_session_info->p_socket->write_line( to_string( get_pid( ) ), c_pid_timeout ) <= 0 )
+                     {
+                        string error;
+                        if( p_session_info->p_socket->had_timeout( ) )
+                           error = "timeout occurred trying to connect to server";
+                        else
+                           error = "application server has terminated this connection";
+
+                        throw runtime_error( error );
+                     }
+
                      string greeting;
                      if( p_session_info->p_socket->read_line( greeting, c_greeting_timeout ) <= 0 )
                      {
@@ -1175,7 +1187,7 @@ void request_handler::process_request( )
                         if( p_session_info->p_socket->had_timeout( ) )
                            error = "timeout occurred trying to connect to server";
                         else
-                           error = "server has terminated this connection";
+                           error = "application server has terminated this connection";
 
                         throw runtime_error( error );
                      }

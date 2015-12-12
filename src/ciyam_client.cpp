@@ -60,10 +60,13 @@ namespace
 const char* const c_app_title = "ciyam_client";
 const char* const c_app_version = "0.1";
 
+const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
+const size_t c_pid_timeout = 5000;
 const size_t c_command_timeout = 60000;
+const size_t c_connect_timeout = 10000;
 const size_t c_greeting_timeout = 10000;
 
 const size_t c_max_length_for_output_env_var = 1024;
@@ -93,6 +96,8 @@ string application_title( app_info_request request )
       throw runtime_error( osstr.str( ) );
    }
 }
+
+int g_pid = get_pid( );
 
 class ciyam_console_command_handler : public console_command_handler
 {
@@ -545,6 +550,11 @@ int main( int argc, char* argv[ ] )
          processor.process_commands( );
       }
 
+      const char* p_pid = getenv( c_env_var_pid );
+
+      if( p_pid )
+         g_pid = atoi( p_pid );
+
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
@@ -557,7 +567,7 @@ int main( int argc, char* argv[ ] )
             is_default = true;
 
 #ifdef _WIN32
-         if( socket.connect( address, is_default ? 1000 : c_greeting_timeout ) )
+         if( socket.connect( address, is_default ? 1000 : c_connect_timeout ) )
 #else
          // NOTE: If the server was started asynchronously in a script immediately prior
          // to the client then wait for half a second and then try again just to be sure.
@@ -568,6 +578,18 @@ int main( int argc, char* argv[ ] )
             if( !socket.set_no_delay( ) )
                cout << "warning: set_no_delay failed..." << endl;
 #endif
+            if( socket.write_line( to_string( g_pid ), c_pid_timeout ) <= 0 )
+            {
+               string error;
+               if( socket.had_timeout( ) )
+                  error = "timeout occurred trying to connect to server";
+               else
+                  error = "application server has terminated this connection";
+
+               socket.close( );
+               throw runtime_error( error );
+            }
+
             string greeting;
             if( socket.read_line( greeting, c_greeting_timeout ) <= 0 )
             {
@@ -575,7 +597,7 @@ int main( int argc, char* argv[ ] )
                if( socket.had_timeout( ) )
                   error = "timeout occurred trying to connect to server";
                else
-                  error = "server has terminated this connection";
+                  error = "application server has terminated this connection";
 
                socket.close( );
                throw runtime_error( error );
