@@ -530,8 +530,9 @@ int main( int argc, char* argv[ ] )
                cout << "server now listening on port " << g_port << "..." << endl;
 
             string pid( to_string( get_pid( ) ) );
+
             string pid_var( "PID=" + pid );
-            _putenv( pid_var.c_str( ) );
+            _putenv( ( char* )pid_var.c_str( ) );
 
             TRACE_LOG( TRACE_ANYTHING,
              "server started on port " + to_string( g_port ) + " (pid = " + pid + ")" );
