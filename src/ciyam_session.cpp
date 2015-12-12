@@ -5109,15 +5109,26 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-ciyam_session::ciyam_session( auto_ptr< ssl_socket >& ap_socket )
+ciyam_session::ciyam_session( auto_ptr< ssl_socket >& ap_socket, const string& ip_addr )
 #else
-ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket )
+ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
 #endif
  :
+ is_local( false ),
+ pid_is_self( false ),
  ap_socket( ap_socket )
 {
    if( !( *this->ap_socket ) )
-      throw runtime_error( "invalid socket..." );
+      throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
+
+   if( ip_addr == "127.0.0.1" )
+      is_local = true;
+
+   string pid;
+   this->ap_socket->read_line( pid, c_request_timeout );
+
+   if( is_local && pid == to_string( get_pid( ) ) )
+      pid_is_self = true;
 
    increment_session_count( );
 }

@@ -1458,7 +1458,7 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
  ap_socket( ap_socket )
 {
    if( !( *this->ap_socket ) )
-      throw runtime_error( "invalid socket..." );
+      throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
 
    string::size_type pos = ip_addr.find( '=' );
    if( pos != string::npos )
@@ -1669,7 +1669,7 @@ void peer_listener::on_start( )
              "peer listener started on port " + to_string( port )
              + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
-            while( s && ( !g_server_shutdown || g_active_sessions ) )
+            while( s && !g_server_shutdown )
             {
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT

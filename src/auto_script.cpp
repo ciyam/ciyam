@@ -346,7 +346,8 @@ void autoscript_session::on_start( )
       if( !script_reconfig )
          changed = true;
 
-      TRACE_LOG( TRACE_SESSIONS, "started autoscript session" );
+      TRACE_LOG( TRACE_SESSIONS,
+       "started autoscript session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
       while( true )
       {

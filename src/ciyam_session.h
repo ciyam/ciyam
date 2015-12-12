@@ -22,12 +22,14 @@ class ciyam_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
-   ciyam_session( std::auto_ptr< ssl_socket >& ap_socket );
+   ciyam_session( std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr );
 #  else
-   ciyam_session( std::auto_ptr< tcp_socket >& ap_socket );
+   ciyam_session( std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr );
 #  endif
 
    ~ciyam_session( );
+
+   bool is_own_pid( ) const { return pid_is_self; }
 
    void on_start( );
 
@@ -35,6 +37,8 @@ class ciyam_session : public thread
    static void decrement_session_count( );
 
    private:
+   bool is_local;
+   bool pid_is_self;
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
 #  else

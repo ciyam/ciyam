@@ -39,6 +39,10 @@
 #  endif
 #endif
 
+#ifdef __GNUG__
+#  define _putenv putenv
+#endif
+
 //#define USE_MAC_LICENSE
 
 #ifdef USE_MAC_LICENSE
@@ -525,8 +529,11 @@ int main( int argc, char* argv[ ] )
             if( !g_is_quiet )
                cout << "server now listening on port " << g_port << "..." << endl;
 
+            string pid( to_string( get_pid( ) ) );
+            _putenv( string( "PID=" + pid ).c_str( ) );
+
             TRACE_LOG( TRACE_ANYTHING,
-             "server started on port " + to_string( g_port ) + " (pid = " + to_string( get_pid( ) ) + ")" );
+             "server started on port " + to_string( g_port ) + " (pid = " + pid + ")" );
 
             file_remove( c_shutdown_signal_file );
 
@@ -575,10 +582,19 @@ int main( int argc, char* argv[ ] )
 #else
                auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-               if( !g_server_shutdown && *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
+               if( *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
                {
-                  ciyam_session* p_session = new ciyam_session( ap_socket );
-                  p_session->start( );
+                  ciyam_session* p_session = new ciyam_session( ap_socket, address.get_addr_string( ) );
+
+                  // NOTE: Even if the server is being shut down will still start sessions
+                  // that were initiated by the server itself (so that operations that use
+                  // a separate session for completion are correctly performed). Therefore
+                  // non-essential scripts should not be executed by the server if already
+                  // shutting down.
+                  if( g_server_shutdown && !p_session->is_own_pid( ) )
+                     delete p_session;
+                  else
+                     p_session->start( );
                }
             }
 
