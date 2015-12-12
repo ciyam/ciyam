@@ -12,6 +12,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stdio.h>
 #  include <memory.h>
+#  include <memory>
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>
