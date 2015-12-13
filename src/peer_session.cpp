@@ -64,6 +64,7 @@ const int c_min_block_wait_passes = 8;
 const size_t c_request_timeout = 5000;
 const size_t c_greeting_timeout = 10000;
 
+const size_t c_pid_timeout = 1000;
 const size_t c_connect_timeout = 2500;
 const size_t c_recconect_timeout = 1000;
 
@@ -1479,6 +1480,17 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
 
    if( this->ip_addr == "127.0.0.1" )
       is_local = true;
+
+   // FUTURE: For now a dummy PID is being written/read so that the standard
+   // general purpose client can be used to connect as a peer (for testing).
+   // Perhaps this could be some specific peer identity in the future to act
+   // as a way of locating specific peers without using fixed IP addresses.
+   string pid( "peer" );
+
+   if( !responder )
+      this->ap_socket->write_line( pid, c_pid_timeout );
+   else
+      this->ap_socket->read_line( pid, c_request_timeout );
 
    increment_session_count( );
 }
