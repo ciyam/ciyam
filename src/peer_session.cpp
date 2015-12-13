@@ -753,7 +753,10 @@ void socket_command_handler::issue_cmd_for_peer( )
       {
          set_needs_blockchain_info( false );
 
-         if( !has_file( blockchain_info_hash ) )
+         string last_blockchain_info(
+          get_raw_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
+
+         if( !has_file( blockchain_info_hash ) && blockchain_info_hash != last_blockchain_info )
             add_peer_file_hash_for_get( blockchain_info_hash );
       }
    }
