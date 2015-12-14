@@ -235,6 +235,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
@@ -5955,6 +5956,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_attached_file_path:
       s = string( c_special_variable_attached_file_path );
+      break;
+
+      case e_special_var_blockchain_head_hash:
+      s = string( c_special_variable_blockchain_head_hash );
       break;
 
       case e_special_var_blockchain_info_hash:

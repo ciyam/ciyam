@@ -1011,7 +1011,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void fetch_file( const string& hash, tcp_socket& socket )
+void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash ) );
@@ -1034,10 +1034,10 @@ void fetch_file( const string& hash, tcp_socket& socket )
          file_copy( filename, tmp_filename );
       }
 
-      file_transfer( tmp_filename,
-       socket, e_ft_direction_send, get_files_area_item_max_size( ),
+      file_transfer( tmp_filename, socket,
+       e_ft_direction_send, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout,
-       c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 
 #ifndef _WIN32
       umask( um );
@@ -1055,7 +1055,7 @@ void fetch_file( const string& hash, tcp_socket& socket )
    }
 }
 
-void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
+void store_file( const string& hash, tcp_socket& socket, const char* p_tag, progress* p_progress )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash, true ) );
@@ -1081,9 +1081,9 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag )
       session_file_buffer_access file_buffer;
 
       file_transfer( tmp_filename,
-       socket, e_ft_direction_receive, get_files_area_item_max_size( ),
+       socket, e_ft_direction_recv, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ) );
+       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress );
 
       unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
@@ -1232,15 +1232,15 @@ void copy_raw_file( const string& hash, const string& dest_filename )
    file_copy( filename, dest_filename );
 }
 
-void fetch_temp_file( const string& name, tcp_socket& socket )
+void fetch_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
 {
    file_transfer( name, socket,
     e_ft_direction_send, get_files_area_item_max_size( ),
     c_response_okay_more, c_file_transfer_initial_timeout,
-    c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 }
 
-void store_temp_file( const string& name, tcp_socket& socket )
+void store_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
 {
 #ifndef _WIN32
    int um = umask( 077 );
@@ -1248,9 +1248,9 @@ void store_temp_file( const string& name, tcp_socket& socket )
    try
    {
       file_transfer( name, socket,
-       e_ft_direction_receive, get_files_area_item_max_size( ),
+       e_ft_direction_recv, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout,
-       c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 
 #ifndef _WIN32
       umask( um );

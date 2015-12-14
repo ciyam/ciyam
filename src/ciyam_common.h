@@ -110,6 +110,7 @@ enum special_var
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
    e_special_var_attached_file_path,
+   e_special_var_blockchain_head_hash,
    e_special_var_blockchain_info_hash,
    e_special_var_secondary_validation,
    e_special_var_skip_blockchain_lock,
