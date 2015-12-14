@@ -1295,17 +1295,15 @@ void socket_command_handler::handle_command_response( const string& response, bo
 
    if( !response.empty( ) )
    {
-      if( is_special && !socket.set_no_delay( ) )
-         issue_warning( "socket set_no_delay failure" );
+      if( is_special )
+         socket.set_no_delay( );
 
       socket.write_line( response, c_request_timeout, p_progress );
    }
 
    if( !is_special )
    {
-      if( !socket.set_no_delay( ) )
-         issue_warning( "socket set_no_delay failure" );
-
+      socket.set_no_delay( );
       socket.write_line( c_response_okay, c_request_timeout, p_progress );
    }
 }
@@ -1344,8 +1342,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
-   if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) && !socket.set_delay( ) )
-      issue_warning( "socket set_delay failure" );
+   if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) )
+      socket.set_delay( );
 
    set_dtm( "" );
    set_grp( "" );
@@ -5088,8 +5086,7 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
    cout << "<processing usage request>" << endl;
 #endif
 
-   if( !socket.set_delay( ) )
-      issue_warning( "socket set_delay failure" );
+   socket.set_delay( );
 
    string cmds( "commands:" );
    if( !wildcard_match_expr.empty( ) )
@@ -5100,9 +5097,7 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
    socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
-   if( !socket.set_no_delay( ) )
-      issue_warning( "socket set_no_delay failure" );
-
+   socket.set_no_delay( );
    socket.write_line( c_response_okay, c_request_timeout );
 }
 

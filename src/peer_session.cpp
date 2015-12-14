@@ -595,6 +595,8 @@ void socket_command_handler::get_hello( )
       create_raw_file( data );
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
+
+   socket.set_delay( );
    socket.write_line( string( c_cmd_peer_session_get ) + " " + temp_hash, c_request_timeout, p_progress );
 
    try
@@ -636,6 +638,7 @@ void socket_command_handler::put_hello( )
    if( !has_file( temp_hash ) )
       create_raw_file( data );
 
+   socket.set_delay( );
    socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
 
    fetch_file( temp_hash, socket, p_progress );
@@ -655,6 +658,7 @@ void socket_command_handler::get_file( const string& hash )
 
    string::size_type pos = hash.find( ':' );
 
+   socket.set_delay( );
    socket.write_line( string( c_cmd_peer_session_get )
     + " " + hash.substr( 0, pos ), c_request_timeout, p_progress );
 
@@ -673,6 +677,7 @@ void socket_command_handler::put_file( const string& hash )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
+   socket.set_delay( );
    socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
 
    fetch_file( hash, socket, p_progress );
@@ -688,6 +693,7 @@ void socket_command_handler::pip_peer( const string& ip_address )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
+   socket.set_no_delay( );
    socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_progress );
 
    string response;
@@ -713,6 +719,8 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
       p_progress = &progress;
 
    string expected;
+
+   socket.set_no_delay( );
 
    if( p_response )
       socket.write_line( string( c_cmd_peer_session_chk )
@@ -895,17 +903,15 @@ void socket_command_handler::handle_command_response( const string& response, bo
 
    if( !response.empty( ) )
    {
-      if( is_special && !socket.set_no_delay( ) )
-         issue_warning( "socket set_no_delay failure" );
+      if( is_special || !is_responder )
+         socket.set_no_delay( );
 
       socket.write_line( response, c_request_timeout, p_progress );
    }
 
    if( !is_special && is_responder )
    {
-      if( !socket.set_no_delay( ) )
-         issue_warning( "socket set_no_delay failure" );
-
+      socket.set_no_delay( );
       socket.write_line( c_response_okay, c_request_timeout, p_progress );
    }
 }
@@ -947,8 +953,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   if( command != c_cmd_peer_session_bye && !socket.set_delay( ) )
-      issue_warning( "socket set_delay failure" );
+   if( command != c_cmd_peer_session_bye )
+      socket.set_delay( );
 
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
@@ -998,6 +1004,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      create_raw_file( data );
 
                   handler.issue_command_reponse( "put " + temp_hash, true );
+
+                  socket.set_delay( );
                   fetch_file( temp_hash, socket, p_progress );
 
                   string temp_file_name( "~" + uuid( ).as_string( ) );
@@ -1084,6 +1092,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
 
+         socket.set_delay( );
+
          if( hash != socket_handler.get_blockchain_info( ).first )
          {
             fetch_file( hash, socket, p_progress );
@@ -1117,6 +1127,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for put" );
+
+         socket.set_delay( );
 
          if( !has_file( hash ) )
             store_file( hash, socket, 0, p_progress );
@@ -1434,8 +1446,7 @@ string socket_command_processor::get_cmd_and_args( )
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const
 {
-   if( !socket.set_delay( ) )
-      issue_warning( "socket set_delay failure" );
+   socket.set_delay( );
 
    string cmds( "commands:" );
    if( !wildcard_match_expr.empty( ) )
@@ -1446,9 +1457,7 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
    socket.write_line( get_usage_for_commands( wildcard_match_expr ), c_request_timeout );
 
-   if( !socket.set_no_delay( ) )
-      issue_warning( "socket set_no_delay failure" );
-
+   socket.set_no_delay( );
    socket.write_line( c_response_okay, c_request_timeout );
 }
 
@@ -1511,7 +1520,10 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
    string pid( "peer" );
 
    if( !responder )
+   {
+      this->ap_socket->set_no_delay( );
       this->ap_socket->write_line( pid, c_pid_timeout );
+   }
    else
       this->ap_socket->read_line( pid, c_request_timeout );
 
