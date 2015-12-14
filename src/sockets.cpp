@@ -534,8 +534,6 @@ void file_transfer( const string& name,
 
    string unexpected_data;
 
-   s.set_no_delay( );
-
    bool use_recv_buffer = ( p_buffer && buffer_size );
    
    bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
