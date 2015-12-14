@@ -20,6 +20,7 @@
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+struct progress;
 class tcp_socket;
 
 void CLASS_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_files( std::ostream& outs );
@@ -66,8 +67,10 @@ std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat );
 
 std::string CLASS_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const std::string& nonce );
 
-void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket );
-void CLASS_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socket, const char* p_tag = 0 );
+void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
+
+void CLASS_BASE_DECL_SPEC store_file( const std::string& hash,
+ tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0 );
 
 void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
 
@@ -75,8 +78,11 @@ void CLASS_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat );
 
 void CLASS_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_filename );
 
-void CLASS_BASE_DECL_SPEC fetch_temp_file( const std::string& name, tcp_socket& socket );
-void CLASS_BASE_DECL_SPEC store_temp_file( const std::string& name, tcp_socket& socket );
+void CLASS_BASE_DECL_SPEC fetch_temp_file(
+ const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
+
+void CLASS_BASE_DECL_SPEC store_temp_file(
+ const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
 
 bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 

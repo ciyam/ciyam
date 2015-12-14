@@ -74,6 +74,7 @@ class tcp_socket
    bool listen( );
    SOCKET accept( ip_address& addr, size_t timeout = 0 ) const;
 
+   bool get_delay( );
    bool set_delay( );
    bool set_no_delay( );
 
@@ -140,13 +141,14 @@ class tcp_socket
 enum ft_direction
 {
    e_ft_direction_send,
-   e_ft_direction_receive
+   e_ft_direction_recv
 };
 
-void file_transfer( const std::string& name, tcp_socket& s,
- ft_direction d, size_t max_size, const char* p_ack_message,
- size_t initial_timeout = 0, size_t line_timeout = 0, size_t max_line_size = 0,
- unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0, unsigned int buffer_size = 0 );
+void file_transfer(
+ const std::string& name, tcp_socket& s, ft_direction d,
+ size_t max_size, const char* p_ack_message, size_t initial_timeout = 0,
+ size_t line_timeout = 0, size_t max_line_size = 0, unsigned char* p_prefix_char = 0,
+ unsigned char* p_buffer = 0, unsigned int buffer_size = 0, progress* p_progress = 0 );
 
 #endif
 

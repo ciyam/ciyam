@@ -262,7 +262,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
 
                   file_transfer( filename, socket,
-                   e_ft_direction_receive, c_max_file_transfer_size,
+                   e_ft_direction_recv, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_initial_timeout,
                    c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
@@ -355,14 +355,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      if( response.substr( 0, pos ) == "get" )
                      {
-                        file_transfer( response.substr( pos + 1 ), socket,
-                         e_ft_direction_send, c_max_file_transfer_size,
+                        file_transfer( response.substr( pos + 1 ),
+                         socket, e_ft_direction_send, c_max_file_transfer_size,
                          c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                      }
                      else if( response.substr( 0, pos ) == "put" )
                      {
-                        file_transfer( response.substr( pos + 1 ), socket,
-                         e_ft_direction_receive, c_max_file_transfer_size,
+                        file_transfer( response.substr( pos + 1 ),
+                         socket, e_ft_direction_recv, c_max_file_transfer_size,
                          c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 
                         // NOTE: If is first "chk" and *not found* is returned then it is next expected

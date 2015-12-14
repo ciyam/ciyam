@@ -414,8 +414,20 @@ void process_file( const string& hash, const string& blockchain )
                 get_special_var_name( e_special_var_peer_is_synchronising ), blockchain );
             else
             {
-               set_session_variable(
-                get_special_var_name( e_special_var_peer_is_synchronising ), "" );
+               string blockchain_head_hash( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_head_hash ) ) );
+
+               if( !blockchain_head_hash.empty( ) && !has_file( blockchain_head_hash ) )
+                  set_session_variable(
+                   get_special_var_name( e_special_var_peer_is_synchronising ), blockchain );
+               else
+               {
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_head_hash ), "" );
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_peer_is_synchronising ), "" );
+               }
 
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
@@ -587,7 +599,7 @@ void socket_command_handler::get_hello( )
 
    try
    {
-      store_temp_file( temp_file_name, socket );
+      store_temp_file( temp_file_name, socket, p_progress );
 
       if( !temp_file_is_identical( temp_file_name, temp_hash ) )
       {
@@ -626,7 +638,7 @@ void socket_command_handler::put_hello( )
 
    socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
 
-   fetch_file( temp_hash, socket );
+   fetch_file( temp_hash, socket, p_progress );
 
    increment_peer_files_uploaded( file_bytes( temp_hash ) );
 }
@@ -646,7 +658,7 @@ void socket_command_handler::get_file( const string& hash )
    socket.write_line( string( c_cmd_peer_session_get )
     + " " + hash.substr( 0, pos ), c_request_timeout, p_progress );
 
-   store_file( hash.substr( 0, pos ), socket );
+   store_file( hash.substr( 0, pos ), socket, 0, p_progress );
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
 }
@@ -663,7 +675,7 @@ void socket_command_handler::put_file( const string& hash )
 
    socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
 
-   fetch_file( hash, socket );
+   fetch_file( hash, socket, p_progress );
 
    increment_peer_files_uploaded( file_bytes( hash ) );
 }
@@ -758,6 +770,14 @@ void socket_command_handler::issue_cmd_for_peer( )
 
          if( !has_file( blockchain_info_hash ) && blockchain_info_hash != last_blockchain_info )
             add_peer_file_hash_for_get( blockchain_info_hash );
+         else
+         {
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_head_hash ), "" );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_peer_is_synchronising ), "" );
+         }    
       }
    }
    // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
@@ -978,13 +998,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      create_raw_file( data );
 
                   handler.issue_command_reponse( "put " + temp_hash, true );
-                  fetch_file( temp_hash, socket );
+                  fetch_file( temp_hash, socket, p_progress );
 
                   string temp_file_name( "~" + uuid( ).as_string( ) );
 
                   try
                   {
-                     store_temp_file( temp_file_name, socket );
+                     store_temp_file( temp_file_name, socket, p_progress );
 
                      response.erase( );
 
@@ -1066,14 +1086,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( hash != socket_handler.get_blockchain_info( ).first )
          {
-            fetch_file( hash, socket );
+            fetch_file( hash, socket, p_progress );
             increment_peer_files_uploaded( file_bytes( hash ) );
          }
          else
          {
             socket_handler.get_blockchain_info( ).first.erase( );
 
-            fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket );
+            fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket, p_progress );
             increment_peer_files_uploaded( file_size( socket_handler.get_blockchain_info( ).second ) );
 
             file_remove( socket_handler.get_blockchain_info( ).second );
@@ -1099,13 +1119,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             throw runtime_error( "invalid state for put" );
 
          if( !has_file( hash ) )
-            store_file( hash, socket );
+            store_file( hash, socket, 0, p_progress );
          else
          {
             string temp_file_name( "~" + uuid( ).as_string( ) );
             try
             {
-               store_temp_file( temp_file_name, socket );
+               store_temp_file( temp_file_name, socket, p_progress );
                file_remove( temp_file_name );
             }
             catch( ... )
@@ -1580,6 +1600,9 @@ void peer_session::on_start( )
 
             if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
                okay = false;
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_head_hash ), blockchain_head_hash );
          }
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;

@@ -237,6 +237,16 @@ SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
    }
 }
 
+bool tcp_socket::get_delay( )
+{
+   int val = 0;
+   socklen_t len = sizeof( val );
+
+   get_option( IPPROTO_TCP, TCP_NODELAY, ( char* )&val, len );
+
+   return ( val == 0 );
+}
+
 bool tcp_socket::set_delay( )
 {
    int val = 0;
@@ -489,7 +499,15 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
    if( p_data )
    {
       if( p_progress )
-         p_progress->output_progress( "<W< " + str );
+      {
+         string write_string( "<W< " );
+
+         if( !get_delay( ) )
+            write_string = string( "<W<!" );
+
+         p_progress->output_progress( write_string + str );
+      }
+
       n = send_n( ( const unsigned char* )p_data, len, timeout );
    }
 
@@ -508,8 +526,8 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 
 void file_transfer( const string& name,
  tcp_socket& s, ft_direction d, size_t max_size,
- const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
- size_t max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size )
+ const char* p_ack_message, size_t initial_timeout, size_t line_timeout, size_t max_line_size,
+ unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size, progress* p_progress )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -555,10 +573,10 @@ void file_transfer( const string& name,
 
          next = base64::encode( next );
 
-         s.write_line( next, is_first ? initial_timeout : line_timeout );
+         s.write_line( next, is_first ? initial_timeout : line_timeout, p_progress );
 
          next.erase( );
-         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
+         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading send response for file transfer" );
@@ -572,7 +590,7 @@ void file_transfer( const string& name,
          is_first = false;
       }
 
-      s.write_line( p_ack_message );
+      s.write_line( p_ack_message, line_timeout, p_progress );
    }
    else
    {
@@ -592,7 +610,7 @@ void file_transfer( const string& name,
       while( true )
       {
          next.erase( );
-         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size );
+         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading next line for file transfer" );
@@ -632,7 +650,7 @@ void file_transfer( const string& name,
             p_buf += decoded.size( );
          }
 
-         s.write_line( p_ack_message );
+         s.write_line( p_ack_message, line_timeout, p_progress );
 
          is_first = false;
       }
