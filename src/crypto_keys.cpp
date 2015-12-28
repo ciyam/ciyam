@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
 #  include <map>
+#  include <memory>
 #  include <iomanip>
 #  include <sstream>
 #  include <stdexcept>
