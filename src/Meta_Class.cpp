@@ -413,6 +413,7 @@ const int c_enum_view_access_restrict_none( 0 );
 const int c_enum_view_access_restrict_owner_only( 1 );
 const int c_enum_view_access_restrict_admin_only( 2 );
 const int c_enum_view_access_restrict_admin_owner( 3 );
+const int c_enum_view_access_restrict_denied_always( 4 );
 
 string get_enum_string_view_access_restrict( int val )
 {
@@ -428,6 +429,8 @@ string get_enum_string_view_access_restrict( int val )
       string_name = "enum_view_access_restrict_admin_only";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_view_access_restrict_admin_owner";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_access_restrict_denied_always";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_access_restrict" );
 
@@ -8088,6 +8091,7 @@ void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_view_access_restrict_1", get_enum_string_view_access_restrict( 1 ) ) );
    pairs.push_back( make_pair( "enum_view_access_restrict_2", get_enum_string_view_access_restrict( 2 ) ) );
    pairs.push_back( make_pair( "enum_view_access_restrict_3", get_enum_string_view_access_restrict( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_4", get_enum_string_view_access_restrict( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_view_change_restrict_0", get_enum_string_view_change_restrict( 0 ) ) );
    pairs.push_back( make_pair( "enum_view_change_restrict_1", get_enum_string_view_change_restrict( 1 ) ) );
@@ -8159,6 +8163,7 @@ void Meta_Class::static_class_init( const char* p_module_name )
    g_view_access_restrict_enum.insert( 1 );
    g_view_access_restrict_enum.insert( 2 );
    g_view_access_restrict_enum.insert( 3 );
+   g_view_access_restrict_enum.insert( 4 );
 
    g_view_change_restrict_enum.insert( 0 );
    g_view_change_restrict_enum.insert( 1 );

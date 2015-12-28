@@ -445,7 +445,8 @@ string public_key::address_to_hash160( const string& address )
    return hex_encode( &dbuf[ 1 ], dbuf.size( ) - 5 );
 }
 
-string public_key::hash160_to_address( const string& hash160, bool is_testnet )
+string public_key::hash160_to_address(
+ const string& hash160, bool use_override, address_prefix override )
 {
    if( hash160.length( ) != RIPEMD160_DIGEST_LENGTH * 2 )
       throw runtime_error( "invalid hash160 '" + hash160 + "'" );
@@ -453,10 +454,10 @@ string public_key::hash160_to_address( const string& hash160, bool is_testnet )
    unsigned char buf[ RIPEMD160_DIGEST_LENGTH + 5 ];
    hex_decode( hash160, buf + 1, RIPEMD160_DIGEST_LENGTH );
 
-   if( !is_testnet )
+   if( !use_override )
       buf[ 0 ] = 0x00;
    else
-      buf[ 0 ] = 0x6F;
+      buf[ 0 ] = override;
 
    unsigned char buf2[ c_num_hash_bytes ];
    sha256 hash2( buf, RIPEMD160_DIGEST_LENGTH + 1 );
@@ -730,6 +731,27 @@ string private_key::construct_signature( const string& msg, bool use_base64 ) co
    p_impl->sign_message( buf, signature );
 
    return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
+}
+
+string create_p2sh_address( const string& hex_script, bool is_testnet )
+{
+   size_t size = hex_script.size( ) / 2;
+
+   auto_ptr< unsigned char > ap_buf;
+   ap_buf.reset( new unsigned char[ size ] );
+
+   hex_decode( hex_script, ap_buf.get( ), size );
+
+   unsigned char buf1[ c_num_hash_bytes ];
+
+   sha256 hash( ap_buf.get( ), size );
+   hash.copy_digest_to_buffer( buf1 );
+
+   unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];
+   RIPEMD160( buf1, c_num_hash_bytes, buf2 );
+
+   return public_key::hash160_to_address( hex_encode( buf2, sizeof( buf2 ) ), true,
+    !is_testnet ? e_address_prefix_btc_p2sh_mainnet : e_address_prefix_btc_p2sh_testnet );
 }
 
 string create_secret_for_address_prefix_with_leading_hash160_bytes( const string& prefix, const string& bytes )

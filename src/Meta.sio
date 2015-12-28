@@ -37927,7 +37927,7 @@
     <id>655
     <name>view_access_restrict
     <type>int
-    <key_values>0=none,1=owner\_only,2=admin\_only,3=admin\_owner
+    <key_values>0=none,1=owner\_only,2=admin\_only,3=admin\_owner,4=denied\_always
    </user_defined_enum>
    <user_defined_enum/>
     <id>657

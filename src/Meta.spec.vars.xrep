@@ -66,7 +66,7 @@
 `{`$enum_test_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 35=Any_Conditional 38=Any_Value_Or_Conditional 99=Any_Type`'`}
 `{`$enum_time_precision`=`'0=default 1=minutes 2=seconds`'`}
 `{`$enum_uom`=`'0=none 1=sqm 2=km 3=m 4=cm 5=mm 6=kg 7=g 8=mg 900=number 901=dollars 902=percent 999=customised`'`}
-`{`$enum_view_access_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner`'`}
+`{`$enum_view_access_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner 4=denied_always`'`}
 `{`$enum_view_change_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner 4=denied_always`'`}
 `{`$enum_view_field_access_scope`=`'0=all 1=create_only 2=post_create 3=editing_only 4=viewing_only 5=updating_only`'`}
 `{`$enum_view_field_change_scope`=`'0=all 1=create_only 2=update_only 3=always_editable`'`}

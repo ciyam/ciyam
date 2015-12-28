@@ -406,10 +406,15 @@ const char* const c_list_field_extra_link_none_owner_only = "link_none_owner_onl
 const char* const c_list_field_extra_link_none_admin_owner = "link_none_admin_owner";
 const char* const c_list_field_extra_link_none_denied_always = "link_none_denied_always";
 
+const char* const c_view_type_none = "none";
 const char* const c_view_type_admin = "admin";
+const char* const c_view_type_owner = "owner";
 const char* const c_view_type_print = "print";
 const char* const c_view_type_standard = "standard";
+const char* const c_view_type_admin_owner = "admin_owner";
 const char* const c_view_type_admin_print = "admin_print";
+const char* const c_view_type_owner_print = "owner_print";
+const char* const c_view_type_admin_owner_print = "admin_owner_print";
 
 const char* const c_view_type_extra_vtabc = "vtabc";
 const char* const c_view_type_extra_no_edit = "no_edit";

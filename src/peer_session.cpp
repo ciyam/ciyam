@@ -903,7 +903,9 @@ void socket_command_handler::handle_command_response( const string& response, bo
 
    if( !response.empty( ) )
    {
-      if( is_special || !is_responder )
+      if( !is_special || is_responder )
+         socket.set_delay( );
+      else
          socket.set_no_delay( );
 
       socket.write_line( response, c_request_timeout, p_progress );

@@ -5224,8 +5224,10 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
    spec_data.data_pairs.push_back( make_pair( "tfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "keyrep", "" ) );
    spec_data.data_pairs.push_back( make_pair( "classrep", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "top_level", "" ) );
    spec_data.data_pairs.push_back( make_pair( "inc_labels", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "key_suffix", "" ) );
 }
 
 string field_from_search_replace_specification::static_class_name( ) { return "field_from_search_replace"; }
