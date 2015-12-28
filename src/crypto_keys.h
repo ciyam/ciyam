@@ -16,6 +16,13 @@
 
 class private_key;
 
+enum address_prefix
+{
+   e_address_prefix_btc_p2sh_mainnet = 0x05,
+   e_address_prefix_btc_p2sh_testnet = 0xc4,
+   e_address_prefix_btc_p2pkh_testnet = 0x6F
+};
+
 class public_key
 {
    friend class private_key;
@@ -33,7 +40,9 @@ class public_key
    bool verify_signature( const unsigned char* p_data, const std::string& sig ) const;
 
    static std::string address_to_hash160( const std::string& address );
-   static std::string hash160_to_address( const std::string& hash160, bool is_testnet = false );
+
+   static std::string hash160_to_address( const std::string& hash160,
+    bool use_override = false, address_prefix override = e_address_prefix_btc_p2pkh_testnet );
 
    private:
    public_key( const public_key& );
@@ -76,6 +85,8 @@ class private_key : public public_key
    private_key( const private_key& );
    private_key& operator =( const private_key& );
 };
+
+std::string create_p2sh_address( const std::string& hex_script, bool is_testnet = false );
 
 std::string create_secret_for_address_prefix_with_leading_hash160_bytes( const std::string& prefix, const std::string& bytes );
 

@@ -7344,12 +7344,14 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600182
 
    // [(start field_from_other_field)] 600183
-   if( !is_null( get_obj( ).Source_Field( ) ) && get_obj( ).Specification_Type( ).Set_Field_To_Source_Field_Or_Child( ) == true )
+   if( !is_null( get_obj( ).Source_Field( ) )
+    && get_obj( ).Specification_Type( ).Set_Field_To_Source_Field_Or_Child( ) == true )
       get_obj( ).Field( get_obj( ).Source_Field( ) );
    // [(finish field_from_other_field)] 600183
 
    // [(start field_from_other_field)] 600184
-   if( !is_null( get_obj( ).Source_Child( ) ) && get_obj( ).Specification_Type( ).Set_Field_To_Source_Field_Or_Child( ) == true )
+   if( !is_null( get_obj( ).Source_Child( ) )
+    && get_obj( ).Specification_Type( ).Set_Field_To_Source_Field_Or_Child( ) == true )
       get_obj( ).Field( get_obj( ).Source_Child( ) );
    // [(finish field_from_other_field)] 600184
 
@@ -7358,7 +7360,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600185
 
    // [(start field_from_other_field)] 600186
-   if( !is_null( get_obj( ).Value( ) ) && get_obj( ).Field( ).Is_Text_Type( ) == true )
+   if( !is_null( get_obj( ).Value( ) )
+    && get_obj( ).Field( ).Is_Text_Type( ) == true )
       get_obj( ).Value_Literal( quoted_literal( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600186
 
@@ -7408,7 +7411,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600191b
 
    // [(start field_from_other_field)] 600191c
-   if( !is_null( get_obj( ).Source_Child( ) ) && get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) == true )
+   if( !is_null( get_obj( ).Source_Child( ) )
+    && get_obj( ).Specification_Type( ).Use_Source_Field_Or_Child_Enum( ) == true )
       get_obj( ).Enum( get_obj( ).Source_Child( ).Enum( ) );
    // [(finish field_from_other_field)] 600191c
 

@@ -1898,6 +1898,10 @@
      <data>3
      <name>enum_view_access_restrict_admin_owner
     </value>
+    <value/>
+     <data>4
+     <name>enum_view_access_restrict_denied_always
+    </value>
    </values>
   </enum>
   <enum/>

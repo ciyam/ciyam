@@ -205,6 +205,7 @@ void check_instance_op_permission( const string& module,
       if( !okay && !permission.empty( ) )
       {
          string uclass( get_raw_session_variable( "@" + module + c_user_class_suffix ) );
+
          if( !uclass.empty( ) )
          {
             size_t uhandle = create_object_instance( module, uclass, 0, false );

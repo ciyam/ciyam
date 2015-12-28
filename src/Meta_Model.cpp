@@ -1775,12 +1775,24 @@ void Meta_Model::impl::impl_Generate( )
             string type;
             string pdf_vars_file;
 
-            if( get_obj( ).child_View( ).Type( ).get_key( ) == "normal" || get_obj( ).child_View( ).Type( ).get_key( ) == "user_info" )
+            if( get_obj( ).child_View( ).Type( ).get_key( ) == "normal"
+             || get_obj( ).child_View( ).Type( ).get_key( ) == "user_info" )
             {
                if( get_obj( ).child_View( ).Access_Restriction( ) == 0 )
                   type = "standard";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 1 ) // i.e. owner_only
+                  type = "owner";
                else if( get_obj( ).child_View( ).Access_Restriction( ) == 2 ) // i.e. admin_only
                   type = "admin";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 3 ) // i.e. admin_owner_only
+                  type = "admin_owner";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 4 ) // i.e. denied_always
+               {
+                  if( is_null( get_obj( ).child_View( ).Access_Permission( ) ) )
+                     type = "none";
+                  else
+                     type = "standard";
+               }
                else
                   throw runtime_error( "unsupported view access restriction #"
                    + to_string( get_obj( ).child_View( ).Access_Restriction( ) ) + " in Model::Generate" );
@@ -1799,8 +1811,19 @@ void Meta_Model::impl::impl_Generate( )
 
                if( get_obj( ).child_View( ).Access_Restriction( ) == 0 )
                   type = "print";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 1 ) // i.e. owner_only
+                  type = "owner_print";
                else if( get_obj( ).child_View( ).Access_Restriction( ) == 2 ) // i.e. admin_only
                   type = "admin_print";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 3 ) // i.e. admin_owner_only
+                  type = "admin_owner_print";
+               else if( get_obj( ).child_View( ).Access_Restriction( ) == 4 ) // i.e. denied_always
+               {
+                  if( is_null( get_obj( ).child_View( ).Access_Permission( ) ) )
+                     type = "none";
+                  else
+                     type = "print";
+               }
                else
                   throw runtime_error( "unsupported view access restriction #"
                    + to_string( get_obj( ).child_View( ).Access_Restriction( ) ) + " in Model::Generate" );

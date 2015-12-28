@@ -2694,6 +2694,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          extra_content << "</h3></div>\n";
 
+         string owner;
+
+         if( !view.owning_user_field.empty( ) && view.fk_field_values.count( view.owning_user_field ) )
+            owner = view.fk_field_values.find( view.owning_user_field )->second;
+
          string user_slevel;
 
          if( !p_session_info->other_slevels.count( p_session_info->user_other ) )
@@ -2705,6 +2710,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( !view_perm.empty( ) && view_perm[ 0 ] == '!' )
             view_perm.erase( 0, 1 );
 
+         bool does_not_have_perm = false;
+
+         if( !view_perm.empty( ) && !p_session_info->user_perms.count( view_perm ) )
+            does_not_have_perm = true;
+
          if( record_not_found_error )
          {
             // NOTE: If a "jump back" is to occur after an action then don't display
@@ -2715,11 +2725,15 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                 << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
             }
          }
-         else if( !p_session_info->is_admin_user // NOTE: "admin" is always permitted access
-          && ( ( !view_perm.empty( ) && !p_session_info->user_perms.count( view_perm ) )
-          || ( view_perm.empty( ) && ( view.type == c_view_type_admin || view.type == c_view_type_admin_print ) )
+         else if( view.type == c_view_type_none
+          || ( does_not_have_perm && !p_session_info->is_admin_user
+          && ( view.type == c_view_type_admin || view.type == c_view_type_admin_print ) )
+          || ( does_not_have_perm && owner != p_session_info->user_key
+          && ( view.type == c_view_type_owner || view.type == c_view_type_owner_print ) )
+          || ( does_not_have_perm && !p_session_info->is_admin_user && owner != p_session_info->user_key
+          && ( view.type == c_view_type_admin_owner || view.type == c_view_type_admin_owner_print ) )
           || ( !view.permission_field.empty( ) && !has_permission( view_permission_value, *p_session_info ) )
-          || ( !view.security_level_field.empty( ) && view_security_level_value.length( ) < user_slevel.length( ) ) ) )
+          || ( !view.security_level_field.empty( ) && view_security_level_value.length( ) < user_slevel.length( ) ) )
             extra_content << "<p align=\"center\" class=\"error\">"
              << GDS( c_display_error ) << ": " << GDS( c_display_permission_denied ) << ".</p>\n";
          else

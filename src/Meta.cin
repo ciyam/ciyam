@@ -47,7 +47,7 @@ user_defined_enum_add -id=638 orientation int 0=landscape,1=portrait,2=neither
 user_defined_enum_add -id=640 procedure_arg_type int 0=in,1=out,99=Any_Type
 user_defined_enum_add -id=650 procedure_arg_primitive int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool,99=Any_Primitive
 user_defined_enum_add -id=654 pdf_font_type int 0=Times_Roman,1=Helvetica,20=SimSun,21=SimHei
-user_defined_enum_add -id=655 view_access_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner
+user_defined_enum_add -id=655 view_access_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=657 view_change_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=658 view_pdf_view_type int 0=none,2=Standard_2_Column,99=Customised
 user_defined_enum_add -id=660 view_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
