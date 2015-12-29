@@ -66,8 +66,10 @@ const char c_history_command_prefix = '!';
 const char c_comment_command_prefix = ';';
 const char c_envcond_command_prefix = '@';
 const char c_message_command_prefix = '#';
-const char c_environment_variable_marker = '%';
+const char c_environment_variable_assign = '=';
 const char c_pause_message_command_prefix = '^';
+const char c_environment_variable_marker_1 = '$';
+const char c_environment_variable_marker_2 = '%';
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
@@ -87,16 +89,16 @@ command_definition startup_command_definitions[ ] =
 const char* const c_command_prompt = "\n> ";
 const char* const c_message_press_any_key = "press any key...";
 
-string replace_input_arg_values( const vector< string >& args, const string& input )
+string replace_input_arg_values( const vector< string >& args, const string& input, char marker )
 {
    string str( input );
 
-   string::size_type pos = str.find( c_environment_variable_marker );
+   string::size_type pos = str.find( marker );
    while( pos != string::npos )
    {
       if( str.size( ) > pos + 1 )
       {
-         if( str[ pos + 1 ] == c_environment_variable_marker )
+         if( str[ pos + 1 ] == marker )
             ++pos;
          else if( str[ pos + 1 ] >= '0' && str[ pos + 1 ] <= '9' )
          {
@@ -134,7 +136,7 @@ string replace_input_arg_values( const vector< string >& args, const string& inp
          }
       }
 
-      pos = str.find( c_environment_variable_marker, pos + 1 );
+      pos = str.find( marker, pos + 1 );
    }
 
    return str;
@@ -313,321 +315,342 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       if( !str.empty( ) )
       {
          string::size_type pos = str.find( ' ' );
+         string::size_type apos = str.substr( 0, pos ).find( c_environment_variable_assign );
 
-         str = replace_input_arg_values( args, str );
-         str = replace_environment_variables( str.c_str( ), c_environment_variable_marker );
+         string assign_env_var_name;
+         if( apos != string::npos )
+         {
+            assign_env_var_name = str.substr( 0, apos );
+            str.erase( 0, apos + 1 );
+         }
+
+         // NOTE: First try the format %* or %1..9 and %<name>% then try $* or $1..9 and $<name> so
+         // script writers can use either (or a combination) of the two environment variable styles.
+         str = replace_input_arg_values( args, str, c_environment_variable_marker_2 );
+         str = replace_environment_variables( str.c_str( ), c_environment_variable_marker_2 );
+
+         str = replace_input_arg_values( args, str, c_environment_variable_marker_1 );
+         str = replace_unquoted_environment_variables( str.c_str( ), c_environment_variable_marker_1 );
 
          bool add_to_history = allow_history_addition;
 
-         if( str[ 0 ] == c_quiet_command_prefix )
+         if( !assign_env_var_name.empty( ) )
          {
-            str.erase( 0, 1 );
-            set_quiet_command( true );
+            set_environment_variable( assign_env_var_name, str );
+            str.erase( );
          }
-         else if( str[ 0 ] == c_read_input_prefix )
+         else
          {
-            size_t file_name_offset = 1;
-            auto_ptr< restorable< bool > > ap_tmp_permit_history_addition;
-
-            // NOTE: If the read input prefix is repeated then each command read from the input file will
-            // be added to the history rather than adding the read input line itself as the history item.
-            if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
+            if( str[ 0 ] == c_quiet_command_prefix )
             {
-               ++file_name_offset;
-               add_to_history = false;
+               str.erase( 0, 1 );
+               set_quiet_command( true );
             }
-            else
-               ap_tmp_permit_history_addition.reset( new restorable< bool >( allow_history_addition, false ) );
-
-            vector< string > new_args;
-            size_t num_new_args = setup_arguments( str.c_str( ) + 1, new_args );
-
-            if( num_new_args == 0 )
-               throw runtime_error( "unexpected missing file name for input" );
-
-            if( num_new_args > c_max_args )
-               throw runtime_error( "unexpected max. number of input args exceeded" );
-
-            for( vector< string >::size_type i = new_args.size( ); i < args.size( ); i++ )
-               new_args.push_back( string( ) );
-
-            ifstream inpf( new_args[ 0 ].c_str( ) );
-            if( !inpf )
-               throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
-
-            vector< bool > dummy_vector;
-
-            // NOTE: As one script may call another all relevant state information must be
-            // captured before and then restored after processing each script.
-            restorable< size_t > tmp_line_number( line_number, 0 );
-            restorable< vector< string > > tmp_args( args, new_args );
-            restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
-            restorable< vector< bool > > tmp_completed( completed, dummy_vector );
-            restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
-            restorable< bool > tmp_executing_commands( is_executing_commands, true );
-            restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
-
-            string next;
-            string next_command;
-            bool is_first = true;
-            while( getline( inpf, next ) )
+            else if( str[ 0 ] == c_read_input_prefix )
             {
-               ++line_number;
-               bool is_continuation = false;
+               size_t file_name_offset = 1;
+               auto_ptr< restorable< bool > > ap_tmp_permit_history_addition;
 
-               if( next.empty( ) )
-                  continue;
-
-               remove_trailing_cr_from_text_file_line( next, is_first );
-
-               if( is_first )
-                  is_first = false;
-
-               // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
-               string::size_type pos = next.find_last_not_of( '\\' );
-               if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
+               // NOTE: If the read input prefix is repeated then each command read from the input file will
+               // be added to the history rather than adding the read input line itself as the history item.
+               if( str.size( ) > 1 && str[ 1 ] == c_read_input_prefix )
                {
-                  next.erase( next.size( ) - 1 );
-                  is_continuation = true;
+                  ++file_name_offset;
+                  add_to_history = false;
                }
+               else
+                  ap_tmp_permit_history_addition.reset( new restorable< bool >( allow_history_addition, false ) );
 
-               next_command += next;
+               vector< string > new_args;
+               size_t num_new_args = setup_arguments( str.c_str( ) + 1, new_args );
 
-               if( !is_continuation )
+               if( num_new_args == 0 )
+                  throw runtime_error( "unexpected missing file name for input" );
+
+               if( num_new_args > c_max_args )
+                  throw runtime_error( "unexpected max. number of input args exceeded" );
+
+               for( vector< string >::size_type i = new_args.size( ); i < args.size( ); i++ )
+                  new_args.push_back( string( ) );
+
+               ifstream inpf( new_args[ 0 ].c_str( ) );
+               if( !inpf )
+                  throw runtime_error( "unable to open file '" + new_args[ 0 ] + "' for input" );
+
+               vector< bool > dummy_vector;
+
+               // NOTE: As one script may call another all relevant state information must be
+               // captured before and then restored after processing each script.
+               restorable< size_t > tmp_line_number( line_number, 0 );
+               restorable< vector< string > > tmp_args( args, new_args );
+               restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
+               restorable< vector< bool > > tmp_completed( completed, dummy_vector );
+               restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
+               restorable< bool > tmp_executing_commands( is_executing_commands, true );
+               restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
+
+               string next;
+               string next_command;
+               bool is_first = true;
+               while( getline( inpf, next ) )
                {
-                  execute_command( next_command );
-                  next_command.erase( );
-               }
-            }
+                  ++line_number;
+                  bool is_continuation = false;
 
-            if( !conditions.empty( ) )
-               throw runtime_error( "missing 'endif' for conditional in '" + new_args[ 0 ] + "'" + error_context );
+                  if( next.empty( ) )
+                     continue;
 
-            if( !inpf.eof( ) )
-               throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
+                  remove_trailing_cr_from_text_file_line( next, is_first );
 
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_write_history_prefix )
-         {
-            add_to_history = false;
-            size_t file_name_offset = 1;
-            ios::openmode output_flags = ios::out;
+                  if( is_first )
+                     is_first = false;
 
-            // NOTE: If the write history prefix is repeated then open the output file for append.
-            if( str.size( ) > 1 && str[ 1 ] == c_write_history_prefix )
-            {
-               ++file_name_offset;
-               output_flags = ios::app;
-            }
-
-            ofstream outf( str.c_str( ) + file_name_offset, output_flags );
-            if( !outf )
-               throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
-
-            if( !command_history.empty( ) )
-               for( deque< string >::size_type i = 0; i < command_history.size( ); i++ )
-                  outf << command_history[ i ] << '\n';
-
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_output_command_usage || str.substr( 0, pos ) == c_help_command )
-         {
-            string wildcard_match_expr;
-            if( pos != string::npos )
-               wildcard_match_expr = str.substr( pos + 1 );
-
-            if( get_command_processor( ) )
-               get_command_processor( )->output_command_usage( wildcard_match_expr );
-
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_system_command_prefix )
-         {
-            int rc = system( str.c_str( ) + 1 );
-
-            ( void )rc;
-
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_history_command_prefix )
-         {
-            add_to_history = false;
-
-            if( command_history.size( ) )
-            {
-               if( str.size( ) > 1 )
-               {
-                  size_t offset = 1;
-                  bool remove = false;
-
-                  if( str.size( ) > 2 && str[ 1 ] == '-' )
+                  // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
+                  string::size_type pos = next.find_last_not_of( '\\' );
+                  if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
                   {
-                     offset = 2;
-                     remove = true;
+                     next.erase( next.size( ) - 1 );
+                     is_continuation = true;
                   }
 
-                  int n;
-                  if( str.size( ) == 2 && str[ 1 ] == c_history_command_prefix )
-                     n = ( int )command_history.size( );
-                  else
-                     n = atoi( str.substr( offset ).c_str( ) );
+                  next_command += next;
 
-                  if( n < 0 || n > ( int )( command_history.size( ) ) )
-                     throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
-
-                  if( !remove )
+                  if( !is_continuation )
                   {
-                     restorable< bool > tmp_executing_commands( is_executing_commands, true );
+                     execute_command( next_command );
+                     next_command.erase( );
+                  }
+               }
 
-                     if( n > 0 )
+               if( !conditions.empty( ) )
+                  throw runtime_error( "missing 'endif' for conditional in '" + new_args[ 0 ] + "'" + error_context );
+
+               if( !inpf.eof( ) )
+                  throw runtime_error( "unexpected error occurred whilst reading '" + new_args[ 0 ] + "'" + error_context );
+
+               str.erase( );
+            }
+            else if( str[ 0 ] == c_write_history_prefix )
+            {
+               add_to_history = false;
+               size_t file_name_offset = 1;
+               ios::openmode output_flags = ios::out;
+
+               // NOTE: If the write history prefix is repeated then open the output file for append.
+               if( str.size( ) > 1 && str[ 1 ] == c_write_history_prefix )
+               {
+                  ++file_name_offset;
+                  output_flags = ios::app;
+               }
+
+               ofstream outf( str.c_str( ) + file_name_offset, output_flags );
+               if( !outf )
+                  throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
+
+               if( !command_history.empty( ) )
+                  for( deque< string >::size_type i = 0; i < command_history.size( ); i++ )
+                     outf << command_history[ i ] << '\n';
+
+               str.erase( );
+            }
+            else if( str[ 0 ] == c_output_command_usage || str.substr( 0, pos ) == c_help_command )
+            {
+               string wildcard_match_expr;
+               if( pos != string::npos )
+                  wildcard_match_expr = str.substr( pos + 1 );
+
+               if( get_command_processor( ) )
+                  get_command_processor( )->output_command_usage( wildcard_match_expr );
+
+               str.erase( );
+            }
+            else if( str[ 0 ] == c_system_command_prefix )
+            {
+               int rc = system( str.c_str( ) + 1 );
+
+               ( void )rc;
+
+               str.erase( );
+            }
+            else if( str[ 0 ] == c_history_command_prefix )
+            {
+               add_to_history = false;
+
+               if( command_history.size( ) )
+               {
+                  if( str.size( ) > 1 )
+                  {
+                     size_t offset = 1;
+                     bool remove = false;
+
+                     if( str.size( ) > 2 && str[ 1 ] == '-' )
                      {
-                        execute_command( command_history[ n - 1 ] );
-                        command_history.pop_back( );
+                        offset = 2;
+                        remove = true;
                      }
+
+                     int n;
+                     if( str.size( ) == 2 && str[ 1 ] == c_history_command_prefix )
+                        n = ( int )command_history.size( );
                      else
+                        n = atoi( str.substr( offset ).c_str( ) );
+
+                     if( n < 0 || n > ( int )( command_history.size( ) ) )
+                        throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
+
+                     if( !remove )
                      {
-                        for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
+                        restorable< bool > tmp_executing_commands( is_executing_commands, true );
+
+                        if( n > 0 )
                         {
-                           execute_command( command_history[ i ] );
+                           execute_command( command_history[ n - 1 ] );
                            command_history.pop_back( );
                         }
+                        else
+                        {
+                           for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
+                           {
+                              execute_command( command_history[ i ] );
+                              command_history.pop_back( );
+                           }
+                        }
+                     }
+                     else
+                     {
+                        if( n == 0 )
+                           command_history.clear( );
+                        else
+                           command_history.erase( command_history.begin( ) + ( n - 1 ) );
                      }
                   }
                   else
                   {
-                     if( n == 0 )
-                        command_history.clear( );
-                     else
-                        command_history.erase( command_history.begin( ) + ( n - 1 ) );
+                     for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
+                        cout << ( i + 1 ) << '\t' << command_history[ i ] << '\n';
                   }
                }
                else
-               {
-                  for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
-                     cout << ( i + 1 ) << '\t' << command_history[ i ] << '\n';
-               }
+                  cout << "(no history is available)\n";
+
+               str.erase( );
             }
-            else
-               cout << "(no history is available)\n";
-
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_comment_command_prefix )
-            str.erase( );
-         else if( str[ 0 ] == c_envcond_command_prefix )
-         {
-            size_t pos = 0;
-            for( size_t i = 1; i < str.length( ); i++ )
+            else if( str[ 0 ] == c_comment_command_prefix )
+               str.erase( );
+            else if( str[ 0 ] == c_envcond_command_prefix )
             {
-               if( str[ i ] != ' ' )
+               size_t pos = 0;
+               for( size_t i = 1; i < str.length( ); i++ )
                {
-                  pos = i;
-                  break;
-               }
-            }
-
-            if( pos == 0 )
-               throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
-
-            string expression( str.substr( pos ) );
-            if( !expression.empty( ) )
-            {
-               string::size_type pos = expression.find( ' ' );
-
-               string token = expression.substr( 0, pos );
-
-               string symbol;
-               if( pos != string::npos )
-               {
-                  symbol = expression.substr( pos + 1 );
-                  if( symbol == "\"\"" )
-                     symbol.erase( );
-               }      
-
-               if( token == "ifdef" )
-               {
-                  if( !conditions.empty( ) && !conditions.back( ) )
-                     dummy_conditions.push_back( 0 );
-                  else
+                  if( str[ i ] != ' ' )
                   {
-                     completed.push_back( false );
-                     conditions.push_back( !symbol.empty( ) );
+                     pos = i;
+                     break;
                   }
                }
-               else if( token == "ifndef" )
-               {
-                  if( !conditions.empty( ) && !conditions.back( ) )
-                     dummy_conditions.push_back( 0 );
-                  else
-                  {
-                     completed.push_back( false );
-                     conditions.push_back( symbol.empty( ) );
-                  }
-               }
-               else if( token == "else" )
-               {
-                  if( !symbol.empty( ) )
-                     throw runtime_error( "invalid 'else' expression" + error_context );
 
-                  if( dummy_conditions.empty( ) )
-                  {
-                     if( conditions.empty( ) || completed.back( ) )
-                        throw runtime_error( "no matching 'ifdef' found for 'else' expression" + error_context );
-
-                     bool val = conditions.back( );
-
-                     completed.back( ) = true;
-
-                     conditions.pop_back( );
-                     conditions.push_back( !val );
-                  }
-               }
-               else if( token == "endif" )
-               {
-                  bool pop_cond = true;
-                  if( !dummy_conditions.empty( ) )
-                  {
-                     if( !dummy_conditions.back( ) )
-                        pop_cond = false;
-                     dummy_conditions.pop_back( );
-                  }
-
-                  if( pop_cond )
-                  {
-                     if( conditions.empty( ) )
-                        throw runtime_error( "no matching 'if' found for 'endif' expression" + error_context );
-
-                     completed.pop_back( );
-                     conditions.pop_back( );
-                  }
-               }
-               else
+               if( pos == 0 )
                   throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
-            }
 
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_message_command_prefix )
-         {
-            cout << str.substr( 1 ) << '\n';
-            str.erase( );
-         }
-         else if( str[ 0 ] == c_pause_message_command_prefix )
-         {
-            if( !has_option( c_cmd_no_pause ) )
+               string expression( str.substr( pos ) );
+               if( !expression.empty( ) )
+               {
+                  string::size_type pos = expression.find( ' ' );
+
+                  string token = expression.substr( 0, pos );
+
+                  string symbol;
+                  if( pos != string::npos )
+                  {
+                     symbol = expression.substr( pos + 1 );
+                     if( symbol == "\"\"" )
+                        symbol.erase( );
+                  }
+
+                  if( token == "ifdef" )
+                  {
+                     if( !conditions.empty( ) && !conditions.back( ) )
+                        dummy_conditions.push_back( 0 );
+                     else
+                     {
+                        completed.push_back( false );
+                        conditions.push_back( !symbol.empty( ) );
+                     }
+                  }
+                  else if( token == "ifndef" )
+                  {
+                     if( !conditions.empty( ) && !conditions.back( ) )
+                        dummy_conditions.push_back( 0 );
+                     else
+                     {
+                        completed.push_back( false );
+                        conditions.push_back( symbol.empty( ) );
+                     }
+                  }
+                  else if( token == "else" )
+                  {
+                     if( !symbol.empty( ) )
+                        throw runtime_error( "invalid 'else' expression" + error_context );
+
+                     if( dummy_conditions.empty( ) )
+                     {
+                        if( conditions.empty( ) || completed.back( ) )
+                           throw runtime_error( "no matching 'ifdef' found for 'else' expression" + error_context );
+
+                        bool val = conditions.back( );
+
+                        completed.back( ) = true;
+
+                        conditions.pop_back( );
+                        conditions.push_back( !val );
+                     }
+                  }
+                  else if( token == "endif" )
+                  {
+                     bool pop_cond = true;
+                     if( !dummy_conditions.empty( ) )
+                     {
+                        if( !dummy_conditions.back( ) )
+                           pop_cond = false;
+                        dummy_conditions.pop_back( );
+                     }
+
+                     if( pop_cond )
+                     {
+                        if( conditions.empty( ) )
+                           throw runtime_error( "no matching 'if' found for 'endif' expression" + error_context );
+
+                        completed.pop_back( );
+                        conditions.pop_back( );
+                     }
+                  }
+                  else
+                     throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
+               }
+
+               str.erase( );
+            }
+            else if( str[ 0 ] == c_message_command_prefix )
             {
-               string msg( c_message_press_any_key );
-               if( str.length( ) > 1 )
-                  msg = str.substr( 1 );
-
+               cout << str.substr( 1 ) << '\n';
                str.erase( );
-               get_char( msg.c_str( ) );
-               cout << '\r' << string( msg.length( )
-                + prompt_prefix.length( ) + strlen( c_command_prompt ), ' ' ) << '\r';
             }
-            else
-               str.erase( );
+            else if( str[ 0 ] == c_pause_message_command_prefix )
+            {
+               if( !has_option( c_cmd_no_pause ) )
+               {
+                  string msg( c_message_press_any_key );
+                  if( str.length( ) > 1 )
+                     msg = str.substr( 1 );
+
+                  str.erase( );
+                  get_char( msg.c_str( ) );
+                  cout << '\r' << string( msg.length( )
+                   + prompt_prefix.length( ) + strlen( c_command_prompt ), ' ' ) << '\r';
+               }
+               else
+                  str.erase( );
+            }
          }
 
          if( add_to_history )

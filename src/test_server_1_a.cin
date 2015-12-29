@@ -1,6 +1,38 @@
 version
 session_list -min
 encrypt -no_ssl -no_salt for_testing_password
+a=X
+b=Y
+c=Z
+#$a
+#$a.
+#.$a
+#%a%
+#%a%.
+#.%a%
+#$a$b
+#$a$b.
+#.$a$b
+#$a.$b.
+#%a%%b%
+#.%a%%b%
+#%a%%b%.
+#%a%.%b%.
+#$a$b$c
+#$a$b$c.
+#.$a$b$c.
+#$a.$b.$c.
+#%a%%b%%c%
+#%a%%b%%c%.
+#.%a%%b%%c%.
+#%a%.%b%.%c%.
+crypto_keys XBT test
+addr=%OUTPUT:1%
+pubkey=%OUTPUT:2%
+privkey=%OUTPUT:3%
+#addr is: $addr
+#pubkey is $pubkey
+#privkey is $privkey
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"

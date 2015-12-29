@@ -22,10 +22,6 @@
 #  endif
 #endif
 
-#ifdef __GNUG__
-#  define _putenv putenv
-#endif
-
 #include "regex.h"
 #include "config.h"
 #include "macros.h"
@@ -467,10 +463,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      cout << response.substr( start ) << endl;
 
                   if( is_error && getenv( c_env_var_error ) == 0 )
-                     _putenv( ( char* )( string( c_env_var_error ) + "=" + response.substr( start ) ).c_str( ) );
+                     set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
                   if( !is_error && !is_message && response.length( ) < c_max_length_for_output_env_var )
-                     _putenv( ( char* )( string( c_env_var_output ) + "=" + response.substr( start ) ).c_str( ) );
+                     set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
 
                   // NOTE: Make sure that progress messages do not end the conversation.
                   if( is_message )
