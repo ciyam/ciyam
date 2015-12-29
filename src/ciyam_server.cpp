@@ -39,10 +39,6 @@
 #  endif
 #endif
 
-#ifdef __GNUG__
-#  define _putenv putenv
-#endif
-
 //#define USE_MAC_LICENSE
 
 #ifdef USE_MAC_LICENSE
@@ -530,9 +526,7 @@ int main( int argc, char* argv[ ] )
                cout << "server now listening on port " << g_port << "..." << endl;
 
             string pid( to_string( get_pid( ) ) );
-
-            string pid_var( "PID=" + pid );
-            _putenv( ( char* )pid_var.c_str( ) );
+            set_environment_variable( "PID", pid.c_str( ) );
 
             TRACE_LOG( TRACE_ANYTHING,
              "server started on port " + to_string( g_port ) + " (pid = " + pid + ")" );

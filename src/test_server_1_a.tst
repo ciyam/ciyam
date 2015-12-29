@@ -8,6 +8,73 @@
 > encrypt -no_ssl -no_salt for_testing_password
 xWhJM6RtGLthLsGJdgnpuYkM7rA=
 
+> a=X
+
+> b=Y
+
+> c=Z
+
+> X
+
+> X.
+
+> .X
+
+> X
+
+> X.
+
+> .X
+
+> XY
+
+> XY.
+
+> .XY
+
+> X.Y.
+
+> XY
+
+> .XY
+
+> XY.
+
+> X.Y.
+
+> XYZ
+
+> XYZ.
+
+> .XYZ.
+
+> X.Y.Z.
+
+> XYZ
+
+> XYZ.
+
+> .XYZ.
+
+> X.Y.Z.
+
+> crypto_keys XBT test
+1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
+02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
+0f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+
+> addr=%OUTPUT:1%
+
+> pubkey=%OUTPUT:2%
+
+> privkey=%OUTPUT:3%
+
+> addr is: 1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
+
+> pubkey is 02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
+
+> privkey is 0f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+
 > utc_to_local AEST "2013-10-05 15:00"
 2013-10-06 01:00 AEST
 

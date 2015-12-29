@@ -60,6 +60,7 @@ typedef int mode_t;
 #  define _chdir chdir
 #  define _mkdir mkdir
 #  define _getcwd getcwd
+#  define _putenv putenv
 #  define _MAX_PATH PATH_MAX
 #endif
 
@@ -85,6 +86,8 @@ const int c_private_directory_perms = S_IRWXU;
 
 const int c_default_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 #endif
+
+const char* const c_alpha_numerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 }
 
@@ -1173,45 +1176,106 @@ bool has_environment_variable( const char* p_env_var_name )
    return getenv( p_env_var_name ) != 0;
 }
 
-void replace_environment_variables( string& s, char bc, const char* p_chars, char esc )
+string get_environment_variable( const char* p_env_var_name )
 {
-   string::size_type pos = s.find( bc );
+   string value;
+
+   const char* p_value( getenv( p_env_var_name ) );
+
+   if( p_value )
+      value = string( p_value );
+
+   return value;
+}
+
+void set_environment_variable( const char* p_env_var_name, const char* p_new_value )
+{
+#ifndef _WIN32
+   setenv( p_env_var_name, p_new_value, 1 );
+#else
+   _putenv( ( char* )( string( p_env_var_name ) + "=" + string( p_new_value ) ).c_str( ) );
+#endif
+}
+
+void replace_environment_variables( string& s, char c, bool as_quotes, const char* p_specials, char esc )
+{
+   string::size_type pos = s.find( c );
    while( pos != string::npos )
    {
       if( s.size( ) > pos + 1 && s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' )
       {
-         pos = s.find( bc, pos + 1 );
+         pos = s.find( c, pos + 1 );
          continue;
       }
 
-      string::size_type npos = s.find( bc, pos + 1 );
+      string::size_type npos = string::npos;
+
+      if( as_quotes )
+         npos = s.find( c, pos + 1 );
+      else
+         npos = s.find_first_not_of( c_alpha_numerics, pos + 1 );
+
       if( npos == string::npos )
-         break;
+      {
+         if( as_quotes )
+            break;
+         else
+            npos = s.length( );
+      }
 
       if( npos != pos + 1 )
       {
          string env_var_name( s.substr( pos + 1, npos - pos - 1 ) );
 
+         int line = 0;
+         if( as_quotes )
+         {
+            // NOTE: If using quote like markers then allow the following:
+            // %<var_name>:<line>% so that a single line in a "multi-line"
+            // environment variable can be extracted.
+            string::size_type lpos = env_var_name.find( ':' );
+            if( lpos != string::npos )
+            {
+               line = atoi( env_var_name.substr( lpos + 1 ).c_str( ) );
+               env_var_name.erase( lpos );
+            }
+         }
+
          string env_var_value;
          char* p_env_var( getenv( env_var_name.c_str( ) ) );
+
          if( p_env_var )
-            env_var_value = string( p_env_var );
+         {
+            if( line == 0 )
+               env_var_value = string( p_env_var );
+            else
+            {
+               vector< string > lines;
+               split( p_env_var, lines, '\n' );
+
+               if( line > 0 && line <= lines.size( ) )
+                  env_var_value = lines[ line - 1 ];
+            }
+         }
 
          if( esc )
-            escape( env_var_value, p_chars, esc );
+            escape( env_var_value, p_specials, esc );
 
-         s.erase( pos, npos - pos + 1 );
+         s.erase( pos, npos - pos + as_quotes );
          s.insert( pos, env_var_value );
 
          npos = pos + env_var_value.size( );
       }
       else
       {
-         s.erase( pos, 1 );
-         npos = pos + 1;
+         if( as_quotes )
+         {
+            s.erase( pos, 1 );
+            --npos;
+         }
       }
 
-      pos = s.find( bc, npos );
+      pos = s.find( c, npos );
    }
 }
 
@@ -1249,13 +1313,6 @@ string trim( const string& s, bool leading_only )
    }
 
    return t;
-}
-
-string replace_environment_variables( const char* p_str, char bc, const char* p_chars, char esc )
-{
-   string s( p_str );
-   replace_environment_variables( s, bc, p_chars, esc );
-   return s;
 }
 
 size_t split( const string& s, set< string >& c, char sep, char esc, bool unescape )
