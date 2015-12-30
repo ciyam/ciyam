@@ -1666,6 +1666,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          crypto_verify( pubkey, message, signature );
       }
+      else if( command == c_cmd_ciyam_session_crypto_addr_hash )
+      {
+         string address( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_addr_hash_address ) );
+
+         response = crypto_address_hash( address );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_p2sh_addr )
+      {
+         string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_addr_extkey ) );
+         string script( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_addr_script ) );
+
+         response = crypto_p2sh_address( extkey, script );
+      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

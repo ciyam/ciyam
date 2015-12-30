@@ -2370,7 +2370,8 @@ void request_handler::process_request( )
 
          if( error_message.length( ) > strlen( c_response_error_prefix )
           && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
-            error_message = string( GDS( c_display_error ) ) + ": " + error_message.substr( strlen( c_response_error_prefix ) );
+            error_message = GDS( c_display_error ) + ": "
+             + error_message.substr( strlen( c_response_error_prefix ) );
 
          setup_gmt_and_dtm_offset( input_data, *p_session_info );
 
