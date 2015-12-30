@@ -1147,8 +1147,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
                      }
 
-                     // FUTURE: Need to report an error if the update fails.
-                     if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
+                     if( perform_update( view.module_id,
+                      view.cid, data, field_value_pairs, *p_session_info, &error_message ) )
                      {
                         performed_file_attach_or_detach = true;
 
@@ -1168,8 +1168,16 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         else
                            view.new_file_name = ".";
                      }
-                     else if( !new_file.empty( ) )
-                        remove( new_file.c_str( ) );
+                     else
+                     {
+                        if( !new_file.empty( ) )
+                           remove( new_file.c_str( ) );
+
+                        if( error_message.length( ) > strlen( c_response_error_prefix )
+                         && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+                           error_message = GDS( c_display_error ) + ": "
+                            + error_message.substr( strlen( c_response_error_prefix ) );
+                     }
                   }
 
                   if( file_exists( new_file_info.c_str( ) ) )

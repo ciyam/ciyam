@@ -1454,6 +1454,10 @@ void CLASS_BASE_DECL_SPEC crypto_verify(
 void CLASS_BASE_DECL_SPEC crypto_verify(
  const std::string& pubkey, const std::string& message, const std::string& signature );
 
+std::string CLASS_BASE_DECL_SPEC crypto_address_hash( const std::string& address );
+
+std::string CLASS_BASE_DECL_SPEC crypto_p2sh_address( const std::string& ext_key, const std::string& hex_script );
+
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key, bool use_base64 = false );
 

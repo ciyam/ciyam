@@ -4600,6 +4600,32 @@ void crypto_verify( const string& pubkey, const string& message, const string& s
 #endif
 }
 
+string crypto_address_hash( const string& address )
+{
+#ifdef SSL_SUPPORT
+   return public_key::address_to_hash160( address );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_address_hash" );
+#endif
+}
+
+string crypto_p2sh_address( const string& ext_key, const string& hex_script )
+{
+#ifdef SSL_SUPPORT
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   bool is_testnet = false;
+
+   if( client_info.extra_info == "testnet" )
+      is_testnet = true;
+
+   return create_p2sh_address( hex_script, is_testnet );
+#else
+   throw runtime_error( "SSL support is needed in order to use crypto_p2sh_address" );
+#endif
+}
+
 string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key, bool use_base64 )
 {
 #ifdef SSL_SUPPORT
