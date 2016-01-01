@@ -1442,7 +1442,8 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image(
  const std::string& source_file, bool is_encrypted = false );
 
-std::string CLASS_BASE_DECL_SPEC crypto_sign( const std::string& secret, const std::string& message );
+std::string CLASS_BASE_DECL_SPEC crypto_sign(
+ const std::string& secret, const std::string& message, bool decode_hex_message = false );
 
 std::string CLASS_BASE_DECL_SPEC crypto_public( const std::string& privkey, bool is_wif = false );
 
@@ -1451,8 +1452,8 @@ std::string CLASS_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool
 void CLASS_BASE_DECL_SPEC crypto_verify(
  const std::string& pubkey, const std::string& address, bool* p_rc = 0 );
 
-void CLASS_BASE_DECL_SPEC crypto_verify(
- const std::string& pubkey, const std::string& message, const std::string& signature );
+void CLASS_BASE_DECL_SPEC crypto_verify( const std::string& pubkey,
+ const std::string& message, const std::string& signature, bool decode_hex_message = false );
 
 std::string CLASS_BASE_DECL_SPEC crypto_address_hash( const std::string& address );
 

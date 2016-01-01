@@ -324,18 +324,45 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             str.erase( 0, apos + 1 );
          }
 
-         // NOTE: First try the format %* or %1..9 and %<name>% then try $* or $1..9 and $<name> so
-         // script writers can use either (or a combination) of the two environment variable styles.
-         str = replace_input_arg_values( args, str, c_environment_variable_marker_2 );
+         // NOTE: First try the format %<name>% and %* or %1..9 then try $* or $1..9 and $<name> so
+         // console scripts can utilise either (or a combination) of these two environment variable
+         // styles. The %<name>% has to be replaced before trying %* and %1..9 otherwise the second
+         // % could confuse the replacement (if it is followed by a * or 1..9).
          str = replace_environment_variables( str.c_str( ), c_environment_variable_marker_2 );
+         str = replace_input_arg_values( args, str, c_environment_variable_marker_2 );
 
          str = replace_input_arg_values( args, str, c_environment_variable_marker_1 );
          str = replace_unquoted_environment_variables( str.c_str( ), c_environment_variable_marker_1 );
 
          bool add_to_history = allow_history_addition;
 
+         // NOTE: For environment variable assignment support VAR=@<fname> to set the variable to the
+         // contents of a file (if wanting to literally assign VAR to "@fname" use "@@fname" instead)
+         // or even to the output of a system call using VAR=@~<cmd> (with both the stdout and stderr
+         // output being redirected to a temporary file).
          if( !assign_env_var_name.empty( ) )
          {
+            if( !str.empty( ) && str[ 0 ] == '@' )
+            {
+               str.erase( 0, 1 );
+
+               if( file_exists( str ) )
+                  str = buffer_file_lines( str );
+               else if( !str.empty( ) && str[ 0 ] == '~' )
+               {
+                  string tmp_name( "~" + uuid( ).as_string( ) );
+                  str += " 2>&1 >" + tmp_name;
+
+                  int rc = system( str.substr( 1 ).c_str( ) );
+
+                  ( void )rc;
+
+                  str = buffer_file_lines( tmp_name );
+
+                  file_remove( tmp_name );
+               }
+            }
+
             set_environment_variable( assign_env_var_name, str );
             str.erase( );
          }

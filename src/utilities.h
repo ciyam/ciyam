@@ -766,16 +766,25 @@ inline size_t setup_arguments( const std::string& s,
 void setup_arguments( int argc, const char* argv[ ],
  std::vector< std::string >& arguments, char esc = '\0', const char* p_specials = 0 );
 
-std::string buffer_file( const std::string& file_name );
+std::string buffer_file( const char* p_file_name );
+inline std::string buffer_file( const std::string& file_name ) { return buffer_file( file_name.c_str( ) ); }
 
-void write_file( const std::string& file_name, unsigned char* p_data, size_t length );
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length );
+
+inline void write_file( const std::string& file_name, unsigned char* p_data, size_t length )
+{
+   write_file( file_name.c_str( ), p_data, length );
+}
 
 inline void write_file( const std::string& file_name, const std::string& file_buffer )
 {
-   write_file( file_name, ( unsigned char* )file_buffer.data( ), file_buffer.length( ) );
+   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ) );
 }
 
 void write_file_lines( const std::string& file_name, const std::vector< std::string >& lines );
+
+std::string buffer_file_lines( const std::string& file_name,
+ bool skip_blank_lines = true, bool strip_extra_crs = true );
 
 void buffer_file_lines( const std::string& file_name,
  std::vector< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );

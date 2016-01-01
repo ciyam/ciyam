@@ -1646,9 +1646,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_sign )
       {
          string privkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_privkey ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_hex_decode ) );
          string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_sign_message ) );
 
-         response = crypto_sign( privkey, message );
+         response = crypto_sign( privkey, message, hex_decode );
       }
       else if( command == c_cmd_ciyam_session_crypto_chain )
       {
@@ -1661,10 +1662,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_verify )
       {
          string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_pubkey ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_hex_decode ) );
          string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_message ) );
          string signature( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_verify_signature ) );
 
-         crypto_verify( pubkey, message, signature );
+         crypto_verify( pubkey, message, signature, hex_decode );
       }
       else if( command == c_cmd_ciyam_session_crypto_addr_hash )
       {
