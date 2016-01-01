@@ -38,7 +38,6 @@ using namespace std;
 namespace
 {
 
-const int c_num_hash_bytes = 32;
 const int c_num_secret_bytes = 32;
 const int c_max_public_key_bytes = 65;
 
@@ -313,11 +312,11 @@ struct public_key::impl
       return nsize;
    }
 
-   bool verify_signature( const unsigned char hash[ c_num_hash_bytes ], vector< unsigned char >& signature )
+   bool verify_signature( const unsigned char hash[ c_sha256_digest_size ], vector< unsigned char >& signature )
    {
       bool okay = false;
 
-      if( ECDSA_verify( 0, &hash[ 0 ], c_num_hash_bytes, &signature[ 0 ], signature.size( ), p_key ) == 1 )
+      if( ECDSA_verify( 0, &hash[ 0 ], c_sha256_digest_size, &signature[ 0 ], signature.size( ), p_key ) == 1 )
          okay = true;
 
       return okay;
@@ -376,7 +375,7 @@ string public_key::get_hash160( bool compressed ) const
    hash1.copy_digest_to_buffer( buf1 );
 
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];
-   RIPEMD160( buf1, c_num_hash_bytes, buf2 );
+   RIPEMD160( buf1, c_sha256_digest_size, buf2 );
 
    return hex_encode( buf2, RIPEMD160_DIGEST_LENGTH );
 }
@@ -391,18 +390,18 @@ string public_key::get_address( bool compressed, bool is_testnet ) const
    hash1.copy_digest_to_buffer( buf1 );
 
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH + 5 ];
-   RIPEMD160( buf1, c_num_hash_bytes, buf2 + 1 );
+   RIPEMD160( buf1, c_sha256_digest_size, buf2 + 1 );
 
    if( !is_testnet )
       buf2[ 0 ] = 0x00;
    else
       buf2[ 0 ] = 0x6F;
 
-   unsigned char buf3[ c_num_hash_bytes ];
+   unsigned char buf3[ c_sha256_digest_size ];
    sha256 hash2( buf2, RIPEMD160_DIGEST_LENGTH + 1 );
    hash2.copy_digest_to_buffer( buf3 );
 
-   hash2.update( buf3, c_num_hash_bytes );
+   hash2.update( buf3, c_sha256_digest_size );
    hash2.copy_digest_to_buffer( buf3 );
 
    memcpy( &buf2[ RIPEMD160_DIGEST_LENGTH + 1 ], buf3, 4 );
@@ -412,7 +411,7 @@ string public_key::get_address( bool compressed, bool is_testnet ) const
 
 bool public_key::verify_signature( const string& msg, const string& sig ) const
 {
-   unsigned char buf[ c_num_hash_bytes ];
+   unsigned char buf[ c_sha256_digest_size ];
 
    sha256 hash( msg );
    hash.copy_digest_to_buffer( buf );
@@ -460,11 +459,11 @@ string public_key::hash160_to_address(
    else
       buf[ 0 ] = override;
 
-   unsigned char buf2[ c_num_hash_bytes ];
+   unsigned char buf2[ c_sha256_digest_size ];
    sha256 hash2( buf, RIPEMD160_DIGEST_LENGTH + 1 );
    hash2.copy_digest_to_buffer( buf2 );
 
-   hash2.update( buf2, c_num_hash_bytes );
+   hash2.update( buf2, c_sha256_digest_size );
    hash2.copy_digest_to_buffer( buf2 );
 
    memcpy( &buf[ RIPEMD160_DIGEST_LENGTH + 1 ], buf2, 4 );
@@ -511,9 +510,9 @@ struct private_key::impl
    }
 
    // NOTE: This function was sourced from the Bitcoin project.
-   void sign_message( const unsigned char hash[ c_num_hash_bytes ], vector< unsigned char >& signature )
+   void sign_message( const unsigned char hash[ c_sha256_digest_size ], vector< unsigned char >& signature )
    {
-      ECDSA_SIG* p_sig = ECDSA_do_sign( &hash[ 0 ], c_num_hash_bytes, p_pub_impl->p_key );
+      ECDSA_SIG* p_sig = ECDSA_do_sign( &hash[ 0 ], c_sha256_digest_size, p_pub_impl->p_key );
       if( !p_sig )
          throw runtime_error( "unexpected failure for ECDSA_do_sign in sign_message" );
 
@@ -608,7 +607,7 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
       sha256 hash( &dbuf[ 0 ], dbuf.size( ) - 4 );
       hash.copy_digest_to_buffer( buf );
 
-      hash.update( buf, c_num_hash_bytes );
+      hash.update( buf, c_sha256_digest_size );
       hash.copy_digest_to_buffer( buf );
 
       if( memcmp( buf, &dbuf[ dbuf.size( ) - 4 ], 4 ) != 0 )
@@ -650,12 +649,12 @@ string private_key::get_wif_secret( bool compressed, bool is_testnet ) const
    if( compressed )
       buf[ c_num_secret_bytes + 1 ] = 0x01;
 
-   unsigned char buf2[ c_num_hash_bytes ];
+   unsigned char buf2[ c_sha256_digest_size ];
 
    sha256 hash( buf, compressed ? c_num_secret_bytes + 2 : c_num_secret_bytes + 1 );
    hash.copy_digest_to_buffer( buf2 );
 
-   hash.update( buf2, c_num_hash_bytes );
+   hash.update( buf2, c_sha256_digest_size );
    hash.copy_digest_to_buffer( buf2 );
 
    memcpy( buf + ( compressed ? c_num_secret_bytes + 2 : c_num_secret_bytes + 1 ), buf2, 4 );
@@ -673,11 +672,11 @@ string private_key::decrypt_message( const public_key& pub, const string& base64
    if( p_id )
    {
       sha256 hash( p_id );
-      unsigned char buf2[ c_num_hash_bytes ];
+      unsigned char buf2[ c_sha256_digest_size ];
 
       hash.copy_digest_to_buffer( buf2 );
 
-      for( size_t i = 0; i < c_num_hash_bytes; i++ )
+      for( size_t i = 0; i < c_sha256_digest_size; i++ )
          buf[ i ] ^= buf2[ i ];
    }
 
@@ -693,11 +692,11 @@ string private_key::encrypt_message(
    if( p_id )
    {
       sha256 hash( p_id );
-      unsigned char buf2[ c_num_hash_bytes ];
+      unsigned char buf2[ c_sha256_digest_size ];
 
       hash.copy_digest_to_buffer( buf2 );
 
-      for( size_t i = 0; i < c_num_hash_bytes; i++ )
+      for( size_t i = 0; i < c_sha256_digest_size; i++ )
          buf[ i ] ^= buf2[ i ];
    }
 
@@ -723,7 +722,7 @@ string private_key::construct_signature( const unsigned char* p_digest, bool use
 
 string private_key::construct_signature( const string& msg, bool use_base64 ) const
 {
-   unsigned char buf[ c_num_hash_bytes ];
+   unsigned char buf[ c_sha256_digest_size ];
 
    sha256 hash( msg );
    hash.copy_digest_to_buffer( buf );
@@ -743,13 +742,13 @@ string create_p2sh_address( const string& hex_script, bool is_testnet )
 
    hex_decode( hex_script, ap_buf.get( ), size );
 
-   unsigned char buf1[ c_num_hash_bytes ];
+   unsigned char buf1[ c_sha256_digest_size ];
 
    sha256 hash( ap_buf.get( ), size );
    hash.copy_digest_to_buffer( buf1 );
 
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];
-   RIPEMD160( buf1, c_num_hash_bytes, buf2 );
+   RIPEMD160( buf1, c_sha256_digest_size, buf2 );
 
    return public_key::hash160_to_address( hex_encode( buf2, sizeof( buf2 ) ), true,
     !is_testnet ? e_address_prefix_btc_p2sh_mainnet : e_address_prefix_btc_p2sh_testnet );
@@ -957,10 +956,10 @@ string construct_raw_transaction(
 
          sha256 hash( &buffer[ 0 ], buffer.size( ) );
 
-         unsigned char buf[ c_num_hash_bytes ];
+         unsigned char buf[ c_sha256_digest_size ];
          hash.copy_digest_to_buffer( buf );
 
-         hash.update( buf, c_num_hash_bytes );
+         hash.update( buf, c_sha256_digest_size );
          hash.copy_digest_to_buffer( buf );
 
          string sig( inputs[ i ].rp_private_key->construct_signature( &buf[ 0 ] ) );

@@ -209,7 +209,7 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
 struct sha256::impl
 {
    bool final;
-   unsigned char digest[ 32 ];
+   unsigned char digest[ c_sha256_digest_size ];
 
    SHA256_CTX context;
 };
@@ -301,7 +301,7 @@ void sha256::copy_digest_to_buffer( unsigned char* p_buffer )
       sha256_final( &p_impl->context, p_impl->digest );
    }
 
-   memcpy( p_buffer, p_impl->digest, 32 );
+   memcpy( p_buffer, p_impl->digest, c_sha256_digest_size );
 }
 
 void sha256::get_digest_as_string( string& s )
@@ -315,7 +315,7 @@ void sha256::get_digest_as_string( string& s )
    if( s.length( ) != 64 )
       s = string( 64, '\0' );
 
-   for( size_t i = 0, j = 0; i < 32; i++ )
+   for( size_t i = 0, j = 0; i < c_sha256_digest_size; i++ )
    {
       s[ j++ ] = ascii_digit( ( p_impl->digest[ i ] & 0xf0 ) >> 4 );
       s[ j++ ] = ascii_digit( p_impl->digest[ i ] & 0x0f );
@@ -331,7 +331,7 @@ string sha256::get_digest_as_string( char separator )
    }
 
    ostringstream outs;
-   for( size_t i = 0; i < 32; i++ )
+   for( size_t i = 0; i < c_sha256_digest_size; i++ )
    {
       if( i && i % 4 == 0 && separator != '\0' )
          outs << separator;
@@ -344,11 +344,11 @@ string sha256::get_digest_as_string( char separator )
 string hmac_sha256( const string& key, const string& message )
 {
    string s( 64, '\0' );
-   unsigned char buffer[ 32 ];
+   unsigned char buffer[ c_sha256_digest_size ];
 
    hmac_sha256( key, message, buffer );
 
-   for( size_t i = 0, j = 0; i < 32; i++ )
+   for( size_t i = 0, j = 0; i < c_sha256_digest_size; i++ )
    {
       s[ j++ ] = ascii_digit( ( buffer[ i ] & 0xf0 ) >> 4 );
       s[ j++ ] = ascii_digit( buffer[ i ] & 0x0f );
@@ -368,8 +368,8 @@ void hmac_sha256( const string& key, const string& message, unsigned char* p_buf
    unsigned char k_ipad[ 65 ];
    unsigned char k_opad[ 65 ];
 
-   unsigned char tk[ 32 ];
-   unsigned char tk2[ 32 ];
+   unsigned char tk[ c_sha256_digest_size ];
+   unsigned char tk2[ c_sha256_digest_size ];
    unsigned char bufferIn[ 1024 ];
    unsigned char bufferOut[ 1024 ];
 
@@ -403,9 +403,9 @@ void hmac_sha256( const string& key, const string& message, unsigned char* p_buf
 
    memset( bufferOut, 0x00, 1024 );
    memcpy( bufferOut, k_opad, 64 );
-   memcpy( bufferOut + 64, tk2, 32 );
+   memcpy( bufferOut + 64, tk2, c_sha256_digest_size );
  
-   sha256 hash2( bufferOut, 64 + 32 );
+   sha256 hash2( bufferOut, 64 + c_sha256_digest_size );
    hash2.copy_digest_to_buffer( p_buffer );
 }
 

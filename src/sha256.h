@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+const int c_sha256_digest_size = 32;
+
 class sha256
 {
    public:

@@ -87,7 +87,7 @@ const int c_private_directory_perms = S_IRWXU;
 const int c_default_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 #endif
 
-const char* const c_alpha_numerics = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const char* const c_env_var_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
 }
 
@@ -1200,6 +1200,7 @@ void set_environment_variable( const char* p_env_var_name, const char* p_new_val
 void replace_environment_variables( string& s, char c, bool as_quotes, const char* p_specials, char esc )
 {
    string::size_type pos = s.find( c );
+
    while( pos != string::npos )
    {
       if( s.size( ) > pos + 1 && s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' )
@@ -1213,7 +1214,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
       if( as_quotes )
          npos = s.find( c, pos + 1 );
       else
-         npos = s.find_first_not_of( c_alpha_numerics, pos + 1 );
+         npos = s.find_first_not_of( c_env_var_characters, pos + 1 );
 
       if( npos == string::npos )
       {
@@ -1228,14 +1229,35 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          string env_var_name( s.substr( pos + 1, npos - pos - 1 ) );
 
          int line = 0;
+         string prefix, suffix;
+
          if( as_quotes )
          {
             // NOTE: If using quote like markers then allow the following:
             // %<var_name>:<line>% so that a single line in a "multi-line"
-            // environment variable can be extracted.
+            // environment variable can be extracted. It is also supported
+            // to use >PREFIX<SUFFIX after <line> where an optional PREFIX
+            // and SUFFIX will limit the assignment to only the text which
+            // appears after the PREFIX or before the SUFFIX (assuming the
+            // PREFIX or SUFFIX is found).
             string::size_type lpos = env_var_name.find( ':' );
             if( lpos != string::npos )
             {
+               string::size_type epos = env_var_name.rfind( '<' );
+
+               if( epos != string::npos && epos > lpos )
+               {
+                  suffix = env_var_name.substr( epos + 1 );
+                  env_var_name.erase( epos );
+               }
+
+               epos = env_var_name.find( '>', lpos );
+               if( epos != string::npos )
+               {
+                  prefix = env_var_name.substr( epos + 1 );
+                  env_var_name.erase( epos );
+               }
+
                line = atoi( env_var_name.substr( lpos + 1 ).c_str( ) );
                env_var_name.erase( lpos );
             }
@@ -1255,6 +1277,28 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
                if( line > 0 && line <= lines.size( ) )
                   env_var_value = lines[ line - 1 ];
+            }
+
+            // NOTE: For the optional PREFIX the text from the start
+            // of the value up until the end of the first occurrence
+            // of the PREFIX will be removed.
+            if( !prefix.empty( ) )
+            {
+               string::size_type ppos = env_var_value.find( prefix );
+
+               if( ppos != string::npos )
+                  env_var_value.erase( 0, ppos + prefix.length( ) );
+            }
+
+            // NOTE: For the optional SUFFIX the text from the start
+            // of the last occurrence of the SUFFIX up until the end
+            // of the value will be removed.
+            if( !suffix.empty( ) )
+            {
+               string::size_type spos = env_var_value.rfind( suffix );
+
+               if( spos != string::npos )
+                  env_var_value.erase( spos );
             }
          }
 
@@ -1639,15 +1683,18 @@ void setup_arguments( int argc, const char* argv[ ],
    }
 }
 
-string buffer_file( const string& file_name )
+string buffer_file( const char* p_file_name )
 {
+   if( !p_file_name )
+      throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
+
 #ifndef _MSC_VER
-   FILE* fp = fopen( file_name.c_str( ), "rb" );
+   FILE* fp = fopen( p_file_name, "rb" );
 #else
-   FILE* fp = fopen( file_name.c_str( ), "rb, ccs=UTF-8" );
+   FILE* fp = fopen( p_file_name, "rb, ccs=UTF-8" );
 #endif
    if( !fp )
-      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file" );
+      throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for input in buffer_file" );
 
    fseek( fp, 0, SEEK_END );
    long size = ftell( fp );
@@ -1656,21 +1703,24 @@ string buffer_file( const string& file_name )
 
    fseek( fp, 0, SEEK_SET );
    if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
-      throw runtime_error( "reading from input file '" + file_name + "'" );
+      throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
 
    fclose( fp );
 
    return str;
 }
 
-void write_file( const string& file_name, unsigned char* p_data, size_t length )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length )
 {
-   FILE* fp = fopen( file_name.c_str( ), "wb" );
+   if( !p_file_name )
+      throw runtime_error( "unexpected null pointer for p_file_name in write_file" );
+
+   FILE* fp = fopen( p_file_name, "wb" );
    if( !fp )
-      throw runtime_error( "unable to open file '" + file_name + "' for output in write_file" );
+      throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
 
    if( fwrite( p_data, 1, length, fp ) != length )
-      throw runtime_error( "writing to output file '" + file_name + "'" );
+      throw runtime_error( "writing to output file '" + string( p_file_name ) + "'" );
 
    fclose( fp );
 }
@@ -1683,6 +1733,23 @@ void write_file_lines( const string& file_name, const vector< string >& lines )
       outf << lines[ i ] << '\n';
 
    outf.flush( );
+}
+
+string buffer_file_lines( const string& file_name, bool skip_blank_lines, bool strip_extra_crs )
+{
+   string str;
+   vector< string > lines;
+
+   buffer_file_lines( file_name, lines, skip_blank_lines, strip_extra_crs );
+
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      if( i > 0 )
+         str += '\n';
+      str += lines[ i ];
+   }
+
+   return str;
 }
 
 void buffer_file_lines( const string& file_name,

@@ -4535,12 +4535,28 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
    return s;
 }
 
-string crypto_sign( const string& secret, const string& message )
+string crypto_sign( const string& secret, const string& message, bool decode_hex_message )
 {
 #ifdef SSL_SUPPORT
    private_key priv( secret, secret.length( ) > 48 && secret.length( ) < 64 ? true : false );
 
-   return priv.construct_signature( message, true );
+   if( decode_hex_message )
+   {
+      vector< unsigned char > buffer( message.size( ) / 2, 0 );
+      hex_decode( message, &buffer[ 0 ], buffer.size( ) );
+
+      sha256 hash( &buffer[ 0 ], buffer.size( ) );
+
+      unsigned char buf[ c_sha256_digest_size ];
+      hash.copy_digest_to_buffer( buf );
+
+      hash.update( buf, c_sha256_digest_size );
+      hash.copy_digest_to_buffer( buf );
+
+      return priv.construct_signature( buf, false );
+   }
+   else
+      return priv.construct_signature( message, true );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_sign" );
 #endif
@@ -4588,12 +4604,31 @@ void crypto_verify( const string& pubkey, const string& address, bool* p_rc )
 #endif
 }
 
-void crypto_verify( const string& pubkey, const string& message, const string& signature )
+void crypto_verify( const string& pubkey,
+ const string& message, const string& signature, bool decode_hex_message )
 {
 #ifdef SSL_SUPPORT
    public_key pub( pubkey, pubkey.length( ) < 64 ? true : false );
 
-   if( !pub.verify_signature( message, signature ) )
+   if( decode_hex_message )
+   {
+      vector< unsigned char > raw_message;
+      raw_message.resize( message.size( ) / 2 );
+
+      hex_decode( message, &raw_message[ 0 ], raw_message.size( ) );
+      
+      sha256 hash( &raw_message[ 0 ], raw_message.size( ) );
+
+      unsigned char buf[ c_sha256_digest_size ];
+      hash.copy_digest_to_buffer( buf );
+
+      hash.update( buf, c_sha256_digest_size );
+      hash.copy_digest_to_buffer( buf );
+
+      if( !pub.verify_signature( buf, signature ) )
+         throw runtime_error( "invalid signature" );
+   }
+   else if( !pub.verify_signature( message, signature ) )
       throw runtime_error( "invalid signature" );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_verify" );
