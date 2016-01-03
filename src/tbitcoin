@@ -1,15 +1,14 @@
 #!/bin/sh
-# Copyright (c) 2012-2016 CIYAM Developers
+# Copyright (c) 2016 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: ext_request [address] [[output_file]]
+ echo Usage: tbitcoin [command] [[arg1 [arg2 [...]]]
 else
- if [ ! "$2" = "" ]; then
-  curl -s -m 8 $1 >$2
- else
-  curl -s -m 8 $1
+ if [ "$TBITCOIN" = "" ]; then
+  TBITCOIN=./bitcoin-cli -rpcpassword=not_what_you_think_it_is -regtest
  fi
+ $TBITCOIN $*
 fi

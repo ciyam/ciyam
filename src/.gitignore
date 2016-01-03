@@ -17,6 +17,7 @@ tmp
 *.lib
 *.exe
 *.exp
+btstore
 bundle
 calendar
 check_source
@@ -33,6 +34,7 @@ generate_commands
 modeller
 test
 test_blockchain
+test_btree
 test_cache
 test_crypto_keys
 test_fcgi
