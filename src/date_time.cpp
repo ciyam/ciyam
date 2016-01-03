@@ -61,6 +61,8 @@ const month c_gregorian_month_begin = e_month_september;
 const year c_gregorian_year_begin = 1752;
 #endif
 
+const julian c_unix_epoch = 2440587.5;
+
 const seconds c_seconds_per_day = 86400.0;
 
 const millisecond c_min_millisecond = 0ul;
@@ -111,6 +113,7 @@ const double c_zenith_nautical = 102.0;
 const double c_zenith_astronomical = 108.0;
 
 const int c_epoch = 1985;
+
 const double c_epsilon_g = 279.611371; // Solar ecliptic long at epoch.
 const double c_rho_g = 282.680403; // Solar ecliptic long of perigee at epoch.
 const double c_eccentricity = 0.01671542; // Solar orbit eccentricity.
@@ -2900,7 +2903,7 @@ date_time& date_time::operator -=( milliseconds m )
    if( m < 0 )
       return operator +=( m * -1 );
 
-   milliseconds ms( ( millisecond )mt );
+   milliseconds ms( ( milliseconds )mt );
    milliseconds oms( ms );
    ms -= m;
 
@@ -2946,7 +2949,7 @@ date_time::operator julian( ) const
    hour hr;
    minute mn;
    seconds secs;
-   millisecond_to_components( mt, hr, mn, secs );
+   millisecond_to_components( mt.get_millisecond( ), hr, mn, secs );
 
    j = calendar_to_julian( yr, mo, dy, hr, mn, secs );
 
@@ -3216,6 +3219,38 @@ void convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th )
 {
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
+}
+
+int64_t unix_timestamp( const date_time& dt )
+{
+   julian j( dt );
+
+   if( j < c_unix_epoch )
+      throw runtime_error( "unix_timestamp is not valid before the unix epoch" );
+
+   return ( int64_t )( ( j - c_unix_epoch ) * c_seconds_per_day );
+}
+
+int64_t seconds_between( const date_time& lhs, const date_time& rhs )
+{
+   int64_t amt = 0;
+
+   if( lhs < rhs )
+   {
+      julian jl( lhs );
+      julian jr( rhs );
+
+      amt = ( int64_t )( ( jr - jl ) * c_seconds_per_day );
+   }
+   else
+   {
+      julian jl( lhs );
+      julian jr( rhs );
+
+      amt = ( int64_t )( ( jl - jr ) * c_seconds_per_day );
+   }
+
+   return amt;
 }
 
 string format_udate( const udate& ud, const string& mask )

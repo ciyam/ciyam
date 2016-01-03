@@ -49,5 +49,12 @@
    <label>XBT
    <protocol>blockchain
   </client>
+  <client/>
+   <label>TBTC
+   <is_local>true
+   <protocol>bitcoin
+   <extra_info>testnet
+   <script_name>tbitcoin
+  </client>
  </extern>
 </sio>

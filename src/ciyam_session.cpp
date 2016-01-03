@@ -1681,6 +1681,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = crypto_p2sh_address( extkey, script );
       }
+      else if( command == c_cmd_ciyam_session_crypto_p2sh_redeem )
+      {
+         string txid( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_txid ) );
+         string index( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_index ) );
+         string script( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_script ) );
+         string address( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_address ) );
+         string amount( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_amount ) );
+         string wif_key( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_wif_privkey ) );
+         string lock_time( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_lock_time ) );
+
+         response = construct_p2sh_redeem_transaction(
+          txid, from_string< unsigned int >( index ), script, address,
+          from_string< uint64_t >( amount ), wif_key.c_str( ), from_string< uint64_t >( lock_time ) );
+      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

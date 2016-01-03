@@ -98,13 +98,14 @@ struct utxo_information
 {
    utxo_information( ) : index ( 0 ) { }
 
-   utxo_information( unsigned int index,
-    const std::string& reversed_txid, const char* p_script = 0, private_key* p_private_key = 0 )
+   utxo_information( unsigned int index, const std::string& reversed_txid,
+    const char* p_script = 0, private_key* p_private_key = 0, bool is_p2sh_redeem = false )
     :
     index( index ),
     reversed_txid( reversed_txid ),
     original_script( p_script ? p_script : "" ),
-    rp_private_key( p_private_key )
+    rp_private_key( p_private_key ),
+    is_p2sh_redeem( is_p2sh_redeem )
    {
    }
 
@@ -113,6 +114,8 @@ struct utxo_information
 
    std::string original_script;
    ref_count_ptr< private_key > rp_private_key;
+
+   bool is_p2sh_redeem;
 };
 
 struct output_information
@@ -132,8 +135,8 @@ struct output_information
 
 std::string construct_raw_transaction(
  const std::vector< utxo_information >& inputs,
- const std::vector< output_information >& outputs,
- bool* p_is_complete = 0, bool randomly_order_outputs = true, const char* p_message = 0 );
+ const std::vector< output_information >& outputs, bool* p_is_complete = 0,
+ bool randomly_order_outputs = true, const char* p_message = 0, uint64_t lock_time = 0 );
 
 #endif
 
