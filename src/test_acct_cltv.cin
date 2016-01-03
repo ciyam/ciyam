@@ -1,0 +1,56 @@
+~tbitcoin generate 101
+;
+; Define an address and matching WIF private key for testing
+;
+ADDR=mp7zjTrEszZezRBM1cUmTvaK2zf3MuDAHt
+WKEY=cPR4DC5NXVkR37wEbCuUVuvuFxSozsMr8SHYteB2iqG8yV3uHdFR
+;
+; To simplify testing just uses the same address for redemption
+;
+crypto_addr_hash $ADDR
+PKH1=$OUTPUT
+PKH2=$OUTPUT
+;
+; Setup an ACCT P2SH script and then get its address and script hash
+;
+SCTH=c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646
+~tbitcoin importprivkey $WKEY
+TXID=@~tbitcoin sendtoaddress $ADDR 50
+BLKN=7f
+SCRIPT=76a820%SCTH%87637576a914%PKH1%88ac6701%BLKN%b17576a914%PKH2%88ac68
+crypto_p2sh_addr TBTC $SCRIPT
+P2SH_ADDR=$OUTPUT
+crypto_addr_hash $P2SH_ADDR
+P2SH_HASH=$OUTPUT
+;
+; Send funds to the P2SH address
+;
+~tbitcoin generate 1
+TXID=@~tbitcoin sendtoaddress $P2SH_ADDR 50
+OLD_TX=@~tbitcoin getrawtransaction $TXID
+~tbitcoin decoderawtransaction $OLD_TX
+;
+; (check that the VOUT matches or change the next line)
+; (also verify the P2SH scriptPubKey's script and hash)
+;
+VOUT=0
+#$P2SH_HASH
+~tbitcoin getblockcount
+LOCK=127
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 5000000000 $WKEY $LOCK
+RAW_TX=$OUTPUT
+~tbitcoin decoderawtransaction $RAW_TX
+~tbitcoin signrawtransaction $RAW_TX
+;
+; Note this attempt will fail due to being non-final (i.e. locktime)
+;
+~tbitcoin sendrawtransaction $RAW_TX
+;
+; Increase the block height and then redeem funds from the P2SH UTXO
+;
+~tbitcoin generate 25
+~tbitcoin getblockcount
+TXID=@~tbitcoin sendrawtransaction $RAW_TX
+NEW_TX=@~tbitcoin getrawtransaction $TXID
+~tbitcoin decoderawtransaction $NEW_TX
+~tbitcoin generate 1
