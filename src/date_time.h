@@ -220,6 +220,7 @@ class DATE_TIME_DECL_SPEC mtime
    mtime& operator +=( milliseconds m );
    mtime& operator -=( milliseconds m );
 
+   operator seconds( ) const { return ( seconds )( ms / 1000 ); }
    operator milliseconds( ) const { return ms; }
 
    hour get_hour( ) const;
@@ -769,6 +770,11 @@ void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
 
 void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th );
+
+int64_t DATE_TIME_DECL_SPEC unix_timestamp( const date_time& dt );
+inline int64_t DATE_TIME_DECL_SPEC unix_timestamp( ) { return unix_timestamp( date_time::standard( ) ); }
+
+int64_t DATE_TIME_DECL_SPEC seconds_between( const date_time& lhs, const date_time& rhs );
 
 std::string format_udate( const udate& ud, const std::string& mask );
 std::string format_mtime( const mtime& mt, const std::string& mask );

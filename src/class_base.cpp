@@ -5001,6 +5001,26 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
    return raw_tx_request;
 }
 
+string construct_p2sh_redeem_transaction(
+ const string& txid, unsigned int index, const string& redeem_script,
+ const string& to_address, uint64_t amount, const char* p_wif_key, uint64_t lock_time )
+{
+   vector< utxo_information > inputs;
+   vector< output_information > outputs;
+
+   auto_ptr< private_key > ap_priv_key;
+
+   if( p_wif_key )
+      ap_priv_key.reset( new private_key( string( p_wif_key ), true ) );
+
+   inputs.push_back( utxo_information( index,
+    reverse_txid( txid ), redeem_script.c_str( ), ap_priv_key.release( ), true ) );
+
+   outputs.push_back( output_information( amount, to_address ) );
+
+   return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time );
+}
+
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd,
  bool throw_on_error, bool* p_is_complete, vector< utxo_info >* p_utxos, vector< address_info >* p_outputs )
 {
@@ -5090,13 +5110,45 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
       if( system( cmd.c_str( ) ) != 0 )
          throw runtime_error( "unexpected system failure in create_or_sign_raw_transaction" );
 
+      bool okay = false;
+      bool complete = false;
+
       if( file_exists( tmp ) )
       {
          retval = trim( buffer_file( tmp ) );
          file_remove( tmp );
 
-         if( throw_on_error && retval.find( "error:" ) != string::npos )
+         if( retval.find( "error:" ) == string::npos )
+         {
+            okay = true;
+
+            // NOTE: JSON output is expected to include the following line:
+            // "complete" : true
+            string::size_type pos = retval.find( "\"complete\"" );
+
+            if( pos != string::npos )
+            {
+               pos = retval.find( "true", pos );
+
+               if( pos != string::npos )
+                  complete = true;
+            }
+         }
+      }
+      else
+         throw runtime_error( "unexpected temporary file not found in create_or_sign_raw_transaction" );
+
+      if( okay )
+      {
+         if( p_is_complete )
+            *p_is_complete = complete;
+      }
+      else
+      {
+         if( throw_on_error )
             throw runtime_error( retval );
+         else if( p_is_complete )
+            *p_is_complete = complete;
       }
    }
 

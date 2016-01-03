@@ -1564,6 +1564,10 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  std::string& changes_address, uint64_t amount, quote_style qs, uint64_t& fee,
  std::string& sign_tx_template, const std::string& file_name );
 
+std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
+ const std::string& txid, unsigned int index, const std::string& redeem_script,
+ const std::string& to_address, uint64_t amount, const char* p_wif_key = 0, uint64_t lock_time = 0 );
+
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
  bool* p_is_complete = 0, std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );

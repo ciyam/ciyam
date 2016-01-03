@@ -195,6 +195,22 @@ void get_utxo_information( const string& source_addresses, const string& file_na
 }
 #endif
 
+string reverse_txid( const string& txid )
+{
+   string reversed;
+
+   for( int i = txid.length( ) - 1; i >= 0; i -= 2 )
+   {
+      if( i - 1 >= 0 )
+      {
+         reversed += txid[ i - 1 ];
+         reversed += txid[ i ];
+      }
+   }
+
+   return reversed;
+}
+
 void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
 {
    string str;
@@ -239,16 +255,9 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                   string input( utxo.tx_id );
                   utxo.tx_id_rev.clear( );
 
-                  for( int i = input.length( ) - 1; i >= 0; i -= 2 )
-                  {
-                     if( i - 1 >= 0 )
-                     {
-                        utxo.tx_id_rev += input[ i - 1 ];
-                        utxo.tx_id_rev += input[ i ];
-                     }
-                  }
+                  utxo.tx_id_rev = reverse_txid( input );
 
-                  // NOTE: The "tx_hash" from "blockchain.info" was initially in reverse order.
+                  // NOTE: The "tx_hash" from "blockchain.info" is already in reverse order.
                   if( !from_standard )
                      swap( utxo.tx_id, utxo.tx_id_rev );
                }

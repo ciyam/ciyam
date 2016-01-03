@@ -28,6 +28,7 @@
 
 #include "base64.h"
 #include "sha256.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "crypt_stream.h"
 
@@ -41,8 +42,8 @@ namespace
 const int c_num_secret_bytes = 32;
 const int c_max_public_key_bytes = 65;
 
-const char* const c_sequence_bytes = "ffffffff";
-const char* const c_zero_lock_time = "00000000";
+const char* const c_zero_sequence_bytes = "00000000";
+const char* const c_default_sequence_bytes = "ffffffff";
 
 const char* const c_zero_amount = "0000000000000000";
 
@@ -803,8 +804,8 @@ string decode_message_from_leading_byte_encoded_addresses( const vector< string 
 
 string construct_raw_transaction(
  const vector< utxo_information >& inputs,
- const vector< output_information >& outputs,
- bool* p_is_complete, bool randomly_order_outputs, const char* p_message )
+ const vector< output_information >& outputs, bool* p_is_complete,
+ bool randomly_order_outputs, const char* p_message, uint64_t lock_time )
 {
    string raw_transaction( "01000000" ); // i.e. version
 
@@ -815,6 +816,8 @@ string construct_raw_transaction(
 
    vector< string > empty_input_sig_info;
    vector< string > signing_input_sig_info;
+
+   bool has_p2sh_redeem = false;
 
    for( size_t i = 0; i < inputs.size( ); i++ )
    {
@@ -831,8 +834,14 @@ string construct_raw_transaction(
 
       if( !inputs[ i ].original_script.empty( ) )
       {
-         size = inputs[ i ].original_script.length( ) / 2;
+         // NOTE: This test is being repeated further down (in the tx signing section).
+         if( inputs[ i ].original_script.length( ) / 2 > 0xff )
+            throw runtime_error( "P2SH redeem script is too big to handle with PUSH_DATA1" );
+
+         size = ( unsigned char )( inputs[ i ].original_script.length( ) / 2 );
+
          next_input_sig_info += hex_encode( &size, sizeof( unsigned char ) );
+
          next_input_sig_info += inputs[ i ].original_script;
       }
       else
@@ -840,9 +849,14 @@ string construct_raw_transaction(
 
       raw_transaction += c_sig_script_marker;
 
-      raw_transaction += c_sequence_bytes;
-      next_empty_sig_info += c_sequence_bytes;
-      next_input_sig_info += c_sequence_bytes;
+      string sequence( inputs[ i ].is_p2sh_redeem ? c_zero_sequence_bytes : c_default_sequence_bytes );
+
+      if( inputs[ i ].is_p2sh_redeem )
+         has_p2sh_redeem = true;
+
+      raw_transaction += sequence;
+      next_empty_sig_info += sequence;
+      next_input_sig_info += sequence;
 
       empty_input_sig_info.push_back( next_empty_sig_info );
       signing_input_sig_info.push_back( next_input_sig_info );
@@ -859,6 +873,7 @@ string construct_raw_transaction(
       ++size;
 
    raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
+
    string signing_info_suffix( hex_encode( &size, sizeof( unsigned char ) ) );
 
    map< string, int > ordering;
@@ -892,13 +907,13 @@ string construct_raw_transaction(
 
       string hash160( public_key::address_to_hash160( outputs[ i->second ].address ) );
 
-      size = ( unsigned char )hash160.size( ) / 2;
+      size = ( unsigned char )( hash160.size( ) / 2 );
       script_pub_key += hex_encode( &size, sizeof( unsigned char ) );
 
       script_pub_key += hash160;
       script_pub_key += "88ac"; // i.e. OP_EQUALVERIFY OP_CHECKSIG
 
-      size = ( unsigned char )script_pub_key.size( ) / 2;
+      size = ( unsigned char )( script_pub_key.size( ) / 2 );
 
       raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
       signing_info_suffix += hex_encode( &size, sizeof( unsigned char ) );
@@ -919,7 +934,7 @@ string construct_raw_transaction(
 
       script_return += hex_encode( ( const unsigned char* )p_message, msg_len );
 
-      size = ( unsigned char )script_return.size( ) / 2;
+      size = ( unsigned char )( script_return.size( ) / 2 );
 
       raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
       signing_info_suffix += hex_encode( &size, sizeof( unsigned char ) );
@@ -928,8 +943,24 @@ string construct_raw_transaction(
       signing_info_suffix += script_return;
    }
 
-   raw_transaction += c_zero_lock_time;
-   signing_info_suffix += c_zero_lock_time;
+   string nlocktime;
+
+   // NOTE: If this tx includes a P2SH redeem script then set the nLockTime to the current
+   // time (in case it is using a CLTV op) unless an explicit lock time value was provided.
+   if( !lock_time && has_p2sh_redeem )
+      lock_time = unix_timestamp( );
+
+   ostringstream osstr;
+   osstr << hex << setw( 8 ) << setfill( '0' ) << lock_time;
+
+   // NOTE: Convert the value to little-endian.
+   nlocktime = osstr.str( ).substr( 6, 2 );
+   nlocktime += osstr.str( ).substr( 4, 2 );
+   nlocktime += osstr.str( ).substr( 2, 2 );
+   nlocktime += osstr.str( ).substr( 0, 2 );
+
+   raw_transaction += nlocktime;
+   signing_info_suffix += nlocktime;
 
    signing_info_suffix += c_hash_code_type_all;
 
@@ -964,27 +995,43 @@ string construct_raw_transaction(
 
          string sig( inputs[ i ].rp_private_key->construct_signature( &buf[ 0 ] ) );
 
-         size = ( ( unsigned char )sig.size( ) / 2 ) + 1;
+         size = ( unsigned char )( sig.size( ) / 2 ) + 1;
          string scriptSig( hex_encode( &size, sizeof( unsigned char ) ) );
+
          scriptSig += sig;
 
          scriptSig += "01"; // i.e. SIGHASH_ALL
 
          string pub( inputs[ i ].rp_private_key->get_public( ) );
 
-         size = ( unsigned char )pub.size( ) / 2;
+         size = ( unsigned char )( pub.size( ) / 2 );
          scriptSig += hex_encode( &size, sizeof( unsigned char ) );
+
          scriptSig += pub;
 
-         string sequence( c_sig_script_marker );
-         sequence += c_sequence_bytes;
+         if( inputs[ i ].is_p2sh_redeem )
+         {
+            string p2sh_redeem_script( inputs[ i ].original_script );
 
-         string::size_type pos = raw_transaction.find( sequence );
+            if( p2sh_redeem_script.length( ) / 2 > 0xff )
+               throw runtime_error( "P2SH redeem script is too big to handle with PUSH_DATA1" );
+
+            size = ( p2sh_redeem_script.length( ) / 2 );
+
+            if( size > 0x4b )
+               scriptSig += "4c"; // i.e. PUSH_DATA1
+
+            scriptSig += hex_encode( &size, sizeof( unsigned char ) );
+
+            scriptSig += p2sh_redeem_script;
+         }
+
+         string::size_type pos = raw_transaction.find( c_sig_script_marker );
 
          if( pos != string::npos )
          {
             raw_transaction.erase( pos, 2 );
-            size = ( unsigned char )scriptSig.size( ) / 2;
+            size = ( unsigned char )( scriptSig.size( ) / 2 );
 
             raw_transaction.insert( pos, hex_encode( &size, sizeof( unsigned char ) ) );
             raw_transaction.insert( pos + 2, scriptSig );

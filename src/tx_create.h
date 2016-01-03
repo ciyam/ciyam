@@ -16,6 +16,8 @@
 #  include "class_base.h"
 #  include "ciyam_common.h"
 
+std::string reverse_txid( const std::string& txid );
+
 void parse_utxo_info( std::istream& is, std::vector< utxo_info >& utxos );
 
 uint64_t get_utxos_balance_amt( const std::string& file_name );

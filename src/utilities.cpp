@@ -772,17 +772,18 @@ bool wildcard_match( const char* p_expr, const char* p_data )
 string& replace( string& s, const char* p_findstr, const char* p_replstr )
 {
    string str;
-
    size_t from = 0;
+
    while( true )
    {
       size_t pos = s.find( p_findstr, from );
+
       if( pos == string::npos )
          break;
 
       str = s.substr( 0, pos );
 
-      str += p_replstr;
+      str += string( p_replstr );
 
       from = pos + strlen( p_replstr );
 

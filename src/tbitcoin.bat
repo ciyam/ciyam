@@ -6,11 +6,13 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 setlocal
 
-SET BITCOIN="C:\Program Files\bitcoin\bitcoin-cli.exe" -testnet -rpcpassword=not_what_you_think_it_is
+if not '%TBITCOIN%' == '' goto next
+SET TBITCOIN="%ProgramFiles%\bitcoin\bitcoin-cli.exe" -regtest -rpcpassword=not_what_you_think_it_is
 
+:next
 if '%1' == '' goto usage
 
-%BITCOIN% %*
+%TBITCOIN% %*
 goto end
 
 :usage
