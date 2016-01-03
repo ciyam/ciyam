@@ -1,3 +1,19 @@
+; Copyright (c) 2016 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+;CIYAM Bitcoin regression test script for ACCT CLTV redemption
+;-------------------------------------------------------------
+;
+;NOTE: In order to utilise the following script you will first
+;need to install Bitcoin either into the directory where CIYAM
+;has been compiled or if not then set the TBITCOIN environment
+;variable accordingly (check the 'tbitcoin' script to work out
+;how to do this and don't forget the '-regtest' option). First
+;make sure that any existing 'regtest' data has been destroyed
+;then start 'bitcoind'.
+;
 ~tbitcoin generate 101
 ;
 ; Define an address and matching WIF private key for testing

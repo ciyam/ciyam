@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2015 CIYAM Developers
+// Copyright (c) 2012-2016 CIYAM Developers
 
 #include <cstring>
 #include <cstdlib>
