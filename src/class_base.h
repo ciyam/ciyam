@@ -1565,7 +1565,7 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  std::string& sign_tx_template, const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
- const std::string& txid, unsigned int index, const std::string& redeem_script,
+ const std::string& txid, unsigned int index, const std::string& redeem_script, const std::string& extras,
  const std::string& to_address, uint64_t amount, const char* p_wif_key = 0, uint64_t lock_time = 0 );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(

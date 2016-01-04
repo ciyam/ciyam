@@ -135,8 +135,9 @@ struct output_information
 
 std::string construct_raw_transaction(
  const std::vector< utxo_information >& inputs,
- const std::vector< output_information >& outputs, bool* p_is_complete = 0,
- bool randomly_order_outputs = true, const char* p_message = 0, uint64_t lock_time = 0 );
+ const std::vector< output_information >& outputs,
+ bool* p_is_complete = 0, bool randomly_order_outputs = true, const char* p_message = 0,
+ uint64_t lock_time = 0, std::vector< std::string >* p_extra_sig_script_items = 0 );
 
 #endif
 
