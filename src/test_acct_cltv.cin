@@ -3,17 +3,22 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-;CIYAM Bitcoin regression test script for ACCT CLTV redemption
-;-------------------------------------------------------------
+; CIYAM Bitcoin test script for ACCT using either a CLTV or secret reveal redemption tx
+; -------------------------------------------------------------------------------------
 ;
-;NOTE: In order to utilise the following script you will first
-;need to install Bitcoin either into the directory where CIYAM
-;has been compiled or if not then set the TBITCOIN environment
-;variable accordingly (check the 'tbitcoin' script to work out
-;how to do this and don't forget the '-regtest' option). First
-;make sure that any existing 'regtest' data has been destroyed
-;then start 'bitcoind'.
+; NOTE: In order to utilise the following script you will first need to install Bitcoin
+; into the directory where CIYAM has been compiled or else set the TBITCOIN environment
+; variable accordingly (check the 'tbitcoin' script to work out how to do this and when
+; doing this don't forget the '-regtest' option). Check that there is no 'regtest' data
+; before starting 'bitcoind' and then running this script.
 ;
+;SECRET_REDEEM=1
+;
+@ifndef $SECRET_REDEEM
+#Redeeming using CLTV refund...
+@else
+#Redeeming using secret reveal...
+@endif
 ~tbitcoin generate 101
 ;
 ; Define an address and matching WIF private key for testing
@@ -41,7 +46,7 @@ P2SH_HASH=$OUTPUT
 ;
 ; Send funds to the P2SH address
 ;
-~tbitcoin generate 1
+~tbitcoin generate 3
 TXID=@~tbitcoin sendtoaddress $P2SH_ADDR 50
 OLD_TX=@~tbitcoin getrawtransaction $TXID
 ~tbitcoin decoderawtransaction $OLD_TX
@@ -51,12 +56,18 @@ OLD_TX=@~tbitcoin getrawtransaction $TXID
 ;
 VOUT=0
 #$P2SH_HASH
+~tbitcoin generate 3
 ~tbitcoin getblockcount
 LOCK=127
+@ifndef $SECRET_REDEEM
 crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 5000000000 $WKEY $LOCK
+@else
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 5000000000 $WKEY -e=31323334353637383930
+@endif
 RAW_TX=$OUTPUT
 ~tbitcoin decoderawtransaction $RAW_TX
 ~tbitcoin signrawtransaction $RAW_TX
+@ifndef $SECRET_REDEEM
 ;
 ; Note this attempt will fail due to being non-final (i.e. locktime)
 ;
@@ -64,7 +75,8 @@ RAW_TX=$OUTPUT
 ;
 ; Increase the block height and then redeem funds from the P2SH UTXO
 ;
-~tbitcoin generate 25
+~tbitcoin generate 20
+@endif
 ~tbitcoin getblockcount
 TXID=@~tbitcoin sendrawtransaction $RAW_TX
 NEW_TX=@~tbitcoin getrawtransaction $TXID

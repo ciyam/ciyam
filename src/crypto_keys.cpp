@@ -28,7 +28,6 @@
 
 #include "base64.h"
 #include "sha256.h"
-#include "date_time.h"
 #include "utilities.h"
 #include "crypt_stream.h"
 
@@ -805,7 +804,8 @@ string decode_message_from_leading_byte_encoded_addresses( const vector< string 
 string construct_raw_transaction(
  const vector< utxo_information >& inputs,
  const vector< output_information >& outputs, bool* p_is_complete,
- bool randomly_order_outputs, const char* p_message, uint64_t lock_time )
+ bool randomly_order_outputs, const char* p_message, uint64_t lock_time,
+ vector< string >* p_extra_sig_script_items )
 {
    string raw_transaction( "01000000" ); // i.e. version
 
@@ -945,11 +945,6 @@ string construct_raw_transaction(
 
    string nlocktime;
 
-   // NOTE: If this tx includes a P2SH redeem script then set the nLockTime to the current
-   // time (in case it is using a CLTV op) unless an explicit lock time value was provided.
-   if( !lock_time && has_p2sh_redeem )
-      lock_time = unix_timestamp( );
-
    ostringstream osstr;
    osstr << hex << setw( 8 ) << setfill( '0' ) << lock_time;
 
@@ -1008,6 +1003,19 @@ string construct_raw_transaction(
          scriptSig += hex_encode( &size, sizeof( unsigned char ) );
 
          scriptSig += pub;
+
+         if( p_extra_sig_script_items && !p_extra_sig_script_items->empty( ) )
+         {
+            for( size_t i = 0; i < p_extra_sig_script_items->size( ); i++ )
+            {
+               string extra( ( *p_extra_sig_script_items )[ i ] );
+
+               size = ( unsigned char )( extra.size( ) / 2 );
+               scriptSig += hex_encode( &size, sizeof( unsigned char ) );
+
+               scriptSig += extra;
+            }
+         }
 
          if( inputs[ i ].is_p2sh_redeem )
          {

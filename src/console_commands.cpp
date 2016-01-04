@@ -280,23 +280,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
    }
    else
    {
-      if( has_option( c_cmd_echo ) )
-      {
-         if( str.empty( ) )
-            cout << endl;
-         else if( str[ 0 ] != c_quiet_command_prefix
-          && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
-          && ( str[ 0 ] != c_message_command_prefix || !has_option( c_cmd_quiet ) ) )
-            cout << str << endl;
-      }
-
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
       if( isatty( STDIN_FILENO ) && !is_executing_commands && !str.empty( ) && str != last_command )
          add_history( str.c_str( ) );
 #  endif
 #endif
-
       string str_for_history( str );
 
       last_command = str_for_history;
@@ -312,6 +301,28 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             if( !conditions.back( ) || !dummy_conditions.empty( ) )
                str.erase( );
          }
+      }
+
+      if( has_option( c_cmd_echo ) )
+      {
+         if( str.empty( ) )
+         {
+            if( !has_option( c_cmd_quiet ) )
+            {
+               // NOTE: If using echo and not quiet then any commands that are
+               // not being executed due to a conditional are output as though
+               // they are comments (which can be helpful for debugging).
+               if( str_for_history.empty( ) )
+                  cout << endl;
+               else
+                  cout << c_comment_command_prefix << str_for_history << endl;
+            }
+         }
+         else if( str[ 0 ] != c_quiet_command_prefix
+          && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
+          && ( str[ 0 ] != c_envcond_command_prefix || !has_option( c_cmd_quiet ) )
+          && ( str[ 0 ] != c_message_command_prefix || !has_option( c_cmd_quiet ) ) )
+            cout << str << endl;
       }
 
       if( !str.empty( ) )

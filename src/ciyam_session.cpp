@@ -1689,11 +1689,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string address( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_address ) );
          string amount( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_amount ) );
          string wif_key( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_wif_privkey ) );
+         string extras( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_extras ) );
          string lock_time( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_p2sh_redeem_lock_time ) );
 
          response = construct_p2sh_redeem_transaction(
-          txid, from_string< unsigned int >( index ), script, address,
-          from_string< uint64_t >( amount ), wif_key.c_str( ), from_string< uint64_t >( lock_time ) );
+          txid, from_string< unsigned int >( index ), script, extras,
+          address, from_string< uint64_t >( amount ), wif_key.c_str( ),
+          lock_time.empty( ) ? 0 : from_string< uint64_t >( lock_time ) );
       }
       else if( command == c_cmd_ciyam_session_module_list )
       {

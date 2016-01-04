@@ -5001,9 +5001,8 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
    return raw_tx_request;
 }
 
-string construct_p2sh_redeem_transaction(
- const string& txid, unsigned int index, const string& redeem_script,
- const string& to_address, uint64_t amount, const char* p_wif_key, uint64_t lock_time )
+string construct_p2sh_redeem_transaction( const string& txid, unsigned int index, const string& redeem_script,
+ const string& extras, const string& to_address, uint64_t amount, const char* p_wif_key, uint64_t lock_time )
 {
    vector< utxo_information > inputs;
    vector< output_information > outputs;
@@ -5018,7 +5017,12 @@ string construct_p2sh_redeem_transaction(
 
    outputs.push_back( output_information( amount, to_address ) );
 
-   return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time );
+   vector< string > extra_items;
+
+   if( !extras.empty( ) )
+      split( extras, extra_items );
+
+   return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time, &extra_items );
 }
 
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd,
