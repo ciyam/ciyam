@@ -284,7 +284,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       {
          if( str.empty( ) )
             cout << endl;
-         else if( strchr( c_non_command_prefix, str[ 0 ] ) != 0 )
+         else if( str[ 0 ] != c_quiet_command_prefix
+          && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
+          && ( str[ 0 ] != c_message_command_prefix || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
       }
 
