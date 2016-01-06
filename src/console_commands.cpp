@@ -339,7 +339,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
          else if( str[ 0 ] != c_quiet_command_prefix
           && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
-          && ( ( apos == string::npos && str[ 0 ] != c_system_command_prefix
+          && ( ( apos == string::npos && str[ 0 ] != c_read_input_prefix
+          && str[ 0 ] != c_write_history_prefix && str[ 0 ] != c_system_command_prefix
           && str[ 0 ] != c_envcond_command_prefix && str[ 0 ] != c_message_command_prefix )
           || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
