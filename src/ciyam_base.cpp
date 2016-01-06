@@ -230,6 +230,7 @@ const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_unix_timestamp = "@unix_timestamp";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
@@ -5938,6 +5939,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_peer_responder );
       break;
 
+      case e_special_var_unix_timestamp:
+      s = string( c_special_variable_unix_timestamp );
+      break;
+
       case e_special_var_check_if_changed:
       s = string( c_special_variable_check_if_changed );
       break;
@@ -6030,6 +6035,8 @@ string get_raw_system_variable( const string& name )
    guard g( g_mutex );
 
    string retval;
+
+   g_variables[ c_special_variable_unix_timestamp ] = to_string( unix_timestamp( ) );
 
    if( g_variables.count( name ) )
       retval = g_variables[ name ];

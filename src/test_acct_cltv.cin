@@ -12,10 +12,16 @@
 ; doing this don't forget the '-regtest' option). Check that there is no 'regtest' data
 ; before starting 'bitcoind' and then running this script.
 ;
-;SECRET_REDEEM=1
+;USE_SECRET_REVEAL=1
+;USE_UNIX_TIMESTAMP=1
 ;
-@ifndef $SECRET_REDEEM
+@ifndef $USE_SECRET_REVEAL
 #Redeeming using CLTV refund...
+@ifndef $USE_UNIX_TIMESTAMP
+#(via block number)
+@else
+#(via unix timestamp)
+@endif
 @else
 #Redeeming using secret reveal...
 @endif
@@ -37,8 +43,17 @@ PKH2=$OUTPUT
 SCTH=c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646
 ~tbitcoin importprivkey $WKEY
 TXID=@~tbitcoin sendtoaddress $ADDR 50
+;
+@ifndef $USE_UNIX_TIMESTAMP
 BLKN=7f
 SCRIPT=76a820%SCTH%87637576a914%PKH1%88ac6701%BLKN%b17576a914%PKH2%88ac68
+@else
+TIME=@unix+5
+HTME=@hexlit:$TIME
+LTME=@substr:0,8:$HTME
+SCRIPT=76a820%SCTH%87637576a914%PKH1%88ac6704%LTME%b17576a914%PKH2%88ac68
+@endif
+;
 crypto_p2sh_addr TBTC $SCRIPT
 P2SH_ADDR=$OUTPUT
 crypto_addr_hash $P2SH_ADDR
@@ -58,16 +73,32 @@ VOUT=0
 #$P2SH_HASH
 ~tbitcoin generate 3
 ~tbitcoin getblockcount
+;
+@ifndef $USE_UNIX_TIMESTAMP
 LOCK=127
-@ifndef $SECRET_REDEEM
-crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 5000000000 $WKEY $LOCK
 @else
-crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 5000000000 $WKEY -e=31323334353637383930
+LOCK=$TIME
+@endif
+@ifndef $USE_SECRET_REVEAL
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 50.0 $WKEY $LOCK
+@else
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 50.0 $WKEY -e=31323334353637383930
 @endif
 RAW_TX=$OUTPUT
 ~tbitcoin decoderawtransaction $RAW_TX
 ~tbitcoin signrawtransaction $RAW_TX
-@ifndef $SECRET_REDEEM
+@ifndef $USE_SECRET_REVEAL
+@ifdef $USE_UNIX_TIMESTAMP
+;
+; Wait for five seconds and then redeem the funds from the P2SH UTXO
+;
+; NOTE: When running with testnet/regtest it seems that when using a
+; unix timestamp (instead of a block number) then the tx is accepted
+; before the actual time so this delay is just to ensure that the tx
+; will appear confirmed after the final generate).
+;
+wait 5000
+@else
 ;
 ; Note this attempt will fail due to being non-final (i.e. locktime)
 ;
@@ -76,6 +107,7 @@ RAW_TX=$OUTPUT
 ; Increase the block height and then redeem funds from the P2SH UTXO
 ;
 ~tbitcoin generate 20
+@endif
 @endif
 ~tbitcoin getblockcount
 TXID=@~tbitcoin sendrawtransaction $RAW_TX

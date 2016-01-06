@@ -4535,6 +4535,24 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
    return s;
 }
 
+uint64_t crypto_amount( const string& amount )
+{
+   uint64_t amt = 0;
+   string::size_type pos = amount.find( '.' );
+
+   if( pos == string::npos )
+      amt = from_string< uint64_t >( amount );
+   else
+   {
+      numeric n( amount.c_str( ) );
+
+      n *= 100000000;
+      amt = n.trunc( );
+   }
+
+   return amt;
+}
+
 string crypto_sign( const string& secret, const string& message, bool decode_hex_message )
 {
 #ifdef SSL_SUPPORT
@@ -5002,7 +5020,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 }
 
 string construct_p2sh_redeem_transaction( const string& txid, unsigned int index, const string& redeem_script,
- const string& extras, const string& to_address, uint64_t amount, const char* p_wif_key, uint64_t lock_time )
+ const string& extras, const string& to_address, uint64_t amount, const char* p_wif_key, uint32_t lock_time )
 {
    vector< utxo_information > inputs;
    vector< output_information > outputs;
@@ -5013,7 +5031,7 @@ string construct_p2sh_redeem_transaction( const string& txid, unsigned int index
       ap_priv_key.reset( new private_key( string( p_wif_key ), true ) );
 
    inputs.push_back( utxo_information( index,
-    reverse_txid( txid ), redeem_script.c_str( ), ap_priv_key.release( ), true ) );
+    hex_reverse( txid ), redeem_script.c_str( ), ap_priv_key.release( ), true ) );
 
    outputs.push_back( output_information( amount, to_address ) );
 

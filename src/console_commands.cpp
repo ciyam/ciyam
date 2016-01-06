@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <ctype.h>
 #  include <cstring>
 #  include <memory>
 #  include <fstream>
@@ -26,6 +27,7 @@
 #include "macros.h"
 #include "console.h"
 #include "pointers.h"
+#include "date_time.h"
 #include "utilities.h"
 
 #ifdef __GNUG__
@@ -72,6 +74,17 @@ const char c_environment_variable_marker_1 = '$';
 const char c_environment_variable_marker_2 = '%';
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+
+const char* const c_unix_timestamp = "unix";
+
+const char* const c_function_hexbig = "hexbig";
+const char* const c_function_hexlit = "hexlit";
+const char* const c_function_substr = "substr";
+
+const char* const c_envcond_command_else = "else";
+const char* const c_envcond_command_endif = "endif";
+const char* const c_envcond_command_ifdef = "ifdef";
+const char* const c_envcond_command_ifndef = "ifndef";
 
 const char* const c_cmd_echo = "echo";
 const char* const c_cmd_quiet = "quiet";
@@ -303,6 +316,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
       }
 
+      string::size_type pos = str.find( ' ' );
+      string::size_type apos = string::npos;
+
+      if( isalpha( str[ 0 ] ) )
+         apos = str.substr( 0, pos ).find( c_environment_variable_assign );
+
       if( has_option( c_cmd_echo ) )
       {
          if( str.empty( ) )
@@ -320,16 +339,14 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
          else if( str[ 0 ] != c_quiet_command_prefix
           && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
-          && ( str[ 0 ] != c_envcond_command_prefix || !has_option( c_cmd_quiet ) )
-          && ( str[ 0 ] != c_message_command_prefix || !has_option( c_cmd_quiet ) ) )
+          && ( ( apos == string::npos && str[ 0 ] != c_system_command_prefix
+          && str[ 0 ] != c_envcond_command_prefix && str[ 0 ] != c_message_command_prefix )
+          || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
       }
 
       if( !str.empty( ) )
       {
-         string::size_type pos = str.find( ' ' );
-         string::size_type apos = str.substr( 0, pos ).find( c_environment_variable_assign );
-
          string assign_env_var_name;
          if( apos != string::npos )
          {
@@ -352,7 +369,27 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          // NOTE: For environment variable assignment support VAR=@<fname> to set the variable to the
          // contents of a file (if wanting to literally assign VAR to "@fname" use "@@fname" instead)
          // or even to the output of a system call using VAR=@~<cmd> (with both the stdout and stderr
-         // output being redirected to a temporary file).
+         // output being redirected to a temporary file). Another usage is VAR=@<expression> where an
+         // expression can be a special symbol (such as "unix" for unix timestamp) or a single simple
+         // math operation between two numbers (where the LHS can be a special symbol). The usage can
+         // be handy for working out the unix timestamp value one hour from the current time with the
+         // following:
+         //
+         // TIME=@unix+3600
+         //
+         // or to do something a little more exotic such as this:
+         //
+         // HRS_01=3600
+         // HRS_24=@$HRS_01*24
+         // TIME=@unix+$HRS_24
+         //
+         // Transformation functions can also be provided in the form VAR=@<func>:<lit> such as:
+         //
+         // HEX_LITTLE_ENDIAN=@hexlit:$TIME
+         //
+         // and a simple sub-string transformation function is also available:
+         //
+         // LAST_FOUR_BYTES=@substr:0,8:$HEX_LITTLE_ENDIAN
          if( !assign_env_var_name.empty( ) )
          {
             if( !str.empty( ) && str[ 0 ] == '@' )
@@ -373,6 +410,103 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   str = buffer_file_lines( tmp_name );
 
                   file_remove( tmp_name );
+               }
+               else if( !str.empty( ) )
+               {
+                  pos = str.find_first_of( "+-*/:" );
+
+                  int64_t val = 0;
+
+                  string lhs( str.substr( 0, pos ) );
+
+                  if( lhs == string( c_unix_timestamp ) )
+                     val = unix_timestamp( );
+
+                  if( pos != string::npos )
+                  {
+                     char op = str[ pos ];
+
+                     bool was_transform = false;
+
+                     int64_t rval = from_string< int64_t >( str.substr( pos + 1 ) );
+
+                     if( !val )
+                     {
+                        if( op == ':' )
+                        {
+                           was_transform = true;
+
+                           if( lhs == c_function_hexbig || lhs == c_function_hexlit )
+                           {
+                              str = hex_encode( ( const unsigned char* )&rval, sizeof( rval ) );
+#ifdef LITTLE_ENDIAN
+                              if( lhs == c_function_hexbig )
+                                 str = hex_reverse( str );
+#else
+                              if( lhs == c_function_hexlit )
+                                 str = hex_reverse( str );
+#endif
+                           }
+                           else if( lhs == c_function_substr )
+                           {
+                              pos = str.find( op, pos + 1 );
+
+                              if( pos != string::npos )
+                              {
+                                 string rhs( str.substr( pos + 1 ) );
+
+                                 str.erase( pos );
+                                 pos = str.find( ',' );
+
+                                 if( pos != string::npos )
+                                 {
+                                    size_t len = atoi( str.substr( pos + 1 ).c_str( ) );
+
+                                    if( rhs.size( ) > rval + len )
+                                       str = rhs.substr( rval, len );
+                                    else if( rhs.size( ) > rval )
+                                       str = rhs.substr( rval );
+                                 }
+                                 else
+                                 {
+                                    if( rhs.size( ) > rval )
+                                       str = rhs.substr( rval );
+                                    else
+                                       str.erase( );
+                                 }
+                              }
+                           }
+                        }
+                        else
+                           val = from_string< int64_t >( str.substr( 0, pos ) );
+                     }
+
+                     if( !was_transform )
+                     {
+                        switch( op )
+                        {
+                           case '+':
+                           val += rval;
+                           break;
+
+                           case '-':
+                           val -= rval;
+                           break;
+
+                           case '*':
+                           val *= rval;
+                           break;
+
+                           case '/':
+                           val /= rval == 0 ? 1 : rval;
+                           break;
+                        }
+
+                        str = to_string( val );
+                     }
+                  }
+                  else if( val )
+                     str = to_string( val );
                }
             }
 
@@ -603,11 +737,14 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   if( pos != string::npos )
                   {
                      symbol = expression.substr( pos + 1 );
+
+                     // NOTE: A symbol is considered as being undefined
+                     // if it is just empty quotes.
                      if( symbol == "\"\"" )
                         symbol.erase( );
                   }
 
-                  if( token == "ifdef" )
+                  if( token == c_envcond_command_ifdef )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
                         dummy_conditions.push_back( 0 );
@@ -617,7 +754,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         conditions.push_back( !symbol.empty( ) );
                      }
                   }
-                  else if( token == "ifndef" )
+                  else if( token == c_envcond_command_ifndef )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
                         dummy_conditions.push_back( 0 );
@@ -627,7 +764,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         conditions.push_back( symbol.empty( ) );
                      }
                   }
-                  else if( token == "else" )
+                  else if( token == c_envcond_command_else )
                   {
                      if( !symbol.empty( ) )
                         throw runtime_error( "invalid 'else' expression" + error_context );
@@ -645,7 +782,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         conditions.push_back( !val );
                      }
                   }
-                  else if( token == "endif" )
+                  else if( token == c_envcond_command_endif )
                   {
                      bool pop_cond = true;
                      if( !dummy_conditions.empty( ) )

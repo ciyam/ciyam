@@ -1442,6 +1442,8 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image(
  const std::string& source_file, bool is_encrypted = false );
 
+uint64_t CLASS_BASE_DECL_SPEC crypto_amount( const std::string& amount );
+
 std::string CLASS_BASE_DECL_SPEC crypto_sign(
  const std::string& secret, const std::string& message, bool decode_hex_message = false );
 
@@ -1566,7 +1568,7 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
 
 std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
  const std::string& txid, unsigned int index, const std::string& redeem_script, const std::string& extras,
- const std::string& to_address, uint64_t amount, const char* p_wif_key = 0, uint64_t lock_time = 0 );
+ const std::string& to_address, uint64_t amount, const char* p_wif_key = 0, uint32_t lock_time = 0 );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,

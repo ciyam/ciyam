@@ -828,6 +828,8 @@ inline std::string hex_encode( const std::string& data, int max_chars_per_line =
    return hex_encode( ( const unsigned char* )data.c_str( ), data.length( ), max_chars_per_line );
 }
 
+std::string hex_reverse( const std::string& hex_value );
+
 std::string decode_quoted_printable( const std::string& data );
 std::string encode_quoted_printable( const std::string& data, int max_chars_per_line );
 

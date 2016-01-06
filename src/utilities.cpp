@@ -2012,6 +2012,22 @@ string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_li
    return s;
 }
 
+string hex_reverse( const string& hex_value )
+{
+   string reversed;
+
+   for( int i = hex_value.length( ) - 1; i >= 0; i -= 2 )
+   {
+      if( i - 1 >= 0 )
+      {
+         reversed += hex_value[ i - 1 ];
+         reversed += hex_value[ i ];
+      }
+   }
+
+   return reversed;
+}
+
 string decode_quoted_printable( const string& data )
 {
    string s;
