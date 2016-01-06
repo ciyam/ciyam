@@ -804,7 +804,7 @@ string decode_message_from_leading_byte_encoded_addresses( const vector< string 
 string construct_raw_transaction(
  const vector< utxo_information >& inputs,
  const vector< output_information >& outputs, bool* p_is_complete,
- bool randomly_order_outputs, const char* p_message, uint64_t lock_time,
+ bool randomly_order_outputs, const char* p_message, uint32_t lock_time,
  vector< string >* p_extra_sig_script_items )
 {
    string raw_transaction( "01000000" ); // i.e. version
@@ -943,16 +943,11 @@ string construct_raw_transaction(
       signing_info_suffix += script_return;
    }
 
-   string nlocktime;
+   string nlocktime( hex_encode( ( const unsigned char* )&lock_time, sizeof( lock_time ) ) );
 
-   ostringstream osstr;
-   osstr << hex << setw( 8 ) << setfill( '0' ) << lock_time;
-
-   // NOTE: Convert the value to little-endian.
-   nlocktime = osstr.str( ).substr( 6, 2 );
-   nlocktime += osstr.str( ).substr( 4, 2 );
-   nlocktime += osstr.str( ).substr( 2, 2 );
-   nlocktime += osstr.str( ).substr( 0, 2 );
+#ifndef LITTLE_ENDIAN
+   nlocktime = hex_reverse( osstr.str( ) );
+#endif
 
    raw_transaction += nlocktime;
    signing_info_suffix += nlocktime;

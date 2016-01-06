@@ -911,7 +911,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Test version, license and encrypt server operations.
+     <description>Test version, license and encrypt server operations (and console command handling).
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet

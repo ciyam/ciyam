@@ -2949,7 +2949,7 @@ date_time::operator julian( ) const
    hour hr;
    minute mn;
    seconds secs;
-   millisecond_to_components( mt.get_millisecond( ), hr, mn, secs );
+   millisecond_to_components( ( milliseconds )mt, hr, mn, secs );
 
    j = calendar_to_julian( yr, mo, dy, hr, mn, secs );
 
@@ -3228,27 +3228,17 @@ int64_t unix_timestamp( const date_time& dt )
    if( j < c_unix_epoch )
       throw runtime_error( "unix_timestamp is not valid before the unix epoch" );
 
-   return ( int64_t )( ( j - c_unix_epoch ) * c_seconds_per_day );
+   return ( int64_t )( ( j - c_unix_epoch ) * ( julian )c_seconds_per_day );
 }
 
 int64_t seconds_between( const date_time& lhs, const date_time& rhs )
 {
    int64_t amt = 0;
 
-   if( lhs < rhs )
-   {
-      julian jl( lhs );
-      julian jr( rhs );
+   julian jl( lhs );
+   julian jr( rhs );
 
-      amt = ( int64_t )( ( jr - jl ) * c_seconds_per_day );
-   }
-   else
-   {
-      julian jl( lhs );
-      julian jr( rhs );
-
-      amt = ( int64_t )( ( jl - jr ) * c_seconds_per_day );
-   }
+   amt = ( int64_t )( ( jr - jl ) * c_seconds_per_day );
 
    return amt;
 }

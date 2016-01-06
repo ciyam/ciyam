@@ -45,6 +45,34 @@ TEST=abc<def>ghi
 #$TEST
 X=%TEST:0><<>%
 #$X
+X=255
+HL=@hexlit:$X
+#$HL
+HB=@hexbig:$X
+#$HB
+Y=@substr:0,8:$HL
+#$Y
+Z=@substr:8:$HB
+#$Z
+Y=@$X*16
+#$Y
+Y=@$Y+20
+#$Y
+Y=@$Y-100
+#$Y
+Y=@$Y/4000
+#$Y
+@ifdef $Y
+#ifdef true
+@else
+#ifdef false
+@endif
+Y=
+@ifdef $Y
+#ifdef true
+@else
+#ifdef false
+@endif
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"
