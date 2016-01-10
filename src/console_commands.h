@@ -8,6 +8,7 @@
 #  define CONSOLE_COMMANDS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <map>
 #     include <deque>
 #     include <vector>
 #     include <string>
@@ -66,8 +67,20 @@ class console_command_handler : public command_handler
    std::string prompt_prefix;
    std::deque< std::string > command_history;
 
+   std::string fissile_data;
+   std::string last_fissile_line;
+   std::string last_fissile_output;
+
+   std::map< std::string, std::string > fissile_values;
+
+   bool use_special_fissile_character;
+
    protected:
    std::string preprocess_command_and_args( const std::string& cmd_and_args );
+
+   bool is_special_command( const std::string& cmd_and_args );
+
+   void handle_special_command( const std::string& cmd_and_args );
 
    void handle_unknown_command( const std::string& command );
 
