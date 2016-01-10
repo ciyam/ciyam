@@ -153,41 +153,46 @@ void command_handler::execute_command( const string& cmd_and_args )
 {
    command_and_args = cmd_and_args;
 
-   string s = preprocess_command_and_args( cmd_and_args );
-
-   if( !s.empty( ) )
+   if( is_special_command( cmd_and_args ) )
+      handle_special_command( cmd_and_args );
+   else
    {
-      string::size_type pos = s.find( ' ' );
+      string s = preprocess_command_and_args( cmd_and_args );
 
-      string cmd( s.substr( 0, pos ) );
-      if( short_commands.count( cmd ) )
-         cmd = short_commands[ cmd ];
-
-      command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
-      if( ci == command_dispatchers.end( ) )
-         handle_unknown_command( cmd );
-      else
+      if( !s.empty( ) )
       {
-         vector< string > arguments;
-         map< string, string > parameters;
+         string::size_type pos = s.find( ' ' );
 
-         if( pos != string::npos )
-            setup_arguments( s.substr( pos + 1 ).c_str( ), arguments );
+         string cmd( s.substr( 0, pos ) );
+         if( short_commands.count( cmd ) )
+            cmd = short_commands[ cmd ];
 
-         if( ci->second.p_parser->parse_command( arguments, parameters ) )
-         {
-            // NOTE: Place an empty pair of strings at the start of the map to help the "get_parm_val" function.
-            parameters.insert( make_pair( string( ), string( ) ) );
-
-            string name( ci->second.name );
-            string::size_type pos = name.find( '|' );
-            ci->second.p_functor->operator( )( name.substr( 0, pos ), parameters );
-         }
+         command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
+         if( ci == command_dispatchers.end( ) )
+            handle_unknown_command( cmd );
          else
-            handle_invalid_command( *ci->second.p_parser, s );
-      }
+         {
+            vector< string > arguments;
+            map< string, string > parameters;
 
-      postprocess_command_and_args( s );
+            if( pos != string::npos )
+               setup_arguments( s.substr( pos + 1 ).c_str( ), arguments );
+
+            if( ci->second.p_parser->parse_command( arguments, parameters ) )
+            {
+               // NOTE: Place an empty pair of strings at the start of the map to help the "get_parm_val" function.
+               parameters.insert( make_pair( string( ), string( ) ) );
+
+               string name( ci->second.name );
+               string::size_type pos = name.find( '|' );
+               ci->second.p_functor->operator( )( name.substr( 0, pos ), parameters );
+            }
+            else
+               handle_invalid_command( *ci->second.p_parser, s );
+         }
+
+         postprocess_command_and_args( s );
+      }
    }
 }
 

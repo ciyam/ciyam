@@ -14,6 +14,7 @@
 #  include <cstring>
 #  include <memory>
 #  include <fstream>
+#  include <sstream>
 #  include <iostream>
 #  include <stdexcept>
 #  ifdef __GNUG__
@@ -183,6 +184,1448 @@ command_functor* startup_command_functor_factory( const string& /*name*/, comman
    return new startup_command_functor( handler );
 }
 
+// FISSILE
+//
+// Functional
+// Interpreted
+// Simple
+// Symbolic
+// Interaction and
+// Lexical
+// Evaluator
+//
+// NOTE: This experimental interpreter is for all "console_command_handler" applications.
+// If a command starts with an asterix then it is assumed to in fact be a list of FISSILE
+// commands (separated by spaces) which will be executed from left to right. It should be
+// noted that numbers are actually stored as X characters (so the decimal number 10 needs
+// ten characters to be used) and are integer only.
+//
+// FUTURE: In order to handle larger numbers a special compressed format should be worked
+// into FISSILE. One idea would be to use a simple RLE approach but care would need to be
+// taken to ensure that this doesn't mess up any existing functionality (for a start this
+// might best be only applied to those numbers whose symbols are just '.' characters, and
+// if a non-numeric string operation is applied to a compressed number then perhaps first
+// it would need to be expanded).
+//
+// Some simple examples are as follows:
+//
+// *#=255
+// *#16
+// *#2
+// *#*2
+// *#
+//
+// *.+
+// *$=abc
+// *$+def
+// *$*...
+// *$
+//
+// *@hello=$`Hello`world!`
+// *!hello
+//
+// *@test=$@^test2=$?__@?__<__!^test2_#=10_!^test2
+// *!test
+//
+// *@ror=$@^^x=@?_@^^y=_>^^x,^^y_>^^y,^^x_@?=@^^x_@?
+// *@rol=$@^^x=@?_@^^y=_<^^y,^^x_<^^x,^^y_@?=@^^x_@?
+// *$=X... @? !ror !ror !ror !rol !rol !rol
+
+const char c_fissile_op_none = '\0';
+const char c_fissile_base_suffix = '#';
+
+const size_t c_fissile_max_depth = 100;
+
+const char* const c_fissile_tmp_special_char = "^@s";
+
+const char* const c_fissile_cmds_limit_variable = "*";
+
+struct fissile_pair
+{
+   const char* p_key;
+   const char* p_data;
+}
+g_default_fissile_pairs[ ] =
+{
+   { "#", "10#" },
+   { "*", "10000" },
+   { "2#0", "" },
+   { "2#1", "." },
+   { "8#0", "" },
+   { "8#1", "." },
+   { "8#2", ".." },
+   { "8#3", "..." },
+   { "8#4", "...." },
+   { "8#5", "....." },
+   { "8#6", "......" },
+   { "8#7", "......." },
+   { "10#0", "" },
+   { "10#1", "." },
+   { "10#2", ".." },
+   { "10#3", "..." },
+   { "10#4", "...." },
+   { "10#5", "....." },
+   { "10#6", "......" },
+   { "10#7", "......." },
+   { "10#8", "........" },
+   { "10#9", "........." },
+   { "16#0", "" },
+   { "16#1", "." },
+   { "16#2", ".." },
+   { "16#3", "..." },
+   { "16#4", "...." },
+   { "16#5", "....." },
+   { "16#6", "......" },
+   { "16#7", "......." },
+   { "16#8", "........" },
+   { "16#9", "........." },
+   { "16#a", ".........." },
+   { "16#b", "..........." },
+   { "16#c", "............" },
+   { "16#d", "............." },
+   { "16#e", ".............." },
+   { "16#f", "..............." },
+};
+
+string replace_char_with_spaces( const string& str, char ch = '_', bool double_as_single = true )
+{
+   string rs;
+
+   for( size_t i = 0; i < str.size( ); i++ )
+   {
+      if( str[ i ] == ch )
+      {
+         if( double_as_single && i < str.size( ) - 1 && str[ i + 1 ] == ch )
+            rs += str[ ++i ];
+         else
+            rs += ' ';
+      }
+      else
+         rs += str[ i ];
+   }
+
+   // NOTE: If the last character is a space then instead treat it as a carriage return.
+   if( !rs.empty( ) && rs[ rs.length( ) - 1 ] == ' ' )
+      rs[ rs.length( ) - 1 ] = '\n';
+
+   return rs;
+}
+
+void split_into_fissile_cmds( const string& next, deque< string >& cmds, bool add_marker = false )
+{
+   string::size_type start = 0;
+
+   deque< string > temp_cmds;
+
+   if( !next.empty( ) )
+   {
+      while( true )
+      {
+         string::size_type pos = next.find( ' ', start );
+
+         temp_cmds.push_back( next.substr( start, pos - start ) );
+
+         if( pos == string::npos )
+            break;
+
+         start = pos + 1;
+      }
+
+      if( add_marker && !temp_cmds.empty( ) )
+         cmds.push_front( "@" );
+
+      while( !temp_cmds.empty( ) )
+      {
+         cmds.push_front( temp_cmds.back( ) );
+         temp_cmds.pop_back( );
+      }
+   }
+}
+
+string::size_type find_item_in_set( const string& item,
+ const string& item_set, size_t* p_len = 0, char sep = ',' )
+{
+   string::size_type pos = string::npos;
+
+   if( p_len )
+      *p_len = item.length( );
+
+   if( item.length( ) == item_set.length( ) )
+      pos = item_set.find( item );
+   else if( item.length( ) < item_set.length( ) )
+   {
+      pos = item_set.find( item + ',' );
+
+      if( pos == 0 )
+      {
+         if( p_len )
+            ++( *p_len );
+      }
+      else
+      {
+         pos = item_set.find( ',' + item + ',' );
+
+         if( pos != string::npos )
+         {
+            if( p_len )
+               ++( *p_len );
+         }
+         else
+         {
+            pos = item_set.rfind( ',' + item );
+            if( pos == item_set.length( ) - item.length( ) - 1 )
+            {
+               if( p_len )
+                  ++( *p_len );
+            }
+         }
+      }
+   }
+
+   return pos;
+}
+
+bool compare_fissile_values( char op, const string& lhs, const string& rhs )
+{
+   bool rc = true;
+
+   if( op == '=' )
+   {
+      if( lhs.length( ) != rhs.length( ) )
+         rc = false;
+      else
+      {
+         for( size_t i = 0; i < lhs.length( ); i++ )
+         {
+            if( lhs[ i ] != rhs[ i ] && rhs[ i ] != '.' )
+            {
+               rc = false;
+               break;
+            }
+         }
+      }
+   }
+   else if( op == '<' )
+   {
+      if( lhs.length( ) > rhs.length( ) )
+         rc = false;
+      else if( lhs.length( ) == rhs.length( ) )
+      {
+         rc = false;
+
+         for( size_t i = 0; i < lhs.length( ); i++ )
+         {
+            if( lhs[ i ] < rhs[ i ] && rhs[ i ] != '.' )
+            {
+               rc = true;
+               break;
+            }
+         }
+      }
+   }
+   else if( op == '>' )
+   {
+      if( lhs.length( ) < rhs.length( ) )
+         rc = false;
+      else if( lhs.length( ) == rhs.length( ) )
+      {
+         rc = false;
+
+         for( size_t i = 0; i < lhs.length( ); i++ )
+         {
+            if( lhs[ i ] > rhs[ i ] && rhs[ i ] != '.' )
+            {
+               rc = true;
+               break;
+            }
+         }
+      }
+   }
+   else if( op == '?' )
+   {
+      if( !rhs.length( ) || !lhs.length( ) )
+         rc = false;
+      else if( find_item_in_set( lhs, rhs ) == string::npos )
+         rc = false;
+   }
+
+   return rc;
+}
+
+string get_fissile_value_as_cmds( const map< string, string >& fissile_values, const string& pat )
+{
+   string cmds;
+
+   if( fissile_values.count( pat ) )
+      cmds = replace_char_with_spaces( fissile_values.find( pat )->second );
+
+   return cmds;
+}
+
+string replace_variable_names_with_fissile_values( const map< string, string >& fissile_values, const string& str )
+{
+   string rs( str );
+
+   string::size_type start = 0;
+
+   while( true )
+   {
+      string::size_type pos = rs.find( '@', start );
+
+      if( pos == string::npos )
+         break;
+
+      string::size_type rpos = rs.find( ' ', pos + 1 );
+
+      string var_name;
+
+      if( rpos == string::npos )
+         var_name = rs.substr( pos + 1 );
+      else
+         var_name = rs.substr( pos + 1, rpos - pos - 1 );
+
+      if( fissile_values.count( var_name ) )
+      {
+         rs.erase( pos, rpos - pos );
+         rs.insert( pos, fissile_values.find( var_name )->second );
+
+         pos = start + fissile_values.find( var_name )->second.size( );
+      }
+
+      start = pos + 1;
+   }
+
+   return rs;
+}
+
+string append_to_fissile_str(
+ const map< string, string >& fissile_values,
+ const string& str, size_t length_to_append, const string& rhs, bool use_special_character )
+{
+   string new_str( str );
+
+   size_t old_first = 0;
+   size_t old_length = str.length( );
+
+   size_t lpos = 0;
+   size_t rpos = 0;
+
+   char special = '.';
+
+   if( fissile_values.count( c_fissile_tmp_special_char ) )
+   {
+      string tmp_val( fissile_values.find( c_fissile_tmp_special_char )->second );
+
+      if( tmp_val.empty( ) )
+         special = '\0';
+      else
+         special = tmp_val[ 0 ];
+   }
+   else if( !use_special_character )
+      special = '\0';
+
+   while( length_to_append-- )
+   {
+      char ch = '.';
+
+      if( !rhs.empty( ) )
+      {
+         if( rpos >= rhs.length( ) )
+            rpos = 0;
+
+         ch = rhs[ rpos++ ];
+      }
+
+      if( ch == special && old_length )
+      {
+         if( lpos >= old_length )
+            lpos = 0;
+
+         ch = str[ lpos++ ];
+      }
+
+      new_str += ch;
+   }
+
+   return new_str;
+}
+
+string expand_fissile_string(
+ const map< string, string >& fissile_values,
+ const string& str, const string& rhs, bool use_special_character )
+{
+   string new_str;
+
+   char special = '.';
+
+   if( fissile_values.count( c_fissile_tmp_special_char ) )
+   {
+      string tmp_val( fissile_values.find( c_fissile_tmp_special_char )->second );
+
+      if( tmp_val.empty( ) )
+         special = '\0';
+      else
+         special = tmp_val[ 0 ];
+   }
+   else if( !use_special_character )
+      special = '\0';
+
+   for( size_t i = 0; i < rhs.size( ); i++ )
+   {
+      if( rhs[ i ] == special )
+         new_str += str;
+      else
+         new_str += string( str.length( ), rhs[ i ] );
+   }
+
+   return new_str;
+}
+
+size_t total_in_fissile_range(
+ const map< string, string >& fissile_values,
+ const string& type, vector< string >* p_symbols = 0 )
+{
+   map< string, string >::const_iterator ci = fissile_values.lower_bound( type );
+
+   size_t total = 0;
+   while( true )
+   {
+      ++total;
+
+      if( p_symbols )
+         p_symbols->push_back( ci->first.substr( type.length( ) ) );
+
+      if( ++ci == fissile_values.end( )
+       || ci->first.length( ) <= type.length( )
+       || ci->first.substr( 0, type.length( ) ) != type )
+         break;
+   }
+
+   return total;
+}
+
+string match_fissile_pattern(
+ const map< string, string >& fissile_values, const string& type, const string& pattern )
+{
+   string str;
+
+   deque< string > digits;
+   vector< string > symbols;
+
+   const map< string, string >::const_iterator ci = fissile_values.lower_bound( type );
+
+   if( ci == fissile_values.end( ) )
+      throw runtime_error( "fissile pattern type '" + type + "' not found" );
+
+   string remaining( pattern );
+
+   size_t total = total_in_fissile_range( fissile_values, type, &symbols );
+
+   if( pattern.empty( ) || symbols.size( ) == 1 )
+      str = symbols[ 0 ];
+   else
+   {
+      while( !remaining.empty( ) )
+      {
+         digits.push_front( symbols[ remaining.length( ) % total ] );
+
+         if( remaining.size( ) < total )
+            remaining.erase( );
+         else if( remaining.size( ) == total )
+         {
+            remaining.erase( );
+            digits.push_front( symbols[ 1 ] );
+         }
+         else
+            remaining = remaining.substr( 0, remaining.size( ) / total );
+      }
+   }
+
+   for( size_t j = 0; j < digits.size( ); j++ )
+      str += digits[ j ];
+
+   return str;
+}
+
+string handle_string_fissile_op(
+ const map< string, string >& fissile_values,
+ char op, const string& val, const string& src, bool use_special_character )
+{
+   string str( src ), next( val );
+
+   if( op == '=' )
+      str = next;
+   else if( op == '+' )
+      str = append_to_fissile_str( fissile_values, str, next.length( ), next, use_special_character );
+   else if( op == '*' || op == '/' )
+   {
+      if( op == '*' )
+      {
+         if( next.empty( ) )
+            str.erase( );
+         else
+            str = expand_fissile_string( fissile_values, str, next, use_special_character );
+      }
+      else
+      {
+         if( !next.length( ) )
+            throw runtime_error( "cannot shrink without fissile value" );
+         else if( str.length( ) )
+            str = str.substr( 0,  str.length( ) / next.length( ) );
+      }
+   }
+
+   return str;
+}
+
+string handle_numeric_fissile_op(
+ const map< string, string >& fissile_values, char op,
+ const string& val, const string& default_base, string& src, bool use_special_character )
+{
+   string str, next( val );
+
+   bool append = false;
+   bool expand = false;
+   bool remove = false;
+   bool shrink = false;
+
+   if( op == '=' )
+   {
+      src.erase( );
+      append = true;
+   }
+   else if( op == '+' )
+      append = true;
+   else if( op == '*' )
+      expand = true;
+   else if( op == '-' )
+      remove = true;
+   else if( op == '/' )
+      shrink = true;
+   else if( op != c_fissile_op_none )
+      throw runtime_error( "invalid numeric fissile op" );
+
+   string::size_type tpos = next.find( '#' );
+
+   if( tpos == string::npos && op == c_fissile_op_none )
+   {
+      if( !next.empty( ) )
+         next += '#';
+      else
+         next = default_base;
+   }
+   else
+   {
+      if( tpos == next.length( ) - 1 )
+      {
+         next.erase( tpos );
+         tpos = string::npos;
+      }
+
+      if( tpos == string::npos )
+         next = default_base + next;
+   }
+
+   tpos = next.find( '#' );
+   if( tpos == string::npos )
+      throw runtime_error( "did not find fissile numeric type prefix" );
+
+   string type( next.substr( 0, tpos + 1 ) );
+   next.erase( 0, tpos + 1 );
+
+   if( next.empty( ) )
+      str = match_fissile_pattern( fissile_values, type, src );
+   else
+   {
+      size_t total = total_in_fissile_range( fissile_values, type );
+
+      string old_src( src );
+
+      src.clear( );
+      for( size_t j = 0; j < next.size( ); j++ )
+      {
+         if( !src.empty( ) )
+         {
+            size_t length = src.size( );
+            src.clear( );
+
+            for( size_t k = 0; k < length; k++ )
+               src += string( total, '.' );
+         }
+
+         const map< string, string >::const_iterator ci = fissile_values.find( type + next[ j ] );
+
+         if( ci != fissile_values.end( ) && !ci->second.empty( ) )
+            src += ci->second;
+      }
+
+      if( append )
+         src = append_to_fissile_str( fissile_values, old_src, src.length( ), "", use_special_character );
+      else if( remove )
+      {
+         if( old_src.length( ) <= src.length( ) )
+            src.erase( );
+         else
+            src = old_src.substr( 0, old_src.length( ) - src.length( ) );
+      }
+      else if( expand )
+         src = expand_fissile_string( fissile_values, old_src, src, use_special_character );
+      else if( shrink )
+      {
+         if( !src.length( ) )
+            throw runtime_error( "cannot shrink without fissile value" );
+         else if( old_src.length( ) )
+            src = old_src.substr( 0,  old_src.length( ) / src.length( ) );
+      }
+
+      str = match_fissile_pattern( fissile_values, type, src );
+   }
+
+   return str;
+}
+
+string get_fissile_name( const map< string, string >& fissile_values, const string& name )
+{
+   string var_name( name );
+
+   size_t depth = 0, max_depth = c_fissile_max_depth;
+
+   while( true )
+   {
+      if( var_name.empty( ) || var_name == "?" || var_name == "!" )
+         break;
+
+      if( !fissile_values.count( var_name ) )
+         throw runtime_error( "unknown fissile variable name '" + var_name + "'" );
+
+      string new_name( fissile_values.find( var_name )->second );
+
+      if( !new_name.empty( ) && new_name[ 0 ] == '@' )
+         var_name = new_name.substr( 1 );
+      else
+         break;
+
+      if( ++depth > max_depth )
+         throw runtime_error( "maximum fissile indirection depth reached for: " + name );
+   }
+
+   return var_name;
+}
+
+string get_fissile_value(
+ const map< string, string >& fissile_values, const string& var_name,
+ const string& data, const string& last_fissile_output, bool must_exist = true )
+{
+   string value;
+
+   if( var_name == "?" )
+      value = data;
+   else if( var_name == "!" )
+      value = last_fissile_output;
+   else if( fissile_values.count( var_name ) && !fissile_values.find( var_name )->second.empty( ) )
+      value = fissile_values.find( var_name )->second;
+   else if( must_exist && !fissile_values.count( var_name ) )
+      throw runtime_error( "unknown fissile variable name '" + var_name + "'" );
+
+   size_t depth = 0, max_depth = c_fissile_max_depth;
+
+   string items, remainder;
+
+   while( true )
+   {
+      if( !value.empty( ) && value[ 0 ] == '@' )
+      {
+         string next_var( value.substr( 1 ) );
+
+         string::size_type pos = next_var.find( "," );
+         if( pos != string::npos )
+         {
+            remainder = next_var.substr( pos );
+            next_var.erase( pos );
+         }
+
+         if( next_var == "?" )
+            value = data;
+         else if( next_var == "!" )
+            value = last_fissile_output;
+         else if( fissile_values.count( next_var ) )
+            value = fissile_values.find( next_var )->second;
+         else
+         {
+            if( !must_exist )
+            {
+               value.erase( );
+               break;
+            }
+            else
+               throw runtime_error( "unknown fissile variable name '" + next_var + "'" );
+         }
+
+         value += remainder;
+         remainder.erase( );
+      }
+      else
+      {
+         value += remainder;
+         remainder.erase( );
+
+         string::size_type pos = value.find( ",@" );
+
+         if( pos == string::npos )
+            break;
+         else
+         {
+            if( pos != 0 )
+            {
+               if( !items.empty( ) )
+                  items += ',';
+
+               items += value.substr( 0, pos );
+            }
+
+            value.erase( 0, pos + 1 );
+         }
+      }
+
+      if( ++depth > max_depth )
+         throw runtime_error( "maximum fissile indirection depth reached for: " + value );
+   }
+
+   if( !items.empty( ) )
+   {
+      if( value.empty( ) )
+         value = items;
+      else
+         value = items + ',' + value;
+   }
+
+   return value;
+}
+
+void process_fissile_commands( ostream& outs, bool interractive,
+ const string& input, string& fissile_data, string& last_fissile_line,
+ string& last_fissile_output, map< string, string >& fissile_values, bool& use_special_fissile_character )
+{
+   string next_fissile_line( input );
+
+   size_t cmds_allowed = 0;
+
+   deque< string > cmds;
+   split_into_fissile_cmds( next_fissile_line, cmds );
+
+   if( fissile_values.count( c_fissile_cmds_limit_variable ) )
+      cmds_allowed = atoi( fissile_values[ c_fissile_cmds_limit_variable ].c_str( ) );
+
+   while( !cmds.empty( ) )
+   {
+      string next( cmds.front( ) );
+
+      bool is_last_command = ( cmds.size( ) == 1 );
+
+      cmds.pop_front( );
+
+      string default_base( 1, c_fissile_base_suffix );
+
+      if( fissile_values.find( default_base ) != fissile_values.end( ) )
+         default_base = fissile_values[ default_base ];
+
+      if( isalpha( next[ 0 ] ) )
+      {
+         if( fissile_values.count( next ) )
+            next = fissile_values[ next ];
+      }
+
+      if( next[ 0 ] == '?' )
+      {
+         string check_value, final_output, final_execute;
+
+         if( next.size( ) > 1 )
+         {
+            char op = '\0';
+
+            if( next[ 1 ] == '=' || next[ 1 ] == '<' || next[ 1 ] == '>' || next[ 1 ] == '?' )
+            {
+               op = next[ 1 ];
+               next.erase( 1, 1 );
+            }
+
+            string::size_type pos = next.find_first_of( "!`", 2 );
+
+            if( pos != string::npos )
+            {
+               final_execute = next.substr( pos );
+               next.erase( pos );
+
+               if( final_execute.size( ) > 1
+                && final_execute[ 0 ] == '!' && final_execute[ 1 ] != '!'
+                && final_execute[ 1 ] != '?' && !isalpha( final_execute[ 1 ] ) )
+                  final_execute.erase( 0, 1 );
+            }
+
+            string check_var( next.substr( 1 ) );
+
+            // NOTE: The check variable can optionally be prefixed with @ so
+            // that checking a special variable is not ambiguous with either
+            // a ?? or !! or ?! command (therefore use ?@?!! to test data is
+            // not empty or if it is then continue from the previous line).
+            //
+            // FUTURE: Perhaps such a prefix should be required in order for
+            // literals to be used in place of variables.
+            if( !check_var.empty( ) && check_var[ 0 ] == '@' )
+               check_var.erase( 0, 1 );
+
+            if( op != '\0' )
+            {
+               pos = check_var.find( ',' );
+
+               if( pos == string::npos )
+               {
+                  check_value = compare_fissile_values( op,
+                   fissile_data, get_fissile_value( fissile_values,
+                   check_var, fissile_data, last_fissile_output, false ) ) ? "1" : "";
+               }
+               else
+               {
+                  string lhs_var( check_var.substr( 0, pos ) );
+                  string rhs_var( check_var.substr( pos + 1 ) );
+
+                  check_value = compare_fissile_values( op,
+                   get_fissile_value( fissile_values, lhs_var, fissile_data, last_fissile_output ),
+                   get_fissile_value( fissile_values, rhs_var, fissile_data, last_fissile_output, false ) ) ? "1" : "";
+               }
+            }
+            else
+               check_value = get_fissile_value( fissile_values,
+                check_var, fissile_data, last_fissile_output, false );
+         }
+         else
+            final_output = fissile_data;
+
+         if( check_value.empty( ) )
+         {
+            if( final_execute.length( ) >= 2 && final_execute.substr( 0, 2 ) == "!!" )
+            {
+               while( !cmds.empty( ) )
+               {
+                  if( cmds.front( ) == "@" )
+                     break;
+
+                  cmds.pop_front( );
+               }
+
+               if( final_execute.size( ) > 2 )
+                  final_execute.erase( 0, 1 );
+               else
+                  final_execute.clear( );
+            }
+            else
+               cmds.clear( );
+
+            if( !final_output.empty( ) )
+            {
+               last_fissile_output = final_output;
+
+               outs << final_output;
+
+               if( interractive )
+                  outs << endl;
+            }
+            else if( !final_execute.empty( ) )
+               cmds.push_front( final_execute );
+         }
+      }
+      else if( next[ 0 ] == '~' )
+      {
+         if( next.size( ) > 1 )
+         {
+            if( next.substr( 1 ) == "*" )
+               fissile_values.clear( );
+            else if( next[ next.length( ) - 1 ] == '*' )
+            {
+               next.erase( next.length( ) - 1 );
+
+               string pat( next.substr( 1 ) );
+
+               while( true )
+               {
+                  if( fissile_values.lower_bound( pat ) == fissile_values.end( ) )
+                     break;
+
+                  if( fissile_values.lower_bound( pat )->first.length( ) < pat.length( )
+                   || fissile_values.lower_bound( pat )->first.substr( 0, pat.length( ) ) != pat )
+                     break;
+
+                  fissile_values.erase( fissile_values.lower_bound( pat ) );
+               }
+            }
+            else if( fissile_values.count( next.substr( 1 ) ) )
+               fissile_values.erase( next.substr( 1 ) );
+         }
+      }
+      else if( next[ 0 ] == '!' )
+      {
+         // NOTE: Command execution can be done in a few ways:
+         // !              reprocess the last line of commands
+         // !?             process "fissile_data" as a set of commands
+         // !<name>        process fissile value <name> as a set of commands
+         // !?<name>       optionally process fissile <name> as a set of commands
+         // !<name>?<lit>  process <name> as a set of commands after setting "fissile_data" to <lit>
+         // !?<name>?<lit> optionally process <name> as a set of commands after setting "fissile_data" to <lit>
+         if( next.size( ) > 1 )
+         {
+            if( next == "!?" )
+               split_into_fissile_cmds( fissile_data, cmds, true );
+            else
+            {
+               bool optional = false;
+
+               if( next.size( ) > 2 && next[ 1 ] == '?' )
+               {
+                  optional = true;
+                  next.erase( 1, 1 );
+               }
+
+               string new_data( fissile_data );
+               string::size_type pos = next.find( '?' );
+
+               if( pos != string::npos )
+               {
+                  new_data = next.substr( pos + 1 );
+                  next.erase( pos );
+               }
+
+               if( fissile_values.count( next.substr( 1 ) ) )
+               {
+                  fissile_data = new_data;
+                  split_into_fissile_cmds(
+                   get_fissile_value_as_cmds( fissile_values, next.substr( 1 ) ), cmds, true );
+               }
+               else if( !optional )
+                  throw runtime_error( "cannot execute unknown fissile variable: " + next.substr( 1 ) );
+            }
+         }
+         else if( !last_fissile_line.empty( ) )
+            split_into_fissile_cmds( last_fissile_line, cmds );
+      }
+      else if( next[ 0 ] == '`' )
+      {
+         if( next.size( ) > 1 )
+         {
+            if( next.size( ) == 2 && next[ 1 ] == next[ 0 ] )
+               outs << '\n';
+            else
+               outs << replace_variable_names_with_fissile_values(
+                fissile_values, replace_char_with_spaces( next.substr( 1 ), '`' ) );
+         }
+      }
+      else if( next[ 0 ] == '*' )
+      {
+         bool matching_prefix_only = false;
+
+         if( next.length( ) > 2 && next[ next.length( ) - 1 ] == '*' )
+         {
+            matching_prefix_only = true;
+            next.erase( next.length( ) - 1 );
+         }
+
+         bool is_first = true;
+
+         for( map< string, string >::iterator i = !matching_prefix_only
+          ? fissile_values.begin( ) : fissile_values.lower_bound( next.substr( 1 ) ); i != fissile_values.end( ); ++i )
+         {
+            if( matching_prefix_only && i->first.find( next.substr( 1 ) ) != 0 )
+               break;
+
+            if( is_first )
+               is_first = false;
+            else
+               outs << '\n';
+
+            outs << i->first << ' ' << i->second;
+         }
+      }
+      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "*=" )
+         fissile_values[ c_fissile_cmds_limit_variable ] = next.substr( 2 );
+      else if( next == "--" )
+      {
+         for( size_t i = 0; i < fissile_data.length( ); i++ )
+            --fissile_data[ i ];
+
+         if( !fissile_data.empty( ) && is_last_command )
+         {
+            last_fissile_output = fissile_data;
+
+            outs << fissile_data;
+
+            if( interractive )
+               outs << endl;
+         }
+      }
+      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "--" )
+      {
+         next.erase( 0, 2 );
+         string::size_type pos = next.find( ',' );
+
+         string lhs_var( get_fissile_name( fissile_values, next.substr( 0, pos ) ) );
+         string item_set( get_fissile_value( fissile_values, lhs_var, fissile_data, last_fissile_output ) );
+
+         string item;
+         if( pos == string::npos )
+            item = fissile_data;
+         else
+            item = get_fissile_value( fissile_values, next.substr( pos + 1 ), fissile_data, last_fissile_output );
+
+         if( !item_set.empty( ) )
+         {
+            size_t len;
+            pos = find_item_in_set( item, item_set, &len );
+
+            if( pos != string::npos )
+            {
+               item_set.erase( pos, len );
+
+               if( lhs_var == "?" )
+                  fissile_data = item_set;
+               else if( lhs_var == "!" )
+                  last_fissile_output = item_set;
+               else
+                  fissile_values[ lhs_var ] = item_set;
+            }
+         }
+      }
+      else if( next == "++" )
+      {
+         for( size_t i = 0; i < fissile_data.length( ); i++ )
+            ++fissile_data[ i ];
+
+         if( !fissile_data.empty( ) && is_last_command )
+         {
+            last_fissile_output = fissile_data;
+
+            outs << fissile_data;
+
+            if( interractive )
+               outs << endl;
+         }
+      }
+      else if( next.length( ) > 2 && next.substr( 0, 2 ) == "++" )
+      {
+         next.erase( 0, 2 );
+
+         string::size_type pos = next.find( ',' );
+
+         string lhs_var( get_fissile_name( fissile_values, next.substr( 0, pos ) ) );
+         string item_set( get_fissile_value( fissile_values, lhs_var, fissile_data, last_fissile_output ) );
+
+         string item;
+         if( pos == string::npos )
+            item = fissile_data;
+         else
+            item = get_fissile_value( fissile_values, next.substr( pos + 1 ), fissile_data, last_fissile_output );
+
+         if( !item.empty( ) )
+         {
+            if( !item_set.empty( ) )
+               item_set += ',';
+            item_set += item;
+
+            if( lhs_var == "?" )
+               fissile_data = item_set;
+            else if( lhs_var == "!" )
+               last_fissile_output = item_set;
+            else
+               fissile_values[ lhs_var ] = item_set;
+         }
+      }
+      else if( next[ 0 ] == '<' || next[ 0 ] == '>' )
+      {
+         char separator = ',';
+         bool is_right = false;
+
+         if( next[ 0 ] == '>' )
+            is_right = true;
+
+         bool is_item = false;
+         if( next.size( ) > 1 && next[ 0 ] == next[ 1 ] )
+         {
+            is_item = true;
+            next.erase( 0, 2 );
+
+            if( !next.empty( ) && !isalnum( next[ next.length( ) - 1 ] ) )
+            {
+               separator = next[ next.length( ) - 1 ];
+               next.erase( next.length( ) - 1 );
+
+               if( separator == '`' )
+                  separator = ' ';
+            }
+         }
+         else
+            next.erase( 0, 1 );
+
+         string str_separator( 1, separator );
+
+         if( next.empty( ) )
+         {
+            if( is_right && !fissile_data.empty( ) )
+            {
+               if( !is_item )
+                  fissile_data.erase( fissile_data.length( ) - 1 );
+               else
+               {
+                  string::size_type pos = fissile_data.rfind( separator );
+                  if( pos == string::npos )
+                     fissile_data.erase( );
+                  else
+                     fissile_data.erase( pos );
+               }
+            }
+            else if( !is_right && !fissile_data.empty( ) )
+            {
+               if( !is_item )
+                  fissile_data.erase( 0, 1 );
+               else
+               {
+                  string::size_type pos = fissile_data.find( separator );
+                  if( pos == string::npos )
+                     fissile_data.erase( );
+                  else
+                     fissile_data.erase( 0, pos + 1 );
+               }
+            }
+
+            if( !fissile_data.empty( ) && is_last_command )
+            {
+               last_fissile_output = fissile_data;
+
+               outs << fissile_data;
+
+               if( interractive )
+                  outs << endl;
+            }
+         }
+         else
+         {
+            string::size_type pos = next.find( separator );
+
+            string lhs( next.substr( 0, pos ) );
+            string rhs( pos == string::npos ? string( ) : next.substr( pos + 1 ) );
+
+            if( fissile_values.count( lhs ) && ( rhs.empty( ) || fissile_values.count( rhs ) ) )
+            {
+               string lhs_value( get_fissile_value( fissile_values, lhs, fissile_data, last_fissile_output ) );
+
+               string rhs_value( rhs.empty( ) ? fissile_data
+                : get_fissile_value( fissile_values, rhs, fissile_data, last_fissile_output ) );
+
+               if( is_right )
+               {
+                  if( !lhs_value.empty( ) )
+                  {
+                     if( !is_item )
+                     {
+                        rhs_value = lhs_value[ lhs_value.size( ) - 1 ] + rhs_value;
+                        lhs_value.erase( lhs_value.size( ) - 1 );
+                     }
+                     else
+                     {
+                        string::size_type pos = lhs_value.rfind( separator );
+                        if( pos == string::npos )
+                        {
+                           rhs_value = lhs_value
+                            + ( rhs_value.empty( ) ? "" : str_separator ) + rhs_value;
+
+                           lhs_value.erase( );
+                        }
+                        else
+                        {
+                           rhs_value = lhs_value.substr( pos + 1 )
+                            + ( rhs_value.empty( ) ? "" : str_separator ) + rhs_value;
+
+                           lhs_value.erase( pos );
+                        }
+                     }
+
+                     fissile_values[ lhs ] = lhs_value;
+
+                     if( rhs.empty( ) )
+                        fissile_data = rhs_value;
+                     else
+                        fissile_values[ rhs ] = rhs_value;
+                  }
+               }
+               else
+               {
+                  if( !rhs_value.empty( ) )
+                  {
+                     if( !is_item )
+                     {
+                        lhs_value += rhs_value[ 0 ];
+                        rhs_value.erase( 0, 1 );
+                     }
+                     else
+                     {
+                        string::size_type pos = rhs_value.find( separator );
+
+                        if( !lhs_value.empty( ) )
+                           lhs_value += separator;
+
+                        lhs_value += rhs_value.substr( 0, pos );
+
+                        if( pos == string::npos )
+                           rhs_value.erase( );
+                        else
+                           rhs_value.erase( 0, pos + 1 );
+                     }
+
+                     fissile_values[ lhs ] = lhs_value;
+
+                     if( rhs.empty( ) )
+                        fissile_data = rhs_value;
+                     else
+                        fissile_values[ rhs ] = rhs_value;
+                  }
+               }
+            }
+         }
+      }
+      else if( next[ 0 ] == '#' )
+      {
+         next.erase( 0, 1 );
+
+         char op;
+         if( next.empty( ) || isdigit( next[ 0 ] ) )
+            op = c_fissile_op_none;
+         else
+         {
+            op = next[ 0 ];
+            next.erase( 0, 1 );
+         }
+
+         string new_data( fissile_data );
+
+         string output( handle_numeric_fissile_op(
+          fissile_values, op, next, default_base, new_data, use_special_fissile_character ) );
+
+         if( op != c_fissile_op_none )
+            fissile_data = new_data;
+         else if( !output.empty( ) && is_last_command )
+         {
+            last_fissile_output = output;
+
+            outs << output;
+
+            if( interractive )
+               outs << endl;
+         }
+      }
+      else if( next[ 0 ] == '$' )
+      {
+         next.erase( 0, 1 );
+
+         if( !next.empty( ) )
+            fissile_data = handle_string_fissile_op( fissile_values,
+             next[ 0 ], next.substr( 1 ), fissile_data, use_special_fissile_character );
+         else if( !fissile_data.empty( ) && is_last_command )
+         {
+            last_fissile_output = fissile_data;
+
+            outs << fissile_data;
+
+            if( interractive )
+               outs << endl;
+         }
+      }
+      else if( next[ 0 ] == '@' )
+      {
+         next.erase( 0, 1 );
+
+         string::size_type pos = next.find_first_of( "=+-*/#$%" );
+
+         string dest_var( next.substr( 0, pos ) );
+
+         if( pos == string::npos )
+         {
+            if( !next.empty( ) )
+            {
+               string value(
+                get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output ) );
+
+               if( !value.empty( ) )
+               {
+                  last_fissile_output = value;
+
+                  outs << value;
+
+                  if( interractive )
+                     outs << endl;
+               }
+            }
+         }
+         else if( next[ pos ] == '=' && pos == next.size( ) - 1 )
+         {
+            if( dest_var == "?" )
+               fissile_data.erase( );
+            else if( dest_var == "!" )
+               last_fissile_output.erase( );
+            else
+               fissile_values[ dest_var ] = string( );
+         }
+         else
+         {
+            if( next.size( ) )
+            {
+               char op = next[ pos ];
+
+               char var_type;
+               size_t offset = 1;
+
+               if( op == '#' || op == '$' )
+               {
+                  op = c_fissile_op_none;
+                  var_type = next[ pos ];
+               }
+               else
+                  var_type = next[ pos + offset++ ];
+
+               if( var_type == '@' )
+               {
+                  string src_var( next.substr( pos + 2 ) );
+
+                  string value(
+                   get_fissile_value( fissile_values, src_var, fissile_data, last_fissile_output ) );
+
+                  if( dest_var == "?" )
+                     fissile_data = handle_string_fissile_op(
+                      fissile_values, op, value, fissile_data, use_special_fissile_character );
+                  else if( dest_var == "!" )
+                     last_fissile_output = handle_string_fissile_op(
+                      fissile_values, op, value, last_fissile_output, use_special_fissile_character );
+                  else
+                     fissile_values[ dest_var ] = handle_string_fissile_op(
+                      fissile_values, op, value, fissile_values[ dest_var ], use_special_fissile_character );
+               }
+               else if( var_type == '#' )
+               {
+                  string value(
+                   get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output, false ) );
+
+                  string output( handle_numeric_fissile_op( fissile_values,
+                   op, next.substr( pos + offset ), default_base, value, use_special_fissile_character ) );
+
+                  if( op != c_fissile_op_none )
+                  {
+                     if( dest_var == "?" )
+                        fissile_data = value;
+                     else if( dest_var == "!" )
+                        last_fissile_output = value;
+                     else
+                        fissile_values[ dest_var ] = value;
+                  }
+                  else if( !output.empty( ) )
+                  {
+                     last_fissile_output = output;
+
+                     outs << output;
+
+                     if( interractive )
+                        outs << endl;
+                  }
+               }
+               else if( var_type == '$' )
+               {
+                  string value(
+                   get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output, false ) );
+
+                  string output( handle_string_fissile_op(
+                   fissile_values, op, next.substr( pos + offset ), value, use_special_fissile_character ) );
+
+                  if( op != c_fissile_op_none )
+                  {
+                     if( dest_var == "?" )
+                        fissile_data = output;
+                     else if( dest_var == "!" )
+                        last_fissile_output = output;
+                     else
+                        fissile_values[ dest_var ] = output;
+                  }
+                  else if( !output.empty( ) )
+                  {
+                     last_fissile_output = output;
+
+                     outs << output;
+
+                     if( interractive )
+                        outs << endl;
+                  }
+               }
+               else if( var_type == '%' )
+               {
+                  set< string > items;
+
+                  string value(
+                   get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output ) );
+
+                  while( true )
+                  {
+                     string::size_type pos = value.find( ',' );
+
+                     if( pos != 0 )
+                        items.insert( value.substr( 0, pos ) );
+
+                     if( pos == string::npos )
+                        break;
+                     else
+                        value.erase( 0, pos + 1 );
+                  }
+
+                  string new_value;
+                  for( set< string >::iterator i = items.begin( ); i != items.end( ); ++i )
+                  {
+                     if( !new_value.empty( ) )
+                        new_value += ',';
+                     new_value += *i;
+                  }
+
+                  fissile_values[ dest_var ] = new_value;
+               }
+               else
+                  throw runtime_error( "invalid fissile variable expression: " + next );
+            }
+         }
+      }
+      else if( next[ 0 ] == '.' )
+      {
+         if( next.size( ) > 1 )
+         {
+            if( next[ 1 ] == '+' )
+               use_special_fissile_character = true;
+            else if( next[ 1 ] == '-' )
+               use_special_fissile_character = false;
+         }
+      }
+      else
+         throw runtime_error( "unknown or invalid fissile command: " + next );
+
+      if( cmds_allowed && --cmds_allowed == 0 && !cmds.empty( ) )
+      {
+         throw runtime_error( "fissile maximum command limit exceeded" );
+         break;
+      }
+   }
+
+   while( true )
+   {
+      map< string, string >::iterator i = fissile_values.lower_bound( "^" );
+      if( i == fissile_values.end( ) || i->first.empty( ) || i->first[ 0 ] != '^' )
+         break;
+
+      fissile_values.erase( i->first );
+   }
+
+   last_fissile_line = next_fissile_line;
+}
+
 }
 
 console_command_handler::console_command_handler( )
@@ -192,7 +1635,8 @@ console_command_handler::console_command_handler( )
  num_custom_startup_options( 0 ),
  is_executing_commands( false ),
  allow_history_addition( true ),
- handling_startup_options( false )
+ handling_startup_options( false ),
+ use_special_fissile_character( false )
 {
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
@@ -204,6 +1648,9 @@ console_command_handler::console_command_handler( )
 
    for( size_t i = 0; i < c_max_args; i++ )
       args.push_back( string( ) );
+
+   for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
+      fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
 }
 
 bool console_command_handler::has_option_quiet( ) const
@@ -390,7 +1837,58 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          //
          // and a simple sub-string transformation function is also available:
          //
-         // LAST_FOUR_BYTES=@substr:0,8:$HEX_LITTLE_ENDIAN
+         // FIRST_FOUR_BYTES=@substr:0,8:$HEX_LITTLE_ENDIAN
+         //
+         // It is also possible to assign an environment variable to a FISSILE expression. Instead of
+         // the usual @ use a * prefix for this. The following example is a binary to decimal literal
+         // conversion followed then by the hexadecimal equivalent (noting that the value used in the
+         // second expression was the one stored in the first).
+         //
+         // DEC=*#=2#11011 #
+         // HEX=*#16
+         //
+         // Imagine if there was no @hexlit transformation but there was a @hexbig (of course if this
+         // function wasn't one of a pair it would probably have a different name such as just @hex).
+         // For the sake of demonstration let's just assume that to be the case. Now of course if one
+         // needs to reverse the endian one could always add the missing @hexlit function but that is
+         // something that would require recompiling the software (which is likely not what you might
+         // want to be doing with a production system). This is where the FISSILE language (as tricky
+         // as it is) can help out as it is entirely interpreted (so you can always add new functions
+         // at runtime with it). To solve this fictitious example we'll first break down this problem
+         // into several parts (partly why the language name was chosen is the approach needed to use
+         // it effectively is to always break down the problem into a set of functional operations).
+         //
+         // First let's define a "split.n" function that will let us split an arbitrary string into a
+         // set of items each having (at most) "n" characters (to test: TEST=*!split.n?2,01020304).
+         //
+         // *@split.n.add.char=$<^z,^y
+         // *@split.n.add.sep=$?^z!!_@^z+$,
+         // *@split.n.loop=$?^x!!_<^y_>^x,^w_!split.n.add.char_!split.n.loop
+         // *@split.n.item=$?@?!!_!split.n.add.sep_@^x=@^n_@^w=_@^y=_!split.n.loop_!split.n.item
+         // *@split.n=$@^n=_<<^n_@^nn=$@^n=#_@^nn+@^n_!^nn_@^z=_!split.n.item_@?=@^z
+         //
+         // Now let's define a "reverse.set" function that will reverse the order of items in a set.
+         //
+         // *@reverse.set.final=$@?=@^z
+         // *@reverse.set.next=$?^x!!reverse.set.final_>>^x,^y_<<^z,^y_!reverse.set.next
+         // *@reverse.set=$@^x=@?_@^y=_@^z=_!reverse.set.next
+         //
+         // Next we'll define a "join" function that joins the items from a set into a single string.
+         //
+         // *@join.next=$?@?!!_<<^y_@^x+@^y_@^y=_!join.next
+         // *@join=$@^x=_@^y=_!join.next_@?=@^x
+         //
+         // And we'll define a helper function to use the previous functions for our specific purpose.
+         //
+         // *@reverse_hex=$@^x=$!split.n?2,_@^x+@?_!^x_!reverse.set_!join_@?
+         //
+         // Finally let's use the newly created FISSILE functions to reverse the endianness.
+         //
+         // TIME=@unix
+         // HEX_BIG_ENDIAN=@hexbig:$TIME
+         // LAST_FOUR_BYTES=@substr:8:$HEX_BIG_ENDIAN
+         // REV=*!reverse_hex?$LAST_FOUR_BYTES
+         //
          if( !assign_env_var_name.empty( ) )
          {
             if( !str.empty( ) && str[ 0 ] == '@' )
@@ -509,6 +2007,16 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   else if( val )
                      str = to_string( val );
                }
+            }
+            else if( !str.empty( ) && str[ 0 ] == '*' )
+            {
+               ostringstream osstr;
+
+               process_fissile_commands( osstr, false,
+                str.substr( 1 ), fissile_data, last_fissile_line,
+                last_fissile_output, fissile_values, use_special_fissile_character );
+
+               str = osstr.str( );
             }
 
             set_environment_variable( assign_env_var_name, str );
@@ -842,6 +2350,22 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
    }
 
    return str;
+}
+
+bool console_command_handler::is_special_command( const string& cmd_and_args )
+{
+   if( !cmd_and_args.empty( ) && cmd_and_args[ 0 ] == '*' )
+      return true;
+   else
+      return false;
+}
+
+void console_command_handler::handle_special_command( const string& cmd_and_args )
+{
+   if( !cmd_and_args.empty( ) )
+      process_fissile_commands( cout, true,
+       cmd_and_args.substr( 1 ), fissile_data, last_fissile_line,
+       last_fissile_output, fissile_values, use_special_fissile_character );
 }
 
 void console_command_handler::handle_unknown_command( const string& command )

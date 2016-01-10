@@ -197,6 +197,10 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
 
    virtual void postprocess_command_and_args( const std::string& /*cmd_and_args*/ ) { }
 
+   virtual bool is_special_command( const std::string& /*cmd_and_args*/ ) { return false; }
+
+   virtual void handle_special_command( const std::string& /*cmd_and_args*/ ) { }
+
    virtual void handle_unknown_command( const std::string& command ) = 0;
    virtual void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args ) = 0;
 
