@@ -12,6 +12,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <ctype.h>
 #  include <cstring>
+#  include <map>
 #  include <memory>
 #  include <fstream>
 #  include <sstream>
@@ -190,22 +191,16 @@ command_functor* startup_command_functor_factory( const string& /*name*/, comman
 // Interpreted
 // Simple
 // Symbolic
-// Interaction and
+// Integer and
 // Lexical
 // Evaluator
 //
 // NOTE: This experimental interpreter is for all "console_command_handler" applications.
 // If a command starts with an asterix then it is assumed to in fact be a list of FISSILE
 // commands (separated by spaces) which will be executed from left to right. It should be
-// noted that numbers are actually stored as X characters (so the decimal number 10 needs
-// ten characters to be used) and are integer only.
-//
-// FUTURE: In order to handle larger numbers a special compressed format should be worked
-// into FISSILE. One idea would be to use a simple RLE approach but care would need to be
-// taken to ensure that this doesn't mess up any existing functionality (for a start this
-// might best be only applied to those numbers whose symbols are just '.' characters, and
-// if a non-numeric string operation is applied to a compressed number then perhaps first
-// it would need to be expanded).
+// noted that numerics are unsigned 64 bit integers that when converted into a string are
+// a string of X characters (so the number 10 would become the string ".........."). Thus
+// care needs to be taken not to accidentally convert a large number into a string.
 //
 // Some simple examples are as follows:
 //
@@ -286,6 +281,213 @@ g_default_fissile_pairs[ ] =
    { "16#e", ".............." },
    { "16#f", "..............." },
 };
+
+class fissile_string
+{
+   friend ostream& operator <<( ostream& os, const fissile_string& fs );
+
+   public:
+   fissile_string( ) : len( 0 ), compressed( false ) { }
+
+   fissile_string( const string& str ) : len( 0 ), data( str ), compressed( false ) { }
+
+   fissile_string( uint64_t len ) : len( len ), compressed( true ) { }
+
+   bool is_compressed( ) const { return compressed; }
+
+   char& operator [ ]( uint64_t i )
+   {
+      if( compressed )
+      {
+         dummy = i < len ? '.' : '\0';
+         return dummy;
+      }
+      else
+         return data[ i ];
+   }
+
+   char operator [ ]( uint64_t i ) const
+   {
+      if( compressed )
+         return  i < len ? '.' : '\0';
+      else
+         return data[ i ];
+   }
+
+   fissile_string& operator +=( const string& s )
+   {
+      fissile_string rhs( s );
+
+      compress_if_possible( );
+      rhs.compress_if_possible( );
+
+      if( is_compressed( ) && rhs.is_compressed( ) )
+         append( rhs.length( ) );
+      else
+      {
+         uncompress( );
+         data += s;
+      }
+
+      return *this;
+   }
+
+   void erase( uint64_t f = 0, uint64_t l = 0 )
+   {
+      if( f == 0 && l == 0 )
+      {
+         if( compressed )
+            len = 0;
+         else
+            data.erase( );
+      }
+      else
+      {
+         if( compressed )
+         {
+            if( f < len )
+            {
+               if( l && l >= len )
+                  len = 0;
+               else
+                  len = l ? len - l : len - f;
+            }
+         }
+         else
+         {
+            if( l == 0 )
+               data.erase( f );
+            else
+               data.erase( f, l );
+         }
+      }
+   }
+
+   uint64_t length( ) const
+   {
+      return compressed ? len : data.length( );
+   }
+
+   bool empty( ) const
+   {
+      return compressed ? len == 0 : data.empty( );
+   }
+
+   string substr( uint64_t i, uint64_t l = 0 ) const
+   {
+      if( compressed )
+      {
+         if( i >= len || ( l && ( l + i >= len ) ) )
+            return string( );
+
+         return string( l ? l : len - i, '.' );
+      }
+      else
+         return l ? data.substr( i, l ) : data.substr( i );
+   }
+
+   operator string( ) const
+   {
+      if( compressed )
+         return string( len, '.' );
+      else
+         return data;
+   }
+
+   fissile_string& append( uint64_t amt )
+   {
+      if( compressed )
+         len += amt;
+      else
+         data += string( amt, '.' );
+
+      return *this;
+   }
+
+   fissile_string& remove( uint64_t amt )
+   {
+      if( compressed )
+         len -= amt;
+      else
+         data = data.substr( 0, data.length( ) - amt );
+
+      return *this;
+   }
+
+   fissile_string& expand( uint64_t amt )
+   {
+      if( compressed )
+         len *= amt;
+      else if( data.length( ) )
+         data += string( data.length( ) * amt, '.' );
+
+      return *this;
+   }
+
+   fissile_string& shrink( uint64_t amt )
+   {
+      if( compressed )
+         len /= amt;
+      else if( data.length( ) )
+         data = data.substr( 0, data.length( ) / amt );
+
+      return *this;
+   }
+
+   void uncompress( )
+   {
+      if( compressed )
+      {
+         compressed = false;
+         data = string( len, '.' );
+      }
+   }
+
+   void compress_if_possible( )
+   {
+      if( !compressed )
+      {
+         bool can_compress = true;
+
+         for( uint64_t i = 0; i < data.length( ); i++ )
+         {
+            if( data[ i ] != '.' )
+            {
+               can_compress = false;
+               break;
+            }
+         }
+
+         if( can_compress )
+         {
+            len = data.length( );
+            compressed = true;
+            data.erase( );
+         }
+      }
+   }
+
+   private:
+   char dummy;
+   uint64_t len;
+
+   string data;
+
+   bool compressed;
+};
+
+ostream& operator <<( ostream& os, const fissile_string& fs )
+{
+   if( fs.compressed )
+   {
+      for( uint64_t i = 0; i < fs.len; i++ )
+         os << fs[ i ];
+   }
+   else
+      os << fs.data;
+
+   return os;
+}
 
 string replace_char_with_spaces( const string& str, char ch = '_', bool double_as_single = true )
 {
@@ -385,7 +587,7 @@ string::size_type find_item_in_set( const string& item,
    return pos;
 }
 
-bool compare_fissile_values( char op, const string& lhs, const string& rhs )
+bool compare_fissile_values( char op, const fissile_string& lhs, const fissile_string& rhs )
 {
    bool rc = true;
 
@@ -395,12 +597,15 @@ bool compare_fissile_values( char op, const string& lhs, const string& rhs )
          rc = false;
       else
       {
-         for( size_t i = 0; i < lhs.length( ); i++ )
+         if( !lhs.is_compressed( ) || !rhs.is_compressed( ) )
          {
-            if( lhs[ i ] != rhs[ i ] && rhs[ i ] != '.' )
+            for( size_t i = 0; i < lhs.length( ); i++ )
             {
-               rc = false;
-               break;
+               if( lhs[ i ] != rhs[ i ] && rhs[ i ] != '.' )
+               {
+                  rc = false;
+                  break;
+               }
             }
          }
       }
@@ -413,12 +618,15 @@ bool compare_fissile_values( char op, const string& lhs, const string& rhs )
       {
          rc = false;
 
-         for( size_t i = 0; i < lhs.length( ); i++ )
+         if( !lhs.is_compressed( ) || !rhs.is_compressed( ) )
          {
-            if( lhs[ i ] < rhs[ i ] && rhs[ i ] != '.' )
+            for( size_t i = 0; i < lhs.length( ); i++ )
             {
-               rc = true;
-               break;
+               if( lhs[ i ] < rhs[ i ] && rhs[ i ] != '.' )
+               {
+                  rc = true;
+                  break;
+               }
             }
          }
       }
@@ -431,12 +639,15 @@ bool compare_fissile_values( char op, const string& lhs, const string& rhs )
       {
          rc = false;
 
-         for( size_t i = 0; i < lhs.length( ); i++ )
+         if( !lhs.is_compressed( ) || !rhs.is_compressed( ) )
          {
-            if( lhs[ i ] > rhs[ i ] && rhs[ i ] != '.' )
+            for( size_t i = 0; i < lhs.length( ); i++ )
             {
-               rc = true;
-               break;
+               if( lhs[ i ] > rhs[ i ] && rhs[ i ] != '.' )
+               {
+                  rc = true;
+                  break;
+               }
             }
          }
       }
@@ -452,17 +663,17 @@ bool compare_fissile_values( char op, const string& lhs, const string& rhs )
    return rc;
 }
 
-string get_fissile_value_as_cmds( const map< string, string >& fissile_values, const string& pat )
+string get_fissile_value_as_cmds( const map< string, fissile_string >& fissile_values, const string& name )
 {
    string cmds;
 
-   if( fissile_values.count( pat ) )
-      cmds = replace_char_with_spaces( fissile_values.find( pat )->second );
+   if( fissile_values.count( name ) )
+      cmds = replace_char_with_spaces( fissile_values.find( name )->second );
 
    return cmds;
 }
 
-string replace_variable_names_with_fissile_values( const map< string, string >& fissile_values, const string& str )
+string replace_variable_names_with_fissile_values( const map< string, fissile_string >& fissile_values, const string& str )
 {
    string rs( str );
 
@@ -489,7 +700,7 @@ string replace_variable_names_with_fissile_values( const map< string, string >& 
          rs.erase( pos, rpos - pos );
          rs.insert( pos, fissile_values.find( var_name )->second );
 
-         pos = start + fissile_values.find( var_name )->second.size( );
+         pos = start + fissile_values.find( var_name )->second.length( );
       }
 
       start = pos + 1;
@@ -499,7 +710,7 @@ string replace_variable_names_with_fissile_values( const map< string, string >& 
 }
 
 string append_to_fissile_str(
- const map< string, string >& fissile_values,
+ const map< string, fissile_string >& fissile_values,
  const string& str, size_t length_to_append, const string& rhs, bool use_special_character )
 {
    string new_str( str );
@@ -551,7 +762,7 @@ string append_to_fissile_str(
 }
 
 string expand_fissile_string(
- const map< string, string >& fissile_values,
+ const map< string, fissile_string >& fissile_values,
  const string& str, const string& rhs, bool use_special_character )
 {
    string new_str;
@@ -582,10 +793,10 @@ string expand_fissile_string(
 }
 
 size_t total_in_fissile_range(
- const map< string, string >& fissile_values,
+ const map< string, fissile_string >& fissile_values,
  const string& type, vector< string >* p_symbols = 0 )
 {
-   map< string, string >::const_iterator ci = fissile_values.lower_bound( type );
+   map< string, fissile_string >::const_iterator ci = fissile_values.lower_bound( type );
 
    size_t total = 0;
    while( true )
@@ -604,40 +815,40 @@ size_t total_in_fissile_range(
    return total;
 }
 
-string match_fissile_pattern(
- const map< string, string >& fissile_values, const string& type, const string& pattern )
+string get_fissile_numeric(
+ const map< string, fissile_string >& fissile_values, const string& type, const fissile_string& num )
 {
    string str;
 
    deque< string > digits;
    vector< string > symbols;
 
-   const map< string, string >::const_iterator ci = fissile_values.lower_bound( type );
+   const map< string, fissile_string >::const_iterator ci = fissile_values.lower_bound( type );
 
    if( ci == fissile_values.end( ) )
       throw runtime_error( "fissile pattern type '" + type + "' not found" );
 
-   string remaining( pattern );
+   uint64_t remaining_length( num.length( ) );
 
    size_t total = total_in_fissile_range( fissile_values, type, &symbols );
 
-   if( pattern.empty( ) || symbols.size( ) == 1 )
+   if( remaining_length == 0 || symbols.size( ) == 1 )
       str = symbols[ 0 ];
    else
    {
-      while( !remaining.empty( ) )
+      while( remaining_length )
       {
-         digits.push_front( symbols[ remaining.length( ) % total ] );
+         digits.push_front( symbols[ remaining_length % total ] );
 
-         if( remaining.size( ) < total )
-            remaining.erase( );
-         else if( remaining.size( ) == total )
+         if( remaining_length < total )
+            remaining_length = 0;
+         else if( remaining_length == total )
          {
-            remaining.erase( );
+            remaining_length = 0;
             digits.push_front( symbols[ 1 ] );
          }
          else
-            remaining = remaining.substr( 0, remaining.size( ) / total );
+            remaining_length /= total;
       }
    }
 
@@ -647,16 +858,33 @@ string match_fissile_pattern(
    return str;
 }
 
-string handle_string_fissile_op(
- const map< string, string >& fissile_values,
- char op, const string& val, const string& src, bool use_special_character )
+fissile_string handle_string_fissile_op(
+ const map< string, fissile_string >& fissile_values,
+ char op, const fissile_string& val, const fissile_string& src, bool use_special_character )
 {
-   string str( src ), next( val );
+   fissile_string str( src ), next( val );
 
    if( op == '=' )
       str = next;
    else if( op == '+' )
-      str = append_to_fissile_str( fissile_values, str, next.length( ), next, use_special_character );
+   {
+      if( str.is_compressed( ) && next.is_compressed( ) )
+         str.append( next.length( ) );
+      else
+         str = append_to_fissile_str( fissile_values, str, next.length( ), next, use_special_character );
+   }
+   else if( op == '-' )
+   {
+      if( str.is_compressed( ) && next.is_compressed( ) )
+         str.remove( next.length( ) );
+      else
+      {
+         if( next.length( ) >= str.length( ) )
+            str.erase( );
+         else
+            str = str.substr( 0, str.length( ) - next.length( ) );
+      }
+   }
    else if( op == '*' || op == '/' )
    {
       if( op == '*' )
@@ -664,23 +892,41 @@ string handle_string_fissile_op(
          if( next.empty( ) )
             str.erase( );
          else
-            str = expand_fissile_string( fissile_values, str, next, use_special_character );
+         {
+            if( str.is_compressed( ) && next.is_compressed( ) )
+               str.expand( next.length( ) );
+            else
+               str = expand_fissile_string( fissile_values, str, next, use_special_character );
+         }
       }
       else
       {
          if( !next.length( ) )
-            throw runtime_error( "cannot shrink without fissile value" );
-         else if( str.length( ) )
-            str = str.substr( 0,  str.length( ) / next.length( ) );
+         {
+            if( str.is_compressed( ) && next.is_compressed( ) )
+               throw runtime_error( "attempt to divide by zero" );
+            else
+               throw runtime_error( "cannot shrink without fissile value" );
+         }
+         else
+         {
+            if( str.length( ) )
+            {
+               if( str.is_compressed( ) && next.is_compressed( ) )
+                  str.shrink( next.length( ) );
+               else
+                  str = str.substr( 0,  str.length( ) / next.length( ) );
+            }
+         }
       }
    }
 
    return str;
 }
 
-string handle_numeric_fissile_op(
- const map< string, string >& fissile_values, char op,
- const string& val, const string& default_base, string& src, bool use_special_character )
+fissile_string handle_numeric_fissile_op(
+ const map< string, fissile_string >& fissile_values, char op,
+ const string& val, const string& default_base, fissile_string& src, bool use_special_character )
 {
    string str, next( val );
 
@@ -734,57 +980,85 @@ string handle_numeric_fissile_op(
    next.erase( 0, tpos + 1 );
 
    if( next.empty( ) )
-      str = match_fissile_pattern( fissile_values, type, src );
+      str = get_fissile_numeric( fissile_values, type, src );
    else
    {
       size_t total = total_in_fissile_range( fissile_values, type );
 
-      string old_src( src );
+      fissile_string old_src( src );
+      old_src.compress_if_possible( );
 
-      src.clear( );
+      src.erase( );
+
       for( size_t j = 0; j < next.size( ); j++ )
       {
          if( !src.empty( ) )
          {
-            size_t length = src.size( );
-            src.clear( );
+            size_t length = src.length( );
 
-            for( size_t k = 0; k < length; k++ )
-               src += string( total, '.' );
+            if( src.is_compressed( ) )
+               src.expand( total );
+            else
+            {
+               src.erase( );
+
+               for( size_t k = 0; k < length; k++ )
+                  src += string( total, '.' );
+            }
          }
 
-         const map< string, string >::const_iterator ci = fissile_values.find( type + next[ j ] );
+         const map< string, fissile_string >::const_iterator ci = fissile_values.find( type + next[ j ] );
 
          if( ci != fissile_values.end( ) && !ci->second.empty( ) )
             src += ci->second;
       }
 
       if( append )
-         src = append_to_fissile_str( fissile_values, old_src, src.length( ), "", use_special_character );
+      {
+         if( old_src.is_compressed( ) )
+            src = old_src.append( src.length( ) );
+         else
+            src = append_to_fissile_str( fissile_values, old_src, src.length( ), "", use_special_character );
+      }
       else if( remove )
       {
          if( old_src.length( ) <= src.length( ) )
             src.erase( );
          else
-            src = old_src.substr( 0, old_src.length( ) - src.length( ) );
+         {
+            if( old_src.is_compressed( ) )
+               src = old_src.remove( src.length( ) );
+            else
+               src = old_src.substr( 0, old_src.length( ) - src.length( ) );
+         }
       }
       else if( expand )
-         src = expand_fissile_string( fissile_values, old_src, src, use_special_character );
+      {
+         if( old_src.is_compressed( ) )
+            src = old_src.expand( src.length( ) );
+         else
+            src = expand_fissile_string( fissile_values, old_src, src, use_special_character );
+      }
       else if( shrink )
       {
          if( !src.length( ) )
-            throw runtime_error( "cannot shrink without fissile value" );
+            throw runtime_error( "attempt to divide by zero" );
          else if( old_src.length( ) )
-            src = old_src.substr( 0,  old_src.length( ) / src.length( ) );
+         {
+            if( old_src.is_compressed( ) )
+               src = old_src.shrink( src.length( ) );
+            else
+               src = old_src.substr( 0,  old_src.length( ) / src.length( ) );
+         }
       }
 
-      str = match_fissile_pattern( fissile_values, type, src );
+      str = get_fissile_numeric( fissile_values, type, src );
    }
 
    return str;
 }
 
-string get_fissile_name( const map< string, string >& fissile_values, const string& name )
+string get_fissile_name( const map< string, fissile_string >& fissile_values, const string& name )
 {
    string var_name( name );
 
@@ -812,11 +1086,11 @@ string get_fissile_name( const map< string, string >& fissile_values, const stri
    return var_name;
 }
 
-string get_fissile_value(
- const map< string, string >& fissile_values, const string& var_name,
- const string& data, const string& last_fissile_output, bool must_exist = true )
+fissile_string get_fissile_value(
+ const map< string, fissile_string >& fissile_values, const string& var_name,
+ fissile_string& data, const fissile_string& last_fissile_output, bool must_exist = true )
 {
-   string value;
+   fissile_string value;
 
    if( var_name == "?" )
       value = data;
@@ -866,10 +1140,16 @@ string get_fissile_value(
       }
       else
       {
-         value += remainder;
-         remainder.erase( );
+         if( !remainder.empty( ) )
+         {
+            value += remainder;
+            remainder.erase( );
+         }
 
-         string::size_type pos = value.find( ",@" );
+         if( value.is_compressed( ) )
+            break;
+
+         string::size_type pos = string( value ).find( ",@" );
 
          if( pos == string::npos )
             break;
@@ -888,7 +1168,7 @@ string get_fissile_value(
       }
 
       if( ++depth > max_depth )
-         throw runtime_error( "maximum fissile indirection depth reached for: " + value );
+         throw runtime_error( "maximum fissile indirection depth reached for: " + ( string )value );
    }
 
    if( !items.empty( ) )
@@ -896,15 +1176,17 @@ string get_fissile_value(
       if( value.empty( ) )
          value = items;
       else
-         value = items + ',' + value;
+         value = items + ',' + ( string )value;
    }
 
    return value;
 }
 
-void process_fissile_commands( ostream& outs, bool interractive,
- const string& input, string& fissile_data, string& last_fissile_line,
- string& last_fissile_output, map< string, string >& fissile_values, bool& use_special_fissile_character )
+void process_fissile_commands(
+ ostream& outs, bool interractive,
+ const string& input, fissile_string& fissile_data,
+ string& last_fissile_line, fissile_string& last_fissile_output,
+ map< string, fissile_string >& fissile_values, bool& use_special_fissile_character )
 {
    string next_fissile_line( input );
 
@@ -914,7 +1196,7 @@ void process_fissile_commands( ostream& outs, bool interractive,
    split_into_fissile_cmds( next_fissile_line, cmds );
 
    if( fissile_values.count( c_fissile_cmds_limit_variable ) )
-      cmds_allowed = atoi( fissile_values[ c_fissile_cmds_limit_variable ].c_str( ) );
+      cmds_allowed = atoi( ( ( string )fissile_values[ c_fissile_cmds_limit_variable ] ).c_str( ) );
 
    while( !cmds.empty( ) )
    {
@@ -937,7 +1219,9 @@ void process_fissile_commands( ostream& outs, bool interractive,
 
       if( next[ 0 ] == '?' )
       {
-         string check_value, final_output, final_execute;
+         string check_value, final_execute;
+
+         fissile_string final_output;
 
          if( next.size( ) > 1 )
          {
@@ -1025,7 +1309,10 @@ void process_fissile_commands( ostream& outs, bool interractive,
             {
                last_fissile_output = final_output;
 
-               outs << final_output;
+               if( !final_output.is_compressed( ) )
+                  outs << final_output;
+               else
+                  outs << get_fissile_numeric( fissile_values, default_base, final_output );
 
                if( interractive )
                   outs << endl;
@@ -1085,7 +1372,8 @@ void process_fissile_commands( ostream& outs, bool interractive,
                   next.erase( 1, 1 );
                }
 
-               string new_data( fissile_data );
+               fissile_string new_data( fissile_data );
+
                string::size_type pos = next.find( '?' );
 
                if( pos != string::npos )
@@ -1097,6 +1385,7 @@ void process_fissile_commands( ostream& outs, bool interractive,
                if( fissile_values.count( next.substr( 1 ) ) )
                {
                   fissile_data = new_data;
+
                   split_into_fissile_cmds(
                    get_fissile_value_as_cmds( fissile_values, next.substr( 1 ) ), cmds, true );
                }
@@ -1128,37 +1417,31 @@ void process_fissile_commands( ostream& outs, bool interractive,
             next.erase( next.length( ) - 1 );
          }
 
-         bool is_first = true;
-
-         for( map< string, string >::iterator i = !matching_prefix_only
+         for( map< string, fissile_string >::iterator i = !matching_prefix_only
           ? fissile_values.begin( ) : fissile_values.lower_bound( next.substr( 1 ) ); i != fissile_values.end( ); ++i )
          {
             if( matching_prefix_only && i->first.find( next.substr( 1 ) ) != 0 )
                break;
 
-            if( is_first )
-               is_first = false;
-            else
-               outs << '\n';
+            outs << i->first;
 
-            outs << i->first << ' ' << i->second;
+            if( i->second.is_compressed( ) )
+               outs << " (compressed) "
+                << get_fissile_numeric( fissile_values, default_base, i->second ) << '\n';
+            else
+               outs << " (raw string) " << i->second << '\n';
          }
       }
       else if( next.length( ) > 2 && next.substr( 0, 2 ) == "*=" )
          fissile_values[ c_fissile_cmds_limit_variable ] = next.substr( 2 );
       else if( next == "--" )
       {
-         for( size_t i = 0; i < fissile_data.length( ); i++ )
-            --fissile_data[ i ];
-
-         if( !fissile_data.empty( ) && is_last_command )
+         if( fissile_data.is_compressed( ) )
+            fissile_data.remove( 1 );
+         else
          {
-            last_fissile_output = fissile_data;
-
-            outs << fissile_data;
-
-            if( interractive )
-               outs << endl;
+            for( size_t i = 0; i < fissile_data.length( ); i++ )
+               --fissile_data[ i ];
          }
       }
       else if( next.length( ) > 2 && next.substr( 0, 2 ) == "--" )
@@ -1195,17 +1478,12 @@ void process_fissile_commands( ostream& outs, bool interractive,
       }
       else if( next == "++" )
       {
-         for( size_t i = 0; i < fissile_data.length( ); i++ )
-            ++fissile_data[ i ];
-
-         if( !fissile_data.empty( ) && is_last_command )
+         if( fissile_data.is_compressed( ) )
+            fissile_data.append( 1 );
+         else
          {
-            last_fissile_output = fissile_data;
-
-            outs << fissile_data;
-
-            if( interractive )
-               outs << endl;
+            for( size_t i = 0; i < fissile_data.length( ); i++ )
+               ++fissile_data[ i ];
          }
       }
       else if( next.length( ) > 2 && next.substr( 0, 2 ) == "++" )
@@ -1273,7 +1551,8 @@ void process_fissile_commands( ostream& outs, bool interractive,
                   fissile_data.erase( fissile_data.length( ) - 1 );
                else
                {
-                  string::size_type pos = fissile_data.rfind( separator );
+                  string::size_type pos = string( fissile_data ).rfind( separator );
+
                   if( pos == string::npos )
                      fissile_data.erase( );
                   else
@@ -1286,7 +1565,8 @@ void process_fissile_commands( ostream& outs, bool interractive,
                   fissile_data.erase( 0, 1 );
                else
                {
-                  string::size_type pos = fissile_data.find( separator );
+                  string::size_type pos = string( fissile_data ).find( separator );
+
                   if( pos == string::npos )
                      fissile_data.erase( );
                   else
@@ -1402,9 +1682,9 @@ void process_fissile_commands( ostream& outs, bool interractive,
             next.erase( 0, 1 );
          }
 
-         string new_data( fissile_data );
+         fissile_string new_data( fissile_data );
 
-         string output( handle_numeric_fissile_op(
+         fissile_string output( handle_numeric_fissile_op(
           fissile_values, op, next, default_base, new_data, use_special_fissile_character ) );
 
          if( op != c_fissile_op_none )
@@ -1448,14 +1728,17 @@ void process_fissile_commands( ostream& outs, bool interractive,
          {
             if( !next.empty( ) )
             {
-               string value(
+               fissile_string value(
                 get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output ) );
 
                if( !value.empty( ) )
                {
                   last_fissile_output = value;
 
-                  outs << value;
+                  if( !value.is_compressed( ) )
+                     outs << value;
+                  else
+                     outs << get_fissile_numeric( fissile_values, default_base, value );
 
                   if( interractive )
                      outs << endl;
@@ -1492,7 +1775,7 @@ void process_fissile_commands( ostream& outs, bool interractive,
                {
                   string src_var( next.substr( pos + 2 ) );
 
-                  string value(
+                  fissile_string value(
                    get_fissile_value( fissile_values, src_var, fissile_data, last_fissile_output ) );
 
                   if( dest_var == "?" )
@@ -1507,10 +1790,10 @@ void process_fissile_commands( ostream& outs, bool interractive,
                }
                else if( var_type == '#' )
                {
-                  string value(
+                  fissile_string value(
                    get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output, false ) );
 
-                  string output( handle_numeric_fissile_op( fissile_values,
+                  fissile_string output( handle_numeric_fissile_op( fissile_values,
                    op, next.substr( pos + offset ), default_base, value, use_special_fissile_character ) );
 
                   if( op != c_fissile_op_none )
@@ -1534,10 +1817,10 @@ void process_fissile_commands( ostream& outs, bool interractive,
                }
                else if( var_type == '$' )
                {
-                  string value(
+                  fissile_string value(
                    get_fissile_value( fissile_values, dest_var, fissile_data, last_fissile_output, false ) );
 
-                  string output( handle_string_fissile_op(
+                  fissile_string output( handle_string_fissile_op(
                    fissile_values, op, next.substr( pos + offset ), value, use_special_fissile_character ) );
 
                   if( op != c_fissile_op_none )
@@ -1616,7 +1899,7 @@ void process_fissile_commands( ostream& outs, bool interractive,
 
    while( true )
    {
-      map< string, string >::iterator i = fissile_values.lower_bound( "^" );
+      map< string, fissile_string >::iterator i = fissile_values.lower_bound( "^" );
       if( i == fissile_values.end( ) || i->first.empty( ) || i->first[ 0 ] != '^' )
          break;
 
@@ -1628,6 +1911,21 @@ void process_fissile_commands( ostream& outs, bool interractive,
 
 }
 
+struct console_command_handler::impl
+{
+   fissile_string fissile_data;
+
+   string last_fissile_line;
+
+   fissile_string last_fissile_output;
+
+   bool use_special_fissile_character;
+
+   impl( ) : use_special_fissile_character( false ) { }
+
+   map< string, fissile_string > fissile_values;
+};
+
 console_command_handler::console_command_handler( )
  :
  line_number( 0 ),
@@ -1635,8 +1933,7 @@ console_command_handler::console_command_handler( )
  num_custom_startup_options( 0 ),
  is_executing_commands( false ),
  allow_history_addition( true ),
- handling_startup_options( false ),
- use_special_fissile_character( false )
+ handling_startup_options( false )
 {
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
@@ -1649,8 +1946,15 @@ console_command_handler::console_command_handler( )
    for( size_t i = 0; i < c_max_args; i++ )
       args.push_back( string( ) );
 
+   p_impl = new impl;
+
    for( size_t i = 0; i < sizeof( g_default_fissile_pairs ) / sizeof( g_default_fissile_pairs[ 0 ] ); i++ )
-      fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
+      p_impl->fissile_values.insert( make_pair( g_default_fissile_pairs[ i ].p_key, g_default_fissile_pairs[ i ].p_data ) );
+}
+
+console_command_handler::~console_command_handler( )
+{
+   delete p_impl;
 }
 
 bool console_command_handler::has_option_quiet( ) const
@@ -2013,8 +2317,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                ostringstream osstr;
 
                process_fissile_commands( osstr, false,
-                str.substr( 1 ), fissile_data, last_fissile_line,
-                last_fissile_output, fissile_values, use_special_fissile_character );
+                str.substr( 1 ), p_impl->fissile_data, p_impl->last_fissile_line,
+                p_impl->last_fissile_output, p_impl->fissile_values, p_impl->use_special_fissile_character );
 
                str = osstr.str( );
             }
@@ -2364,8 +2668,8 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
 {
    if( !cmd_and_args.empty( ) )
       process_fissile_commands( cout, true,
-       cmd_and_args.substr( 1 ), fissile_data, last_fissile_line,
-       last_fissile_output, fissile_values, use_special_fissile_character );
+       cmd_and_args.substr( 1 ), p_impl->fissile_data, p_impl->last_fissile_line,
+       p_impl->last_fissile_output, p_impl->fissile_values, p_impl->use_special_fissile_character );
 }
 
 void console_command_handler::handle_unknown_command( const string& command )
