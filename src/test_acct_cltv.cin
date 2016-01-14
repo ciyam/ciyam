@@ -12,8 +12,13 @@
 ; doing this don't forget the '-regtest' option). Check that there is no 'regtest' data
 ; before starting 'bitcoind' and then running this script.
 ;
-;USE_SECRET_REVEAL=1
+;USE_SECRET_REVEAL=
+;
+;USE_SECRET_REVEAL=
 ;USE_UNIX_TIMESTAMP=1
+;
+;SECRET=1234567890
+;USE_SECRET_REVEAL=1
 ;
 @ifndef $USE_SECRET_REVEAL
 #Redeeming using CLTV refund...
@@ -23,6 +28,9 @@
 #(via unix timestamp)
 @endif
 @else
+@ifndef $SECRET
+SECRET=1234567890
+@endif
 #Redeeming using secret reveal...
 @endif
 ~tbitcoin generate 101
@@ -40,7 +48,7 @@ PKH2=$OUTPUT
 ;
 ; Setup an ACCT P2SH script and then get its address and script hash
 ;
-SCTH=c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646
+SCTH=@sha256:$SECRET
 ~tbitcoin importprivkey $WKEY
 TXID=@~tbitcoin sendtoaddress $ADDR 50
 ;
@@ -82,7 +90,8 @@ LOCK=$TIME
 @ifndef $USE_SECRET_REVEAL
 crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 50.0 $WKEY $LOCK
 @else
-crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 50.0 $WKEY -e=31323334353637383930
+HEX_SCRT=@aschex:$SECRET
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 50.0 $WKEY -e=$HEX_SCRT
 @endif
 RAW_TX=$OUTPUT
 ~tbitcoin decoderawtransaction $RAW_TX
