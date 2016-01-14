@@ -1705,6 +1705,15 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_ftransient=$specification_\0_ftransient arg_ext_field=$specification_\0_ext_field\
  arg_allow_parent_iteration=$specification_\0_allow_parent_iteration`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
+`{`#field_from_op.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_vtype=$specification_\0_vtype arg_ofield=$specification_\0_ofield\
+ arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype arg_modifier=$specification_\0_modifier\
+ arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check=$specification_\0_check arg_new_only=$specification_\0_new_only\
+ arg_create_only=$specification_\0_create_only arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update\
+ arg_evalue=$specification_\0_evalue`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_search_replace`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
 `{`#field_from_search_replace.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
@@ -2250,7 +2259,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)\
-`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
+`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'`'`)
 `{`#field_from_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_vtype=$specification_\0_vtype arg_ofield=$specification_\0_ofield\
@@ -3995,7 +4004,7 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field\
  arg_dest_field=$specification_\0_dest_field arg_ext_field=$specification_\0_ext_field`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'`'`)
 `{`#field_from_op.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield`}\

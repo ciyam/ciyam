@@ -4745,6 +4745,56 @@ bool can_create_address( const string& ext_key )
    return !client_info.script_name.empty( );
 }
 
+void import_address( const string& ext_key, const string& address, const string& label )
+{
+   string s;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+   if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "importaddress";
+
+      cmd += " " + address;
+
+      if( !label.empty( ) )
+         cmd += " \"" + label + "\"";
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for load_address_information" );
+   }
+
+   if( file_exists( tmp_file_name ) )
+   {
+      string error, content( buffer_file( tmp_file_name ) );
+
+      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
+
+      file_remove( tmp_file_name );
+
+      if( !error.empty( ) )
+      {
+         string::size_type pos = error.find_first_of( "\r\n" );
+
+         throw runtime_error( error.substr( 0, pos ) );
+      }
+   }
+}
+
 void load_address_information( const string& ext_key, const string& file_name )
 {
    string s;

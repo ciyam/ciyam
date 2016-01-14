@@ -96,7 +96,7 @@ std::string decode_message_from_leading_byte_encoded_addresses( const std::vecto
 
 struct utxo_information
 {
-   utxo_information( ) : index ( 0 ) { }
+   utxo_information( ) : index ( 0 ), is_p2sh_redeem( false ) { }
 
    utxo_information( unsigned int index, const std::string& reversed_txid,
     const char* p_script = 0, private_key* p_private_key = 0, bool is_p2sh_redeem = false )
