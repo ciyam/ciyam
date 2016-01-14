@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "macros.h"
+#include "sha256.h"
 #include "console.h"
 #include "pointers.h"
 #include "date_time.h"
@@ -79,8 +80,11 @@ const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 
 const char* const c_unix_timestamp = "unix";
 
+const char* const c_function_aschex = "aschex";
+const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
 const char* const c_function_hexlit = "hexlit";
+const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
 
 const char* const c_envcond_command_else = "else";
@@ -2239,7 +2243,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         {
                            was_transform = true;
 
-                           if( lhs == c_function_hexbig || lhs == c_function_hexlit )
+                           if( lhs == c_function_aschex )
+                              str = hex_encode( str.substr( pos + 1 ) );
+                           else if( lhs == c_function_hexasc )
+                              str = hex_decode( str.substr( pos + 1 ) );
+                           else if( lhs == c_function_hexbig || lhs == c_function_hexlit )
                            {
                               str = hex_encode( ( const unsigned char* )&rval, sizeof( rval ) );
 #ifdef LITTLE_ENDIAN
@@ -2250,6 +2258,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  str = hex_reverse( str );
 #endif
                            }
+                           else if( lhs == c_function_sha256 )
+                              str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
                            else if( lhs == c_function_substr )
                            {
                               pos = str.find( op, pos + 1 );

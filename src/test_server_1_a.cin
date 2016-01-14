@@ -73,6 +73,14 @@ Y=
 @else
 #ifdef false
 @endif
+ASC=1234567890
+#$ASC
+HEX=@aschex:$ASC
+#$HEX
+ASC=@hexasc:$HEX
+#$ASC
+HASH=@sha256:$ASC
+#$HASH
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"
