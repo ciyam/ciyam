@@ -2650,7 +2650,8 @@ bool output_view_form( ostream& os, const string& act,
                      string all_filters( info.filters.find( info.values[ i ].first )->second );
                      set< string > filters;
 
-                     split( all_filters, filters, '|' );
+                     if( !all_filters.empty( ) )
+                        split( all_filters, filters, '|' );
 
                      if( !filters.count( enum_filter_value ) )
                         continue;

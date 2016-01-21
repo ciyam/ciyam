@@ -4637,6 +4637,8 @@ void Meta_List_Field::impl::finalise_fetch( bool skip_set_original )
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
 
+   uint64_t state = p_obj->get_state( );
+
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }

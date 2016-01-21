@@ -105,6 +105,7 @@ class NUMERIC_DECL_SPEC numeric
    std::string as_string( ) const;
    double as_double( ) const;
 
+   int64_t as_int64_t( ) const;
    inline uint64_t as_uint64( ) const { return mantissa; }
 
    std::string as_comparable_string( ) const;

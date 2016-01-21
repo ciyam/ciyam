@@ -7034,6 +7034,8 @@ void Meta_Specification::impl::finalise_fetch( bool skip_set_original )
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
 
+   uint64_t state = p_obj->get_state( );
+
    // [(start field_from_procedure_call)] 600209
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "All_Vars" )

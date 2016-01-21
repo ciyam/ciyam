@@ -23,7 +23,7 @@
 `}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
 `{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)\
-      get_obj( ).`{`$arg_field`}( `{`$arg_value`} );\
+      get_obj( ).`{`$arg_field`}( `{`$arg_value`} );`{`!`@eq`(`$arg_ename`,`'`'`) // i.e. `{`$arg_ename`}`}\
 `,\
       get_obj( ).`{`$arg_field`}( get_session_variable( `{`$arg_value`} ) );\
 `}

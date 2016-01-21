@@ -537,6 +537,7 @@ string get_enum_string_time_precision( int val )
 const int c_enum_zero_padding_none( 0 );
 const int c_enum_zero_padding_decimals( 1 );
 const int c_enum_zero_padding_all_digits( 2 );
+const int c_enum_zero_padding_one_decimal( 3 );
 
 string get_enum_string_zero_padding( int val )
 {
@@ -550,6 +551,8 @@ string get_enum_string_zero_padding( int val )
       string_name = "enum_zero_padding_decimals";
    else if( to_string( val ) == to_string( "2" ) )
       string_name = "enum_zero_padding_all_digits";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_zero_padding_one_decimal";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for zero_padding" );
 
@@ -1971,6 +1974,8 @@ void Meta_Type::impl::finalise_fetch( bool skip_set_original )
 {
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
+
+   uint64_t state = p_obj->get_state( );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3985,6 +3990,7 @@ void Meta_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pai
    pairs.push_back( make_pair( "enum_zero_padding_0", get_enum_string_zero_padding( 0 ) ) );
    pairs.push_back( make_pair( "enum_zero_padding_1", get_enum_string_zero_padding( 1 ) ) );
    pairs.push_back( make_pair( "enum_zero_padding_2", get_enum_string_zero_padding( 2 ) ) );
+   pairs.push_back( make_pair( "enum_zero_padding_3", get_enum_string_zero_padding( 3 ) ) );
 }
 
 void Meta_Type::static_get_sql_indexes( vector< string >& indexes )
@@ -4084,6 +4090,7 @@ void Meta_Type::static_class_init( const char* p_module_name )
    g_zero_padding_enum.insert( 0 );
    g_zero_padding_enum.insert( 1 );
    g_zero_padding_enum.insert( 2 );
+   g_zero_padding_enum.insert( 3 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

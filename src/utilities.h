@@ -515,7 +515,7 @@ inline bool wildcard_match( const std::string& expr, const std::string& data ) {
 
 std::string& replace( std::string& s, const char* p_findstr, const char* p_replstr );
 
-inline std::string& replace( std::string& s, std::string& findstr, const char* p_replstr )
+inline std::string& replace( std::string& s, const std::string& findstr, const char* p_replstr )
 {
    return replace( s, findstr.c_str( ), p_replstr );
 }

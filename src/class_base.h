@@ -1122,6 +1122,8 @@ std::string CLASS_BASE_DECL_SPEC get_uuid( );
 
 std::string CLASS_BASE_DECL_SPEC get_random_hash( );
 
+int64_t CLASS_BASE_DECL_SPEC get_unix_timestamp( bool use_dtm = true );
+
 std::string CLASS_BASE_DECL_SPEC get_ext( const std::string& filename );
 std::string CLASS_BASE_DECL_SPEC get_path( const std::string& filename );
 
@@ -1234,6 +1236,8 @@ std::string CLASS_BASE_DECL_SPEC totp_secret( const std::string& unique );
 
 std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
+
+std::string CLASS_BASE_DECL_SPEC unix_to_locktime( const numeric& unix );
 
 std::string CLASS_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CLASS_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );

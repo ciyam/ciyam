@@ -187,16 +187,21 @@ string get_mask( int numeric_digits,
 
    whole_digits -= numeric_decimals;
 
-   if( zero_padding < 2 )
+   if( zero_padding < 2 || zero_padding == 3 )
       mask += string( whole_digits, '#' );
-   else
+   else if( zero_padding == 2 )
       mask += string( whole_digits, '0' );
+   else
+      throw runtime_error( "unexpected zero_padding value #" + to_string( zero_padding ) );
 
    if( numeric_decimals )
    {
       mask += '.';
+
       if( zero_padding < 1 )
          mask += string( numeric_decimals, '#' );
+      else if( zero_padding == 3 && numeric_decimals > 1 )
+         mask += "0" + string( numeric_decimals - 1, '#' );
       else
          mask += string( numeric_decimals, '0' );
    }
@@ -2525,6 +2530,15 @@ string get_random_hash( )
    return "0" + hash.get_digest_as_string( ).substr( 1 );
 }
 
+int64_t get_unix_timestamp( bool use_dtm )
+{
+   string dtm( get_dtm( ) );
+
+   date_time dt( use_dtm && !dtm.empty( ) ? date_time( dtm ) : date_time::standard( ) );
+
+   return unix_timestamp( dt );
+}
+
 string get_ext( const string& filename )
 {
    string str( filename );
@@ -3281,6 +3295,19 @@ string valid_utf8_filename( const string& str )
 string valid_non_utf8_filename( const string& str )
 {
    return search_replace( valid_file_name( str ), " ", "_" );
+}
+
+string unix_to_locktime( const numeric& unix )
+{
+   int64_t val( unix.as_int64_t( ) );
+
+   string str( hex_encode( ( const unsigned char* )&val, sizeof( val ) ) );
+
+#ifndef LITTLE_ENDIAN
+   str = hex_reverse( str );
+#endif
+
+   return str.substr( 0, 8 );
 }
 
 string formatted_int( int n, const string& mask )
@@ -4656,7 +4683,7 @@ void crypto_verify( const string& pubkey,
 string crypto_address_hash( const string& address )
 {
 #ifdef SSL_SUPPORT
-   return public_key::address_to_hash160( address );
+   return address.empty( ) ? string( ) : public_key::address_to_hash160( address );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_address_hash" );
 #endif
@@ -4673,7 +4700,7 @@ string crypto_p2sh_address( const string& ext_key, const string& hex_script )
    if( client_info.extra_info == "testnet" )
       is_testnet = true;
 
-   return create_p2sh_address( hex_script, is_testnet );
+   return hex_script.empty( ) ? string( ) : create_p2sh_address( hex_script, is_testnet );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_p2sh_address" );
 #endif

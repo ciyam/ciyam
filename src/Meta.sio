@@ -38035,7 +38035,7 @@
     <id>513
     <name>zero_padding
     <type>int
-    <key_values>0=none,1=decimals,2=all\_digits
+    <key_values>0=none,1=decimals,2=all\_digits,3=one\_decimal
    </user_defined_enum>
   </user_defined_enums>
   <user_defined_types/>

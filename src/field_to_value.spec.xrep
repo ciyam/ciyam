@@ -6,7 +6,9 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$value`=`$arg_value`}\
-`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+`{`@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`,\
+`@eq`(`$arg_value`,`'@unix`'`)`$value`=`'get_unix_timestamp( )`'`,\
+`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_create_only`=`'`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_update_only`=`'`'`}\
 `{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_internal_only`=`'`'`}\

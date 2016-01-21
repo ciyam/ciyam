@@ -13,6 +13,7 @@
 ; before starting 'bitcoind' and then running this script.
 ;
 ;USE_SECRET_REVEAL=
+;USE_UNIX_TIMESTAMP=
 ;
 ;USE_SECRET_REVEAL=
 ;USE_UNIX_TIMESTAMP=1
@@ -35,7 +36,7 @@ SECRET=1234567890
 @endif
 ~tbitcoin generate 101
 ;
-; Define an address and matching WIF private key for testing
+; Define an address and matching WIF private key for testing.
 ;
 ADDR=mp7zjTrEszZezRBM1cUmTvaK2zf3MuDAHt
 WKEY=cPR4DC5NXVkR37wEbCuUVuvuFxSozsMr8SHYteB2iqG8yV3uHdFR
@@ -43,23 +44,25 @@ WKEY=cPR4DC5NXVkR37wEbCuUVuvuFxSozsMr8SHYteB2iqG8yV3uHdFR
 ; To simplify testing just uses the same address for redemption
 ;
 crypto_addr_hash $ADDR
-PKH1=$OUTPUT
-PKH2=$OUTPUT
+PKHS=$OUTPUT
+PKHR=$OUTPUT
 ;
-; Setup an ACCT P2SH script and then get its address and script hash
+; Send some funds to the address of the newly imported private key.
 ;
-SCTH=@sha256:$SECRET
 ~tbitcoin importprivkey $WKEY
 TXID=@~tbitcoin sendtoaddress $ADDR 50
 ;
+; Setup an ACCT P2SH script and then get its address and script hash.
+;
+SCTH=@sha256:$SECRET
 @ifndef $USE_UNIX_TIMESTAMP
 BLKN=7f
-SCRIPT=76a820%SCTH%87637576a914%PKH1%88ac6701%BLKN%b17576a914%PKH2%88ac68
+SCRIPT=76a820%SCTH%87637576a914%PKHS%88ac6701%BLKN%b17576a914%PKHR%88ac68
 @else
 TIME=@unix+5
 HTME=@hexlit:$TIME
 LTME=@substr:0,8:$HTME
-SCRIPT=76a820%SCTH%87637576a914%PKH1%88ac6704%LTME%b17576a914%PKH2%88ac68
+SCRIPT=76a820%SCTH%87637576a914%PKHS%88ac6704%LTME%b17576a914%PKHR%88ac68
 @endif
 ;
 crypto_p2sh_addr TBTC $SCRIPT
@@ -67,7 +70,7 @@ P2SH_ADDR=$OUTPUT
 crypto_addr_hash $P2SH_ADDR
 P2SH_HASH=$OUTPUT
 ;
-; Send funds to the P2SH address
+; Now send funds to the P2SH address.
 ;
 ~tbitcoin generate 3
 TXID=@~tbitcoin sendtoaddress $P2SH_ADDR 50
@@ -99,7 +102,7 @@ RAW_TX=$OUTPUT
 @ifndef $USE_SECRET_REVEAL
 @ifdef $USE_UNIX_TIMESTAMP
 ;
-; Wait for five seconds and then redeem the funds from the P2SH UTXO
+; Wait for five seconds to then redeem the funds from the P2SH UTXO.
 ;
 ; NOTE: When running with testnet/regtest it seems that when using a
 ; unix timestamp (instead of a block number) then the tx is accepted
@@ -109,11 +112,11 @@ RAW_TX=$OUTPUT
 wait 5000
 @else
 ;
-; Note this attempt will fail due to being non-final (i.e. locktime)
+; Note this attempt will fail due to being non-final (i.e. locktime).
 ;
 ~tbitcoin sendrawtransaction $RAW_TX
 ;
-; Increase the block height and then redeem funds from the P2SH UTXO
+; Increase the block height then redeem the funds from the P2SH UTXO.
 ;
 ~tbitcoin generate 20
 @endif

@@ -84,7 +84,7 @@
 `{`$enum_view_field_trigger_for_state`=`'0=editable 1=protected 2=relegated`'`}
 `{`$enum_view_field_trigger_option`=`'0=none 1=key1 2=key2 3=key3 4=key4 5=key5 6=key6 7=key7 8=key8 9=key9 10=key0`'`}
 `{`$enum_view_pdf_view_type`=`'0=none 2=Standard_2_Column 99=Customised`'`}
-`{`$enum_zero_padding`=`'0=none 1=decimals 2=all_digits`'`}
+`{`$enum_zero_padding`=`'0=none 1=decimals 2=all_digits 3=one_decimal`'`}
 `{`}
 `{`$all_classes`=`'Application Auto_Code Class Enum Enum_Item Field Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
 `{`}

@@ -644,6 +644,16 @@ double numeric::as_double( ) const
    return d;
 }
 
+int64_t numeric::as_int64_t( ) const
+{
+   int64_t i = mantissa;
+
+   if( decimals & c_negative_flag )
+      i *= -1;
+
+   return i;
+}
+
 string numeric::as_comparable_string( ) const
 {
    string cs;
