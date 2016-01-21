@@ -3297,9 +3297,9 @@ string valid_non_utf8_filename( const string& str )
    return search_replace( valid_file_name( str ), " ", "_" );
 }
 
-string unix_to_locktime( const numeric& unix )
+string unix_to_locktime( const numeric& unix_timestamp )
 {
-   int64_t val( unix.as_int64_t( ) );
+   int64_t val( unix_timestamp.as_int64_t( ) );
 
    string str( hex_encode( ( const unsigned char* )&val, sizeof( val ) ) );
 
