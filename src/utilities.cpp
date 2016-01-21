@@ -1312,13 +1312,7 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          npos = pos + env_var_value.size( );
       }
       else
-      {
-         if( as_quotes )
-         {
-            s.erase( pos, 1 );
-            --npos;
-         }
-      }
+         s.erase( pos, 1 );
 
       pos = s.find( c, npos );
    }

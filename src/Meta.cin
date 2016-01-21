@@ -12,7 +12,7 @@ user_defined_enum_add -id=507 round_type int 1=up,2=down,3=normal,4=bankers
 user_defined_enum_add -id=510 string_domain int 0=none,2=label,3=filename,1=identifier
 user_defined_enum_add -id=511 date_precision int 0=default,1=months,2=decades
 user_defined_enum_add -id=512 time_precision int 0=default,1=minutes,2=seconds
-user_defined_enum_add -id=513 zero_padding int 0=none,1=decimals,2=all\\_digits
+user_defined_enum_add -id=513 zero_padding int 0=none,1=decimals,2=all\\_digits,3=one\\_decimal
 user_defined_enum_add -id=514 fraction_limit int 0=none,2=halves,4=quarters
 user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_group,3=user_other
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
@@ -838,7 +838,7 @@ field_add -id=137112 Package_Option Time string opt
 field_add -id=137113 Package_Option Numeric string opt
 field_add -id=137114 Package_Option Integer int mand -def=0
 field_add -id=137115 Package_Option Name str100 mand
-field_add -id=137116 Package_Option Actions string opt -def=137410$137100*@id -transient -x=actions
+field_add -id=137116 Package_Option Actions string opt -def=137410$$137100*@id -transient -x=actions
 field_add -id=137117 Package_Option Is_Class bool mand -def=0
 field_add -id=137118 Package_Option Is_Mandatory_Class bool mand -def=0
 field_add -id=137119 Package_Option Has_Field bool mand -def=0

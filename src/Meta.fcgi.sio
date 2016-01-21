@@ -2430,6 +2430,10 @@
      <data>2
      <name>enum_zero_padding_all_digits
     </value>
+    <value/>
+     <data>3
+     <name>enum_zero_padding_one_decimal
+    </value>
    </values>
   </enum>
  </enums>

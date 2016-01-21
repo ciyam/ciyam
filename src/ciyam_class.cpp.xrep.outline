@@ -868,7 +868,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_clone_field=$specification_\\0_clone_field arg_procedure=$specification_\\0_procedure arg_create_only=\
  arg_output_arg=$specification_\\0_output_arg arg_output_field=$specification_\\0_output_field\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_dtm_as_suffix=$specification_\\0_use_dtm_as_suffix\
- arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix arg_append_loopval=$specification_\\0_append_loopval`}\
+ arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix arg_is_clone=$specification_\\0_is_clone\
+ arg_append_loopval=$specification_\\0_append_loopval`}\
 `,\
 `@eq`(`'\\1`'`,`'destroy_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#destroy_children.spec.xrep section=procedure class_name=$class_name\
@@ -1787,14 +1788,15 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans arg_not_sess_var=$specification_\0_not_sess_var\
  arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
+`@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
  arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
- arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod`}\
+ arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
+ arg_top_level=$specification_\0_top_level`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_has_child_for_uid`'`)
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=after_fetch module_name=$module_name\
@@ -1929,6 +1931,8 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
    if( !skip_set_original && !get_obj( ).get_key( ).empty( ) )
       get_obj( ).set_new_original_values( );
 
+   uint64_t state = p_obj->get_state( );
+
 `{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
    get_obj( ).set_variable(
     get_special_var_name( e_special_var_permission ), get_obj( ).`{`$permission_field`}( ) );
@@ -1939,6 +1943,16 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
 `{`@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'true`'`)\
 `{`#field_from_procedure_call.spec.xrep section=finalise_fetch class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_procedure=$specification_\0_procedure arg_value=$specification_\0_value`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'true`'`)\
+`{`#transient_field_alias.spec.xrep section=finalise_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
+ arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
+ arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
+ arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
+ arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
+ arg_top_level=$specification_\0_top_level`}
 ### finalise_fetch
 `}`]`}
    // [<start finalise_fetch>]
@@ -2045,7 +2059,8 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
  arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
- arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod`}
+ arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
+ arg_top_level=$specification_\0_top_level`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_is_in_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_bool_is_in_op.spec.xrep section=post_init class_name=$class_name\
@@ -2117,7 +2132,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
- arg_tvalue=$specification_\0_tvalue`}\
+ arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#default_to_grp.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2468,7 +2483,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
- arg_tvalue=$specification_\0_tvalue`}\
+ arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_grp.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2838,8 +2853,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_cprocedure=$specification_\0_cprocedure arg_tfield=$specification_\0_tfield arg_tfistexttype=$specification_\0_tfistexttype\
  arg_field_list=$specification_\0_field_list arg_clone_field=$specification_\0_clone_field arg_create_only=$specification_\0_create_only\
  arg_procedure= arg_output_arg= arg_output_field= arg_key_suffix=$specification_\0_key_suffix\
- arg_use_dtm_as_suffix=$specification_\0_use_dtm_as_suffix arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix\
- arg_append_loopval=$specification_\0_append_loopval`}\
+ arg_use_dtm_as_suffix=$specification_\0_use_dtm_as_suffix arg_is_clone=$specification_\0_is_clone\
+ arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix arg_append_loopval=$specification_\0_append_loopval`}\
 `,\
 `@eq`(`'\1`'`,`'create_children_for_fk_children`'`)
 `{`#create_children_for_fk_children.spec.xrep section=after_store full_class_name=$full_class_name\

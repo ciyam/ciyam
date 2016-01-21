@@ -3,9 +3,9 @@
 `{`@eq`(`$arg_create_only`,`'`'`)\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`} )
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
-   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`} )
+   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`}`} ) )
 `}`,\
 `{`@eq`(`$arg_modifier`,`'`'`)\
    // NOTE: Empty code block for scope purposes.
@@ -14,26 +14,27 @@
 `}`}`,\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
    if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
-    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`} )
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `,\
    if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
-    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`} )
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `}`}\
    {
 `{`@eq`(`$arg_key_suffix`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
 `{`@eq`(`$arg_use_dtm_as_suffix`,`'`'`)\
-      string child_key( get_obj( ).get_key( ) + "_C" );\
+      string child_key( get_obj( ).get_key( ) + "_C" );
 `,\
-      string child_key( get_obj( ).get_key( ) + "_" + get_dtm( ) );\
+      string child_key( get_obj( ).get_key( ) + "_" + get_dtm( ) );
 `}`,\
-      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );\
+      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );
 `}`,\
-      string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );\
-`}
-`{`@eq`(`$arg_append_loopval`,`'true`'`)
+      string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );
+`}`{`@eq`(`$arg_append_loopval`,`'true`'`)
       child_key += get_obj( ).get_variable( get_special_var_name( e_special_var_loop ) );
-`}`{`!`@eq`(`$arg_clone_field`,`'`'`)\
+`}`{`@eq`(`$arg_is_clone`,`'true`'`)
+      child_key += " " + get_obj( ).get_key( );
+`}`{`!`@eq`(`$arg_clone_field`,`'`'`)
       if( !is_null( get_obj( ).`{`$arg_clone_field`}( ) ) )
          child_key += " " + get_obj( ).`{`$arg_clone_field`}( ).get_key( );
 `}
@@ -43,8 +44,10 @@
 `{`!`@eq`(`$arg_field`,`'`'`)\
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_field`}( `{`$arg_value`} );
 `}`{`?`$arg_field_list`[`$arg_field_list`%,`,
-      copy_field_or_file_and_field( get_obj( ).child_`{`$arg_child`}( ),
-       get_obj( ).child_`{`$arg_child`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
+      copy_field_or_file_and_field(
+       get_obj( ).child_`{`$arg_child`}( ),
+       get_obj( ).child_`{`$arg_child`}( ).get_key( ),
+       "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
 `]`}
       get_obj( ).child_`{`$arg_child`}( ).op_apply( );
 `{`!`@eq`(`$arg_cprocedure`,`'`'`)
