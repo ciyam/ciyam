@@ -1796,7 +1796,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
- arg_top_level=$specification_\0_top_level`}\
+ arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_has_child_for_uid`'`)
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=after_fetch module_name=$module_name\
@@ -1952,7 +1952,7 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
  arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
- arg_top_level=$specification_\0_top_level`}
+ arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}
 ### finalise_fetch
 `}`]`}
    // [<start finalise_fetch>]
@@ -2060,7 +2060,7 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
- arg_top_level=$specification_\0_top_level`}
+ arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_is_in_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_bool_is_in_op.spec.xrep section=post_init class_name=$class_name\
