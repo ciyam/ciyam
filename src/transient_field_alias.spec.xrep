@@ -5,6 +5,7 @@
 `{`@eq`(`$arg_def_value`,`'`'`)\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( `{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
+    && `}`{`@eq`(`$arg_top_or_iter`,`'true`'`)( !get_obj( ).get_graph_parent( ) || get_obj( ).get_is_iterating( ) )
     && `}`{`!`@eq`(`$arg_check_mod`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)( `}get_obj( ).needs_field_value( "`{`$arg_field`}" )
 `{`@eq`(`$arg_check_mod`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
@@ -33,6 +34,7 @@
 `}`,\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( `{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
+    && `}`{`@eq`(`$arg_top_or_iter`,`'true`'`)( !get_obj( ).get_graph_parent( ) || get_obj( ).get_is_iterating( ) )
     && `}( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\

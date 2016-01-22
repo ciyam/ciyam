@@ -10147,6 +10147,7 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( "func_arg1", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg2", "" ) );
    spec_data.data_pairs.push_back( make_pair( "top_level", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "top_or_iter", "" ) );
    spec_data.data_pairs.push_back( make_pair( "post_init", "" ) );
    spec_data.data_pairs.push_back( make_pair( "finalise_fetch", "" ) );
 }
