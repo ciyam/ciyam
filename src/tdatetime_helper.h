@@ -58,7 +58,7 @@ class tdatetime : public nullable_date_time
    {
    }
 
-   tdatetime( year yr, day_of_significance dos ) : nullable_date_time( date_time( dos ) ) { }
+   tdatetime( year yr, day_of_significance dos ) : nullable_date_time( date_time( yr, dos ) ) { }
 
    tdatetime( year yr, month mo, day dy, time_of_significance tos, const locality& l )
     : nullable_date_time( date_time( yr, mo, dy, tos, l ) )

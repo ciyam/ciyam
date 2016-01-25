@@ -483,7 +483,10 @@ class DATE_TIME_DECL_SPEC date_time
    public:
    date_time( ) { }
 
-   explicit date_time( julian jdt );
+   explicit date_time( julian j );
+   explicit date_time( int64_t unix_timestamp );
+
+   void construct_from_julian( julian j );
 
    explicit date_time( const char* s );
    explicit date_time( const std::string& s );

@@ -2495,7 +2495,27 @@ write_stream& operator <<( write_stream& ws, const udate& src )
    return ws;
 }
 
-date_time::date_time( julian jdt )
+date_time::date_time( julian j )
+{
+   construct_from_julian( j );
+}
+
+date_time::date_time( int64_t unix_timestamp )
+{
+   julian j = ( unix_timestamp / ( julian )c_seconds_per_day ) + c_unix_epoch;
+
+   construct_from_julian( j );
+}
+
+date_time::date_time( const char* s )
+{
+   if( !s )
+      throw runtime_error( "unexpected null ptr in date_time::date_time" );
+
+   *this = date_time( string( s ) );
+}
+
+void date_time::construct_from_julian( julian j )
 {
    year yr;
    month mo;
@@ -2509,18 +2529,10 @@ date_time::date_time( julian jdt )
    hundredth hd;
    thousandth th;
 
-   julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
+   julian_to_calendar( j, yr, mo, dy, hr, mn, sc, te, hd, th );
 
    ud = udate( yr, mo, dy );
    mt = mtime( hr, mn, sc, te, hd, th );
-}
-
-date_time::date_time( const char* s )
-{
-   if( !s )
-      throw runtime_error( "unexpected null ptr in date_time::date_time" );
-
-   *this = date_time( string( s ) );
 }
 
 date_time::date_time( const string& s )

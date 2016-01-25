@@ -55,6 +55,7 @@ const int c_max_history = 1000;
 const char c_startup_prefix = '-';
 
 const char* const c_help_command = "help";
+const char* const c_default_value_prompt = "VALUE=";
 
 #ifdef _WIN32
 const char* const c_startup_alt_help = "/?";
@@ -66,6 +67,7 @@ const char c_read_input_prefix = '<';
 const char c_write_history_prefix = '>';
 const char c_quiet_command_prefix = '.';
 const char c_output_command_usage = '?';
+const char c_prompted_input_prefix = '&';
 const char c_system_command_prefix = '~';
 const char c_history_command_prefix = '!';
 const char c_comment_command_prefix = ';';
@@ -106,7 +108,7 @@ command_definition startup_command_definitions[ ] =
 };
 
 const char* const c_command_prompt = "\n> ";
-const char* const c_message_press_any_key = "press any key...";
+const char* const c_message_press_any_key = "(press any key to continue)...";
 
 string replace_input_arg_values( const vector< string >& args, const string& input, char marker )
 {
@@ -2048,6 +2050,31 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
    }
    else
    {
+      if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
+      {
+         string msg( c_default_value_prompt );
+         if( str.length( ) > 1 )
+            msg = str.substr( 1 );
+
+         str = msg;
+         bool is_first = true;
+
+         while( true )
+         {
+            char ch = get_char( is_first ? msg.c_str( ) : 0 );
+
+            if( ch == '\r' )
+               break;
+
+            cout << ch;
+
+            str += ch;
+            is_first = false;
+         }
+
+         cout << '\n';
+      }
+
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
       if( isatty( STDIN_FILENO ) && !is_executing_commands && !str.empty( ) && str != last_command )

@@ -45,11 +45,11 @@ extern "C"
 
 using namespace std;
 
-char get_char( const char* prompt )
+char get_char( const char* p_prompt )
 {
-   if( prompt[ 0 ] != 0 )
+   if( p_prompt && p_prompt[ 0 ] != 0 )
    {
-      cout << prompt;
+      cout << p_prompt;
       cout.flush( );
    }
 
@@ -97,7 +97,7 @@ char get_char( const char* prompt )
 #endif
 }
 
-string get_line( const char* prompt )
+string get_line( const char* p_prompt )
 {
    string str;
 
@@ -107,7 +107,7 @@ string get_line( const char* prompt )
 #  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
    {
-      char* p = readline( prompt );
+      char* p = readline( p_prompt );
       if( p )
       {
          str = string( p );
@@ -117,15 +117,16 @@ string get_line( const char* prompt )
    else
 #  endif
    {
-      if( prompt[ 0 ] != 0 )
-         cout << prompt;
+      if( p_prompt && p_prompt[ 0 ] != 0 )
+         cout << p_prompt;
+
       getline( cin, str );
    }
 
    return str;
 #else
-   if( prompt[ 0 ] != 0 )
-      cout << prompt;
+   if( p_prompt && p_prompt[ 0 ] != 0 )
+      cout << p_prompt;
 
    getline( cin, str );
    return str;
@@ -133,10 +134,10 @@ string get_line( const char* prompt )
 }
 
 #ifdef __GNUG__
-string get_password( const char* prompt )
+string get_password( const char* p_prompt )
 {
    string str;
-   char* p = getpass( prompt );
+   char* p = getpass( p_prompt );
    str = string( p );
    memset( p, '\0', str.size( ) );
    return str;
@@ -144,14 +145,14 @@ string get_password( const char* prompt )
 #endif
 
 #ifdef _WIN32
-string get_password( const char* prompt )
+string get_password( const char* p_prompt )
 {
    string str;
    char buf[ 128 ] = "";
 
-   if( prompt[ 0 ] != 0 )
+   if( p_prompt && p_prompt[ 0 ] != 0 )
    {
-      cout << prompt;
+      cout << p_prompt;
       cout.flush( );
    }
 
