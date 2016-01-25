@@ -3310,6 +3310,13 @@ string unix_to_locktime( const numeric& unix_timestamp )
    return str.substr( 0, 8 );
 }
 
+string unix_to_datetime( const numeric& unix_timestamp )
+{
+   int64_t val( unix_timestamp.as_int64_t( ) );
+
+   return date_time( val ).as_string( );
+}
+
 string formatted_int( int n, const string& mask )
 {
    return format_numeric( n, mask );

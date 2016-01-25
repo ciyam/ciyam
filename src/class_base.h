@@ -1238,6 +1238,7 @@ std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 
 std::string CLASS_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_timestamp );
+std::string CLASS_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_timestamp );
 
 std::string CLASS_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CLASS_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );

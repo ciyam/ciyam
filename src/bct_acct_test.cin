@@ -1,0 +1,147 @@
+; Copyright (c) 2016 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+; CIYAM Bitcoin test script for ACCT using either a CLTV or secret reveal redemption tx
+; -------------------------------------------------------------------------------------
+;
+; NOTE: In order to utilise the following script you will first need to install Bitcoin
+; into the directory where CIYAM has been compiled or else set the TBITCOIN environment
+; variable accordingly (check the 'tbitcoin' script to work out how to do this and when
+; doing this don't forget the '-regtest' option). Check that there is no 'regtest' data
+; before running this script.
+;
+; As this script uses four different wallets you will need to create four scripts named
+; bct1, bct2, bct3 and bct4 which each should first delete the current 'regtest' wallet
+; and then if a saved wallet exists copy that to wallet.dat. After bitcoin has finished
+; running then the current wallet will be copied so it can be restored later.
+;
+^If bitcoind is running then stop it now and press any key to continue...
+~bct1
+^When bct1 is ready press any key to continue...
+#Generating a spendable amount of RHS for "user1"...
+NUL=@~tbitcoin generate 101
+~tbitcoin importprivkey cRamM8VxjrrdpdQfoeidK4MpTTyTJvvaN4EgMWic6Qc7UrbGWQRQ "user1 (refund)"
+^Shutdown bct1 now and press any key to continue...
+~bct2
+^When bct2 is ready press any key to continue...
+#Generating a spendable amount of LHS for "user2"...
+NUL=@~tbitcoin generate 101
+~tbitcoin importprivkey cNAxEFeb4cRx6bmxHkU9bDQ2WhhW1PUEduZqKf1VxryD3GsqieRP "user2 (refund)"
+#
+^Shutdown bct2 now and press any key to continue...
+#Login as "user1" and create a Trading Pair (with Maximum Amount as at least 25) and then Logout.
+^
+#
+#Now login as "user2" and create a tx from the offer in the All Open Offers list with the following details:
+#
+#Sending Amount: 25
+#Refund Address: mtW4pzRHXwNwkHa2mdy2EokKy5GZ4aMWtu
+#Receiving Address: mkoJtKoxHmdL8aXJvPudmUgZKC1xXHb9KT
+#Secret Hash: 2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b
+#
+^Save the record and then click the Proceed button and Logout...
+#Now login as "user1" and edit the Trade Transaction in the My Trade Transactions list with the following:
+#
+#Refund Address: mids4AKKn42KmcJTvaynUzmnhWnmfgwRMw
+#Receiving Address: mgF67ucKz7CddjuJwDvDUgC5HiJBRDGNBx
+#
+^Save the record then click the Proceed button and Logout...
+#Now login as "user2" and from the tx click on the Waiting tx and copy and paste the Sending Address:
+#
+&USER2_P2SH=
+~bct2
+#
+^Now Logout and when bct2 is ready press any key to continue...
+#Now "user2" will send LHS to their P2SH address.
+^
+NUL=@~tbitcoin sendtoaddress $USER2_P2SH 25
+NUL=@~tbitcoin generate 4
+#
+#Now login as "user1" and from the tx click on the Waiting tx and copy and paste the Sending Address:
+#
+&USER1_P2SH=
+#
+^Now Logout and also shutdown bct2 and press any key to continue...
+~bct1
+^When bct1 is ready press any key to continue...
+#Now "user1" will send RHS to their P2SH address...
+NUL=@~tbitcoin sendtoaddress $USER1_P2SH 25
+NUL=@~tbitcoin generate 4
+#
+^Shutdown bct1 now and press any key to continue...
+~bct4
+^When bct4 is ready press any key to continue...
+~tbitcoin importprivkey cRkycYvB6kS9e6gXFn4CmLBRAgWJNTW2Z8Hp7aZhBhCJyeissCv5 "user2 (receive)"
+~tbitcoin importaddress $USER1_P2SH "user2 (user1's p2sh)"
+~tbitcoin listtransactions "*" 1 0 true
+#
+#Now enter the following from the transaction information above:
+&TXID=
+&VOUT=
+#
+#Now login as "user2" and from the tx click the Receive Checked button and paste the Secret Reveal Script:
+SECRET=secret
+HEX_SCRT=@aschex:$SECRET
+&SCRIPT=
+ADDR=mkoJtKoxHmdL8aXJvPudmUgZKC1xXHb9KT
+WKEY=cRkycYvB6kS9e6gXFn4CmLBRAgWJNTW2Z8Hp7aZhBhCJyeissCv5
+#
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 25.0 $WKEY -e=$HEX_SCRT
+RAW_TX=$OUTPUT
+;~tbitcoin decoderawtransaction $RAW_TX
+#
+#Now "user2" will redeem RHS from the "user1" P2SH address tx (exposing their secret).
+^
+NUL=@~tbitcoin sendrawtransaction $RAW_TX
+NUL=@~tbitcoin generate 1
+#
+#Balance of RHS for "user2" is:
+~tbitcoin getbalance
+#
+^Now Logout and shutdown bct4 and press any key to continue...
+~bct1
+#Now login as "user1" and from the tx click the Receive Checked button and paste the new Check Address:
+&ADDR=
+~tbitcoin importaddress $ADDR "user1 (user2's reveal)"
+#
+~tbitcoin listtransactions "*" 1 0 true
+#
+#Now copy and paste the secret reveal txid:
+&TXID=
+RAW_TX=@~tbitcoin getrawtransaction $TXID
+#
+~tbitcoin decoderawtransaction $RAW_TX
+#
+#Now copy and paste the revealed secret:
+&HEX_SCRT=
+^Shutdown bct1 now and press any key to continue...
+~bct3
+^When bct3 is ready press any key to continue...
+~tbitcoin importprivkey cNLhr36maZTyS84dXXf2WyWq43pHdix53FEoMaRhUEywi5vpP6Y3 "user1 (receive)"
+~tbitcoin importaddress $USER2_P2SH "user1 (user2's p2sh)"
+#
+~tbitcoin listunspent 1 9999
+#
+#Now copy and paste the P2SH txid and vout:
+&TXID=
+&VOUT=
+ADDR=mgF67ucKz7CddjuJwDvDUgC5HiJBRDGNBx
+WKEY=cNLhr36maZTyS84dXXf2WyWq43pHdix53FEoMaRhUEywi5vpP6Y3
+#
+#Now click the Secret Checked button and paste the Secret Reveal Script:
+&SCRIPT=
+#
+crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 25.0 $WKEY -e=$HEX_SCRT
+RAW_TX=$OUTPUT
+;~tbitcoin decoderawtransaction $RAW_TX
+#
+#Now "user1" will redeem LHS from the "user2" P2SH address tx.
+^
+NUL=@~tbitcoin sendrawtransaction $RAW_TX
+NUL=@~tbitcoin generate 1
+#
+#Balance of LHS for "user1" is:
+~tbitcoin getbalance
+^Now Logout and shutdown bct3 and press any key to finish...
