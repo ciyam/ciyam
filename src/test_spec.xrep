@@ -1,0 +1,7 @@
+`{`$spec`=`$object`}
+`{`$spec`^`'.spec.xrep`'`}
+`{`$arg_id`=`'12345`'`}
+`{`$module_name`=`'Sample`'`}
+`{`$class_name`=`'Class`'`}
+`{`$full_class_name`=`'Sample_Class`'`}
+`{`#$spec @`}
