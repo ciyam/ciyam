@@ -2063,16 +2063,17 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          {
             char ch = get_char( is_first ? msg.c_str( ) : 0 );
 
-            if( ch == '\r' )
+            if( ch == '\r' || ch == '\n' )
                break;
 
             cout << ch;
+            cout.flush( );
 
             str += ch;
             is_first = false;
          }
 
-         cout << '\n';
+         cout << endl;
       }
 
 #ifdef __GNUG__
@@ -2725,7 +2726,7 @@ void console_command_handler::handle_invalid_command( const command_parser&, con
 void console_command_handler::handle_command_response( const string& response, bool is_special )
 {
    if( !is_special )
-      cout << response << '\n';
+      cout << response << endl;
    else
       cerr << response << endl;
 }

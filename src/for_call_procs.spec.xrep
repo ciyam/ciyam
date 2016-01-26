@@ -7,11 +7,17 @@
    try
    {
 `}\
-`{`!`@eq`(`$arg_fname`,`'`'`)`&`!`@eq`(`$arg_fvalue`,`'`'`)\
+`{`@eq`(`$arg_update`,`'true`'`)\
 `{`$i`}   get_obj( ).op_update( );
-`{`$i`}   get_obj( ).`{`$arg_fname`}( get_obj( ).`{`$arg_fvalue`}( ) );
+`}`{`!`@eq`(`$arg_fname`,`'`'`)`&`!`@eq`(`$arg_fvalue`,`'`'`)\
+`{`@eq`(`$arg_update`,`'`'`)\
+`{`$i`}   get_obj( ).op_update( );
+`,
+`}`{`$i`}   get_obj( ).`{`$arg_fname`}( get_obj( ).`{`$arg_fvalue`}( ) );
+`{`@eq`(`$arg_update`,`'`'`)\
 `{`$i`}   get_obj( ).op_apply( );
-
+`}
+`,`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`$arg_session_var`,`'`'`)`&`@eq`(`$arg_skip_restore`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)
 `}`{`!`@eq`(`$arg_session_var`,`'`'`)`|`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$j`^`'   `'`}\
 `{`$i`}   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_skip_restore`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`}`{`!`@eq`(`$arg_session_var`,`'`'`)\
@@ -22,6 +28,9 @@
 `{`$j`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$proc_arg`,`'`'`)`{`$proc_arg`} `});
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`$i`}   }
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`$arg_session_var`,`'`'`)`&`@eq`(`$arg_skip_restore`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)
+`}`}`{`@eq`(`$arg_update`,`'true`'`)
+`{`$i`}   get_obj( ).op_apply( );
 `}`{`@eq`(`$arg_use_trans`,`'true`'`)
       transaction_commit( );
 `}\

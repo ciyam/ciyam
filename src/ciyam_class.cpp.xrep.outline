@@ -950,7 +950,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_fname=$specification_\\0_fname arg_fvalue=$specification_\\0_fvalue arg_tfield=$specification_\\0_tfield\
  arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2\
  arg_use_trans=$specification_\\0_use_trans arg_skip_restore=$specification_\\0_skip_restore\
- arg_message=$specification_\\0_message arg_session_var=$specification_\\0_session_var`}\
+ arg_update=$specification_\\0_update arg_message=$specification_\\0_message arg_session_var=$specification_\\0_session_var`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
