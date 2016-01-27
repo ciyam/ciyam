@@ -191,6 +191,185 @@ command_functor* startup_command_functor_factory( const string& /*name*/, comman
    return new startup_command_functor( handler );
 }
 
+struct choice
+{
+   char ch;
+   string show;
+   string value;
+   string output;
+};
+
+bool is_choice_input( const string& input )
+{
+   string::size_type pos = input.find( '[' );
+
+   if( pos != string::npos && input.find( ']', pos + 1 ) != string::npos )
+      return true;
+   else
+      return false;
+}
+
+// Supports single key selection of one of a simple set choices for special input.
+//
+// If you used the following:
+//
+// &Continue? [yes=1|no=] (choose one)
+//
+// then it will output:
+//
+// Continue? [y]es, [n]o (choose one)
+//
+// and assuming you keyed in 'y' it would then output:
+//
+// Continue? yes
+//
+// but the actual string returned will be:
+//
+// Continue=1
+//
+// (in the above example if 'n' was selected it would return "Continue=" instead)
+//
+// If instead you used the following:
+//
+// &Continue? [yes=1!Yes|no=!No] (choose one)
+//
+// then the output after typing 'y' or 'n' would be 'Yes' or 'No' instead of 'yes' or 'no'.
+
+string get_input_from_choices( const string& input )
+{
+   string str( input );
+
+   string::size_type pos = input.find( '[' );
+
+   if( pos != string::npos )
+   {
+      string::size_type rpos = input.find( ']', pos + 1 );
+
+      if( rpos != string::npos )
+      {
+         vector< choice > choices;
+
+         string choice_info( input.substr( pos + 1, rpos - pos - 1 ) );
+
+         str.erase( pos, rpos - pos + 1 );
+
+         while( true )
+         {
+            string::size_type npos = choice_info.find( '|' );
+
+            string next( choice_info.substr( 0, npos ) );
+
+            choice next_choice;
+
+            bool has_output = false;
+            string::size_type opos = next.find( '!' );
+
+            if( opos != string::npos )
+            {
+               next_choice.output = next.substr( opos + 1 );
+
+               has_output = true;
+               next.erase( opos );
+            }
+
+            string::size_type epos = next.find( '=' );
+
+            if( epos == 0 || epos == string::npos )
+               break;
+
+            next_choice.value = next.substr( epos + 1 );
+            next.erase( epos );
+
+            char ch = '\0';
+            bool found = false;
+
+            for( size_t i = 0; i < next.length( ); i++ )
+            {
+               ch = next[ i ];
+
+               if( !has_output )
+                  next_choice.output += ch;
+
+               bool okay = true;
+               for( size_t j = 0; j < choices.size( ); j++ )
+               {
+                  if( choices[ j ].ch == ch )
+                  {
+                     okay = false;
+                     break;
+                  }
+               }
+
+               if( found || !okay )
+                  next_choice.show += ch;
+               else
+               {
+                  found = true;
+                  next_choice.ch = ch;
+                  next_choice.show += '[' + string( 1, ch ) + ']';
+               }
+            }
+
+            choices.push_back( next_choice );
+
+            if( npos == string::npos )
+               break;
+
+            choice_info.erase( 0, npos + 1 );
+         }
+
+         choice_info.erase( );
+
+         for( size_t i = 0; i < choices.size( ); i++ )
+         {
+            if( i > 0 )
+               choice_info += ", ";
+            choice_info += choices[ i ].show;
+         }
+
+         str.insert( pos, choice_info );
+
+         cout << str;
+
+         string value, output;
+         bool found = false;
+
+         while( !found )
+         {
+            char ch = get_char( );
+            for( size_t i = 0; i < choices.size( ); i++ )
+            {
+               if( choices[ i ].ch == ch )
+               {
+                  value = choices[ i ].value;
+                  output = choices[ i ].output;
+
+                  found = true;
+                  break;
+               }
+            }
+         }
+
+         size_t num_to_erase = str.length( ) - pos;
+
+         cout << string( num_to_erase, '\b' )
+          << string( num_to_erase, ' ' ) << string( num_to_erase, '\b' ) << output << endl;
+
+         pos = str.find_first_of( "#$%=:?" );
+
+         if( pos != string::npos )
+         {
+            str.erase( pos );
+            str += '=';
+         }
+
+         str += value;
+      }
+   }
+
+   return str;
+}
+
 // FISSILE
 //
 // Functional
@@ -2057,7 +2236,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          if( str.length( ) > 1 )
             msg = str.substr( 1 );
 
-         str = msg + get_line( msg, false );
+         if( !is_choice_input( msg ) )
+            str = msg + get_line( msg, false );
+         else
+            str = get_input_from_choices( msg );
       }
 
 #ifdef __GNUG__
