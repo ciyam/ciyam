@@ -2053,10 +2053,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       if( !str.empty( ) && str[ 0 ] == c_prompted_input_prefix )
       {
          string msg( c_default_value_prompt );
+
          if( str.length( ) > 1 )
             msg = str.substr( 1 );
 
-         str = msg + get_line( msg );
+         str = msg + get_line( msg, false );
       }
 
 #ifdef __GNUG__

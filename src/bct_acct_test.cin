@@ -31,7 +31,7 @@ NUL=@~tbitcoin generate 101
 ~tbitcoin importprivkey cNAxEFeb4cRx6bmxHkU9bDQ2WhhW1PUEduZqKf1VxryD3GsqieRP "user2 (refund)"
 #
 ^Shutdown bct2 now and press any key to continue...
-#Login as "user1" and create a Trading Pair (with Maximum Amount as at least 25) and then Logout.
+#Login as "user1" and create a Trade Offer (with Maximum Amount as at least 25) and then Logout.
 ^
 #
 #Now login as "user2" and create a tx from the offer in the All Open Offers list with the following details:
@@ -108,13 +108,13 @@ NUL=@~tbitcoin generate 1
 #
 ~tbitcoin listtransactions "*" 1 0 true
 #
-#Now copy and paste the secret reveal txid:
+#Now copy and paste the secret reveal txid from the above:
 &TXID=
 RAW_TX=@~tbitcoin getrawtransaction $TXID
 #
 ~tbitcoin decoderawtransaction $RAW_TX
 #
-#Now copy and paste the revealed secret:
+#Now copy and paste the revealed secret from the above:
 &HEX_SCRT=
 ^Shutdown bct1 now and press any key to continue...
 ~bct3
@@ -124,7 +124,7 @@ RAW_TX=@~tbitcoin getrawtransaction $TXID
 #
 ~tbitcoin listunspent 1 9999
 #
-#Now copy and paste the P2SH txid and vout:
+#Now copy and paste the P2SH txid and vout from the above:
 &TXID=
 &VOUT=
 ADDR=mgF67ucKz7CddjuJwDvDUgC5HiJBRDGNBx
@@ -145,3 +145,5 @@ NUL=@~tbitcoin generate 1
 #Balance of LHS for "user1" is:
 ~tbitcoin getbalance
 ^Now Logout and shutdown bct3 and press any key to finish...
+#
+#This concludes the ACCT using CLTV demonstration with bct1..4 scripts.
