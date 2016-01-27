@@ -330,6 +330,7 @@ string get_input_from_choices( const string& input )
          str.insert( pos, choice_info );
 
          cout << str;
+         cout.flush( );
 
          string value, output;
          bool found = false;
