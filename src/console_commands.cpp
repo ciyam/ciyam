@@ -2056,52 +2056,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          if( str.length( ) > 1 )
             msg = str.substr( 1 );
 
-         str = msg;
-
-         cout << msg;
-         size_t min = str.length( );
-
-         while( true )
-         {
-            cout.flush( );
-            char ch = get_char( );
-
-            // NOTE: Handle a backspace by erasing the last input character
-            // and ESC or ctrl-u to erase current input (after the prompt).
-            if( ch == '\b' )
-            {
-               if( str.length( ) > min )
-               {
-                  str = str.substr( 0, str.length( ) - 1 );
-                  cout << '\r' << str << ' ' << '\b';
-               }
-
-               continue;
-            }
-            else if( ch == 0x1b || ch == 0x15 ) // i.e. ESC or ctrl-u
-            {
-               if( str.length( ) > min )
-               {
-                  size_t diff = str.length( ) - min;
-
-                  str = str.substr( 0, min );
-
-                  cout << '\r' << str << string( diff, ' ' ) << string( diff, '\b' );
-               }
-               else
-                  cout << '\r' << str;
-
-               continue;
-            }
-
-            if( ch == '\r' || ch == '\n' )
-               break;
-
-            str += ch;
-            cout << ch;
-         }
-
-         cout << endl;
+         str = msg + get_line( msg );
       }
 
 #ifdef __GNUG__
