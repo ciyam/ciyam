@@ -36,6 +36,8 @@
 #include "ciyam_core_files.h"
 #include "command_processor.h"
 
+//#define USE_THROTTLING
+
 using namespace std;
 
 extern size_t g_active_sessions;
@@ -68,7 +70,9 @@ const size_t c_pid_timeout = 1000;
 const size_t c_connect_timeout = 2500;
 const size_t c_recconect_timeout = 1000;
 
+#ifdef USE_THROTTLING
 const size_t c_request_throttle_sleep_time = 250;
+#endif
 
 enum peer_state
 {
@@ -1433,9 +1437,10 @@ string socket_command_processor::get_cmd_and_args( )
       }
       else
       {
+#ifdef USE_THROTTLING
          if( request != "bye" )
             msleep( c_request_throttle_sleep_time );
-
+#endif
          if( request == c_response_okay || request == c_response_okay_more )
             request = "bye";
 
