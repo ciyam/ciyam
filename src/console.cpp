@@ -45,7 +45,62 @@ extern "C"
 
 using namespace std;
 
-char get_char( const char* p_prompt )
+namespace
+{
+
+string get_line_using_get_char( )
+{
+   string str;
+
+   while( true )
+   {
+      cout.flush( );
+      char ch = get_char( 0, false );
+
+      if( ch == '\r' || ch == '\n' || ch == 0x03 ) // i.e. ctrl-c
+      {
+         cout << endl;
+
+         if( ch == 0x03 )
+            str.erase( );
+
+         break;
+      }
+#ifdef _WIN32
+      else if( ch == '\b' || ch == 0x1b ) // i.e. BS or ESC
+#else
+      else if( ch == '\b' || ch == 0x21 ) // i.e. BS or ctrl-u
+#endif
+      {
+         if( str.length( ) )
+         {
+            if( ch != '\b' )
+            {
+               cout << string( str.length( ), '\b' )
+                << string( str.length( ), ' ' ) << string( str.length( ), '\b' );
+
+               str.erase( );
+            }
+            else
+            {
+               cout << '\b' << ' ' << '\b';
+               str = str.substr( 0, str.length( ) - 1 );
+            }
+         }
+      }
+      else
+      {
+         str += ch;
+         cout << ch;
+      }
+   }
+
+   return str;
+}
+
+}
+
+char get_char( const char* p_prompt, bool flush_input )
 {
    if( p_prompt && p_prompt[ 0 ] != 0 )
    {
@@ -72,10 +127,15 @@ char get_char( const char* p_prompt )
    }
 
    tcgetattr( infd, &systerm );
+
    systerm.c_lflag &= ~( ICANON | ECHO );
    systerm.c_cc[ VMIN ] = 0;
    systerm.c_cc[ VTIME ] = 1;
-   tcsetattr( infd, TCSAFLUSH, &systerm );
+
+   if( !flush_input )
+      tcsetattr( infd, TCSANOW, &systerm );
+   else
+      tcsetattr( infd, TCSAFLUSH, &systerm );
 
    char ch;
    while( true )
@@ -97,13 +157,13 @@ char get_char( const char* p_prompt )
 #endif
 }
 
-string get_line( const char* p_prompt )
+string get_line( const char* p_prompt, bool use_cin )
 {
    string str;
 
 #ifdef __GNUG__
-   // NOTE: If standard input is not a terminal (such as is the case with redirected input) then
-   // don't use "readline" (as it seems to be causing problems).
+   // NOTE: If standard input is not a terminal (such as is the case with redirected input)
+   // then don't use "readline" (as it does not behave as one might expect it would).
 #  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
    {
@@ -120,7 +180,10 @@ string get_line( const char* p_prompt )
       if( p_prompt && p_prompt[ 0 ] != 0 )
          cout << p_prompt;
 
-      getline( cin, str );
+      if( use_cin )
+         getline( cin, str );
+      else
+         str = get_line_using_get_char( );
    }
 
    return str;
@@ -128,7 +191,11 @@ string get_line( const char* p_prompt )
    if( p_prompt && p_prompt[ 0 ] != 0 )
       cout << p_prompt;
 
-   getline( cin, str );
+   if( use_cin )
+      getline( cin, str );
+   else
+      str = get_line_using_get_char( );
+
    return str;
 #endif
 }
