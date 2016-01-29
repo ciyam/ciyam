@@ -405,12 +405,15 @@ string get_input_from_choices( const string& input )
 // *@hello=$`Hello`world!`
 // *!hello
 //
-// *@test=$@^test2=$?__@?__<__!^test2_#=10_!^test2
-// *!test
+// *@hex2dec=$@^x=$@?=#16#_@^x+@?_!^x_@?#
+// *!hex2dec?ffff
 //
 // *@ror=$@^^x=@?_@^^y=_>^^x,^^y_>^^y,^^x_@?=@^^x_@?
 // *@rol=$@^^x=@?_@^^y=_<^^y,^^x_<^^x,^^y_@?=@^^x_@?
 // *$=X... @? !ror !ror !ror !rol !rol !rol
+//
+// *@test=$@^test2=$`.__?@?!!__<__!^test2_@?=#42_!^test2_``
+// *!test
 
 const char c_fissile_op_none = '\0';
 const char c_fissile_base_suffix = '#';

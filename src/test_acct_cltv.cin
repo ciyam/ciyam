@@ -12,29 +12,51 @@
 ; doing this don't forget the '-regtest' option). Check that there is no 'regtest' data
 ; before starting 'bitcoind' and then running this script.
 ;
+;SECRET=1234567890
+;USE_SECRET_REVEAL=1
+;
+;LOCK=128
 ;USE_SECRET_REVEAL=
 ;USE_UNIX_TIMESTAMP=
 ;
+;SECS=5
 ;USE_SECRET_REVEAL=
 ;USE_UNIX_TIMESTAMP=1
 ;
-;SECRET=1234567890
-;USE_SECRET_REVEAL=1
+<std.fissile
 ;
 @ifndef $USE_SECRET_REVEAL
 #Redeeming using CLTV refund...
 @ifndef $USE_UNIX_TIMESTAMP
 #(via block number)
+@ifndef $LOCK
+LOCK=128
+@endif
+#$LOCK
+;
+; Function to reverse endian (using some std functions).
+*@reverse_hex=$@^x=$!split.n?2,_@^x+@?_!^x_!reverse.set_!join_@?
+;
+; Functions to determine the maximum signed hex value that has the same number of digits as its input.
+*@hexmaxs.loop=$?^y!!_<^z,^y_@^x+$f_!hexmaxs.loop
+*@hexmaxs=$@^x=$7_@^y=@?_@^z=_<^z,^y_!hexmaxs.loop_@^x
 @else
 #(via unix timestamp)
+@ifndef SECS
+SECS=5
+@endif
+#$SECS seconds
+UNIX=@unix
 @endif
 @else
 @ifndef $SECRET
 SECRET=1234567890
 @endif
 #Redeeming using secret reveal...
+#($SECRET)
 @endif
-~tbitcoin generate 101
+#Generating a spendable amount...
+NUL=@~tbitcoin generate 101
 ;
 ; Define an address and matching WIF private key for testing.
 ;
@@ -56,10 +78,23 @@ TXID=@~tbitcoin sendtoaddress $ADDR 50
 ;
 SCTH=@sha256:$SECRET
 @ifndef $USE_UNIX_TIMESTAMP
-BLKN=7f
-SCRIPT=76a820%SCTH%87637576a914%PKHS%88ac6701%BLKN%b17576a914%PKHR%88ac68
+BLKH=*!dec2hex?$LOCK
+HMAX=*!hexmaxs?$BLKH
+;
+; Function to output 00 if its first hex value arg is greater than its second.
+*@gt00=$@^u=_@^v=_@^w=_@^x=_@^y=$@^w=#16#_@^z=$@^x=#16#_<<^u_@^y+@^u_<<^v_@^z+@^v_!^y_!^z_?>^w,^x_`00
+PREF=*!gt00?$BLKH,$HMAX
+FULL=$PREF$BLKH
+;
+*@size.loop=$?@^x!!_<^z,^x_@^s+#1_!size.loop
+*@size=$@^s=#0_@^x=@?_@^z=_!size.loop_@^s/#2_`0_@^s
+SIZE=*!size?$FULL
+BLKR=*!reverse_hex?$FULL
+BLKI=$SIZE$BLKR
+;
+SCRIPT=76a820%SCTH%87637576a914%PKHS%88ac67%BLKI%b17576a914%PKHR%88ac68
 @else
-TIME=@unix+5
+TIME=@$UNIX+$SECS
 HTME=@hexlit:$TIME
 LTME=@substr:0,8:$HTME
 SCRIPT=76a820%SCTH%87637576a914%PKHS%88ac6704%LTME%b17576a914%PKHR%88ac68
@@ -72,7 +107,7 @@ P2SH_HASH=$OUTPUT
 ;
 ; Now send funds to the P2SH address.
 ;
-~tbitcoin generate 3
+NUL=@~tbitcoin generate 3
 TXID=@~tbitcoin sendtoaddress $P2SH_ADDR 50
 OLD_TX=@~tbitcoin getrawtransaction $TXID
 ~tbitcoin decoderawtransaction $OLD_TX
@@ -82,12 +117,9 @@ OLD_TX=@~tbitcoin getrawtransaction $TXID
 ;
 VOUT=0
 #$P2SH_HASH
-~tbitcoin generate 3
-~tbitcoin getblockcount
+NUL=@~tbitcoin generate 3
 ;
-@ifndef $USE_UNIX_TIMESTAMP
-LOCK=127
-@else
+@ifdef $USE_UNIX_TIMESTAMP
 LOCK=$TIME
 @endif
 @ifndef $USE_SECRET_REVEAL
@@ -102,14 +134,16 @@ RAW_TX=$OUTPUT
 @ifndef $USE_SECRET_REVEAL
 @ifdef $USE_UNIX_TIMESTAMP
 ;
-; Wait for five seconds to then redeem the funds from the P2SH UTXO.
+; Wait for SECS seconds to then redeem the funds from the P2SH UTXO.
 ;
 ; NOTE: When running with testnet/regtest it seems that when using a
 ; unix timestamp (instead of a block number) then the tx is accepted
 ; before the actual time so this delay is just to ensure that the tx
 ; will appear confirmed after the final generate).
 ;
-wait 5000
+MILI=@$SECS*1000
+#wait $MILI
+.wait $MILI
 @else
 ;
 ; Note this attempt will fail due to being non-final (i.e. locktime).
@@ -118,11 +152,12 @@ wait 5000
 ;
 ; Increase the block height then redeem the funds from the P2SH UTXO.
 ;
-~tbitcoin generate 20
+NEED=@$LOCK-107
+NUL=@~tbitcoin generate $NEED
 @endif
 @endif
 ~tbitcoin getblockcount
 TXID=@~tbitcoin sendrawtransaction $RAW_TX
 NEW_TX=@~tbitcoin getrawtransaction $TXID
 ~tbitcoin decoderawtransaction $NEW_TX
-~tbitcoin generate 1
+NUL=@~tbitcoin generate 1

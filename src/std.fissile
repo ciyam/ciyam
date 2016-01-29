@@ -1,0 +1,22 @@
+; Copyright (c) 2016 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+; Various general purpose FISSILE functions (available for inclusion in CIYAM scripts).
+;
+*@split.n.add.char=$<^z,^y
+*@split.n.add.sep=$?^z!!_@^z+$,
+*@split.n.loop=$?^x!!_<^y_>^x,^w_!split.n.add.char_!split.n.loop
+*@split.n.item=$?@?!!_!split.n.add.sep_@^x=@^n_@^w=_@^y=_!split.n.loop_!split.n.item
+*@split.n=$@^n=_<<^n_@^nn=$@^n=#_@^nn+@^n_!^nn_@^z=_!split.n.item_@?=@^z
+;
+*@reverse.set.final=$@?=@^z
+*@reverse.set.next=$?^x!!reverse.set.final_>>^x,^y_<<^z,^y_!reverse.set.next
+*@reverse.set=$@^x=@?_@^y=_@^z=_!reverse.set.next
+;
+*@join.next=$?@?!!_<<^y_@^x+@^y_@^y=_!join.next
+*@join=$@^x=_@^y=_!join.next_@?=@^x
+;
+*@hex2dec=$@^x=$@?=#16#_@^x+@?_!^x_@?#10
+*@dec2hex=$@^x=$@?=#10#_@^x+@?_!^x_@?#16
