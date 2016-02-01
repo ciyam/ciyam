@@ -54,8 +54,7 @@ NUL=@~tbitcoin generate 101
 ~bct2
 #
 ^Now Logout and when bct2 is ready press any key to continue...
-#Now "user2" will send LHS to their P2SH address.
-^
+#Now "user2" sends LHS to their P2SH address.
 NUL=@~tbitcoin sendtoaddress $USER2_P2SH 25
 NUL=@~tbitcoin generate 4
 #
@@ -66,7 +65,7 @@ NUL=@~tbitcoin generate 4
 ^Now Logout and also shutdown bct2 and press any key to continue...
 ~bct1
 ^When bct1 is ready press any key to continue...
-#Now "user1" will send RHS to their P2SH address...
+#Now "user1" sends RHS to their P2SH address...
 NUL=@~tbitcoin sendtoaddress $USER1_P2SH 25
 NUL=@~tbitcoin generate 4
 #

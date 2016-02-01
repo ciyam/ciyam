@@ -7500,6 +7500,9 @@ void set_grp( const string& grp )
 
 string get_dtm( )
 {
+   if( gtp_session->dtm.empty( ) )
+      gtp_session->dtm = date_time::standard( ).as_string( );
+
    return gtp_session->dtm;
 }
 
