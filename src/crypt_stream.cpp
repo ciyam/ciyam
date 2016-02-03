@@ -45,6 +45,8 @@ namespace
 const size_t c_max_key_size = 128;
 const size_t c_file_buf_size = 32768;
 
+const size_t c_work_buffer_size = c_sha256_digest_size * 5000000;
+
 const size_t c_password_rounds_multiplier = 3;
 
 }
@@ -344,5 +346,83 @@ string harden_key_with_salt( const string& key, const string& salt )
    }
 
    return salted_key;
+}
+
+string check_for_proof_of_work(
+ const string& data, size_t start, size_t range, size_t num_leading_zeroes )
+{
+   unsigned char hash_buffer[ c_sha256_digest_size ];
+
+   if( range == 0 )
+      throw runtime_error( "invalid range 0 for 'check_for_proof_of_work'" );
+
+   auto_ptr< unsigned char > ap_buffer( new unsigned char[ c_work_buffer_size ] );
+
+   bool okay = true;
+   size_t nonce = 0;
+   string hash_string;
+
+   for( size_t i = 0; i < range; i++ )
+   {
+      sha256 hash( data );
+      hash.copy_digest_to_buffer( hash_buffer );
+
+      size_t offset = 0;
+      size_t num_bytes = 0;
+
+      nonce = start + i;
+
+      if( nonce < 2 )
+         throw runtime_error( "invalid nonce < 2 for 'check_for_proof_of_work'" );
+
+      // NOTE: The purpose of this algorithm is to transform during copying such that
+      // it shouldn't be possible to do the hashing without using the memory for this
+      // transforming (if this algorithm can be implemented without requiring all the
+      // memory to be allocated then it will need to be reworked).
+      while( num_bytes < c_work_buffer_size )
+      {
+         memcpy( ap_buffer.get( ) + num_bytes, hash_buffer, c_sha256_digest_size );
+
+         if( num_bytes && num_bytes % nonce == 0 )
+         {
+            if( ++offset >= c_sha256_digest_size )
+               offset = 0;
+
+            hash_buffer[ offset ] ^= 0xaa;
+         }
+
+         num_bytes += c_sha256_digest_size;
+      }
+
+      reverse( ap_buffer.get( ), ap_buffer.get( ) + c_work_buffer_size );
+
+      sha256 buf_hash( ap_buffer.get( ), c_work_buffer_size );
+
+      // NOTE: Just in case the nonce was bigger than the buffer itself (in which case
+      // the hash buffer transformation above would not have occurred) perform another
+      // round with the nonce value (as a string).
+      buf_hash.update( to_string( nonce ) );
+
+      okay = true;
+
+      hash_string = buf_hash.get_digest_as_string( );
+
+      for( size_t j = 0; j < num_leading_zeroes; j++ )
+      {
+         if( hash_string[ j ] != '0' )
+         {
+            okay = false;
+            break;
+         }
+      }
+
+      if( okay )
+         break;
+   }
+
+   if( range == 1 )
+      return okay ? hash_string : string( );
+   else
+      return okay ? to_string( nonce ) : string( );
 }
 

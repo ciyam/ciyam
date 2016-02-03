@@ -1697,6 +1697,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
           script, extras, address, crypto_amount( amount ),
           wif_key.c_str( ), lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
       }
+      else if( command == c_cmd_ciyam_session_crypto_proof_search )
+      {
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_search_data ) );
+
+         // NOTE: To make sure the console client doesn't time out limit the range to 20.
+         size_t start = rand( );
+
+         response = check_for_proof_of_work( data, start, 20 );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_proof_verify )
+      {
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_verify_data ) );
+         string nonce( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_verify_nonce ) );
+
+         response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1 );
+      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );
