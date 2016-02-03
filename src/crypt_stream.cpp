@@ -16,6 +16,7 @@
 #  include <memory>
 #  include <sstream>
 #  include <iostream>
+#  include <stdexcept>
 #endif
 
 #include "crypt_stream.h"
