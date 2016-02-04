@@ -230,6 +230,8 @@ class uuid
    uuid( );
    uuid( const std::string& str );
 
+   size_t as_size_t( ) const;
+
    std::string as_string( ) const;
 
    private:

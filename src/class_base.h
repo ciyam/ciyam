@@ -1120,6 +1120,8 @@ void CLASS_BASE_DECL_SPEC wait( unsigned long ms );
 
 std::string CLASS_BASE_DECL_SPEC get_uuid( );
 
+size_t CLASS_BASE_DECL_SPEC get_random( );
+
 std::string CLASS_BASE_DECL_SPEC get_random_hash( );
 
 int64_t CLASS_BASE_DECL_SPEC get_unix_timestamp( bool use_dtm = true );

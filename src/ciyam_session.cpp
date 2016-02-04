@@ -1700,11 +1700,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_proof_search )
       {
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_search_data ) );
+         string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_search_start ) );
 
-         // NOTE: To make sure the console client doesn't time out limit the range to 20.
-         size_t start = rand( );
+         size_t start_val;
 
-         response = check_for_proof_of_work( data, start, 20 );
+         if( start.empty( ) )
+            start_val = get_random( );
+         else
+            start_val = from_string< size_t >( start );
+
+         // NOTE: To make sure the console client doesn't time out limit the range to 16.
+         response = check_for_proof_of_work( data, start_val, 16 );
       }
       else if( command == c_cmd_ciyam_session_crypto_proof_verify )
       {

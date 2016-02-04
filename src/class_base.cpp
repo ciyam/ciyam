@@ -2514,6 +2514,18 @@ string get_uuid( )
    return uuid( ).as_string( );
 }
 
+size_t get_random( )
+{
+   size_t val;
+#ifdef SSL_SUPPORT
+   RAND_bytes( ( unsigned char* )&val, sizeof( val ) );
+#else
+   val = uuid( ).as_size_t( );
+#endif
+
+   return val;
+}
+
 string get_random_hash( )
 {
 #ifdef SSL_SUPPORT
