@@ -152,6 +152,11 @@ uuid::uuid( const string& str )
       buf[ i ] = ( hex_nibble( str[ i * 2 ] ) << 4 ) + hex_nibble( str[ ( i * 2 ) + 1 ] );
 }
 
+size_t uuid::as_size_t( ) const
+{
+   return *( size_t* )( &buf[ c_uuid_size - sizeof( size_t ) ] );
+}
+
 string uuid::as_string( ) const
 {
    string str( c_uuid_size * 2, '\0' );

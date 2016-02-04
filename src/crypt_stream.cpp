@@ -353,6 +353,7 @@ string check_for_proof_of_work(
  const string& data, size_t start, size_t range, size_t num_leading_zeroes )
 {
    unsigned char hash_buffer[ c_sha256_digest_size ];
+   unsigned char orig_buffer[ c_sha256_digest_size ];
 
    if( range == 0 )
       throw runtime_error( "invalid range 0 for 'check_for_proof_of_work'" );
@@ -363,18 +364,25 @@ string check_for_proof_of_work(
    size_t nonce = 0;
    string hash_string;
 
+   sha256 hash( data );
+   hash.copy_digest_to_buffer( hash_buffer );
+
+   memcpy( orig_buffer, hash_buffer, c_sha256_digest_size );
+
    for( size_t i = 0; i < range; i++ )
    {
-      sha256 hash( data );
-      hash.copy_digest_to_buffer( hash_buffer );
+      if( i != 0 )
+         memcpy( hash_buffer, orig_buffer, c_sha256_digest_size );
 
       size_t offset = 0;
       size_t num_bytes = 0;
 
       nonce = start + i;
 
-      if( nonce < 2 )
-         throw runtime_error( "invalid nonce < 2 for 'check_for_proof_of_work'" );
+      for( size_t j = 0; j < c_sha256_digest_size; j++ )
+         hash_buffer[ j ] ^= ( unsigned char )nonce;
+
+      unsigned char ch = '\0';
 
       // NOTE: The purpose of this algorithm is to transform during copying such that
       // it shouldn't be possible to do the hashing without using the memory for this
@@ -384,28 +392,28 @@ string check_for_proof_of_work(
       {
          memcpy( ap_buffer.get( ) + num_bytes, hash_buffer, c_sha256_digest_size );
 
-         if( num_bytes && num_bytes % nonce == 0 )
-         {
-            if( ++offset >= c_sha256_digest_size )
-               offset = 0;
+         if( ++offset >= c_sha256_digest_size - 1 )
+            offset = 0;
 
-            hash_buffer[ offset ] ^= 0xaa;
-         }
+         ch += hash_buffer[ offset ];
+
+         for( size_t j = 0; j < c_sha256_digest_size; j++ )
+            hash_buffer[ j ] ^= ( ch + j );
 
          num_bytes += c_sha256_digest_size;
       }
 
+      // NOTE: The content is reversed prior to hashing to ensure that the entire
+      // pass has to have been completed before any hashing can commence. Another
+      // approach would be to change the SHA256 code to be able to operate itself
+      // with the data in reverse but tests showed that the reversing is not that
+      // significant a proportion of the time (so it wouldn't significantly speed
+      // things up).
       reverse( ap_buffer.get( ), ap_buffer.get( ) + c_work_buffer_size );
 
       sha256 buf_hash( ap_buffer.get( ), c_work_buffer_size );
 
-      // NOTE: Just in case the nonce was bigger than the buffer itself (in which case
-      // the hash buffer transformation above would not have occurred) perform another
-      // round with the nonce value (as a string).
-      buf_hash.update( to_string( nonce ) );
-
       okay = true;
-
       hash_string = buf_hash.get_digest_as_string( );
 
       for( size_t j = 0; j < num_leading_zeroes; j++ )
