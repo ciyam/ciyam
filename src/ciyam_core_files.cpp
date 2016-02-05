@@ -37,6 +37,11 @@
 #endif
 #include "hash_chain.h"
 #include "ciyam_files.h"
+#include "crypt_stream.h"
+
+#ifdef SSL_SUPPORT
+#  include <openssl/rand.h>
+#endif
 
 using namespace std;
 
@@ -1053,6 +1058,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    vector< string > transaction_hashes;
 
+   bool had_nonce = false;
    bool had_signature = false;
    bool has_secondary_account = false;
 
@@ -1256,6 +1262,16 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
          transaction_hashes.push_back( tx_hash );
       }
+      else if( !had_nonce
+       && prefix == string( c_file_type_core_block_detail_proof_of_work_prefix ) )
+      {
+         had_nonce = true;
+
+         if( check_for_proof_of_work( verify, from_string< size_t >( next_line ), 1 ).empty( ) )
+            throw runtime_error( "invalid proof of work" );
+
+         verify += "\n" + lines[ i ];
+      }
       else if( !had_signature
        && prefix == string( c_file_type_core_block_detail_signature_prefix ) )
       {
@@ -1280,6 +1296,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    if( !block_height )
       account_hash = "0" + public_key_base64;
+   else if( p_extras && !had_nonce )
+      throw runtime_error( "block proof of work missing" );
 
    if( p_block_info )
    {
@@ -3787,8 +3805,17 @@ string construct_new_block( const string& blockchain,
       data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + unconfirmed_txs[ i ];
    }
 
+   size_t start = 0;
+#ifdef SSL_SUPPORT
+   RAND_bytes( ( unsigned char* )&start, sizeof( start ) );
+#endif
+   string nonce( check_for_proof_of_work( data, start, 16 ) );
+
    if( p_new_block_info )
-      p_new_block_info->num_txs = num_txs;
+      p_new_block_info->num_txs = nonce.empty( ) ? 0 : num_txs;
+
+   if( !nonce.empty( ) )
+      data += "\n" + string( c_file_type_core_block_detail_proof_of_work_prefix ) + nonce;
 
 #ifdef SSL_SUPPORT
    data += "\n" + string( c_file_type_core_block_detail_signature_prefix ) + priv_key.construct_signature( data, true );

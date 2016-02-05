@@ -63,7 +63,7 @@ const int c_max_line_length = 500;
 
 const int c_min_block_wait_passes = 8;
 
-const size_t c_request_timeout = 5000;
+const size_t c_request_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
 
 const size_t c_pid_timeout = 1000;
@@ -230,7 +230,7 @@ string mint_new_block( const string& blockchain, new_block_info& new_block, stri
 
          next_data = construct_new_block( blockchain, next_password, &next_block );
 
-         // NOTE: If no txs have been included then don't bother continuing.
+         // NOTE: If no txs have been included (or "nonce" found) then don't proceed.
          if( !next_block.num_txs )
             break;
 
