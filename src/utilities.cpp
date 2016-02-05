@@ -152,14 +152,20 @@ uuid::uuid( const string& str )
       buf[ i ] = ( hex_nibble( str[ i * 2 ] ) << 4 ) + hex_nibble( str[ ( i * 2 ) + 1 ] );
 }
 
-size_t uuid::as_size_t( ) const
+uint32_t uuid::as_uint32_t( ) const
 {
-   return *( size_t* )( &buf[ c_uuid_size - sizeof( size_t ) ] );
+   return *( uint32_t* )( &buf[ c_uuid_size - sizeof( uint32_t ) ] );
+}
+
+uint64_t uuid::as_uint64_t( ) const
+{
+   return *( uint64_t* )( &buf[ c_uuid_size - sizeof( uint64_t ) ] );
 }
 
 string uuid::as_string( ) const
 {
    string str( c_uuid_size * 2, '\0' );
+
    for( int i = 0; i < c_uuid_size; i++ )
    {
       str[ i * 2 ] = ascii_digit( ( buf[ i ] & 0xf0 ) >> 4 );

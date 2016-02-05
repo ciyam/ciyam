@@ -3805,7 +3805,7 @@ string construct_new_block( const string& blockchain,
       data += "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + unconfirmed_txs[ i ];
    }
 
-   size_t start = 0;
+   uint32_t start = 0;
 #ifdef SSL_SUPPORT
    RAND_bytes( ( unsigned char* )&start, sizeof( start ) );
 #endif

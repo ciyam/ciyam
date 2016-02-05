@@ -353,7 +353,7 @@ string harden_key_with_salt( const string& key, const string& salt )
 }
 
 string check_for_proof_of_work(
- const string& data, size_t start, size_t range, size_t num_leading_zeroes )
+ const string& data, uint32_t start, uint8_t range, uint8_t num_leading_zeroes )
 {
    unsigned char hash_buffer[ c_sha256_digest_size ];
    unsigned char orig_buffer[ c_sha256_digest_size ];
@@ -364,7 +364,7 @@ string check_for_proof_of_work(
    auto_ptr< unsigned char > ap_buffer( new unsigned char[ c_work_buffer_size ] );
 
    bool okay = true;
-   size_t nonce = 0;
+   uint32_t nonce = 0;
    string hash_string;
 
    sha256 hash( data );
@@ -372,23 +372,23 @@ string check_for_proof_of_work(
 
    memcpy( orig_buffer, hash_buffer, c_sha256_digest_size );
 
-   for( size_t i = 0; i < range; i++ )
+   for( uint8_t i = 0; i < range; i++ )
    {
       if( i != 0 )
          memcpy( hash_buffer, orig_buffer, c_sha256_digest_size );
 
-      size_t offset = 0;
-      size_t num_bytes = 0;
+      uint8_t offset = 0;
+      uint32_t num_bytes = 0;
 
       nonce = start + i;
 
-      for( size_t j = 0; j < c_sha256_digest_size; j++ )
+      for( uint8_t j = 0; j < c_sha256_digest_size; j++ )
          hash_buffer[ j ] ^= ( unsigned char )nonce;
 
       unsigned char ch = '\0';
       unsigned char* p_next = ap_buffer.get( );
 
-      size_t wrap = c_sha256_digest_size - 1;
+      uint8_t wrap = c_sha256_digest_size - 1;
 
       // NOTE: The purpose of this algorithm is to transform during copying such that
       // it shouldn't be possible to do the hashing without using the memory for this
@@ -439,6 +439,9 @@ string check_for_proof_of_work(
 
       if( okay )
          break;
+
+      // NOTE: Take a short break after each pass to let other threads get a go.
+      msleep( 250 );
    }
 
    if( range == 1 )

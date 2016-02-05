@@ -230,7 +230,8 @@ class uuid
    uuid( );
    uuid( const std::string& str );
 
-   size_t as_size_t( ) const;
+   uint32_t as_uint32_t( ) const;
+   uint64_t as_uint64_t( ) const;
 
    std::string as_string( ) const;
 

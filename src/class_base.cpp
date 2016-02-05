@@ -2514,13 +2514,13 @@ string get_uuid( )
    return uuid( ).as_string( );
 }
 
-size_t get_random( )
+uint32_t get_random( )
 {
-   size_t val;
+   uint32_t val;
 #ifdef SSL_SUPPORT
    RAND_bytes( ( unsigned char* )&val, sizeof( val ) );
 #else
-   val = uuid( ).as_size_t( );
+   val = uuid( ).as_uint32_t( );
 #endif
 
    return val;
