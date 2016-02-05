@@ -13,6 +13,7 @@
 #  endif
 
 #  include "config.h"
+#  include "ptypes.h"
 
 void crypt_stream( std::iostream& io, const char* p_key, size_t key_length );
 
@@ -44,6 +45,6 @@ std::string data_encrypt( const std::string& dat,
 std::string harden_key_with_salt( const std::string& key, const std::string& salt );
 
 std::string check_for_proof_of_work(
- const std::string& data, size_t start, size_t range = 1, size_t num_leading_zeroes = 1 );
+ const std::string& data, uint32_t start, uint8_t range = 1, uint8_t num_leading_zeroes = 1 );
 
 #endif

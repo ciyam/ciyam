@@ -1697,17 +1697,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
           script, extras, address, crypto_amount( amount ),
           wif_key.c_str( ), lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
       }
-      else if( command == c_cmd_ciyam_session_crypto_proof_search )
+      else if( command == c_cmd_ciyam_session_crypto_nonce_search )
       {
-         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_search_data ) );
-         string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_search_start ) );
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_data ) );
+         string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_start ) );
 
          size_t start_val;
 
          if( start.empty( ) )
             start_val = get_random( );
          else
-            start_val = from_string< size_t >( start );
+            start_val = from_string< uint32_t >( start );
 
          // NOTE: To make sure the console client doesn't time out issue a progress message and also
          // limit the effort to 16 passes (which on average should find a hash with a leading zero).
@@ -1715,10 +1715,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = check_for_proof_of_work( data, start_val, 16 );
       }
-      else if( command == c_cmd_ciyam_session_crypto_proof_verify )
+      else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
       {
-         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_verify_data ) );
-         string nonce( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_proof_verify_nonce ) );
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_verify_data ) );
+         string nonce( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_verify_nonce ) );
 
          response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1 );
       }
