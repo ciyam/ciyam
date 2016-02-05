@@ -46,7 +46,8 @@ namespace
 const size_t c_max_key_size = 128;
 const size_t c_file_buf_size = 32768;
 
-const size_t c_work_buffer_size = c_sha256_digest_size * 5000000;
+const size_t c_work_buffer_size = 0x8000000;
+const size_t c_work_buffer_pos_mask = 0x7ffff00;
 
 const size_t c_password_rounds_multiplier = 3;
 
@@ -181,6 +182,7 @@ string get_totp( const string& base32_encoded_secret, int freq )
    uint64_t tm = time( 0 ) / freq;
 
    uint8_t challenge[ 8 ];
+
    for( int i = 8; i--; tm >>= 8 )
       challenge[ i ] = tm;
 
@@ -191,6 +193,7 @@ string get_totp( const string& base32_encoded_secret, int freq )
 
    int offset = hash[ 19 ] & 0xf;
    unsigned int truncatedHash = 0;
+
    for( int i = 0; i < 4; ++i )
    {
       truncatedHash <<= 8;
@@ -383,6 +386,9 @@ string check_for_proof_of_work(
          hash_buffer[ j ] ^= ( unsigned char )nonce;
 
       unsigned char ch = '\0';
+      unsigned char* p_next = ap_buffer.get( );
+
+      size_t wrap = c_sha256_digest_size - 1;
 
       // NOTE: The purpose of this algorithm is to transform during copying such that
       // it shouldn't be possible to do the hashing without using the memory for this
@@ -390,9 +396,9 @@ string check_for_proof_of_work(
       // memory to be allocated then it will need to be reworked).
       while( num_bytes < c_work_buffer_size )
       {
-         memcpy( ap_buffer.get( ) + num_bytes, hash_buffer, c_sha256_digest_size );
+         memcpy( p_next, hash_buffer, c_sha256_digest_size );
 
-         if( ++offset >= c_sha256_digest_size - 1 )
+         if( ++offset >= wrap )
             offset = 0;
 
          ch += hash_buffer[ offset ];
@@ -400,6 +406,12 @@ string check_for_proof_of_work(
          for( size_t j = 0; j < c_sha256_digest_size; j++ )
             hash_buffer[ j ] ^= ( ch + j );
 
+         // NOTE: Effectively choose a random byte within the total buffer range
+         // to do a bit flip on (so random access to the entire memory range has
+         // to be provided during this entire loop).
+         *( p_next + ( *p_next & c_work_buffer_pos_mask ) ) ^= 0xaa;
+
+         p_next += c_sha256_digest_size;
          num_bytes += c_sha256_digest_size;
       }
 

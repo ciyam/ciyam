@@ -88,6 +88,7 @@ const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
 const char* const c_file_type_core_block_detail_account_prefix = "a:";
 const char* const c_file_type_core_block_detail_signature_prefix = "s:";
 const char* const c_file_type_core_block_detail_transaction_prefix = "t:";
+const char* const c_file_type_core_block_detail_proof_of_work_prefix = "w:";
 
 const char* const c_file_type_core_block_header_chain_meta_requisite_prefix = "r:";
 
@@ -108,6 +109,7 @@ const char* const c_file_type_core_transaction_header_transaction_lock_prefix = 
 
 const char* const c_file_type_core_transaction_detail_log_prefix = "l:";
 const char* const c_file_type_core_transaction_detail_signature_prefix = "s:";
+
 const char* const c_file_type_core_transaction_special_file_extract_prefix = "fe ";
 
 const char* const c_file_type_core_blockchain_info_header_chain_prefix = "c=";

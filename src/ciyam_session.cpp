@@ -1709,7 +1709,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             start_val = from_string< size_t >( start );
 
-         // NOTE: To make sure the console client doesn't time out limit the range to 16.
+         // NOTE: To make sure the console client doesn't time out issue a progress message and also
+         // limit the effort to 16 passes (which on average should find a hash with a leading zero).
+         handler.output_progress( "(checking for a valid nonce)" );
+
          response = check_for_proof_of_work( data, start_val, 16 );
       }
       else if( command == c_cmd_ciyam_session_crypto_proof_verify )
