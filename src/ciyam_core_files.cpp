@@ -1062,6 +1062,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    bool had_signature = false;
    bool has_secondary_account = false;
 
+   string nonce_data;
+   uint32_t nonce_value;
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -1267,8 +1270,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       {
          had_nonce = true;
 
-         if( check_for_proof_of_work( verify, from_string< size_t >( next_line ), 1 ).empty( ) )
-            throw runtime_error( "invalid proof of work" );
+         nonce_data = verify;
+         nonce_value = from_string< uint32_t >( next_line );
 
          verify += "\n" + lines[ i ];
       }
@@ -1297,7 +1300,15 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    if( !block_height )
       account_hash = "0" + public_key_base64;
    else if( p_extras && !had_nonce )
+   {
       throw runtime_error( "block proof of work missing" );
+
+      // NOTE: As the proof checking does involve considerable effort this
+      // is only done after the signature and other header information has
+      // been verified.
+      if( check_for_proof_of_work( nonce_data, nonce_value, 1 ).empty( ) )
+         throw runtime_error( "invalid proof of work" );
+   }
 
    if( p_block_info )
    {

@@ -386,8 +386,9 @@ string check_for_proof_of_work(
          hash_buffer[ j ] ^= ( unsigned char )nonce;
 
       unsigned char ch = '\0';
-      unsigned char* p_next = ap_buffer.get( );
+      unsigned char* p_start = ap_buffer.get( );
 
+      unsigned char* p_next = p_start;
       uint8_t wrap = c_sha256_digest_size - 1;
 
       // NOTE: The purpose of this algorithm is to transform during copying such that
@@ -409,7 +410,7 @@ string check_for_proof_of_work(
          // NOTE: Effectively choose a random byte within the total buffer range
          // to do a bit flip on (so random access to the entire memory range has
          // to be provided during this entire loop).
-         *( p_next + ( *p_next & c_work_buffer_pos_mask ) ) ^= 0xaa;
+         *( p_start + ( *p_next & c_work_buffer_pos_mask ) ) ^= 0xaa;
 
          p_next += c_sha256_digest_size;
          num_bytes += c_sha256_digest_size;
