@@ -117,12 +117,15 @@ std::string CLASS_BASE_DECL_SPEC check_account( const std::string& blockchain, c
 
 std::string CLASS_BASE_DECL_SPEC construct_new_block(
  const std::string& blockchain, const std::string& password,
- const std::string& account, bool use_core_file_format = true, new_block_info* p_new_block_info = 0 );
+ const std::string& account, bool use_core_file_format = true,
+ new_block_info* p_new_block_info = 0, bool search_for_proof_of_work_nonce = false );
 
 inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
- const std::string& blockchain, const std::string& password, new_block_info* p_new_block_info = 0 )
+ const std::string& blockchain, const std::string& password,
+ new_block_info* p_new_block_info = 0, bool search_for_proof_of_work_nonce = false )
 {
-   return construct_new_block( blockchain, password, "", true, p_new_block_info );
+   return construct_new_block( blockchain,
+    password, "", true, p_new_block_info, search_for_proof_of_work_nonce );
 }
 
 std::string CLASS_BASE_DECL_SPEC construct_new_transaction(

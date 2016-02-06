@@ -3681,8 +3681,9 @@ string check_account( const string& blockchain, const string& password )
    return retval;
 }
 
-string construct_new_block( const string& blockchain,
- const string& password, const string& account, bool use_core_file_format, new_block_info* p_new_block_info )
+string construct_new_block(
+ const string& blockchain, const string& password, const string& account,
+ bool use_core_file_format, new_block_info* p_new_block_info, bool search_for_proof_of_work_nonce )
 {
    string acct( account );
    string accts_file;
@@ -3820,7 +3821,12 @@ string construct_new_block( const string& blockchain,
 #ifdef SSL_SUPPORT
    RAND_bytes( ( unsigned char* )&start, sizeof( start ) );
 #endif
-   string nonce( check_for_proof_of_work( data, start, 16 ) );
+   string nonce;
+
+   // NOTE: If there are were txs found then there is no need to expend the effort
+   // to try and find a valid nonce.
+   if( num_txs && search_for_proof_of_work_nonce )
+      nonce = check_for_proof_of_work( data, start, 16 );
 
    if( p_new_block_info )
       p_new_block_info->num_txs = nonce.empty( ) ? 0 : num_txs;

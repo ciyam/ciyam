@@ -14,8 +14,8 @@ const char* const c_file_kill_command = "file_kill";
 
 const size_t c_max_file_transfer_size = 102400;
 
-const size_t c_file_transfer_line_timeout = 5000;
-const size_t c_file_transfer_initial_timeout = 10000;
+const size_t c_file_transfer_line_timeout = 10000;
+const size_t c_file_transfer_initial_timeout = 60000;
 
 const size_t c_file_transfer_max_line_size = 100000;
 

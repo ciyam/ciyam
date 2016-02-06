@@ -206,7 +206,8 @@ string process_txs( const string& blockchain, const string& tx_hash )
    return hash;
 }
 
-string mint_new_block( const string& blockchain, new_block_info& new_block, string& password_hash )
+string mint_new_block( const string& blockchain,
+ new_block_info& new_block, string& password_hash, bool is_for_store )
 {
    guard g( get_core_files_trace_mutex( ), "mint_new_block" );
 
@@ -228,9 +229,9 @@ string mint_new_block( const string& blockchain, new_block_info& new_block, stri
          if( is_reminting && sha256( next_password ).get_digest_as_string( ) != password_hash )
             continue;
 
-         next_data = construct_new_block( blockchain, next_password, &next_block );
+         next_data = construct_new_block( blockchain, next_password, &next_block, is_for_store );
 
-         // NOTE: If no txs have been included (or "nonce" found) then don't proceed.
+         // NOTE: If no txs have been included (or no valid "nonce" was found) then don't proceed.
          if( !next_block.num_txs )
             break;
 
@@ -261,7 +262,7 @@ string store_new_block( const string& blockchain, const string& password_hash )
 
    // NOTE: Before storing now re-mint the block just in case further txs can be added to it.
    new_block_info new_block;
-   string data( mint_new_block( blockchain, new_block, hash ) );
+   string data( mint_new_block( blockchain, new_block, hash, true ) );
 
    if( data.empty( ) || !new_block.num_txs )
       return string( );
@@ -1383,7 +1384,7 @@ string socket_command_processor::get_cmd_and_args( )
           && !any_has_session_variable(
           get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
          {
-            mint_new_block( blockchain, new_block, new_block_pwd_hash );
+            mint_new_block( blockchain, new_block, new_block_pwd_hash, false );
             new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );
          }
       }
