@@ -241,6 +241,7 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
    if( dat[ pos ] == '*' || dat[ pos ] == '#' )
    {
       ++pos;
+      use_256 = true;
 
       if( dat[ pos ] == '*' )
          use_MD5 = true;
@@ -301,6 +302,10 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
    }
 #endif
 
+   // NOTE: Overwrite each byte of the copied key to protect from potential swap file discovery.
+   for( size_t i = 0; i < salted_key.length( ); i++ )
+      salted_key[ i ] = '\0';
+
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
 }
 
@@ -360,6 +365,10 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
        aes_crypt( ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_encrypt ) );
    }
 #endif
+
+   // NOTE: Overwrite each byte of the copied key to protect from potential swap file discovery.
+   for( size_t i = 0; i < salted_key.length( ); i++ )
+      salted_key[ i ] = '\0';
 
    return s;
 }
