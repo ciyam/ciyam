@@ -6,7 +6,7 @@
 1* session_list <none> <unknown> 0:0 0:0
 
 > encrypt -no_ssl -no_salt for_testing_password
-xWhJM6RtGLthLsGJdgnpuYkM7rA=
+Zm9yX3Rlc3RpbmdfcGFzc3dvcmQ=
 
 > 
 > 
