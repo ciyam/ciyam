@@ -3823,13 +3823,13 @@ string construct_new_block(
 #endif
    string nonce;
 
-   // NOTE: If there are were txs found then there is no need to expend the effort
+   // NOTE: If there were no txs found then there is no need to expend the effort
    // to try and find a valid nonce.
    if( num_txs && search_for_proof_of_work_nonce )
       nonce = check_for_proof_of_work( data, start, 16 );
 
    if( p_new_block_info )
-      p_new_block_info->num_txs = nonce.empty( ) ? 0 : num_txs;
+      p_new_block_info->num_txs = ( nonce.empty( ) && search_for_proof_of_work_nonce ) ? 0 : num_txs;
 
    if( !nonce.empty( ) )
       data += "\n" + string( c_file_type_core_block_detail_proof_of_work_prefix ) + nonce;
