@@ -43,7 +43,7 @@ using namespace std;
 namespace
 {
 
-const size_t c_max_key_size = 128;
+const size_t c_max_key_size = 256;
 const size_t c_file_buf_size = 32768;
 
 const size_t c_work_buffer_size = 0x8000000;
@@ -136,6 +136,7 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
    }
    else
    {
+      // NOTE: Use SHA256 hashes of the key as ckey and ivec must be 32 bytes each.
       sha256 hash( p_key );
       hash.copy_digest_to_buffer( buffer );
 
@@ -229,19 +230,30 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
    else
       salt = dat.substr( 0, ++pos );
 
+   bool use_MD5 = false;
+
    // NOTE: For compatability with older 128 bit AES encrypted
-   // passwords the 256 bit ones are prefixed with an asterisk.
+   // passwords the 256 bit ones are prefixed with an asterisk
+   // or a hash (the asterisk prefixed ones use an MD5 hash of
+   // the key rather than the key itself and so are considered
+   // less secure).
    bool use_256 = false;
-   if( dat[ pos ] == '*' )
+   if( dat[ pos ] == '*' || dat[ pos ] == '#' )
    {
       ++pos;
-      use_256 = true;
+
+      if( dat[ pos ] == '*' )
+         use_MD5 = true;
    }
    else
    {
-      if( !salt.empty( ) && salt[ 0 ] == '*' )
+      if( !salt.empty( ) && ( salt[ 0 ] == '*' || salt[ 0 ] == '#' ) )
       {
          use_256 = true;
+
+         if( salt[ 0 ] == '*' )
+            use_MD5 = true;
+
          salt.erase( 0, 1 );
       }
    }
@@ -263,18 +275,30 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
          hash.get_digest_as_string( salted_key );
       }
    }
-   
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
+
+   auto_ptr< char > ap_digest;
+
+   if( use_MD5 )
+      ap_digest.reset( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
 
    if( !use_ssl )
    {
-      crypt_stream( ss, ap_digest.get( ), 32 );
+      if( use_MD5 )
+         crypt_stream( ss, ap_digest.get( ), 32 );
+      else
+         crypt_stream( ss, salted_key.c_str( ), salted_key.length( ) );
+
       s = ss.str( );
    }
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
+   {
+      if( use_MD5 )
+         s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
+      else
+         s = aes_crypt( ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_decrypt, use_256 );
+   }
 #endif
 
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
@@ -296,6 +320,7 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
    if( !use_ssl )
    {
       char c( '\0' );
+
       while( s.length( ) < 20 )
       {
          s += c;
@@ -322,17 +347,18 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
       }
    }
 
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
-
    if( !use_ssl )
    {
-      crypt_stream( ss, ap_digest.get( ), 32 );
+      crypt_stream( ss, salted_key.c_str( ), salted_key.length( ) );
       s = salt + base64::encode( ss.str( ) );
    }
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-      s = '*' + salt + base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
+   {
+      s = '#' + salt + base64::encode(
+       aes_crypt( ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_encrypt ) );
+   }
 #endif
 
    return s;

@@ -1701,19 +1701,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_data ) );
          string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_start ) );
+         string range( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_range ) );
+         string zeroes( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_zeroes ) );
 
-         size_t start_val;
+         uint32_t start_val;
+         uint8_t range_val = 16;
+         uint8_t zeroes_val = 1;
 
          if( start.empty( ) )
             start_val = get_random( );
          else
             start_val = from_string< uint32_t >( start );
 
-         // NOTE: To make sure the console client doesn't time out issue a progress message and also
-         // limit the effort to 16 passes (which on average should find a hash with a leading zero).
+         if( !range.empty( ) )
+            range_val = from_string< uint8_t >( range );
+
+         if( !zeroes.empty( ) )
+            zeroes_val = from_string< uint8_t >( zeroes );
+
+         // NOTE: To make sure the console client doesn't time out issue a progress message.
          handler.output_progress( "(checking for a valid nonce)" );
 
-         response = check_for_proof_of_work( data, start_val, 16 );
+         response = check_for_proof_of_work( data, start_val, range_val, zeroes_val );
       }
       else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
       {
