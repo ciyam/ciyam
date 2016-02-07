@@ -1408,7 +1408,7 @@ void request_handler::process_request( )
 
                            if( !simple_command( *p_session_info, "peer_account_mint "
                             + get_storage_info( ).blockchain + " -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, password ), &username ) )
+                            + " " + priv_key.encrypt_message( pub_key, password, 0, true ), &username ) )
                               throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 #else
                            if( !simple_command( *p_session_info, "peer_account_mint "
