@@ -388,7 +388,7 @@ string harden_key_with_salt( const string& key, const string& salt )
 }
 
 string check_for_proof_of_work(
- const string& data, uint32_t start, uint8_t range, uint8_t num_leading_zeroes )
+ const string& data, uint32_t start, uint32_t range, nonce_difficulty difficulty )
 {
    unsigned char hash_buffer[ c_sha256_digest_size ];
    unsigned char orig_buffer[ c_sha256_digest_size ];
@@ -407,7 +407,7 @@ string check_for_proof_of_work(
 
    memcpy( orig_buffer, hash_buffer, c_sha256_digest_size );
 
-   for( uint8_t i = 0; i < range; i++ )
+   for( uint32_t i = 0; i < range; i++ )
    {
       if( i != 0 )
          memcpy( hash_buffer, orig_buffer, c_sha256_digest_size );
@@ -415,10 +415,13 @@ string check_for_proof_of_work(
       uint8_t offset = 0;
       uint32_t num_bytes = 0;
 
-      nonce = start + i;
+      uint32_t temp = nonce = start + i;
 
       for( uint8_t j = 0; j < c_sha256_digest_size; j++ )
-         hash_buffer[ j ] ^= ( unsigned char )nonce;
+      {
+         hash_buffer[ j ] ^= ( unsigned char )( temp );
+         temp >>= 1;
+      }
 
       unsigned char ch = '\0';
       unsigned char* p_start = ap_buffer.get( );
@@ -454,9 +457,7 @@ string check_for_proof_of_work(
       // NOTE: The content is reversed prior to hashing to ensure that the entire
       // pass has to have been completed before any hashing can commence. Another
       // approach would be to change the SHA256 code to be able to operate itself
-      // with the data in reverse but tests showed that the reversing is not that
-      // significant a proportion of the time (so it wouldn't significantly speed
-      // things up).
+      // in reverse but tests showed that the reversing time is not significant.
       reverse( ap_buffer.get( ), ap_buffer.get( ) + c_work_buffer_size );
 
       sha256 buf_hash( ap_buffer.get( ), c_work_buffer_size );
@@ -464,19 +465,19 @@ string check_for_proof_of_work(
       okay = true;
       hash_string = buf_hash.get_digest_as_string( );
 
-      for( size_t j = 0; j < num_leading_zeroes; j++ )
-      {
-         if( hash_string[ j ] != '0' )
-         {
-            okay = false;
-            break;
-         }
-      }
+      if( difficulty > e_nonce_difficulty_none && hash_string[ 0 ] != '0' )
+         okay = false;
+
+      if( difficulty > e_nonce_difficulty_easy && hash_string[ 1 ] != '0' )
+         okay = false;
+
+      if( difficulty > e_nonce_difficulty_hard && hash_string[ 2 ] != '0' )
+         okay = false;
 
       if( okay )
          break;
 
-      // NOTE: Take a short break after each pass to let other threads get a go.
+      // NOTE: Take a short break after each pass to let any other threads process.
       msleep( 250 );
    }
 

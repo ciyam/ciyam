@@ -44,7 +44,15 @@ std::string data_encrypt( const std::string& dat,
 
 std::string harden_key_with_salt( const std::string& key, const std::string& salt );
 
-std::string check_for_proof_of_work(
- const std::string& data, uint32_t start, uint8_t range = 1, uint8_t num_leading_zeroes = 1 );
+enum nonce_difficulty
+{
+   e_nonce_difficulty_none,
+   e_nonce_difficulty_easy,
+   e_nonce_difficulty_hard,
+   e_nonce_difficulty_most
+};
+
+std::string check_for_proof_of_work( const std::string& data, uint32_t start,
+ uint32_t range = 1, nonce_difficulty difficulty = e_nonce_difficulty_easy );
 
 #endif
