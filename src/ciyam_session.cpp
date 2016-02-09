@@ -1294,6 +1294,9 @@ void socket_command_handler::handle_command_response( const string& response, bo
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
+   if( !is_restoring( ) )
+      set_slowest_if_applicable( );
+
    if( !response.empty( ) )
    {
       if( is_special )
@@ -1702,11 +1705,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_data ) );
          string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_start ) );
          string range( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_range ) );
-         string zeroes( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_zeroes ) );
+         string difficulty( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_difficulty ) );
 
          uint32_t start_val;
-         uint8_t range_val = 16;
-         uint8_t zeroes_val = 1;
+         uint32_t range_val = 16;
+
+         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
 
          if( start.empty( ) )
             start_val = get_random( );
@@ -1714,22 +1718,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             start_val = from_string< uint32_t >( start );
 
          if( !range.empty( ) )
-            range_val = from_string< uint8_t >( range );
+            range_val = from_string< uint32_t >( range );
 
-         if( !zeroes.empty( ) )
-            zeroes_val = from_string< uint8_t >( zeroes );
+         if( !difficulty.empty( ) )
+            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
 
          // NOTE: To make sure the console client doesn't time out issue a progress message.
          handler.output_progress( "(checking for a valid nonce)" );
 
-         response = check_for_proof_of_work( data, start_val, range_val, zeroes_val );
+         response = check_for_proof_of_work( data, start_val, range_val, difficulty_val );
       }
       else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
       {
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_verify_data ) );
          string nonce( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_verify_nonce ) );
+         string difficulty( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_verify_difficulty ) );
 
-         response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1 );
+         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
+
+         if( !difficulty.empty( ) )
+            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
+
+         response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1, difficulty_val );
       }
       else if( command == c_cmd_ciyam_session_module_list )
       {

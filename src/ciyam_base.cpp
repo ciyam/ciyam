@@ -202,6 +202,7 @@ const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
 const char* const c_special_variable_package = "@package";
 const char* const c_special_variable_restore = "@restore";
+const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
 const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
@@ -5123,6 +5124,26 @@ void increment_peer_files_downloaded( int64_t bytes )
    {
       ++gtp_session->peer_files_downloaded;
       gtp_session->peer_bytes_downloaded += bytes;
+   }
+}
+
+void set_slowest_if_applicable( )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+   {
+      date_time now( date_time::local( ) );
+      uint64_t elapsed = seconds_between( gtp_session->dtm_last_cmd, now );
+
+      string previous( get_session_variable( c_special_variable_slowest ) );
+
+      uint64_t prev_secs = 0;
+      if( !previous.empty( ) )
+         prev_secs = from_string< uint64_t >( previous );
+
+      if( elapsed > prev_secs )
+         set_session_variable( c_special_variable_slowest, to_string( elapsed ) );
    }
 }
 
