@@ -405,18 +405,18 @@ template< class S > struct wildcard_compare_less_functor : public std::binary_fu
 {
    wildcard_compare_less_functor( )
     :
-    truncated_comparision( false )
+    truncated_comparison( false )
    {
    }
 
-   void use_truncated_comparision( bool val ) const
+   void use_truncated_comparison( bool val ) const
    {
-      truncated_comparision = val;
+      truncated_comparison = val;
    }
 
    bool operator( )( const S& x, const S& y ) const
    {
-      if( !truncated_comparision )
+      if( !truncated_comparison )
          return less< S >( )( x, y );
 
       size_t xlen = x.const_str( ).length( );
@@ -426,7 +426,7 @@ template< class S > struct wildcard_compare_less_functor : public std::binary_fu
    }
 
    private:
-   mutable bool truncated_comparision;
+   mutable bool truncated_comparison;
 };
 
 template< class S > struct wildcard_compare_equal_functor : public std::binary_function< S, S, bool >
@@ -525,9 +525,9 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       iter = bt.lower_bound( item );
 
       if( pos != string::npos )
-         compare_less.use_truncated_comparision( true );
+         compare_less.use_truncated_comparison( true );
       else
-         compare_less.use_truncated_comparision( false );
+         compare_less.use_truncated_comparison( false );
 
       size_t count = 0;
       if( iter != bt.end( ) )
@@ -551,7 +551,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       else if( count == 0 )
          cout << "*** item not found ***" << endl;
 
-      compare_less.use_truncated_comparision( false );
+      compare_less.use_truncated_comparison( false );
    }
    else if( command == c_cmd_test_btree_lbound )
    {

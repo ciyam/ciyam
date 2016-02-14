@@ -1525,6 +1525,7 @@ struct utxo_info
     :
     vout( 0 ),
     amount( 0 ),
+    spendable( true ),
     confirmations( 0 )
    {
    }
@@ -1557,6 +1558,8 @@ struct utxo_info
    std::string address;
 
    uint64_t amount;
+
+   bool spendable;
    unsigned int confirmations;
 };
 

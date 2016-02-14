@@ -236,7 +236,7 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
    // passwords the 256 bit ones are prefixed with an asterisk
    // or a hash (the asterisk prefixed ones use an MD5 hash of
    // the key rather than the key itself and so are considered
-   // less secure).
+   // to be less secure).
    bool use_256 = false;
    if( dat[ pos ] == '*' || dat[ pos ] == '#' )
    {
@@ -258,6 +258,12 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
          salt.erase( 0, 1 );
       }
    }
+
+   // NOTE: Legacy encryption is less secure (but assuming that
+   // existing encrypted information has been re-encrypted then
+   // this should not be an issue).
+   if( !use_256 )
+      use_MD5 = true;
 
    stringstream ss( base64::decode( dat.substr( pos ) ) );
 

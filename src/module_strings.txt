@@ -1,4 +1,6 @@
+none "(none)"
 error "{@error}."
+unknown "(unknown)"
 field_mismatch "{@field} does not match {@field2}."
 field_not_comaptible "This {@field} cannot be used with this {@field2}."
 field_must_not_be_zero "{@field} must not be zero."
