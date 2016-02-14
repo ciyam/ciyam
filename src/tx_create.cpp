@@ -201,19 +201,24 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
    utxo_info utxo;
 
    bool found = false;
+   bool was_skipped = false;
    bool from_standard = false;
 
    while( getline( is, str ) )
    {
       string::size_type pos = str.find( "\"tx_hash\"" );
       if( pos != string::npos )
+      {
+         was_skipped = false;
          from_standard = false;
+      }
       else
       {
          pos = str.find( "\"txid\"" );
 
          if( pos != string::npos )
          {
+            was_skipped = false;
             from_standard = true;
             pos = str.find( "txid" );
          }
@@ -408,6 +413,8 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                         // that are smaller than the minimum fee amount.
                         if( utxo.amount >= c_min_fee )
                            utxos.push_back( utxo );
+                        else
+                           was_skipped = true;
 
                         utxo.clear( );
                      }
@@ -415,6 +422,20 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                         throw runtime_error( "unexpected format for '" + str + "'" );
                   }
                }
+            }
+         }
+      }
+      else if( !was_skipped && !utxos.empty( ) )
+      {
+         pos = str.find( "\"spendable\"" );
+
+         if( pos != string::npos )
+         {
+            pos = str.find( ':', pos );
+            if( pos != string::npos )
+            {
+               if( str.find( "false", pos + 1 ) != string::npos )
+                  utxos.back( ).spendable = false;
             }
          }
       }

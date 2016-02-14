@@ -7,8 +7,10 @@
 #ifndef MODULE_STRINGS_H
 #  define MODULE_STRINGS_H
 
+const char* const c_str_none = "(none)";
 const char* const c_str_error = "{@error}.";
 const char* const c_str_parm_error_error = "{@error}";
+const char* const c_str_unknown = "(unknown)";
 const char* const c_str_field_mismatch = "{@field} does not match {@field2}.";
 const char* const c_str_parm_field_mismatch_field = "{@field}";
 const char* const c_str_parm_field_mismatch_field2 = "{@field2}";

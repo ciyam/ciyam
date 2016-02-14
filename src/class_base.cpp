@@ -4820,7 +4820,7 @@ void import_address( const string& ext_key, const string& address, const string&
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
       if( system( cmd.c_str( ) ) != 0 )
-         throw runtime_error( "unexpected system failure for load_address_information" );
+         throw runtime_error( "unexpected system failure for import_address" );
    }
 
    if( file_exists( tmp_file_name ) )
@@ -5166,6 +5166,9 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
       for( size_t i = 0; i < p_utxos->size( ); i++ )
       {
+         if( !( *p_utxos )[ i ].spendable )
+            continue;
+
          utxo_information utxo;
 
          string tx_id( ( *p_utxos )[ i ].tx_id );
