@@ -18,8 +18,12 @@ class private_key;
 
 enum address_prefix
 {
+   e_address_prefix_use_default = 0x00,
+   e_address_prefix_btc_wif_mainnet = 0x80,
+   e_address_prefix_btc_wif_testnet = 0xef,
    e_address_prefix_btc_p2sh_mainnet = 0x05,
    e_address_prefix_btc_p2sh_testnet = 0xc4,
+   e_address_prefix_btc_p2pkh_mainnet = 0x00,
    e_address_prefix_btc_p2pkh_testnet = 0x6F
 };
 
@@ -34,7 +38,9 @@ class public_key
 
    std::string get_public( bool compressed = true, bool use_base64 = false ) const;
    std::string get_hash160( bool compressed = true ) const;
-   std::string get_address( bool compressed = true, bool is_testnet = false ) const;
+
+   std::string get_address( bool compressed = true,
+    bool use_override = false, address_prefix override = e_address_prefix_btc_p2pkh_testnet ) const;
 
    bool verify_signature( const std::string& msg, const std::string& sig ) const;
    bool verify_signature( const unsigned char* p_data, const std::string& sig ) const;
@@ -65,7 +71,8 @@ class private_key : public public_key
 
    std::string get_secret( bool use_base64 = false ) const;
 
-   std::string get_wif_secret( bool compressed = true, bool is_testnet = false ) const;
+   std::string get_wif_secret( bool compressed = true,
+    bool use_override = false, address_prefix override = e_address_prefix_btc_wif_testnet ) const;
 
    std::string decrypt_message( const public_key& pub,
     const std::string& base64, const char* p_id = 0 ) const;
@@ -86,7 +93,8 @@ class private_key : public public_key
    private_key& operator =( const private_key& );
 };
 
-std::string create_p2sh_address( const std::string& hex_script, bool is_testnet = false );
+std::string create_p2sh_address( const std::string& hex_script,
+ bool use_override = false, address_prefix override = e_address_prefix_btc_p2sh_testnet );
 
 std::string create_secret_for_address_prefix_with_leading_hash160_bytes( const std::string& prefix, const std::string& bytes );
 

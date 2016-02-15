@@ -380,7 +380,7 @@ string public_key::get_hash160( bool compressed ) const
    return hex_encode( buf2, RIPEMD160_DIGEST_LENGTH );
 }
 
-string public_key::get_address( bool compressed, bool is_testnet ) const
+string public_key::get_address( bool compressed, bool use_override, address_prefix override ) const
 {
    unsigned char buf1[ c_max_public_key_bytes ];
 
@@ -392,10 +392,10 @@ string public_key::get_address( bool compressed, bool is_testnet ) const
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH + 5 ];
    RIPEMD160( buf1, c_sha256_digest_size, buf2 + 1 );
 
-   if( !is_testnet )
-      buf2[ 0 ] = 0x00;
+   if( !use_override )
+      buf2[ 0 ] = e_address_prefix_btc_p2pkh_mainnet;
    else
-      buf2[ 0 ] = 0x6F;
+      buf2[ 0 ] = override ? override : e_address_prefix_btc_p2pkh_testnet;
 
    unsigned char buf3[ c_sha256_digest_size ];
    sha256 hash2( buf2, RIPEMD160_DIGEST_LENGTH + 1 );
@@ -455,9 +455,9 @@ string public_key::hash160_to_address(
    hex_decode( hash160, buf + 1, RIPEMD160_DIGEST_LENGTH );
 
    if( !use_override )
-      buf[ 0 ] = 0x00;
+      buf[ 0 ] = e_address_prefix_btc_p2pkh_mainnet;
    else
-      buf[ 0 ] = override;
+      buf[ 0 ] = override ? override : e_address_prefix_btc_p2pkh_testnet;
 
    unsigned char buf2[ c_sha256_digest_size ];
    sha256 hash2( buf, RIPEMD160_DIGEST_LENGTH + 1 );
@@ -635,14 +635,14 @@ string private_key::get_secret( bool use_base64 ) const
    return use_base64 ? base64::encode( buf, c_num_secret_bytes ) : hex_encode( buf, c_num_secret_bytes );
 }
 
-string private_key::get_wif_secret( bool compressed, bool is_testnet ) const
+string private_key::get_wif_secret( bool compressed, bool use_override, address_prefix override ) const
 {
    unsigned char buf[ c_num_secret_bytes + 6 ];
 
-   if( is_testnet )
-      buf[ 0 ] = 0xef;
+   if( !use_override )
+      buf[ 0 ] = e_address_prefix_btc_wif_mainnet;
    else
-      buf[ 0 ] = 0x80;
+      buf[ 0 ] = override ? override : e_address_prefix_btc_wif_testnet;
 
    p_impl->get_secret_bytes( buf + 1 );
 
@@ -733,7 +733,7 @@ string private_key::construct_signature( const string& msg, bool use_base64 ) co
    return use_base64 ? base64::encode( &signature[ 0 ], signature.size( ) ) : hex_encode( &signature[ 0 ], signature.size( ) );
 }
 
-string create_p2sh_address( const string& hex_script, bool is_testnet )
+string create_p2sh_address( const string& hex_script, bool use_override, address_prefix override )
 {
    size_t size = hex_script.size( ) / 2;
 
@@ -750,8 +750,9 @@ string create_p2sh_address( const string& hex_script, bool is_testnet )
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];
    RIPEMD160( buf1, c_sha256_digest_size, buf2 );
 
-   return public_key::hash160_to_address( hex_encode( buf2, sizeof( buf2 ) ), true,
-    !is_testnet ? e_address_prefix_btc_p2sh_mainnet : e_address_prefix_btc_p2sh_testnet );
+   return public_key::hash160_to_address(
+    hex_encode( buf2, sizeof( buf2 ) ), true, use_override
+    ? ( override ? override : e_address_prefix_btc_p2sh_testnet ) : e_address_prefix_btc_p2sh_mainnet );
 }
 
 string create_secret_for_address_prefix_with_leading_hash160_bytes( const string& prefix, const string& bytes )
