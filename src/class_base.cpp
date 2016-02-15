@@ -86,6 +86,10 @@ const size_t c_cascade_progress_seconds = 10;
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
 
+const char* const c_crypto_info_testnet = "testnet";
+const char* const c_crypto_info_addr_prefix = "addr_prefix";
+const char* const c_crypto_info_p2sh_prefix = "p2sh_prefix";
+
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
 const char* const c_special_regex_for_email_address = "@email_address";
@@ -469,6 +473,62 @@ void validate_addresses( const string& addresses )
 }
 
 #include "trace_progress.cpp"
+
+struct crypto_info
+{
+   crypto_info( )
+    :
+    override( false ),
+    addr_prefix( e_address_prefix_use_default ),
+    p2sh_prefix( e_address_prefix_use_default )
+   {
+   }
+
+   bool override;
+   address_prefix addr_prefix;
+   address_prefix p2sh_prefix;
+};
+
+void get_crypto_info( const string& extra_info, crypto_info& info )
+{
+   vector< string > extras;
+   if( !extra_info.empty( ) )
+      split( extra_info, extras );
+
+   map< string, string > extra_details;
+
+   for( size_t i = 0; i < extras.size( ); i++ )
+   {
+      string next( extras[ i ] );
+      string::size_type pos = next.find( '=' );
+
+      string key( next.substr( 0, pos ) );
+      string data;
+
+      if( pos != string::npos )
+         data = next.substr( pos + 1 );
+
+      extra_details.insert( make_pair( key, data ) );
+   }
+
+   if( extra_details.count( c_crypto_info_testnet ) )
+      info.override = true;
+
+   string addr_prefix( extra_details[ c_crypto_info_addr_prefix ] );
+
+   if( !addr_prefix.empty( ) )
+   {
+      info.override = true;
+      info.addr_prefix = ( address_prefix )atoi( addr_prefix.c_str( ) );
+   }
+
+   string p2sh_prefix( extra_details[ c_crypto_info_p2sh_prefix ] );
+   if( !p2sh_prefix.empty( ) )
+   {
+      info.override = true;
+      info.p2sh_prefix = ( address_prefix )atoi( p2sh_prefix.c_str( ) );
+   }
+}
 
 }
 
@@ -4714,12 +4774,10 @@ string crypto_p2sh_address( const string& ext_key, const string& hex_script )
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   bool is_testnet = false;
+   crypto_info info;
+   get_crypto_info( client_info.extra_info, info );
 
-   if( client_info.extra_info == "testnet" )
-      is_testnet = true;
-
-   return hex_script.empty( ) ? string( ) : create_p2sh_address( hex_script, is_testnet );
+   return hex_script.empty( ) ? string( ) : create_p2sh_address( hex_script, info.override, info.p2sh_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_p2sh_address" );
 #endif
@@ -4733,16 +4791,13 @@ string create_address_key_pair( const string& ext_key, string& pub_key, string& 
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   bool compressed = true;
-   bool is_testnet = false;
+   crypto_info info;
+   get_crypto_info( client_info.extra_info, info );
 
-   if( client_info.extra_info == "testnet" )
-      is_testnet = true;
-
-   pub_key = new_key.get_public( compressed, use_base64 );
+   pub_key = new_key.get_public( true, use_base64 );
    priv_key = new_key.get_secret( use_base64 );
 
-   return new_key.get_address( compressed, is_testnet );
+   return new_key.get_address( true, info.override, info.addr_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
@@ -4758,10 +4813,9 @@ string create_address_key_pair( const string& ext_key,
    get_external_client_info( ext_key, client_info );
 
    bool compressed = true;
-   bool is_testnet = false;
 
-   if( client_info.extra_info == "testnet" )
-      is_testnet = true;
+   crypto_info info;
+   get_crypto_info( client_info.extra_info, info );
 
    if( !is_seed )
       ap_new_key.reset( new private_key( priv_info, true, &compressed ) );
@@ -4777,7 +4831,7 @@ string create_address_key_pair( const string& ext_key,
    pub_key = ap_new_key->get_public( compressed, use_base64 );
    priv_key = ap_new_key->get_secret( use_base64 );
 
-   return ap_new_key->get_address( compressed, is_testnet );
+   return ap_new_key->get_address( compressed, info.override, info.addr_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
@@ -5044,12 +5098,10 @@ string convert_hash160_to_address( const string& ext_key, const string& hash160 
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   bool is_testnet = false;
+   crypto_info info;
+   get_crypto_info( client_info.extra_info, info );
 
-   if( client_info.extra_info == "testnet" )
-      is_testnet = true;
-
-   return public_key::hash160_to_address( hash160, is_testnet );
+   return public_key::hash160_to_address( hash160, info.override, info.addr_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use convert_hash160_to_address" );
 #endif
@@ -5147,11 +5199,6 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
    external_client client_info;
    get_external_client_info( ext_key, client_info );
-
-   bool is_testnet = false;
-
-   if( client_info.extra_info == "testnet" )
-      is_testnet = true;
 
    bool is_sign_raw_tx = false;
    string::size_type pos = raw_tx_cmd.find( "signrawtransaction" );
