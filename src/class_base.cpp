@@ -3080,19 +3080,19 @@ size_t split_count( const string& s, char sep )
    return split_size( s, sep );
 }
 
-void split_string( const string& s, set< string >& c, char sep )
+void split_string( const string& s, set< string >& c, char sep, bool unescape )
 {
-   split( escape_sep_if_quoted( s, sep ), c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep, c_esc, unescape );
 }
 
-void split_string( const string& s, deque< string >& c, char sep )
+void split_string( const string& s, deque< string >& c, char sep, bool unescape )
 {
-   split( escape_sep_if_quoted( s, sep ), c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep, c_esc, unescape );
 }
 
-void split_string( const string& s, vector< string >& c, char sep )
+void split_string( const string& s, vector< string >& c, char sep, bool unescape )
 {
-   split( escape_sep_if_quoted( s, sep ), c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep, c_esc, unescape );
 }
 
 void split_string( const string& s, set< string >& c, const string& sep )
@@ -5114,7 +5114,9 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   validate_addresses( source_addresses );
+   if( source_addresses != "*" )
+      validate_addresses( source_addresses );
+
    validate_addresses( destination_addresses );
 
    bool needs_new_address_for_change = false;
