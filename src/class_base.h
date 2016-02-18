@@ -1198,9 +1198,9 @@ std::string CLASS_BASE_DECL_SPEC truncate_string( const std::string& s, int max_
 
 size_t CLASS_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
 
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',' );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, char sep = ',' );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, char sep = ',' );
+void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',', bool unescape = true );
+void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, char sep = ',', bool unescape = true );
+void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, char sep = ',', bool unescape = true );
 
 void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, const std::string& sep );
 void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, const std::string& sep );
