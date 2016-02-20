@@ -847,6 +847,24 @@
    </values>
   </enum>
   <enum/>
+   <id>639
+   <name>enum_label_source_child
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_label_source_child_default
+    </value>
+    <value/>
+     <data>1
+     <name>enum_label_source_child_non_prefixed
+    </value>
+    <value/>
+     <data>2
+     <name>enum_label_source_child_just_child_always
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>688
    <name>enum_list_direction
    <values/>
@@ -4381,12 +4399,12 @@
      <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
-     <name>field_list_field_label_without_prefix
+     <name>field_list_field_label_source_child
      <field>124129
-     <ftype>bool
-     <extra>
+     <ftype>int
+     <extra>enum=639
      <mandatory>true
-     <modifiers>400000:relegate,2000:relegate
+     <modifiers>1000:relegate,200000:relegate,400000:relegate,2000:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_list_field_use_in_text_search_title
@@ -7987,12 +8005,12 @@
      <modifiers>20000:relegate,40000:relegate,2000:relegate,1000:relegate
     </field>
     <field/>
-     <name>field_view_field_label_without_prefix
+     <name>field_view_field_label_source_child
      <field>120128
-     <ftype>bool
-     <extra>
+     <ftype>int
+     <extra>enum=639
      <mandatory>true
-     <modifiers>40000:relegate,2000:relegate
+     <modifiers>40000:relegate,2000:relegate,100:relegate
     </field>
     <field/>
      <name>field_view_field_show_hide_start_point

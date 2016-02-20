@@ -256,6 +256,7 @@ const char* const c_field_extra_manual_link = "manual_link";
 const char* const c_field_extra_non_fk_link = "non_fk_link";
 const char* const c_field_extra_orientation = "orientation";
 const char* const c_field_extra_print_total = "print_total";
+const char* const c_field_extra_child_always = "child_always";
 const char* const c_field_extra_ignore_links = "ignore_links";
 const char* const c_field_extra_non_prefixed = "non_prefixed";
 const char* const c_field_extra_numeric_type = "numeric_type";

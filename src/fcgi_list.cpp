@@ -189,6 +189,7 @@ void setup_list_fields( list_source& list,
       fld_info fld( ( list.lici->second )->fields[ i ] );
 
       bool is_hidden = false;
+      bool child_always = false;
       bool non_prefixed = false;
 
       string field_id( fld.field );
@@ -482,6 +483,9 @@ void setup_list_fields( list_source& list,
          else if( extra_data.count( c_list_field_extra_use_list_title ) )
             list.use_list_title_fields.insert( value_id );
 
+         if( extra_data.count( c_field_extra_child_always ) )
+            child_always = true;
+
          if( extra_data.count( c_field_extra_non_prefixed ) )
             non_prefixed = true;
 
@@ -513,9 +517,9 @@ void setup_list_fields( list_source& list,
       {
          string display_name( get_display_string( fld.name ) );
 
-         if( field_id_counts[ field_id ] > 0 )
+         if( child_always || field_id_counts[ field_id ] > 0 )
          {
-            if( non_prefixed )
+            if( child_always || non_prefixed )
                display_name = get_display_string( fld.pfname );
             else
                display_name += " " + get_display_string( fld.pfname );

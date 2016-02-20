@@ -179,7 +179,7 @@ const char* const c_field_id_Font_Size = "124130";
 const char* const c_field_id_Include_Key_Additions = "124122";
 const char* const c_field_id_Label_Class = "124131";
 const char* const c_field_id_Label_Source = "124120";
-const char* const c_field_id_Label_Without_Prefix = "124129";
+const char* const c_field_id_Label_Source_Child = "124129";
 const char* const c_field_id_Link_Empty_Restriction = "124134";
 const char* const c_field_id_Link_Permission = "302135";
 const char* const c_field_id_Link_Restriction = "124108";
@@ -236,7 +236,7 @@ const char* const c_field_name_Font_Size = "Font_Size";
 const char* const c_field_name_Include_Key_Additions = "Include_Key_Additions";
 const char* const c_field_name_Label_Class = "Label_Class";
 const char* const c_field_name_Label_Source = "Label_Source";
-const char* const c_field_name_Label_Without_Prefix = "Label_Without_Prefix";
+const char* const c_field_name_Label_Source_Child = "Label_Source_Child";
 const char* const c_field_name_Link_Empty_Restriction = "Link_Empty_Restriction";
 const char* const c_field_name_Link_Permission = "Link_Permission";
 const char* const c_field_name_Link_Restriction = "Link_Restriction";
@@ -293,7 +293,7 @@ const char* const c_field_display_name_Font_Size = "field_list_field_font_size";
 const char* const c_field_display_name_Include_Key_Additions = "field_list_field_include_key_additions";
 const char* const c_field_display_name_Label_Class = "field_list_field_label_class";
 const char* const c_field_display_name_Label_Source = "field_list_field_label_source";
-const char* const c_field_display_name_Label_Without_Prefix = "field_list_field_label_without_prefix";
+const char* const c_field_display_name_Label_Source_Child = "field_list_field_label_source_child";
 const char* const c_field_display_name_Link_Empty_Restriction = "field_list_field_link_empty_restriction";
 const char* const c_field_display_name_Link_Permission = "field_list_field_link_permission";
 const char* const c_field_display_name_Link_Restriction = "field_list_field_link_restriction";
@@ -414,7 +414,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Include_Key_Additions",
    "Label_Class",
    "Label_Source",
-   "Label_Without_Prefix",
+   "Label_Source_Child",
    "Link_Empty_Restriction",
    "Link_Permission",
    "Link_Restriction",
@@ -563,7 +563,7 @@ int g_default_Font_Size = int( 0 );
 string g_default_Include_Key_Additions = string( );
 int g_default_Label_Class = int( 0 );
 int g_default_Label_Source = int( 0 );
-bool g_default_Label_Without_Prefix = bool( 0 );
+int g_default_Label_Source_Child = int( 0 );
 int g_default_Link_Empty_Restriction = int( 0 );
 string g_default_Link_Permission = string( );
 int g_default_Link_Restriction = int( 0 );
@@ -607,6 +607,7 @@ set< int > g_field_alignment_enum;
 set< int > g_font_size_enum;
 set< int > g_list_field_label_class_enum;
 set< int > g_list_field_label_source_enum;
+set< int > g_label_source_child_enum;
 set< int > g_list_field_link_restrict_enum;
 set< int > g_list_field_link_type_enum;
 set< int > g_list_field_notes_truncation_enum;
@@ -738,6 +739,28 @@ string get_enum_string_list_field_label_source( int val )
       string_name = "enum_list_field_label_source_omit_label";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_label_source" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_label_source_child_default( 0 );
+const int c_enum_label_source_child_non_prefixed( 1 );
+const int c_enum_label_source_child_just_child_always( 2 );
+
+string get_enum_string_label_source_child( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for label_source_child" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_label_source_child_default";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_label_source_child_non_prefixed";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_label_source_child_just_child_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for label_source_child" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -1222,10 +1245,10 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          string_getter< int >( cmd_handler.p_Meta_List_Field->Label_Source( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      if( !handled && field_name == c_field_id_Label_Source_Child || field_name == c_field_name_Label_Source_Child )
       {
          handled = true;
-         string_getter< bool >( cmd_handler.p_Meta_List_Field->Label_Without_Prefix( ), cmd_handler.retval );
+         string_getter< int >( cmd_handler.p_Meta_List_Field->Label_Source_Child( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
@@ -1588,11 +1611,11 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Source, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      if( !handled && field_name == c_field_id_Label_Source_Child || field_name == c_field_name_Label_Source_Child )
       {
          handled = true;
-         func_string_setter< Meta_List_Field, bool >(
-          *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Without_Prefix, field_value );
+         func_string_setter< Meta_List_Field, int >(
+          *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Source_Child, field_value );
       }
 
       if( !handled && field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
@@ -1981,8 +2004,8 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    int impl_Label_Source( ) const { return lazy_fetch( p_obj ), v_Label_Source; }
    void impl_Label_Source( int Label_Source ) { v_Label_Source = Label_Source; }
 
-   bool impl_Label_Without_Prefix( ) const { return lazy_fetch( p_obj ), v_Label_Without_Prefix; }
-   void impl_Label_Without_Prefix( bool Label_Without_Prefix ) { v_Label_Without_Prefix = Label_Without_Prefix; }
+   int impl_Label_Source_Child( ) const { return lazy_fetch( p_obj ), v_Label_Source_Child; }
+   void impl_Label_Source_Child( int Label_Source_Child ) { v_Label_Source_Child = Label_Source_Child; }
 
    int impl_Link_Empty_Restriction( ) const { return lazy_fetch( p_obj ), v_Link_Empty_Restriction; }
    void impl_Link_Empty_Restriction( int Link_Empty_Restriction ) { v_Link_Empty_Restriction = Link_Empty_Restriction; }
@@ -2813,7 +2836,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    string v_Include_Key_Additions;
    int v_Label_Class;
    int v_Label_Source;
-   bool v_Label_Without_Prefix;
+   int v_Label_Source_Child;
    int v_Link_Empty_Restriction;
    int v_Link_Restriction;
    int v_Link_Type;
@@ -3123,7 +3146,7 @@ string Meta_List_Field::impl::get_field_value( int field ) const
       break;
 
       case 18:
-      retval = to_string( impl_Label_Without_Prefix( ) );
+      retval = to_string( impl_Label_Source_Child( ) );
       break;
 
       case 19:
@@ -3358,7 +3381,7 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 18:
-      func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Label_Without_Prefix, value );
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_Label_Source_Child, value );
       break;
 
       case 19:
@@ -3593,7 +3616,7 @@ bool Meta_List_Field::impl::is_field_default( int field ) const
       break;
 
       case 18:
-      retval = ( v_Label_Without_Prefix == g_default_Label_Without_Prefix );
+      retval = ( v_Label_Source_Child == g_default_Label_Source_Child );
       break;
 
       case 19:
@@ -4138,7 +4161,7 @@ void Meta_List_Field::impl::clear( )
    v_Include_Key_Additions = g_default_Include_Key_Additions;
    v_Label_Class = g_default_Label_Class;
    v_Label_Source = g_default_Label_Source;
-   v_Label_Without_Prefix = g_default_Label_Without_Prefix;
+   v_Label_Source_Child = g_default_Label_Source_Child;
    v_Link_Empty_Restriction = g_default_Link_Empty_Restriction;
    v_Link_Restriction = g_default_Link_Restriction;
    v_Link_Type = g_default_Link_Type;
@@ -4354,6 +4377,11 @@ void Meta_List_Field::impl::validate( unsigned state, bool is_internal, validati
       p_validation_errors->insert( validation_error_value_type( c_field_name_Label_Source,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Label_Source ) ) ) ) );
+
+   if( !g_label_source_child_enum.count( v_Label_Source_Child ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Label_Source_Child,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Label_Source_Child ) ) ) ) );
 
    if( !g_list_field_link_restrict_enum.count( v_Link_Empty_Restriction ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Link_Empty_Restriction,
@@ -4983,14 +5011,14 @@ void Meta_List_Field::Label_Source( int Label_Source )
    p_impl->impl_Label_Source( Label_Source );
 }
 
-bool Meta_List_Field::Label_Without_Prefix( ) const
+int Meta_List_Field::Label_Source_Child( ) const
 {
-   return p_impl->impl_Label_Without_Prefix( );
+   return p_impl->impl_Label_Source_Child( );
 }
 
-void Meta_List_Field::Label_Without_Prefix( bool Label_Without_Prefix )
+void Meta_List_Field::Label_Source_Child( int Label_Source_Child )
 {
-   p_impl->impl_Label_Without_Prefix( Label_Without_Prefix );
+   p_impl->impl_Label_Source_Child( Label_Source_Child );
 }
 
 int Meta_List_Field::Link_Empty_Restriction( ) const
@@ -5909,12 +5937,12 @@ const char* Meta_List_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Label_Without_Prefix )
+   else if( name == c_field_name_Label_Source_Child )
    {
-      p_id = c_field_id_Label_Without_Prefix;
+      p_id = c_field_id_Label_Source_Child;
 
       if( p_type_name )
-         *p_type_name = "bool";
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -6480,12 +6508,12 @@ const char* Meta_List_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Label_Without_Prefix )
+   else if( id == c_field_id_Label_Source_Child )
    {
-      p_name = c_field_name_Label_Without_Prefix;
+      p_name = c_field_name_Label_Source_Child;
 
       if( p_type_name )
-         *p_type_name = "bool";
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -6984,10 +7012,10 @@ string Meta_List_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Label_Source );
       get_module_string( c_field_display_name_Label_Source, &next );
    }
-   else if( id_or_name == c_field_id_Label_Without_Prefix || id_or_name == c_field_name_Label_Without_Prefix )
+   else if( id_or_name == c_field_id_Label_Source_Child || id_or_name == c_field_name_Label_Source_Child )
    {
-      name = string( c_field_display_name_Label_Without_Prefix );
-      get_module_string( c_field_display_name_Label_Without_Prefix, &next );
+      name = string( c_field_display_name_Label_Source_Child );
+      get_module_string( c_field_display_name_Label_Source_Child, &next );
    }
    else if( id_or_name == c_field_id_Link_Empty_Restriction || id_or_name == c_field_name_Link_Empty_Restriction )
    {
@@ -7225,8 +7253,8 @@ string Meta_List_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Label_Class );
    else if( id_or_name == c_field_id_Label_Source || id_or_name == c_field_name_Label_Source )
       display_name = get_module_string( c_field_display_name_Label_Source );
-   else if( id_or_name == c_field_id_Label_Without_Prefix || id_or_name == c_field_name_Label_Without_Prefix )
-      display_name = get_module_string( c_field_display_name_Label_Without_Prefix );
+   else if( id_or_name == c_field_id_Label_Source_Child || id_or_name == c_field_name_Label_Source_Child )
+      display_name = get_module_string( c_field_display_name_Label_Source_Child );
    else if( id_or_name == c_field_id_Link_Empty_Restriction || id_or_name == c_field_name_Link_Empty_Restriction )
       display_name = get_module_string( c_field_display_name_Link_Empty_Restriction );
    else if( id_or_name == c_field_id_Link_Permission || id_or_name == c_field_name_Link_Permission )
@@ -7661,7 +7689,7 @@ void Meta_List_Field::get_sql_column_names(
    names.push_back( "C_Include_Key_Additions" );
    names.push_back( "C_Label_Class" );
    names.push_back( "C_Label_Source" );
-   names.push_back( "C_Label_Without_Prefix" );
+   names.push_back( "C_Label_Source_Child" );
    names.push_back( "C_Link_Empty_Restriction" );
    names.push_back( "C_Link_Permission" );
    names.push_back( "C_Link_Restriction" );
@@ -7727,7 +7755,7 @@ void Meta_List_Field::get_sql_column_values(
    values.push_back( sql_quote( to_string( Include_Key_Additions( ) ) ) );
    values.push_back( to_string( Label_Class( ) ) );
    values.push_back( to_string( Label_Source( ) ) );
-   values.push_back( to_string( Label_Without_Prefix( ) ) );
+   values.push_back( to_string( Label_Source_Child( ) ) );
    values.push_back( to_string( Link_Empty_Restriction( ) ) );
    values.push_back( sql_quote( to_string( Link_Permission( ) ) ) );
    values.push_back( to_string( Link_Restriction( ) ) );
@@ -8212,7 +8240,7 @@ void Meta_List_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "124122", "Include_Key_Additions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "124131", "Label_Class", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "124120", "Label_Source", "int", false, "", "" ) );
-   all_field_info.push_back( field_info( "124129", "Label_Without_Prefix", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "124129", "Label_Source_Child", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "124134", "Link_Empty_Restriction", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "302135", "Link_Permission", "Meta_Permission", false, "", "" ) );
    all_field_info.push_back( field_info( "124108", "Link_Restriction", "int", false, "", "" ) );
@@ -8615,7 +8643,7 @@ const char* Meta_List_Field::static_get_field_name( field_id id )
       break;
 
       case 19:
-      p_id = "Label_Without_Prefix";
+      p_id = "Label_Source_Child";
       break;
 
       case 20:
@@ -8815,7 +8843,7 @@ int Meta_List_Field::static_get_field_num( const string& field )
       rc += 17;
    else if( field == c_field_id_Label_Source || field == c_field_name_Label_Source )
       rc += 18;
-   else if( field == c_field_id_Label_Without_Prefix || field == c_field_name_Label_Without_Prefix )
+   else if( field == c_field_id_Label_Source_Child || field == c_field_name_Label_Source_Child )
       rc += 19;
    else if( field == c_field_id_Link_Empty_Restriction || field == c_field_name_Link_Empty_Restriction )
       rc += 20;
@@ -8937,7 +8965,7 @@ string Meta_List_Field::static_get_sql_columns( )
     "C_Include_Key_Additions VARCHAR(200) NOT NULL,"
     "C_Label_Class INTEGER NOT NULL,"
     "C_Label_Source INTEGER NOT NULL,"
-    "C_Label_Without_Prefix INTEGER NOT NULL,"
+    "C_Label_Source_Child INTEGER NOT NULL,"
     "C_Link_Empty_Restriction INTEGER NOT NULL,"
     "C_Link_Permission VARCHAR(75) NOT NULL,"
     "C_Link_Restriction INTEGER NOT NULL,"
@@ -9010,6 +9038,10 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_label_source_0", get_enum_string_list_field_label_source( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_label_source_1", get_enum_string_list_field_label_source( 1 ) ) );
    pairs.push_back( make_pair( "enum_list_field_label_source_2", get_enum_string_list_field_label_source( 2 ) ) );
+
+   pairs.push_back( make_pair( "enum_label_source_child_0", get_enum_string_label_source_child( 0 ) ) );
+   pairs.push_back( make_pair( "enum_label_source_child_1", get_enum_string_label_source_child( 1 ) ) );
+   pairs.push_back( make_pair( "enum_label_source_child_2", get_enum_string_label_source_child( 2 ) ) );
 
    pairs.push_back( make_pair( "enum_list_field_link_restrict_0", get_enum_string_list_field_link_restrict( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_link_restrict_1", get_enum_string_list_field_link_restrict( 1 ) ) );
@@ -9143,6 +9175,10 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_label_source_enum.insert( 0 );
    g_list_field_label_source_enum.insert( 1 );
    g_list_field_label_source_enum.insert( 2 );
+
+   g_label_source_child_enum.insert( 0 );
+   g_label_source_child_enum.insert( 1 );
+   g_label_source_child_enum.insert( 2 );
 
    g_list_field_link_restrict_enum.insert( 0 );
    g_list_field_link_restrict_enum.insert( 1 );

@@ -533,14 +533,18 @@ void setup_view_fields( view_source& view,
       else
          view.value_ids.push_back( value_id );
 
+      bool child_always = false;
+      if( extra_data.count( c_field_extra_child_always ) )
+         child_always = true;
+
       bool non_prefixed = false;
       if( extra_data.count( c_field_extra_non_prefixed ) )
          non_prefixed = true;
 
       string display_name( get_display_string( fld.name ) );
-      if( field_id_counts[ field_id ] > 0 )
+      if( child_always || field_id_counts[ field_id ] > 0 )
       {
-         if( non_prefixed )
+         if( child_always || non_prefixed )
             display_name = get_display_string( fld.pfname );
          else
             display_name += " " + get_display_string( fld.pfname );
