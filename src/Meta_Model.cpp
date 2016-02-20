@@ -3185,11 +3185,31 @@ void Meta_Model::impl::impl_Generate( )
                         extras += "ignore_links";
                      }
 
-                     if( get_obj( ).child_View( ).child_View_Field( ).Label_Without_Prefix( ) )
+                     switch( get_obj( ).child_View( ).child_View_Field( ).Label_Source_Child( ) )
                      {
-                        if( !extras.empty( ) )
-                           extras += '+';
-                        extras += "non_prefixed";
+                        case 0: // i.e. default
+                        break;
+
+                        case 1:
+                        {
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "non_prefixed";
+                           break;
+                        }
+
+                        case 2:
+                        {
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "child_always";
+                           break;
+                        }
+
+                        default:
+                        throw runtime_error( "unexpected Label_Source_Child value #"
+                         + to_string( get_obj( ).child_View( ).child_View_Field( ).Label_Source_Child( ) )
+                         + " in Model::Generate" );
                      }
 
                      if( !get_obj( ).child_View( ).child_View_Field( ).Allow_Anonymous_Access( ) )
@@ -4505,11 +4525,31 @@ void Meta_Model::impl::impl_Generate( )
                             + " in Model::Generate" );
                         }
 
-                        if( get_obj( ).child_List( ).child_List_Field( ).Label_Without_Prefix( ) )
+                        switch( get_obj( ).child_List( ).child_List_Field( ).Label_Source_Child( ) )
                         {
-                           if( !extras.empty( ) )
-                              extras += '+';
-                           extras += "non_prefixed";
+                           case 0: // i.e. default
+                           break;
+
+                           case 1:
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "non_prefixed";
+                              break;
+                           }
+
+                           case 2:
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "child_always";
+                              break;
+                           }
+
+                           default:
+                           throw runtime_error( "unexpected Label_Source_Child value #"
+                            + to_string( get_obj( ).child_List( ).child_List_Field( ).Label_Source_Child( ) )
+                            + " in Model::Generate" );
                         }
                      }
 

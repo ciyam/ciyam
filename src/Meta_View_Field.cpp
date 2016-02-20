@@ -151,7 +151,7 @@ const char* const c_field_id_FK_Trigger_Behaviour = "120112";
 const char* const c_field_id_FK_Trigger_Option = "120111";
 const char* const c_field_id_Font_Size = "120125";
 const char* const c_field_id_Ignore_Manual_Links = "120126";
-const char* const c_field_id_Label_Without_Prefix = "120128";
+const char* const c_field_id_Label_Source_Child = "120128";
 const char* const c_field_id_Link_Permission = "301915";
 const char* const c_field_id_Link_Restriction = "120108";
 const char* const c_field_id_Mandatory_Option = "120114";
@@ -195,7 +195,7 @@ const char* const c_field_name_FK_Trigger_Behaviour = "FK_Trigger_Behaviour";
 const char* const c_field_name_FK_Trigger_Option = "FK_Trigger_Option";
 const char* const c_field_name_Font_Size = "Font_Size";
 const char* const c_field_name_Ignore_Manual_Links = "Ignore_Manual_Links";
-const char* const c_field_name_Label_Without_Prefix = "Label_Without_Prefix";
+const char* const c_field_name_Label_Source_Child = "Label_Source_Child";
 const char* const c_field_name_Link_Permission = "Link_Permission";
 const char* const c_field_name_Link_Restriction = "Link_Restriction";
 const char* const c_field_name_Mandatory_Option = "Mandatory_Option";
@@ -239,7 +239,7 @@ const char* const c_field_display_name_FK_Trigger_Behaviour = "field_view_field_
 const char* const c_field_display_name_FK_Trigger_Option = "field_view_field_fk_trigger_option";
 const char* const c_field_display_name_Font_Size = "field_view_field_font_size";
 const char* const c_field_display_name_Ignore_Manual_Links = "field_view_field_ignore_manual_links";
-const char* const c_field_display_name_Label_Without_Prefix = "field_view_field_label_without_prefix";
+const char* const c_field_display_name_Label_Source_Child = "field_view_field_label_source_child";
 const char* const c_field_display_name_Link_Permission = "field_view_field_link_permission";
 const char* const c_field_display_name_Link_Restriction = "field_view_field_link_restriction";
 const char* const c_field_display_name_Mandatory_Option = "field_view_field_mandatory_option";
@@ -334,7 +334,7 @@ const char* const c_all_sorted_field_names[ ] =
    "FK_Trigger_Option",
    "Font_Size",
    "Ignore_Manual_Links",
-   "Label_Without_Prefix",
+   "Label_Source_Child",
    "Link_Permission",
    "Link_Restriction",
    "Mandatory_Option",
@@ -454,7 +454,7 @@ int g_default_FK_Trigger_Behaviour = int( 0 );
 int g_default_FK_Trigger_Option = int( 0 );
 int g_default_Font_Size = int( 0 );
 bool g_default_Ignore_Manual_Links = bool( 0 );
-bool g_default_Label_Without_Prefix = bool( 0 );
+int g_default_Label_Source_Child = int( 0 );
 string g_default_Link_Permission = string( );
 int g_default_Link_Restriction = int( 4 );
 int g_default_Mandatory_Option = int( 0 );
@@ -491,6 +491,7 @@ set< int > g_view_field_enum_at_enum;
 set< int > g_view_field_fk_trigger_behaviour_enum;
 set< int > g_view_field_fk_trigger_option_enum;
 set< int > g_font_size_enum;
+set< int > g_label_source_child_enum;
 set< int > g_view_field_link_restrict_enum;
 set< int > g_view_field_mandatory_option_enum;
 set< int > g_view_field_new_source_enum;
@@ -826,6 +827,28 @@ string get_enum_string_font_size( int val )
       string_name = "enum_font_size_smaller";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for font_size" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_label_source_child_default( 0 );
+const int c_enum_label_source_child_non_prefixed( 1 );
+const int c_enum_label_source_child_just_child_always( 2 );
+
+string get_enum_string_label_source_child( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for label_source_child" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_label_source_child_default";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_label_source_child_non_prefixed";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_label_source_child_just_child_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for label_source_child" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -1206,10 +1229,10 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
          string_getter< bool >( cmd_handler.p_Meta_View_Field->Ignore_Manual_Links( ), cmd_handler.retval );
       }
 
-      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      if( !handled && field_name == c_field_id_Label_Source_Child || field_name == c_field_name_Label_Source_Child )
       {
          handled = true;
-         string_getter< bool >( cmd_handler.p_Meta_View_Field->Label_Without_Prefix( ), cmd_handler.retval );
+         string_getter< int >( cmd_handler.p_Meta_View_Field->Label_Source_Child( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
@@ -1493,11 +1516,11 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
           *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Ignore_Manual_Links, field_value );
       }
 
-      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      if( !handled && field_name == c_field_id_Label_Source_Child || field_name == c_field_name_Label_Source_Child )
       {
          handled = true;
-         func_string_setter< Meta_View_Field, bool >(
-          *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Label_Without_Prefix, field_value );
+         func_string_setter< Meta_View_Field, int >(
+          *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Label_Source_Child, field_value );
       }
 
       if( !handled && field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
@@ -1795,8 +1818,8 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    bool impl_Ignore_Manual_Links( ) const { return lazy_fetch( p_obj ), v_Ignore_Manual_Links; }
    void impl_Ignore_Manual_Links( bool Ignore_Manual_Links ) { v_Ignore_Manual_Links = Ignore_Manual_Links; }
 
-   bool impl_Label_Without_Prefix( ) const { return lazy_fetch( p_obj ), v_Label_Without_Prefix; }
-   void impl_Label_Without_Prefix( bool Label_Without_Prefix ) { v_Label_Without_Prefix = Label_Without_Prefix; }
+   int impl_Label_Source_Child( ) const { return lazy_fetch( p_obj ), v_Label_Source_Child; }
+   void impl_Label_Source_Child( int Label_Source_Child ) { v_Label_Source_Child = Label_Source_Child; }
 
    int impl_Link_Restriction( ) const { return lazy_fetch( p_obj ), v_Link_Restriction; }
    void impl_Link_Restriction( int Link_Restriction ) { v_Link_Restriction = Link_Restriction; }
@@ -2281,7 +2304,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    int v_FK_Trigger_Option;
    int v_Font_Size;
    bool v_Ignore_Manual_Links;
-   bool v_Label_Without_Prefix;
+   int v_Label_Source_Child;
    int v_Link_Restriction;
    int v_Mandatory_Option;
    string v_Name;
@@ -2547,7 +2570,7 @@ string Meta_View_Field::impl::get_field_value( int field ) const
       break;
 
       case 17:
-      retval = to_string( impl_Label_Without_Prefix( ) );
+      retval = to_string( impl_Label_Source_Child( ) );
       break;
 
       case 18:
@@ -2730,7 +2753,7 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 17:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Label_Without_Prefix, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Label_Source_Child, value );
       break;
 
       case 18:
@@ -2913,7 +2936,7 @@ bool Meta_View_Field::impl::is_field_default( int field ) const
       break;
 
       case 17:
-      retval = ( v_Label_Without_Prefix == g_default_Label_Without_Prefix );
+      retval = ( v_Label_Source_Child == g_default_Label_Source_Child );
       break;
 
       case 18:
@@ -3256,7 +3279,7 @@ void Meta_View_Field::impl::clear( )
    v_FK_Trigger_Option = g_default_FK_Trigger_Option;
    v_Font_Size = g_default_Font_Size;
    v_Ignore_Manual_Links = g_default_Ignore_Manual_Links;
-   v_Label_Without_Prefix = g_default_Label_Without_Prefix;
+   v_Label_Source_Child = g_default_Label_Source_Child;
    v_Link_Restriction = g_default_Link_Restriction;
    v_Mandatory_Option = g_default_Mandatory_Option;
    v_Name = g_default_Name;
@@ -3442,6 +3465,11 @@ void Meta_View_Field::impl::validate( unsigned state, bool is_internal, validati
       p_validation_errors->insert( validation_error_value_type( c_field_name_Font_Size,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Font_Size ) ) ) ) );
+
+   if( !g_label_source_child_enum.count( v_Label_Source_Child ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Label_Source_Child,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Label_Source_Child ) ) ) ) );
 
    if( !g_view_field_link_restrict_enum.count( v_Link_Restriction ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Link_Restriction,
@@ -3991,14 +4019,14 @@ void Meta_View_Field::Ignore_Manual_Links( bool Ignore_Manual_Links )
    p_impl->impl_Ignore_Manual_Links( Ignore_Manual_Links );
 }
 
-bool Meta_View_Field::Label_Without_Prefix( ) const
+int Meta_View_Field::Label_Source_Child( ) const
 {
-   return p_impl->impl_Label_Without_Prefix( );
+   return p_impl->impl_Label_Source_Child( );
 }
 
-void Meta_View_Field::Label_Without_Prefix( bool Label_Without_Prefix )
+void Meta_View_Field::Label_Source_Child( int Label_Source_Child )
 {
-   p_impl->impl_Label_Without_Prefix( Label_Without_Prefix );
+   p_impl->impl_Label_Source_Child( Label_Source_Child );
 }
 
 int Meta_View_Field::Link_Restriction( ) const
@@ -4672,12 +4700,12 @@ const char* Meta_View_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Label_Without_Prefix )
+   else if( name == c_field_name_Label_Source_Child )
    {
-      p_id = c_field_id_Label_Without_Prefix;
+      p_id = c_field_id_Label_Source_Child;
 
       if( p_type_name )
-         *p_type_name = "bool";
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -5113,12 +5141,12 @@ const char* Meta_View_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Label_Without_Prefix )
+   else if( id == c_field_id_Label_Source_Child )
    {
-      p_name = c_field_name_Label_Without_Prefix;
+      p_name = c_field_name_Label_Source_Child;
 
       if( p_type_name )
-         *p_type_name = "bool";
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -5492,10 +5520,10 @@ string Meta_View_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Ignore_Manual_Links );
       get_module_string( c_field_display_name_Ignore_Manual_Links, &next );
    }
-   else if( id_or_name == c_field_id_Label_Without_Prefix || id_or_name == c_field_name_Label_Without_Prefix )
+   else if( id_or_name == c_field_id_Label_Source_Child || id_or_name == c_field_name_Label_Source_Child )
    {
-      name = string( c_field_display_name_Label_Without_Prefix );
-      get_module_string( c_field_display_name_Label_Without_Prefix, &next );
+      name = string( c_field_display_name_Label_Source_Child );
+      get_module_string( c_field_display_name_Label_Source_Child, &next );
    }
    else if( id_or_name == c_field_id_Link_Permission || id_or_name == c_field_name_Link_Permission )
    {
@@ -5671,8 +5699,8 @@ string Meta_View_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Font_Size );
    else if( id_or_name == c_field_id_Ignore_Manual_Links || id_or_name == c_field_name_Ignore_Manual_Links )
       display_name = get_module_string( c_field_display_name_Ignore_Manual_Links );
-   else if( id_or_name == c_field_id_Label_Without_Prefix || id_or_name == c_field_name_Label_Without_Prefix )
-      display_name = get_module_string( c_field_display_name_Label_Without_Prefix );
+   else if( id_or_name == c_field_id_Label_Source_Child || id_or_name == c_field_name_Label_Source_Child )
+      display_name = get_module_string( c_field_display_name_Label_Source_Child );
    else if( id_or_name == c_field_id_Link_Permission || id_or_name == c_field_name_Link_Permission )
       display_name = get_module_string( c_field_display_name_Link_Permission );
    else if( id_or_name == c_field_id_Link_Restriction || id_or_name == c_field_name_Link_Restriction )
@@ -6024,7 +6052,7 @@ void Meta_View_Field::get_sql_column_names(
    names.push_back( "C_FK_Trigger_Option" );
    names.push_back( "C_Font_Size" );
    names.push_back( "C_Ignore_Manual_Links" );
-   names.push_back( "C_Label_Without_Prefix" );
+   names.push_back( "C_Label_Source_Child" );
    names.push_back( "C_Link_Permission" );
    names.push_back( "C_Link_Restriction" );
    names.push_back( "C_Mandatory_Option" );
@@ -6077,7 +6105,7 @@ void Meta_View_Field::get_sql_column_values(
    values.push_back( to_string( FK_Trigger_Option( ) ) );
    values.push_back( to_string( Font_Size( ) ) );
    values.push_back( to_string( Ignore_Manual_Links( ) ) );
-   values.push_back( to_string( Label_Without_Prefix( ) ) );
+   values.push_back( to_string( Label_Source_Child( ) ) );
    values.push_back( sql_quote( to_string( Link_Permission( ) ) ) );
    values.push_back( to_string( Link_Restriction( ) ) );
    values.push_back( to_string( Mandatory_Option( ) ) );
@@ -6338,7 +6366,7 @@ void Meta_View_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "120111", "FK_Trigger_Option", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "120125", "Font_Size", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "120126", "Ignore_Manual_Links", "bool", false, "", "" ) );
-   all_field_info.push_back( field_info( "120128", "Label_Without_Prefix", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "120128", "Label_Source_Child", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "301915", "Link_Permission", "Meta_Permission", false, "", "" ) );
    all_field_info.push_back( field_info( "120108", "Link_Restriction", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "120114", "Mandatory_Option", "int", false, "", "" ) );
@@ -6662,7 +6690,7 @@ const char* Meta_View_Field::static_get_field_name( field_id id )
       break;
 
       case 18:
-      p_id = "Label_Without_Prefix";
+      p_id = "Label_Source_Child";
       break;
 
       case 19:
@@ -6812,7 +6840,7 @@ int Meta_View_Field::static_get_field_num( const string& field )
       rc += 16;
    else if( field == c_field_id_Ignore_Manual_Links || field == c_field_name_Ignore_Manual_Links )
       rc += 17;
-   else if( field == c_field_id_Label_Without_Prefix || field == c_field_name_Label_Without_Prefix )
+   else if( field == c_field_id_Label_Source_Child || field == c_field_name_Label_Source_Child )
       rc += 18;
    else if( field == c_field_id_Link_Permission || field == c_field_name_Link_Permission )
       rc += 19;
@@ -6909,7 +6937,7 @@ string Meta_View_Field::static_get_sql_columns( )
     "C_FK_Trigger_Option INTEGER NOT NULL,"
     "C_Font_Size INTEGER NOT NULL,"
     "C_Ignore_Manual_Links INTEGER NOT NULL,"
-    "C_Label_Without_Prefix INTEGER NOT NULL,"
+    "C_Label_Source_Child INTEGER NOT NULL,"
     "C_Link_Permission VARCHAR(75) NOT NULL,"
     "C_Link_Restriction INTEGER NOT NULL,"
     "C_Mandatory_Option INTEGER NOT NULL,"
@@ -7022,6 +7050,10 @@ void Meta_View_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_font_size_2", get_enum_string_font_size( 2 ) ) );
    pairs.push_back( make_pair( "enum_font_size_5", get_enum_string_font_size( 5 ) ) );
    pairs.push_back( make_pair( "enum_font_size_6", get_enum_string_font_size( 6 ) ) );
+
+   pairs.push_back( make_pair( "enum_label_source_child_0", get_enum_string_label_source_child( 0 ) ) );
+   pairs.push_back( make_pair( "enum_label_source_child_1", get_enum_string_label_source_child( 1 ) ) );
+   pairs.push_back( make_pair( "enum_label_source_child_2", get_enum_string_label_source_child( 2 ) ) );
 
    pairs.push_back( make_pair( "enum_view_field_link_restrict_0", get_enum_string_view_field_link_restrict( 0 ) ) );
    pairs.push_back( make_pair( "enum_view_field_link_restrict_1", get_enum_string_view_field_link_restrict( 1 ) ) );
@@ -7181,6 +7213,10 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_font_size_enum.insert( 2 );
    g_font_size_enum.insert( 5 );
    g_font_size_enum.insert( 6 );
+
+   g_label_source_child_enum.insert( 0 );
+   g_label_source_child_enum.insert( 1 );
+   g_label_source_child_enum.insert( 2 );
 
    g_view_field_link_restrict_enum.insert( 0 );
    g_view_field_link_restrict_enum.insert( 1 );

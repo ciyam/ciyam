@@ -7452,19 +7452,36 @@
      </field>
      <field/>
       <id>124129
-      <name>Label_Without_Prefix
-      <type>bool
+      <name>Label_Source_Child
+      <type>int
       <mandatory>true
+      <enum_id>639
       <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500860
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500876
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500877
         <affect>relegate
        </modifier>
        <modifier/>
         <id>500878
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500883
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500886
         <affect>relegate
        </modifier>
       </modifiers>
@@ -26320,9 +26337,10 @@
      </field>
      <field/>
       <id>120128
-      <name>Label_Without_Prefix
-      <type>bool
+      <name>Label_Source_Child
+      <type>int
       <mandatory>true
+      <enum_id>639
       <default_value>0
       <indexes/>
       </indexes>
@@ -26333,6 +26351,10 @@
        </modifier>
        <modifier/>
         <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500730
         <affect>relegate
        </modifier>
       </modifiers>
@@ -31730,7 +31752,7 @@
      <field_info>302176:107101!@fkey1:300700+107108=0+107101;link
      <field_info>124131;enum=698
      <field_info>124120;enum=692
-     <field_info>124129
+     <field_info>124129;enum=639
      <field_info>124116
      <field_info>124128
      <field_info>124118;enum=697
@@ -37290,7 +37312,7 @@
      <field_info>120121
      <field_info>120130
      <field_info>120126
-     <field_info>120128
+     <field_info>120128;enum=639
      <field_info>120116
      <field_info>120108;enum=663
      <field_info>301915:116101!@group:301500+116101
@@ -37706,6 +37728,12 @@
     <name>int_type
     <type>int
     <key_values>0=normal,3=bytes,1=duration_dhm,2=duration_hms
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>639
+    <name>label_source_child
+    <type>int
+    <key_values>0=default,1=non\_prefixed,2=just\_child\_always
    </user_defined_enum>
    <user_defined_enum/>
     <id>688

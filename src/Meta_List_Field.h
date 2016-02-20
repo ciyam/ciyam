@@ -65,7 +65,7 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Include_Key_Additions = 16,
       e_field_id_Label_Class = 17,
       e_field_id_Label_Source = 18,
-      e_field_id_Label_Without_Prefix = 19,
+      e_field_id_Label_Source_Child = 19,
       e_field_id_Link_Empty_Restriction = 20,
       e_field_id_Link_Permission = 21,
       e_field_id_Link_Restriction = 22,
@@ -135,8 +135,8 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
    int Label_Source( ) const;
    void Label_Source( int Label_Source );
 
-   bool Label_Without_Prefix( ) const;
-   void Label_Without_Prefix( bool Label_Without_Prefix );
+   int Label_Source_Child( ) const;
+   void Label_Source_Child( int Label_Source_Child );
 
    int Link_Empty_Restriction( ) const;
    void Link_Empty_Restriction( int Link_Empty_Restriction );

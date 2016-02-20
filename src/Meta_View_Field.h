@@ -58,7 +58,7 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_FK_Trigger_Option = 15,
       e_field_id_Font_Size = 16,
       e_field_id_Ignore_Manual_Links = 17,
-      e_field_id_Label_Without_Prefix = 18,
+      e_field_id_Label_Source_Child = 18,
       e_field_id_Link_Permission = 19,
       e_field_id_Link_Restriction = 20,
       e_field_id_Mandatory_Option = 21,
@@ -131,8 +131,8 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
    bool Ignore_Manual_Links( ) const;
    void Ignore_Manual_Links( bool Ignore_Manual_Links );
 
-   bool Label_Without_Prefix( ) const;
-   void Label_Without_Prefix( bool Label_Without_Prefix );
+   int Label_Source_Child( ) const;
+   void Label_Source_Child( int Label_Source_Child );
 
    int Link_Restriction( ) const;
    void Link_Restriction( int Link_Restriction );

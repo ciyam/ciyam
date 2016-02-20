@@ -174,6 +174,7 @@ const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
+const char* const c_special_variable_os = "@os";
 const char* const c_special_variable_dtm = "@dtm";
 const char* const c_special_variable_key = "@key";
 const char* const c_special_variable_sec = "@sec";
@@ -4181,6 +4182,12 @@ void init_globals( )
    init_files_area( );
 
    check_timezone_info( );
+
+#ifndef _WIN32
+   set_system_variable( c_special_variable_os, "Linux" );
+#else
+   set_system_variable( c_special_variable_os, "Windows" );
+#endif
 
    // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
    // to be run, however, it is been read at startup just to ensure that the .sio file isn't
