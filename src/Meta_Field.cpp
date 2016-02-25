@@ -2831,6 +2831,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Get_Text_Type_impl>]
 //nyi
@@ -3896,6 +3897,7 @@ void Meta_Field::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3909,6 +3911,9 @@ void Meta_Field::impl::at_create( )
 
 void Meta_Field::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

@@ -557,6 +557,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 void Meta_Package_Type::impl::impl_Install( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Install_impl>]
 //nyi
@@ -1042,6 +1043,7 @@ void Meta_Package_Type::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1060,6 +1062,9 @@ void Meta_Package_Type::impl::at_create( )
 
 void Meta_Package_Type::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

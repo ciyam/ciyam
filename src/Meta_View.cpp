@@ -1209,6 +1209,7 @@ struct Meta_View::impl : public Meta_View_command_handler
 void Meta_View::impl::impl_Generate_PDF_View( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_PDF_View_impl>]
 //nyi
@@ -2349,6 +2350,7 @@ void Meta_View::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -2367,6 +2369,9 @@ void Meta_View::impl::at_create( )
 
 void Meta_View::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

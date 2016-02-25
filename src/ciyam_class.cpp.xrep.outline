@@ -858,6 +858,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `+,`] `})
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 `{`?`$all_procedure_specifications`[`$all_procedure_specifications`%,`,\
 `{`@eq`(`'\\1`'`,`'create_child`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#create_child.spec.xrep section=procedure full_class_name=$full_class_name\
@@ -1934,6 +1935,7 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
 `{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
    get_obj( ).set_variable(
@@ -1987,6 +1989,9 @@ void `{`$full_class_name`}::impl::at_create( )
 
 void `{`$full_class_name`}::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
 `{`?`$all_post_init_specifications`[`$all_post_init_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'field_bool_acct_minting`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_bool_acct_minting.spec.xrep section=post_init class_name=$class_name\

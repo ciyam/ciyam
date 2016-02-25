@@ -3972,6 +3972,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 void Meta_Specification::impl::impl_Add_Arg_1( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Arg_1_impl>]
    // [<finish Add_Arg_1_impl>]
@@ -3980,6 +3981,7 @@ void Meta_Specification::impl::impl_Add_Arg_1( )
 void Meta_Specification::impl::impl_Add_Arg_2( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Arg_2_impl>]
    // [<finish Add_Arg_2_impl>]
@@ -3988,6 +3990,7 @@ void Meta_Specification::impl::impl_Add_Arg_2( )
 void Meta_Specification::impl::impl_Add_Child_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Child_Info_impl>]
    // [<finish Add_Child_Info_impl>]
@@ -3996,6 +3999,7 @@ void Meta_Specification::impl::impl_Add_Child_Info( )
 void Meta_Specification::impl::impl_Add_Destination_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Destination_Info_impl>]
    // [<finish Add_Destination_Info_impl>]
@@ -4004,6 +4008,7 @@ void Meta_Specification::impl::impl_Add_Destination_Info( )
 void Meta_Specification::impl::impl_Add_Extra_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Extra_Info_impl>]
    // [<finish Add_Extra_Info_impl>]
@@ -4012,6 +4017,7 @@ void Meta_Specification::impl::impl_Add_Extra_Info( )
 void Meta_Specification::impl::impl_Add_Field( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Field_impl>]
    // [<finish Add_Field_impl>]
@@ -4020,6 +4026,7 @@ void Meta_Specification::impl::impl_Add_Field( )
 void Meta_Specification::impl::impl_Add_Field_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Field_Info_impl>]
    // [<finish Add_Field_Info_impl>]
@@ -4028,6 +4035,7 @@ void Meta_Specification::impl::impl_Add_Field_Info( )
 void Meta_Specification::impl::impl_Add_Field_Pair( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Field_Pair_impl>]
    // [<finish Add_Field_Pair_impl>]
@@ -4036,6 +4044,7 @@ void Meta_Specification::impl::impl_Add_Field_Pair( )
 void Meta_Specification::impl::impl_Add_Grandchild_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Grandchild_Info_impl>]
    // [<finish Add_Grandchild_Info_impl>]
@@ -4044,6 +4053,7 @@ void Meta_Specification::impl::impl_Add_Grandchild_Info( )
 void Meta_Specification::impl::impl_Add_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Info_impl>]
    // [<finish Add_Info_impl>]
@@ -4052,6 +4062,7 @@ void Meta_Specification::impl::impl_Add_Info( )
 void Meta_Specification::impl::impl_Add_Next( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Next_impl>]
    // [<finish Add_Next_impl>]
@@ -4060,6 +4071,7 @@ void Meta_Specification::impl::impl_Add_Next( )
 void Meta_Specification::impl::impl_Add_Opt_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Opt_Info_impl>]
    // [<finish Add_Opt_Info_impl>]
@@ -4068,6 +4080,7 @@ void Meta_Specification::impl::impl_Add_Opt_Info( )
 void Meta_Specification::impl::impl_Add_Other_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Other_Info_impl>]
    // [<finish Add_Other_Info_impl>]
@@ -4076,6 +4089,7 @@ void Meta_Specification::impl::impl_Add_Other_Info( )
 void Meta_Specification::impl::impl_Add_Secondary( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Secondary_impl>]
    // [<finish Add_Secondary_impl>]
@@ -4084,6 +4098,7 @@ void Meta_Specification::impl::impl_Add_Secondary( )
 void Meta_Specification::impl::impl_Add_Source_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Source_Info_impl>]
    // [<finish Add_Source_Info_impl>]
@@ -4092,6 +4107,7 @@ void Meta_Specification::impl::impl_Add_Source_Info( )
 void Meta_Specification::impl::impl_Add_Stats_1( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Stats_1_impl>]
    // [<finish Add_Stats_1_impl>]
@@ -4100,6 +4116,7 @@ void Meta_Specification::impl::impl_Add_Stats_1( )
 void Meta_Specification::impl::impl_Add_Stats_2( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Stats_2_impl>]
    // [<finish Add_Stats_2_impl>]
@@ -4108,6 +4125,7 @@ void Meta_Specification::impl::impl_Add_Stats_2( )
 void Meta_Specification::impl::impl_Add_Stats_Info( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Add_Stats_Info_impl>]
    // [<finish Add_Stats_Info_impl>]
@@ -4116,6 +4134,7 @@ void Meta_Specification::impl::impl_Add_Stats_Info( )
 void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, const string& Parent_Prefix )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_All_Strings_impl>]
 //nyi
@@ -4181,6 +4200,7 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
 void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_All_Vars_impl>]
 //nyi
@@ -4254,6 +4274,7 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
 void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 600169
    transaction_start( );
@@ -4339,6 +4360,7 @@ void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, co
 void Meta_Specification::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 600169
    transaction_start( );
@@ -7035,6 +7057,7 @@ void Meta_Specification::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start field_from_procedure_call)] 600209
    if( !get_obj( ).get_key( ).empty( )
@@ -7070,6 +7093,9 @@ void Meta_Specification::impl::at_create( )
 
 void Meta_Specification::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

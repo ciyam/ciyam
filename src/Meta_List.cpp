@@ -2321,6 +2321,7 @@ struct Meta_List::impl : public Meta_List_command_handler
 void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_PDF_List_impl>]
 //nyi
@@ -4510,6 +4511,7 @@ void Meta_List::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -4528,6 +4530,9 @@ void Meta_List::impl::at_create( )
 
 void Meta_List::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

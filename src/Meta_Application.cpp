@@ -1606,6 +1606,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
 void Meta_Application::impl::impl_Generate( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_impl>]
 //nyi
@@ -2218,6 +2219,7 @@ void Meta_Application::impl::impl_Generate( )
 void Meta_Application::impl::impl_Generate_File_Links( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_File_Links_impl>]
 //nyi
@@ -2240,6 +2242,7 @@ void Meta_Application::impl::impl_Generate_File_Links( )
 void Meta_Application::impl::impl_Generate_Modules( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_Modules_impl>]
 //nyi
@@ -2264,6 +2267,7 @@ void Meta_Application::impl::impl_Generate_Modules( )
 void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_Upgrade_DDL_impl>]
 //nyi
@@ -2341,6 +2345,7 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Test_Proc_1_impl>]
 //nyi
@@ -2352,6 +2357,7 @@ void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 void Meta_Application::impl::impl_Test_Proc_2( const string& Input, string& Output )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Test_Proc_2_impl>]
 //nyi
@@ -3164,6 +3170,7 @@ void Meta_Application::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3177,6 +3184,9 @@ void Meta_Application::impl::at_create( )
 
 void Meta_Application::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

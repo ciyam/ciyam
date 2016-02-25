@@ -2050,6 +2050,7 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 void Meta_Package_Option::impl::impl_Clear( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Clear_impl>]
 //nyi
@@ -2062,6 +2063,7 @@ void Meta_Package_Option::impl::impl_Clear( )
 void Meta_Package_Option::impl::impl_Edit( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Edit_impl>]
    // [<finish Edit_impl>]
@@ -2070,6 +2072,7 @@ void Meta_Package_Option::impl::impl_Edit( )
 void Meta_Package_Option::impl::impl_Select( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Select_impl>]
 //nyi
@@ -3265,6 +3268,7 @@ void Meta_Package_Option::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3278,6 +3282,9 @@ void Meta_Package_Option::impl::at_create( )
 
 void Meta_Package_Option::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

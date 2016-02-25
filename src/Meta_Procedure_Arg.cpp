@@ -731,6 +731,7 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
 void Meta_Procedure_Arg::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 620093
    transaction_start( );
@@ -799,6 +800,7 @@ void Meta_Procedure_Arg::impl::impl_Move_Down( const string& Restrict_Fields, co
 void Meta_Procedure_Arg::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 620093
    transaction_start( );
@@ -1181,6 +1183,7 @@ void Meta_Procedure_Arg::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1194,6 +1197,9 @@ void Meta_Procedure_Arg::impl::at_create( )
 
 void Meta_Procedure_Arg::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }
