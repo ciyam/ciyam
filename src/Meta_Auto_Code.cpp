@@ -386,6 +386,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start for_auto_code)] 600295
    get_obj( ).op_update( );
@@ -731,6 +732,7 @@ void Meta_Auto_Code::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -744,6 +746,9 @@ void Meta_Auto_Code::impl::at_create( )
 
 void Meta_Auto_Code::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

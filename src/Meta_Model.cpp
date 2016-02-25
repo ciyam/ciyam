@@ -1301,6 +1301,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 void Meta_Model::impl::impl_Create_Module( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Create_Module_impl>]
 //nyi
@@ -1355,6 +1356,7 @@ void Meta_Model::impl::impl_Create_Module( )
 void Meta_Model::impl::impl_Generate( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_impl>]
 //nyi
@@ -6054,6 +6056,7 @@ void Meta_Model::impl::impl_Generate( )
 void Meta_Model::impl::impl_Generate_File_Links( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_File_Links_impl>]
 //nyi
@@ -6104,6 +6107,7 @@ void Meta_Model::impl::impl_Generate_File_Links( )
 void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Get_Acyclic_Class_List_impl>]
 //nyi
@@ -6246,6 +6250,7 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
 void Meta_Model::impl::impl_Remove_All_Packages( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Remove_All_Packages_impl>]
 //nyi
@@ -6337,6 +6342,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 void Meta_Model::impl::impl_Remove_Module( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Remove_Module_impl>]
 //nyi
@@ -7059,6 +7065,7 @@ void Meta_Model::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -7072,6 +7079,9 @@ void Meta_Model::impl::at_create( )
 
 void Meta_Model::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

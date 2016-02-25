@@ -3492,6 +3492,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start meta_trait_val_proc)] 600211
    if( get_obj( ).Field_type( ) != c_enum_field_type_Any_Type )
@@ -5581,6 +5582,7 @@ void Meta_Specification_Type::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -5594,6 +5596,9 @@ void Meta_Specification_Type::impl::at_create( )
 
 void Meta_Specification_Type::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

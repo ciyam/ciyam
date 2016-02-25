@@ -928,6 +928,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 void Meta_Specification_Field_Action::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Generate_All_Vars_impl>]
 //nyi
@@ -1324,6 +1325,7 @@ void Meta_Specification_Field_Action::impl::finalise_fetch( bool skip_set_origin
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1337,6 +1339,9 @@ void Meta_Specification_Field_Action::impl::at_create( )
 
 void Meta_Specification_Field_Action::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

@@ -1117,6 +1117,7 @@ void Meta_Modifier_Affect::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1130,6 +1131,9 @@ void Meta_Modifier_Affect::impl::at_create( )
 
 void Meta_Modifier_Affect::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

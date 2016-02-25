@@ -836,6 +836,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
 void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 600071
    transaction_start( );
@@ -904,6 +905,7 @@ void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const stri
 void Meta_Index::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start move_up_and_down)] 600071
    transaction_start( );
@@ -1449,6 +1451,7 @@ void Meta_Index::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1462,6 +1465,9 @@ void Meta_Index::impl::at_create( )
 
 void Meta_Index::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }

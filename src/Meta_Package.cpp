@@ -781,6 +781,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 void Meta_Package::impl::impl_Cancel_Remove( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Cancel_Remove_impl>]
 //nyi
@@ -801,6 +802,7 @@ void Meta_Package::impl::impl_Cancel_Remove( )
 void Meta_Package::impl::impl_Check_Install( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Check_Install_impl>]
 //nyi
@@ -868,6 +870,7 @@ void Meta_Package::impl::impl_Check_Install( )
 void Meta_Package::impl::impl_Complete_Remove( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Complete_Remove_impl>]
 //nyi
@@ -905,6 +908,7 @@ void Meta_Package::impl::impl_Complete_Remove( )
 void Meta_Package::impl::impl_Install( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Install_impl>]
 //nyi
@@ -1309,6 +1313,7 @@ void Meta_Package::impl::impl_Install( )
 void Meta_Package::impl::impl_Remove( )
 {
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start Remove_impl>]
 //nyi
@@ -2020,6 +2025,7 @@ void Meta_Package::impl::finalise_fetch( bool skip_set_original )
       get_obj( ).set_new_original_values( );
 
    uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -2033,6 +2039,9 @@ void Meta_Package::impl::at_create( )
 
 void Meta_Package::impl::post_init( )
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start post_init>]
    // [<finish post_init>]
 }
