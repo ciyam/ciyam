@@ -3958,7 +3958,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string dat_name( name + ".dat" );
             string sql_name( name + ".sql" );
             string log_name( name + ".log" );
-            string sid_name( "ciyam_server.sid" );
             string sio_name( "ciyam_server.sio" );
 
             string sav_hdr_name( hdr_name + ".sav" );
@@ -3966,7 +3965,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string sav_dat_name( dat_name + ".sav" );
             string sav_sql_name( sql_name + ".sav" );
             string sav_log_name( log_name + ".sav" );
-            string sav_sid_name( sid_name + ".sav" );
             string sav_sio_name( sio_name + ".sav" );
 
             ifstream hdrf( hdr_name.c_str( ), ios::in | ios::binary );
@@ -3974,10 +3972,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ifstream datf( dat_name.c_str( ), ios::in | ios::binary );
             ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
             ifstream logf( log_name.c_str( ), ios::in | ios::binary );
-            ifstream sidf( sid_name.c_str( ), ios::in | ios::binary );
             ifstream siof( sio_name.c_str( ), ios::in | ios::binary );
 
-            if( !hdrf || !idxf || !datf || !sqlf || !logf || !sidf || !siof )
+            if( !hdrf || !idxf || !datf || !sqlf || !logf || !siof )
                throw runtime_error( "unable to open backup files for '" + name + "' (in use?)" );
 
             ofstream sav_hdrf( sav_hdr_name.c_str( ), ios::out | ios::binary );
@@ -3985,10 +3982,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ofstream sav_datf( sav_dat_name.c_str( ), ios::out | ios::binary );
             ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
             ofstream sav_logf( sav_log_name.c_str( ), ios::out | ios::binary );
-            ofstream sav_sidf( sav_sid_name.c_str( ), ios::out | ios::binary );
             ofstream sav_siof( sav_sio_name.c_str( ), ios::out | ios::binary );
 
-            if( !sav_hdrf || !sav_idxf || !sav_datf || !sav_sqlf || !sav_logf || !sav_sidf || !sav_siof )
+            if( !sav_hdrf || !sav_idxf || !sav_datf || !sav_sqlf || !sav_logf || !sav_siof )
                throw runtime_error( "unable to open backup files for '" + name + "'" );
 
             copy_stream( hdrf, sav_hdrf );
@@ -3996,7 +3992,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             copy_stream( datf, sav_datf );
             copy_stream( sqlf, sav_sqlf );
             copy_stream( logf, sav_logf );
-            copy_stream( sidf, sav_sidf );
             copy_stream( siof, sav_siof );
 
             string ltf_name( name + ".ltf" );
@@ -4110,7 +4105,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          file_names += " " + name + ".sql.sav";
          file_names += " " + name + ".log.sav";
          file_names += " " + name + ".backup.sql";
-         file_names += " ciyam_server.sid.sav ciyam_server.sio.sav";
+         file_names += " ciyam_server.sio.sav";
 
          if( has_ltf )
             file_names += " " + name + ".ltf.sav";
@@ -4176,7 +4171,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          remove_file( name + ".sql.sav" );
          remove_file( name + ".log.sav" );
          remove_file( name + ".backup.sql" );
-         remove_file( "ciyam_server.sid.sav" );
          remove_file( "ciyam_server.sio.sav" );
 
          if( has_ltf )

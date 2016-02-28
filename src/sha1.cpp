@@ -224,9 +224,15 @@ void sha1_final( unsigned char digest[ 20 ], sha1_context* context )
 struct sha1::impl
 {
    bool final;
-   unsigned char digest[ 20 ];
+   unsigned char digest[ c_sha1_digest_size ];
 
    sha1_context context;
+
+   ~impl( )
+   {
+      for( size_t i = 0; i < c_sha1_digest_size; i++ )
+         digest[ i ] = 0;
+   }
 };
 
 sha1::sha1( )
@@ -297,7 +303,7 @@ void sha1::copy_digest_to_buffer( unsigned char* p_buffer )
       sha1_final( p_impl->digest, &p_impl->context );
    }
 
-   memcpy( p_buffer, p_impl->digest, 20 );
+   memcpy( p_buffer, p_impl->digest, c_sha1_digest_size );
 }
 
 void sha1::get_digest_as_string( string& s )
@@ -308,10 +314,12 @@ void sha1::get_digest_as_string( string& s )
       sha1_final( p_impl->digest, &p_impl->context );
    }
 
-   if( s.length( ) != 40 )
+   if( s.length( ) > 40 )
+      s.resize( 40 );
+   else if( s.length( ) != 40 )
       s = string( 40, '\0' );
 
-   for( size_t i = 0, j = 0; i < 20; i++ )
+   for( size_t i = 0, j = 0; i < c_sha1_digest_size; i++ )
    {
       s[ j++ ] = ascii_digit( ( p_impl->digest[ i ] & 0xf0 ) >> 4 );
       s[ j++ ] = ascii_digit( p_impl->digest[ i ] & 0x0f );
@@ -327,7 +335,7 @@ string sha1::get_digest_as_string( char separator )
    }
 
    ostringstream outs;
-   for( size_t i = 0; i < 20; i++ )
+   for( size_t i = 0; i < c_sha1_digest_size; i++ )
    {
       if( i && i % 4 == 0 && separator != '\0' )
          outs << separator;
@@ -340,11 +348,11 @@ string sha1::get_digest_as_string( char separator )
 string hmac_sha1( const string& key, const string& message )
 {
    string s( 40, '\0' );
-   unsigned char buffer[ 20 ];
+   unsigned char buffer[ c_sha1_digest_size ];
 
    hmac_sha1( key, message, buffer );
 
-   for( size_t i = 0, j = 0; i < 20; i++ )
+   for( size_t i = 0, j = 0; i < c_sha1_digest_size; i++ )
    {
       s[ j++ ] = ascii_digit( ( buffer[ i ] & 0xf0 ) >> 4 );
       s[ j++ ] = ascii_digit( buffer[ i ] & 0x0f );
@@ -364,8 +372,8 @@ void hmac_sha1( const string& key, const string& message, unsigned char* p_buffe
    unsigned char k_ipad[ 65 ];
    unsigned char k_opad[ 65 ];
 
-   unsigned char tk[ 20 ];
-   unsigned char tk2[ 20 ];
+   unsigned char tk[ c_sha1_digest_size ];
+   unsigned char tk2[ c_sha1_digest_size ];
    unsigned char bufferIn[ 1024 ];
    unsigned char bufferOut[ 1024 ];
 
@@ -399,9 +407,9 @@ void hmac_sha1( const string& key, const string& message, unsigned char* p_buffe
 
    memset( bufferOut, 0x00, 1024 );
    memcpy( bufferOut, k_opad, 64 );
-   memcpy( bufferOut + 64, tk2, 20 );
+   memcpy( bufferOut + 64, tk2, c_sha1_digest_size );
  
-   sha1 hash2( bufferOut, 64 + 20 );
+   sha1 hash2( bufferOut, 64 + c_sha1_digest_size );
    hash2.copy_digest_to_buffer( p_buffer );
 }
 

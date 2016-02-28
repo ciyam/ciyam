@@ -55,11 +55,13 @@ const size_t c_password_rounds_multiplier = 3;
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick, however, it is not considered "strong encryption" and
-// therefore should not be used for encrypting very sensitive information.
+// therefore should not be used for encrypting highly sensitive information.
 void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
    unsigned char buf[ c_file_buf_size ];
+
+   memset( key, '\0', c_max_key_size );
 
    io.seekg( 0, ios::end );
    size_t length = ( size_t )io.tellg( );

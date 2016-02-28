@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+const int c_sha1_digest_size = 20;
+
 class sha1
 {
    public:

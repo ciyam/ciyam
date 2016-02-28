@@ -187,10 +187,10 @@ bool CIYAM_BASE_DECL_SPEC is_local_external_client( const std::string& key );
 
 void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
 
-std::string CIYAM_BASE_DECL_SPEC encrypt_data(
+std::string CIYAM_BASE_DECL_SPEC decrypt_data(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
-std::string CIYAM_BASE_DECL_SPEC decrypt_data(
+std::string CIYAM_BASE_DECL_SPEC encrypt_data(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
 std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
