@@ -1240,14 +1240,11 @@ void request_handler::process_request( )
                         set_server_id( server_id );
                         g_id = get_id_from_server_id( );
 
-                        if( !file_exists( c_identity_file ) )
-                        {
-                           ofstream outf( c_identity_file );
-                           outf << get_server_id( );
-                        }
+                        ofstream outf( c_identity_file );
+                        outf << g_id;
 
-                        // NOTE: As the original "g_id" value was empty any URL link or attempt to login
-                        // could fail so force the page to refresh using the now corrected "g_id" value.
+                        // NOTE: As the original "g_id" value was potentially invalid any URL link or attempt
+                        // to login could fail so force the page to refresh with the now correct "g_id" value.
                         if( cmd != c_cmd_open )
                            extra_content_func += "refresh( false );\n";
                      }
@@ -2706,12 +2703,7 @@ int main( int argc, char* argv[ ] )
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
       if( file_exists( c_identity_file ) )
-      {
-         string identity( buffer_file( c_identity_file ) );
-         set_server_id( identity );
-
-         g_id = get_id_from_server_id( );
-      }
+         g_id = buffer_file( c_identity_file );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );

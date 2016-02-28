@@ -248,6 +248,13 @@ const char* const c_special_variable_total_child_field_in_parent = "@total_child
 const char* const c_special_variable_value_increment = "@increment";
 const char* const c_special_variable_value_decrement = "@decrement";
 
+void clear_key( string& key )
+{
+   // NOTE: Overwrite each byte of the key to protect from potential swap file discovery.
+   for( string::size_type i = 0; i < key.length( ); i++ )
+      key[ i ] = '\0';
+}
+
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -3240,15 +3247,20 @@ external_client_container g_external_client_info;
 
 #include "sid.enc"
 
-string sid_hash( )
+void sid_hash( string& s )
 {
    guard g( g_mutex );
 
    sha256 hash1( string( c_salt_value ) + get_sid( ) );
 
-   sha1 hash2( hash1.get_digest_as_string( ) );
+   // NOTE: Fix the initial size so that no temporary string is used.
+   s.resize( c_sha256_digest_size * 2 );
 
-   return hash2.get_digest_as_string( );
+   hash1.get_digest_as_string( s );
+
+   sha1 hash2( s );
+
+   hash2.get_digest_as_string( s );
 }
 
 struct script_info
@@ -4376,7 +4388,17 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
    string s( g_reg_key );
 
    if( prepend_sid )
-      s = sid_hash( ) + ( s.empty( ) ? string( ) : "-" + s );
+   {
+      // NOTE: Reload just in case it has been overwritten.
+      g_sid = buffer_file( c_server_sid_file );
+
+      string suffix( s );
+
+      sid_hash( s );
+
+      if( !suffix.empty( ) )
+         s += "-" + suffix;
+   }
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );
@@ -4651,31 +4673,62 @@ void get_external_client_info( const string& key, external_client& info )
    info = g_external_client_info[ key ];
 }
 
-string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
-{
-   string salt;
-
-   if( !no_salt )
-      salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
-
-   return data_encrypt( data, salt, !no_ssl, !no_salt );
-}
-
 string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
-   string salt;
+   string key, retval;
 
+   // NOTE: If "no_salt" was specified then an empty key is used (so "no_salt" should
+   // only ever be set "true" for the purpose of performing simple regression tests).
    if( !no_salt )
-      salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
+   {
+      sid_hash( key );
 
-   return data_decrypt( data, salt, !no_ssl );
+      if( !hash_only )
+         key += string( c_salt_value );
+   }
+
+   retval = data_decrypt( data, key, !no_ssl );
+
+   clear_key( key );
+
+   return retval;
+}
+
+string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
+{
+   string key, retval;
+
+   // NOTE: (see above)
+   if( !no_salt )
+   {
+      sid_hash( key );
+
+      if( !hash_only )
+         key += string( c_salt_value );
+   }
+
+   retval = data_encrypt( data, key, !no_ssl, !no_salt );
+
+   clear_key( key );
+
+   return retval;
 }
 
 string totp_secret_key( const string& unique )
 {
+   string key, retval;
+
    string crypt_key( get_raw_session_variable( c_special_variable_crypt_key ) );
 
-   return get_totp_secret( unique, crypt_key.empty( ) ? sid_hash( ) : crypt_key );
+   if( crypt_key.empty( ) )
+      sid_hash( key );
+
+   retval = get_totp_secret( unique, crypt_key.empty( ) ? key : crypt_key );
+
+   if( crypt_key.empty( ) )
+      clear_key( key );
+
+   return retval;
 }
 
 int exec_system( const string& cmd, bool async, bool delay )

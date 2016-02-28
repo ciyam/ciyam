@@ -212,6 +212,12 @@ struct sha256::impl
    unsigned char digest[ c_sha256_digest_size ];
 
    SHA256_CTX context;
+
+   ~impl( )
+   {
+      for( size_t i = 0; i < c_sha256_digest_size; i++ )
+         digest[ i ] = 0;
+   }
 };
 
 sha256::sha256( )
@@ -312,7 +318,9 @@ void sha256::get_digest_as_string( string& s )
       sha256_final( &p_impl->context, p_impl->digest );
    }
 
-   if( s.length( ) != 64 )
+   if( s.length( ) > 64 )
+      s.resize( 64 );
+   else if( s.length( ) != 64 )
       s = string( 64, '\0' );
 
    for( size_t i = 0, j = 0; i < c_sha256_digest_size; i++ )
