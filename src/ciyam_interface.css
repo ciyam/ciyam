@@ -138,13 +138,9 @@ input:focus, textarea:focus
 
 a
 {
-   text-decoration: none;
    color: #222;
-}
-
-td a
-{
    font-weight: 600;
+   text-decoration: none;
 }
 
 #content

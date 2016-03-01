@@ -92,14 +92,14 @@ const string& get_server_id( )
    return get_sid( );
 }
 
-void set_server_id( string& id )
+void set_server_id( const string& id )
 {
    set_sid( id );
 }
 
-string get_id_from_server_id( )
+string get_id_from_server_id( const char* p_server_id )
 {
-   string key( get_server_id( ) );
+   string key( p_server_id ? string( p_server_id ) : get_server_id( ) );
 
    MD5 md5;
    md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
@@ -1316,8 +1316,8 @@ void replace_links_and_output( const string& s,
    }
 }
 
-void output_login_logout( const string& module_name, ostream& os,
- const string& extra_details, const string& msg, bool is_activation )
+void output_form( const string& module_name, ostream& os,
+ const string& extra_details, const string& msg, bool is_sign_in, const string& title )
 {
    os << "\n<div id=\"normal_content\">\n";
 
@@ -1326,8 +1326,12 @@ void output_login_logout( const string& module_name, ostream& os,
 
    if( !extra_details.empty( ) )
    {
-      if( is_activation )
-         os << "<h3 class=\"right-top\">" << GDS( c_display_activate_account ) << "</h3>" << endl;
+      if( !is_sign_in )
+      {
+         string title_string( !title.empty( ) ? title : GDS( c_display_activate_account ) );
+
+         os << "<h3 class=\"right-top\">" << title_string << "</h3>" << endl;
+      }
       else if( is_blockchain_application( ) )
          os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_password ) << "</h3>" << endl;
       else

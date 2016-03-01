@@ -44,9 +44,9 @@ void init_log( );
 void log_trace_message( const std::string& message );
 
 const std::string& get_server_id( );
-void set_server_id( std::string& id );
+void set_server_id( const std::string& id );
 
-std::string get_id_from_server_id( );
+std::string get_id_from_server_id( const char* p_server_id = 0 );
 
 void init_strings( );
 void init_extkeys( );
@@ -145,8 +145,9 @@ void replace_links_and_output( const std::string& s, const std::string& id,
  bool is_content, bool output_hrefs, const std::string& session_id, const session_info& sess_info,
  const std::string& user_select_key, bool using_session_cookie, bool use_url_checksum, std::string* p_last_key = 0 );
 
-void output_login_logout( const std::string& module_name, std::ostream& os,
- const std::string& extra_details, const std::string& msg = "", bool is_activation = false );
+void output_form(
+ const std::string& module_name, std::ostream& os, const std::string& extra_details,
+ const std::string& msg = "", bool is_sign_in = true, const std::string& title = "" );
 
 void output_actions( std::ostream& os,
  const source& src, const std::string& cmd, const std::string& data,

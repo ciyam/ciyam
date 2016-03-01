@@ -839,6 +839,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             replace_char_occurences( title, '_', ' ' );
 
             stringf << "title \"" << title << "\"\n";
+            stringf << "home_title \"" << title << "\"\n";
 
             stringf << "field_key \"Key\"\n";
             stringf << "field_row \"#\"\n";

@@ -1337,7 +1337,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-         output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
+         output_form( module_name, extra_content, login_html, osstr.str( ) );
       }
    }
 
