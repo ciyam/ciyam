@@ -1,4 +1,5 @@
 title "Meta Beta"
+home_title "Meta Beta"
 field_key "Key"
 field_row "#"
 enum_add_packages "add packages"

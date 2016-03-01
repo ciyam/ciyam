@@ -104,7 +104,7 @@ const int c_pid_timeout = 2500;
 const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 
-const char* const c_identity_file = "identity.txt";
+const char* const c_id_file = "identity.txt";
 
 const char* const c_stop_file = "ciyam_interface.stop";
 
@@ -117,6 +117,7 @@ const char* const c_footer_file = "footer.htms";
 const char* const c_openup_file = "openup.htms";
 const char* const c_signup_file = "signup.htms";
 const char* const c_activate_file = "activate.htms";
+const char* const c_identity_file = "identity.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
 const char* const c_authenticate_file = "authenticate.htms";
@@ -175,8 +176,6 @@ bool g_has_connected = false;
 
 bool g_is_blockchain_application = false;
 
-string g_activate_html;
-
 size_t g_max_user_limit = 1;
 
 mutex g_session_mutex;
@@ -188,11 +187,14 @@ map< string, string > g_uuid_for_ip_addr;
 }
 
 string g_id;
+string g_tmp;
 
 string g_login_html;
 string g_footer_html;
 string g_openup_html;
 string g_signup_html;
+string g_activate_html;
+string g_identity_html;
 string g_password_html;
 string g_ssl_signup_html;
 string g_authenticate_html;
@@ -716,6 +718,7 @@ void request_handler::process_request( )
    bool temp_session = false;
    bool force_refresh = false;
    bool created_session = false;
+   bool using_anonymous = false;
    bool finished_session = false;
 
    string hash;
@@ -953,7 +956,6 @@ void request_handler::process_request( )
       }
 
       bool is_sign_in = false;
-      bool using_anonymous = false;
 
       if( !is_kept
        && cmd != c_cmd_password && cmd != c_cmd_credentials
@@ -962,6 +964,20 @@ void request_handler::process_request( )
       {
          is_authorised = true;
          using_anonymous = true;
+      }
+
+      // NOTE: For Meta an explicit identity confirmation is required.
+      if( !file_exists( c_id_file ) && module_name == "Meta" )
+      {
+         if( cmd == c_cmd_identity )
+         {
+            set_server_id( g_tmp );
+
+            ofstream outf( c_id_file );
+            outf << g_id;
+         }
+         else
+            using_anonymous = true;
       }
 
       if( cmd == c_cmd_password || cmd == c_cmd_credentials )
@@ -1014,7 +1030,7 @@ void request_handler::process_request( )
             if( cmd != c_cmd_activate )
             {
                is_login_screen = true;
-               output_login_logout( module_name, extra_content, login_html );
+               output_form( module_name, extra_content, login_html );
             }
             else
             {
@@ -1028,7 +1044,7 @@ void request_handler::process_request( )
                 + string_message( GDS( c_display_provide_password_to_activate ),
                 make_pair( c_display_provide_password_to_activate_parm_id, user ) ) + "</b></p>" );
 
-               output_login_logout( module_name, extra_content, activate_html, message, true );
+               output_form( module_name, extra_content, activate_html, message, false );
             }
          }
          else
@@ -1118,7 +1134,7 @@ void request_handler::process_request( )
             if( g_is_blockchain_application )
                login_html = g_login_password_html;
 
-            output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
+            output_form( module_name, extra_content, login_html, osstr.str( ) );
 
             if( cookies_permitted )
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
@@ -1134,6 +1150,8 @@ void request_handler::process_request( )
       else
       {
          guard g( g_session_mutex );
+
+         bool has_output_form = false;
 
          if( !p_session_info->p_socket )
          {
@@ -1237,52 +1255,85 @@ void request_handler::process_request( )
 
                      if( get_server_id( ) != server_id )
                      {
-                        set_server_id( server_id );
-                        g_id = get_id_from_server_id( );
+                        if( module_name != "Meta" )
+                        {
+                           set_server_id( server_id );
+                           g_id = get_id_from_server_id( );
 
-                        ofstream outf( c_identity_file );
-                        outf << g_id;
+                           ofstream outf( c_id_file );
+                           outf << g_id;
 
-                        // NOTE: As the original "g_id" value was potentially invalid any URL link or attempt
-                        // to login could fail so force the page to refresh with the now correct "g_id" value.
-                        if( cmd != c_cmd_open )
-                           extra_content_func += "refresh( false );\n";
+                           // NOTE: As the original "g_id" value was potentially invalid any URL link or attempt
+                           // to login could fail so force the page to refresh with the now correct "g_id" value.
+                           if( cmd != c_cmd_open )
+                              extra_content_func += "refresh( false );\n";
+                        }
+                        else
+                        {
+                           g_tmp = server_id;
+                           g_id = get_id_from_server_id( g_tmp.c_str( ) );
+
+                           string identity_html( g_identity_html );
+
+                           str_replace( identity_html,
+                            c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
+
+                           str_replace( identity_html,
+                            c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
+
+                           str_replace( identity_html, c_identity_fingerprint, g_id );
+
+                           str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
+
+                           str_replace( identity_html, c_identity_retry_message,
+                            string_message( GDS( c_display_click_here_to_retry ),
+                            make_pair( c_display_click_here_to_retry_parm_href,
+                            "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
+
+                           output_form( module_name, extra_content,
+                            identity_html, "", false, GDS( c_display_confirm_identity ) );
+
+                           has_output_form = true;
+                        }
                      }
 
-                     g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
-
-                     if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
-                        throw runtime_error( "unable to initialise '" + get_storage_info( ).storage_name + "' storage" );
-
-                     string response;
-                     if( !get_storage_info( ).has_web_root( ) )
+                     if( !has_output_form )
                      {
-                        if( !simple_command( *p_session_info, "storage_web_root -expand", &response ) )
-                           throw runtime_error( "unable to get web root from '" + get_storage_info( ).storage_name + "' storage" );
+                        g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
-                        get_storage_info( ).web_root = response;
+                        if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
+                           throw runtime_error( "unable to initialise '" + get_storage_info( ).storage_name + "' storage" );
 
-                        setup_directories( );
-                     }
+                        string response;
+                        if( !get_storage_info( ).has_web_root( ) )
+                        {
+                           if( !simple_command( *p_session_info, "storage_web_root -expand", &response ) )
+                              throw runtime_error( "unable to get web root from '" + get_storage_info( ).storage_name + "' storage" );
 
-                     module_index_iterator mii;
-                     for( mii = get_storage_info( ).modules_index.begin( );
-                      mii != get_storage_info( ).modules_index.end( ); ++mii )
-                     {
-                        module_info& mod_info( *mii->second );
-                        read_module_strings( mod_info, *p_session_info->p_socket );
+                           get_storage_info( ).web_root = response;
 
-                        if( !simple_command( *p_session_info, mod_info.name + "_ver", &response ) )
-                           throw runtime_error( "unable to get version information for module '" + mod_info.name + "'" );
+                           setup_directories( );
+                        }
 
-                        mod_info.title = response;
-                     }
+                        module_index_iterator mii;
+                        for( mii = get_storage_info( ).modules_index.begin( );
+                         mii != get_storage_info( ).modules_index.end( ); ++mii )
+                        {
+                           module_info& mod_info( *mii->second );
+                           read_module_strings( mod_info, *p_session_info->p_socket );
+
+                           if( !simple_command( *p_session_info, mod_info.name + "_ver", &response ) )
+                              throw runtime_error( "unable to get version information for module '" + mod_info.name + "'" );
+
+                           mod_info.title = response;
+                        }
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-                     connection_okay = true;
+                        connection_okay = true;
 #else
-                     g_has_connected = connection_okay = true;
+                        g_has_connected = connection_okay = true;
 #endif
+                     }
                   }
                   else
                      throw runtime_error( GDS( c_display_application_server_unavailable ) );
@@ -1609,780 +1660,784 @@ void request_handler::process_request( )
             }
          }
 
-         string act( input_data[ c_param_act ] );
-         string app( input_data[ c_param_app ] );
-         string chk( input_data[ c_param_chk ] );
-         string cls( input_data[ c_param_cls ] );
-         string pin( input_data[ c_param_pin ] );
-         string cont( input_data[ c_param_cont ] );
-         string exec( input_data[ c_param_exec ] );
-         string vtab( input_data[ c_param_vtab ] );
-         string vtabc( input_data[ c_param_vtabc ] );
-         string extra( input_data[ c_param_extra ] );
-         string field( input_data[ c_param_field ] );
-         string flags( input_data[ c_param_flags ] );
-         string ident( input_data[ c_param_ident ] );
-         string qlink( input_data[ c_param_qlink ] );
-         string bcount( input_data[ c_param_bcount ] );
-         string scrollx( input_data[ c_param_scrollx ] );
-         string scrolly( input_data[ c_param_scrolly ] );
-         string special( input_data[ c_param_special ] );
-         string uselect( input_data[ c_param_uselect ] );
-         string listarg( input_data[ c_param_listarg ] );
-         string listvar( input_data[ c_param_listvar ] );
-         string listinfo( input_data[ c_param_listinfo ] );
-         string listsort( input_data[ c_param_listsort ] );
-         string listsrch( input_data[ c_param_listsrch ] );
-         string findinfo( input_data[ c_param_findinfo ] );
-         string fieldlist( input_data[ c_param_fieldlist ] );
-         string listextra( input_data[ c_param_listextra ] );
-         string uselextra( input_data[ c_param_uselextra ] );
-         string userfetch( input_data[ c_param_userfetch ] );
-         string quicklink( input_data[ c_param_quicklink ] );
-         string keepchecks( input_data[ c_param_keepchecks ] );
-         string extrafields( input_data[ c_param_extrafields ] );
-         string extravalues( input_data[ c_param_extravalues ] );
-
-         set< string > url_opts;
-         if( !get_storage_info( ).url_opts.empty( ) )
-            split( get_storage_info( ).url_opts, url_opts, '+' );
-
-         bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
-
-         bool is_checksummed_home = ( cmd == c_cmd_home && !uselect.empty( ) );
-
-         if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join && cmd != c_cmd_open
-          && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
-          && cmd != c_cmd_status && ( cmd != c_cmd_view || ( act != c_act_cont && act != c_act_undo ) ) ) ) )
+         if( !has_output_form )
          {
-            string prefix;
+            string act( input_data[ c_param_act ] );
+            string app( input_data[ c_param_app ] );
+            string chk( input_data[ c_param_chk ] );
+            string cls( input_data[ c_param_cls ] );
+            string pin( input_data[ c_param_pin ] );
+            string cont( input_data[ c_param_cont ] );
+            string exec( input_data[ c_param_exec ] );
+            string vtab( input_data[ c_param_vtab ] );
+            string vtabc( input_data[ c_param_vtabc ] );
+            string extra( input_data[ c_param_extra ] );
+            string field( input_data[ c_param_field ] );
+            string flags( input_data[ c_param_flags ] );
+            string ident( input_data[ c_param_ident ] );
+            string qlink( input_data[ c_param_qlink ] );
+            string bcount( input_data[ c_param_bcount ] );
+            string scrollx( input_data[ c_param_scrollx ] );
+            string scrolly( input_data[ c_param_scrolly ] );
+            string special( input_data[ c_param_special ] );
+            string uselect( input_data[ c_param_uselect ] );
+            string listarg( input_data[ c_param_listarg ] );
+            string listvar( input_data[ c_param_listvar ] );
+            string listinfo( input_data[ c_param_listinfo ] );
+            string listsort( input_data[ c_param_listsort ] );
+            string listsrch( input_data[ c_param_listsrch ] );
+            string findinfo( input_data[ c_param_findinfo ] );
+            string fieldlist( input_data[ c_param_fieldlist ] );
+            string listextra( input_data[ c_param_listextra ] );
+            string uselextra( input_data[ c_param_uselextra ] );
+            string userfetch( input_data[ c_param_userfetch ] );
+            string quicklink( input_data[ c_param_quicklink ] );
+            string keepchecks( input_data[ c_param_keepchecks ] );
+            string extrafields( input_data[ c_param_extrafields ] );
+            string extravalues( input_data[ c_param_extravalues ] );
 
-            if( act != c_act_qlink )
-               prefix += act;
+            set< string > url_opts;
+            if( !get_storage_info( ).url_opts.empty( ) )
+               split( get_storage_info( ).url_opts, url_opts, '+' );
 
-            string identity_values( cmd + data );
+            bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
 
-            string checksum_values;
+            bool is_checksummed_home = ( cmd == c_cmd_home && !uselect.empty( ) );
 
-            if( cmd == c_cmd_home )
+            if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join && cmd != c_cmd_open
+             && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
+             && cmd != c_cmd_status && ( cmd != c_cmd_view || ( act != c_act_cont && act != c_act_undo ) ) ) ) )
             {
-               // NOTE: The uselect itself cannot be used in the checkum when it is being changed (as the
-               // checksum value is worked out prior to the runtime selection) so uselextra is being used
-               // instead. It's last value is remembered to ensure that direct tampering of uselect can't
-               // succeed with a new (possibly random) uselextra value.
-               checksum_values = session_id + uselextra;
+               string prefix;
 
-               string user_other( p_session_info->user_other );
-               if( user_other.empty( ) )
-                  user_other = c_user_other_none;
+               if( act != c_act_qlink )
+                  prefix += act;
 
-               if( !uselect.empty( )
-                && uselextra == p_session_info->last_uselextra && uselect != user_other )
-                  checksum_values += "invalid";
-            }
-            else
-            {
-               checksum_values = prefix + cmd + data + exec + ident;
+               string identity_values( cmd + data );
 
-               if( !act.empty( ) || uselextra.empty( ) )
-                  checksum_values += uselect;
+               string checksum_values;
+
+               if( cmd == c_cmd_home )
+               {
+                  // NOTE: The uselect itself cannot be used in the checkum when it is being changed (as the
+                  // checksum value is worked out prior to the runtime selection) so uselextra is being used
+                  // instead. It's last value is remembered to ensure that direct tampering of uselect can't
+                  // succeed with a new (possibly random) uselextra value.
+                  checksum_values = session_id + uselextra;
+
+                  string user_other( p_session_info->user_other );
+                  if( user_other.empty( ) )
+                     user_other = c_user_other_none;
+
+                  if( !uselect.empty( )
+                   && uselextra == p_session_info->last_uselextra && uselect != user_other )
+                     checksum_values += "invalid";
+               }
                else
-                  checksum_values += uselextra;
+               {
+                  checksum_values = prefix + cmd + data + exec + ident;
+
+                  if( !act.empty( ) || uselextra.empty( ) )
+                     checksum_values += uselect;
+                  else
+                     checksum_values += uselextra;
+               }
+
+               // NOTE: For actions (and for new records) a serial number is being used to both prevent
+               // URL tampering and replaying (also a defense against any browser repeating POST bugs).
+               if( ( !act.empty( ) && act != c_act_view ) || ( cmd == c_cmd_view && data.find( c_new_record ) == 0 ) )
+                  checksum_values += to_string( p_session_info->checksum_serial++ );
+
+               string name, other_values;
+               for( int i = 0; i < 10; i++ )
+               {
+                  name = c_list_prefix;
+                  name += c_prnt_suffix;
+                  name += to_string( i );
+
+                  if( input_data.count( name ) )
+                     other_values += input_data.find( name )->second;
+
+                  name = c_list_prefix;
+                  name += c_rest_suffix;
+                  name += to_string( i );
+
+                  if( input_data.count( name ) )
+                     other_values += input_data.find( name )->second;
+               }
+
+               if( !hashval.empty( ) )
+                  checksum_values += c_hash_suffix;
+
+               string hash_values( p_session_info->hashval_prefix + findinfo + listsrch + other_values );
+
+               // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
+               // ensure the search data hasn't been changed via URL tampering.
+               if( !has_just_logged_in && ( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
+                || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) ) )
+               {
+#ifdef DEBUG
+                  for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
+                     DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
+#endif
+                  // NOTE: If a session has just been created then assume the invalid URL was
+                  // actually due to an already "timed out" session.
+                  if( created_session && !using_anonymous )
+                     throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
+                  else
+                     throw runtime_error( GDS( c_display_invalid_url ) );
+               }
             }
 
-            // NOTE: For actions (and for new records) a serial number is being used to both prevent
-            // URL tampering and replaying (also a defense against any browser repeating POST bugs).
-            if( ( !act.empty( ) && act != c_act_view ) || ( cmd == c_cmd_view && data.find( c_new_record ) == 0 ) )
-               checksum_values += to_string( p_session_info->checksum_serial++ );
+            p_session_info->last_uselextra = uselextra;
 
-            string name, other_values;
+            string new_field_info;
+            string new_value_info;
+
+            map< string, string > new_field_and_values;
+
+            bool was_invalid = false;
+
+            if( input_data.count( c_param_newflds ) )
+               new_field_info = input_data[ c_param_newflds ];
+
+            if( input_data.count( c_param_newvals ) )
+               new_value_info = input_data[ c_param_newvals ];
+
+            if( !new_field_info.empty( ) )
+            {
+               while( true )
+               {
+                  string::size_type pos = new_field_info.find( "," );
+                  string next_field( new_field_info.substr( 0, pos ) );
+
+                  if( pos != string::npos )
+                     new_field_info.erase( 0, pos + 1 );
+
+                  pos = new_value_info.find( "," );
+                  string next_value( new_value_info.substr( 0, pos ) );
+
+                  if( pos != string::npos )
+                     new_value_info.erase( 0, pos + 1 );
+
+                  if( next_value == c_parent_extra_user )
+                     next_value = p_session_info->user_key;
+                  else if( next_value == c_parent_extra_group )
+                     next_value = p_session_info->user_group;
+
+                  new_field_and_values.insert( make_pair( next_field, next_value ) );
+
+                  if( pos == string::npos )
+                     break;
+               }
+            }
+
+            int vtab_num = 1;
+            if( !vtab.empty( ) )
+               vtab_num = atoi( vtab.c_str( ) );
+
+            string new_key;
+            string error_message;
+            string user_home_info;
+
+            string server_command( cmd );
+
+            bool is_new_record = false;
+            if( !data.empty( ) && data[ 0 ] == ' ' )
+               is_new_record = true;
+
+            bool module_access_denied = false;
+            if( module_name != p_session_info->user_module )
+               module_access_denied = true;
+
+            bool allow_module_switching = false;
+
+            if( login_opts.count( c_login_opt_allow_switching ) )
+            {
+               module_access_denied = false;
+               allow_module_switching = true;
+               p_session_info->user_module = module_name;
+            }
+
+            if( !mod_info.perm.empty( ) && !p_session_info->user_perms.count( mod_info.perm ) )
+               throw runtime_error( GDS( c_display_permission_denied ) );
+
+            if( cmd == c_cmd_login || module_access_denied )
+            {
+               act.erase( );
+               cmd.erase( );
+               server_command.erase( );
+            }
+            else if( cmd == c_cmd_pview )
+               interface_file = string( c_printview_file );
+            else if( cmd == c_cmd_plist )
+               interface_file = string( c_printlist_file );
+
+#ifdef DEBUG
+            for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
+               DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
+#endif
+
+            // NOTE: When logging in after having previously logged out the initial URL will actually
+            // be the "quit" command so now verify that the session being logged out matches the same
+            // one that the quit was issued from (via "extra").
+            if( cmd == c_cmd_quit && extra != session_id )
+            {
+               cmd = c_cmd_home;
+               server_command.erase( );
+            }
+
+            if( cmd.empty( ) )
+               cmd = c_cmd_home;
+
+            bool had_send_or_recv_error = false;
+            bool record_not_found_error = false;
+
+            // NOTE: As the user's record could be changed at any time (and especially
+            // to ensure a session cannot continue if its account is now de-activated)
+            // the user information is checked again here.
+            try
+            {
+               if( !has_just_logged_in && p_session_info->logged_in
+                && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
+                || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
+                  fetch_user_record( g_id, module_id, module_name, mod_info,
+                   *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
+            }
+            catch( ... )
+            {
+               // NOTE: If an exception is thrown reading the user information then it is
+               // assumed that the user is no longer valid to be logged in (perhaps being
+               // due to de-activation or module permission changes). It makes sense that
+               // at this point the user would need to try and login again so the session
+               // is being killed in the same way as would occur for an invalid login.
+               p_session_info->logged_in = false;
+               created_session = true;
+               throw;
+            }
+
+            // NOTE: The PIN is compared against the current and previous (if has already checked)
+            // expected value to allow for a little bit more margin with the device time accuracy.
+            if( !pin.empty( )
+             && ( pin == p_session_info->user_pin_value || pin == p_session_info->last_user_pin_value ) )
+               p_session_info->needs_pin = false;
+
+            if( p_session_info->needs_pin && cmd != c_cmd_quit )
+               cmd = c_cmd_home;
+
+            // NOTE: If a new password hash is passed from the client after logging in then
+            // encrypt and store it in the application server "files area" for later usage.
+            if( !g_is_blockchain_application && p_session_info->logged_in && !newhash.empty( ) )
+            {
+               string data( data_encrypt( newhash, get_server_id( ) ) );
+
+               string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
+               simple_command( *p_session_info, cmd );
+            }
+
+            // NOTE: For a save or continue edit action it is expected that a field list and
+            // a corresponding set of user values will be provided. If a "view" contains one
+            // or more "always_editable" fields then these will be passed via the field list
+            // for an "edit", "view" or any "exec" action.
+            map< string, string > user_field_info;
+            map< string, string > extra_field_info;
+
+            if( !fieldlist.empty( ) && ( act == c_act_edit
+             || act == c_act_cont || act == c_act_save || act == c_act_exec || act == c_act_view ) )
+            {
+               vector< string > field_ids;
+               vector< string > field_values;
+
+               split( fieldlist, field_ids );
+               if( act != c_act_exec )
+                  raw_split( app, field_values );
+               else
+                  raw_split( extra, field_values );
+
+               if( field_ids.size( ) != field_values.size( ) )
+                  throw runtime_error( "unexpected field_ids and field_values size mismatch" );
+
+               for( size_t i = 0; i < field_ids.size( ); i++ )
+                  user_field_info.insert( make_pair( field_ids[ i ], field_values[ i ] ) );
+
+               if( !extrafields.empty( ) )
+               {
+                  vector< string > extra_field_ids;
+                  vector< string > extra_field_values;
+
+                  split( extrafields, extra_field_ids );
+                  raw_split( extravalues, extra_field_values );
+
+                  if( extra_field_ids.size( ) != extra_field_values.size( ) )
+                     throw runtime_error( "unexpected extra_field_ids and extra_field_values size mismatch" );
+
+                  for( size_t i = 0; i < extra_field_ids.size( ); i++ )
+                  {
+                     user_field_info.insert( make_pair( extra_field_ids[ i ], extra_field_values[ i ] ) );
+                     extra_field_info.insert( make_pair( extra_field_ids[ i ], extra_field_values[ i ] ) );
+                  }
+               }
+            }
+
+            set< string > selected_records;
+            if( !app.empty( ) && act != c_act_save && act != c_act_cont && act != c_act_view )
+            {
+               vector< string > record_keys;
+               split( app, record_keys );
+
+               for( size_t i = 0; i < record_keys.size( ); i++ )
+               {
+                  string::size_type pos = record_keys[ i ].find( ' ' ); // i.e. for optional version information
+                  selected_records.insert( record_keys[ i ].substr( 0, pos ) );
+               }
+            }
+
+            set< string > menu_opts;
+            if( !get_storage_info( ).menu_opts.empty( ) )
+               split( get_storage_info( ).menu_opts, menu_opts, '+' );
+
+            is_vertical = menu_opts.count( c_menu_opt_use_vertical_menu );
+
+            map< string, string > list_search_text;
+            map< string, string > list_search_values;
+
+            if( !listsrch.empty( ) )
+               list_search_text.insert( make_pair( c_param_listsrch, listsrch ) );
+
             for( int i = 0; i < 10; i++ )
             {
-               name = c_list_prefix;
+               string child_name( c_list_prefix );
+               child_name += ( '0' + i );
+               child_name += c_srch_suffix;
+
+               if( input_data.count( child_name ) )
+                  list_search_text.insert( make_pair( child_name, input_data[ child_name ] ) );
+            }
+
+            map< string, string > list_selections;
+
+            // NOTE: Any selections found are put into a map here to simplify finding them later.
+            for( int i = 0; i < 10; i++ )
+            {
+               string name( c_list_prefix );
                name += c_prnt_suffix;
-               name += to_string( i );
+               name += ( '0' + i );
 
                if( input_data.count( name ) )
-                  other_values += input_data.find( name )->second;
+                  list_selections.insert( make_pair( name, input_data[ name ] ) );
 
-               name = c_list_prefix;
+               string child_list( c_list_prefix );
+               child_list += ( '0' + i );
+
+               for( int j = 0; j < 10; j++ )
+               {
+                  string child_name( child_list + c_prnt_suffix );
+                  child_name += ( '0' + j );
+
+                  if( input_data.count( child_name ) )
+                     list_selections.insert( make_pair( child_name, input_data[ child_name ] ) );
+               }
+            }
+
+            // NOTE: In the same manner any field restrictions are found are also put into the same map.
+            for( int i = 0; i < 10; i++ )
+            {
+               string name( c_list_prefix );
                name += c_rest_suffix;
-               name += to_string( i );
+               name += ( '0' + i );
 
                if( input_data.count( name ) )
-                  other_values += input_data.find( name )->second;
-            }
+                  list_selections.insert( make_pair( name, input_data[ name ] ) );
 
-            if( !hashval.empty( ) )
-               checksum_values += c_hash_suffix;
+               string child_list( c_list_prefix );
+               child_list += ( '0' + i );
 
-            string hash_values( p_session_info->hashval_prefix + findinfo + listsrch + other_values );
-
-            // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
-            // ensure the search data hasn't been changed via URL tampering.
-            if( !has_just_logged_in && ( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
-             || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) ) )
-            {
-#ifdef DEBUG
-               for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
-                  DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
-#endif
-               // NOTE: If a session has just been created then assume the invalid URL was
-               // actually due to an already "timed out" session.
-               if( created_session && !using_anonymous )
-                  throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
-               else
-                  throw runtime_error( GDS( c_display_invalid_url ) );
-            }
-         }
-
-         p_session_info->last_uselextra = uselextra;
-
-         string new_field_info;
-         string new_value_info;
-
-         map< string, string > new_field_and_values;
-
-         bool was_invalid = false;
-
-         if( input_data.count( c_param_newflds ) )
-            new_field_info = input_data[ c_param_newflds ];
-
-         if( input_data.count( c_param_newvals ) )
-            new_value_info = input_data[ c_param_newvals ];
-
-         if( !new_field_info.empty( ) )
-         {
-            while( true )
-            {
-               string::size_type pos = new_field_info.find( "," );
-               string next_field( new_field_info.substr( 0, pos ) );
-
-               if( pos != string::npos )
-                  new_field_info.erase( 0, pos + 1 );
-
-               pos = new_value_info.find( "," );
-               string next_value( new_value_info.substr( 0, pos ) );
-
-               if( pos != string::npos )
-                  new_value_info.erase( 0, pos + 1 );
-
-               if( next_value == c_parent_extra_user )
-                  next_value = p_session_info->user_key;
-               else if( next_value == c_parent_extra_group )
-                  next_value = p_session_info->user_group;
-
-               new_field_and_values.insert( make_pair( next_field, next_value ) );
-
-               if( pos == string::npos )
-                  break;
-            }
-         }
-
-         int vtab_num = 1;
-         if( !vtab.empty( ) )
-            vtab_num = atoi( vtab.c_str( ) );
-
-         string new_key;
-         string error_message;
-         string user_home_info;
-
-         string server_command( cmd );
-
-         bool is_new_record = false;
-         if( !data.empty( ) && data[ 0 ] == ' ' )
-            is_new_record = true;
-
-         bool module_access_denied = false;
-         if( module_name != p_session_info->user_module )
-            module_access_denied = true;
-
-         bool allow_module_switching = false;
-
-         if( login_opts.count( c_login_opt_allow_switching ) )
-         {
-            module_access_denied = false;
-            allow_module_switching = true;
-            p_session_info->user_module = module_name;
-         }
-
-         if( !mod_info.perm.empty( ) && !p_session_info->user_perms.count( mod_info.perm ) )
-            throw runtime_error( GDS( c_display_permission_denied ) );
-
-         if( cmd == c_cmd_login || module_access_denied )
-         {
-            act.erase( );
-            cmd.erase( );
-            server_command.erase( );
-         }
-         else if( cmd == c_cmd_pview )
-            interface_file = string( c_printview_file );
-         else if( cmd == c_cmd_plist )
-            interface_file = string( c_printlist_file );
-
-#ifdef DEBUG
-         for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
-            DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
-#endif
-
-         // NOTE: When logging in after having previously logged out the initial URL will actually
-         // be the "quit" command so now verify that the session being logged out matches the same
-         // one that the quit was issued from (via "extra").
-         if( cmd == c_cmd_quit && extra != session_id )
-         {
-            cmd = c_cmd_home;
-            server_command.erase( );
-         }
-
-         if( cmd.empty( ) )
-            cmd = c_cmd_home;
-
-         bool had_send_or_recv_error = false;
-         bool record_not_found_error = false;
-
-         // NOTE: As the user's record could be changed at any time (and especially
-         // to ensure a session cannot continue if its account is now de-activated)
-         // the user information is checked again here.
-         try
-         {
-            if( !has_just_logged_in && p_session_info->logged_in
-             && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
-             || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
-               fetch_user_record( g_id, module_id, module_name, mod_info,
-                *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
-         }
-         catch( ... )
-         {
-            // NOTE: If an exception is thrown reading the user information then it is
-            // assumed that the user is no longer valid to be logged in (perhaps being
-            // due to de-activation or module permission changes). It makes sense that
-            // at this point the user would need to try and login again so the session
-            // is being killed in the same way as would occur for an invalid login.
-            p_session_info->logged_in = false;
-            created_session = true;
-            throw;
-         }
-
-         // NOTE: The PIN is compared against the current and previous (if has already checked)
-         // expected value to allow for a little bit more margin with the device time accuracy.
-         if( !pin.empty( )
-          && ( pin == p_session_info->user_pin_value || pin == p_session_info->last_user_pin_value ) )
-            p_session_info->needs_pin = false;
-
-         if( p_session_info->needs_pin && cmd != c_cmd_quit )
-            cmd = c_cmd_home;
-
-         // NOTE: If a new password hash is passed from the client after logging in then
-         // encrypt and store it in the application server "files area" for later usage.
-         if( !g_is_blockchain_application && p_session_info->logged_in && !newhash.empty( ) )
-         {
-            string data( data_encrypt( newhash, get_server_id( ) ) );
-
-            string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
-            simple_command( *p_session_info, cmd );
-         }
-
-         // NOTE: For a save or continue edit action it is expected that a field list and
-         // a corresponding set of user values will be provided. If a "view" contains one
-         // or more "always_editable" fields then these will be passed via the field list
-         // for an "edit", "view" or any "exec" action.
-         map< string, string > user_field_info;
-         map< string, string > extra_field_info;
-         if( !fieldlist.empty( )
-          && ( act == c_act_edit || act == c_act_cont || act == c_act_save || act == c_act_exec || act == c_act_view ) )
-         {
-            vector< string > field_ids;
-            vector< string > field_values;
-
-            split( fieldlist, field_ids );
-            if( act != c_act_exec )
-               raw_split( app, field_values );
-            else
-               raw_split( extra, field_values );
-
-            if( field_ids.size( ) != field_values.size( ) )
-               throw runtime_error( "unexpected field_ids and field_values size mismatch" );
-
-            for( size_t i = 0; i < field_ids.size( ); i++ )
-               user_field_info.insert( make_pair( field_ids[ i ], field_values[ i ] ) );
-
-            if( !extrafields.empty( ) )
-            {
-               vector< string > extra_field_ids;
-               vector< string > extra_field_values;
-
-               split( extrafields, extra_field_ids );
-               raw_split( extravalues, extra_field_values );
-
-               if( extra_field_ids.size( ) != extra_field_values.size( ) )
-                  throw runtime_error( "unexpected extra_field_ids and extra_field_values size mismatch" );
-
-               for( size_t i = 0; i < extra_field_ids.size( ); i++ )
+               for( int j = 0; j < 10; j++ )
                {
-                  user_field_info.insert( make_pair( extra_field_ids[ i ], extra_field_values[ i ] ) );
-                  extra_field_info.insert( make_pair( extra_field_ids[ i ], extra_field_values[ i ] ) );
+                  string child_name( child_list + c_rest_suffix );
+                  child_name += ( '0' + j );
+
+                  if( input_data.count( child_name ) )
+                     list_selections.insert( make_pair( child_name, input_data[ child_name ] ) );
                }
             }
-         }
 
-         set< string > selected_records;
-         if( !app.empty( ) && act != c_act_save && act != c_act_cont && act != c_act_view )
-         {
-            vector< string > record_keys;
-            split( app, record_keys );
-
-            for( size_t i = 0; i < record_keys.size( ); i++ )
+            // NOTE: These special extra variables are used to indicate a restrict check/uncheck
+            // has occurred for a view child list when fetching the parent view.
+            map< string, string > view_extra_vars;
+            for( int i = 0; i < 10; i++ )
             {
-               string::size_type pos = record_keys[ i ].find( ' ' ); // i.e. for optional version information
-               selected_records.insert( record_keys[ i ].substr( 0, pos ) );
+               string name( c_vext_prefix );
+               name += ( '0' + i );
+
+               if( input_data.count( name ) )
+                  view_extra_vars.insert( make_pair( name, input_data[ name ] ) );
             }
-         }
 
-         set< string > menu_opts;
-         if( !get_storage_info( ).menu_opts.empty( ) )
-            split( get_storage_info( ).menu_opts, menu_opts, '+' );
-
-         is_vertical = menu_opts.count( c_menu_opt_use_vertical_menu );
-
-         map< string, string > list_search_text;
-         map< string, string > list_search_values;
-
-         if( !listsrch.empty( ) )
-            list_search_text.insert( make_pair( c_param_listsrch, listsrch ) );
-
-         for( int i = 0; i < 10; i++ )
-         {
-            string child_name( c_list_prefix );
-            child_name += ( '0' + i );
-            child_name += c_srch_suffix;
-
-            if( input_data.count( child_name ) )
-               list_search_text.insert( make_pair( child_name, input_data[ child_name ] ) );
-         }
-
-         map< string, string > list_selections;
-
-         // NOTE: Any selections found are put into a map here to simplify finding them later.
-         for( int i = 0; i < 10; i++ )
-         {
-            string name( c_list_prefix );
-            name += c_prnt_suffix;
-            name += ( '0' + i );
-
-            if( input_data.count( name ) )
-               list_selections.insert( make_pair( name, input_data[ name ] ) );
-
-            string child_list( c_list_prefix );
-            child_list += ( '0' + i );
-
-            for( int j = 0; j < 10; j++ )
+            // NOTE: If the user is able to select their group or "other" then assign it here.
+            if( !mod_info.user_select_field.empty( )
+             && ( mod_info.user_select_perm.empty( )
+             || p_session_info->user_perms.count( mod_info.user_select_perm ) ) )
             {
-               string child_name( child_list + c_prnt_suffix );
-               child_name += ( '0' + j );
-
-               if( input_data.count( child_name ) )
-                  list_selections.insert( make_pair( child_name, input_data[ child_name ] ) );
-            }
-         }
-
-         // NOTE: In the same manner any field restrictions are found are also put into the same map.
-         for( int i = 0; i < 10; i++ )
-         {
-            string name( c_list_prefix );
-            name += c_rest_suffix;
-            name += ( '0' + i );
-
-            if( input_data.count( name ) )
-               list_selections.insert( make_pair( name, input_data[ name ] ) );
-
-            string child_list( c_list_prefix );
-            child_list += ( '0' + i );
-
-            for( int j = 0; j < 10; j++ )
-            {
-               string child_name( child_list + c_rest_suffix );
-               child_name += ( '0' + j );
-
-               if( input_data.count( child_name ) )
-                  list_selections.insert( make_pair( child_name, input_data[ child_name ] ) );
-            }
-         }
-
-         // NOTE: These special extra variables are used to indicate a restrict check/uncheck
-         // has occurred for a view child list when fetching the parent view.
-         map< string, string > view_extra_vars;
-         for( int i = 0; i < 10; i++ )
-         {
-            string name( c_vext_prefix );
-            name += ( '0' + i );
-
-            if( input_data.count( name ) )
-               view_extra_vars.insert( make_pair( name, input_data[ name ] ) );
-         }
-
-         // NOTE: If the user is able to select their group or "other" then assign it here.
-         if( !mod_info.user_select_field.empty( )
-          && ( mod_info.user_select_perm.empty( )
-          || p_session_info->user_perms.count( mod_info.user_select_perm ) ) )
-         {
-            if( mod_info.user_select_field == mod_info.user_group_field_id )
-            {
-               if( has_just_logged_in || uselect.empty( ) )
-                  uselect = p_session_info->default_user_group;
-               else
+               if( mod_info.user_select_field == mod_info.user_group_field_id )
                {
-                  if( uselect == c_user_other_none )
-                     p_session_info->user_group.erase( );
+                  if( has_just_logged_in || uselect.empty( ) )
+                     uselect = p_session_info->default_user_group;
                   else
-                     p_session_info->user_group = uselect;
-               }
-            }
-            else if( mod_info.user_select_field == mod_info.user_other_field_id )
-            {
-               if( has_just_logged_in || uselect.empty( ) )
-                  uselect = p_session_info->default_user_other;
-               else
-               {
-                  if( uselect == c_user_other_none )
-                     p_session_info->user_other.erase( );
-                  else
-                     p_session_info->user_other = uselect;
-               }
-            }
-         }
-
-         view_source view;
-         list_source list;
-         list_source olist;
-
-         map< string, list_source > home_lists;
-
-         string oident( ident );
-
-         map< string, row_error_container > child_row_errors;
-
-         view_info_const_iterator vici = mod_info.view_info.end( );
-         list_info_const_iterator lici = mod_info.list_info.end( );
-
-         bool skip_force_fields = false;
-
-         bool is_in_edit = false;
-         if( act == c_act_edit || act == c_act_save
-          || act == c_act_cont || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
-            is_in_edit = true;
-
-         if( cmd == c_cmd_view || cmd == c_cmd_pview )
-         {
-            vici = mod_info.view_info.find( ident );
-            if( vici == mod_info.view_info.end( ) )
-               throw runtime_error( "unknown view '" + ident + "'" );
-
-            view.vici = vici;
-
-            setup_view_fields( view, *vici->second,
-             mod_info, *p_session_info, ident, login_opts, module_id, module_ref, is_in_edit, is_new_record );
-         }
-         else if( cmd == c_cmd_home || cmd == c_cmd_list || cmd == c_cmd_plist )
-         {
-            if( cmd == c_cmd_home )
-            {
-               for( lici = mod_info.list_info.begin( ); lici != mod_info.list_info.end( ); ++lici )
-               {
-                  list_source next_list;
-
-                  if( lici->second->type == c_list_type_home )
                   {
-                     next_list.module_id = module_id;
-                     next_list.module_ref = module_ref;
-
-                     next_list.lici = lici;
-                     setup_list_fields( next_list, "", module_name, *p_session_info, false );
-
-                     home_lists.insert( make_pair( mod_info.get_string( next_list.name ), next_list ) );
-                  }
-               }
-            }
-            else
-            {
-               lici = mod_info.list_info.find( ident );
-
-               if( lici == mod_info.list_info.end( ) )
-                  throw runtime_error( "Unknown list id '" + ident + "'." );
-
-               olist.module_id = module_id;
-               olist.module_ref = module_ref;
-
-               olist.lici = lici;
-
-               string pkey;
-               if( ( lici->second )->type == c_list_type_group )
-                  pkey = p_session_info->user_group;
-               else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
-                  pkey = p_session_info->user_key;
-
-               setup_list_fields( olist, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
-
-               // NOTE: Repeat the setup as the current list "variation" may not be the original list.
-               if( !listvar.empty( ) )
-                  ident = listvar;
-
-               lici = mod_info.list_info.find( ident );
-               if( lici == mod_info.list_info.end( ) )
-                  throw runtime_error( "Unknown list id '" + ident + "'." );
-
-               list.module_id = module_id;
-               list.module_ref = module_ref;
-
-               list.lici = lici;
-
-               pkey.erase( );
-               if( ( lici->second )->type == c_list_type_group )
-                  pkey = p_session_info->user_group;
-               else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
-                  pkey = p_session_info->user_key;
-
-               setup_list_fields( list, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
-            }
-         }
-
-         if( !act.empty( ) )
-         {
-            if( cmd == c_cmd_view )
-            {
-               if( act == c_act_save )
-               {
-                  if( error_message.empty( ) )
-                  {
-                     if( !view.create_user_key_field.empty( )
-                      && !extra_field_info.count( view.create_user_key_field ) )
-                        extra_field_info.insert( make_pair( view.create_user_key_field, p_session_info->user_key ) );
-
-                     save_record( module_id, flags, app, chk, field, extra, exec, cont, fieldlist,
-                      is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
-                      *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
-
-                     // NOTE: When initially determining the "view source" it had to be assumed that editing
-                     // was still occurring (in order to have all the required field information perform the
-                     // save). If the save was successful then the "view source" needs to now be replaced by
-                     // the non-edit version.
-                     if( error_message.empty( ) )
-                     {
-                        view_source non_edit_view;
-                        non_edit_view.vici = view.vici;
-
-                        setup_view_fields( non_edit_view, *vici->second,
-                         mod_info, *p_session_info, ident, login_opts, module_id, module_ref, false, false );
-
-                        view = non_edit_view;
-                     }
-
-                     // NOTE: If the record saved was a user record then if not admin assume a
-                     // user has changed their own details (so re-read the user record details).
-                     if( error_message.empty( ) && !had_send_or_recv_error
-                      && mod_info.user_class_id == view.cid && !p_session_info->is_admin_user )
-                        fetch_user_record( g_id, module_id, module_name, mod_info,
-                         *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
-                  }
-               }
-               else if( act == c_act_cont )
-               {
-                  act = c_act_edit;
-                  was_invalid = true;
-               }
-               else if( act == c_act_del || act == c_act_rdel || act == c_act_link || act == c_act_exec )
-               {
-                  if( act == c_act_exec )
-                  {
-                     set< string > fields;
-                     split( fieldlist, fields );
-
-                     for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
-                     {
-                        if( !fields.count( view.user_force_fields[ i ] ) && user_field_info.count( view.user_force_fields[ i ] ) )
-                        {
-                           if( !fieldlist.empty( ) )
-                              fieldlist += ",";
-                           fieldlist += view.user_force_fields[ i ];
-
-                           if( !fieldlist.empty( ) )
-                              extra += ",";
-                           extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
-                        }
-                     }
-                  }
-
-                  if( !perform_action( view.module, cls, act, app, field,
-                   fieldlist, exec, extra, child_row_errors[ listarg ], *p_session_info ) )
-                     had_send_or_recv_error = true;
-
-                  // NOTE: Handle an error/response (is stored as the first record in "child_row_errors").
-                  if( ( app.empty( ) || listarg.empty( ) ) && child_row_errors[ listarg ].size( ) )
-                  {
-                     error_message = escape_markup( child_row_errors[ listarg ].begin( )->second );
-
-                     // NOTE: If the output from an "exec" is in the form "{xxx}" then it used assumed that
-                     // the "xxx" is the key of another same class record which becomes the current record.
-                     if( !is_in_edit && act == c_act_exec && error_message.size( ) > 2
-                      && error_message[ 0 ] == '{' && error_message[ error_message.size( ) - 1 ] == '}' )
-                     {
-                        string s( error_message.substr( 1, error_message.size( ) - 2 ) );
-                        error_message.erase( );
-
-                        // NOTE: The "key" returned can actually instead be a specialised instruction.
-                        if( s == "@no_send" )
-                           skip_force_fields = true;
-                        else
-                        {
-                           data = s;
-
-                           if( use_url_checksum )
-                           {
-                              string checksum_values( c_cmd_view + data + ident + uselect );
-                              string new_checksum_value = get_checksum( *p_session_info, checksum_values );
-
-                              extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
-                              extra_content_func += "query_update( '" + to_string( c_param_chksum ) + "', '" + new_checksum_value + "', true );\n";
-                           }
-                           else
-                              extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
-                        }
-                     }
-                  }
-               }
-               else if( act == c_act_qlink )
-                  add_quick_link( module_ref, cmd, data, extra, "", "", oident,
-                   uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info );
-            }
-            else if( cmd == c_cmd_home || cmd == c_cmd_list )
-            {
-               if( act == c_act_qlink )
-                  add_quick_link( module_ref, cmd, findinfo, quicklink, listsrch, listsort, oident,
-                   uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info, &list_selections );
-               else if( !perform_action( list.module, list.cid, act, app,
-                   field, "", exec, extra, list.row_errors, *p_session_info ) )
-                     had_send_or_recv_error = true;
-
-               // NOTE: Handle an error/response (is stored as the first record in "row_errors").
-               // Also if no message was returned for a non-instance procedure call then output
-               // a "success" message so it is clear something has occurred.
-               if( app.empty( ) && list.row_errors.size( ) )
-                  error_message = escape_markup( list.row_errors.begin( )->second );
-
-               if( app.empty( ) && error_message.empty( ) )
-                  error_message = GDS( c_display_completed_successfully );
-            }
-
-            // NOTE: Any action that performed on the "quick link" class will result in
-            // the quick links being re-fetched (i.e. assume it's the user's own links).
-            if( ( cmd == c_cmd_view || cmd == c_cmd_list )
-             && !mod_info.user_qlink_class_id.empty( ) && !p_session_info->quick_link_data.empty( ) )
-               fetch_user_quick_links( mod_info, *p_session_info );
-         }
-
-         // NOTE: If the user has selected a "timezone" then work out the current local
-         // time (for display as well as for use in "defcurrent" date and time fields).
-         if( p_session_info->tz_name.empty( ) )
-            p_session_info->tz_abbr = p_session_info->current_dtm = string( );
-         else
-         {
-            string cmd, time_info;
-
-            cmd = "utc_to_local " + p_session_info->tz_name
-             + " " + date_time::standard( ).as_string( e_time_format_hhmm );
-
-            if( simple_command( *p_session_info, cmd, &time_info ) )
-            {
-               string::size_type pos = time_info.rfind( ' ' );
-               p_session_info->current_dtm = time_info.substr( 0, pos );
-
-               if( pos != string::npos )
-                  p_session_info->tz_abbr = time_info.substr( pos + 1 );
-            }
-         }
-
-         if( cmd == c_cmd_pwd )
-         {
-            server_command.erase( );
-
-            if( input_data.count( c_param_newpwd ) )
-            {
-               string new_password( input_data[ c_param_newpwd ] );
-               string old_password( input_data[ c_param_password ] );
-
-               if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
-                  error_message = string( c_response_error_prefix ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
-               else if( old_password != p_session_info->user_pwd_hash && p_session_info->pwd_encrypted )
-                  error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
-               else
-               {
-                  string encrypted_new_password( data_encrypt( new_password, get_server_id( ) ) );
-
-                  vector< pair< string, string > > pwd_field_value_pairs;
-                  pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
-
-                  pwd_field_value_pairs.push_back( make_pair(
-                   mod_info.user_hash_field_id, sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) );
-
-                  string user_crypt_key;
-                  if( !mod_info.user_crypt_field_id.empty( ) )
-                  {
-                     if( p_session_info->user_crypt.empty( ) )
-                        user_crypt_key = uuid( ).as_string( );
+                     if( uselect == c_user_other_none )
+                        p_session_info->user_group.erase( );
                      else
-                        user_crypt_key = data_decrypt( p_session_info->user_crypt, old_password );
-
-                     user_crypt_key = data_encrypt( user_crypt_key, new_password );
-
-                     pwd_field_value_pairs.push_back( make_pair( mod_info.user_crypt_field_id, user_crypt_key ) );
+                        p_session_info->user_group = uselect;
                   }
-
-                  if( !perform_update( module_id, mod_info.user_class_id,
-                   p_session_info->user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
+               }
+               else if( mod_info.user_select_field == mod_info.user_other_field_id )
+               {
+                  if( has_just_logged_in || uselect.empty( ) )
+                     uselect = p_session_info->default_user_other;
+                  else
                   {
-                     if( error_message.empty( ) )
-                        throw runtime_error( "unexpected server error occurred." );
+                     if( uselect == c_user_other_none )
+                        p_session_info->user_other.erase( );
+                     else
+                        p_session_info->user_other = uselect;
                   }
-
-                  p_session_info->pwd_encrypted = true;
-                  p_session_info->user_crypt = user_crypt_key;
-                  p_session_info->user_pwd_hash = new_password;
                }
             }
-            else if( !persistent.empty( ) )
+
+            view_source view;
+            list_source list;
+            list_source olist;
+
+            map< string, list_source > home_lists;
+
+            string oident( ident );
+
+            map< string, row_error_container > child_row_errors;
+
+            view_info_const_iterator vici = mod_info.view_info.end( );
+            list_info_const_iterator lici = mod_info.list_info.end( );
+
+            bool skip_force_fields = false;
+
+            bool is_in_edit = false;
+            if( act == c_act_edit || act == c_act_save
+             || act == c_act_cont || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
+               is_in_edit = true;
+
+            if( cmd == c_cmd_view || cmd == c_cmd_pview )
             {
-               if( persistent == c_true )
+               vici = mod_info.view_info.find( ident );
+               if( vici == mod_info.view_info.end( ) )
+                  throw runtime_error( "unknown view '" + ident + "'" );
+
+               view.vici = vici;
+
+               setup_view_fields( view, *vici->second,
+                mod_info, *p_session_info, ident, login_opts, module_id, module_ref, is_in_edit, is_new_record );
+            }
+            else if( cmd == c_cmd_home || cmd == c_cmd_list || cmd == c_cmd_plist )
+            {
+               if( cmd == c_cmd_home )
                {
-                  remove_non_persistent( session_id );
-                  p_session_info->is_persistent = true;
+                  for( lici = mod_info.list_info.begin( ); lici != mod_info.list_info.end( ); ++lici )
+                  {
+                     list_source next_list;
+
+                     if( lici->second->type == c_list_type_home )
+                     {
+                        next_list.module_id = module_id;
+                        next_list.module_ref = module_ref;
+
+                        next_list.lici = lici;
+                        setup_list_fields( next_list, "", module_name, *p_session_info, false );
+
+                        home_lists.insert( make_pair( mod_info.get_string( next_list.name ), next_list ) );
+                     }
+                  }
                }
                else
                {
-                  add_non_persistent( session_id );
-                  p_session_info->is_persistent = false;
+                  lici = mod_info.list_info.find( ident );
+
+                  if( lici == mod_info.list_info.end( ) )
+                     throw runtime_error( "Unknown list id '" + ident + "'." );
+
+                  olist.module_id = module_id;
+                  olist.module_ref = module_ref;
+
+                  olist.lici = lici;
+
+                  string pkey;
+                  if( ( lici->second )->type == c_list_type_group )
+                     pkey = p_session_info->user_group;
+                  else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
+                     pkey = p_session_info->user_key;
+
+                  setup_list_fields( olist, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
+
+                  // NOTE: Repeat the setup as the current list "variation" may not be the original list.
+                  if( !listvar.empty( ) )
+                     ident = listvar;
+
+                  lici = mod_info.list_info.find( ident );
+                  if( lici == mod_info.list_info.end( ) )
+                     throw runtime_error( "Unknown list id '" + ident + "'." );
+
+                  list.module_id = module_id;
+                  list.module_ref = module_ref;
+
+                  list.lici = lici;
+
+                  pkey.erase( );
+                  if( ( lici->second )->type == c_list_type_group )
+                     pkey = p_session_info->user_group;
+                  else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
+                     pkey = p_session_info->user_key;
+
+                  setup_list_fields( list, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
                }
             }
+
+            if( !act.empty( ) )
+            {
+               if( cmd == c_cmd_view )
+               {
+                  if( act == c_act_save )
+                  {
+                     if( error_message.empty( ) )
+                     {
+                        if( !view.create_user_key_field.empty( )
+                         && !extra_field_info.count( view.create_user_key_field ) )
+                           extra_field_info.insert( make_pair( view.create_user_key_field, p_session_info->user_key ) );
+
+                        save_record( module_id, flags, app, chk, field, extra, exec, cont, fieldlist,
+                         is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
+                         *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
+
+                        // NOTE: When initially determining the "view source" it had to be assumed that editing
+                        // was still occurring (in order to have all the required field information perform the
+                        // save). If the save was successful then the "view source" needs to now be replaced by
+                        // the non-edit version.
+                        if( error_message.empty( ) )
+                        {
+                           view_source non_edit_view;
+                           non_edit_view.vici = view.vici;
+
+                           setup_view_fields( non_edit_view, *vici->second,
+                            mod_info, *p_session_info, ident, login_opts, module_id, module_ref, false, false );
+
+                           view = non_edit_view;
+                        }
+
+                        // NOTE: If the record saved was a user record then if not admin assume a
+                        // user has changed their own details (so re-read the user record details).
+                        if( error_message.empty( ) && !had_send_or_recv_error
+                         && mod_info.user_class_id == view.cid && !p_session_info->is_admin_user )
+                           fetch_user_record( g_id, module_id, module_name, mod_info,
+                            *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
+                     }
+                  }
+                  else if( act == c_act_cont )
+                  {
+                     act = c_act_edit;
+                     was_invalid = true;
+                  }
+                  else if( act == c_act_del || act == c_act_rdel || act == c_act_link || act == c_act_exec )
+                  {
+                     if( act == c_act_exec )
+                     {
+                        set< string > fields;
+                        split( fieldlist, fields );
+
+                        for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
+                        {
+                           if( !fields.count( view.user_force_fields[ i ] ) && user_field_info.count( view.user_force_fields[ i ] ) )
+                           {
+                              if( !fieldlist.empty( ) )
+                                 fieldlist += ",";
+                              fieldlist += view.user_force_fields[ i ];
+
+                              if( !fieldlist.empty( ) )
+                                 extra += ",";
+                              extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
+                           }
+                        }
+                     }
+
+                     if( !perform_action( view.module, cls, act, app, field,
+                      fieldlist, exec, extra, child_row_errors[ listarg ], *p_session_info ) )
+                        had_send_or_recv_error = true;
+
+                     // NOTE: Handle an error/response (is stored as the first record in "child_row_errors").
+                     if( ( app.empty( ) || listarg.empty( ) ) && child_row_errors[ listarg ].size( ) )
+                     {
+                        error_message = escape_markup( child_row_errors[ listarg ].begin( )->second );
+
+                        // NOTE: If the output from an "exec" is in the form "{xxx}" then it used assumed that
+                        // the "xxx" is the key of another same class record which becomes the current record.
+                        if( !is_in_edit && act == c_act_exec && error_message.size( ) > 2
+                         && error_message[ 0 ] == '{' && error_message[ error_message.size( ) - 1 ] == '}' )
+                        {
+                           string s( error_message.substr( 1, error_message.size( ) - 2 ) );
+                           error_message.erase( );
+
+                           // NOTE: The "key" returned can actually instead be a specialised instruction.
+                           if( s == "@no_send" )
+                              skip_force_fields = true;
+                           else
+                           {
+                              data = s;
+
+                              if( use_url_checksum )
+                              {
+                                 string checksum_values( c_cmd_view + data + ident + uselect );
+                                 string new_checksum_value = get_checksum( *p_session_info, checksum_values );
+
+                                 extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
+                                 extra_content_func += "query_update( '" + to_string( c_param_chksum ) + "', '" + new_checksum_value + "', true );\n";
+                              }
+                              else
+                                 extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
+                           }
+                        }
+                     }
+                  }
+                  else if( act == c_act_qlink )
+                     add_quick_link( module_ref, cmd, data, extra, "", "", oident,
+                      uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info );
+               }
+               else if( cmd == c_cmd_home || cmd == c_cmd_list )
+               {
+                  if( act == c_act_qlink )
+                     add_quick_link( module_ref, cmd, findinfo, quicklink, listsrch, listsort, oident,
+                      uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info, &list_selections );
+                  else if( !perform_action( list.module, list.cid, act, app,
+                      field, "", exec, extra, list.row_errors, *p_session_info ) )
+                        had_send_or_recv_error = true;
+
+                  // NOTE: Handle an error/response (is stored as the first record in "row_errors").
+                  // Also if no message was returned for a non-instance procedure call then output
+                  // a "success" message so it is clear something has occurred.
+                  if( app.empty( ) && list.row_errors.size( ) )
+                     error_message = escape_markup( list.row_errors.begin( )->second );
+
+                  if( app.empty( ) && error_message.empty( ) )
+                     error_message = GDS( c_display_completed_successfully );
+               }
+
+               // NOTE: Any action that performed on the "quick link" class will result in
+               // the quick links being re-fetched (i.e. assume it's the user's own links).
+               if( ( cmd == c_cmd_view || cmd == c_cmd_list )
+                && !mod_info.user_qlink_class_id.empty( ) && !p_session_info->quick_link_data.empty( ) )
+                  fetch_user_quick_links( mod_info, *p_session_info );
+            }
+
+            // NOTE: If the user has selected a "timezone" then work out the current local
+            // time (for display as well as for use in "defcurrent" date and time fields).
+            if( p_session_info->tz_name.empty( ) )
+               p_session_info->tz_abbr = p_session_info->current_dtm = string( );
+            else
+            {
+               string cmd, time_info;
+
+               cmd = "utc_to_local " + p_session_info->tz_name
+                + " " + date_time::standard( ).as_string( e_time_format_hhmm );
+
+               if( simple_command( *p_session_info, cmd, &time_info ) )
+               {
+                  string::size_type pos = time_info.rfind( ' ' );
+                  p_session_info->current_dtm = time_info.substr( 0, pos );
+
+                  if( pos != string::npos )
+                     p_session_info->tz_abbr = time_info.substr( pos + 1 );
+               }
+            }
+
+            if( cmd == c_cmd_pwd )
+            {
+               server_command.erase( );
+
+               if( input_data.count( c_param_newpwd ) )
+               {
+                  string new_password( input_data[ c_param_newpwd ] );
+                  string old_password( input_data[ c_param_password ] );
+
+                  if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
+                     error_message = string( c_response_error_prefix ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
+                  else if( old_password != p_session_info->user_pwd_hash && p_session_info->pwd_encrypted )
+                     error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
+                  else
+                  {
+                     string encrypted_new_password( data_encrypt( new_password, get_server_id( ) ) );
+
+                     vector< pair< string, string > > pwd_field_value_pairs;
+                     pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_new_password ) );
+
+                     pwd_field_value_pairs.push_back( make_pair(
+                      mod_info.user_hash_field_id, sha256( p_session_info->user_id + new_password ).get_digest_as_string( ) ) );
+
+                     string user_crypt_key;
+                     if( !mod_info.user_crypt_field_id.empty( ) )
+                     {
+                        if( p_session_info->user_crypt.empty( ) )
+                           user_crypt_key = uuid( ).as_string( );
+                        else
+                           user_crypt_key = data_decrypt( p_session_info->user_crypt, old_password );
+
+                        user_crypt_key = data_encrypt( user_crypt_key, new_password );
+
+                        pwd_field_value_pairs.push_back( make_pair( mod_info.user_crypt_field_id, user_crypt_key ) );
+                     }
+
+                     if( !perform_update( module_id, mod_info.user_class_id,
+                      p_session_info->user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
+                     {
+                        if( error_message.empty( ) )
+                           throw runtime_error( "unexpected server error occurred." );
+                     }
+
+                     p_session_info->pwd_encrypted = true;
+                     p_session_info->user_crypt = user_crypt_key;
+                     p_session_info->user_pwd_hash = new_password;
+                  }
+               }
+               else if( !persistent.empty( ) )
+               {
+                  if( persistent == c_true )
+                  {
+                     remove_non_persistent( session_id );
+                     p_session_info->is_persistent = true;
+                  }
+                  else
+                  {
+                     add_non_persistent( session_id );
+                     p_session_info->is_persistent = false;
+                  }
+               }
+            }
+            else if( cmd == c_cmd_join || cmd == c_cmd_open )
+               server_command.erase( );
+
+            if( error_message.length( ) > strlen( c_response_error_prefix )
+             && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+               error_message = GDS( c_display_error ) + ": "
+                + error_message.substr( strlen( c_response_error_prefix ) );
+
+            setup_gmt_and_dtm_offset( input_data, *p_session_info );
+
+            process_fcgi_request( mod_info, p_session_info, cmd, act, data, field,
+             extra, qlink, password, pin, raddr, uselect, userhash, userfetch, exec, ident, oident,
+             special, back, vtabc, bcount, hashval, cont, listarg, listvar, listinfo, listsort, listsrch, listextra,
+             findinfo, app, keepchecks, new_key, session_id, module_id, module_ref, module_name, scrollx, scrolly,
+             server_command, menu_opts, selected_records, input_data, view, vici, view_extra_vars, list, olist, lici,
+             list_selections, list_search_text, list_search_values, home_lists, user_home_info, user_field_info,
+             new_field_and_values, child_row_errors, error_message, extra_content, extra_content_func,
+             activation_file, okay, had_send_or_recv_error, record_not_found_error, finished_session,
+             module_access_denied, cookies_permitted, temp_session, using_anonymous, use_url_checksum,
+             is_ssl, is_sign_in, is_in_edit, is_new_record, was_invalid, skip_force_fields, created_session,
+             allow_module_switching, vtab_num );
          }
-         else if( cmd == c_cmd_join || cmd == c_cmd_open )
-            server_command.erase( );
-
-         if( error_message.length( ) > strlen( c_response_error_prefix )
-          && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
-            error_message = GDS( c_display_error ) + ": "
-             + error_message.substr( strlen( c_response_error_prefix ) );
-
-         setup_gmt_and_dtm_offset( input_data, *p_session_info );
-
-         process_fcgi_request( mod_info, p_session_info, cmd, act, data, field,
-          extra, qlink, password, pin, raddr, uselect, userhash, userfetch, exec, ident, oident,
-          special, back, vtabc, bcount, hashval, cont, listarg, listvar, listinfo, listsort, listsrch, listextra,
-          findinfo, app, keepchecks, new_key, session_id, module_id, module_ref, module_name, scrollx, scrolly,
-          server_command, menu_opts, selected_records, input_data, view, vici, view_extra_vars, list, olist, lici,
-          list_selections, list_search_text, list_search_values, home_lists, user_home_info, user_field_info,
-          new_field_and_values, child_row_errors, error_message, extra_content, extra_content_func,
-          activation_file, okay, had_send_or_recv_error, record_not_found_error, finished_session,
-          module_access_denied, cookies_permitted, temp_session, using_anonymous, use_url_checksum,
-          is_ssl, is_sign_in, is_in_edit, is_new_record, was_invalid, skip_force_fields, created_session,
-          allow_module_switching, vtab_num );
       }
 
       if( cmd != c_cmd_status )
@@ -2439,6 +2494,7 @@ void request_handler::process_request( )
       else
       {
          okay = false;
+
          if( force_refresh )
          {
             is_logged_in = true;
@@ -2450,7 +2506,7 @@ void request_handler::process_request( )
          }
       }
 
-      if( !is_logged_in )
+      if( !is_logged_in && !using_anonymous )
       {
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -2465,16 +2521,29 @@ void request_handler::process_request( )
              "<a href=\"" + get_module_page_name( module_ref, true )
              + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) + "</p>";
 
-            output_login_logout( module_name, extra_content, osstr.str( ), login_html );
+            output_form( module_name, extra_content, osstr.str( ), login_html );
          }
          else
-            output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
+            output_form( module_name, extra_content, login_html, osstr.str( ) );
       }
       else
+      {
+         extra_content << "\n<div id=\"normal_content\">\n";
+
+         extra_content << "\n<div id=\"header\"><div id=\"appname\">";
+         extra_content << "<a href=\"?cmd=" << c_cmd_home << "\">" << get_app_name( ) << "</a></div>\n";
+         extra_content << "</div>\n";
+
          extra_content << osstr.str( );
 
-      if( is_logged_in )
+         extra_content << "<p align=\"center\">"
+          << string_message( GDS( c_display_click_here_to_retry ),
+          make_pair( c_display_click_here_to_retry_parm_href,
+          "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+
          extra_content << g_footer_html;
+         extra_content << "</div>\n";
+      }
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
@@ -2696,14 +2765,15 @@ int main( int argc, char* argv[ ] )
       g_openup_html = buffer_file( c_openup_file );
       g_signup_html = buffer_file( c_signup_file );
       g_activate_html = buffer_file( c_activate_file );
+      g_identity_html = buffer_file( c_identity_file );
       g_password_html = buffer_file( c_password_file );
       g_ssl_signup_html = buffer_file( c_ssl_signup_file );
       g_authenticate_html = buffer_file( c_authenticate_file );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
-      if( file_exists( c_identity_file ) )
-         g_id = buffer_file( c_identity_file );
+      if( file_exists( c_id_file ) )
+         g_id = buffer_file( c_id_file );
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );

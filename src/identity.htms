@@ -1,0 +1,24 @@
+<div class="wrapper box-shadow">
+
+<div align="center">
+<div class="identity_form">
+<p>
+@@identity_introduction_1
+</p>
+<p>
+@@identity_introduction_2
+</p>
+<p><b>@@identity_fingerprint</b></p>
+   <form method="POST" name="identity" id="identity"
+    onsubmit="return dyn_load( this, 'cmd=identity', false );">
+       <label for="submit" id="submit">
+          <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@confirm_identity" />
+       </label>
+   </form>
+<p>
+@@identity_retry_message
+</p>
+</div>
+</div>
+
+</div>
