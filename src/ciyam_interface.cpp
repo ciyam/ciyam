@@ -184,6 +184,12 @@ session_container g_sessions;
 
 map< string, string > g_uuid_for_ip_addr;
 
+void clear_key( string& key )
+{
+   for( size_t i = 0; i < key.length( ); i++ )
+      key[ i ] = '\0';
+}
+
 }
 
 string g_id;
@@ -967,7 +973,8 @@ void request_handler::process_request( )
       }
 
       // NOTE: For Meta an explicit identity confirmation is required.
-      if( !file_exists( c_id_file ) && module_name == "Meta" )
+      if( module_name == "Meta"
+       && ( cmd == c_cmd_identity || !file_exists( c_id_file ) ) )
       {
          if( cmd == c_cmd_identity )
          {
@@ -1263,37 +1270,50 @@ void request_handler::process_request( )
                            ofstream outf( c_id_file );
                            outf << g_id;
 
-                           // NOTE: As the original "g_id" value was potentially invalid any URL link or attempt
-                           // to login could fail so force the page to refresh with the now correct "g_id" value.
+                           // NOTE: As the original "g_id" value was potentially invalid any URL link or
+                           // attempt to login could well fail so force the page to refresh with the now
+                           // correct "g_id" value.
                            if( cmd != c_cmd_open )
                               extra_content_func += "refresh( false );\n";
                         }
                         else
                         {
+                           string old_id( g_id );
+
                            g_tmp = server_id;
                            g_id = get_id_from_server_id( g_tmp.c_str( ) );
 
-                           string identity_html( g_identity_html );
+                           // NOTE: If is the first time but the identity matches what had already been saved
+                           // then no need to display the confirmation form.
+                           if( old_id == g_id )
+                           {
+                              clear_key( g_tmp );
+                              set_server_id( server_id );
+                           }
+                           else
+                           {
+                              string identity_html( g_identity_html );
 
-                           str_replace( identity_html,
-                            c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
+                              str_replace( identity_html,
+                               c_identity_introduction_1, GDS( c_display_identity_introduction_1 ) );
 
-                           str_replace( identity_html,
-                            c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
+                              str_replace( identity_html,
+                               c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
-                           str_replace( identity_html, c_identity_fingerprint, g_id );
+                              str_replace( identity_html, c_identity_fingerprint, g_id );
 
-                           str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
+                              str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
 
-                           str_replace( identity_html, c_identity_retry_message,
-                            string_message( GDS( c_display_click_here_to_retry ),
-                            make_pair( c_display_click_here_to_retry_parm_href,
-                            "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
+                              str_replace( identity_html, c_identity_retry_message,
+                               string_message( GDS( c_display_click_here_to_retry ),
+                               make_pair( c_display_click_here_to_retry_parm_href,
+                               "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
 
-                           output_form( module_name, extra_content,
-                            identity_html, "", false, GDS( c_display_confirm_identity ) );
+                              output_form( module_name, extra_content,
+                               identity_html, "", false, GDS( c_display_confirm_identity ) );
 
-                           has_output_form = true;
+                              has_output_form = true;
+                           }
                         }
                      }
 
@@ -1334,6 +1354,9 @@ void request_handler::process_request( )
                         g_has_connected = connection_okay = true;
 #endif
                      }
+
+                     clear_key( server_id );
+                     clear_key( identity_info );
                   }
                   else
                      throw runtime_error( GDS( c_display_application_server_unavailable ) );

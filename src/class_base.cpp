@@ -4863,8 +4863,9 @@ void import_address( const string& ext_key, const string& address, const string&
 
       cmd += " " + address;
 
-      if( !label.empty( ) )
-         cmd += " \"" + label + "\"";
+      cmd += " \"" + label + "\"";
+
+      cmd += " false"; // i.e: prevent a re-scan
 
       cmd += " >" + tmp_file_name + " 2>&1";
    }
