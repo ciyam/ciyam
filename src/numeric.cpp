@@ -432,15 +432,16 @@ numeric& numeric::round( int num_decimals, round_method method )
 
 double numeric::frac( ) const
 {
-   uint64_t whole = mantissa / power10[ decimals ];
-   uint64_t fraction = mantissa - ( whole * power10[ decimals ] );
+   uint64_t whole = mantissa / power10[ decimals & c_decimals_mask ];
+   uint64_t fraction = mantissa - ( whole * power10[ decimals & c_decimals_mask ] );
 
-   return ( double )fraction / power10[ decimals ];
+   return ( double )fraction / power10[ decimals & c_decimals_mask ];
 }
 
 uint64_t numeric::trunc( ) const
 {
-   uint64_t whole = mantissa / power10[ decimals ];
+   uint64_t whole = mantissa / power10[ decimals & c_decimals_mask ];
+
    return whole;
 }
 
@@ -601,6 +602,7 @@ numeric numeric::max( )
 {
    numeric n;
    n.mantissa = c_max_mantissa;
+
    return n;
 }
 
@@ -609,6 +611,7 @@ numeric numeric::min( )
    numeric n;
    n.mantissa = c_max_mantissa;
    n.decimals = c_negative_flag;
+
    return n;
 }
 
@@ -648,10 +651,21 @@ int64_t numeric::as_int64_t( ) const
 {
    int64_t i = mantissa;
 
+   i /= power10[ decimals & c_decimals_mask ];
+
    if( decimals & c_negative_flag )
-      i *= -1;
+      i *= -1.0;
 
    return i;
+}
+
+uint64_t numeric::as_uint64( ) const
+{
+   uint64_t ui = mantissa;
+
+   ui /= power10[ decimals & c_decimals_mask ];
+
+   return ui;
 }
 
 string numeric::as_comparable_string( ) const
