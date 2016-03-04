@@ -904,7 +904,19 @@ string construct_raw_transaction(
       raw_transaction += outs.str( );
       signing_info_suffix += outs.str( );
 
-      string script_pub_key( "76a9" ); // i.e. OP_DUP OP_HASH160
+      bool is_p2sh = false;
+
+      // NOTE: If the address prefix is found to be 2 or 3 then assume P2SH rather than P2PKH.
+      if( !outputs[ i->second ].address.empty( )
+       && ( outputs[ i->second ].address[ 0 ] == '2' || outputs[ i->second ].address[ 0 ] == '3' ) )
+         is_p2sh = true;
+
+      string script_pub_key;
+
+      if( is_p2sh )
+         script_pub_key = "a9"; // i.e. OP_HASH160
+      else
+         script_pub_key = "76a9"; // i.e. OP_DUP OP_HASH160
 
       string hash160( public_key::address_to_hash160( outputs[ i->second ].address ) );
 
@@ -912,7 +924,11 @@ string construct_raw_transaction(
       script_pub_key += hex_encode( &size, sizeof( unsigned char ) );
 
       script_pub_key += hash160;
-      script_pub_key += "88ac"; // i.e. OP_EQUALVERIFY OP_CHECKSIG
+
+      if( is_p2sh )
+         script_pub_key += "87"; // i.e. OP_EQUAL
+      else
+         script_pub_key += "88ac"; // i.e. OP_EQUALVERIFY OP_CHECKSIG
 
       size = ( unsigned char )( script_pub_key.size( ) / 2 );
 
