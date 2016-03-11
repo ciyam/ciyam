@@ -3187,6 +3187,16 @@ string replace_leading_cols_with_ws( const string& s, const string& sep, size_t 
    return retval;
 }
 
+string decode_hex( const string& s )
+{
+   return hex_decode( s );
+}
+
+string encode_hex( const string& s )
+{
+   return hex_encode( s );
+}
+
 string check_with_regex( const string& r, const string& s, bool* p_rc )
 {
    string re( r );
@@ -5137,7 +5147,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 
          cmd += "getnewaddress";
 
-         cmd += " >" + tmp + " 2>&1";;
+         cmd += " >" + tmp + " 2>&1";
       }
 
       if( !cmd.empty( ) )
@@ -5170,16 +5180,17 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
    return raw_tx_request;
 }
 
-string construct_p2sh_redeem_transaction( const string& txid, unsigned int index, const string& redeem_script,
- const string& extras, const string& to_address, uint64_t amount, const char* p_wif_key, uint32_t lock_time )
+string construct_p2sh_redeem_transaction(
+ const string& txid, unsigned int index, const string& redeem_script, const string& extras,
+ const string& to_address, uint64_t amount, const string& key, bool is_wif_format, uint32_t lock_time )
 {
    vector< utxo_information > inputs;
    vector< output_information > outputs;
 
    auto_ptr< private_key > ap_priv_key;
 
-   if( p_wif_key )
-      ap_priv_key.reset( new private_key( string( p_wif_key ), true ) );
+   if( !key.empty( ) )
+      ap_priv_key.reset( new private_key( key, is_wif_format ) );
 
    inputs.push_back( utxo_information( index,
     hex_reverse( txid ), redeem_script.c_str( ), ap_priv_key.release( ), true ) );
@@ -5192,6 +5203,176 @@ string construct_p2sh_redeem_transaction( const string& txid, unsigned int index
       split( extras, extra_items );
 
    return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time, &extra_items );
+}
+
+string retreive_p2sh_redeem_extra_info( const string& ext_key, const string& check_address )
+{
+   string extra_info;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd, retval;
+   string tmp( "~" + uuid( ).as_string( ) );
+
+   if( client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "listtransactions \"*\" 100 0 true";
+
+      cmd += " >" + tmp + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+
+      if( file_exists( tmp ) )
+      {
+         string all_lines( buffer_file( tmp ) );
+         file_remove( tmp );
+
+         vector< string > lines;
+         split( all_lines, lines, '\n' );
+
+         string txid;
+         bool matches = false;
+         for( size_t i = 0; i < lines.size( ); i++ )
+         {
+            string next( lines[ i ] );
+
+            string::size_type pos = next.find( "\"address\"" );
+            if( pos != string::npos )
+            {
+               pos = next.find( check_address );
+
+               if( pos != string::npos )
+                  matches = true;
+               else
+                  matches = false;
+            }
+
+            if( matches )
+            {
+               pos = next.find( "\"txid\"" );
+               if( pos != string::npos )
+               {
+                  next.erase( 0, pos + 6 );
+
+                  pos = next.find( "\"" );
+                  if( pos != string::npos )
+                  {
+                     next.erase( 0, pos + 1 );
+                     pos = next.find( "\"" );
+
+                     if( pos != string::npos )
+                     {
+                        next.erase( pos );
+                        txid = next;
+                        break;
+                     }
+                  }
+               }
+            }
+         }
+
+         if( !txid.empty( ) )
+         {
+            cmd = escaped( client_info.script_name ) + " ";
+            cmd += "getrawtransaction " + txid;
+            cmd += " >" + tmp + " 2>&1";
+
+            TRACE_LOG( TRACE_SESSIONS, cmd );
+
+            if( system( cmd.c_str( ) ) != 0 )
+               throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+
+            if( file_exists( tmp ) )
+            {
+               string raw_tx( buffer_file( tmp ) );
+               file_remove( tmp );
+
+               string::size_type pos = raw_tx.find_first_not_of( "0123456789abcdef" );
+               if( pos != string::npos )
+                  raw_tx.erase( pos );
+
+               cmd = escaped( client_info.script_name ) + " ";
+               cmd += "decoderawtransaction " + raw_tx;
+               cmd += " >" + tmp + " 2>&1";
+
+               TRACE_LOG( TRACE_SESSIONS, cmd );
+
+               if( system( cmd.c_str( ) ) != 0 )
+                  throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+
+               if( file_exists( tmp ) )
+               {
+                  string all_lines( buffer_file( tmp ) );
+                  file_remove( tmp );
+
+                  vector< string > lines;
+                  split( all_lines, lines, '\n' );
+
+                  bool found_script_sig = false;
+                  for( size_t i = 0; i < lines.size( ); i++ )
+                  {
+                     string next( lines[ i ] );
+
+                     string::size_type pos = next.find( "\"scriptSig\"" );
+
+                     if( pos != string::npos )
+                        found_script_sig = true;
+                     else if( found_script_sig )
+                     {
+                        pos = next.find( "\"asm\"" );
+
+                        if( pos != string::npos )
+                        {
+                           next.erase( 0, pos + 5 );
+
+                           pos = next.find( "\"" );
+                           if( pos != string::npos )
+                           {
+                              next.erase( 0, pos + 1 );
+                              pos = next.find( "\"" );
+
+                              if( pos != string::npos )
+                              {
+                                 next.erase( pos );
+
+                                 vector< string > parts;
+                                 split( next, parts, ' ' );
+
+                                 // NOTE: It is being assumed that the P2SH redeem format is that
+                                 // of a <sig> followed by <pubkey> and <extra> before the actual
+                                 // P2SH <script> itself.
+                                 if( parts.size( ) == 4 )
+                                 {
+                                    extra_info = parts[ 2 ];
+                                    break;
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+               else
+                  throw runtime_error( "unexpected temporary file not found in retreive_p2sh_redeem_extra_info" );
+            }
+            else
+               throw runtime_error( "unexpected temporary file not found in retreive_p2sh_redeem_extra_info" );
+         }
+      }
+      else
+         throw runtime_error( "unexpected temporary file not found in retreive_p2sh_redeem_extra_info" );
+   }
+
+   return extra_info;
 }
 
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd,
@@ -5271,7 +5452,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
       cmd += raw_tx_cmd;
 
-      cmd += " >" + tmp + " 2>&1";;
+      cmd += " >" + tmp + " 2>&1";
    }
 
    if( !cmd.empty( ) )

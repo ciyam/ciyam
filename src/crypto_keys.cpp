@@ -620,6 +620,8 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
       throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
    p_impl->set_secret_bytes( buf );
+
+   memset( buf, '\0', sizeof( buf ) );
 }
 
 private_key::~private_key( )

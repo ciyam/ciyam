@@ -1840,6 +1840,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_file.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_suffix=$specification_\0_suffix`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_file_attachment`'`)
+`{`#transient_field_from_file_attachment.spec.xrep section=after_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_suffix=$specification_\0_suffix`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_key.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\

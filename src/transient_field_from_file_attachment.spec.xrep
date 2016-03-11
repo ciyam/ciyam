@@ -1,0 +1,18 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_from_file_attachment)] `{`$arg_id`}
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )
+   {
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+      string name( get_obj( ).`{`$arg_sfield`}( ) );
+`,\
+      string name( get_obj( ).get_key( )`{`!`@eq`(`$arg_suffix`,`'`'`) + "`{`$arg_suffix`}"`} );
+`}\
+      string file_name( get_obj( ).get_attached_file_path( name ) );
+
+      if( exists_file( file_name, false ) )
+         get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( load_file( file_name ) ) );
+   }
+   // [(finish transient_field_from_file_attachment)] `{`$arg_id`}
+`}

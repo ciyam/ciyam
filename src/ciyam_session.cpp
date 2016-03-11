@@ -1698,7 +1698,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = construct_p2sh_redeem_transaction(
           txid, from_string< unsigned int >( index ),
           script, extras, address, crypto_amount( amount ),
-          wif_key.c_str( ), lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
+          wif_key, true, lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
       }
       else if( command == c_cmd_ciyam_session_crypto_nonce_search )
       {
