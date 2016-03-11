@@ -1219,6 +1219,9 @@ inline std::string unquoted_literal( const std::string& s, char esc = '\\' ) { r
 
 std::string CLASS_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string& s, const std::string& sep, size_t num_spaces );
 
+std::string CLASS_BASE_DECL_SPEC decode_hex( const std::string& s );
+std::string CLASS_BASE_DECL_SPEC encode_hex( const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
 
 std::string CLASS_BASE_DECL_SPEC hash_sha1( const std::string& s );
@@ -1580,8 +1583,12 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  std::string& sign_tx_template, const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
- const std::string& txid, unsigned int index, const std::string& redeem_script, const std::string& extras,
- const std::string& to_address, uint64_t amount, const char* p_wif_key = 0, uint32_t lock_time = 0 );
+ const std::string& txid, unsigned int index, const std::string& redeem_script,
+ const std::string& extras, const std::string& to_address, uint64_t amount, const std::string& key,
+ bool is_wif_format = false, uint32_t lock_time = 0 );
+
+std::string CLASS_BASE_DECL_SPEC retreive_p2sh_redeem_extra_info(
+ const std::string& ext_key, const std::string& check_address );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
