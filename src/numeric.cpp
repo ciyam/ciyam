@@ -240,7 +240,7 @@ numeric::numeric( int64_t i )
    mantissa = i;
 }
 
-numeric::numeric( double d, int max_decimals, round_method method )
+numeric::numeric( double d, int max_decimals, round_method method, bool simplify )
  :
  decimals( 0 ),
  mantissa( 0 )
@@ -289,7 +289,7 @@ numeric::numeric( double d, int max_decimals, round_method method )
       decimals |= c_negative_flag;
 
    if( md != max_decimals )
-      round( max_decimals, method );
+      round( max_decimals, method, simplify );
 }
 
 numeric::numeric( const char* p, char dec, char sep )
@@ -378,7 +378,7 @@ numeric::numeric( const char* p, char dec, char sep )
    }
 }
 
-numeric& numeric::round( int num_decimals, round_method method )
+numeric& numeric::round( int num_decimals, round_method method, bool simplify )
 {
    if( method == e_round_method_none )
       return *this;
@@ -417,10 +417,24 @@ numeric& numeric::round( int num_decimals, round_method method )
 
       decimals = num_decimals;
 
-      while( decimals > 0 && mantissa % 10 == 0 )
+      if( simplify )
       {
-         --decimals;
-         mantissa /= 10;
+         while( decimals > 0 && mantissa % 10 == 0 )
+         {
+            --decimals;
+            mantissa /= 10;
+         }
+      }
+   }
+
+   if( !simplify )
+   {
+      int num_decimals_now = decimal_digits( );
+
+      while( num_decimals_now++ < num_decimals )
+      {
+         mantissa *= 10;
+         ++decimals;
       }
    }
 
@@ -694,7 +708,7 @@ string numeric::as_comparable_string( ) const
       cs += '+';
 
    string::size_type pos = str.find( '.' );
-   int digits = ( pos != string::npos ) ? pos : str.size( );
+   int digits = ( pos == string::npos ) ? str.size( ) : str.size( ) - 1;
 
    if( digits < e_max_digits )
       cs += string( e_max_digits - digits, '0' );
@@ -931,7 +945,7 @@ numeric sqrt( const numeric& n )
    }
 
    // NOTE: Reduce the number of decimals to match constants such as pi.
-   mid.round( numeric::e_default_decimals + 3 );
+   mid.round( numeric::e_default_decimals + 3, numeric::e_round_method_normal, true );
 
    return mid;
 }

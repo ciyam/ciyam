@@ -202,10 +202,12 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          else if( has_parm_val( parameters, c_cmd_parm_test_numeric_round_bankers ) )
             m = numeric::e_round_method_bankers;
 
+         bool simplify = has_parm_val( parameters, c_cmd_parm_test_numeric_round_simplify );
+
          int n = atoi( get_parm_val( parameters, c_cmd_parm_test_numeric_round_decimals ).c_str( ) );
          try
          {
-            num.round( n, m );
+            num.round( n, m, simplify );
             cout << num << endl;
          }
          catch( exception& x )

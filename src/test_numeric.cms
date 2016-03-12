@@ -22,7 +22,7 @@ is_lteq "is less than or equal to numeric value" <val//num>
 is_gteq "is greater than or equal to numeric value" <val//num>
 frac "fractional component"
 trunc "whole number component"
-round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<opt/bankers>]
+round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<opt/bankers>][<opt/simplify>]
 round_table "display sample table of rounding values"
 digits "display number of digits"
 whole_digits "display number of whole digits"
