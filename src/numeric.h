@@ -64,11 +64,13 @@ class NUMERIC_DECL_SPEC numeric
    numeric( int64_t i );
    inline numeric( uint64_t ui ) : decimals( 0 ), mantissa( ui ) { }
 
-   numeric( double d, int max_decimals = e_default_decimals, round_method method = e_round_method_normal );
+   numeric( double d, int max_decimals = e_default_decimals,
+    round_method method = e_round_method_normal, bool simplify = false );
 
    explicit numeric( const char* p, char dec = c_decimal, char sep = c_separator );
 
-   numeric& round( int num_decimals = e_default_decimals, round_method method = e_round_method_normal );
+   numeric& round( int num_decimals = e_default_decimals,
+    round_method method = e_round_method_normal, bool simplify = false );
 
    double frac( ) const;
    int64_t trunc( ) const;
