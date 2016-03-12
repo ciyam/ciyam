@@ -4,13 +4,17 @@ min "show minimum possible value"
 max "show maximum possible value"
 e "show value of e"
 pi "show value of pi"
+phi "show value of phi"
+abs "asbolute value"
+inv "inversed value"
 get "get current value"
-cmp "get comparable value"
+cmp "get comparable string value"
 set "set numeric value" <val//num>
 add "add to numeric value" <val//num>
 sub "subtract from numeric value" <val//num>
 mul "multiply by numeric value" <val//num>
 div "divide by numeric value" <val//num>
+sqrt "square root"
 is_lt "is less than numeric value" <val//num>
 is_gt "is greater than numeric value" <val//num>
 is_eq "is equal to numeric value" <val//num>
@@ -22,5 +26,6 @@ round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<op
 round_table "display sample table of rounding values"
 digits "display number of digits"
 whole_digits "display number of whole digits"
+decimal_digits "display number of decimal digits"
 format "format current value according to numeric mask" <val//mask>
 exit "exit program"

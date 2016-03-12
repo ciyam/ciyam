@@ -438,11 +438,16 @@ double numeric::frac( ) const
    return ( double )fraction / power10[ decimals & c_decimals_mask ];
 }
 
-uint64_t numeric::trunc( ) const
+int64_t numeric::trunc( ) const
 {
    uint64_t whole = mantissa / power10[ decimals & c_decimals_mask ];
 
-   return whole;
+   int64_t signed_whole( whole );
+
+   if( decimals & c_negative_flag )
+      signed_whole *= -1;
+
+   return signed_whole;
 }
 
 numeric& numeric::operator *=( numeric n )
@@ -617,14 +622,21 @@ numeric numeric::min( )
 
 numeric numeric::e( )
 {
-   static numeric g_e( "2.71828182845904524" );
+   static numeric g_e( "2.71828183" );
    return g_e;
 }
 
 numeric numeric::pi( )
 {
-   static numeric g_pi( "3.14159265358979324" );
+   static numeric g_pi( "3.14159265" );
    return g_pi;
+}
+
+numeric numeric::phi( )
+{
+   static numeric g_phi( "1.61803399" );
+
+   return g_phi;
 }
 
 string numeric::as_string( ) const
@@ -861,6 +873,67 @@ write_stream& operator <<( write_stream& ws, const numeric& n )
 {
    ws << n.decimals << n.mantissa;
    return ws;
+}
+
+numeric abs( const numeric& n )
+{
+   numeric abs_n( n );
+
+   if( abs_n < 0 )
+      abs_n *= -1;
+
+   return abs_n;
+}
+
+numeric sqrt( const numeric& n )
+{
+   if( n < 1 )
+      throw runtime_error( "invalid attempt to sqrt a number less than 1" );
+      
+   numeric low = 0;
+   numeric mid, high;
+
+   high = mid = n;
+   numeric omid = -1;
+
+   numeric accuracy = 1;
+   accuracy /= power10[ numeric::e_default_decimals + 4 ];
+
+   while( abs( omid - mid ) >= accuracy )
+   {
+      omid = mid;
+      mid = ( high + low ) / 2;
+
+      // NOTE: Avoid some potential mantissa overflows.
+      if( mid > 10000000 )
+         mid.round( 0 );
+      else if( mid > 1000000 )
+         mid.round( 1 );
+      else if( mid > 100000 )
+         mid.round( 2 );
+      else if( mid > 10000 )
+         mid.round( 3 );
+      else if( mid > 1000 )
+         mid.round( 4 );
+      else if( mid > 100 )
+         mid.round( numeric::e_default_decimals );
+      else if( mid > 10 )
+         mid.round( numeric::e_default_decimals + 2 );
+      else if( mid > 2 )
+         mid.round( numeric::e_default_decimals + 3 );
+      else
+         mid.round( numeric::e_default_decimals + 4 );
+
+      if( mid * mid < n )
+         low = mid;
+      else
+         high = mid;
+   }
+
+   // NOTE: Reduce the number of decimals to match constants such as pi.
+   mid.round( numeric::e_default_decimals + 3 );
+
+   return mid;
 }
 
 string format_numeric( const numeric& n, const string& mask,

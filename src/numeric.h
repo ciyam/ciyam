@@ -71,7 +71,7 @@ class NUMERIC_DECL_SPEC numeric
    numeric& round( int num_decimals = e_default_decimals, round_method method = e_round_method_normal );
 
    double frac( ) const;
-   uint64_t trunc( ) const;
+   int64_t trunc( ) const;
 
    operator bool_type( ) const
    {
@@ -122,6 +122,7 @@ class NUMERIC_DECL_SPEC numeric
 
    static numeric e( );
    static numeric pi( );
+   static numeric phi( );
 
    friend void NUMERIC_DECL_SPEC perform_add_or_subtract( numeric& n1, numeric n2, bool is_add );
 
@@ -235,6 +236,9 @@ inline bool operator ==( const numeric& lhs, const numeric& rhs )
 }
 
 inline bool operator !=( const numeric& lhs, const numeric& rhs ) { return !( lhs == rhs ); }
+
+numeric abs( const numeric& n );
+numeric sqrt( const numeric& n );
 
 std::string format_numeric( const numeric& n, const std::string& mask,
  const char* p_decimal_point = 0, const char* p_plus = 0, const char* p_minus = 0,
