@@ -100,6 +100,12 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          cout << numeric::e( ) << endl;
       else if( command == c_cmd_test_numeric_pi )
          cout << numeric::pi( ) << endl;
+      else if( command == c_cmd_test_numeric_phi )
+         cout << numeric::phi( ) << endl;
+      else if( command == c_cmd_test_numeric_abs )
+         cout << abs( num ) << endl;
+      else if( command == c_cmd_test_numeric_inv )
+         cout << ( 1 / num ) << endl;
       else if( command == c_cmd_test_numeric_get )
          cout << num << endl;
       else if( command == c_cmd_test_numeric_cmp )
@@ -139,6 +145,8 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          num /= n;
          cout << num << endl;
       }
+      else if( command == c_cmd_test_numeric_sqrt )
+         cout << sqrt( num ) << endl;
       else if( command == c_cmd_test_numeric_is_lt )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_lt_num ).c_str( ) );
@@ -275,6 +283,8 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          cout << ( int )num.digits( ) << endl;
       else if( command == c_cmd_test_numeric_whole_digits )
          cout << ( int )num.whole_digits( ) << endl;
+      else if( command == c_cmd_test_numeric_decimal_digits )
+         cout << ( int )num.decimal_digits( ) << endl;
       else if( command == c_cmd_test_numeric_format )
       {
          string mask( get_parm_val( parameters, c_cmd_parm_test_numeric_format_mask ) );
