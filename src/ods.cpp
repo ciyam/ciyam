@@ -3434,8 +3434,6 @@ ods& operator <<( ods& o, storable_base& s )
 
    o.bytes_used = 0;
    o.bytes_reserved = s.get_size_of( );
-   if( !o.bytes_reserved )
-      throw ods_error( "cannot store zero length object..." );
 
    bool can_write = false;
    bool has_locked = false;
@@ -3643,7 +3641,9 @@ ods& operator <<( ods& o, storable_base& s )
       s.flags |= storable_base::e_flag_interim_update;
 
    ods::ods_stream ods_stream( o );
-   s.put_instance( ods_stream );
+
+   if( o.bytes_reserved )
+      s.put_instance( ods_stream );
 
    if( o.bytes_used < o.bytes_reserved )
    {

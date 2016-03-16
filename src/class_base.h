@@ -1587,8 +1587,20 @@ std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
  const std::string& extras, const std::string& to_address, uint64_t amount, const std::string& key,
  bool is_wif_format = false, uint32_t lock_time = 0 );
 
+enum p2sh_redeem_extra_info_count
+{
+   e_p2sh_redeem_extra_info_count_acct_secret = 4
+};
+
+enum p2sh_redeem_extra_info_offset
+{
+   e_p2sh_redeem_extra_info_offset_acct_secret = 2
+};
+
 std::string CLASS_BASE_DECL_SPEC retreive_p2sh_redeem_extra_info(
- const std::string& ext_key, const std::string& check_address );
+ const std::string& ext_key, const std::string& check_address,
+ p2sh_redeem_extra_info_count count = e_p2sh_redeem_extra_info_count_acct_secret,
+ p2sh_redeem_extra_info_offset offset = e_p2sh_redeem_extra_info_offset_acct_secret );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
