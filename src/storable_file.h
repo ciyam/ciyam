@@ -33,6 +33,7 @@ class FILE_DECL_SPEC storable_file : public storable_base
    std::string get_name( ) const { return file_name; }
 
    int_t get_size_of( ) const;
+
    void get_instance( read_stream& rs );
    void put_instance( write_stream& ws ) const;
 

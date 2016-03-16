@@ -781,7 +781,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             else
             {
                scoped_ods_instance so( o );
-               o.set_string( output_name + ':' + to_string( o.get_size( temp_node.get_file( ).get_id( ) ) ));
+               o.set_string( output_name + ':' + to_string( o.get_size( temp_node.get_file( ).get_id( ) ) ) );
 
                *temp_node.get_file( );
 

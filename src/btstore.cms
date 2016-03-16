@@ -1,12 +1,22 @@
+cd "get or set the current default folder" [<val//folder>]
+files "list matching files" [<opt/-f/full>|<opt/-b/brief>][<val//expr>]
+branch "list a branch of files/folders/objects" [<opt/-f/full>|<opt/-b/brief>]<opt/files>|<opt/folders>|<opt/objects>[<val//expr>]
+folders "list matching folders" [<opt/-f/full>][<val//expr>]
+objects "list matching files and folders" [<opt/-f/full>|<opt/-b/brief>][<val//expr>]
+file_add "add a file into the current folder" <val//name>[<val//file_name>]
+file_get "get a file from the current folder" <val//name>[<val//file_name>]
+folder_add "add a folder below the current folder" <val//name>
+file_remove "remove a file from the current folder" <val//name>
+folder_remove "remove a folder from the current folder" <val//name>
 add "add an item" <val//item>
 find "find an item" <val//item>
-match "perform wildcard match" <val//expr>
+match "wildcard item match" <val//expr>[<val//regexpr>]
 lbound "find lower bound" <val//item>
 ubound "find upper bound" <val//item>
 remove "remove an item" [<val//item>]
 erange "find equal range" <val//item>
 count "count item matches" <val//item>
-mcount "count wildcard matches" <val//expr>
+mcount "count wildcard matches" <val//expr>[<val//regexpr>]
 import "import items from a text file" <val//filename>
 export "export items to a text file" <val//filename>
 append "append items from a text file" <val//filename>

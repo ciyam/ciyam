@@ -956,6 +956,7 @@ template< typename T, typename L, typename N, typename M >
 
    uint node_found( state.root_node );
    int item_pos = find_item( node_found, key, e_find_equal_to );
+
    if( item_pos != -1 )
       return const_iterator( this, node_found, ( uchar )item_pos );
    else
@@ -992,6 +993,7 @@ template< typename T, typename L, typename N, typename M >
 
    uint node_found( state.root_node );
    int item_pos = find_item( node_found, key, e_find_greater_than );
+
    if( item_pos != -1 )
       return const_iterator( this, node_found, ( uchar )item_pos );
    else

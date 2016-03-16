@@ -5205,7 +5205,9 @@ string construct_p2sh_redeem_transaction(
    return construct_raw_transaction( inputs, outputs, 0, false, 0, lock_time, &extra_items );
 }
 
-string retreive_p2sh_redeem_extra_info( const string& ext_key, const string& check_address )
+string retreive_p2sh_redeem_extra_info(
+ const string& ext_key, const string& check_address,
+ p2sh_redeem_extra_info_count count, p2sh_redeem_extra_info_offset offset )
 {
    string extra_info;
 
@@ -5347,12 +5349,9 @@ string retreive_p2sh_redeem_extra_info( const string& ext_key, const string& che
                                  vector< string > parts;
                                  split( next, parts, ' ' );
 
-                                 // NOTE: It is being assumed that the P2SH redeem format is that
-                                 // of a <sig> followed by <pubkey> and <extra> before the actual
-                                 // P2SH <script> itself.
-                                 if( parts.size( ) == 4 )
+                                 if( parts.size( ) == count )
                                  {
-                                    extra_info = parts[ 2 ];
+                                    extra_info = parts[ offset ];
                                     break;
                                  }
                               }

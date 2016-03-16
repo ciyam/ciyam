@@ -26,7 +26,7 @@ using namespace std;
 namespace
 {
 
-const int c_buf_size = 1024;
+const int c_buf_size = 4096;
 
 }
 
@@ -81,6 +81,8 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
       size -= bytes;
    }
+
+   outf.close( );
 
    return rs;
 }
