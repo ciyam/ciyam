@@ -38,6 +38,7 @@
 #include "console_commands.h"
 
 //#define USE_BULK_PAUSE
+//#define ALLOW_SAME_FILE_AND_FOLDER_NAMES
 
 using namespace std;
 using namespace btree;
@@ -492,25 +493,35 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          *ap_ods >> *ap_btree;
 
-         tmp_item.val = value;
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+         tmp_item.val = value + string( c_root_folder );
 
          tmp_iter = ap_btree->find( tmp_item );
 
          if( tmp_iter != ap_btree->end( ) )
-            cout << "*** file '" << name << "' already exists" << endl;
+            cout << "*** a folder with the name '" << name << "' already exists" << endl;
          else
+#endif
          {
-            tmp_item.get_file( ).reset( new storable_file( file_name ) );
+            tmp_item.val = value;
+            tmp_iter = ap_btree->find( tmp_item );
 
-            scoped_ods_instance so( *ap_ods );
-            tmp_item.get_file( ).store( );
-
-            ap_btree->insert( tmp_item );
-
-            if( current_folder == string( c_root_folder ) )
+            if( tmp_iter != ap_btree->end( ) )
+               cout << "*** file '" << name << "' already exists" << endl;
+            else
             {
-               tmp_item.val = "|" + name;
+               tmp_item.get_file( ).reset( new storable_file( file_name ) );
+
+               scoped_ods_instance so( *ap_ods );
+               tmp_item.get_file( ).store( );
+
                ap_btree->insert( tmp_item );
+
+               if( current_folder == string( c_root_folder ) )
+               {
+                  tmp_item.val = "|" + name;
+                  ap_btree->insert( tmp_item );
+               }
             }
          }
       }
@@ -576,23 +587,33 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          if( current_folder == string( c_root_folder ) )
          {
-            tmp_item.val = current_folder + name;
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+            tmp_item.val = '|' + name;
             tmp_iter = ap_btree->find( tmp_item );
 
             if( tmp_iter != ap_btree->end( ) )
-               cout << "*** folder '" << name << "' already exists" << endl;
+               cout << "*** a file with the name '" << name << "' already exists" << endl;
             else
+#endif
             {
-               ap_btree->insert( tmp_item );
+               tmp_item.val = current_folder + name;
+               tmp_iter = ap_btree->find( tmp_item );
 
-               tmp_item.val = ':' + tmp_item.val;
-               ap_btree->insert( tmp_item );
+               if( tmp_iter != ap_btree->end( ) )
+                  cout << "*** folder '" << name << "' already exists" << endl;
+               else
+               {
+                  ap_btree->insert( tmp_item );
 
-               tmp_item.val = '|' + name + '/';
-               ap_btree->insert( tmp_item );
+                  tmp_item.val = ':' + tmp_item.val;
+                  ap_btree->insert( tmp_item );
 
-               tmp_item.val = "|/" + name + '/';
-               ap_btree->insert( tmp_item );
+                  tmp_item.val = '|' + name + '/';
+                  ap_btree->insert( tmp_item );
+
+                  tmp_item.val = "|/" + name + '/';
+                  ap_btree->insert( tmp_item );
+               }
             }
          }
          else
@@ -600,21 +621,32 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
             string name_1( current_folder + '/' + name );
             string name_2( replaced( current_folder, "/", ":" ) + ":/" + name );
             string name_3( replaced( current_folder, "/", "|" ) + '/' + name + '/' );
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+            string name_x( replaced( current_folder, "/", "|" ) + '/' + name );
 
-            tmp_item.val = name_1;
+            tmp_item.val = name_x;
             tmp_iter = ap_btree->find( tmp_item );
 
             if( tmp_iter != ap_btree->end( ) )
-               cout << "*** folder '" << name << "' already exists" << endl;
+               cout << "*** a file with the name '" << name << "' already exists" << endl;
             else
+#endif
             {
-               ap_btree->insert( tmp_item );
+               tmp_item.val = name_1;
+               tmp_iter = ap_btree->find( tmp_item );
 
-               tmp_item.val = name_2;
-               ap_btree->insert( tmp_item );
+               if( tmp_iter != ap_btree->end( ) )
+                  cout << "*** folder '" << name << "' already exists" << endl;
+               else
+               {
+                  ap_btree->insert( tmp_item );
 
-               tmp_item.val = name_3;
-               ap_btree->insert( tmp_item );
+                  tmp_item.val = name_2;
+                  ap_btree->insert( tmp_item );
+
+                  tmp_item.val = name_3;
+                  ap_btree->insert( tmp_item );
+               }
             }
          }
       }
