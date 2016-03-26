@@ -38,6 +38,7 @@ using namespace std;
 namespace
 {
 
+const int c_tx_max_msg_len = 80;
 const int c_num_secret_bytes = 32;
 const int c_max_public_key_bytes = 65;
 
@@ -869,8 +870,8 @@ string construct_raw_transaction(
 
    size_t msg_len = p_message ? strlen( p_message ) : 0;
 
-   if( p_message && msg_len > 40 )
-      throw runtime_error( "max. message size is 40 bytes per transaction" );
+   if( p_message && msg_len > c_tx_max_msg_len )
+      throw runtime_error( "max. message size is " + to_string( c_tx_max_msg_len ) + " bytes per transaction" );
 
    if( p_message && msg_len )
       ++size;
