@@ -1982,6 +1982,11 @@ bool ods::is_corrupt( )
    return p_impl->is_corrupt;
 }
 
+bool ods::is_bulk_locked( ) const
+{
+   return ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none );
+}
+
 int_t ods::get_total_entries( )
 {
    return p_impl->rp_header_info->total_entries;

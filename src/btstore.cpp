@@ -58,10 +58,12 @@ const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
 
-const char c_folder_separator = '/';
+const char c_folder = '/';
 
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
+
+const char* const c_folder_separator = "/";
 
 bool g_shared_access = true;
 
@@ -326,7 +328,7 @@ class btstore_command_functor : public command_functor
     const char erase_all_before_and_including = '\0', bool show_file_sizes = false,
     const char* p_ignore_with_prefix = 0 );
 
-   string determine_folder( const string& folder );
+   string determine_folder( const string& folder, bool quiet = false );
 
    void expand_entity_expression( const string& expr,
     bool had_wildcard, string& entity_expr, const char* p_suffix = 0 );
@@ -396,7 +398,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          search_replaces.push_back( make_pair( "//", "/" ) );
 
          perform_match( cout, entity_expr, regexpr,
-          0, &search_replaces, 0, 0, full ? '\0' : c_folder_separator, !brief );
+          0, &search_replaces, 0, 0, full ? '\0' : c_folder, !brief );
       }
    }
    else if( command == c_cmd_btstore_branch )
@@ -422,7 +424,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       string prefix_2( prefix_1 );
 
       if( prefix_1.size( ) > 1 )
-         prefix_1 += string( c_root_folder );
+         prefix_1 += string( c_folder_separator );
 
       if( entity_expr.find_first_of( "?*" ) == string::npos )
          entity_expr += "*";
@@ -438,10 +440,10 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       string entity_expr( current_folder );
       bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
-      expand_entity_expression( expr, had_wildcard, entity_expr, c_root_folder );
+      expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? '\0' : c_folder_separator );
 
-      if( !had_wildcard && current_folder != string( c_root_folder ) )
-         entity_expr += string( c_root_folder );
+      if( expr.empty( ) && current_folder != string( c_root_folder ) )
+         entity_expr += string( c_folder_separator );
 
       if( !entity_expr.empty( ) )
       {
@@ -454,7 +456,12 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
             string::size_type pos = entity_expr.rfind( ':' );
 
             if( pos != string::npos )
-               entity_expr[ pos ] = '/';
+            {
+               if( pos == 0 || entity_expr[ pos - 1 ] == ':' )
+                  entity_expr[ pos ] = c_folder;
+               else
+                  entity_expr.insert( pos + 1, c_folder_separator );
+            }
          }
 
          string regexpr;
@@ -464,7 +471,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          search_replaces.push_back( make_pair( "//", "/" ) );
 
          perform_match( cout, entity_expr, regexpr,
-          0, &search_replaces, 0, 0, full ? '\0' : c_folder_separator );
+          0, &search_replaces, 0, 0, full ? '\0' : c_folder );
       }
    }
    else if( command == c_cmd_btstore_file_add )
@@ -481,10 +488,9 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       {
          string value( current_folder );
 
-         if( !value.empty( ) )
-            value[ 0 ] = '|';
+         value = replace( value, "/", "|" );
 
-         value += string( c_root_folder ) + name;
+         value += string( c_folder_separator ) + name;
 
          ods::bulk_write bulk( *ap_ods );
 
@@ -494,7 +500,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          *ap_ods >> *ap_btree;
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-         tmp_item.val = value + string( c_root_folder );
+         tmp_item.val = value + string( c_folder_separator );
 
          tmp_iter = ap_btree->find( tmp_item );
 
@@ -536,10 +542,9 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
       string value( current_folder );
 
-      if( !value.empty( ) )
-         value[ 0 ] = '|';
+      value = replace( value, "/", "|" );
 
-      value += string( c_root_folder ) + name;
+      value += string( c_folder_separator ) + name;
 
       ods::bulk_read bulk( *ap_ods );
 
@@ -568,6 +573,120 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
           + to_string( ap_ods->get_size( tmp_item.get_file( ).get_id( ) ) ) );
 
          *tmp_item.get_file( );
+      }
+   }
+   else if( command == c_cmd_btstore_file_move )
+   {
+      string name( get_parm_val( parameters, c_cmd_parm_btstore_file_move_name ) );
+      string destination( get_parm_val( parameters, c_cmd_parm_btstore_file_move_destination ) );
+
+      string::size_type pos = destination.rfind( c_folder );
+
+      string dest_name( destination.substr( pos == string::npos ? 0 : pos + 1 ) );
+
+      if( valid_file_name( dest_name ) != dest_name )
+         cout << "*** invalid destination file name ***" << endl;
+      else
+      {
+         ods::bulk_write bulk( *ap_ods );
+
+         *ap_ods >> *ap_btree;
+         auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( *ap_btree ) );
+
+         string value( current_folder );
+
+         value = replace( value, "/", "|" );
+
+         value += string( c_folder_separator ) + name;
+
+         btree_type::iterator tmp_iter;
+         btree_type::item_type tmp_item;
+
+         tmp_item.val = value;
+
+         tmp_iter = ap_btree->find( tmp_item );
+
+         if( tmp_iter == ap_btree->end( ) )
+            cout << "*** file '" << name << "' not found ***" << endl;
+         else
+         {
+            tmp_item = *tmp_iter;
+            oid id( tmp_item.get_file( ).get_id( ) );
+
+            string folder = determine_folder( destination, true );
+
+            if( folder.empty( ) )
+            {
+               if( pos == string::npos )
+                  folder = current_folder;
+               else if( pos == 0 )
+               {
+                  destination.erase( 0, 1 );
+                  folder = string( c_root_folder );
+               }
+               else
+               {
+                  folder = determine_folder( destination.substr( 0, pos ) );
+
+                  if( !folder.empty( ) )
+                     dest_name = destination.substr( pos + 1 );
+               }
+            }
+            else
+               dest_name = name;
+
+            if( !folder.empty( ) )
+            {
+               folder = replace( folder, "/", "|" );
+
+               folder += string( c_folder_separator );
+
+               string full_name( folder + dest_name );
+
+               tmp_item.val = full_name;
+               tmp_item.get_file( ).set_id( id );
+
+               if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
+                  cout << "*** destination file already exists ***" << endl;
+               else
+               {
+                  ap_btree->erase( tmp_iter );
+                  ap_btree->insert( tmp_item );
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+                  tmp_item.val += string( c_folder_separator );
+
+                  tmp_iter = ap_btree->find( tmp_item );
+
+                  if( tmp_iter != ap_btree->end( ) )
+                     cout << "*** a folder with the same destination name already exists" << endl;
+                  else
+#endif
+                  {
+                     // NOTE: If was a "root folder" file the delete the root specific item.
+                     if( current_folder == string( c_root_folder ) )
+                     {
+                        tmp_item.val = "|" + name;
+                        tmp_iter = ap_btree->find( tmp_item );
+
+                        if( tmp_iter != ap_btree->end( ) )
+                           ap_btree->erase( tmp_iter );
+                     }
+
+                     // NOTE: If is a "root folder" file now then create the root specific item.
+                     if( folder.size( ) == 2 )
+                     {
+                        tmp_item.val = "|" + dest_name;
+                        tmp_item.get_file( ).set_id( id );
+
+                        ap_btree->insert( tmp_item );
+                     }
+
+                     ap_tx->commit( );
+                  }
+               }
+            }
+         }
       }
    }
    else if( command == c_cmd_btstore_folder_add )
@@ -1226,6 +1345,11 @@ void btstore_command_functor::perform_match(
 
    size_t minimum_length = match_item.val.length( );
 
+   bool is_folder_expr = false;
+
+   if( pos != string::npos && pos > 0 && expr[ pos - 1 ] == c_folder )
+      is_folder_expr = true;
+
    auto_ptr< regex > ap_regex;
 
    if( !regexpr.empty( ) )
@@ -1291,7 +1415,8 @@ void btstore_command_functor::perform_match(
                {
                   string val( match_iter->val );
 
-                  if( val.length( ) < minimum_length )
+                  if( is_folder_expr && ( val.length( ) < minimum_length
+                   || ( val.length( ) == minimum_length && val[ val.length( ) - 1 ] == c_folder ) ) )
                      val.erase( );
 
                   if( p_ignore_with_prefix && val.find( p_ignore_with_prefix ) == 0 )
@@ -1336,7 +1461,7 @@ void btstore_command_functor::perform_match(
    compare_less.use_truncated_comparison( false );
 }
 
-string btstore_command_functor::determine_folder( const string& folder )
+string btstore_command_functor::determine_folder( const string& folder, bool quiet )
 {
    string new_folder( folder );
    string old_current_folder( current_folder );
@@ -1347,7 +1472,7 @@ string btstore_command_functor::determine_folder( const string& folder )
 
       while( pos == 0 )
       {
-         string::size_type dpos = old_current_folder.rfind( c_root_folder );
+         string::size_type dpos = old_current_folder.rfind( c_folder_separator );
 
          if( dpos != string::npos && old_current_folder != string( c_root_folder ) )
          {
@@ -1364,7 +1489,7 @@ string btstore_command_functor::determine_folder( const string& folder )
          pos = new_folder.find( c_parent_folder );
       }
 
-      pos = new_folder.find( c_root_folder );
+      pos = new_folder.find( c_folder_separator );
 
       if( pos != 0 )
       {
@@ -1373,12 +1498,15 @@ string btstore_command_functor::determine_folder( const string& folder )
          else if( new_folder.empty( ) )
             new_folder = old_current_folder;
          else
-            new_folder = old_current_folder + string( c_root_folder ) + new_folder;
+            new_folder = old_current_folder + string( c_folder_separator ) + new_folder;
       }
 
       if( new_folder != string( c_root_folder ) )
       {
-         ods::bulk_read bulk( *ap_ods );
+         auto_ptr< ods::bulk_read > ap_bulk;
+
+         if( !ap_ods->is_bulk_locked( ) )
+            ap_bulk.reset( new ods::bulk_read( *ap_ods ) );
 
          *ap_ods >> *ap_btree;
 
@@ -1388,7 +1516,9 @@ string btstore_command_functor::determine_folder( const string& folder )
 
          if( ap_btree->find( tmp_item ) == ap_btree->end( ) )
          {
-            cout << "*** folder '" << new_folder << "' not found ***" << endl;
+            if( !quiet )
+               cout << "*** folder '" << folder << "' not found ***" << endl;
+
             new_folder.erase( );
          }
       }
@@ -1404,20 +1534,20 @@ void btstore_command_functor::expand_entity_expression(
    {
       // NOTE: If a superflous final folder separator had been provided then remove it.
       if( entity_expr.size( ) > 1
-       && entity_expr.substr( entity_expr.length( ) - 1 ) == string( c_root_folder ) )
+       && entity_expr.substr( entity_expr.length( ) - 1 ) == string( c_folder_separator ) )
          entity_expr.erase( entity_expr.length( ) - 1 );
    }
 
-   string::size_type pos = expr.rfind( c_root_folder );
+   string::size_type pos = expr.rfind( c_folder_separator );
 
    if( pos != string::npos || expr == string( c_parent_folder ) )
    {
       if( pos == 0 )
       {
-         if( !had_wildcard || expr == string( c_root_folder ) )
+         if( !had_wildcard || expr == string( c_folder_separator ) )
             entity_expr = expr;
          else
-            entity_expr = string( c_root_folder ) + expr;
+            entity_expr = string( c_folder_separator ) + expr;
 
          if( entity_expr.size( ) > 1 && p_suffix )
             entity_expr += string( p_suffix );
@@ -1445,10 +1575,10 @@ void btstore_command_functor::expand_entity_expression(
    }
    else if( !expr.empty( ) )
    {
-      if( !had_wildcard && entity_expr == string( c_root_folder ) )
+      if( !had_wildcard && entity_expr == string( c_folder_separator ) )
          entity_expr += expr;
       else
-         entity_expr += string( c_root_folder ) + expr;
+         entity_expr += string( c_folder_separator ) + expr;
 
       if( !had_wildcard && p_suffix )
          entity_expr += string( p_suffix );
