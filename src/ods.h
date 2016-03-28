@@ -606,6 +606,8 @@ class ODS_DECL_SPEC ods
    bool is_new( );
    bool is_corrupt( );
 
+   bool is_bulk_locked( ) const;
+
    std::string get_string( ) const { return str; }
    void set_string( const std::string& new_str ) { str = new_str; }
 
