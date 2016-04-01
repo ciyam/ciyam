@@ -8,6 +8,7 @@ file_get "get a file from the current folder" <val//name>[<val//file_name>]
 file_move "move a file to another folder or rename it" <val//name><val//destination>
 folder_add "add a folder below the current folder" <val//name>
 file_remove "remove a file from the current folder" <val//name>
+folder_move "move a child folder below another folder or rename it" <val//name><val//destination>
 folder_remove "remove a folder from the current folder" <val//name>
 add "add an item" <val//item>
 find "find an item" <val//item>
