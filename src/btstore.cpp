@@ -60,6 +60,8 @@ const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
 
+const char c_pipe = '|';
+const char c_colon = ':';
 const char c_folder = '/';
 
 const int c_default_item_limit = 25;
@@ -67,6 +69,8 @@ const int c_default_item_limit = 25;
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
 
+const char* const c_pipe_separator = "|";
+const char* const c_colon_separator = ":";
 const char* const c_folder_separator = "/";
 
 bool g_shared_access = true;
@@ -346,7 +350,7 @@ class btstore_command_functor : public command_functor
     const string& expr, bool full, bool brief, bool show_folders, const string* p_start_folder = 0 );
 
    bool move_files_and_folders( const string& source,
-    const string& destination, bool src_is_root, bool dest_is_root );
+    const string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );
 
    int& list_iter_limit;
 
@@ -403,21 +407,20 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          if( command == c_cmd_btstore_objects )
             get_child_folders( expr, full, extras );
 
-         entity_expr = replace( entity_expr, "/", "|" );
+         entity_expr = replace( entity_expr, c_folder_separator, c_pipe_separator );
 
          if( !had_wildcard )
             entity_expr += "/*";
          else
          {
-            string::size_type pos = entity_expr.rfind( '|' );
+            string::size_type pos = entity_expr.rfind( c_pipe );
 
             if( pos != string::npos )
-               entity_expr[ pos ] = '/';
+               entity_expr[ pos ] = c_folder;
          }
 
          search_replaces.clear( );
-         search_replaces.push_back( make_pair( "|", "/" ) );
-         search_replaces.push_back( make_pair( "//", "/" ) );
+         search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
          perform_match( cout, entity_expr, "",
           0, &search_replaces, 0, 0, full ? '\0' : c_folder, !brief, 0, &extras );
@@ -444,8 +447,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          entity_expr += expr;
 
          vector< pair< string, string > > search_replaces;
-         search_replaces.push_back( make_pair( "|", "/" ) );
-         search_replaces.push_back( make_pair( "//", "/" ) );
+         search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
          string prefix_1( current_folder );
          string prefix_2( prefix_1 );
@@ -475,26 +477,20 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
       if( !entity_expr.empty( ) )
       {
-         entity_expr = replace( entity_expr, "/", ":" );
+         entity_expr = replace( entity_expr, c_folder_separator, c_colon_separator );
+
+         string::size_type pos = entity_expr.rfind( c_colon );
+
+         if( pos == 0 )
+            entity_expr += c_folder;
+         else if( pos != string::npos )
+            entity_expr[ pos ] = c_folder;
 
          if( !had_wildcard )
-            entity_expr += "/*";
-         else
-         {
-            string::size_type pos = entity_expr.rfind( ':' );
-
-            if( pos != string::npos )
-            {
-               if( pos == 0 || entity_expr[ pos - 1 ] == ':' )
-                  entity_expr[ pos ] = c_folder;
-               else
-                  entity_expr.insert( pos + 1, c_folder_separator );
-            }
-         }
+            entity_expr += "*";
 
          vector< pair< string, string > > search_replaces;
-         search_replaces.push_back( make_pair( ":", "/" ) );
-         search_replaces.push_back( make_pair( "//", "/" ) );
+         search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
 
          perform_match( cout, entity_expr, "",
           0, &search_replaces, 0, 0, full ? '\0' : c_folder );
@@ -513,8 +509,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       else
       {
          string value( current_folder );
-
-         value = replace( value, "/", "|" );
+         value = replace( value, c_folder_separator, c_pipe_separator );
 
          value += string( c_folder_separator ) + name;
 
@@ -561,8 +556,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          file_name = name;
 
       string value( current_folder );
-
-      value = replace( value, "/", "|" );
+      value = replace( value, c_folder_separator, c_pipe_separator );
 
       value += string( c_folder_separator ) + name;
 
@@ -589,7 +583,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          scoped_ods_instance so( *ap_ods );
 
-         ap_ods->set_string( file_name + ':'
+         ap_ods->set_string( file_name + c_colon
           + to_string( ap_ods->get_size( tmp_item.get_file( ).get_id( ) ) ) );
 
          *tmp_item.get_file( );
@@ -615,8 +609,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( *ap_btree ) );
 
          string value( current_folder );
-
-         value = replace( value, "/", "|" );
+         value = replace( value, c_folder_separator, c_pipe_separator );
 
          value += string( c_folder_separator ) + name;
 
@@ -658,7 +651,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
             if( !dest_folder.empty( ) )
             {
-               dest_folder = replace( dest_folder, "/", "|" );
+               dest_folder = replace( dest_folder, c_folder_separator, c_pipe_separator );
 
                dest_folder += string( c_folder_separator );
 
@@ -675,12 +668,12 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
                   ap_btree->insert( tmp_item );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-                  tmp_item.val += string( c_folder_separator );
+                  replace( tmp_item.val, c_pipe_separator, c_colon_separator );
 
                   tmp_iter = ap_btree->find( tmp_item );
 
                   if( tmp_iter != ap_btree->end( ) )
-                     cout << "*** a folder with the same destination name already exists" << endl;
+                     cout << "*** a folder with the same destination name already exists ***" << endl;
                   else
 #endif
                   {
@@ -709,7 +702,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          if( current_folder == string( c_root_folder ) )
          {
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-            tmp_item.val = '|' + name;
+            tmp_item.val = c_pipe + name;
             tmp_iter = ap_btree->find( tmp_item );
 
             if( tmp_iter != ap_btree->end( ) )
@@ -726,17 +719,17 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
                {
                   ap_btree->insert( tmp_item );
 
-                  tmp_item.val = ':' + tmp_item.val;
+                  tmp_item.val = c_colon + tmp_item.val;
                   ap_btree->insert( tmp_item );
                }
             }
          }
          else
          {
-            string name_1( current_folder + '/' + name );
-            string name_2( replaced( current_folder, "/", ":" ) + ":/" + name );
+            string name_1( current_folder + c_folder + name );
+            string name_2( replaced( current_folder, c_folder_separator, c_colon_separator ) + c_folder + name );
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-            string name_x( replaced( current_folder, "/", "|" ) + '/' + name );
+            string name_x( replaced( current_folder, c_folder_separator, c_pipe_separator ) + c_folder + name );
 
             tmp_item.val = name_x;
             tmp_iter = ap_btree->find( tmp_item );
@@ -772,7 +765,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
       btree_type::item_type tmp_item;
 
       *ap_ods >> *ap_btree;
-      tmp_item.val = "|" + current_folder + name;
+      tmp_item.val = c_pipe_separator + current_folder + name;
 
       tmp_iter = ap_btree->find( tmp_item );
 
@@ -788,6 +781,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
    }
    else if( command == c_cmd_btstore_folder_move )
    {
+      bool overwrite( has_parm_val( parameters, c_cmd_parm_btstore_folder_move_overwrite ) );
       string name( get_parm_val( parameters, c_cmd_parm_btstore_folder_move_name ) );
       string destination( get_parm_val( parameters, c_cmd_parm_btstore_folder_move_destination ) );
 
@@ -825,14 +819,16 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          if( dest_folder.empty( ) )
          {
-            if( valid_file_name( destination ) != destination )
+            if( destination.find( c_folder_separator ) != string::npos )
+               cout << "*** folder '" << destination << "' does not exist ***" << endl;
+            else if( valid_file_name( destination ) != destination )
                cout << "*** invalid folder name '" << destination << "' ***" << endl;
             else
             {
                if( !src_is_root )
                   destination = current_folder + string( c_folder_separator ) + destination;
 
-               okay = move_files_and_folders( full_name, destination, src_is_root, src_is_root );
+               okay = move_files_and_folders( full_name, destination, src_is_root, src_is_root, overwrite );
             }
          }
          else
@@ -849,7 +845,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
             if( dest_folder.size( ) >= full_name.size( ) && dest_folder.find( full_name ) == 0 )
                cout << "*** a folder cannot be moved below itself ***" << endl;
             else
-               okay = move_files_and_folders( full_name, dest_name, src_is_root, dest_is_root );
+               okay = move_files_and_folders( full_name, dest_name, src_is_root, dest_is_root, overwrite );
          }
 
          if( okay )
@@ -874,14 +870,14 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
             cout << "*** folder '" << name << "' not found ***" << endl;
          else
          {
-            tmp_item.val = ':' + tmp_item.val;
+            tmp_item.val = c_colon + tmp_item.val;
             ap_btree->erase( tmp_item );
          }
       }
       else
       {
-         string name_1( current_folder + '/' + name );
-         string name_2( replaced( current_folder, "/", ":" ) + ":/" + name );
+         string name_1( current_folder + c_folder + name );
+         string name_2( replaced( current_folder, c_folder_separator, c_colon_separator ) + c_folder + name );
 
          tmp_item.val = name_1;
 
@@ -1686,25 +1682,19 @@ void btstore_command_functor::get_child_folders(
    if( expr.empty( ) && current_folder != string( c_root_folder ) )
       folder_expr += string( c_folder_separator );
 
-   folder_expr = replace( folder_expr, "/", ":" );
+   folder_expr = replace( folder_expr, c_folder_separator, c_colon_separator );
+
+   string::size_type pos = folder_expr.rfind( c_colon );
+
+   if( pos == 0 )
+      folder_expr += c_folder;
+   else if( pos != string::npos )
+      folder_expr[ pos ] = c_folder;
 
    if( !had_wildcard )
-      folder_expr += "/*";
-   else
-   {
-      string::size_type pos = folder_expr.rfind( ':' );
+      folder_expr += "*";
 
-      if( pos != string::npos )
-      {
-         if( pos == 0 || folder_expr[ pos - 1 ] == ':' )
-            folder_expr[ pos ] = c_folder;
-         else
-            folder_expr.insert( pos + 1, c_folder_separator );
-      }
-   }
-
-   search_replaces.push_back( make_pair( ":", "/" ) );
-   search_replaces.push_back( make_pair( "//", "/" ) );
+   search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
 
    ostringstream osstr;
 
@@ -1719,7 +1709,7 @@ void btstore_command_functor::get_child_folders(
    if( append_separator )
    {
       for( size_t i = 0; i < folders.size( ); i++ )
-         folders[ i ] += '/';
+         folders[ i ] += c_folder;
    }
 }
 
@@ -1735,8 +1725,7 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
    pair< string, string > range;
 
    vector< pair< string, string > > search_replaces;
-   search_replaces.push_back( make_pair( "|", "/" ) );
-   search_replaces.push_back( make_pair( "//", "/" ) );
+   search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
    string prefix_1( p_start_folder ? *p_start_folder : folder );
    string prefix_2( prefix_1 );
@@ -1746,7 +1735,7 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
 
    string entity_expr( folder );
 
-   entity_expr = replace( entity_expr, "/", "|" );
+   entity_expr = replace( entity_expr, c_folder_separator, c_pipe_separator );
 
    entity_expr += c_folder_separator + expr;
 
@@ -1774,14 +1763,14 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
             range.second = range.first;
          else
          {
-            pos = range.first.rfind( '/' );
+            pos = range.first.rfind( c_folder );
             range.second = range.first.substr( 0, pos + 1 );
          }
       }
       else
       {
          if( is_root_folder )
-            pos = range.first.rfind( '|', range.first.length( ) - 2 );
+            pos = range.first.rfind( c_pipe, range.first.length( ) - 2 );
          else
             pos = range.first.rfind( c_folder, range.first.length( ) - 2 );
 
@@ -1854,8 +1843,8 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
     full ? 0 : prefix_1.c_str( ), full ? 0 : prefix_2.c_str( ), '\0', !brief, 0, 0, &range );
 }
 
-bool btstore_command_functor::move_files_and_folders(
- const string& source, const string& destination, bool src_is_root, bool dest_is_root )
+bool btstore_command_functor::move_files_and_folders( const string& source,
+ const string& destination, bool src_is_root, bool dest_is_root, bool replace_existing )
 {
    string full_name( source );
    string dest_name( destination );
@@ -1894,9 +1883,12 @@ bool btstore_command_functor::move_files_and_folders(
          tmp_item.val = next;
 
          if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
-            throw runtime_error( "*** the folder '" + next + "' already exists ***" );
-
-         ap_btree->insert( tmp_item );
+         {
+            if( !replace_existing )
+               throw runtime_error( "*** the folder '" + next + "' already exists ***" );
+         }
+         else
+            ap_btree->insert( tmp_item );
 
          tmp_item.val = full_name;
          tmp_iter = ap_btree->lower_bound( tmp_item );
@@ -1905,13 +1897,13 @@ bool btstore_command_functor::move_files_and_folders(
             break;
       }
 
-      replace( full_name, "/", ":" );
-      replace( dest_name, "/", ":" );
+      replace( full_name, c_folder_separator, c_colon_separator );
+      replace( dest_name, c_folder_separator, c_colon_separator );
 
       if( src_is_root )
       {
          string root_name( full_name );
-         root_name.insert( 1, "/" );
+         root_name.insert( 1, c_folder_separator );
 
          tmp_item.val = root_name;
          tmp_iter = ap_btree->find( tmp_item );
@@ -1923,11 +1915,11 @@ bool btstore_command_functor::move_files_and_folders(
       {
          string folder_name( full_name );
 
-         pos = folder_name.rfind( ':' );
+         pos = folder_name.rfind( c_colon );
 
          if( pos != string::npos )
          {
-            folder_name.insert( pos + 1, "/" );
+            folder_name[ pos ] = c_folder;
 
             tmp_item.val = folder_name;
 
@@ -1941,23 +1933,45 @@ bool btstore_command_functor::move_files_and_folders(
       if( dest_is_root )
       {
          string new_root_name( dest_name );
-         new_root_name.insert( 1, "/" );
+         new_root_name.insert( 1, c_folder_separator );
 
          tmp_item.val = new_root_name;
-         ap_btree->insert( tmp_item );
+
+         if( ap_btree->find( tmp_item ) == ap_btree->end( ) )
+            ap_btree->insert( tmp_item );
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+         replace( new_root_name, c_colon_separator, c_pipe_separator );
+         tmp_item.val = new_root_name;
+
+         if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
+            throw runtime_error( "*** a file with the name '"
+             + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+#endif
       }
       else
       {
          string new_folder_name( dest_name );
 
-         pos = new_folder_name.rfind( ':' );
+         pos = new_folder_name.rfind( c_colon );
 
          if( pos != string::npos )
          {
-            new_folder_name.insert( pos + 1, "/" );
+            new_folder_name[ pos ] = c_folder;
 
             tmp_item.val = new_folder_name;
-            ap_btree->insert( tmp_item );
+
+            if( ap_btree->find( tmp_item ) == ap_btree->end( ) )
+               ap_btree->insert( tmp_item );
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+            replace( new_folder_name, c_colon_separator, c_pipe_separator );
+            tmp_item.val = new_folder_name;
+
+            if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
+               throw runtime_error( "*** a file with the name '"
+                + replaced( dest_name, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+#endif
          }
       }
 
@@ -1985,11 +1999,29 @@ bool btstore_command_functor::move_files_and_folders(
          next.insert( 0, dest_name );
 
          tmp_item.val = next;
-         ap_btree->insert( tmp_item );
+
+         bool already_exists = false;
+
+         if( replace_existing )
+            already_exists = ( ap_btree->find( tmp_item ) != ap_btree->end( ) );
+
+         if( !already_exists )
+         {
+            ap_btree->insert( tmp_item );
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+            replace( next, c_colon_separator, c_pipe_separator );
+            tmp_item.val = next;
+
+            if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
+               throw runtime_error( "*** a file with the name '"
+                + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
+#endif
+         }
       }
 
-      replace( full_name, ":", "|" );
-      replace( dest_name, ":", "|" );
+      replace( full_name, c_colon_separator, c_pipe_separator );
+      replace( dest_name, c_colon_separator, c_pipe_separator );
 
       tmp_item.val = full_name;
 
@@ -2020,10 +2052,37 @@ bool btstore_command_functor::move_files_and_folders(
 
          tmp_item.val = next;
 
-         if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
-            throw runtime_error( "*** file '" + replaced( next, "|", "/" ) + "' already exists ***" );
+         bool already_exists = false;
 
-         ap_btree->insert( tmp_item );
+         if( replace_existing )
+            already_exists = ( ap_btree->find( tmp_item ) != ap_btree->end( ) );
+
+         if( already_exists )
+         {
+            if( !replace_existing )
+               throw runtime_error( "*** file '"
+                + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
+            else
+            {
+               if( !tmp_iter->get_file( ).get_id( ).is_new( ) )
+                  ap_ods->destroy( tmp_iter->get_file( ).get_id( ) );
+
+               ap_btree->erase( tmp_iter );
+            }
+         }
+         else
+         {
+            ap_btree->insert( tmp_item );
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+            replace( next, c_pipe_separator, c_colon_separator );
+            tmp_item.val = next;
+
+            if( ap_btree->find( tmp_item ) != ap_btree->end( ) )
+               throw runtime_error( "*** a folder with the name '"
+                + replaced( next, c_colon_separator, c_folder_separator ) + "' already exists ***" );
+#endif
+         }
       }
    }
    catch( exception& x )
