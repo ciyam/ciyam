@@ -130,8 +130,10 @@ template< class T > std::ostream& operator <<( ffmt_setter const& fs, T const& t
    return static_cast< std::ostream& >( fs ) << t;
 }
 
-std::string format_bytes( int64_t size );
-int64_t unformat_bytes( const std::string& size_string, int64_t default_val = INT64_C( 0 ) );
+std::string format_bytes( int64_t size, bool use_iec = true );
+
+int64_t unformat_bytes( const std::string& size_string,
+ int64_t default_val = INT64_C( 0 ), bool use_iec_always = false );
 
 std::string format_duration( int value, bool include_seconds = true );
 int unformat_duration( const std::string& value );

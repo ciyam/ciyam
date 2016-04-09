@@ -140,13 +140,13 @@
 `{`$specification_Application_view_fmand000`=`'true`'`}
 `{`$specification_Application_view_field001`=`'127136`'`}
 `{`$specification_Application_view_ftype001`=`'bool`'`}
-`{`$specification_Application_view_extra001`=`'new_edit+force+enum=907`'`}
+`{`$specification_Application_view_extra001`=`'non_new+no_edit+enum=907`'`}
 `{`$specification_Application_view_fmods001`=`'`'`}
 `{`$specification_Application_view_fname001`=`'field_application_type`'`}
 `{`$specification_Application_view_fmand001`=`'true`'`}
 `{`$specification_Application_view_field002`=`'127135`'`}
 `{`$specification_Application_view_ftype002`=`'string`'`}
-`{`$specification_Application_view_extra002`=`'new_edit+max_size=30`'`}
+`{`$specification_Application_view_extra002`=`'non_new+max_size=30`'`}
 `{`$specification_Application_view_fmods002`=`'800:relegate`'`}
 `{`$specification_Application_view_fname002`=`'field_application_blockchain_id`'`}
 `{`$specification_Application_view_fmand002`=`'false`'`}
