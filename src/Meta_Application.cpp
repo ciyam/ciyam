@@ -289,20 +289,22 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 3;
+const int c_num_transient_fields = 4;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "127106",
    "127125",
-   "127128"
+   "127128",
+   "127136"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
    "Add_Modules_Automatically",
    "Create_Database",
-   "Generate_Details"
+   "Generate_Details",
+   "Type"
 };
 
 inline bool is_transient_field( const string& field )
@@ -1613,6 +1615,10 @@ void Meta_Application::impl::impl_Generate( )
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
+
+   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
+      throw runtime_error( get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain_Id ) ) ) );
 
    set_system_variable( "@" + storage_name( ) + "_protect", "1" );
 
@@ -3086,13 +3092,6 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-   // [(start check_cond_non_null)] 600530
-   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Blockchain_Id,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain_Id ) ) ) ) );
-   // [(finish check_cond_non_null)] 600530
-
    // [<start validate>]
    // [<finish validate>]
 }
@@ -3159,8 +3158,23 @@ void Meta_Application::impl::after_fetch( )
 
    // [<start after_fetch>]
 //nyi
-   if( get_obj( ).get_key( ).empty( ) && get_obj( ).get_variable( "@trigger" ).empty( ) )
-      get_obj( ).Type( 0 );
+   if( !get_obj( ).get_key( ).empty( ) && !get_obj( ).get_graph_parent( ) )
+   {
+      get_obj( ).Type( 1 );
+      if( get_obj( ).child_Module( ).iterate_forwards( ) )
+      {
+         do
+         {
+            if( !get_obj( ).child_Module( ).Model( ).Type( ) )
+            {
+               get_obj( ).Type( 0 );
+               get_obj( ).child_Module( ).iterate_stop( );
+
+               break;
+            }
+         } while( get_obj( ).child_Module( ).iterate_next( ) );
+      }
+   }
    // [<finish after_fetch>]
 }
 
@@ -4302,7 +4316,7 @@ const char* Meta_Application::get_field_id(
          *p_type_name = "bool";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( name == c_field_name_Use_Check_Boxes_for_Bools )
    {
@@ -4673,7 +4687,7 @@ const char* Meta_Application::get_field_name(
          *p_type_name = "bool";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Use_Check_Boxes_for_Bools )
    {
@@ -5306,7 +5320,6 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Print_Lists_With_Row_Numbers" );
    names.push_back( "C_Registration_Key" );
    names.push_back( "C_Show_Inaccessible_Modules" );
-   names.push_back( "C_Type" );
    names.push_back( "C_Use_Check_Boxes_for_Bools" );
    names.push_back( "C_Use_Embedded_Images" );
    names.push_back( "C_Use_TLS_Sessions" );
@@ -5350,7 +5363,6 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Print_Lists_With_Row_Numbers( ) ) );
    values.push_back( sql_quote( to_string( Registration_Key( ) ) ) );
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
-   values.push_back( to_string( Type( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_Embedded_Images( ) ) );
    values.push_back( to_string( Use_TLS_Sessions( ) ) );
@@ -5977,7 +5989,6 @@ string Meta_Application::static_get_sql_columns( )
     "C_Print_Lists_With_Row_Numbers INTEGER NOT NULL,"
     "C_Registration_Key VARCHAR(200) NOT NULL,"
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
-    "C_Type INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"
     "C_Use_TLS_Sessions INTEGER NOT NULL,"

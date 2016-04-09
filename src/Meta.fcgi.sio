@@ -2479,7 +2479,7 @@
      <name>field_application_type
      <field>127136
      <ftype>bool
-     <extra>new_edit+force+enum=907
+     <extra>non_new+no_edit+enum=907
      <mandatory>true
      <modifiers>
     </field>
@@ -2487,7 +2487,7 @@
      <name>field_application_blockchain_id
      <field>127135
      <ftype>string
-     <extra>new_edit+max_size=30
+     <extra>non_new+max_size=30
      <mandatory>false
      <modifiers>800:relegate
     </field>

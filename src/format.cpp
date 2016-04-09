@@ -26,46 +26,96 @@ using namespace std;
 namespace
 {
 
-const char byte_suffix = 'B';
-const char scale_prefix[ ] = { 'K', 'M', 'G', 'T' };
+const char c_byte_suffix = 'B';
 
-enum byte_scale
+const char* const c_iec_byte_suffix = "iB";
+const char* const c_metric_byte_suffix = "B";
+
+const char iec_scale_prefix[ ] = { 'K', 'M', 'G', 'T' };
+const char metric_scale_prefix[ ] = { 'k', 'M', 'G', 'T' };
+
+enum iec_byte_scale
 {
-   e_byte_scale_none,
-   e_byte_scale_kilo,
-   e_byte_scale_mega,
-   e_byte_scale_giga,
-   e_byte_scale_tera
+   e_iec_byte_scale_none,
+   e_iec_byte_scale_kibi,
+   e_iec_byte_scale_mebi,
+   e_iec_byte_scale_gibi,
+   e_iec_byte_scale_tebi
 };
 
-const double c_kilobytes = 1024.0l;
-const double c_megabytes = c_kilobytes * 1024.0l;
-const double c_gigabytes = c_megabytes * 1024.0l;
-const double c_terabytes = c_gigabytes * 1024.0l;
-
-byte_scale convert_bytes_to_scaled_size( int64_t num_bytes, double& scaled_size )
+enum metric_byte_scale
 {
-   byte_scale bs = e_byte_scale_none;
+   e_metric_byte_scale_none,
+   e_metric_byte_scale_kilo,
+   e_metric_byte_scale_mega,
+   e_metric_byte_scale_giga,
+   e_metric_byte_scale_tera
+};
+
+const double c_kibibytes = 1024.0l;
+const double c_mebibytes = c_kibibytes * c_kibibytes;
+const double c_gibibytes = c_mebibytes * c_kibibytes;
+const double c_tebibytes = c_gibibytes * c_kibibytes;
+
+const double c_kilobytes = 1000.0l;
+const double c_megabytes = c_kilobytes * c_kilobytes;
+const double c_gigabytes = c_megabytes * c_kilobytes;
+const double c_terabytes = c_gigabytes * c_kilobytes;
+
+iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scaled_size )
+{
+   iec_byte_scale bs = e_iec_byte_scale_none;
+   double divisor = 1.0, unscaled_size( num_bytes );
+
+   if( num_bytes >= c_tebibytes )
+   {
+      bs = e_iec_byte_scale_tebi;
+      divisor = c_tebibytes;
+   }
+   else if( num_bytes >= c_gibibytes )
+   {
+      bs = e_iec_byte_scale_gibi;
+      divisor = c_gibibytes;
+   }
+   else if( num_bytes >= c_mebibytes )
+   {
+      bs = e_iec_byte_scale_mebi;
+      divisor = c_mebibytes;
+   }
+   else if( num_bytes >= c_kibibytes )
+   {
+      bs = e_iec_byte_scale_kibi;
+      divisor = c_kibibytes;
+   }
+
+   scaled_size = unscaled_size / divisor;
+
+   return bs;
+}
+
+metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double& scaled_size )
+{
+   metric_byte_scale bs = e_metric_byte_scale_none;
    double divisor = 1.0, unscaled_size( num_bytes );
 
    if( num_bytes >= c_terabytes )
    {
-      bs = e_byte_scale_tera;
+      bs = e_metric_byte_scale_tera;
       divisor = c_terabytes;
    }
    else if( num_bytes >= c_gigabytes )
    {
-      bs = e_byte_scale_giga;
+      bs = e_metric_byte_scale_giga;
       divisor = c_gigabytes;
    }
    else if( num_bytes >= c_megabytes )
    {
-      bs = e_byte_scale_mega;
+      bs = e_metric_byte_scale_mega;
       divisor = c_megabytes;
    }
    else if( num_bytes >= c_kilobytes )
    {
-      bs = e_byte_scale_kilo;
+      bs = e_metric_byte_scale_kilo;
       divisor = c_kilobytes;
    }
 
@@ -76,7 +126,7 @@ byte_scale convert_bytes_to_scaled_size( int64_t num_bytes, double& scaled_size 
 
 const bool convert( const double& d, int64_t& i64 )
 {
-   // double representation of max acceptable value for double to int64 conversion
+   // NOTE: This is the double representation of the maximum acceptable value for double to int64 conversion.
    static int64_t iMax = INT64_C( 0x43DFFFFFFFFFFFFF );
 
    static const double dMax = *reinterpret_cast< double* >( &iMax );
@@ -95,16 +145,20 @@ const bool convert( const double& d, int64_t& i64 )
 
 }
 
-string format_bytes( int64_t size )
+string format_bytes( int64_t size, bool use_iec )
 {
    ostringstream osstr;
 
    double ss;
-   byte_scale bs = convert_bytes_to_scaled_size( size, ss );
 
-   if( bs > e_byte_scale_none )
+   iec_byte_scale ibs = !use_iec ? e_iec_byte_scale_none : convert_bytes_to_iec_scaled_size( size, ss );
+   metric_byte_scale mbs = use_iec ? e_metric_byte_scale_none : convert_bytes_to_metric_scaled_size( size, ss );
+
+   string suffix( use_iec ? c_iec_byte_suffix : c_metric_byte_suffix );
+
+   if( ibs > e_iec_byte_scale_none || mbs > e_metric_byte_scale_none )
    {
-      char sp = scale_prefix[ bs - 1 ];
+      char sp = use_iec ? iec_scale_prefix[ ibs - 1 ] : metric_scale_prefix[ mbs - 1 ];
 
       int old_precision = osstr.precision( );
       ios::fmtflags old_flags = osstr.flags( );
@@ -112,23 +166,24 @@ string format_bytes( int64_t size )
       osstr.precision( 1 );
       osstr.setf( ios::fixed, ios::floatfield );
 
-      osstr << ss << ' ' << sp << byte_suffix;
+      osstr << ss << ' ' << sp << suffix;
 
       osstr.flags( old_flags );
       osstr.precision( old_precision );
    }
    else
-      osstr << ss << ' ' << byte_suffix;
+      osstr << ss << ' ' << c_byte_suffix;
 
    return osstr.str( );
 }
 
-int64_t unformat_bytes( const string& size_string, int64_t default_val )
+int64_t unformat_bytes( const string& size_string, int64_t default_val, bool use_iec_always )
 {
    int64_t retval( default_val );
 
    double val( 0.0l );
    string str( size_string );
+
    if( !str.empty( ) )
    {
       if( str[ str.size( ) - 1 ] == 'B' || str[ str.size( ) - 1 ] == 'b' )
@@ -137,31 +192,69 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val )
       if( str.size( ) < 1 )
          throw runtime_error( "invalid size string '" + size_string + "'" );
 
-      byte_scale s( e_byte_scale_none );
-      switch( str[ str.size( ) - 1 ] )
+      iec_byte_scale is( e_iec_byte_scale_none );
+      metric_byte_scale ms( e_metric_byte_scale_none );
+
+      if( use_iec_always || str[ str.size( ) - 1 ] == 'i' )
       {
-         case 'K':
-         case 'k':
-         s = e_byte_scale_kilo;
-         break;
+         if( str[ str.size( ) - 1 ] == 'i' )
+         {
+            str.erase( str.size( ) - 1 );
 
-         case 'M':
-         case 'm':
-         s = e_byte_scale_mega;
-         break;
+            if( str.size( ) < 1 )
+               throw runtime_error( "invalid size string '" + size_string + "'" );
+         }
 
-         case 'G':
-         case 'g':
-         s = e_byte_scale_giga;
-         break;
+         switch( str[ str.size( ) - 1 ] )
+         {
+            case 'K':
+            case 'k':
+            is = e_iec_byte_scale_kibi;
+            break;
 
-         case 'T':
-         case 't':
-         s = e_byte_scale_tera;
-         break;
+            case 'M':
+            case 'm':
+            is = e_iec_byte_scale_mebi;
+            break;
+
+            case 'G':
+            case 'g':
+            is = e_iec_byte_scale_gibi;
+            break;
+
+            case 'T':
+            case 't':
+            is = e_iec_byte_scale_tebi;
+            break;
+         }
+      }
+      else
+      {
+         switch( str[ str.size( ) - 1 ] )
+         {
+            case 'K':
+            case 'k':
+            ms = e_metric_byte_scale_kilo;
+            break;
+
+            case 'M':
+            case 'm':
+            ms = e_metric_byte_scale_mega;
+            break;
+
+            case 'G':
+            case 'g':
+            ms = e_metric_byte_scale_giga;
+            break;
+
+            case 'T':
+            case 't':
+            ms = e_metric_byte_scale_tera;
+            break;
+         }
       }
 
-      if( s != e_byte_scale_none )
+      if( is != e_iec_byte_scale_none || ms != e_metric_byte_scale_none )
          str.erase( str.size( ) - 1 );
 
       if( str.size( ) && str[ str.size( ) - 1 ] == ' ' )
@@ -170,8 +263,9 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val )
       if( str.size( ) < 1 )
          throw runtime_error( "invalid size string '" + size_string + "'" );
 
-      bool had_point = false;
       double divisor = 0.1l;
+      bool had_point = false;
+
       for( size_t i = 0; i < str.size( ); i++ )
       {
          if( !had_point && str[ i ] == '.' )
@@ -196,23 +290,48 @@ int64_t unformat_bytes( const string& size_string, int64_t default_val )
          val += next;
       }
 
-      switch( s )
+      if( is != e_iec_byte_scale_none )
       {
-         case e_byte_scale_kilo:
-         val *= c_kilobytes;
-         break;
+         switch( is )
+         {
+            case e_iec_byte_scale_kibi:
+            val *= c_kibibytes;
+            break;
 
-         case e_byte_scale_mega:
-         val *= c_megabytes;
-         break;
+            case e_iec_byte_scale_mebi:
+            val *= c_mebibytes;
+            break;
 
-         case e_byte_scale_giga:
-         val *= c_gigabytes;
-         break;
+            case e_iec_byte_scale_gibi:
+            val *= c_gibibytes;
+            break;
 
-         case e_byte_scale_tera:
-         val *= c_terabytes;
-         break;
+            case e_iec_byte_scale_tebi:
+            val *= c_tebibytes;
+            break;
+         }
+      }
+
+      if( ms != e_metric_byte_scale_none )
+      {
+         switch( ms )
+         {
+            case e_metric_byte_scale_kilo:
+            val *= c_kilobytes;
+            break;
+
+            case e_metric_byte_scale_mega:
+            val *= c_megabytes;
+            break;
+
+            case e_metric_byte_scale_giga:
+            val *= c_gigabytes;
+            break;
+
+            case e_metric_byte_scale_tera:
+            val *= c_terabytes;
+            break;
+         }
       }
 
       if( !convert( val, retval ) )
@@ -275,9 +394,11 @@ int unformat_duration( const string& value )
    bool had_seconds = false;
 
    vector< string > parts;
+
    if( !value.empty( ) )
    {
       split( value, parts, ' ' );
+
       for( int i = 0; i < parts.size( ); i++ )
       {
          string next_part( parts[ i ] );
@@ -345,3 +466,4 @@ int unformat_duration( const string& value )
 
    return rc;
 }
+
