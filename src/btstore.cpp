@@ -77,6 +77,13 @@ bool g_shared_access = true;
 
 bool g_application_title_called = false;
 
+enum file_size_output_type
+{
+   e_file_size_output_type_none,
+   e_file_size_output_type_scaled,
+   e_file_size_output_type_num_bytes
+};
+
 string application_title( app_info_request request )
 {
    g_application_title_called = true;
@@ -335,8 +342,9 @@ class btstore_command_functor : public command_functor
     size_t* p_count = 0, vector< pair< string, string > >* p_search_replaces = 0,
     const char* p_prefix_1 = 0, const char* p_prefix_2 = 0,
     const char erase_all_before_and_including = '\0',
-    bool show_file_sizes = false, const char* p_ignore_with_prefix = 0,
-    deque< string >* p_extra_items = 0, pair< string, string >* p_range = 0 );
+    file_size_output_type file_size_output = e_file_size_output_type_none,
+    const char* p_ignore_with_prefix = 0, deque< string >* p_extra_items = 0,
+    pair< string, string >* p_range = 0 );
 
    string determine_folder( const string& folder, bool quiet = false );
 
@@ -422,8 +430,12 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          search_replaces.clear( );
          search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
+         if( full )
+            search_replaces.push_back( make_pair( "//", c_root_folder ) );
+
          perform_match( cout, entity_expr, "",
-          0, &search_replaces, 0, 0, full ? '\0' : c_folder, !brief, 0, &extras );
+          0, &search_replaces, 0, 0, full ? '\0' : c_folder, brief ? e_file_size_output_type_none
+          : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, &extras );
       }
    }
    else if( command == c_cmd_btstore_branch )
@@ -449,6 +461,9 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          vector< pair< string, string > > search_replaces;
          search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
+         if( full )
+            search_replaces.push_back( make_pair( "//", c_root_folder ) );
+
          string prefix_1( current_folder );
          string prefix_2( prefix_1 );
 
@@ -458,8 +473,10 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          if( entity_expr.find_first_of( "?*" ) == string::npos )
             entity_expr += "*";
 
-         perform_match( cout, entity_expr, "", 0, &search_replaces,
-          full ? 0 : prefix_1.c_str( ), full ? 0 : prefix_2.c_str( ), '\0', !brief, "|/" );
+         perform_match( cout, entity_expr,
+          "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
+          full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
+          : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), "|/" );
       }
    }
    else if( command == c_cmd_btstore_folders )
@@ -491,6 +508,9 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          vector< pair< string, string > > search_replaces;
          search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
+
+         if( full )
+            search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
          perform_match( cout, entity_expr, "",
           0, &search_replaces, 0, 0, full ? '\0' : c_folder );
@@ -1369,7 +1389,7 @@ void btstore_command_functor::perform_match(
  ostream& os, const string& expr, const string& regexpr, size_t* p_count,
  vector< pair< string, string > >* p_search_replaces,
  const char* p_prefix_1, const char* p_prefix_2,
- const char erase_all_before_and_including, bool show_file_sizes,
+ const char erase_all_before_and_including, file_size_output_type file_size_output,
  const char* p_ignore_with_prefix, deque< string >* p_extra_items, pair< string, string >* p_range )
 {
    auto_ptr< ods::bulk_read > ap_bulk;
@@ -1512,8 +1532,16 @@ void btstore_command_functor::perform_match(
                            break;
                      }
 
-                     if( show_file_sizes && !match_iter->get_file( ).get_id( ).is_new( ) )
-                        val += " (" + format_bytes( ap_ods->get_size( match_iter->get_file( ).get_id( ) ) ) + ')';
+                     if( !match_iter->get_file( ).get_id( ).is_new( )
+                      && file_size_output != e_file_size_output_type_none )
+                     {
+                        int_t size = ap_ods->get_size( match_iter->get_file( ).get_id( ) );
+
+                        if( file_size_output != e_file_size_output_type_scaled )
+                           val += " (" + format_int( size ) + ')';
+                        else
+                           val += " (" + format_bytes( size ) + ')';
+                     }
 
                      os << val << '\n';
                   }
@@ -1696,6 +1724,9 @@ void btstore_command_functor::get_child_folders(
 
    search_replaces.push_back( make_pair( c_colon_separator, c_folder_separator ) );
 
+   if( full )
+      search_replaces.push_back( make_pair( "//", c_root_folder ) );
+
    ostringstream osstr;
 
    perform_match( osstr, folder_expr, "",
@@ -1726,6 +1757,9 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
 
    vector< pair< string, string > > search_replaces;
    search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
+
+   if( full )
+      search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
    string prefix_1( p_start_folder ? *p_start_folder : folder );
    string prefix_2( prefix_1 );
@@ -1790,8 +1824,10 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
        << next_entity_expr << " " << range.first << " ==> " << range.second << endl;
 #endif
 
-      perform_match( os, next_entity_expr, "", 0, &search_replaces,
-       full ? 0 : prefix_1.c_str( ), full ? 0 : prefix_2.c_str( ), '\0', !brief, 0, 0, &range );
+      perform_match( os, next_entity_expr,
+       "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
+       full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
+       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, 0, &range );
 
       string next_folder( folder );
 
@@ -1839,8 +1875,10 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
    cout << "(" << folder << ") " << entity_expr << " " << range.first << " ==> " << range.second << endl;
 #endif
 
-   perform_match( os, entity_expr, "", 0, &search_replaces,
-    full ? 0 : prefix_1.c_str( ), full ? 0 : prefix_2.c_str( ), '\0', !brief, 0, 0, &range );
+   perform_match( os, entity_expr,
+    "", 0, &search_replaces, full ? 0 : prefix_1.c_str( ),
+    full ? 0 : prefix_2.c_str( ), '\0', brief ? e_file_size_output_type_none
+    : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, 0, &range );
 }
 
 bool btstore_command_functor::move_files_and_folders( const string& source,

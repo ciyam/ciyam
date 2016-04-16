@@ -13,6 +13,7 @@
 #  include <string>
 #  include <vector>
 #  include <sstream>
+#  include <algorithm>
 #  include <stdexcept>
 #endif
 
@@ -143,6 +144,41 @@ const bool convert( const double& d, int64_t& i64 )
    }
 }
 
+}
+
+string format_int( int64_t i, char separator, unsigned int grouping )
+{
+   ostringstream osstr;
+
+   osstr << i;
+
+   string str( osstr.str( ) );
+   string retval;
+
+   bool is_negative = false;
+
+   if( !str.empty( ) && str[ 0 ] == '-' )
+   {
+      is_negative = true;
+      str.erase( 0, 1 );
+   }
+
+   reverse( str.begin( ), str.end( ) );
+
+   for( size_t i = 0; i < str.size( ); i++ )
+   {
+      if( i && i % grouping == 0 )
+         retval += separator;
+
+      retval += str[ i ];
+   }
+
+   reverse( retval.begin( ), retval.end( ) );
+
+   if( is_negative )
+      retval = '-' + retval;
+
+   return retval;
 }
 
 string format_bytes( int64_t size, bool use_iec )

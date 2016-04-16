@@ -130,6 +130,9 @@ template< class T > std::ostream& operator <<( ffmt_setter const& fs, T const& t
    return static_cast< std::ostream& >( fs ) << t;
 }
 
+std::string format_int( int64_t i,
+ char separator = ',', unsigned int grouping = 3 );
+
 std::string format_bytes( int64_t size, bool use_iec = true );
 
 int64_t unformat_bytes( const std::string& size_string,
