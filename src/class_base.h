@@ -369,6 +369,7 @@ class CLASS_BASE_DECL_SPEC class_base
    bool needs_field_value( const std::string& field_name, const std::set< std::string >& names ) const;
 
    std::string get_original_field_value( int field ) const;
+
    inline std::string get_original_field_value( const std::string& field ) const
    {
       return get_original_field_value( get_field_num( field ) );
@@ -376,6 +377,9 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual std::string get_field_value( int field ) const = 0;
    virtual void set_field_value( int field, const std::string& value ) = 0;
+
+   virtual void set_field_default( int field ) = 0;
+   virtual void set_field_default( const std::string& field ) = 0;
 
    virtual bool has_field_changed( const std::string& field ) const = 0;
 

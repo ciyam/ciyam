@@ -557,6 +557,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -833,6 +834,39 @@ void Meta_Enum_Item::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Enum_Item::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Enum( g_default_Enum );
+      break;
+
+      case 1:
+      impl_Filter( g_default_Filter );
+      break;
+
+      case 2:
+      impl_Internal( g_default_Internal );
+      break;
+
+      case 3:
+      impl_Label( g_default_Label );
+      break;
+
+      case 4:
+      impl_Order( g_default_Order );
+      break;
+
+      case 5:
+      impl_Value( g_default_Value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1391,6 +1425,21 @@ string Meta_Enum_Item::get_field_value( int field ) const
 void Meta_Enum_Item::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Enum_Item::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Enum_Item::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Enum_Item::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Enum_Item::is_field_default( int field ) const

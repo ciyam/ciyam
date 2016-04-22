@@ -2280,6 +2280,9 @@ void clone_children_from_fk_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_fkchild, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_fkfield, fkfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, cpfield_name ) );
+
+   spec_data.data_pairs.push_back( make_pair( "dfield", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
 }
 
 string clone_children_from_fk_specification::static_class_name( ) { return "clone_children_from_fk"; }

@@ -1914,6 +1914,7 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -2501,6 +2502,215 @@ void Meta_Package_Option::impl::set_field_value( int field, const string& value 
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Package_Option::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Actions( g_default_Actions );
+      break;
+
+      case 1:
+      impl_Class( g_default_Class );
+      break;
+
+      case 2:
+      impl_Date( g_default_Date );
+      break;
+
+      case 3:
+      impl_Datetime( g_default_Datetime );
+      break;
+
+      case 4:
+      impl_Field( g_default_Field );
+      break;
+
+      case 5:
+      impl_Has_Field( g_default_Has_Field );
+      break;
+
+      case 6:
+      impl_Has_List( g_default_Has_List );
+      break;
+
+      case 7:
+      impl_Has_Modifier( g_default_Has_Modifier );
+      break;
+
+      case 8:
+      impl_Has_Other_Field( g_default_Has_Other_Field );
+      break;
+
+      case 9:
+      impl_Has_Other_Field_2( g_default_Has_Other_Field_2 );
+      break;
+
+      case 10:
+      impl_Has_Other_Source_Field( g_default_Has_Other_Source_Field );
+      break;
+
+      case 11:
+      impl_Has_Procedure( g_default_Has_Procedure );
+      break;
+
+      case 12:
+      impl_Has_Source_Field( g_default_Has_Source_Field );
+      break;
+
+      case 13:
+      impl_Has_View( g_default_Has_View );
+      break;
+
+      case 14:
+      impl_Id( g_default_Id );
+      break;
+
+      case 15:
+      impl_Installed( g_default_Installed );
+      break;
+
+      case 16:
+      impl_Integer( g_default_Integer );
+      break;
+
+      case 17:
+      impl_Is_Class( g_default_Is_Class );
+      break;
+
+      case 18:
+      impl_Is_Mandatory_Class( g_default_Is_Mandatory_Class );
+      break;
+
+      case 19:
+      impl_Is_Mandatory_Field( g_default_Is_Mandatory_Field );
+      break;
+
+      case 20:
+      impl_Is_Mandatory_List( g_default_Is_Mandatory_List );
+      break;
+
+      case 21:
+      impl_Is_Mandatory_Modifier( g_default_Is_Mandatory_Modifier );
+      break;
+
+      case 22:
+      impl_Is_Mandatory_Other_Field( g_default_Is_Mandatory_Other_Field );
+      break;
+
+      case 23:
+      impl_Is_Mandatory_Other_Field_2( g_default_Is_Mandatory_Other_Field_2 );
+      break;
+
+      case 24:
+      impl_Is_Mandatory_Other_Source_Field( g_default_Is_Mandatory_Other_Source_Field );
+      break;
+
+      case 25:
+      impl_Is_Mandatory_Procedure( g_default_Is_Mandatory_Procedure );
+      break;
+
+      case 26:
+      impl_Is_Mandatory_Source_Field( g_default_Is_Mandatory_Source_Field );
+      break;
+
+      case 27:
+      impl_Is_Mandatory_View( g_default_Is_Mandatory_View );
+      break;
+
+      case 28:
+      impl_Is_Other_Package( g_default_Is_Other_Package );
+      break;
+
+      case 29:
+      impl_List( g_default_List );
+      break;
+
+      case 30:
+      impl_Model( g_default_Model );
+      break;
+
+      case 31:
+      impl_Modifier( g_default_Modifier );
+      break;
+
+      case 32:
+      impl_Name( g_default_Name );
+      break;
+
+      case 33:
+      impl_Notes( g_default_Notes );
+      break;
+
+      case 34:
+      impl_Numeric( g_default_Numeric );
+      break;
+
+      case 35:
+      impl_Other_Field( g_default_Other_Field );
+      break;
+
+      case 36:
+      impl_Other_Field_2( g_default_Other_Field_2 );
+      break;
+
+      case 37:
+      impl_Other_Package( g_default_Other_Package );
+      break;
+
+      case 38:
+      impl_Other_Package_Required( g_default_Other_Package_Required );
+      break;
+
+      case 39:
+      impl_Other_Package_Type( g_default_Other_Package_Type );
+      break;
+
+      case 40:
+      impl_Other_Source_Field( g_default_Other_Source_Field );
+      break;
+
+      case 41:
+      impl_Package( g_default_Package );
+      break;
+
+      case 42:
+      impl_Primitive( g_default_Primitive );
+      break;
+
+      case 43:
+      impl_Procedure( g_default_Procedure );
+      break;
+
+      case 44:
+      impl_Source_Field( g_default_Source_Field );
+      break;
+
+      case 45:
+      impl_String( g_default_String );
+      break;
+
+      case 46:
+      impl_Time( g_default_Time );
+      break;
+
+      case 47:
+      impl_Use_Option( g_default_Use_Option );
+      break;
+
+      case 48:
+      impl_Value( g_default_Value );
+      break;
+
+      case 49:
+      impl_View( g_default_View );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -4021,6 +4231,21 @@ string Meta_Package_Option::get_field_value( int field ) const
 void Meta_Package_Option::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Package_Option::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Package_Option::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Package_Option::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package_Option::is_field_default( int field ) const

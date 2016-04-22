@@ -690,6 +690,7 @@ struct Meta_Modifier_Affect::impl : public Meta_Modifier_Affect_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -848,6 +849,47 @@ void Meta_Modifier_Affect::impl::set_field_value( int field, const string& value
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Modifier_Affect::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Class( g_default_Class );
+      break;
+
+      case 1:
+      impl_Extra( g_default_Extra );
+      break;
+
+      case 2:
+      impl_Field( g_default_Field );
+      break;
+
+      case 3:
+      impl_Internal( g_default_Internal );
+      break;
+
+      case 4:
+      impl_Modifier( g_default_Modifier );
+      break;
+
+      case 5:
+      impl_Scope( g_default_Scope );
+      break;
+
+      case 6:
+      impl_Source_Modifier_Affect( g_default_Source_Modifier_Affect );
+      break;
+
+      case 7:
+      impl_Type( g_default_Type );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1444,6 +1486,21 @@ string Meta_Modifier_Affect::get_field_value( int field ) const
 void Meta_Modifier_Affect::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Modifier_Affect::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Modifier_Affect::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Modifier_Affect::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Modifier_Affect::is_field_default( int field ) const

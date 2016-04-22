@@ -486,6 +486,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -800,6 +801,51 @@ void Meta_Package_Type::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Package_Type::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Actions( g_default_Actions );
+      break;
+
+      case 1:
+      impl_Dependencies( g_default_Dependencies );
+      break;
+
+      case 2:
+      impl_File( g_default_File );
+      break;
+
+      case 3:
+      impl_Installed( g_default_Installed );
+      break;
+
+      case 4:
+      impl_Multi( g_default_Multi );
+      break;
+
+      case 5:
+      impl_Name( g_default_Name );
+      break;
+
+      case 6:
+      impl_Plural( g_default_Plural );
+      break;
+
+      case 7:
+      impl_Single( g_default_Single );
+      break;
+
+      case 8:
+      impl_Version( g_default_Version );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1349,6 +1395,21 @@ string Meta_Package_Type::get_field_value( int field ) const
 void Meta_Package_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Package_Type::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Package_Type::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Package_Type::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package_Type::is_field_default( int field ) const

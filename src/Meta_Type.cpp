@@ -1079,6 +1079,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -1348,6 +1349,99 @@ void Meta_Type::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Type::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Auto_Round( g_default_Auto_Round );
+      break;
+
+      case 1:
+      impl_Date_Precision( g_default_Date_Precision );
+      break;
+
+      case 2:
+      impl_Default_UOM( g_default_Default_UOM );
+      break;
+
+      case 3:
+      impl_Fraction_Limit( g_default_Fraction_Limit );
+      break;
+
+      case 4:
+      impl_Id( g_default_Id );
+      break;
+
+      case 5:
+      impl_Int_Type( g_default_Int_Type );
+      break;
+
+      case 6:
+      impl_Internal( g_default_Internal );
+      break;
+
+      case 7:
+      impl_Max_Size( g_default_Max_Size );
+      break;
+
+      case 8:
+      impl_Max_Value( g_default_Max_Value );
+      break;
+
+      case 9:
+      impl_Min_Value( g_default_Min_Value );
+      break;
+
+      case 10:
+      impl_Name( g_default_Name );
+      break;
+
+      case 11:
+      impl_Numeric_Decimals( g_default_Numeric_Decimals );
+      break;
+
+      case 12:
+      impl_Numeric_Digits( g_default_Numeric_Digits );
+      break;
+
+      case 13:
+      impl_Numeric_Type( g_default_Numeric_Type );
+      break;
+
+      case 14:
+      impl_Primitive( g_default_Primitive );
+      break;
+
+      case 15:
+      impl_Rounding_Method( g_default_Rounding_Method );
+      break;
+
+      case 16:
+      impl_Show_Plus_Sign( g_default_Show_Plus_Sign );
+      break;
+
+      case 17:
+      impl_String_Domain( g_default_String_Domain );
+      break;
+
+      case 18:
+      impl_Time_Precision( g_default_Time_Precision );
+      break;
+
+      case 19:
+      impl_Workgroup( g_default_Workgroup );
+      break;
+
+      case 20:
+      impl_Zero_Padding( g_default_Zero_Padding );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -2379,6 +2473,21 @@ string Meta_Type::get_field_value( int field ) const
 void Meta_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Type::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Type::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Type::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Type::is_field_default( int field ) const

@@ -1,6 +1,6 @@
-`{`@eq`(`'after_store`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start clone_children_from_fk)] `{`$arg_id`}
-   if( is_create && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
+   if( `{`@eq`(`'after_store`'`,`$section`)is_create && `}!is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
    {
       if( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_forwards( ) )
       {
@@ -13,6 +13,9 @@
 
             get_obj( ).child_`{`$arg_child`}( ).op_create( key_info );
             get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
+`{`!`@eq`(`$arg_dfield`,`'`'`)\
+            get_obj( ).child_`{`$arg_child`}( ).set_field_default( `{`$module_name`}_`{`$arg_cclass`}::e_field_id_`{`$arg_dfield`} );
+`}\
 `{`!`@eq`(`$arg_cpfield`,`'`'`)\
             get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cpfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).get_key( ) );
 `}\
