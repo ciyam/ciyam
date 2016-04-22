@@ -596,6 +596,7 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -744,6 +745,43 @@ void Meta_Workgroup::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Workgroup::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Id( g_default_Id );
+      break;
+
+      case 1:
+      impl_Name( g_default_Name );
+      break;
+
+      case 2:
+      impl_Next_Enum_Id( g_default_Next_Enum_Id );
+      break;
+
+      case 3:
+      impl_Next_Model_Id( g_default_Next_Model_Id );
+      break;
+
+      case 4:
+      impl_Next_Permission_Id( g_default_Next_Permission_Id );
+      break;
+
+      case 5:
+      impl_Next_Type_Id( g_default_Next_Type_Id );
+      break;
+
+      case 6:
+      impl_Standard_Package( g_default_Standard_Package );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1399,6 +1437,21 @@ string Meta_Workgroup::get_field_value( int field ) const
 void Meta_Workgroup::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Workgroup::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Workgroup::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Workgroup::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Workgroup::is_field_default( int field ) const

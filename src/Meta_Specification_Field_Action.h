@@ -76,6 +76,10 @@ class META_SPECIFICATION_FIELD_ACTION_DECL_SPEC Meta_Specification_Field_Action 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 
+   void set_field_default( int field );
+   void set_field_default( field_id id );
+   void set_field_default( const std::string& field );
+
    bool is_field_default( int field ) const;
    bool is_field_default( field_id id ) const;
    bool is_field_default( const std::string& field ) const;

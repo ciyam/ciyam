@@ -412,6 +412,7 @@ struct Meta_Module::impl : public Meta_Module_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -657,6 +658,27 @@ void Meta_Module::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Module::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Application( g_default_Application );
+      break;
+
+      case 1:
+      impl_Model( g_default_Model );
+      break;
+
+      case 2:
+      impl_Order( g_default_Order );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1061,6 +1083,21 @@ string Meta_Module::get_field_value( int field ) const
 void Meta_Module::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Module::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Module::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Module::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Module::is_field_default( int field ) const

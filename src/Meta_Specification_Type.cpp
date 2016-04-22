@@ -3303,6 +3303,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -4715,6 +4716,483 @@ void Meta_Specification_Type::impl::set_field_value( int field, const string& va
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Specification_Type::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Allow_Child_Relationship( g_default_Allow_Child_Relationship );
+      break;
+
+      case 1:
+      impl_Allow_Enum( g_default_Allow_Enum );
+      break;
+
+      case 2:
+      impl_Allow_Enum_Item( g_default_Allow_Enum_Item );
+      break;
+
+      case 3:
+      impl_Allow_FK_Source_Field_Choice( g_default_Allow_FK_Source_Field_Choice );
+      break;
+
+      case 4:
+      impl_Allow_FK_Test_Field_Choice( g_default_Allow_FK_Test_Field_Choice );
+      break;
+
+      case 5:
+      impl_Allow_Field( g_default_Allow_Field );
+      break;
+
+      case 6:
+      impl_Allow_Modifier( g_default_Allow_Modifier );
+      break;
+
+      case 7:
+      impl_Allow_Options( g_default_Allow_Options );
+      break;
+
+      case 8:
+      impl_Allow_Other_Class( g_default_Allow_Other_Class );
+      break;
+
+      case 9:
+      impl_Allow_Other_Class_Field( g_default_Allow_Other_Class_Field );
+      break;
+
+      case 10:
+      impl_Allow_Other_Field( g_default_Allow_Other_Field );
+      break;
+
+      case 11:
+      impl_Allow_Other_Field_2( g_default_Allow_Other_Field_2 );
+      break;
+
+      case 12:
+      impl_Allow_Other_Procedure( g_default_Allow_Other_Procedure );
+      break;
+
+      case 13:
+      impl_Allow_Other_Procedure_2( g_default_Allow_Other_Procedure_2 );
+      break;
+
+      case 14:
+      impl_Allow_Other_Source_Child( g_default_Allow_Other_Source_Child );
+      break;
+
+      case 15:
+      impl_Allow_Other_Source_Child_2( g_default_Allow_Other_Source_Child_2 );
+      break;
+
+      case 16:
+      impl_Allow_Permission( g_default_Allow_Permission );
+      break;
+
+      case 17:
+      impl_Allow_Procedure( g_default_Allow_Procedure );
+      break;
+
+      case 18:
+      impl_Allow_Procedure_Arg( g_default_Allow_Procedure_Arg );
+      break;
+
+      case 19:
+      impl_Allow_Source_Child( g_default_Allow_Source_Child );
+      break;
+
+      case 20:
+      impl_Allow_Source_Class( g_default_Allow_Source_Class );
+      break;
+
+      case 21:
+      impl_Allow_Source_Field( g_default_Allow_Source_Field );
+      break;
+
+      case 22:
+      impl_Allow_Source_Grandchild( g_default_Allow_Source_Grandchild );
+      break;
+
+      case 23:
+      impl_Allow_Source_Parent( g_default_Allow_Source_Parent );
+      break;
+
+      case 24:
+      impl_Allow_Test_Field( g_default_Allow_Test_Field );
+      break;
+
+      case 25:
+      impl_Allow_Test_Value( g_default_Allow_Test_Value );
+      break;
+
+      case 26:
+      impl_Allow_Value( g_default_Allow_Value );
+      break;
+
+      case 27:
+      impl_Child_Prefix( g_default_Child_Prefix );
+      break;
+
+      case 28:
+      impl_Child_Rel_Grandparent_Match( g_default_Child_Rel_Grandparent_Match );
+      break;
+
+      case 29:
+      impl_Child_Rel_Parent_Match( g_default_Child_Rel_Parent_Match );
+      break;
+
+      case 30:
+      impl_Child_Relationship_Class_Match( g_default_Child_Relationship_Class_Match );
+      break;
+
+      case 31:
+      impl_Child_Specification_Type( g_default_Child_Specification_Type );
+      break;
+
+      case 32:
+      impl_Default_Child_Vars( g_default_Default_Child_Vars );
+      break;
+
+      case 33:
+      impl_Field_type( g_default_Field_type );
+      break;
+
+      case 34:
+      impl_Has_Next_Specification_Info( g_default_Has_Next_Specification_Info );
+      break;
+
+      case 35:
+      impl_Is_Child_Only( g_default_Is_Child_Only );
+      break;
+
+      case 36:
+      impl_Is_Required_For_UI_Gen( g_default_Is_Required_For_UI_Gen );
+      break;
+
+      case 37:
+      impl_Is_System( g_default_Is_System );
+      break;
+
+      case 38:
+      impl_Name( g_default_Name );
+      break;
+
+      case 39:
+      impl_Needs_Child_Relationship( g_default_Needs_Child_Relationship );
+      break;
+
+      case 40:
+      impl_Needs_Class( g_default_Needs_Class );
+      break;
+
+      case 41:
+      impl_Needs_Enum( g_default_Needs_Enum );
+      break;
+
+      case 42:
+      impl_Needs_Enum_Item( g_default_Needs_Enum_Item );
+      break;
+
+      case 43:
+      impl_Needs_Enum_Item_2( g_default_Needs_Enum_Item_2 );
+      break;
+
+      case 44:
+      impl_Needs_Enum_Item_3( g_default_Needs_Enum_Item_3 );
+      break;
+
+      case 45:
+      impl_Needs_Enum_Item_4( g_default_Needs_Enum_Item_4 );
+      break;
+
+      case 46:
+      impl_Needs_Enum_Item_5( g_default_Needs_Enum_Item_5 );
+      break;
+
+      case 47:
+      impl_Needs_Field( g_default_Needs_Field );
+      break;
+
+      case 48:
+      impl_Needs_Modifier( g_default_Needs_Modifier );
+      break;
+
+      case 49:
+      impl_Needs_Other_Class( g_default_Needs_Other_Class );
+      break;
+
+      case 50:
+      impl_Needs_Other_Class_Field( g_default_Needs_Other_Class_Field );
+      break;
+
+      case 51:
+      impl_Needs_Other_Field( g_default_Needs_Other_Field );
+      break;
+
+      case 52:
+      impl_Needs_Other_Field_2( g_default_Needs_Other_Field_2 );
+      break;
+
+      case 53:
+      impl_Needs_Other_Modifier( g_default_Needs_Other_Modifier );
+      break;
+
+      case 54:
+      impl_Needs_Other_Modifier_2( g_default_Needs_Other_Modifier_2 );
+      break;
+
+      case 55:
+      impl_Needs_Other_Permission( g_default_Needs_Other_Permission );
+      break;
+
+      case 56:
+      impl_Needs_Other_Permission_2( g_default_Needs_Other_Permission_2 );
+      break;
+
+      case 57:
+      impl_Needs_Other_Procedure( g_default_Needs_Other_Procedure );
+      break;
+
+      case 58:
+      impl_Needs_Other_Procedure_2( g_default_Needs_Other_Procedure_2 );
+      break;
+
+      case 59:
+      impl_Needs_Other_Source_Child( g_default_Needs_Other_Source_Child );
+      break;
+
+      case 60:
+      impl_Needs_Other_Source_Child_2( g_default_Needs_Other_Source_Child_2 );
+      break;
+
+      case 61:
+      impl_Needs_Permission( g_default_Needs_Permission );
+      break;
+
+      case 62:
+      impl_Needs_Procedure( g_default_Needs_Procedure );
+      break;
+
+      case 63:
+      impl_Needs_Procedure_Arg( g_default_Needs_Procedure_Arg );
+      break;
+
+      case 64:
+      impl_Needs_Procedure_Arg_2( g_default_Needs_Procedure_Arg_2 );
+      break;
+
+      case 65:
+      impl_Needs_Procedure_Arg_3( g_default_Needs_Procedure_Arg_3 );
+      break;
+
+      case 66:
+      impl_Needs_Source_Child( g_default_Needs_Source_Child );
+      break;
+
+      case 67:
+      impl_Needs_Source_Field( g_default_Needs_Source_Field );
+      break;
+
+      case 68:
+      impl_Needs_Source_Field_Or_Child( g_default_Needs_Source_Field_Or_Child );
+      break;
+
+      case 69:
+      impl_Needs_Source_Parent( g_default_Needs_Source_Parent );
+      break;
+
+      case 70:
+      impl_Needs_Test_Field( g_default_Needs_Test_Field );
+      break;
+
+      case 71:
+      impl_Needs_Test_Value( g_default_Needs_Test_Value );
+      break;
+
+      case 72:
+      impl_Needs_Value( g_default_Needs_Value );
+      break;
+
+      case 73:
+      impl_Next_Child_Specification_Type( g_default_Next_Child_Specification_Type );
+      break;
+
+      case 74:
+      impl_Next_Protect_Child_Rel( g_default_Next_Protect_Child_Rel );
+      break;
+
+      case 75:
+      impl_Next_Protect_Procedure( g_default_Next_Protect_Procedure );
+      break;
+
+      case 76:
+      impl_Next_Protect_Source_Parent( g_default_Next_Protect_Source_Parent );
+      break;
+
+      case 77:
+      impl_Next_Specification_Actions( g_default_Next_Specification_Actions );
+      break;
+
+      case 78:
+      impl_Notes( g_default_Notes );
+      break;
+
+      case 79:
+      impl_Parent_Specification_Type( g_default_Parent_Specification_Type );
+      break;
+
+      case 80:
+      impl_Procedure_Arg_primitive( g_default_Procedure_Arg_primitive );
+      break;
+
+      case 81:
+      impl_Procedure_Arg_type( g_default_Procedure_Arg_type );
+      break;
+
+      case 82:
+      impl_Protect_Child_Rel_From_Update( g_default_Protect_Child_Rel_From_Update );
+      break;
+
+      case 83:
+      impl_Protect_Class_From_Edit( g_default_Protect_Class_From_Edit );
+      break;
+
+      case 84:
+      impl_Protect_Class_From_Update( g_default_Protect_Class_From_Update );
+      break;
+
+      case 85:
+      impl_Protect_Other_Class_From_Edit( g_default_Protect_Other_Class_From_Edit );
+      break;
+
+      case 86:
+      impl_Protect_Procedure_From_Edit( g_default_Protect_Procedure_From_Edit );
+      break;
+
+      case 87:
+      impl_Protect_Source_Parent( g_default_Protect_Source_Parent );
+      break;
+
+      case 88:
+      impl_Set_Field_To_Source_Field_Or_Child( g_default_Set_Field_To_Source_Field_Or_Child );
+      break;
+
+      case 89:
+      impl_Source_Field_Needs_Test_Field( g_default_Source_Field_Needs_Test_Field );
+      break;
+
+      case 90:
+      impl_Source_Field_Type_Match( g_default_Source_Field_Type_Match );
+      break;
+
+      case 91:
+      impl_Source_Parent_type( g_default_Source_Parent_type );
+      break;
+
+      case 92:
+      impl_Source_type( g_default_Source_type );
+      break;
+
+      case 93:
+      impl_Specification_Actions( g_default_Specification_Actions );
+      break;
+
+      case 94:
+      impl_Specification_Name( g_default_Specification_Name );
+      break;
+
+      case 95:
+      impl_Specification_Object( g_default_Specification_Object );
+      break;
+
+      case 96:
+      impl_Specification_Strings( g_default_Specification_Strings );
+      break;
+
+      case 97:
+      impl_Specification_Vars( g_default_Specification_Vars );
+      break;
+
+      case 98:
+      impl_Test_Field_Type_Match( g_default_Test_Field_Type_Match );
+      break;
+
+      case 99:
+      impl_Test_Field_type( g_default_Test_Field_type );
+      break;
+
+      case 100:
+      impl_Use_Class_As_Source_Parent_Class( g_default_Use_Class_As_Source_Parent_Class );
+      break;
+
+      case 101:
+      impl_Use_Field_Enum( g_default_Use_Field_Enum );
+      break;
+
+      case 102:
+      impl_Use_Parent_Child_Rel_As_Source_Parent( g_default_Use_Parent_Child_Rel_As_Source_Parent );
+      break;
+
+      case 103:
+      impl_Use_Parent_Child_Rel_For_Class( g_default_Use_Parent_Child_Rel_For_Class );
+      break;
+
+      case 104:
+      impl_Use_Parent_Child_Rel_For_Other_Class( g_default_Use_Parent_Child_Rel_For_Other_Class );
+      break;
+
+      case 105:
+      impl_Use_Parent_Class( g_default_Use_Parent_Class );
+      break;
+
+      case 106:
+      impl_Use_Parent_Field_For_Class( g_default_Use_Parent_Field_For_Class );
+      break;
+
+      case 107:
+      impl_Use_Parent_Other_Class( g_default_Use_Parent_Other_Class );
+      break;
+
+      case 108:
+      impl_Use_Parent_Other_Class_For_Class( g_default_Use_Parent_Other_Class_For_Class );
+      break;
+
+      case 109:
+      impl_Use_Parent_Procedure( g_default_Use_Parent_Procedure );
+      break;
+
+      case 110:
+      impl_Use_Parent_Source_Class( g_default_Use_Parent_Source_Class );
+      break;
+
+      case 111:
+      impl_Use_Parent_Source_Field_For_Class( g_default_Use_Parent_Source_Field_For_Class );
+      break;
+
+      case 112:
+      impl_Use_Parent_Source_Parent( g_default_Use_Parent_Source_Parent );
+      break;
+
+      case 113:
+      impl_Use_Parent_Source_Parent_For_Class( g_default_Use_Parent_Source_Parent_For_Class );
+      break;
+
+      case 114:
+      impl_Use_Source_Field_Enum( g_default_Use_Source_Field_Enum );
+      break;
+
+      case 115:
+      impl_Use_Source_Field_Or_Child_Enum( g_default_Use_Source_Field_Or_Child_Enum );
+      break;
+
+      case 116:
+      impl_View_Id( g_default_View_Id );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -7009,6 +7487,21 @@ string Meta_Specification_Type::get_field_value( int field ) const
 void Meta_Specification_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Specification_Type::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Specification_Type::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Specification_Type::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Specification_Type::is_field_default( int field ) const

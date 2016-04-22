@@ -1114,6 +1114,7 @@ struct Meta_View::impl : public Meta_View_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -1893,6 +1894,99 @@ void Meta_View::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_View::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 1:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 2:
+      impl_Allow_Copy_Action( g_default_Allow_Copy_Action );
+      break;
+
+      case 3:
+      impl_Allow_Printable_Version( g_default_Allow_Printable_Version );
+      break;
+
+      case 4:
+      impl_Auto_Back_After_Save( g_default_Auto_Back_After_Save );
+      break;
+
+      case 5:
+      impl_Change_Permission( g_default_Change_Permission );
+      break;
+
+      case 6:
+      impl_Change_Restriction( g_default_Change_Restriction );
+      break;
+
+      case 7:
+      impl_Class( g_default_Class );
+      break;
+
+      case 8:
+      impl_File_Links_Always_As_Single( g_default_File_Links_Always_As_Single );
+      break;
+
+      case 9:
+      impl_Id( g_default_Id );
+      break;
+
+      case 10:
+      impl_Ignore_Parent_Record( g_default_Ignore_Parent_Record );
+      break;
+
+      case 11:
+      impl_Ignore_Unactionable_Records( g_default_Ignore_Unactionable_Records );
+      break;
+
+      case 12:
+      impl_Model( g_default_Model );
+      break;
+
+      case 13:
+      impl_Name( g_default_Name );
+      break;
+
+      case 14:
+      impl_PDF_Font_Type( g_default_PDF_Font_Type );
+      break;
+
+      case 15:
+      impl_PDF_View_Type( g_default_PDF_View_Type );
+      break;
+
+      case 16:
+      impl_Print_Without_Highlight( g_default_Print_Without_Highlight );
+      break;
+
+      case 17:
+      impl_Title( g_default_Title );
+      break;
+
+      case 18:
+      impl_Type( g_default_Type );
+      break;
+
+      case 19:
+      impl_Type_Key( g_default_Type_Key );
+      break;
+
+      case 20:
+      impl_Use_First_Row_As_Header( g_default_Use_First_Row_As_Header );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -2840,6 +2934,21 @@ string Meta_View::get_field_value( int field ) const
 void Meta_View::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_View::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_View::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_View::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_View::is_field_default( int field ) const

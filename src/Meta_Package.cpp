@@ -703,6 +703,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -1730,6 +1731,55 @@ void Meta_Package::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Package::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Actions( g_default_Actions );
+      break;
+
+      case 1:
+      impl_Install_Details( g_default_Install_Details );
+      break;
+
+      case 2:
+      impl_Installed( g_default_Installed );
+      break;
+
+      case 3:
+      impl_Key( g_default_Key );
+      break;
+
+      case 4:
+      impl_Model( g_default_Model );
+      break;
+
+      case 5:
+      impl_Name( g_default_Name );
+      break;
+
+      case 6:
+      impl_Package_Type( g_default_Package_Type );
+      break;
+
+      case 7:
+      impl_Plural( g_default_Plural );
+      break;
+
+      case 8:
+      impl_Type_Name( g_default_Type_Name );
+      break;
+
+      case 9:
+      impl_Usage_Count( g_default_Usage_Count );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -2815,6 +2865,21 @@ string Meta_Package::get_field_value( int field ) const
 void Meta_Package::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Package::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Package::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Package::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Package::is_field_default( int field ) const

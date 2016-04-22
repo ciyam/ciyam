@@ -1335,6 +1335,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -1638,6 +1639,107 @@ void Meta_Relationship::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Relationship::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 1:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 2:
+      impl_Access_Scope( g_default_Access_Scope );
+      break;
+
+      case 3:
+      impl_Cascade_Op( g_default_Cascade_Op );
+      break;
+
+      case 4:
+      impl_Change_Permission( g_default_Change_Permission );
+      break;
+
+      case 5:
+      impl_Change_Restriction( g_default_Change_Restriction );
+      break;
+
+      case 6:
+      impl_Change_Scope( g_default_Change_Scope );
+      break;
+
+      case 7:
+      impl_Child_Class( g_default_Child_Class );
+      break;
+
+      case 8:
+      impl_Child_Class_Id( g_default_Child_Class_Id );
+      break;
+
+      case 9:
+      impl_Child_Class_Name( g_default_Child_Class_Name );
+      break;
+
+      case 10:
+      impl_Child_Name( g_default_Child_Name );
+      break;
+
+      case 11:
+      impl_Extra( g_default_Extra );
+      break;
+
+      case 12:
+      impl_Field_Id( g_default_Field_Id );
+      break;
+
+      case 13:
+      impl_Field_Key( g_default_Field_Key );
+      break;
+
+      case 14:
+      impl_Internal( g_default_Internal );
+      break;
+
+      case 15:
+      impl_Mandatory( g_default_Mandatory );
+      break;
+
+      case 16:
+      impl_Model( g_default_Model );
+      break;
+
+      case 17:
+      impl_Name( g_default_Name );
+      break;
+
+      case 18:
+      impl_Parent_Class( g_default_Parent_Class );
+      break;
+
+      case 19:
+      impl_Parent_Field_For_List( g_default_Parent_Field_For_List );
+      break;
+
+      case 20:
+      impl_Parent_Field_For_View( g_default_Parent_Field_For_View );
+      break;
+
+      case 21:
+      impl_Source_Relationship( g_default_Source_Relationship );
+      break;
+
+      case 22:
+      impl_Transient( g_default_Transient );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -2796,6 +2898,21 @@ string Meta_Relationship::get_field_value( int field ) const
 void Meta_Relationship::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Relationship::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Relationship::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Relationship::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Relationship::is_field_default( int field ) const

@@ -519,6 +519,7 @@ struct Meta_User::impl : public Meta_User_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -678,6 +679,51 @@ void Meta_User::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_User::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Active( g_default_Active );
+      break;
+
+      case 1:
+      impl_Description( g_default_Description );
+      break;
+
+      case 2:
+      impl_Email( g_default_Email );
+      break;
+
+      case 3:
+      impl_Password( g_default_Password );
+      break;
+
+      case 4:
+      impl_Password_Hash( g_default_Password_Hash );
+      break;
+
+      case 5:
+      impl_Permissions( g_default_Permissions );
+      break;
+
+      case 6:
+      impl_User_Hash( g_default_User_Hash );
+      break;
+
+      case 7:
+      impl_User_Id( g_default_User_Id );
+      break;
+
+      case 8:
+      impl_Workgroup( g_default_Workgroup );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1188,6 +1234,21 @@ string Meta_User::get_field_value( int field ) const
 void Meta_User::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_User::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_User::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_User::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_User::is_field_default( int field ) const

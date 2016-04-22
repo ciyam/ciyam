@@ -753,6 +753,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -1029,6 +1030,103 @@ void Meta_List_Field_Type::impl::set_field_value( int field, const string& value
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_List_Field_Type::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Allow_Child_Rel_Select_Specifics( g_default_Allow_Child_Rel_Select_Specifics );
+      break;
+
+      case 1:
+      impl_Allow_Exclude_In_Use_FK( g_default_Allow_Exclude_In_Use_FK );
+      break;
+
+      case 2:
+      impl_Allow_Link_Empty_Restriction( g_default_Allow_Link_Empty_Restriction );
+      break;
+
+      case 3:
+      impl_Allow_Link_Permission( g_default_Allow_Link_Permission );
+      break;
+
+      case 4:
+      impl_Allow_Link_Specifics( g_default_Allow_Link_Specifics );
+      break;
+
+      case 5:
+      impl_Allow_Link_Type( g_default_Allow_Link_Type );
+      break;
+
+      case 6:
+      impl_Allow_Procedure( g_default_Allow_Procedure );
+      break;
+
+      case 7:
+      impl_Allow_Restriction_Field( g_default_Allow_Restriction_Field );
+      break;
+
+      case 8:
+      impl_Allow_Restriction_Spec( g_default_Allow_Restriction_Spec );
+      break;
+
+      case 9:
+      impl_Allow_Restriction_Value( g_default_Allow_Restriction_Value );
+      break;
+
+      case 10:
+      impl_Allow_Search_Option_Limit( g_default_Allow_Search_Option_Limit );
+      break;
+
+      case 11:
+      impl_Allow_Select_Specifics( g_default_Allow_Select_Specifics );
+      break;
+
+      case 12:
+      impl_Allow_Sort_Manually( g_default_Allow_Sort_Manually );
+      break;
+
+      case 13:
+      impl_Allow_View_Parent_Extra( g_default_Allow_View_Parent_Extra );
+      break;
+
+      case 14:
+      impl_Is_Restrict_Search( g_default_Is_Restrict_Search );
+      break;
+
+      case 15:
+      impl_List_Field_Name( g_default_List_Field_Name );
+      break;
+
+      case 16:
+      impl_Name( g_default_Name );
+      break;
+
+      case 17:
+      impl_Needs_Restriction_Field( g_default_Needs_Restriction_Field );
+      break;
+
+      case 18:
+      impl_Needs_Source( g_default_Needs_Source );
+      break;
+
+      case 19:
+      impl_Needs_Switch_Type( g_default_Needs_Switch_Type );
+      break;
+
+      case 20:
+      impl_Non_Simple_Field( g_default_Non_Simple_Field );
+      break;
+
+      case 21:
+      impl_Trivial_Field_Only( g_default_Trivial_Field_Only );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1702,6 +1800,21 @@ string Meta_List_Field_Type::get_field_value( int field ) const
 void Meta_List_Field_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_List_Field_Type::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_List_Field_Type::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_List_Field_Type::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Field_Type::is_field_default( int field ) const

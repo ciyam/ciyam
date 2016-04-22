@@ -2215,6 +2215,7 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -3926,6 +3927,127 @@ void Meta_Class::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Class::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 1:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 2:
+      impl_Change_Permission( g_default_Change_Permission );
+      break;
+
+      case 3:
+      impl_Change_Restriction( g_default_Change_Restriction );
+      break;
+
+      case 4:
+      impl_Commands_File( g_default_Commands_File );
+      break;
+
+      case 5:
+      impl_Create_List( g_default_Create_List );
+      break;
+
+      case 6:
+      impl_Create_Permission( g_default_Create_Permission );
+      break;
+
+      case 7:
+      impl_Create_Restriction( g_default_Create_Restriction );
+      break;
+
+      case 8:
+      impl_Create_View( g_default_Create_View );
+      break;
+
+      case 9:
+      impl_Created_List( g_default_Created_List );
+      break;
+
+      case 10:
+      impl_Created_View( g_default_Created_View );
+      break;
+
+      case 11:
+      impl_Delay_Initial_Records( g_default_Delay_Initial_Records );
+      break;
+
+      case 12:
+      impl_Destroy_Permission( g_default_Destroy_Permission );
+      break;
+
+      case 13:
+      impl_Destroy_Restriction( g_default_Destroy_Restriction );
+      break;
+
+      case 14:
+      impl_Extra( g_default_Extra );
+      break;
+
+      case 15:
+      impl_Header_File( g_default_Header_File );
+      break;
+
+      case 16:
+      impl_Id( g_default_Id );
+      break;
+
+      case 17:
+      impl_Model( g_default_Model );
+      break;
+
+      case 18:
+      impl_Name( g_default_Name );
+      break;
+
+      case 19:
+      impl_Next_Field_Id( g_default_Next_Field_Id );
+      break;
+
+      case 20:
+      impl_Next_Procedure_Id( g_default_Next_Procedure_Id );
+      break;
+
+      case 21:
+      impl_Plural( g_default_Plural );
+      break;
+
+      case 22:
+      impl_Quick_Link_Field( g_default_Quick_Link_Field );
+      break;
+
+      case 23:
+      impl_Source_Class( g_default_Source_Class );
+      break;
+
+      case 24:
+      impl_Source_File( g_default_Source_File );
+      break;
+
+      case 25:
+      impl_Source_Model( g_default_Source_Model );
+      break;
+
+      case 26:
+      impl_Static_Instance_Key( g_default_Static_Instance_Key );
+      break;
+
+      case 27:
+      impl_Type( g_default_Type );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -5773,6 +5895,21 @@ string Meta_Class::get_field_value( int field ) const
 void Meta_Class::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Class::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Class::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Class::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Class::is_field_default( int field ) const

@@ -2772,6 +2772,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -3536,6 +3537,239 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_List_Field::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Parent_Modifier( g_default_Access_Parent_Modifier );
+      break;
+
+      case 1:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 2:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 3:
+      impl_Alignment( g_default_Alignment );
+      break;
+
+      case 4:
+      impl_Allow_Anonymous_Access( g_default_Allow_Anonymous_Access );
+      break;
+
+      case 5:
+      impl_Child_Rel_Child_Class( g_default_Child_Rel_Child_Class );
+      break;
+
+      case 6:
+      impl_Child_Rel_Source_Child( g_default_Child_Rel_Source_Child );
+      break;
+
+      case 7:
+      impl_Child_Rel_Source_Field( g_default_Child_Rel_Source_Field );
+      break;
+
+      case 8:
+      impl_Child_Rel_Source_Parent( g_default_Child_Rel_Source_Parent );
+      break;
+
+      case 9:
+      impl_Child_Rel_Source_Parent_Class( g_default_Child_Rel_Source_Parent_Class );
+      break;
+
+      case 10:
+      impl_Child_Relationship( g_default_Child_Relationship );
+      break;
+
+      case 11:
+      impl_Class( g_default_Class );
+      break;
+
+      case 12:
+      impl_Exact_Match_Only( g_default_Exact_Match_Only );
+      break;
+
+      case 13:
+      impl_Exclude_In_Use_FK( g_default_Exclude_In_Use_FK );
+      break;
+
+      case 14:
+      impl_Font_Size( g_default_Font_Size );
+      break;
+
+      case 15:
+      impl_Include_Key_Additions( g_default_Include_Key_Additions );
+      break;
+
+      case 16:
+      impl_Label_Class( g_default_Label_Class );
+      break;
+
+      case 17:
+      impl_Label_Source( g_default_Label_Source );
+      break;
+
+      case 18:
+      impl_Label_Source_Child( g_default_Label_Source_Child );
+      break;
+
+      case 19:
+      impl_Link_Empty_Restriction( g_default_Link_Empty_Restriction );
+      break;
+
+      case 20:
+      impl_Link_Permission( g_default_Link_Permission );
+      break;
+
+      case 21:
+      impl_Link_Restriction( g_default_Link_Restriction );
+      break;
+
+      case 22:
+      impl_Link_Type( g_default_Link_Type );
+      break;
+
+      case 23:
+      impl_List( g_default_List );
+      break;
+
+      case 24:
+      impl_Name( g_default_Name );
+      break;
+
+      case 25:
+      impl_Non_Instance_Procedure( g_default_Non_Instance_Procedure );
+      break;
+
+      case 26:
+      impl_Notes_Truncation( g_default_Notes_Truncation );
+      break;
+
+      case 27:
+      impl_Omit_Versions( g_default_Omit_Versions );
+      break;
+
+      case 28:
+      impl_Order( g_default_Order );
+      break;
+
+      case 29:
+      impl_Orientation( g_default_Orientation );
+      break;
+
+      case 30:
+      impl_Parent_Class( g_default_Parent_Class );
+      break;
+
+      case 31:
+      impl_Print_Type( g_default_Print_Type );
+      break;
+
+      case 32:
+      impl_Procedure( g_default_Procedure );
+      break;
+
+      case 33:
+      impl_Procedure_Args( g_default_Procedure_Args );
+      break;
+
+      case 34:
+      impl_Restriction_Field( g_default_Restriction_Field );
+      break;
+
+      case 35:
+      impl_Restriction_Spec( g_default_Restriction_Spec );
+      break;
+
+      case 36:
+      impl_Restriction_Value( g_default_Restriction_Value );
+      break;
+
+      case 37:
+      impl_Retain_Selected_Rows( g_default_Retain_Selected_Rows );
+      break;
+
+      case 38:
+      impl_Reverse_Order( g_default_Reverse_Order );
+      break;
+
+      case 39:
+      impl_Search_Option_Limit( g_default_Search_Option_Limit );
+      break;
+
+      case 40:
+      impl_Select_Key_Exclusions( g_default_Select_Key_Exclusions );
+      break;
+
+      case 41:
+      impl_Sort_Manually( g_default_Sort_Manually );
+      break;
+
+      case 42:
+      impl_Source_Child( g_default_Source_Child );
+      break;
+
+      case 43:
+      impl_Source_Child_Class( g_default_Source_Child_Class );
+      break;
+
+      case 44:
+      impl_Source_Field( g_default_Source_Field );
+      break;
+
+      case 45:
+      impl_Source_Grandchild( g_default_Source_Grandchild );
+      break;
+
+      case 46:
+      impl_Source_Parent( g_default_Source_Parent );
+      break;
+
+      case 47:
+      impl_Source_Parent_Class( g_default_Source_Parent_Class );
+      break;
+
+      case 48:
+      impl_Switch_Type( g_default_Switch_Type );
+      break;
+
+      case 49:
+      impl_Trigger_Option( g_default_Trigger_Option );
+      break;
+
+      case 50:
+      impl_Type( g_default_Type );
+      break;
+
+      case 51:
+      impl_Use_Child_Rel_Source_Parent( g_default_Use_Child_Rel_Source_Parent );
+      break;
+
+      case 52:
+      impl_Use_In_Text_Search_Title( g_default_Use_In_Text_Search_Title );
+      break;
+
+      case 53:
+      impl_Use_Source_Parent( g_default_Use_Source_Parent );
+      break;
+
+      case 54:
+      impl_Use_Type_Field( g_default_Use_Type_Field );
+      break;
+
+      case 55:
+      impl_View_Parent_Extra( g_default_View_Parent_Extra );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -5620,6 +5854,21 @@ string Meta_List_Field::get_field_value( int field ) const
 void Meta_List_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_List_Field::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_List_Field::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_List_Field::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Field::is_field_default( int field ) const

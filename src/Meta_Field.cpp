@@ -2676,6 +2676,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -3153,6 +3154,151 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Field::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 1:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 2:
+      impl_Access_Scope( g_default_Access_Scope );
+      break;
+
+      case 3:
+      impl_Change_Permission( g_default_Change_Permission );
+      break;
+
+      case 4:
+      impl_Change_Restriction( g_default_Change_Restriction );
+      break;
+
+      case 5:
+      impl_Change_Scope( g_default_Change_Scope );
+      break;
+
+      case 6:
+      impl_Class( g_default_Class );
+      break;
+
+      case 7:
+      impl_Create_List_Field( g_default_Create_List_Field );
+      break;
+
+      case 8:
+      impl_Create_View_Field( g_default_Create_View_Field );
+      break;
+
+      case 9:
+      impl_Def_Value( g_default_Def_Value );
+      break;
+
+      case 10:
+      impl_Default( g_default_Default );
+      break;
+
+      case 11:
+      impl_Dummy_1( g_default_Dummy_1 );
+      break;
+
+      case 12:
+      impl_Encrypted( g_default_Encrypted );
+      break;
+
+      case 13:
+      impl_Enum( g_default_Enum );
+      break;
+
+      case 14:
+      impl_Enum_Filter( g_default_Enum_Filter );
+      break;
+
+      case 15:
+      impl_Extra( g_default_Extra );
+      break;
+
+      case 16:
+      impl_Extra_Filter( g_default_Extra_Filter );
+      break;
+
+      case 17:
+      impl_Id( g_default_Id );
+      break;
+
+      case 18:
+      impl_Internal( g_default_Internal );
+      break;
+
+      case 19:
+      impl_Is_Foreign_Key( g_default_Is_Foreign_Key );
+      break;
+
+      case 20:
+      impl_Is_Text_Type( g_default_Is_Text_Type );
+      break;
+
+      case 21:
+      impl_Mandatory( g_default_Mandatory );
+      break;
+
+      case 22:
+      impl_Name( g_default_Name );
+      break;
+
+      case 23:
+      impl_Numeric_Decimals( g_default_Numeric_Decimals );
+      break;
+
+      case 24:
+      impl_Parent_Class( g_default_Parent_Class );
+      break;
+
+      case 25:
+      impl_Parent_Class_Name( g_default_Parent_Class_Name );
+      break;
+
+      case 26:
+      impl_Primitive( g_default_Primitive );
+      break;
+
+      case 27:
+      impl_Source_Field( g_default_Source_Field );
+      break;
+
+      case 28:
+      impl_Transient( g_default_Transient );
+      break;
+
+      case 29:
+      impl_Type( g_default_Type );
+      break;
+
+      case 30:
+      impl_UOM( g_default_UOM );
+      break;
+
+      case 31:
+      impl_UOM_Name( g_default_UOM_Name );
+      break;
+
+      case 32:
+      impl_UOM_Symbol( g_default_UOM_Symbol );
+      break;
+
+      case 33:
+      impl_Use_In_Text_Search( g_default_Use_In_Text_Search );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -5347,6 +5493,21 @@ string Meta_Field::get_field_value( int field ) const
 void Meta_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Field::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Field::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Field::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Field::is_field_default( int field ) const

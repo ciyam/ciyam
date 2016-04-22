@@ -323,6 +323,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -509,6 +510,27 @@ void Meta_Auto_Code::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Auto_Code::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Exhausted( g_default_Exhausted );
+      break;
+
+      case 1:
+      impl_Mask( g_default_Mask );
+      break;
+
+      case 2:
+      impl_Next( g_default_Next );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -930,6 +952,21 @@ string Meta_Auto_Code::get_field_value( int field ) const
 void Meta_Auto_Code::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Auto_Code::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Auto_Code::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Auto_Code::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Auto_Code::is_field_default( int field ) const

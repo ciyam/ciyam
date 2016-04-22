@@ -1508,6 +1508,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -2681,6 +2682,159 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_Application::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Actions( g_default_Actions );
+      break;
+
+      case 1:
+      impl_Add_Modules_Automatically( g_default_Add_Modules_Automatically );
+      break;
+
+      case 2:
+      impl_Allow_Duplicate_Logins( g_default_Allow_Duplicate_Logins );
+      break;
+
+      case 3:
+      impl_Allow_Module_Switching( g_default_Allow_Module_Switching );
+      break;
+
+      case 4:
+      impl_Auto_Login_Days( g_default_Auto_Login_Days );
+      break;
+
+      case 5:
+      impl_Blockchain_Id( g_default_Blockchain_Id );
+      break;
+
+      case 6:
+      impl_Create_Database( g_default_Create_Database );
+      break;
+
+      case 7:
+      impl_Created_Database( g_default_Created_Database );
+      break;
+
+      case 8:
+      impl_Default_Image_Height( g_default_Default_Image_Height );
+      break;
+
+      case 9:
+      impl_Default_Image_Width( g_default_Default_Image_Width );
+      break;
+
+      case 10:
+      impl_Default_List_Print_Row_Limit( g_default_Default_List_Print_Row_Limit );
+      break;
+
+      case 11:
+      impl_Default_List_Row_Limit( g_default_Default_List_Row_Limit );
+      break;
+
+      case 12:
+      impl_Default_Max_Attached_File_Size( g_default_Default_Max_Attached_File_Size );
+      break;
+
+      case 13:
+      impl_Default_Multiline_Max_Rows( g_default_Default_Multiline_Max_Rows );
+      break;
+
+      case 14:
+      impl_Default_Multiline_Min_Rows( g_default_Default_Multiline_Min_Rows );
+      break;
+
+      case 15:
+      impl_Default_Multiline_Text_Limit( g_default_Default_Multiline_Text_Limit );
+      break;
+
+      case 16:
+      impl_Default_Multiline_Text_Trunc( g_default_Default_Multiline_Text_Trunc );
+      break;
+
+      case 17:
+      impl_Encrypt_Dynamic_Content( g_default_Encrypt_Dynamic_Content );
+      break;
+
+      case 18:
+      impl_Generate_Details( g_default_Generate_Details );
+      break;
+
+      case 19:
+      impl_Generate_Status( g_default_Generate_Status );
+      break;
+
+      case 20:
+      impl_Generate_Type( g_default_Generate_Type );
+      break;
+
+      case 21:
+      impl_Keep_Existing_Data( g_default_Keep_Existing_Data );
+      break;
+
+      case 22:
+      impl_Module_Prefix( g_default_Module_Prefix );
+      break;
+
+      case 23:
+      impl_Name( g_default_Name );
+      break;
+
+      case 24:
+      impl_Print_Lists_With_Check_Boxes( g_default_Print_Lists_With_Check_Boxes );
+      break;
+
+      case 25:
+      impl_Print_Lists_With_Row_Numbers( g_default_Print_Lists_With_Row_Numbers );
+      break;
+
+      case 26:
+      impl_Registration_Key( g_default_Registration_Key );
+      break;
+
+      case 27:
+      impl_Show_Inaccessible_Modules( g_default_Show_Inaccessible_Modules );
+      break;
+
+      case 28:
+      impl_Type( g_default_Type );
+      break;
+
+      case 29:
+      impl_Use_Check_Boxes_for_Bools( g_default_Use_Check_Boxes_for_Bools );
+      break;
+
+      case 30:
+      impl_Use_Embedded_Images( g_default_Use_Embedded_Images );
+      break;
+
+      case 31:
+      impl_Use_TLS_Sessions( g_default_Use_TLS_Sessions );
+      break;
+
+      case 32:
+      impl_Use_URL_Checksum( g_default_Use_URL_Checksum );
+      break;
+
+      case 33:
+      impl_Use_Vertical_Menu( g_default_Use_Vertical_Menu );
+      break;
+
+      case 34:
+      impl_Version( g_default_Version );
+      break;
+
+      case 35:
+      impl_Workgroup( g_default_Workgroup );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -3885,6 +4039,21 @@ string Meta_Application::get_field_value( int field ) const
 void Meta_Application::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Application::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Application::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Application::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Application::is_field_default( int field ) const

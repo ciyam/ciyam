@@ -1207,6 +1207,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -6617,6 +6618,95 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
    }
 }
 
+void Meta_Model::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Actions( g_default_Actions );
+      break;
+
+      case 1:
+      impl_Add_Packages( g_default_Add_Packages );
+      break;
+
+      case 2:
+      impl_Allow_Anonymous_Access( g_default_Allow_Anonymous_Access );
+      break;
+
+      case 3:
+      impl_Commands_File( g_default_Commands_File );
+      break;
+
+      case 4:
+      impl_Created( g_default_Created );
+      break;
+
+      case 5:
+      impl_Home_Title( g_default_Home_Title );
+      break;
+
+      case 6:
+      impl_Id( g_default_Id );
+      break;
+
+      case 7:
+      impl_Name( g_default_Name );
+      break;
+
+      case 8:
+      impl_Next_Class_Id( g_default_Next_Class_Id );
+      break;
+
+      case 9:
+      impl_Next_List_Id( g_default_Next_List_Id );
+      break;
+
+      case 10:
+      impl_Next_Specification_Id( g_default_Next_Specification_Id );
+      break;
+
+      case 11:
+      impl_Next_View_Id( g_default_Next_View_Id );
+      break;
+
+      case 12:
+      impl_Permission( g_default_Permission );
+      break;
+
+      case 13:
+      impl_Source_File( g_default_Source_File );
+      break;
+
+      case 14:
+      impl_Status( g_default_Status );
+      break;
+
+      case 15:
+      impl_Type( g_default_Type );
+      break;
+
+      case 16:
+      impl_Use_Package_Demo_Data( g_default_Use_Package_Demo_Data );
+      break;
+
+      case 17:
+      impl_Version( g_default_Version );
+      break;
+
+      case 18:
+      impl_Workgroup( g_default_Workgroup );
+      break;
+
+      case 19:
+      impl_Year_Created( g_default_Year_Created );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
+   }
+}
+
 bool Meta_Model::impl::is_field_default( int field ) const
 {
    bool retval = false;
@@ -7771,6 +7861,21 @@ string Meta_Model::get_field_value( int field ) const
 void Meta_Model::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_Model::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_Model::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_Model::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_Model::is_field_default( int field ) const

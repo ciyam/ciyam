@@ -980,8 +980,6 @@ bool storage_handler::obtain_lock( size_t& handle,
             // NOTE: Cascade locks will be ignored within the same session as it can sometimes be necessary for
             // update or delete operations to occur on an already cascade locked instance. Locks that are being
             // held for the duration of a transaction are ignored within the same session.
-            // FUTURE: The ignoring of cascade locks would need to be reviewed if it became desirable to permit
-            // multiple separate operations (belonging to the same session) to occur within a single command.
             if( ( lock_instance.empty( ) || next_lock_instance.empty( ) || lock_instance == next_lock_instance )
              && ( ( !locks_can_coexist( type, next_lock.type )
              && ( p_session != next_lock.p_session || p_root_class || p_root_class == next_lock.p_root_class ) )
@@ -1206,7 +1204,6 @@ void storage_handler::release_locks_for_commit( session* p_session )
       op_lock& next_lock( lii->second->second );
 
       if( next_lock.p_session == p_session
-       && next_lock.transaction_id == p_ods->get_transaction_id( )
        && next_lock.transaction_level >= p_ods->get_transaction_level( ) )
       {
          if( p_ods->get_transaction_level( ) > 1 )
@@ -1218,7 +1215,11 @@ void storage_handler::release_locks_for_commit( session* p_session )
          else
          {
             locks.erase( lii->second );
-            lock_index.erase( lii++ );
+
+            size_t id( lii->first );
+            lock_index.erase( lii );
+
+            lii = lock_index.lower_bound( id );
          }
       }
       else
@@ -11269,12 +11270,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          storage_handler& handler( *gtp_session->p_storage_handler );
 
          if( !op_is_in_transaction )
-         {
-            guard g( g_mutex );
-
             tx.commit( );
-            append_transaction_log_command( handler );
-         }
 
          // FUTURE: It would be more efficient not to call "release_locks_for_owner" unless
          // it is known that cascade locks had actually been obtained when the destroy began.

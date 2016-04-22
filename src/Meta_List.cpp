@@ -2183,6 +2183,7 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -3714,6 +3715,223 @@ void Meta_List::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_List::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Parent_Modifier( g_default_Access_Parent_Modifier );
+      break;
+
+      case 1:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 2:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 3:
+      impl_Allow_Anonymous_Access( g_default_Allow_Anonymous_Access );
+      break;
+
+      case 4:
+      impl_Allow_Quick_Link( g_default_Allow_Quick_Link );
+      break;
+
+      case 5:
+      impl_Allow_Text_Search( g_default_Allow_Text_Search );
+      break;
+
+      case 6:
+      impl_Class( g_default_Class );
+      break;
+
+      case 7:
+      impl_Create_Only_If_Default_Other( g_default_Create_Only_If_Default_Other );
+      break;
+
+      case 8:
+      impl_Create_Parent_Modifier( g_default_Create_Parent_Modifier );
+      break;
+
+      case 9:
+      impl_Create_Permission( g_default_Create_Permission );
+      break;
+
+      case 10:
+      impl_Create_Restriction( g_default_Create_Restriction );
+      break;
+
+      case 11:
+      impl_Delete_Direction( g_default_Delete_Direction );
+      break;
+
+      case 12:
+      impl_Destroy_Only_If_Default_Other( g_default_Destroy_Only_If_Default_Other );
+      break;
+
+      case 13:
+      impl_Destroy_Parent_Modifier( g_default_Destroy_Parent_Modifier );
+      break;
+
+      case 14:
+      impl_Destroy_Permission( g_default_Destroy_Permission );
+      break;
+
+      case 15:
+      impl_Destroy_Restriction( g_default_Destroy_Restriction );
+      break;
+
+      case 16:
+      impl_Direction( g_default_Direction );
+      break;
+
+      case 17:
+      impl_Display_Only_If_Default_Other( g_default_Display_Only_If_Default_Other );
+      break;
+
+      case 18:
+      impl_Display_Row_Limit( g_default_Display_Row_Limit );
+      break;
+
+      case 19:
+      impl_Display_Security_Level( g_default_Display_Security_Level );
+      break;
+
+      case 20:
+      impl_Display_Sub_Totals( g_default_Display_Sub_Totals );
+      break;
+
+      case 21:
+      impl_Display_Totals( g_default_Display_Totals );
+      break;
+
+      case 22:
+      impl_File_Links_Always_As_Single( g_default_File_Links_Always_As_Single );
+      break;
+
+      case 23:
+      impl_Id( g_default_Id );
+      break;
+
+      case 24:
+      impl_Ignore_Implicit_Ordering( g_default_Ignore_Implicit_Ordering );
+      break;
+
+      case 25:
+      impl_Ignore_State_For_Display( g_default_Ignore_State_For_Display );
+      break;
+
+      case 26:
+      impl_Ignore_Unactionable_Records( g_default_Ignore_Unactionable_Records );
+      break;
+
+      case 27:
+      impl_Ignore_Uneditable_Parent( g_default_Ignore_Uneditable_Parent );
+      break;
+
+      case 28:
+      impl_Ignore_User_Id_Filter( g_default_Ignore_User_Id_Filter );
+      break;
+
+      case 29:
+      impl_Is_Admin( g_default_Is_Admin );
+      break;
+
+      case 30:
+      impl_Is_Child( g_default_Is_Child );
+      break;
+
+      case 31:
+      impl_Is_Home( g_default_Is_Home );
+      break;
+
+      case 32:
+      impl_Is_Not_Anonymous( g_default_Is_Not_Anonymous );
+      break;
+
+      case 33:
+      impl_Is_Variation( g_default_Is_Variation );
+      break;
+
+      case 34:
+      impl_Limit_Scroll_And_New( g_default_Limit_Scroll_And_New );
+      break;
+
+      case 35:
+      impl_Model( g_default_Model );
+      break;
+
+      case 36:
+      impl_Multiline_Truncate_For_Print( g_default_Multiline_Truncate_For_Print );
+      break;
+
+      case 37:
+      impl_Name( g_default_Name );
+      break;
+
+      case 38:
+      impl_Number_Multiple_Pages( g_default_Number_Multiple_Pages );
+      break;
+
+      case 39:
+      impl_PDF_Font_Type( g_default_PDF_Font_Type );
+      break;
+
+      case 40:
+      impl_PDF_List_Type( g_default_PDF_List_Type );
+      break;
+
+      case 41:
+      impl_Parent_Class( g_default_Parent_Class );
+      break;
+
+      case 42:
+      impl_Parent_Field( g_default_Parent_Field );
+      break;
+
+      case 43:
+      impl_Print_Restriction( g_default_Print_Restriction );
+      break;
+
+      case 44:
+      impl_Print_Without_Highlight( g_default_Print_Without_Highlight );
+      break;
+
+      case 45:
+      impl_Search_Option_Limit( g_default_Search_Option_Limit );
+      break;
+
+      case 46:
+      impl_Sort_Rows_In_UI( g_default_Sort_Rows_In_UI );
+      break;
+
+      case 47:
+      impl_Style( g_default_Style );
+      break;
+
+      case 48:
+      impl_Text_Match_Highlight( g_default_Text_Match_Highlight );
+      break;
+
+      case 49:
+      impl_Title( g_default_Title );
+      break;
+
+      case 50:
+      impl_Type( g_default_Type );
+      break;
+
+      case 51:
+      impl_Variation_Name( g_default_Variation_Name );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -5368,6 +5586,21 @@ string Meta_List::get_field_value( int field ) const
 void Meta_List::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_List::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_List::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_List::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_List::is_field_default( int field ) const

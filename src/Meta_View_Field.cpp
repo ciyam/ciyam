@@ -2235,6 +2235,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -2860,6 +2861,187 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_View_Field::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Access_Permission( g_default_Access_Permission );
+      break;
+
+      case 1:
+      impl_Access_Restriction( g_default_Access_Restriction );
+      break;
+
+      case 2:
+      impl_Access_Scope( g_default_Access_Scope );
+      break;
+
+      case 3:
+      impl_Alignment( g_default_Alignment );
+      break;
+
+      case 4:
+      impl_Allow_Anonymous_Access( g_default_Allow_Anonymous_Access );
+      break;
+
+      case 5:
+      impl_Change_Permission( g_default_Change_Permission );
+      break;
+
+      case 6:
+      impl_Change_Restriction( g_default_Change_Restriction );
+      break;
+
+      case 7:
+      impl_Change_Scope( g_default_Change_Scope );
+      break;
+
+      case 8:
+      impl_Child_List_Extra_Option( g_default_Child_List_Extra_Option );
+      break;
+
+      case 9:
+      impl_Class( g_default_Class );
+      break;
+
+      case 10:
+      impl_Date_Precision_Option( g_default_Date_Precision_Option );
+      break;
+
+      case 11:
+      impl_Enum_Finishes_At( g_default_Enum_Finishes_At );
+      break;
+
+      case 12:
+      impl_Enum_Starts_At( g_default_Enum_Starts_At );
+      break;
+
+      case 13:
+      impl_FK_Trigger_Behaviour( g_default_FK_Trigger_Behaviour );
+      break;
+
+      case 14:
+      impl_FK_Trigger_Option( g_default_FK_Trigger_Option );
+      break;
+
+      case 15:
+      impl_Font_Size( g_default_Font_Size );
+      break;
+
+      case 16:
+      impl_Ignore_Manual_Links( g_default_Ignore_Manual_Links );
+      break;
+
+      case 17:
+      impl_Label_Source_Child( g_default_Label_Source_Child );
+      break;
+
+      case 18:
+      impl_Link_Permission( g_default_Link_Permission );
+      break;
+
+      case 19:
+      impl_Link_Restriction( g_default_Link_Restriction );
+      break;
+
+      case 20:
+      impl_Mandatory_Option( g_default_Mandatory_Option );
+      break;
+
+      case 21:
+      impl_Name( g_default_Name );
+      break;
+
+      case 22:
+      impl_New_Source( g_default_New_Source );
+      break;
+
+      case 23:
+      impl_New_Value( g_default_New_Value );
+      break;
+
+      case 24:
+      impl_Order( g_default_Order );
+      break;
+
+      case 25:
+      impl_Orientation( g_default_Orientation );
+      break;
+
+      case 26:
+      impl_Restriction_Spec( g_default_Restriction_Spec );
+      break;
+
+      case 27:
+      impl_Show_Hide_Start_Point( g_default_Show_Hide_Start_Point );
+      break;
+
+      case 28:
+      impl_Sort_Manually( g_default_Sort_Manually );
+      break;
+
+      case 29:
+      impl_Source_Child( g_default_Source_Child );
+      break;
+
+      case 30:
+      impl_Source_Edit_Child( g_default_Source_Edit_Child );
+      break;
+
+      case 31:
+      impl_Source_Field( g_default_Source_Field );
+      break;
+
+      case 32:
+      impl_Source_Parent( g_default_Source_Parent );
+      break;
+
+      case 33:
+      impl_Source_Parent_Class( g_default_Source_Parent_Class );
+      break;
+
+      case 34:
+      impl_Tab_Name( g_default_Tab_Name );
+      break;
+
+      case 35:
+      impl_Trigger_Behaviour( g_default_Trigger_Behaviour );
+      break;
+
+      case 36:
+      impl_Trigger_For_State( g_default_Trigger_For_State );
+      break;
+
+      case 37:
+      impl_Trigger_Option( g_default_Trigger_Option );
+      break;
+
+      case 38:
+      impl_Type( g_default_Type );
+      break;
+
+      case 39:
+      impl_Use_Full_Height( g_default_Use_Full_Height );
+      break;
+
+      case 40:
+      impl_Use_Full_Width( g_default_Use_Full_Width );
+      break;
+
+      case 41:
+      impl_Use_Source_Parent( g_default_Use_Source_Parent );
+      break;
+
+      case 42:
+      impl_View( g_default_View );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -4393,6 +4575,21 @@ string Meta_View_Field::get_field_value( int field ) const
 void Meta_View_Field::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_View_Field::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_View_Field::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_View_Field::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_View_Field::is_field_default( int field ) const

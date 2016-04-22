@@ -439,6 +439,7 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
+   void set_field_default( int field );
 
    bool is_field_default( int field ) const;
 
@@ -580,6 +581,43 @@ void Meta_List_Type::impl::set_field_value( int field, const string& value )
 
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
+   }
+}
+
+void Meta_List_Type::impl::set_field_default( int field )
+{
+   switch( field )
+   {
+      case 0:
+      impl_Dummy_0( g_default_Dummy_0 );
+      break;
+
+      case 1:
+      impl_Is_Admin( g_default_Is_Admin );
+      break;
+
+      case 2:
+      impl_Is_Child( g_default_Is_Child );
+      break;
+
+      case 3:
+      impl_Is_Home( g_default_Is_Home );
+      break;
+
+      case 4:
+      impl_Is_Not_Anonymous( g_default_Is_Not_Anonymous );
+      break;
+
+      case 5:
+      impl_List_Name( g_default_List_Name );
+      break;
+
+      case 6:
+      impl_Name( g_default_Name );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range in set field default" );
    }
 }
 
@@ -1028,6 +1066,21 @@ string Meta_List_Type::get_field_value( int field ) const
 void Meta_List_Type::set_field_value( int field, const string& value )
 {
    p_impl->set_field_value( field, value );
+}
+
+void Meta_List_Type::set_field_default( int field )
+{
+   return set_field_default( ( field_id )( field + 1 ) );
+}
+
+void Meta_List_Type::set_field_default( field_id id )
+{
+   p_impl->set_field_default( ( int )id - 1 );
+}
+
+void Meta_List_Type::set_field_default( const string& field )
+{
+   p_impl->set_field_default( get_field_num( field ) );
 }
 
 bool Meta_List_Type::is_field_default( int field ) const
