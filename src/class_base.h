@@ -375,6 +375,9 @@ class CLASS_BASE_DECL_SPEC class_base
       return get_original_field_value( get_field_num( field ) );
    }
 
+   std::string get_fields_and_values( bool use_field_names = false,
+    bool include_unchanged = false, bool include_transients = false ) const;
+
    virtual std::string get_field_value( int field ) const = 0;
    virtual void set_field_value( int field, const std::string& value ) = 0;
 
@@ -389,6 +392,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual bool is_field_encrypted( int field ) const = 0;
    virtual bool is_field_transient( int field ) const = 0;
 
+   virtual std::string get_field_id( int field ) const = 0;
    virtual std::string get_field_name( int field ) const = 0;
 
    virtual int get_field_num( const std::string& field ) const = 0;

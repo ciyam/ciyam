@@ -544,6 +544,7 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
    bool is_field_transient( int field ) const;
    bool is_field_transient( field_id id ) const { return static_is_field_transient( id ); }
 
+   std::string get_field_id( int field ) const;
    std::string get_field_name( int field ) const;
 
    int get_field_num( const std::string& field ) const;

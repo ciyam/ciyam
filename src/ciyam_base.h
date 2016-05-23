@@ -746,7 +746,6 @@ bool CIYAM_BASE_DECL_SPEC perform_instance_iterate(
  sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
 bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );
-void CIYAM_BASE_DECL_SPEC perform_instance_iterate_stop( class_base& instance );
 
 #endif
 

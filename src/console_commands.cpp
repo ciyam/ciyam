@@ -115,6 +115,7 @@ string replace_input_arg_values( const vector< string >& args, const string& inp
    string str( input );
 
    string::size_type pos = str.find( marker );
+
    while( pos != string::npos )
    {
       if( str.size( ) > pos + 1 )
@@ -125,6 +126,12 @@ string replace_input_arg_values( const vector< string >& args, const string& inp
          {
             int argnum = str[ pos + 1 ] - '0';
             string argval( args[ argnum ] );
+
+            // NOTE: If the argument has been quoted but the position at which it is being
+            // inserted after is also a quote then remove the quotes from the argument.
+            if( argval.length( ) > 1 && argval[ 0 ] == '"'
+             && argval[ argval.length( ) - 1 ] == '"' && pos > 0 && str[ pos - 1 ] == '"' )
+               argval = argval.substr( 1, argval.length( ) - 2 );
 
             str.erase( pos, 2 );
             str.insert( pos, argval );
