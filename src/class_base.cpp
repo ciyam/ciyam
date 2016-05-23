@@ -1095,7 +1095,17 @@ void class_base::iterate_stop( )
    in_forwards_iteration = false;
    in_backwards_iteration = false;
 
-   perform_instance_iterate_stop( *this );
+   if( p_sql_dataset )
+   {
+      delete p_sql_dataset;
+      p_sql_dataset = 0;
+   }
+
+   init( false );
+   set_key( "", true );
+
+   row_cache.clear( );
+   transient_filter_field_values.clear( );
 }
 
 void class_base::set_instance( const string& key )
@@ -1324,6 +1334,37 @@ string class_base::get_original_field_value( int field ) const
 
    if( field < original_values.size( ) )
       str = original_values[ field ];
+
+   return str;
+}
+
+string class_base::get_fields_and_values(
+ bool use_field_names, bool include_unchanged, bool include_transients ) const
+{
+   string str;
+
+   bool had_first = false;
+   int num_fields = get_num_fields( );
+
+   for( size_t i = 0; i < num_fields; i++ )
+   {
+      if( ( ( include_unchanged || has_field_changed( i ) )
+       && ( include_transients || !is_field_transient( i ) ) )
+       || ( !graph_parent_fk_field.empty( ) && graph_parent_fk_field == get_field_id( i ) ) )
+      {
+         if( !had_first )
+            had_first = true;
+         else
+            str += ",";
+
+         if( !use_field_names )
+            str += get_field_id( i );
+         else
+            str += get_field_name( i ) ;
+
+         str += "=" + escaped( get_field_value( i ), ",\"" );
+      }
+   }
 
    return str;
 }
@@ -1693,6 +1734,8 @@ void class_base::set_op( op_type new_op, bool is_new_key )
 
 void class_base::set_is_in_iteration( bool is_in_iter, bool is_forwards )
 {
+   iteration_starting = is_in_iter;
+
    in_forwards_iteration = ( is_in_iter && is_forwards );
    in_backwards_iteration = ( is_in_iter && !is_forwards );
 }

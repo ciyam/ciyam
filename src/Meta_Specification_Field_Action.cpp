@@ -1698,6 +1698,16 @@ bool Meta_Specification_Field_Action::is_field_transient( int field ) const
       return static_is_field_transient( ( field_id )( field - num_parent_fields + 1 ) );
 }
 
+string Meta_Specification_Field_Action::get_field_id( int field ) const
+{
+   int num_parent_fields( parent_class_type::get_num_fields( ) );
+
+   if( field < num_parent_fields )
+      return parent_class_type::get_field_id( field );
+   else
+      return static_get_field_id( ( field_id )( field - num_parent_fields + 1 ) );
+}
+
 string Meta_Specification_Field_Action::get_field_name( int field ) const
 {
    int num_parent_fields( parent_class_type::get_num_fields( ) );

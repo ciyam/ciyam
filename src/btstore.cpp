@@ -461,9 +461,6 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          vector< pair< string, string > > search_replaces;
          search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
-         if( full )
-            search_replaces.push_back( make_pair( "//", c_root_folder ) );
-
          string prefix_1( current_folder );
          string prefix_2( prefix_1 );
 
@@ -1758,8 +1755,7 @@ void btstore_command_functor::branch_files_or_objects( ostream& os, const string
    vector< pair< string, string > > search_replaces;
    search_replaces.push_back( make_pair( c_pipe_separator, c_folder_separator ) );
 
-   if( full )
-      search_replaces.push_back( make_pair( "//", c_root_folder ) );
+   search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
    string prefix_1( p_start_folder ? *p_start_folder : folder );
    string prefix_2( prefix_1 );

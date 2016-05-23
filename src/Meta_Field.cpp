@@ -5535,6 +5535,11 @@ bool Meta_Field::is_field_transient( int field ) const
    return static_is_field_transient( ( field_id )( field + 1 ) );
 }
 
+string Meta_Field::get_field_id( int field ) const
+{
+   return static_get_field_id( ( field_id )( field + 1 ) );
+}
+
 string Meta_Field::get_field_name( int field ) const
 {
    return static_get_field_name( ( field_id )( field + 1 ) );

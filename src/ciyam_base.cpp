@@ -181,6 +181,8 @@ const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
+const char* const c_special_variable_val1 = "@val1";
+const char* const c_special_variable_val2 = "@val2";
 const char* const c_special_variable_file = "@file";
 const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_name = "@name";
@@ -5821,6 +5823,14 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_arg2 );
       break;
 
+      case e_special_var_val1:
+      s = string( c_special_variable_val1 );
+      break;
+
+      case e_special_var_val2:
+      s = string( c_special_variable_val2 );
+      break;
+
       case e_special_var_file:
       s = string( c_special_variable_file );
       break;
@@ -10215,7 +10225,7 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
          *p_rc = e_instance_check_rc_not_found;
       else
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
+          make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
           make_pair( c_str_parm_record_not_found_key, instance_accessor.get_lazy_fetch_key( ) ) ) );
    }
 }
@@ -10862,7 +10872,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                   make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
+                   make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
                    make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
             }
          }
@@ -10998,7 +11008,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
             else
                throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
+                make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
                 make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
          }
 
@@ -11426,7 +11436,7 @@ void perform_instance_fetch( class_base& instance,
             keys.erase( 0, pos + 1 );
 
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
+          make_pair( c_str_parm_record_not_found_class, instance.get_display_name( ) ),
           make_pair( c_str_parm_record_not_found_key, keys ) ) );
       }
    }
@@ -11748,10 +11758,7 @@ bool perform_instance_iterate( class_base& instance,
          // NOTE: Unless a single row limit was specified (which is an alternate way of performing an
          // instance fetch) then iteration is flagged so that "after_fetch" triggers can detect this.
          if( row_limit != 1 )
-         {
-            instance_accessor.set_iteration_starting( true );
             instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
-         }
 
          instance.set_variable( c_special_variable_loop, int_to_comparable_string( 0, false, c_loop_variable_digits ) );
 
@@ -11872,16 +11879,14 @@ bool perform_instance_iterate_next( class_base& instance )
       if( !instance_accessor.p_sql_dataset( ) && instance_accessor.row_cache( ).size( ) == 1 )
       {
          cache_depleted = true;
-         instance_accessor.row_cache( ).clear( );
-         instance_accessor.transient_filter_field_values( ).clear( );
-
-         instance_accessor.set_is_in_iteration( false );
+         instance.iterate_stop( );
       }
       else
       {
          found = true;
 
          bool skip_after_fetch = false;
+
          string skip_after_fetch_var(
           instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
@@ -11900,19 +11905,5 @@ bool perform_instance_iterate_next( class_base& instance )
    else
       return perform_instance_iterate( instance, c_nul_key, "", "", "", "",
        instance.get_is_in_forwards_iteration( ) ? e_iter_direction_forwards : e_iter_direction_backwards, false, -1 );
-}
-
-void perform_instance_iterate_stop( class_base& instance )
-{
-   if( instance.get_is_iterating( ) )
-   {
-      class_base_accessor instance_accessor( instance );
-
-      if( instance_accessor.p_sql_dataset( ) )
-      {
-         delete instance_accessor.p_sql_dataset( );
-         instance_accessor.p_sql_dataset( ) = 0;
-      }
-   }
 }
 
