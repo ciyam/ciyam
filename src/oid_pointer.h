@@ -28,11 +28,11 @@ template< typename T > class oid_pointer
    friend write_stream& operator << < T >( write_stream& ws, const oid_pointer< T >& op );
 
    public:
-   oid_pointer( ) : p_T( 0 ), changed( false ) { }
+   oid_pointer( ) : p_T( 0 ), p_extra( 0 ), changed( false ) { }
 
    explicit oid_pointer( T* p_T );
 
-   ~oid_pointer( ) { delete p_T; }
+   ~oid_pointer( );
 
    oid_pointer( const oid_pointer< T >& src );
 
@@ -56,7 +56,9 @@ template< typename T > class oid_pointer
    int_t get_size_of( ) const { return sizeof( oid ); }
 
    void reset( T* p );
+
    void set_id( const oid& new_id );
+   void set_extra( storable_extra* p_new_extra );
 
    private:
    void get_instance( ) const;
@@ -64,12 +66,15 @@ template< typename T > class oid_pointer
    oid id;
 
    mutable T* p_T;
+   mutable storable_extra* p_extra;
+
    mutable bool changed;
 };
 
 template< typename T > inline oid_pointer< T >::oid_pointer( T* p_T )
  :
  p_T( p_T ),
+ p_extra( 0 ),
  changed( false )
 {
    if( p_T )
@@ -79,8 +84,19 @@ template< typename T > inline oid_pointer< T >::oid_pointer( T* p_T )
    }
 }
 
+template< typename T > inline oid_pointer< T >::~oid_pointer( )
+{
+   delete p_T;
+
+   if( p_extra )
+      delete p_extra;
+}
+
 template< typename T > inline oid_pointer< T >::oid_pointer( const oid_pointer< T >& src )
 {
+   p_T = 0;
+   p_extra = 0;
+
    copy( src );
 }
 
@@ -94,6 +110,7 @@ template< typename T > inline T* oid_pointer< T >::operator ->( )
 {
    changed = true;
    get_instance( );
+
    return p_T;
 }
 
@@ -118,16 +135,40 @@ template< typename T > inline void oid_pointer< T >::copy( const oid_pointer< T 
 {
    id = src.id;
 
-   if( !src.p_T )
-      p_T = 0;
-   else
-      p_T = new T( *src.p_T );
+   if( p_T )
+      delete p_T;
 
-   changed = src.changed;
+   // NOTE: Normally copies are permitted to have their object data directly copied
+   // in order to minimise unnecessary fetches and allow immediate data access, but
+   // if the object data could be expected to be extremely large (such as some sort
+   // of arbitrary length BLOB), it would be advised to code a "can_copy_direct" in
+   // the class declaration that returns "false" (and this must also apply to those
+   // classes where the data is never held in memory but only ever accessed via the
+   // streaming operator).
+   if( !T::can_copy_direct( ) )
+   {
+      p_T = 0;
+      changed = id.is_new( );
+   }
+   else
+   {
+      if( !src.p_T )
+         p_T = 0;
+      else
+         p_T = new T( *src.p_T );
+
+      changed = src.changed;
+   }
 }
 
 template< typename T > inline void oid_pointer< T >::store( oid_pointer_opt opt )
 {
+   if( !p_T )
+   {
+      changed = true;
+      get_instance( );
+   }
+
    if( p_T && ( changed || opt == e_oid_pointer_opt_force_write ) )
    {
       *ods::instance( ) << *p_T;
@@ -144,6 +185,7 @@ template< typename T > inline void oid_pointer< T >::destroy( )
    delete p_T;
 
    p_T = 0;
+
    id = oid( );
    changed = false;
 }
@@ -153,6 +195,7 @@ template< typename T > inline void oid_pointer< T >::reset( T* p )
    delete p_T;
 
    p_T = p;
+
    if( !p_T )
    {
       id = oid( );
@@ -170,8 +213,17 @@ template< typename T > inline void oid_pointer< T >::set_id( const oid& new_id )
    delete p_T;
 
    p_T = 0;
+
    id = new_id;
    changed = false;
+}
+
+template< typename T > inline void oid_pointer< T >::set_extra( storable_extra* p_new_extra )
+{
+   if( p_extra )
+      delete p_extra;
+
+   p_extra = p_new_extra;
 }
 
 template< typename T > inline void oid_pointer< T >::get_instance( ) const
@@ -180,6 +232,9 @@ template< typename T > inline void oid_pointer< T >::get_instance( ) const
    {
       p_T = new T;
       p_T->set_id( id );
+
+      if( p_extra )
+         p_T->set_extra( p_extra );
 
       if( !id.is_new( ) )
          *ods::instance( ) >> *p_T;

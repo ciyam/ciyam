@@ -30,6 +30,28 @@ const int c_buf_size = 4096;
 
 }
 
+void storable_file::set_extra( storable_extra* p_extra )
+{
+   storable_file_extra* p_file_extra = dynamic_cast< storable_file_extra* >( p_extra );
+
+   if( p_file_extra )
+   {
+      file_name = p_file_extra->file_name;
+      p_istream = p_file_extra->p_istream;
+      p_ostream = p_file_extra->p_ostream;
+      file_size = p_file_extra->file_size;
+   }
+   else
+   {
+      file_name.clear( );
+
+      p_istream = 0;
+      p_ostream = 0;
+
+      file_size = 0;
+   }
+}
+
 int_t storable_file::get_size_of( ) const
 {
    return size_of( *this );
@@ -47,26 +69,28 @@ void storable_file::put_instance( write_stream& ws ) const
 
 int_t size_of( const storable_file& sf )
 {
-   return file_size( sf.file_name.c_str( ) );
+   if( sf.p_istream )
+      return sf.file_size;
+   else
+      return file_size( sf.file_name.c_str( ) );
 }
 
 read_stream& operator >>( read_stream& rs, storable_file& sf )
 {
-   rs.read_meta( sf.file_name );
-
    if( sf.file_name.empty( ) )
-      throw runtime_error( "unexpected missing read_stream meta-data for storable_file" );
+      throw runtime_error( "unexpected missing file_name for storable_file" );
 
-   string::size_type pos = sf.file_name.find_last_of( ':' );
-   if( pos == string::npos )
-      throw runtime_error( "unexpected file length missing from storable_file read_stream meta-data" );
+   int64_t size = sf.get_ods( )->get_size( sf.get_id( ) );
 
-   int64_t size = from_string< int64_t >( sf.file_name.substr( pos + 1 ) );
-   sf.file_name.erase( pos );
+   auto_ptr< ofstream > ap_outf;
 
-   ofstream outf( sf.file_name.c_str( ), ios::out | ios::binary );
-   if( !outf )
-      throw runtime_error( "unable to open '" + sf.file_name + "' for output" );
+   if( !sf.p_ostream )
+   {
+      ap_outf.reset( new ofstream( sf.file_name.c_str( ), ios::out | ios::binary ) );
+
+      if( !( *ap_outf ) )
+         throw runtime_error( "unable to open '" + sf.file_name + "' for output" );
+   }
 
    unsigned char data[ c_buf_size ];
    while( size )
@@ -77,30 +101,33 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
       rs.read( &data[ 0 ], bytes );
 
-      outf.write( ( const char* )&data[ 0 ], bytes );
+      if( !sf.p_ostream )
+         ap_outf->write( ( const char* )&data[ 0 ], bytes );
+      else
+         sf.p_ostream->write( ( const char* )&data[ 0 ], bytes );
 
       size -= bytes;
    }
 
-   outf.close( );
+   if( !sf.p_ostream )
+      ap_outf->close( );
 
    return rs;
 }
 
 write_stream& operator <<( write_stream& ws, const storable_file& sf )
 {
-   string name( sf.file_name );
-#ifndef _WIN32
-   string::size_type pos = name.find_last_of( "/" );
-#else
-   string::size_type pos = name.find_last_of( ":/\\" );
-#endif
+   int64_t size = size_of( sf );
 
-   int64_t size = file_size( sf.file_name.c_str( ) );
+   auto_ptr< ifstream > ap_inpf;
 
-   ifstream inpf( sf.file_name.c_str( ), ios::in | ios::binary );
-   if( !inpf )
-      throw runtime_error( "unable to open '" + sf.file_name + "' for input" );
+   if( !sf.p_istream )
+   {
+      ap_inpf.reset( new ifstream( sf.file_name.c_str( ), ios::in | ios::binary ) );
+
+      if( !( *ap_inpf ) )
+         throw runtime_error( "unable to open '" + sf.file_name + "' for input" );
+   }
 
    unsigned char data[ c_buf_size ];
 
@@ -110,7 +137,14 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       if( size < bytes )
          bytes = size;
 
-      if( !inpf.read( ( char* )&data[ 0 ], bytes ) )
+      bool okay = true;
+
+      if( !sf.p_istream )
+         okay = ap_inpf->read( ( char* )&data[ 0 ], bytes );
+      else
+         okay = sf.p_istream->read( ( char* )&data[ 0 ], bytes );
+
+      if( !okay )
          throw runtime_error( "unexpected error reading '" + sf.file_name + "' for write_stream output" );
 
       ws.write( &data[ 0 ], bytes );
@@ -118,7 +152,8 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       size -= ( int64_t )bytes;
    }
 
-   inpf.close( );
+   if( !sf.p_istream )
+      ap_inpf->close( );
 
    return ws;
 }

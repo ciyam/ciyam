@@ -119,6 +119,8 @@ struct test_item
    oid_pointer< storable_file >& get_file( ) { return o_file; }
    const oid_pointer< storable_file >& get_file( ) const { return o_file; }
 
+   oid_pointer< storable_file >& get_file( storable_file_extra* p_extra ) { o_file.set_extra( p_extra ); return o_file; }
+
    bool operator <( const test_item& src ) const { return val < src.val; }
    bool operator ==( const test_item& src ) const { return val == src.val; }
 
@@ -516,6 +518,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
    else if( command == c_cmd_btstore_file_add )
    {
       string name( get_parm_val( parameters, c_cmd_parm_btstore_file_add_name ) );
+      bool use_cin( has_parm_val( parameters, c_cmd_parm_btstore_file_add_cin ) );
       string file_name( get_parm_val( parameters, c_cmd_parm_btstore_file_add_file_name ) );
 
       if( file_name.empty( ) )
@@ -537,6 +540,8 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
          *ap_ods >> *ap_btree;
 
+         auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( *ap_btree ) );
+
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
          tmp_item.val = value + string( c_folder_separator );
 
@@ -554,12 +559,37 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
                cout << "*** file '" << name << "' already exists ***" << endl;
             else
             {
-               tmp_item.get_file( ).reset( new storable_file( file_name ) );
-
                scoped_ods_instance so( *ap_ods );
-               tmp_item.get_file( ).store( );
+
+               if( !use_cin )
+                  tmp_item.get_file( new storable_file_extra( file_name ) ).store( );
+               else
+               {
+                  string next, content;
+
+                  cout << "Enter multi-line content followed by a line with just a single dot (.) to finish:" << endl;
+
+                  bool first = true;
+                  while( getline( cin, next ) )
+                  {
+                     if( next == "." )
+                        break;
+
+                     if( first )
+                        first = false;
+                     else
+                        content += '\n';
+
+                     content += next;
+                  }
+
+                  istringstream isstr( content );
+
+                  tmp_item.get_file( new storable_file_extra( file_name, isstr, content.size( ) ) ).store( );
+               }
 
                ap_btree->insert( tmp_item );
+               ap_tx->commit( );
             }
          }
       }
@@ -567,6 +597,7 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
    else if( command == c_cmd_btstore_file_get )
    {
       string name( get_parm_val( parameters, c_cmd_parm_btstore_file_get_name ) );
+      bool use_cout( has_parm_val( parameters, c_cmd_parm_btstore_file_get_cout ) );
       string file_name( get_parm_val( parameters, c_cmd_parm_btstore_file_get_file_name ) );
 
       if( file_name.empty( ) )
@@ -592,18 +623,10 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
          cout << "*** file '" << name << "' not found ***" << endl;
       else
       {
-         // NOTE: Force the file to be saved by resetting its id as the
-         // node may still be cached (in which case the "storable file"
-         // wouldn't be saved).
          tmp_item = *tmp_iter;
-         tmp_item.get_file( ).set_id( tmp_item.get_file( ).get_id( ) );
 
          scoped_ods_instance so( *ap_ods );
-
-         ap_ods->set_string( file_name + c_colon
-          + to_string( ap_ods->get_size( tmp_item.get_file( ).get_id( ) ) ) );
-
-         *tmp_item.get_file( );
+         *tmp_item.get_file( new storable_file_extra( file_name, use_cout ? &cout : 0 ) );
       }
    }
    else if( command == c_cmd_btstore_file_move )
