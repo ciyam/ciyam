@@ -3,8 +3,8 @@ files "list matching files" [<opt/-f/full>|<opt/-b/brief>][<val//expr>]
 branch "list a branch of files/folders/objects" [<opt/-f/full>|<opt/-b/brief>]<opt/files>|<opt/folders>|<opt/objects>[<val//expr>]
 folders "list matching folders" [<opt/-f/full>][<val//expr>]
 objects "list matching files and folders" [<opt/-f/full>|<opt/-b/brief>][<val//expr>]
-file_add "add a file into the current folder" <val//name>[<val//file_name>]
-file_get "get a file from the current folder" <val//name>[<val//file_name>]
+file_add "add a file into the current folder" <val//name>[<opt/-c/cin>|<val//file_name>]
+file_get "get a file from the current folder" <val//name>[<opt/-c/cout>|<val//file_name>]
 file_move "move a file to another folder or rename it" <val//name><val//destination>
 folder_add "add a folder below the current folder" <val//name>
 file_remove "remove a file from the current folder" <val//name>

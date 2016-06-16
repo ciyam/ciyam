@@ -140,6 +140,8 @@ class outline_base : public storable_base
 
    oid_pointer< storable_file >& get_file( ) { return o_file; }
 
+   oid_pointer< storable_file >& get_file( storable_file_extra* p_extra ) { o_file.set_extra( p_extra ); return o_file; }
+
    void iter( )
    {
       count = 0;
@@ -745,10 +747,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
       o << temp_node;
 
-      temp_node.get_file( ).reset( new storable_file( file_name ) );
-
       scoped_ods_instance so( o );
-      temp_node.get_file( ).store( );
+      temp_node.get_file( new storable_file_extra( file_name ) ).store( );
 
       o << temp_node;
 
@@ -771,6 +771,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       {
          temp_node.set_id( node.child( ) );
          o >> temp_node;
+
          if( temp_node.get_description( ) == file_name )
          {
             if( temp_node.get_file( ).get_id( ).is_new( ) )
@@ -781,11 +782,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             else
             {
                scoped_ods_instance so( o );
-               o.set_string( output_name + ':' + to_string( o.get_size( temp_node.get_file( ).get_id( ) ) ) );
 
-               *temp_node.get_file( );
+               *temp_node.get_file( new storable_file_extra( output_name ) );
 
-               cout << "saved " << temp_node.get_file( )->get_name( )
+               cout << "saved " << output_name
                 << " (" << format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) << ')' << endl;
                found = true;
                break;

@@ -20,6 +20,33 @@
 class read_stream;
 class write_stream;
 
+struct storable_file_extra : public storable_extra
+{
+   storable_file_extra( const std::string& file_name, std::ostream* p_ostream = 0 )
+    :
+    file_name( file_name ),
+    p_istream( 0 ),
+    p_ostream( p_ostream ),
+    file_size( 0 )
+   {
+   }
+
+   storable_file_extra( const std::string& file_name, std::istream& isstr, int64_t file_size )
+    :
+    file_name( file_name ),
+    p_istream( &isstr ),
+    p_ostream( 0 ),
+    file_size( file_size )
+   {
+   }
+
+   std::string file_name;
+   std::istream* p_istream;
+   std::ostream* p_ostream;
+
+   int64_t file_size;
+};
+
 class FILE_DECL_SPEC storable_file : public storable_base
 {
    friend int_t size_of( const storable_file& sf );
@@ -27,18 +54,25 @@ class FILE_DECL_SPEC storable_file : public storable_base
    friend write_stream& operator <<( write_stream& ws, const storable_file& sf );
 
    public:
-   storable_file( ) { }
-   storable_file( const std::string& file_name ) : file_name( file_name ) { }
+   storable_file( ) : p_istream( 0 ), p_ostream( 0 ), file_size( 0 ) { }
+   storable_file( const std::string& file_name ) : file_name( file_name ), p_istream( 0 ), p_ostream( 0 ), file_size( 0 ) { }
 
-   std::string get_name( ) const { return file_name; }
+   void set_extra( storable_extra* p_extra );
 
    int_t get_size_of( ) const;
 
    void get_instance( read_stream& rs );
    void put_instance( write_stream& ws ) const;
 
+   // NOTE: Refer to the NOTE in "oid_pointer.h" about this function.
+   static bool can_copy_direct( ) { return false; }
+
    private:
    std::string file_name;
+   std::istream* p_istream;
+   std::ostream* p_ostream;
+
+   int64_t file_size;
 };
 
 #endif

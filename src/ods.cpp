@@ -313,10 +313,10 @@ class ods::ods_stream : public read_write_stream
    explicit ods_stream( ods& o ) : o( o ) { }
 
    void read( unsigned char* p_buf, size_t len, read_write_type ) { o.read( p_buf, len ); }
-   void read_meta( string& s ) { s = o.get_string( ); }
-
    void write( const unsigned char* p_buf, size_t len, read_write_type ) { o.write( p_buf, len ); }
-   void write_meta( string& s ) { s = o.get_string( ); }
+
+   void read_meta( string& s ) { s = o.get_meta( ); }
+   void write_meta( string& s ) { s = o.get_meta( ); }
 
    private:
    ods& o;

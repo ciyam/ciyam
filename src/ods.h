@@ -306,6 +306,11 @@ write_stream ODS_DECL_SPEC& operator <<( write_stream& ws, const byte_skip& bs )
 
 template< class T, int_t R, class B > class storable;
 
+struct storable_extra
+{
+   virtual ~storable_extra( ) { }
+};
+
 class ODS_DECL_SPEC storable_base
 {
    template< class T, int_t R, class B > friend class storable;
@@ -354,6 +359,8 @@ class ODS_DECL_SPEC storable_base
       last_tran_id = -1;
    }
 
+   ods* get_ods( ) const { return p_ods; }
+
    short get_flags( ) const { return flags; }
 
    int_t get_last_size( ) const { return last_size; }
@@ -361,7 +368,12 @@ class ODS_DECL_SPEC storable_base
 
    bool had_interim_update( ) const { return ( flags & e_flag_interim_update ) ? true : false; }
 
+   virtual void set_extra( storable_extra* /*p_extra*/ ) { }
+
    virtual int_t get_size_of( ) const = 0;
+
+   // NOTE: See the NOTE in "oid_pointer.h" about the purpose of this static function.
+   static bool can_copy_direct( ) { return true; }
 
    private:
    void set_ods( ods* p ) { p_ods = p; }
@@ -608,8 +620,8 @@ class ODS_DECL_SPEC ods
 
    bool is_bulk_locked( ) const;
 
-   std::string get_string( ) const { return str; }
-   void set_string( const std::string& new_str ) { str = new_str; }
+   std::string get_meta( ) const { return meta; }
+   void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
    void destroy( const oid& id );
 
@@ -703,7 +715,7 @@ class ODS_DECL_SPEC ods
 
    private:
    bool okay;
-   std::string str;
+   std::string meta;
 
    struct impl;
    impl* p_impl;
