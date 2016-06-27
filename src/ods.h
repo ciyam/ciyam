@@ -620,6 +620,10 @@ class ODS_DECL_SPEC ods
 
    bool is_bulk_locked( ) const;
 
+   bool is_bulk_dump_locked( ) const;
+   bool is_bulk_read_locked( ) const;
+   bool is_bulk_write_locked( ) const;
+
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 

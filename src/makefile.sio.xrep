@@ -34,6 +34,7 @@
      <filename>mime.cpp
      <filename>numeric.cpp
      <filename>ods.cpp
+     <filename>ods_file_system.cpp
 `{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)\
      <filename>pdf.cpp
      <filename>pdf_gen.cpp\
