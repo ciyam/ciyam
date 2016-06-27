@@ -10,13 +10,10 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <memory>
 #  include <string>
 #  include <sstream>
 #  include <iostream>
-#  ifdef __GNUG__
-#     include <limits.h>
-#     include <unistd.h>
-#  endif
 #endif
 
 #include "ods.h"
