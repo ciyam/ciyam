@@ -1987,6 +1987,21 @@ bool ods::is_bulk_locked( ) const
    return ( *p_impl->rp_bulk_mode != impl::e_bulk_mode_none );
 }
 
+bool ods::is_bulk_dump_locked( ) const
+{
+   return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_dump );
+}
+
+bool ods::is_bulk_read_locked( ) const
+{
+   return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_read );
+}
+
+bool ods::is_bulk_write_locked( ) const
+{
+   return ( *p_impl->rp_bulk_mode == impl::e_bulk_mode_write );
+}
+
 int_t ods::get_total_entries( )
 {
    return p_impl->rp_header_info->total_entries;
