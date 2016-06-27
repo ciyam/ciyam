@@ -15,6 +15,10 @@
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>
+#  ifdef __GNUG__
+#     include <limits.h>
+#     include <unistd.h>
+#  endif
 #endif
 
 #define BTREE_IMPL
