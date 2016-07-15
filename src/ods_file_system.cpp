@@ -15,6 +15,7 @@
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>
+#  include <stdexcept>
 #  ifdef __GNUG__
 #     include <limits.h>
 #     include <unistd.h>
@@ -59,11 +60,15 @@ const char* const c_folder_separator = "/";
 
 const unsigned char c_ofs_items_per_node = 255;
 
+uint16_t c_ofs_object_flag_type_file = 0x8000;
+uint16_t c_ofs_object_flag_type_link = 0x4000;
+
+uint16_t c_ofs_object_flag_type_vals = 0xc000;
+
+uint16_t c_ofs_object_maxiumum_val_size = 0x3fff;
+
 struct ofs_object
 {
-   ofs_object( ) { }
-   ofs_object( const char* str ) { val = str; }
-
    string& str( ) { return val; }
    const string& const_str( ) const { return val; }
 
@@ -86,30 +91,69 @@ struct ofs_object
    oid_pointer< storable_file > o_file;
 };
 
-int_t size_of( const ofs_object& t )
+int_t size_of( const ofs_object& o )
 {
-   return sizeof( size_t ) + t.val.length( ) + sizeof( oid );
+   if( o.val.length( ) > c_ofs_object_maxiumum_val_size )
+      throw runtime_error( "maximum object length exceeded with ofs_object '" + o.val + "'" );
+
+   return sizeof( uint16_t ) + o.val.length( ) + o.o_file.get_id( ).is_new( ) ? 0 : sizeof( oid );
 }
 
-read_stream& operator >>( read_stream& rs, ofs_object& t )
+read_stream& operator >>( read_stream& rs, ofs_object& o )
 {
-   rs >> t.val;
-   rs >> t.o_file;
+   uint16_t size;
+
+   rs >> size;
+
+   bool has_file = false;
+
+   if( size & c_ofs_object_flag_type_vals )
+   {
+      has_file = true;
+      size &= ~c_ofs_object_flag_type_vals;
+   }
+
+   o.val.resize( size );
+
+   for( uint16_t i = 0; i < size; i++ )
+      rs >> o.val[ i ];
+
+   if( has_file )
+      rs >> o.o_file;
+   else
+      o.o_file.get_id( ).set_new( );
 
    return rs;
 }
 
-write_stream& operator <<( write_stream& ws, const ofs_object& t )
+write_stream& operator <<( write_stream& ws, const ofs_object& o )
 {
-   ws << t.val;
-   ws << t.o_file;
+   uint16_t size = o.val.length( );
+
+   bool has_file = false;
+
+   if( !o.o_file.get_id( ).is_new( ) )
+   {
+      has_file = true;
+      size |= c_ofs_object_flag_type_file;
+   }
+
+   ws << size;
+
+   size &= ~c_ofs_object_flag_type_vals;
+
+   for( uint16_t i = 0; i < size; i++ )
+      ws << o.val[ i ];
+
+   if( has_file )
+      ws << o.o_file;
 
    return ws;
 }
 
-ostream& operator <<( ostream& outf, const ofs_object& t )
+ostream& operator <<( ostream& outf, const ofs_object& o )
 {
-   outf << t.val;
+   outf << o.val;
    return outf;
 }
 

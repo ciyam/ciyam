@@ -259,12 +259,11 @@ class ODS_DECL_SPEC char_buffer
 class oid
 {
    public:
-   oid( int_t num = -1 ) : num( num ), ver( 0 ), pad( 0 ) { }
+   oid( int_t num = -1 ) : num( num ) { }
 
    int_t get_num( ) const { return num; }
-   int32_t get_ver( ) const { return ver; }
 
-   void set_new( ) { num = -1; ver = 0; }
+   void set_new( ) { num = -1; }
 
    bool is_new( ) const { return num == -1; }
 
@@ -273,12 +272,10 @@ class oid
 
    private:
    int_t num;
-   int32_t ver;
-   int32_t pad;
 
    friend class ods;
-   friend ods ODS_DECL_SPEC& operator >>( ods& t, storable_base& s );
-   friend ods ODS_DECL_SPEC& operator <<( ods& t, storable_base& s );
+   friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
+   friend ods ODS_DECL_SPEC& operator <<( ods& o, storable_base& s );
    friend read_stream ODS_DECL_SPEC& operator >>( read_stream& rs, oid& id );
    friend write_stream ODS_DECL_SPEC& operator <<( write_stream& ws, const oid& id );
 };
@@ -287,7 +284,7 @@ inline size_t size_determiner( const oid* p_o ) { return sizeof( oid ); }
 
 inline bool operator ==( const oid& lhs, const oid& rhs )
 {
-   return lhs.num == rhs.num && lhs.ver == rhs.ver;
+   return lhs.num == rhs.num;
 }
 
 inline bool operator !=( const oid& lhs, const oid& rhs )
@@ -298,6 +295,7 @@ inline bool operator !=( const oid& lhs, const oid& rhs )
 struct byte_skip
 {
    byte_skip( int_t num ) : num( num ) { }
+
    int_t num;
 };
 
@@ -484,10 +482,11 @@ template< class T, int_t R = 0, class B = none > class storable : public T, publ
       int_t size = size_of( *this );
 #  endif
 
-      // IMPORTANT: The R value is used to round up the storable size allowing storable objects to grow by this amount before
-      // needing to be moved to the end of the data file (reducing the amount of "slack" space that would otherwise be created
-      // each time the storable size increased).
+      // IMPORTANT: The R value is used to round up the storable size allowing storable objects to grow by
+      // this amount before needing to be moved to the end of the data file (reducing the amount of wasted
+      // space that might otherwise be created each time the storable size is increased).
       int_t round( R );
+
       if( round && size % round )
          size += round - ( size % round );
 
@@ -533,12 +532,7 @@ struct transaction_op
       int_t pos;
       int_t size;
       int_t old_tran_id;
-      int32_t old_tran_op;
-
-      // NOTE: Pad the data structure size to 64 bytes.
-      int32_t padding;
-      int_t padding_2;
-      int_t padding_3;
+      int_t old_tran_op;
    } data;
 
    op_type type;
@@ -549,8 +543,6 @@ struct transaction_op
       data.size = 0;
       data.old_tran_id = 0;
       data.old_tran_op = 0;
-
-      data.padding = data.padding_2 = data.padding_3 = 0;
 
       type = e_op_type_none;
    }
@@ -569,8 +561,8 @@ struct transaction_level_info
 
    int_t size;
    int_t offset;
-   int32_t op_count;
-   int32_t op_offset;
+   int_t op_count;
+   int_t op_offset;
 };
 
 class ods_index_cache_buffer;
