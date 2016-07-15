@@ -3328,9 +3328,6 @@ ods& operator >>( ods& o, storable_base& s )
                can_read = false;
             else
             {
-               if( index_entry.get_ver( ) != s.id.get_ver( ) )
-                  throw ods_error( "invalid object reference" );
-
                if( !o.p_impl->trans_level
                 || ( index_entry.trans_flag == ods_index_entry::e_trans_none )
                 || ( index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id ) )
@@ -3473,7 +3470,7 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
          ostringstream osstr;
-         osstr << "oid: num = " << s.id.get_num( ) << ", ver = " << s.id.get_ver( );
+         osstr << "oid: num = " << s.id.get_num( );
          DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -3531,11 +3528,9 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
             ostringstream osstr;
-            osstr << "oid (new): num = " << s.id.get_num( ) << ", ver = " << s.id.get_ver( );
+            osstr << "oid (new): num = " << s.id.get_num( );
             DEBUG_LOG( osstr.str( ) );
 #endif
-            s.id.ver = index_entry.ver;
-
             can_write = true;
          }
          else
