@@ -16,11 +16,6 @@
 #  include <stdexcept>
 #endif
 
-// KLUDGE: see below...
-#ifdef _MSC_VER
-#  include <fstream>
-#endif
-
 #include "ods.h"
 #include "utilities.h"
 

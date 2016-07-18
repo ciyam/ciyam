@@ -9,9 +9,8 @@ Data Transformation Id = 10011
 Index Transformation Id = 50013
 
 ** Entry Info for: 0
-num: 0000000000000000            ver: 00000000
-txi: 0000000000007539            txo: 00000000                     flags: lk=0 tx=0
-pos: 0000000000063d72            len: 000000000000001c
+num: 0000000000000000          pos: 0000000000063d72          len: 000000000000001c
+txi: 0000000000007539          txo: 0000000000000000               flags: lk=0 tx=0
 0000000000063d72  04 00 00 00 00 00 00 00 72 6f 6f 74 ff ff ff ff  ........root....
 0000000000063d82  ff ff ff ff 00 00 00 00 00 00 00 00              ............
 
