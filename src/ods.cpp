@@ -449,12 +449,12 @@ class ods_index_entry
    public:
    struct data_t
    {
-      data_t( ) : pos( 0 ), ext( 0 ), size( 0 ), tran_id( 0 ) { }
+      data_t( ) : pos( 0 ), size( 0 ), tran_id( 0 ), tran_op( 0 ) { }
 
       int_t pos;
-      int_t ext;
       int_t size;
       int_t tran_id;
+      int_t tran_op;
    } data;
 
    private:
@@ -477,12 +477,9 @@ class ods_index_entry
    };
 
    int_t get_pos( ) const { return data.pos; }
-   int_t get_ext( ) const { return data.ext; }
    int_t get_size( ) const { return data.size; }
    int_t get_tran_id( ) const { return data.tran_id; }
-
-   int32_t get_ver( ) const { return ver; }
-   int32_t get_tran_op( ) const { return tran_op; }
+   int_t get_tran_op( ) const { return data.tran_op; }
 
    lock get_lock_flag( ) const { return lock_flag; }
    trans get_trans_flag( ) const { return trans_flag; }
@@ -491,9 +488,6 @@ class ods_index_entry
 
    lock lock_flag;
    trans trans_flag;
-
-   int32_t ver;
-   int32_t tran_op;
 
    friend class ods;
    friend ods& operator >>( ods& o, storable_base& s );
@@ -1627,8 +1621,6 @@ struct ods_index_entry_pos
 
 ods_index_entry::ods_index_entry( )
  :
- ver( 0 ),
- tran_op( 0 ),
  lock_flag( e_lock_none ),
  trans_flag( e_trans_none )
 {
@@ -1638,10 +1630,11 @@ void ods_index_entry::dump_entry( ostream& os, int_t num )
 {
    os << "num: " << hex
     << setw( 16 ) << setfill( '0' ) << num
-    << "            ver: " << hex << setw( 8 ) << setfill( '0' ) << ver
+    << "          pos: " << hex << setw( 16 ) << setfill( '0' ) << data.pos
+    << "          len: " << hex << setw( 16 ) << setfill( '0' ) << data.size
     << "\ntxi: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_id
-    << "            txo: " << hex << setw( 8 ) << setfill( '0' ) << tran_op
-    << "                     flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
+    << "          txo: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_op
+    << "               flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
     << " tx=" << hex << setw( 1 ) << setfill( '0' ) << trans_flag << dec << '\n';
 }
 
@@ -2274,7 +2267,7 @@ void ods::destroy( const oid& id )
                 && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
                {
                   if( index_entry.trans_flag == ods_index_entry::e_trans_none )
-                     index_entry.tran_op = 0;
+                     index_entry.data.tran_op = 0;
 
                   if( p_impl->trans_level )
                   {
@@ -2283,11 +2276,11 @@ void ods::destroy( const oid& id )
                      op.type = transaction_op::e_op_type_destroy;
 
                      op.data.id = id;
-                     op.data.old_tran_op = index_entry.tran_op;
+                     op.data.old_tran_op = index_entry.data.tran_op;
 
                      write_transaction_op( op );
 
-                     index_entry.tran_op = 0;
+                     index_entry.data.tran_op = 0;
                      index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
 
                      index_entry.trans_flag = ods_index_entry::e_trans_delete;
@@ -2301,7 +2294,7 @@ void ods::destroy( const oid& id )
 
                      index_entry.data.size = 0;
 
-                     index_entry.tran_op = 0;
+                     index_entry.data.tran_op = 0;
                      index_entry.data.tran_id = p_impl->rp_header_info->transaction_id;
 
                      index_entry.trans_flag = ods_index_entry::e_trans_free_list;
@@ -2542,7 +2535,7 @@ void ods::rollback_dead_transactions( )
 
             index_entry.data.size = 0;
 
-            index_entry.tran_op = 0;
+            index_entry.data.tran_op = 0;
             index_entry.trans_flag = ods_index_entry::e_trans_free_list;
 
             p_impl->rp_header_info->index_free_list = i + 1;
@@ -2552,7 +2545,7 @@ void ods::rollback_dead_transactions( )
          {
             ++( *p_impl->rp_session_update_total );
 
-            index_entry.tran_op = 0;
+            index_entry.data.tran_op = 0;
             index_entry.trans_flag = ods_index_entry::e_trans_none;
          }
 
@@ -2680,10 +2673,6 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
       }
       else
       {
-         os << "pos: " << hex << setw( 16 )
-          << setfill( '0' ) << index_entry.data.pos << "            len: "
-          << hex << setw( 16 ) << setfill( '0' ) << index_entry.data.size << dec << '\n';
-
          if( !only_pos_and_size )
          {
             int_t chunk = 16;
@@ -3033,7 +3022,7 @@ void ods::transaction_commit( )
                      }
                   }
 
-                  index_entry.tran_op = 0;
+                  index_entry.data.tran_op = 0;
                   if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                      index_entry.trans_flag = ods_index_entry::e_trans_none;
 
@@ -3142,7 +3131,7 @@ void ods::transaction_rollback( )
                   ++( *p_impl->rp_session_delete_total );
                }
 
-               index_entry.tran_op = op.data.old_tran_op;
+               index_entry.data.tran_op = op.data.old_tran_op;
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                {
                   if( op.data.old_tran_op == 0 )
@@ -3368,7 +3357,7 @@ ods& operator >>( ods& o, storable_base& s )
                o.p_impl->read_from_trans = true;
 
                transaction_op op;
-               o.read_transaction_op( op, index_entry.tran_op - 1 );
+               o.read_transaction_op( op, index_entry.data.tran_op - 1 );
 
                s.last_size = op.data.size;
                trans_read_pos = op.data.pos;
@@ -3500,7 +3489,6 @@ ods& operator <<( ods& o, storable_base& s )
          {
             if( !o.p_impl->rp_header_info->index_free_list )
             {
-               index_entry.data.ext = 0;
                s.id.num = o.p_impl->rp_header_info->total_entries;
 
                p_total_to_update = &*o.p_impl->rp_session_create_total;
@@ -3514,8 +3502,6 @@ ods& operator <<( ods& o, storable_base& s )
 
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                   throw ods_error( "unexpected trans flag value found in freelist entry" );
-
-               ++index_entry.ver;
 
                index_entry.trans_flag = ods_index_entry::e_trans_none;
                s.id.num = o.p_impl->rp_header_info->index_free_list - 1;
@@ -3586,13 +3572,13 @@ ods& operator <<( ods& o, storable_base& s )
 
                op.data.old_tran_id = old_tran_id;
                if( index_entry.trans_flag != ods_index_entry::e_trans_none )
-                  op.data.old_tran_op = index_entry.tran_op;
+                  op.data.old_tran_op = index_entry.data.tran_op;
 
                op.data.pos =
                 o.p_impl->p_trans_buffer->levels.top( ).offset
                 + o.p_impl->p_trans_buffer->levels.top( ).size;
 
-               index_entry.tran_op =
+               index_entry.data.tran_op =
                 o.p_impl->p_trans_buffer->levels.top( ).op_offset
                 + o.p_impl->p_trans_buffer->levels.top( ).op_count + 1;
                index_entry.data.tran_id = o.p_impl->p_trans_buffer->tran_id;
@@ -3975,26 +3961,23 @@ void ods::read_index_entry( ods_index_entry& index_entry, int_t num )
       ( int& )index_entry.lock_flag |= c_bit_1;
    }
 
-   if( index_entry.data.ext & c_int_type_hi_bit )
-   {
-      index_entry.data.ext &= ~c_int_type_hi_bit;
-      ( int& )index_entry.lock_flag |= c_bit_2;
-   }
-
    if( index_entry.data.size & c_int_type_hi_bit )
    {
       index_entry.data.size &= ~c_int_type_hi_bit;
-      ( int& )index_entry.trans_flag |= c_bit_1;
+      ( int& )index_entry.lock_flag |= c_bit_2;
    }
 
    if( index_entry.data.tran_id & c_int_type_hi_bit )
    {
       index_entry.data.tran_id &= ~c_int_type_hi_bit;
-      ( int& )index_entry.trans_flag |= c_bit_2;
+      ( int& )index_entry.trans_flag |= c_bit_1;
    }
 
-   index_entry.ver = ( index_entry.data.ext & c_int_type_low_bits );
-   index_entry.tran_op = ( index_entry.data.ext & c_int_type_high_bits ) >> ( std::numeric_limits< uint_t >::digits / 2 );
+   if( index_entry.data.tran_op & c_int_type_hi_bit )
+   {
+      index_entry.data.tran_op &= ~c_int_type_hi_bit;
+      ( int& )index_entry.trans_flag |= c_bit_2;
+   }
 }
 
 void ods::write_index_entry( const ods_index_entry& index_entry, int_t num, bool force_cache_write_back )
@@ -4019,20 +4002,17 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int_t num, bool
 
    data = index_entry.data;
 
-   data.ext = index_entry.ver;
-   data.ext |= ( int_t )index_entry.tran_op << ( std::numeric_limits< uint_t >::digits / 2 );
-
    if( index_entry.lock_flag & c_bit_1 )
       data.pos |= c_int_type_hi_bit;
 
    if( index_entry.lock_flag & c_bit_2 )
-      data.ext |= c_int_type_hi_bit;
-
-   if( index_entry.trans_flag & c_bit_1 )
       data.size |= c_int_type_hi_bit;
 
-   if( index_entry.trans_flag & c_bit_2 )
+   if( index_entry.trans_flag & c_bit_1 )
       data.tran_id |= c_int_type_hi_bit;
+
+   if( index_entry.trans_flag & c_bit_2 )
+      data.tran_op |= c_int_type_hi_bit;
 
    if( !force_cache_write_back )
       has_written_index_item = true;
