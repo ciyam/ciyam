@@ -105,7 +105,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       branch_files_or_objects( os, current_folder, expr, style, true );
    }
 
-   void add_file( const std::string& name, const std::string& src_name, std::ostream* p_os = 0, std::istream* p_is = 0 );
+   void add_file( const std::string& name, const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
 
    inline void add_file( const std::string& name, std::ostream* p_os = 0, std::istream* p_is = 0 )
    {
@@ -118,6 +118,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    {
       get_file( name, "", p_os, output_to_stream );
    }
+
+   void link_file( const std::string& name, const std::string& source, std::ostream* p_os = 0 );
 
    void move_file( const std::string& name, const std::string& destination, std::ostream* p_os = 0 );
 

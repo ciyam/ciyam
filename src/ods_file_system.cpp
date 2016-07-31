@@ -69,8 +69,13 @@ uint16_t c_ofs_object_maxiumum_val_size = 0x3fff;
 
 struct ofs_object
 {
+   ofs_object( ) : is_link( false ) { }
+
    string& str( ) { return val; }
    const string& const_str( ) const { return val; }
+
+   bool get_is_link( ) const { return is_link; }
+   void set_is_link( ) { is_link = true; }
 
    oid_pointer< storable_file >& get_file( ) { return o_file; }
    const oid_pointer< storable_file >& get_file( ) const { return o_file; }
@@ -88,6 +93,8 @@ struct ofs_object
    friend ostream& operator <<( ostream& outf, const ofs_object& t );
 
    string val;
+   bool is_link;
+
    oid_pointer< storable_file > o_file;
 };
 
@@ -107,9 +114,15 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
 
    bool has_file = false;
 
+   o.is_link = false;
+
    if( size & c_ofs_object_flag_type_vals )
    {
       has_file = true;
+
+      if( size & c_ofs_object_flag_type_link )
+         o.is_link = true;
+
       size &= ~c_ofs_object_flag_type_vals;
    }
 
@@ -136,6 +149,9 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
    {
       has_file = true;
       size |= c_ofs_object_flag_type_file;
+
+      if( o.is_link )
+         size |= c_ofs_object_flag_type_link;
    }
 
    ws << size;
@@ -392,9 +408,9 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
     : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), "|/" );
 }
 
-void ods_file_system::add_file( const string& name, const string& src_name, ostream* p_os, istream* p_is )
+void ods_file_system::add_file( const string& name, const string& source, ostream* p_os, istream* p_is )
 {
-   string file_name( src_name );
+   string file_name( source );
 
    if( file_name.empty( ) )
       file_name = name;
@@ -428,7 +444,7 @@ void ods_file_system::add_file( const string& name, const string& src_name, ostr
       auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
-      tmp_item.val = value + string( c_folder_separator );
+      tmp_item.val = current_folder + string( c_folder_separator ) + name;
 
       tmp_iter = bt.find( tmp_item );
 
@@ -535,6 +551,132 @@ void ods_file_system::get_file( const string& name, const string& destination, o
    }
 }
 
+void ods_file_system::link_file( const string& name, const string& source, ostream* p_os )
+{
+   btree_type& bt( p_impl->bt );
+
+   if( valid_file_name( name ) != name )
+   {
+      if( p_os )
+         *p_os << "*** invalid file name '" << name << "' ***" << endl;
+      else
+         throw runtime_error( "invalid file name '" + name + "'" );
+   }
+   else
+   {
+      string value( current_folder );
+      value = replace( value, c_folder_separator, c_pipe_separator );
+
+      value += string( c_folder_separator ) + name;
+
+      auto_ptr< ods::bulk_write > ap_bulk;
+
+      if( !o.is_bulk_locked( ) )
+         ap_bulk.reset( new ods::bulk_write( o ) );
+
+      o >> bt;
+
+      auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+
+      btree_type::iterator tmp_iter;
+      btree_type::item_type tmp_item;
+
+#ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
+      tmp_item.val = current_folder + string( c_folder_separator ) + name;
+
+      tmp_iter = bt.find( tmp_item );
+
+      if( tmp_iter != bt.end( ) )
+      {
+         if( p_os )
+            *p_os << "*** a folder with the name '" << name << "' already exists ***" << endl;
+         else
+            throw runtime_error( "a folder with the name '" + name + "' already exists" );
+      }
+      else
+#endif
+      {
+         tmp_item.val = value;
+
+         tmp_iter = bt.find( tmp_item );
+
+         if( tmp_iter != bt.end( ) )
+         {
+            if( p_os )
+               *p_os << "*** file '" << name << "' already exists ***" << endl;
+            else
+               throw runtime_error( "file '" + name + "' already exists" );
+         }
+         else
+         {
+            string::size_type pos = source.find( c_folder_separator );
+
+            string source_value;
+
+            if( pos == 0 )
+            {
+               string::size_type rpos = source.rfind( c_folder_separator );
+
+               if( rpos != pos )
+                  source_value = source;
+               else
+                  source_value = string( c_root_folder ) + source;
+            }
+            else
+            {
+               source_value = current_folder;
+
+               if( pos == string::npos )
+                  source_value += c_folder_separator;
+
+               source_value += source;
+            }
+
+            source_value = replace( source_value, c_folder_separator, c_pipe_separator );
+
+            string::size_type rpos = source_value.rfind( c_pipe_separator );
+
+            if( rpos != string::npos )
+               source_value[ rpos ] = c_folder;
+
+            tmp_item.val = source_value;
+
+            tmp_iter = bt.find( tmp_item );
+
+            if( tmp_iter == bt.end( ) )
+            {
+               if( p_os )
+                  *p_os << "*** file '" << source << "' not found ***" << endl;
+               else
+                  throw runtime_error( "file '" + source + "' not found" );
+            }
+            else
+            {
+               tmp_item.val = value;
+               tmp_item.set_is_link( );
+
+               oid id( tmp_iter->get_file( ).get_id( ) );
+
+               tmp_item.get_file( ).set_id( id );
+
+               bt.insert( tmp_item );
+
+               // NOTE: In order to make locating file links straight forward when
+               // the file is later removed (or its content is replaced) a special
+               // object that starts with the OID's number is created.
+               tmp_item.val = to_string( id.get_num( ) ) + value;
+
+               tmp_item.get_file( ).get_id( ).set_new( );
+
+               bt.insert( tmp_item );
+
+               ap_tx->commit( );
+            }
+         }
+      }
+   }
+}
+
 void ods_file_system::move_file( const string& name, const string& destination, ostream* p_os )
 {
    string dest( destination );
@@ -585,9 +727,11 @@ void ods_file_system::move_file( const string& name, const string& destination, 
       else
       {
          tmp_item = *tmp_iter;
+
+         bool is_link = tmp_item.get_is_link( );
          oid id( tmp_item.get_file( ).get_id( ) );
 
-         string dest_folder = determine_folder( dest );
+         string dest_folder( determine_folder( dest ) );
 
          if( dest_folder.empty( ) )
          {
@@ -620,6 +764,9 @@ void ods_file_system::move_file( const string& name, const string& destination, 
             tmp_item.val = full_name;
             tmp_item.get_file( ).set_id( id );
 
+            if( is_link )
+               tmp_item.set_is_link( );
+
             if( bt.find( tmp_item ) != bt.end( ) )
             {
                if( p_os )
@@ -647,6 +794,24 @@ void ods_file_system::move_file( const string& name, const string& destination, 
                else
 #endif
                {
+                  // NOTE: If this is a file link then need to also update its special object.
+                  if( is_link )
+                  {
+                     tmp_item.val = to_string( id.get_num( ) ) + value;
+
+                     tmp_iter = bt.find( tmp_item );
+
+                     if( tmp_iter != bt.end( ) )
+                     {
+                        tmp_item = *tmp_iter;
+
+                        bt.erase( tmp_iter );
+                        tmp_item.val = to_string( id.get_num( ) ) + full_name;
+
+                        bt.insert( tmp_item );
+                     }
+                  }
+
                   ap_tx->commit( );
                }
             }
@@ -668,6 +833,9 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
    btree_type::item_type tmp_item;
 
    o >> bt;
+
+   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+
    tmp_item.val = c_pipe_separator + current_folder + name;
 
    tmp_iter = bt.find( tmp_item );
@@ -681,10 +849,54 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
    }
    else
    {
-      if( !tmp_iter->get_file( ).get_id( ).is_new( ) )
-         o.destroy( tmp_iter->get_file( ).get_id( ) );
+      oid id( tmp_iter->get_file( ).get_id( ) );
+
+      bool is_link = tmp_iter->get_is_link( );
 
       bt.erase( tmp_iter );
+
+      if( !id.is_new( ) )
+      {
+         if( is_link )
+         {
+            tmp_item.val = to_string( id.get_num( ) ) + tmp_item.val;
+
+            tmp_iter = bt.find( tmp_item );
+
+            if( tmp_iter != bt.end( ) )
+               bt.erase( tmp_iter );
+         }
+         else
+         {
+            o.destroy( id );
+
+            string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
+            // NOTE: Now need to delete any existing links to the file.
+            while( true )
+            {
+               tmp_item.val = link_prefix;
+
+               tmp_iter = bt.lower_bound( tmp_item );
+
+               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+                  break;
+
+               string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
+
+               bt.erase( tmp_iter );
+
+               tmp_item.val = link_name;
+
+               tmp_iter = bt.find( tmp_item );
+
+               if( tmp_iter != bt.end( ) )
+                  bt.erase( tmp_iter );
+            }
+         }
+      }
+
+      ap_tx->commit( );
    }
 }
 
@@ -722,8 +934,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    }
    else
    {
-      if( !tmp_iter->get_file( ).get_id( ).is_new( ) )
-         o.destroy( tmp_iter->get_file( ).get_id( ) );
+      oid id( tmp_iter->get_file( ).get_id( ) );
 
       bt.erase( tmp_iter );
 
@@ -758,6 +969,48 @@ void ods_file_system::replace_file( const string& name, const string& source, os
       }
 
       bt.insert( tmp_item );
+
+      oid new_id( tmp_item.get_file( ).get_id( ) );
+
+      string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
+      // NOTE: If any links to the previous file existed then they now need to be updated.
+      while( true )
+      {
+         tmp_item.val = link_prefix;
+
+         tmp_iter = bt.lower_bound( tmp_item );
+
+         if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+            break;
+
+         string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
+
+         bt.erase( tmp_iter );
+
+         tmp_item.val = to_string( new_id.get_num( ) ) + link_name;
+         tmp_item.get_file( ).get_id( ).set_new( );
+
+         bt.insert( tmp_item );
+
+         tmp_item.val = link_name;
+
+         tmp_iter = bt.find( tmp_item );
+
+         if( tmp_iter != bt.end( ) )
+         {
+            bt.erase( tmp_iter );
+
+            tmp_item.set_is_link( );
+            tmp_item.get_file( ).set_id( new_id );
+
+            bt.insert( tmp_item );
+         }
+      }
+
+      if( !id.is_new( ) )
+         o.destroy( id );
+
       ap_tx->commit( );
    }
 }
@@ -1193,6 +1446,9 @@ void ods_file_system::perform_match(
                         else
                            break;
                      }
+
+                     if( match_iter->get_is_link( ) )
+                        val += "*";
 
                      if( !match_iter->get_file( ).get_id( ).is_new( )
                       && file_size_output != e_file_size_output_type_none )
@@ -1714,18 +1970,24 @@ bool ods_file_system::move_files_and_folders( const string& source,
 
          string next( tmp_iter->val );
 
-         string::size_type pos = next.find( full_name );
+         string old_name( next );
 
-         oid id = tmp_iter->get_file( ).get_id( );
+         string::size_type pos = next.find( full_name );
 
          if( pos != 0 )
             break;
+
+         bool is_link = tmp_iter->get_is_link( );
+         oid id = tmp_iter->get_file( ).get_id( );
 
          bt.erase( tmp_iter );
 
          next.erase( 0, full_name.length( ) );
 
          next.insert( 0, dest_name );
+
+         if( is_link )
+            tmp_item.set_is_link( );
 
          tmp_item.get_file( ).set_id( id );
 
@@ -1736,22 +1998,14 @@ bool ods_file_system::move_files_and_folders( const string& source,
          if( replace_existing )
             already_exists = ( bt.find( tmp_item ) != bt.end( ) );
 
-         if( already_exists )
-         {
-            if( !replace_existing )
-               throw runtime_error( "*** file '"
-                + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
-            else
-            {
-               if( !tmp_iter->get_file( ).get_id( ).is_new( ) )
-                  o.destroy( tmp_iter->get_file( ).get_id( ) );
-
-               bt.erase( tmp_iter );
-            }
-         }
+         if( already_exists && !replace_existing )
+            throw runtime_error( "*** file '"
+             + replaced( next, c_pipe_separator, c_folder_separator ) + "' already exists ***" );
          else
          {
             bt.insert( tmp_item );
+
+            string next_name( next );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
             replace( next, c_pipe_separator, c_colon_separator );
@@ -1761,6 +2015,23 @@ bool ods_file_system::move_files_and_folders( const string& source,
                throw runtime_error( "*** a folder with the name '"
                 + replaced( next, c_colon_separator, c_folder_separator ) + "' already exists ***" );
 #endif
+            // NOTE: If this is a file link then need to also update its special object.
+            if( is_link )
+            {
+               tmp_item.val = to_string( id.get_num( ) ) + old_name;
+
+               tmp_iter = bt.find( tmp_item );
+
+               if( tmp_iter != bt.end( ) )
+               {
+                  bt.erase( tmp_iter );
+
+                  tmp_item.val = to_string( id.get_num( ) ) + next_name;
+                  tmp_item.get_file( ).get_id( ).set_new( );
+
+                  bt.insert( tmp_item );
+               }
+            }
          }
       }
    }

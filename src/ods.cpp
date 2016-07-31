@@ -2287,6 +2287,10 @@ void ods::destroy( const oid& id )
                   }
                   else
                   {
+                     if( index_entry.data.pos + index_entry.data.size
+                      == p_impl->rp_header_info->total_size_of_data )
+                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+
                      if( !p_impl->rp_header_info->index_free_list )
                         index_entry.data.pos = 0;
                      else
@@ -2332,6 +2336,7 @@ void ods::destroy( const oid& id )
    if( p_impl->trans_level && trans_write_ops_buffer_num != -1 && has_written_trans_op )
    {
       p_impl->p_ods_trans_op_cache_buffer->put( trans_write_ops_buffer, trans_write_ops_buffer_num );
+
       has_written_trans_op = false;
       had_interim_trans_op_write = true;
    }
@@ -2441,6 +2446,7 @@ void ods::move_free_data_to_end( )
 
       if( next_pos < read_pos )
          throw ods_error( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
+
       adjust_read_data_pos( next_pos - read_pos );
 
       if( next_pos != new_pos )
@@ -2980,6 +2986,10 @@ void ods::transaction_commit( )
                {
                   if( index_entry.trans_flag == ods_index_entry::e_trans_delete )
                   {
+                     if( index_entry.data.pos + index_entry.data.size
+                      == p_impl->rp_header_info->total_size_of_data )
+                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+
                      if( !p_impl->rp_header_info->index_free_list )
                         index_entry.data.pos = 0;
                      else
@@ -3118,6 +3128,10 @@ void ods::transaction_rollback( )
             {
                if( op.data.old_tran_op == 0 && op.data.old_tran_id == -1 )
                {
+                  if( index_entry.data.pos + index_entry.data.size
+                   == p_impl->rp_header_info->total_size_of_data )
+                     p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+
                   if( !p_impl->rp_header_info->index_free_list )
                      index_entry.data.pos = 0;
                   else

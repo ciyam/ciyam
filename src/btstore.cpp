@@ -226,6 +226,13 @@ void btstore_command_functor::operator ( )( const string& command, const paramet
 
       ap_ofs->get_file( name, file_name, &cout, use_cout );
    }
+   else if( command == c_cmd_btstore_file_link )
+   {
+      string name( get_parm_val( parameters, c_cmd_parm_btstore_file_link_name ) );
+      string source( get_parm_val( parameters, c_cmd_parm_btstore_file_link_source ) );
+
+      ap_ofs->link_file( name, source, &cout );
+   }
    else if( command == c_cmd_btstore_file_move )
    {
       string name( get_parm_val( parameters, c_cmd_parm_btstore_file_move_name ) );
