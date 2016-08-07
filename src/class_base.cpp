@@ -2571,39 +2571,11 @@ void from_string( class_base& cb, const string& s )
    class_base_accessor( cb ).set_key( s );
 }
 
-string int_to_comparable_string( int i, bool prefix_with_sign, int max_digits )
-{
-   string retval;
-
-   if( prefix_with_sign )
-   {
-      if( i < 0 )
-         retval += '-';
-      else
-         retval += '+';
-   }
-
-   string digits( to_string( i ) );
-
-   if( digits[ 0 ] == '-' )
-      digits.erase( 0, 1 );
-
-   if( max_digits == 0 )
-      max_digits = c_int_digits10 + 1;
-
-   int extra = max_digits - digits.size( );
-
-   if( extra > 0 )
-      retval += string( extra, '0' );
-   retval += digits;
-
-   return retval;
-}
-
 string construct_key_from_int( const string& prefix, int num, int num_digits )
 {
    string retval( prefix );
-   retval += int_to_comparable_string( num, false, num_digits );
+   retval += to_comparable_string( num, false, num_digits );
+
    return retval;
 }
 

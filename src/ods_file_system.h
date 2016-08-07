@@ -52,10 +52,15 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files_or_objects( "", os, false, style );
    }
 
-   inline void list_files( const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
+   inline void list_files(
+    const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
    {
       list_files_or_objects( expr, os, false, style );
    }
+
+   void list_folders( const std::string& expr, std::vector< std::string >& list );
+
+   inline void list_folders( std::vector< std::string >& list ) { list_folders( "", list ); }
 
    void list_folders( const std::string& expr, std::ostream& os, bool full_path = false );
 
@@ -66,7 +71,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files_or_objects( "", os, true, style );
    }
 
-   inline void list_objects( const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
+   inline void list_objects(
+    const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
    {
       list_files_or_objects( expr, os, true, style );
    }
@@ -83,12 +89,14 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       branch_files_or_objects( os, current_folder, "", style );
    }
 
-   inline void branch_files( const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default )
+   inline void branch_files(
+    const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default )
    {
       branch_files_or_objects( os, current_folder, expr, style );
    }
 
-   void branch_folders( const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default );
+   void branch_folders(
+    const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default );
 
    inline void branch_folders( std::ostream& os, branch_style style = e_branch_style_default )
    {
@@ -100,39 +108,78 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       branch_files_or_objects( os, current_folder, "", style, true );
    }
 
-   inline void branch_objects( const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default )
+   inline void branch_objects(
+    const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default )
    {
       branch_files_or_objects( os, current_folder, expr, style, true );
    }
 
-   void add_file( const std::string& name, const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+   void add_file(
+    const std::string& name, const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
 
    inline void add_file( const std::string& name, std::ostream* p_os = 0, std::istream* p_is = 0 )
    {
       add_file( name, "", p_os, p_is );
    }
 
-   void get_file( const std::string& name, const std::string& destination, std::ostream* p_os = 0, bool output_to_stream = false );
+   inline void add_file( const std::string& name, std::istream* p_is )
+   {
+      add_file( name, "", 0, p_is );
+   }
+
+   void get_file( const std::string& name,
+    const std::string& destination, std::ostream* p_os = 0, bool output_to_stream = false );
 
    inline void get_file( const std::string& name, std::ostream* p_os = 0, bool output_to_stream = false )
    {
       get_file( name, "", p_os, output_to_stream );
    }
 
+   inline void get_file( const std::string& name, std::ostream& os )
+   {
+      get_file( name, "", &os, true );
+   }
+
+   bool has_file( const std::string& name );
+
    void link_file( const std::string& name, const std::string& source, std::ostream* p_os = 0 );
 
    void move_file( const std::string& name, const std::string& destination, std::ostream* p_os = 0 );
 
+   void store_file( const std::string& name,
+    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+
+   inline void store_file( const std::string& name, std::istream* p_is = 0 )
+   {
+      store_file( name, "", 0, p_is );
+   }
+
+   inline void store_file( const std::string& name, std::ostream* p_os, std::istream* p_is = 0 )
+   {
+      store_file( name, "", p_os, p_is );
+   }
+
    void remove_file( const std::string& name, std::ostream* p_os = 0 );
 
-   void replace_file( const std::string& name, const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+   void replace_file( const std::string& name,
+    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
 
    inline void replace_file( const std::string& name, std::ostream* p_os = 0, std::istream* p_is = 0 )
    {
       replace_file( name, "", p_os, p_is );
    }
 
+   void store_as_text_file( const std::string& name, int32_t val );
+   void store_as_text_file( const std::string& name, int64_t val );
+   void store_as_text_file( const std::string& name, const std::string& val, size_t pad_to_len = 0 );
+
+   void fetch_from_text_file( const std::string& name, int32_t& val );
+   void fetch_from_text_file( const std::string& name, int64_t& val );
+   void fetch_from_text_file( const std::string& name, std::string& val, bool remove_padding = false );
+
    void add_folder( const std::string& name, std::ostream* p_os = 0 );
+
+   bool has_folder( const std::string& name );
 
    void move_folder( const std::string& name,
     const std::string& destination, bool overwrite = false, std::ostream* p_os = 0 );
@@ -151,8 +198,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       e_file_size_output_type_num_bytes
    };
 
-   void perform_match( std::ostream& os, const std::string& expr, const std::string& regexpr,
-    size_t* p_count = 0, std::vector< std::pair< std::string, std::string > >* p_search_replaces = 0,
+   void perform_match( std::ostream& os,
+    const std::string& expr, const std::string& regexpr, size_t* p_count = 0,
+    std::vector< std::pair< std::string, std::string > >* p_search_replaces = 0,
     const char* p_prefix_1 = 0, const char* p_prefix_2 = 0,
     const char erase_all_before_and_including = '\0',
     file_size_output_type file_size_output = e_file_size_output_type_none,
@@ -168,8 +216,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    void list_files_or_objects( const std::string& expr,
     std::ostream& os, bool objects = true, list_style style = e_list_style_default );
 
-   void branch_files_or_objects( std::ostream& os, const std::string& folder,
-    const std::string& expr, branch_style style, bool show_folders = false, const std::string* p_start_folder = 0 );
+   void branch_files_or_objects(
+    std::ostream& os, const std::string& folder, const std::string& expr,
+    branch_style style, bool show_folders = false, const std::string* p_start_folder = 0 );
 
    bool move_files_and_folders( const std::string& source,
     const std::string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );

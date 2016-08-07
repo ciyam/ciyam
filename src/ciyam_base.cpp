@@ -55,6 +55,7 @@
 #include "ciyam_session.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
+#include "ods_file_system.h"
 #include "module_interface.h"
 #include "module_management.h"
 #include "read_write_stream.h"
@@ -69,6 +70,7 @@ namespace
 const string c_nul_key( 1, '\0' );
 
 const char c_module_prefix_separator = '_';
+const char c_module_order_prefix_separator = '.';
 
 const int c_identity_burn = 100;
 
@@ -86,6 +88,8 @@ const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 200;
 
 const int c_loop_variable_digits = 8;
+
+const int c_storable_file_pad_len = 32;
 
 const int c_max_file_buffer_expansion = 10;
 
@@ -171,6 +175,16 @@ const char* const c_dead_keys_ext = ".dead_keys.lst";
 const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
+
+const char* const c_storable_file_name_clim = "clim";
+const char* const c_storable_file_name_ident = "ident";
+const char* const c_storable_file_name_log_id = "log_id";
+const char* const c_storable_file_name_mod_dir = "mod_dir";
+const char* const c_storable_file_name_t_count = "t_count";
+const char* const c_storable_file_name_version = "version";
+const char* const c_storable_file_name_web_root = "web_root";
+
+const char* const c_storable_folder_name_modules = "modules";
 
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
@@ -594,47 +608,14 @@ typedef lock_index_container::value_type lock_index_value_type;
 
 const int c_storage_format_version = 1;
 
-struct storage_module
+// NOTE: Log identity values less than 5 are reserved for system purposes.
+struct log_identity
 {
-   storage_module( ) : version( 0 ) { }
-
-   int32_t version;
-};
-
-typedef storable< storage_module, 256, storable_base > storable_module;
-
-typedef map< string, oid_pointer< storable_module > > storable_module_container;
-typedef storable_module_container::iterator storable_module_iterator;
-typedef storable_module_container::const_iterator storable_module_const_iterator;
-typedef storable_module_container::value_type storable_module_value_type;
-
-// NOTE: Identity values less than 5 are reserved for system purposes.
-struct identity
-{
-   identity( ) : next_id( 4 ), ceiling( 0 ) { }
+   log_identity( ) : next_id( 4 ), ceiling( 0 ) { }
 
    int32_t next_id;
    int32_t ceiling;
 };
-
-typedef storable< identity, 0, storable_base > storable_identity;
-
-int_t size_of( const identity& i )
-{
-   return size_determiner( &i.next_id );
-}
-
-read_stream& operator >>( read_stream& rs, identity& i )
-{
-   rs >> i.next_id;
-   return rs;
-}
-
-write_stream& operator <<( write_stream& ws, const identity& i )
-{
-   ws << i.next_id;
-   return ws;
-}
 
 struct storage_root
 {
@@ -660,88 +641,39 @@ struct storage_root
    int32_t truncation_count;
 
    vector< string > module_list;
-   storable_module_container modules;
 
-   oid_pointer< storable_identity > o_identity;
+   log_identity log_id;
+
+   void store_as_text_files( ods_file_system& ofs );
+   void fetch_from_text_files( ods_file_system& ods );
 };
 
-typedef storable< storage_root, 512, storable_base > storable_root;
-
-int_t size_of( const storage_root& sr )
+void storage_root::store_as_text_files( ods_file_system& ofs )
 {
-   size_t size( 0 );
-
-   size += size_determiner( &sr.version );
-   size += size_determiner( &sr.identity );
-
-   size += size_determiner( &sr.cache_limit );
-
-   size += size_determiner( &sr.web_root );
-
-   size += size_determiner( &sr.module_directory );
-   size += size_determiner( &sr.truncation_count );
-
-   size += size_determiner( &sr.module_list );
-   size += size_determiner( &sr.modules );
-
-   size += size_determiner( &sr.o_identity );
-
-   return size;
+   ofs.store_as_text_file( c_storable_file_name_clim, cache_limit );
+   ofs.store_as_text_file( c_storable_file_name_ident, identity );
+   ofs.store_as_text_file( c_storable_file_name_log_id, log_id.next_id );
+   ofs.store_as_text_file( c_storable_file_name_mod_dir, module_directory, c_storable_file_pad_len );
+   ofs.store_as_text_file( c_storable_file_name_t_count, truncation_count );
+   ofs.store_as_text_file( c_storable_file_name_version, version );
+   ofs.store_as_text_file( c_storable_file_name_web_root, web_root, c_storable_file_pad_len );
 }
 
-read_stream& operator >>( read_stream& rs, storage_root& sr )
+void storage_root::fetch_from_text_files( ods_file_system& ofs )
 {
-   rs
-    >> sr.version
-    >> sr.identity
-    >> sr.cache_limit
-    >> sr.web_root
-    >> sr.module_directory
-    >> sr.truncation_count
-    >> sr.module_list
-    >> sr.modules
-    >> sr.o_identity;
+   ofs.fetch_from_text_file( c_storable_file_name_clim, cache_limit );
+   ofs.fetch_from_text_file( c_storable_file_name_ident, identity );
+   ofs.fetch_from_text_file( c_storable_file_name_log_id, log_id.next_id );
+   ofs.fetch_from_text_file( c_storable_file_name_mod_dir, module_directory, true );
+   ofs.fetch_from_text_file( c_storable_file_name_t_count, truncation_count );
+   ofs.fetch_from_text_file( c_storable_file_name_version, version );
+   ofs.fetch_from_text_file( c_storable_file_name_web_root, web_root, true );
 
-   return rs;
-}
+   // NOTE: Force an identity write to occur when the first transaction is logged.
+   log_id.ceiling = log_id.next_id;
 
-write_stream& operator <<( write_stream& ws, const storage_root& sr )
-{
-   ws
-    << sr.version
-    << sr.identity
-    << sr.cache_limit
-    << sr.web_root
-    << sr.module_directory
-    << sr.truncation_count
-    << sr.module_list
-    << sr.modules
-    << sr.o_identity;
-
-   return ws;
-}
-
-int_t size_of( const storage_module& sm )
-{
-   size_t size( 0 );
-
-   size += size_determiner( &sm.version );
-
-   return size;
-}
-
-read_stream& operator >>( read_stream& rs, storage_module& sm )
-{
-   rs >> sm.version;
-
-   return rs;
-}
-
-write_stream& operator <<( write_stream& ws, const storage_module& sm )
-{
-   ws << sm.version;
-
-   return ws;
+   if( version != c_storage_format_version )
+      throw runtime_error( "found incorrect storage format version " + to_string( version ) );
 }
 
 typedef multimap< time_t, string > time_info_container;
@@ -784,8 +716,8 @@ class storage_handler
    ofstream* get_alternative_log_file( ) { return p_alternative_log_file; }
    void set_alternative_log_file( ofstream* p_log_file ) { p_alternative_log_file = p_log_file; }
 
-   storable_root& get_root( ) { return root; }
-   const storable_root& get_root( ) const { return root; }
+   storage_root& get_root( ) { return root; }
+   const storage_root& get_root( ) const { return root; }
 
    bool is_using_blockchain( ) const { return root.identity.find( ':' ) != string::npos; }
 
@@ -833,7 +765,7 @@ class storage_handler
    ofstream log_file;
    ofstream* p_alternative_log_file;
 
-   storable_root root;
+   storage_root root;
 
    size_t next_lock_handle;
 
@@ -1470,7 +1402,6 @@ void perform_storage_op( storage_op op,
          {
             ods::transaction tx( *ap_ods );
 
-            ap_handler->get_root( ).set_new( );
             ap_handler->get_root( ).module_directory = directory;
 
             string blockchain( get_raw_session_variable( c_special_variable_blockchain ) );
@@ -1478,26 +1409,39 @@ void perform_storage_op( storage_op op,
             if( !blockchain.empty( ) )
                ap_handler->get_root( ).identity += ":" + blockchain;
 
-            *ap_ods << ap_handler->get_root( );
+            ods_file_system ofs( *ap_ods );
 
-            // NOTE: Create the storage "identity" object then store the root object again (so that
-            // the root object is the first and the identity object is the second within the storage).
-            ap_handler->get_root( ).o_identity.reset( new storable_identity );
-            ap_handler->get_root( ).o_identity.store( );
-            *ap_ods << ap_handler->get_root( );
+            ofs.add_folder( c_storable_folder_name_modules );
+            ap_handler->get_root( ).store_as_text_files( ofs );
 
             tx.commit( );
          }
          else
          {
-            ap_handler->get_root( ).set_id( 0 );
-            *ap_ods >> ap_handler->get_root( );
-
             if( ap_handler->get_root( ).version != c_storage_format_version )
                throw runtime_error( "found incorrect storage format version " + to_string( ap_handler->get_root( ).version ) );
 
+            ods_file_system ofs( *ap_ods );
+            ap_handler->get_root( ).fetch_from_text_files( ofs );
+
+            ofs.set_folder( c_storable_folder_name_modules );
+
+            vector< string > order_prefixed_module_list;
+            ofs.list_folders( order_prefixed_module_list );
+
+            for( size_t i = 0; i < order_prefixed_module_list.size( ); i++ )
+            {
+               string next( order_prefixed_module_list[ i ] );
+               string::size_type pos = next.find( c_module_order_prefix_separator );
+
+               if( pos != string::npos )
+                  next.erase( 0, pos + 1 );
+
+               ap_handler->get_root( ).module_list.push_back( next );
+            }
+
             // NOTE: Force an identity write to occur when the first transaction is logged.
-            ap_handler->get_root( ).o_identity->ceiling = ap_handler->get_root( ).o_identity->next_id;
+            ap_handler->get_root( ).log_id.ceiling = ap_handler->get_root( ).log_id.next_id;
          }
 
          string dead_keys_file( ap_handler->get_name( ) + c_dead_keys_ext );
@@ -1802,7 +1746,10 @@ bool fetch_instance_from_db( class_base& instance,
 
                      if( handler.get_record_cache( ).count( key_info ) )
                      {
-                        time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+                        time_info_iterator tii
+                         = handler.get_key_for_time( ).lower_bound(
+                         handler.get_time_for_key( ).find( key_info )->second );
+
                         while( tii->second != key_info )
                            ++tii;
 
@@ -3155,7 +3102,7 @@ void append_transaction_log_command( storage_handler& handler,
          tx_id = 2;
       else
       {
-         storable_identity& identity( *handler.get_root( ).o_identity );
+         log_identity& identity( handler.get_root( ).log_id );
 
          if( identity.next_id == identity.ceiling )
          {
@@ -3166,8 +3113,10 @@ void append_transaction_log_command( storage_handler& handler,
             // to occur normally then the actual "next_id" will be written and no
             // identity value is lost. If for some reason normal termination does
             // not occur then up to the "burn" number of identities will be lost.
-            restorable< int > tmp_identity( identity.next_id, identity.ceiling );
-            handler.get_root( ).o_identity.store( e_oid_pointer_opt_force_write );
+            restorable< int32_t > tmp_identity( identity.next_id, identity.ceiling );
+
+            ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+            ofs.store_as_text_file( c_storable_file_name_log_id, identity.next_id );
          }
 
          tx_id = ++identity.next_id;
@@ -6454,7 +6403,11 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count )
       if( p_truncation_count )
       {
          *p_truncation_count = ++gtp_session->p_storage_handler->get_root( ).truncation_count;
-         *p_ods << gtp_session->p_storage_handler->get_root( );
+
+         ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+
+         ofs.store_as_text_file( c_storable_file_name_t_count,
+          gtp_session->p_storage_handler->get_root( ).truncation_count );
 
          ostringstream osstr;
          osstr << handler.get_name( ) << ".log." << setw( 3 ) << setfill( '0' ) << *p_truncation_count;
@@ -6526,10 +6479,11 @@ void term_storage( command_handler& cmd_handler )
       while( !gtp_session->transactions.empty( ) )
          transaction_rollback( );
 
-      // NOTE: Now store the "next_id" (rather than the "ceiling" value). The "force_write" option
-      // is to ensure that store occurs regardless of whether the "oid_pointer" has registered any
-      // change (as using reference aliases prevents that mechanism from working).
-      gtp_session->p_storage_handler->get_root( ).o_identity.store( e_oid_pointer_opt_force_write );
+      // NOTE: Now store the "next_id" (rather than the "ceiling" value).
+      ods_file_system ofs( *ods::instance( ) );
+
+      ofs.store_as_text_file( c_storable_file_name_log_id,
+       gtp_session->p_storage_handler->get_root( ).log_id.next_id );
 
       delete ods::instance( );
       ods::instance( 0, true );
@@ -6590,7 +6544,8 @@ void storage_comment( const string& comment )
       gtp_session->transaction_log_command = ";" + comment;
 
       storage_handler& handler( *gtp_session->p_storage_handler );
-      storable_identity& identity( *handler.get_root( ).o_identity );
+
+      log_identity& identity( handler.get_root( ).log_id );
 
       // NOTE: During a "restore" the comment does not need to be logged unless it follows initial data
       // records (as others will be appended to the new log file by the "storage restore" code itself).
@@ -6669,11 +6624,12 @@ size_t storage_cache_limit( size_t new_limit )
 
    if( p_ods )
    {
-      ods::transaction tx( *p_ods );
-      *p_ods << handler.get_root( );
-      tx.commit( );
+      ods_file_system ofs( *p_ods );
 
-      storable_identity& identity( *handler.get_root( ).o_identity );
+      ofs.store_as_text_file( c_storable_file_name_clim,
+       gtp_session->p_storage_handler->get_root( ).cache_limit );
+
+      log_identity& identity( handler.get_root( ).log_id );
 
       gtp_session->transaction_log_command = ";cache_limit ==> " + to_string( new_limit );
       append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id );
@@ -6930,6 +6886,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
          string next;
          size_t line = 0;
          time_t ts( time( 0 ) );
+
          while( getline( logs, next ) )
          {
             ++line;
@@ -7144,9 +7101,10 @@ void storage_web_root( const string& new_root )
 
    if( p_ods )
    {
-      ods::transaction tx( *p_ods );
-      *p_ods << gtp_session->p_storage_handler->get_root( );
-      tx.commit( );
+      ods_file_system ofs( *p_ods );
+
+      ofs.store_as_text_file( c_storable_file_name_web_root,
+       gtp_session->p_storage_handler->get_root( ).web_root, c_storable_file_pad_len );
 
       gtp_session->transaction_log_command = ";web_root ==> " + new_root;
       append_transaction_log_command( *gtp_session->p_storage_handler );
@@ -7809,7 +7767,8 @@ void module_load( const string& module_name,
       ods* p_ods( ods::instance( ) );
       storage_handler& handler( *gtp_session->p_storage_handler );
 
-      if( handler.get_root( ).modules.find( module_name ) == handler.get_root( ).modules.end( ) )
+      if( find( handler.get_root( ).module_list.begin( ),
+       handler.get_root( ).module_list.end( ), module_name ) == handler.get_root( ).module_list.end( ) )
       {
          if( !handler.get_is_locked_for_admin( ) )
          {
@@ -7820,160 +7779,154 @@ void module_load( const string& module_name,
          gtp_session->storage_controlled_modules.push_back( module_name );
 
          handler.get_root( ).module_list.push_back( module_name );
-         handler.get_root( ).modules.insert( make_pair( module_name, oid_pointer< storable_module >( ) ) );
 
          try
          {
-            storable_module& module( *handler.get_root( ).modules[ module_name ] );
-
             string temp_sql_file_name;
 
-            if( module.get_id( ).is_new( ) )
+            vector< string > class_list;
+            list_module_classes( module_name, class_list );
+
+            map< string, string > class_ids_and_names;
+            list_module_classes( module_name, class_ids_and_names, true );
+
+            // NOTE: Create/append to a DDL file (which is the storage name with a ".sql" extension).
+            string sql_file_name( handler.get_name( ) );
+            sql_file_name += ".sql";
+
+            temp_sql_file_name = "~" + sql_file_name;
+
+            bool is_first = true;
+            bool file_existed( file_exists( sql_file_name ) );
+
+            ofstream out1( sql_file_name.c_str( ), ios::out | ios::app );
+            if( !out1 )
+               throw runtime_error(
+                "unable to open file '" + sql_file_name + "' for output/append in module_load" );
+
+            ofstream out2( temp_sql_file_name.c_str( ) );
+            if( !out2 )
+               throw runtime_error(
+                "unable to open file '" + temp_sql_file_name + "' for output in module_load" );
+
+            if( file_existed )
+               out1 << '\n';
+
+            tee_stream outf( out1, out2 );
+            outf << "BEGIN;\n";
+
+            for( size_t i = 0; i < class_list.size( ); i++ )
             {
-               vector< string > class_list;
-               list_module_classes( module_name, class_list );
+               vector< string > columns;
+               string sql_columns( get_sql_columns_for_module_class( module_name, class_list[ i ] ) );
 
-               map< string, string > class_ids_and_names;
-               list_module_classes( module_name, class_ids_and_names, true );
-
-               // NOTE: Create/append to a DDL file (which is the storage name with a ".sql" extension).
-               string sql_file_name( handler.get_name( ) );
-               sql_file_name += ".sql";
-
-               temp_sql_file_name = "~" + sql_file_name;
-
-               bool is_first = true;
-               bool file_existed( file_exists( sql_file_name ) );
-
-               ofstream out1( sql_file_name.c_str( ), ios::out | ios::app );
-               if( !out1 )
-                  throw runtime_error(
-                   "unable to open file '" + sql_file_name + "' for output/append in module_load" );
-
-               ofstream out2( temp_sql_file_name.c_str( ) );
-               if( !out2 )
-                  throw runtime_error(
-                   "unable to open file '" + temp_sql_file_name + "' for output in module_load" );
-
-               if( file_existed )
-                  out1 << '\n';
-
-               tee_stream outf( out1, out2 );
-               outf << "BEGIN;\n";
-
-               for( size_t i = 0; i < class_list.size( ); i++ )
+               if( !sql_columns.empty( ) )
                {
-                  vector< string > columns;
-                  string sql_columns( get_sql_columns_for_module_class( module_name, class_list[ i ] ) );
+                  split( sql_columns, columns );
 
-                  if( !sql_columns.empty( ) )
+                  string table_name( "T_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
+
+                  outf << "\nDROP TABLE IF EXISTS " << table_name << ";\n";
+
+                  // FUTURE: This message should be handled as a server string message.
+                  outf << "\n#Creating table and indexes for " << module_name
+                   << "_" << class_ids_and_names[ class_list[ i ] ] << "...\n";
+
+                  outf << "\nCREATE TABLE " << table_name << '\n';
+                  outf << "(\n";
+                  for( size_t j = 0; j < columns.size( ); j++ )
                   {
-                     split( sql_columns, columns );
+                     if( j > 0 )
+                        outf << ",\n";
+                     outf << " " << columns[ j ];
+                  }
+                  outf << "\n);\n";
 
-                     string table_name( "T_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
+                  vector< string > sql_indexes;
+                  get_sql_indexes_for_module_class( module_name, class_list[ i ], sql_indexes );
 
-                     outf << "\nDROP TABLE IF EXISTS " << table_name << ";\n";
+                  string index_prefix( "I_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
 
-                     // FUTURE: This message should be handled as a server string message.
-                     outf << "\n#Creating table and indexes for " << module_name
-                      << "_" << class_ids_and_names[ class_list[ i ] ] << "...\n";
+                  for( size_t j = 0; j < sql_indexes.size( ); j++ )
+                  {
+                     vector< string > index_columns;
+                     split( sql_indexes[ j ], index_columns );
 
-                     outf << "\nCREATE TABLE " << table_name << '\n';
+                     outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
+                     if( j < 10 )
+                        outf << '0';
+                     outf << j << " ON " << table_name << '\n';
                      outf << "(\n";
-                     for( size_t j = 0; j < columns.size( ); j++ )
+                     for( size_t k = 0; k < index_columns.size( ); k++ )
                      {
-                        if( j > 0 )
+                        if( k > 0 )
                            outf << ",\n";
-                        outf << " " << columns[ j ];
+                        outf << " " << index_columns[ k ];
                      }
                      outf << "\n);\n";
-
-                     vector< string > sql_indexes;
-                     get_sql_indexes_for_module_class( module_name, class_list[ i ], sql_indexes );
-
-                     string index_prefix( "I_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
-
-                     for( size_t j = 0; j < sql_indexes.size( ); j++ )
-                     {
-                        vector< string > index_columns;
-                        split( sql_indexes[ j ], index_columns );
-
-                        outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
-                        if( j < 10 )
-                           outf << '0';
-                        outf << j << " ON " << table_name << '\n';
-                        outf << "(\n";
-                        for( size_t k = 0; k < index_columns.size( ); k++ )
-                        {
-                           if( k > 0 )
-                              outf << ",\n";
-                           outf << " " << index_columns[ k ];
-                        }
-                        outf << "\n);\n";
-                     }
                   }
                }
+            }
 
-               outf << "\nCOMMIT;\n";
-               outf.flush( );
+            outf << "\nCOMMIT;\n";
+            outf.flush( );
 
-               if( gtp_session->ap_db.get( ) )
+            if( gtp_session->ap_db.get( ) )
+            {
+               // NOTE: As MySQL DDL operations with InnoDB can be very slow the global
+               // thread lock is released whilst performing the DDL. As the storage has
+               // already been locked for administration this should be of no concern.
+               ap_guard.reset( );
+               try
                {
-                  // NOTE: As MySQL DDL operations with InnoDB can be very slow the global
-                  // thread lock is released whilst performing the DDL. As the storage has
-                  // already been locked for administration this should be of no concern.
-                  ap_guard.reset( );
-                  try
-                  {
-                     exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
-                  }
-                  catch( ... )
-                  {
-                     // NOTE: Restore the storage state (otherwise a SQL error can be lost
-                     // due to the fact that the storage is left in an inconsistent state).
-                     gtp_session->storage_controlled_modules.pop_back( );
-                     *p_ods >> handler.get_root( );
-                     throw;
-                  }
+                  exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
+               }
+               catch( ... )
+               {
+                  gtp_session->storage_controlled_modules.pop_back( );
 
-                  ap_guard.reset( new guard( g_mutex ) );
+                  // NOTE: Restore the storage state (otherwise a SQL error can be lost
+                  // due to the fact that the storage is left in an inconsistent state).
+                  ods_file_system ofs( *p_ods );
+                  handler.get_root( ).fetch_from_text_files( ofs );
+
+                  throw;
                }
 
-               ods::transaction tx( *p_ods );
+               ap_guard.reset( new guard( g_mutex ) );
+            }
 
-               *p_ods << module;
+            ods_file_system ofs( *p_ods );
 
-               // FUTURE: Performing a "set_id" on the module's "oid_pointer" is inefficient
-               // as the "storable_module" object itself is destroyed when doing this.
-               handler.get_root( ).modules[ module_name ].set_id( module.get_id( ) );
-               *p_ods << handler.get_root( );
+            ofs.set_folder( c_storable_folder_name_modules );
 
-               tx.commit( );
+            string prefix( to_comparable_string( handler.get_root( ).module_list.size( ), false, 3 ) );
 
-               if( log_tx_comment )
+            ofs.add_folder( prefix + c_module_order_prefix_separator + module_name );
+
+            if( log_tx_comment )
+            {
+               gtp_session->transaction_log_command = ";module ==> " + module_name;
+               append_transaction_log_command( handler, true, handler.get_root( ).module_list.size( ) );
+            }
+
+            if( append_to_module_list )
+            {
+               string module_list_file( handler.get_name( ) + ".modules.lst" );
+
+               set< string > existing_modules;
+
+               if( file_exists( module_list_file ) )
+                  buffer_file_lines( module_list_file, existing_modules );
+
+               if( !existing_modules.count( module_name ) )
                {
-                  gtp_session->transaction_log_command = ";module ==> " + module_name;
-                  append_transaction_log_command( handler, true, handler.get_root( ).module_list.size( ) );
-               }
+                  ofstream modf( module_list_file.c_str( ), ios::out | ios::app );
 
-               if( append_to_module_list )
-               {
-                  string module_list_file( handler.get_name( ) + ".modules.lst" );
+                  if( !modf )
+                     throw runtime_error( "unexpected error opening '" + module_list_file + "' for output/append" );
 
-                  set< string > existing_modules;
-
-                  if( file_exists( module_list_file ) )
-                     buffer_file_lines( module_list_file, existing_modules );
-
-                  if( !existing_modules.count( module_name ) )
-                  {
-                     ofstream modf( module_list_file.c_str( ), ios::out | ios::app );
-
-                     if( !modf )
-                        throw runtime_error( "unexpected error opening '" + module_list_file + "' for output/append" );
-
-                     modf << module_name << endl;
-                  }
+                  modf << module_name << endl;
                }
             }
 
@@ -10589,7 +10542,8 @@ size_t set_transaction_id( size_t tx_id )
    guard g( g_mutex );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
-   storable_identity& identity( *handler.get_root( ).o_identity );
+
+   log_identity& identity( handler.get_root( ).log_id );
 
    identity.next_id = tx_id;
 
@@ -10603,8 +10557,10 @@ size_t set_transaction_id( size_t tx_id )
       // to occur normally then the actual "next_id" will be written and no
       // identity value is lost. If for some reason normal termination does
       // not occur then up to the "burn" number of identities will be lost.
-      restorable< int > tmp_identity( identity.next_id, identity.ceiling );
-      handler.get_root( ).o_identity.store( e_oid_pointer_opt_force_write );
+      restorable< int32_t > tmp_identity( identity.next_id, identity.ceiling );
+
+      ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+      ofs.store_as_text_file( c_storable_file_name_log_id, identity.next_id );
    }
 
    return identity.next_id;
@@ -10615,7 +10571,8 @@ size_t next_transaction_id( )
    guard g( g_mutex );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
-   storable_identity& identity( *handler.get_root( ).o_identity );
+
+   log_identity& identity( handler.get_root( ).log_id );
 
    return identity.next_id;
 }
@@ -11760,7 +11717,8 @@ bool perform_instance_iterate( class_base& instance,
          if( row_limit != 1 )
             instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
 
-         instance.set_variable( c_special_variable_loop, int_to_comparable_string( 0, false, c_loop_variable_digits ) );
+         instance.set_variable( c_special_variable_loop,
+          to_comparable_string( 0, false, c_loop_variable_digits ) );
 
          found = fetch_instance_from_db( instance,
           instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
@@ -11898,7 +11856,9 @@ bool perform_instance_iterate_next( class_base& instance )
    }
 
    int loop_num = atoi( instance.get_raw_variable( c_special_variable_loop ).c_str( ) );
-   instance.set_variable( c_special_variable_loop, int_to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
+
+   instance.set_variable( c_special_variable_loop,
+    to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
 
    if( found || cache_depleted )
       return found;

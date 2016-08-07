@@ -51,16 +51,6 @@ inline std::string to_string( int num, int min_digits )
    return s;
 }
 
-template< typename T > inline std::string to_comparable_string( const T& t )
-{
-   return to_string( t );
-}
-
-template< > inline std::string to_comparable_string( const int& i )
-{
-   return int_to_comparable_string( i );
-}
-
 template< typename T > inline void append_value( std::string& str, const T& value, char separator = '\n' )
 {
    if( !str.empty( ) )
