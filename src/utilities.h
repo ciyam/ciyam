@@ -321,7 +321,49 @@ template< typename T > class restorable
 #     pragma option pop
 #  endif
 
-template< typename T > std::string signed_to_string( T val )
+inline std::string comparable_int_string(
+ bool prefix_with_sign, int max_digits, const std::string& val, bool is_less_than_zero )
+{
+   std::string retval;
+
+   if( prefix_with_sign )
+   {
+      if( is_less_than_zero )
+         retval += '-';
+      else
+         retval += '+';
+   }
+
+   std::string digits( val );
+
+   if( digits[ 0 ] == '-' )
+      digits.erase( 0, 1 );
+
+   int extra = max_digits - digits.size( );
+
+   if( extra > 0 )
+      retval += std::string( extra, '0' );
+
+   retval += digits;
+
+   return retval;
+}
+
+template< typename T > inline std::string
+ to_comparable_string( T val, bool prefix_with_sign, int max_digits = 0 )
+{
+   if( max_digits == 0 )
+      max_digits = std::numeric_limits< T >::digits10;
+
+   return comparable_int_string( prefix_with_sign, max_digits, to_string( val ), val < 0 );
+}
+
+template< typename T > inline std::string to_comparable_string( const T& val )
+{
+   return to_comparable_string( val, true );
+}
+
+template< typename T > inline std::string signed_to_string( T val )
 {
    const int buf_size = std::numeric_limits< T >::digits10 + 3;
 
@@ -350,7 +392,7 @@ template< typename T > std::string signed_to_string( T val )
    return &buf[ pos ];
 }
 
-template< typename T > std::string unsigned_to_string( T val )
+template< typename T > inline std::string unsigned_to_string( T val )
 {
    const int buf_size = std::numeric_limits< T >::digits10 + 2;
 
@@ -698,7 +740,7 @@ inline std::string replace_unquoted_environment_variables(
    return replace_environment_variables( p_str, c, false, p_specials, esc );
 }
 
-std::string trim( const std::string& s, bool leading_only = false );
+std::string trim( const std::string& s, bool leading_only = false, bool trailing_only = false );
 
 size_t split( const std::string& s, std::set< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );
 size_t split( const std::string& s, std::deque< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );

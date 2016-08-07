@@ -356,7 +356,7 @@ class test_cache_command_handler : public console_command_handler
     items_per_region( c_default_items_per_region ),
     number_of_regions( c_default_number_of_regions )
    {
-      set_custom_startup_options( 3, "[<max_items=5>[<items_per_region=10>[<num_regions=1>]]]" );
+      set_custom_startup_options( 3, "[<max_items=5> [<items_per_region=10> [<num_regions=1>]]]" );
    }
 
    void init( )

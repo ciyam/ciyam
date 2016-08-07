@@ -1329,36 +1329,43 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
    }
 }
 
-string trim( const string& s, bool leading_only )
+string trim( const string& s, bool leading_only, bool trailing_only )
 {
    string t;
+
    if( s.length( ) )
    {
       string ws( c_whitespace_chars );
 
       string::size_type start = 0;
-      string::size_type finish = s.length( ) - 1;
+      string::size_type finish = s.length( );
 
-      for( string::size_type i = 0; i < s.length( ); i++ )
+      if( !trailing_only )
       {
-         if( ws.find( s[ i ] ) == string::npos )
-            break;
-         ++start;
+         for( string::size_type i = 0; i < s.length( ); i++ )
+         {
+            if( ws.find( s[ i ] ) == string::npos )
+               break;
+            ++start;
+         }
       }
 
       if( start < finish )
       {
          if( !leading_only )
          {
-            for( string::size_type i = s.length( ) - 1; i > 0; i-- )
+            for( string::size_type i = s.length( ) - 1; ; i-- )
             {
                if( ws.find( s[ i ] ) == string::npos )
                   break;
                --finish;
+
+               if( i == 0 )
+                  break;
             }
          }
 
-         t = s.substr( start, finish - start + 1 );
+         t = s.substr( start, finish - start );
       }
    }
 

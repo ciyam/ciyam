@@ -178,7 +178,7 @@ inline size_t first_wildcard_character_pos( const string& str )
    return str.find_first_of( "?*" );
 }
 
-template< class S > struct wildcard_compare_less_functor : public std::binary_function< S, S, bool >
+template< class S > struct wildcard_compare_less_functor : public binary_function< S, S, bool >
 {
    wildcard_compare_less_functor( )
     :
@@ -208,7 +208,7 @@ template< class S > struct wildcard_compare_less_functor : public std::binary_fu
    mutable bool truncated_comparison;
 };
 
-template< class S > struct wildcard_compare_equal_functor : public std::binary_function< S, S, bool >
+template< class S > struct wildcard_compare_equal_functor : public binary_function< S, S, bool >
 {
    bool operator( )( const S& x, const S& y ) const
    {
@@ -221,7 +221,7 @@ typedef storable< storable_node_base< ofs_object >, storable_node_base< ofs_obje
 
 typedef storable_node_manager< ofs_object > btree_node_manager_type;
 
-typedef bt_transaction< ofs_object, std::less< ofs_object >, btree_node_type, btree_node_manager_type > btree_trans_type;
+typedef bt_transaction< ofs_object, less< ofs_object >, btree_node_type, btree_node_manager_type > btree_trans_type;
 
 }
 
@@ -241,7 +241,7 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
 
    btree_type& bt( p_impl->bt );
 
-   if( !o.is_new( ) )
+   if( o.get_total_entries( ) > i + 1 )
    {
       bt.set_id( i );
       o >> bt;
@@ -345,6 +345,20 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os )
    }
 
    return new_folder;
+}
+
+void ods_file_system::list_folders( const string& expr, vector< string >& list )
+{
+   ostringstream osstr;
+
+   list_folders( expr, osstr );
+
+   string folder_list( osstr.str( ) );
+
+   if( !folder_list.empty( ) && folder_list[ folder_list.length( ) - 1 ] == '\n' )
+      folder_list = folder_list.substr( 0, folder_list.length( ) - 1 );
+
+   split( folder_list, list, '\n' );
 }
 
 void ods_file_system::list_folders( const string& expr, ostream& os, bool full_path )
@@ -551,6 +565,29 @@ void ods_file_system::get_file( const string& name, const string& destination, o
    }
 }
 
+bool ods_file_system::has_file( const string& name )
+{
+   btree_type& bt( p_impl->bt );
+
+   string value( current_folder );
+   value = replace( value, c_folder_separator, c_pipe_separator );
+
+   value += string( c_folder_separator ) + name;
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   o >> bt;
+
+   btree_type::item_type tmp_item;
+
+   tmp_item.val = value;
+
+   return bt.find( tmp_item ) != bt.end( );
+}
+
 void ods_file_system::link_file( const string& name, const string& source, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
@@ -609,29 +646,16 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
          }
          else
          {
-            string::size_type pos = source.find( c_folder_separator );
+            string::size_type pos = source.rfind( c_folder );
 
-            string source_value;
+            string source_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
 
-            if( pos == 0 )
-            {
-               string::size_type rpos = source.rfind( c_folder_separator );
+            string source_folder( determine_folder( source ) );
 
-               if( rpos != pos )
-                  source_value = source;
-               else
-                  source_value = string( c_root_folder ) + source;
-            }
-            else
-            {
-               source_value = current_folder;
+            if( source_folder.empty( ) )
+               source_folder = string( c_root_folder );
 
-               if( pos == string::npos )
-                  source_value += c_folder_separator;
-
-               source_value += source;
-            }
-
+            string source_value( source_folder + c_folder_separator + source_name );
             source_value = replace( source_value, c_folder_separator, c_pipe_separator );
 
             string::size_type rpos = source_value.rfind( c_pipe_separator );
@@ -820,6 +844,22 @@ void ods_file_system::move_file( const string& name, const string& destination, 
    }
 }
 
+void ods_file_system::store_file( const string& name,
+ const string& source, ostream* p_os, istream* p_is )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_write > ap_bulk;
+
+   if( !o.is_bulk_write_locked( ) )
+      ap_bulk.reset( new ods::bulk_write( o ) );
+
+   if( !has_file( name ) )
+      add_file( name, source, p_os, p_is );
+   else
+      replace_file( name, source, p_os, p_is );
+}
+
 void ods_file_system::remove_file( const string& name, ostream* p_os )
 {
    btree_type& bt( p_impl->bt );
@@ -936,12 +976,13 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    {
       oid id( tmp_iter->get_file( ).get_id( ) );
 
-      bt.erase( tmp_iter );
+      tmp_item.get_file( ).set_id( id );
 
       scoped_ods_instance so( o );
 
       if( !p_is )
-         tmp_item.get_file( new storable_file_extra( file_name ) ).store( );
+         tmp_item.get_file(
+          new storable_file_extra( file_name ) ).store( e_oid_pointer_opt_force_write_skip_read );
       else
       {
          string next, content;
@@ -965,54 +1006,69 @@ void ods_file_system::replace_file( const string& name, const string& source, os
 
          istringstream isstr( content );
 
-         tmp_item.get_file( new storable_file_extra( file_name, isstr, content.size( ) ) ).store( );
+         tmp_item.get_file( new storable_file_extra(
+          file_name, isstr, content.size( ) ) ).store( e_oid_pointer_opt_force_write_skip_read );
       }
-
-      bt.insert( tmp_item );
-
-      oid new_id( tmp_item.get_file( ).get_id( ) );
-
-      string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
-
-      // NOTE: If any links to the previous file existed then they now need to be updated.
-      while( true )
-      {
-         tmp_item.val = link_prefix;
-
-         tmp_iter = bt.lower_bound( tmp_item );
-
-         if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
-            break;
-
-         string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
-
-         bt.erase( tmp_iter );
-
-         tmp_item.val = to_string( new_id.get_num( ) ) + link_name;
-         tmp_item.get_file( ).get_id( ).set_new( );
-
-         bt.insert( tmp_item );
-
-         tmp_item.val = link_name;
-
-         tmp_iter = bt.find( tmp_item );
-
-         if( tmp_iter != bt.end( ) )
-         {
-            bt.erase( tmp_iter );
-
-            tmp_item.set_is_link( );
-            tmp_item.get_file( ).set_id( new_id );
-
-            bt.insert( tmp_item );
-         }
-      }
-
-      if( !id.is_new( ) )
-         o.destroy( id );
 
       ap_tx->commit( );
    }
+}
+
+void ods_file_system::store_as_text_file( const string& name, int32_t val )
+{
+   string value( to_comparable_string( val, false ) );
+
+   istringstream isstr( value );
+
+   store_file( name, &isstr );
+}
+
+void ods_file_system::store_as_text_file( const string& name, int64_t val )
+{
+   string value( to_comparable_string( val, false ) );
+
+   istringstream isstr( value );
+
+   store_file( name, &isstr );
+}
+
+void ods_file_system::store_as_text_file( const string& name, const string& val, size_t pad_to_len )
+{
+   string value( val );
+
+   if( pad_to_len && value.length( ) < pad_to_len )
+      value += string( pad_to_len - value.length( ), ' ' );
+
+   istringstream isstr( value );
+
+   store_file( name, &isstr );
+}
+
+void ods_file_system::fetch_from_text_file( const string& name, int32_t& val )
+{
+   ostringstream osstr;
+   get_file( name, osstr );
+
+   val = from_string< int32_t >( osstr.str( ) );
+}
+
+void ods_file_system::fetch_from_text_file( const string& name, int64_t& val )
+{
+   ostringstream osstr;
+   get_file( name, osstr );
+
+   val = from_string< int64_t >( osstr.str( ) );
+}
+
+void ods_file_system::fetch_from_text_file( const string& name, string& val, bool remove_padding )
+{
+   ostringstream osstr;
+   get_file( name, osstr );
+
+   val = osstr.str( );
+
+   if( remove_padding )
+      val = trim( val, false, true );
 }
 
 void ods_file_system::add_folder( const string& name, ostream* p_os )
@@ -1113,6 +1169,36 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
          }
       }
    }
+}
+
+bool ods_file_system::has_folder( const string& name )
+{
+   btree_type& bt( p_impl->bt );
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   o >> bt;
+
+   string full_name( current_folder );
+
+   if( !name.empty( ) )
+   {
+      if( name[ 0 ] == c_folder )
+         full_name = name;
+      else
+         full_name += c_folder + name;
+
+      btree_type::item_type tmp_item;
+
+      tmp_item.val = full_name;
+
+      return bt.find( tmp_item ) != bt.end( );
+   }
+
+   return false;
 }
 
 void ods_file_system::move_folder( const string& name, const string& destination, bool overwrite, ostream* p_os )

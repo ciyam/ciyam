@@ -1110,8 +1110,6 @@ inline bool operator !=( const class_base& cb, const std::string& s ) { return s
 
 void CLASS_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC int_to_comparable_string( int i, bool prefix_with_sign = true, int max_digits = 0 );
-
 std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num, int num_digits = 5 );
 
 template< typename T > inline int to_integer( const T& t ) { return t; }

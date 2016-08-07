@@ -17,7 +17,8 @@ template< typename T > write_stream& operator <<( write_stream& ws, const oid_po
 enum oid_pointer_opt
 {
    e_oid_pointer_opt_if_changed,
-   e_oid_pointer_opt_force_write
+   e_oid_pointer_opt_force_write,
+   e_oid_pointer_opt_force_write_skip_read
 };
 
 template< typename T > class oid_pointer
@@ -61,7 +62,7 @@ template< typename T > class oid_pointer
    void set_extra( storable_extra* p_new_extra );
 
    private:
-   void get_instance( ) const;
+   void get_instance( bool do_not_read = false ) const;
 
    oid id;
 
@@ -166,10 +167,10 @@ template< typename T > inline void oid_pointer< T >::store( oid_pointer_opt opt 
    if( !p_T )
    {
       changed = true;
-      get_instance( );
+      get_instance( opt == e_oid_pointer_opt_force_write_skip_read );
    }
 
-   if( p_T && ( changed || opt == e_oid_pointer_opt_force_write ) )
+   if( p_T && ( changed || opt >= e_oid_pointer_opt_force_write ) )
    {
       *ods::instance( ) << *p_T;
       id = p_T->get_id( );
@@ -226,7 +227,7 @@ template< typename T > inline void oid_pointer< T >::set_extra( storable_extra* 
    p_extra = p_new_extra;
 }
 
-template< typename T > inline void oid_pointer< T >::get_instance( ) const
+template< typename T > inline void oid_pointer< T >::get_instance( bool do_not_read ) const
 {
    if( !p_T )
    {
@@ -236,7 +237,7 @@ template< typename T > inline void oid_pointer< T >::get_instance( ) const
       if( p_extra )
          p_T->set_extra( p_extra );
 
-      if( !id.is_new( ) )
+      if( !do_not_read && !id.is_new( ) )
          *ods::instance( ) >> *p_T;
    }
 }

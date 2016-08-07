@@ -25,12 +25,19 @@ using namespace std;
 
 #include "btstore.cmh"
 
+namespace
+{
+
 const char* const c_opt_exclusive = "-x";
 
 const char* const c_app_title = "btstore";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
+
+int64_t g_oid = 0;
+
+string g_name( c_app_title );
 
 bool g_shared_access = true;
 
@@ -60,6 +67,8 @@ string application_title( app_info_request request )
    }
 }
 
+}
+
 class btstore_startup_functor : public command_functor
 {
    public:
@@ -84,18 +93,21 @@ class btstore_command_handler : public console_command_handler
    public:
    btstore_command_handler( )
    {
+      set_custom_startup_options( 2, "[<name> [<ident>]]" );
    }
 
-   void init( const char* p_file_name );
+   void init( );
 
    private:
    auto_ptr< ods > ap_ods;
    auto_ptr< ods_file_system > ap_ofs;
+
+   void process_custom_startup_option( size_t num, const string& option );
 };
 
-void btstore_command_handler::init( const char* p_file_name )
+void btstore_command_handler::init( )
 {
-   ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
+   ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
     ( g_shared_access ? ods::e_share_mode_shared : ods::e_share_mode_exclusive ) ) );
 
    ods::bulk_write bulk_write( *ap_ods );
@@ -103,7 +115,22 @@ void btstore_command_handler::init( const char* p_file_name )
    if( !g_shared_access && !ap_ods->is_new( ) )
       ap_ods->rollback_dead_transactions( );
 
-   ap_ofs.reset( new ods_file_system( *ap_ods ) );
+   ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
+}
+
+void btstore_command_handler::process_custom_startup_option( size_t num, const string& option )
+{
+   if( num == 0 )
+      g_name = option;
+   else if( num == 1 )
+   {
+      if( !option.empty( ) && option[ 0 ] >= '0' && option[ 0 ] <= '9' )
+         g_oid = from_string< int64_t >( option );
+      else
+         throw runtime_error( "unexpected startup option '" + option + "'" );
+   }
+   else
+      throw runtime_error( "unexpected startup option '" + option + "'" );
 }
 
 class btstore_command_functor : public command_functor
@@ -326,7 +353,7 @@ int main( int argc, char* argv[ ] )
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
-      cmd_handler.init( "btstore" );
+      cmd_handler.init( );
 
       cmd_handler.add_commands( 0,
        btstore_command_functor_factory, ARRAY_PTR_AND_SIZE( btstore_command_definitions ) );
