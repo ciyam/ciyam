@@ -349,20 +349,6 @@ inline std::string comparable_int_string(
    return retval;
 }
 
-template< typename T > inline std::string
- to_comparable_string( T val, bool prefix_with_sign, int max_digits = 0 )
-{
-   if( max_digits == 0 )
-      max_digits = std::numeric_limits< T >::digits10;
-
-   return comparable_int_string( prefix_with_sign, max_digits, to_string( val ), val < 0 );
-}
-
-template< typename T > inline std::string to_comparable_string( const T& val )
-{
-   return to_comparable_string( val, true );
-}
-
 template< typename T > inline std::string signed_to_string( T val )
 {
    const int buf_size = std::numeric_limits< T >::digits10 + 3;
@@ -493,6 +479,20 @@ template< typename T > inline std::string to_string( const T& t )
 #  ifdef __BORLANDC__
 #     define USE_FROM_STRING_IMPL
 #  endif
+
+template< typename T > inline std::string
+ to_comparable_string( T val, bool prefix_with_sign, int max_digits = 0 )
+{
+   if( max_digits == 0 )
+      max_digits = std::numeric_limits< T >::digits10;
+
+   return comparable_int_string( prefix_with_sign, max_digits, to_string( val ), val < 0 );
+}
+
+template< typename T > inline std::string to_comparable_string( const T& val )
+{
+   return to_comparable_string( val, true );
+}
 
 // NOTE: For some reason BCB is not able to use/handle the "from_string" std::string specialisation when
 // explicit syntax (i.e. from_string< std::string >( s )) is used. So a work-around is to instead forward
