@@ -28,7 +28,7 @@ int main( int argc, char* argv[ ] )
       if( argc < 2
        || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
       {
-         cout << "Usage: DUMP [[-d] <entries>] <file>" << endl;
+         cout << "Usage: ods_dump [[-d] <entries>] <file>" << endl;
          return 0;
       }
 
@@ -90,7 +90,7 @@ int main( int argc, char* argv[ ] )
 
       if( entries.length( ) )
       {
-         int_t totalEntriesDumped = 0;
+         int_t total_entries_dumped = 0;
          cout << endl << "** Entry Info for: " << entries << endl;
 
          while( true )
@@ -106,7 +106,7 @@ int main( int argc, char* argv[ ] )
 
                cout << '\n';
 
-               if( ++totalEntriesDumped % 500 == 0 )
+               if( ++total_entries_dumped % 500 == 0 )
                   bulk_dump.pause( );
             }
 
