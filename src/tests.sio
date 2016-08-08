@@ -810,19 +810,19 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>dump test_ods
+      <exec>ods_dump test_ods
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>dump all test_ods
+      <exec>ods_dump all test_ods
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>dump -d all test_ods
+      <exec>ods_dump -d all test_ods
       <input>false
       <output>generate
      </test_step>
@@ -843,13 +843,13 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>dump test_ods
+      <exec>ods_dump test_ods
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>dump -d 0 test_ods
+      <exec>ods_dump -d 0 test_ods
       <input>false
       <output>generate
      </test_step>
@@ -865,13 +865,13 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>dump test_ods
+      <exec>ods_dump test_ods
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>dump -d 0 test_ods
+      <exec>ods_dump -d 0 test_ods
       <input>false
       <output>generate
      </test_step>
