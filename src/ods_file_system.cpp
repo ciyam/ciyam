@@ -347,6 +347,45 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os )
    return new_folder;
 }
 
+string ods_file_system::determine_strip_and_change_folder( string& name, std::ostream* p_os )
+{
+   string original_folder;
+
+   string::size_type pos = name.rfind( c_folder_separator );
+
+   if( pos != string::npos )
+   {
+      string source_folder( determine_folder( name.substr( 0, pos ), p_os ) );
+
+      if( source_folder.empty( ) )
+         name.erase( );
+      else
+      {
+         original_folder = get_folder( );
+
+         name.erase( 0, pos + 1 );
+         set_folder( source_folder );
+      }
+   }
+
+   return original_folder;
+}
+
+void ods_file_system::list_files( const string& expr, vector< string >& list )
+{
+   ostringstream osstr;
+
+   list_files( expr, osstr, e_list_style_brief );
+
+   string file_list( osstr.str( ) );
+
+   if( !file_list.empty( ) && file_list[ file_list.length( ) - 1 ] == '\n' )
+      file_list = file_list.substr( 0, file_list.length( ) - 1 );
+
+   if( !file_list.empty( ) )
+      split( file_list, list, '\n' );
+}
+
 void ods_file_system::list_folders( const string& expr, vector< string >& list )
 {
    ostringstream osstr;
@@ -358,7 +397,8 @@ void ods_file_system::list_folders( const string& expr, vector< string >& list )
    if( !folder_list.empty( ) && folder_list[ folder_list.length( ) - 1 ] == '\n' )
       folder_list = folder_list.substr( 0, folder_list.length( ) - 1 );
 
-   split( folder_list, list, '\n' );
+   if( !folder_list.empty( ) )
+      split( folder_list, list, '\n' );
 }
 
 void ods_file_system::list_folders( const string& expr, ostream& os, bool full_path )

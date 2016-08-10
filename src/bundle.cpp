@@ -43,8 +43,8 @@
 #include "base64.h"
 #include "config.h"
 #include "format.h"
-#include "fs_iterator.h"
 #include "utilities.h"
+#include "fs_iterator.h"
 
 #ifdef ZLIB_SUPPORT
 #  include <zlib.h>
