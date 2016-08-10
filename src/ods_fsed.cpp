@@ -18,6 +18,7 @@
 
 #include "ods.h"
 #include "utilities.h"
+#include "fs_iterator.h"
 #include "ods_file_system.h"
 #include "console_commands.h"
 
@@ -65,6 +66,120 @@ string application_title( app_info_request request )
       osstr << "unknown app_info_request: " << request;
       throw runtime_error( osstr.str( ) );
    }
+}
+
+void export_objects( ods_file_system& ofs )
+{
+   vector< string > files;
+
+   ofs.list_files( files );
+
+   for( size_t i = 0; i < files.size( ); i++ )
+   {
+      string next( files[ i ] );
+      ofs.get_file( next, next );
+   }
+
+   vector< string > folders;
+
+   ofs.list_folders( folders );
+
+   for( size_t i = 0; i < folders.size( ); i++ )
+   {
+      string next( folders[ i ] );
+
+      string cwd( get_cwd( ) );
+
+      bool rc = false;
+      set_cwd( next, &rc );
+
+      if( !rc )
+      {
+         create_dir( next );
+         set_cwd( next );
+      }
+
+      string folder( ofs.get_folder( ) );
+
+      ofs.set_folder( next );
+      export_objects( ofs );
+
+      ofs.set_folder( folder );
+
+      set_cwd( cwd );
+   }
+}
+
+void import_objects( ods_file_system& ofs, const string& directory )
+{
+   string cwd( get_cwd( ) );
+
+   set_cwd( directory );
+
+   directory_filter df;
+   fs_iterator dfsi( get_cwd( ), &df );
+
+   bool is_first = true;
+
+   deque< string > folders;
+   folders.push_back( get_cwd( ) );
+
+   string folder( ofs.get_folder( ) );
+
+   vector< string > all_folders;
+
+   do
+   {
+      all_folders.push_back( dfsi.get_path_name( ) );
+   } while( dfsi.has_next( ) );
+
+   set_cwd( cwd );
+
+   for( size_t i = 0; i < all_folders.size( ); i++ )
+   {
+      if( i > 0 )
+      {
+         string next_folder( all_folders[ i ] );
+         string::size_type pos = next_folder.find( folders.back( ) );
+
+         if( pos != 0 )
+         {
+            while( folders.size( ) > 1 )
+            {
+               folders.pop_back( );
+
+               ofs.set_folder( ".." );
+
+               if( next_folder.find( folders.back( ) ) == 0 )
+                  break;
+            }
+         }
+
+         next_folder.erase( 0, folders.back( ).length( ) + 1 );
+
+         if( !ofs.has_folder( next_folder ) )
+            ofs.add_folder( next_folder );
+
+         ofs.set_folder( next_folder );
+
+         folders.push_back( all_folders[ i ] );
+      }
+
+      vector< pair< string, string > > all_files;
+
+      file_filter ff;
+      fs_iterator ffsi( all_folders[ i ], &ff );
+
+      while( ffsi.has_next( ) )
+         all_files.push_back( make_pair( ffsi.get_name( ), ffsi.get_full_name( ) ) );
+
+      set_cwd( cwd );
+
+      for( size_t j = 0; j < all_files.size( ); j++ )
+         ofs.store_file( all_files[ j ].first, all_files[ j ].second );
+   }
+
+   ofs.set_folder( folder );
 }
 
 }
@@ -251,7 +366,15 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       bool use_cout( has_parm_val( parameters, c_cmd_parm_ods_fsed_file_get_cout ) );
       string file_name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_get_file_name ) );
 
-      ap_ofs->get_file( name, file_name, &cout, use_cout );
+      string original_folder( ap_ofs->determine_strip_and_change_folder( name, &cout ) );
+
+      if( !name.empty( ) )
+      {
+         ap_ofs->get_file( name, file_name, &cout, use_cout );
+
+         if( !original_folder.empty( ) )
+            ap_ofs->set_folder( original_folder );
+      }
    }
    else if( command == c_cmd_ods_fsed_file_link )
    {
@@ -300,6 +423,31 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_folder_remove_name ) );
 
       ap_ofs->remove_folder( name, &cout );
+   }
+   else if( command == c_cmd_ods_fsed_export )
+   {
+      string directory( get_parm_val( parameters, c_cmd_parm_ods_fsed_export_directory ) );
+
+      string cwd( get_cwd( ) );
+
+      bool rc = false;
+      set_cwd( directory, &rc );
+
+      if( !rc )
+      {
+         create_dir( directory );
+         set_cwd( directory );
+      }
+
+      export_objects( *ap_ofs );
+
+      set_cwd( cwd );
+   }
+   else if( command == c_cmd_ods_fsed_import )
+   {
+      string directory( get_parm_val( parameters, c_cmd_parm_ods_fsed_import_directory ) );
+
+      import_objects( *ap_ofs, directory );
    }
    else if( command == c_cmd_ods_fsed_rebuild )
    {

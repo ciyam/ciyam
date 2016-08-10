@@ -40,6 +40,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    std::string determine_folder( const std::string& folder, std::ostream* p_os = 0 );
 
+   std::string determine_strip_and_change_folder( std::string& name, std::ostream* p_os = 0 );
+
    enum list_style
    {
       e_list_style_brief,
@@ -57,6 +59,10 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    {
       list_files_or_objects( expr, os, false, style );
    }
+
+   void list_files( const std::string& expr, std::vector< std::string >& list );
+
+   inline void list_files( std::vector< std::string >& list ) { list_files( "", list ); }
 
    void list_folders( const std::string& expr, std::vector< std::string >& list );
 

@@ -12,6 +12,8 @@ file_replace "replace the content of an existing file" <val//name>[<opt/-c/cin>|
 folder_add "add a folder below the current folder" <val//name>
 folder_move "move a child folder below another folder or rename it" [<opt/-o/overwrite>]<val//name><val//destination>
 folder_remove "remove a folder from the current folder" <val//name>
+export "export all objects to a directory" <val//directory>
+import "import all objects from a directory" <val//directory>
 rebuild "rebuild index nodes"
 dump "dump container details (to a file)" [<val//filename>]
 compress "move free data to end of store"
