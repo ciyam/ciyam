@@ -15,15 +15,20 @@
    {
       if( !was_create_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) ) )
       {
+`{`!`@eq`(`$arg_from_other`,`'`'`)\
+         class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
+         cp_other->perform_fetch( get_obj( ).get_key( ) );
+
+`}\
          get_obj( ).`{`$arg_spfield`}( ).op_update( );
 `{`!`@eq`(`$arg_scfield`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( get_obj( ).`{`$arg_field`}( ) );
+         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_field`}( ) );
 `}\
 `{`!`@eq`(`$arg_oscfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( get_obj( ).`{`$arg_ofield`}( ) );
+         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_ofield`}( ) );
 `}\
 `{`!`@eq`(`$arg_o2scfield`,`'`'`)`&`!`@eq`(`$arg_o2field`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_o2scfield`}( get_obj( ).`{`$arg_o2field`}( ) );
+         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_o2scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_o2field`}( ) );
 `}\
          get_obj( ).`{`$arg_spfield`}( ).op_apply( );
       }   
