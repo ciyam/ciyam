@@ -56,6 +56,10 @@ namespace
 const char* const c_app_title = "ciyam_client";
 const char* const c_app_version = "0.1";
 
+const char* const c_cmd_exec = "exec";
+const char* const c_cmd_parm_exec_command = "command";
+const char* const c_cmd_parm_exec_arguments = "arguments";
+
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
@@ -95,6 +99,30 @@ string application_title( app_info_request request )
 
 int g_pid = get_pid( );
 
+string g_single_command;
+
+class ciyam_console_startup_functor : public command_functor
+{
+   public:
+   ciyam_console_startup_functor( command_handler& handler )
+    : command_functor( handler )
+   {
+   }
+
+   void operator ( )( const string& command, const parameter_info& parameters )
+   {
+      if( command == c_cmd_exec )
+      {
+         g_single_command = get_parm_val( parameters, c_cmd_parm_exec_command );
+
+         string arguments( get_parm_val( parameters, c_cmd_parm_exec_arguments ) );
+
+         if( !arguments.empty( ) )
+            g_single_command += " " + arguments;
+      }
+   }
+};
+
 class ciyam_console_command_handler : public console_command_handler
 {
    public:
@@ -109,7 +137,7 @@ class ciyam_console_command_handler : public console_command_handler
     socket( socket ),
     had_chk_command( false )
    {
-      set_custom_startup_options( 1, "[<port> or <host[:|-]port]>]" );
+      set_custom_startup_options( 1, "[<port> or <host[(:|-)port]>]" );
    }
 
    const char* get_host( ) const { return host.c_str( ); }
@@ -543,6 +571,10 @@ int main( int argc, char* argv[ ] )
       // NOTE: Use block scope for startup command processor object...
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
+
+         cmd_handler.add_command( c_cmd_exec, 1,
+          "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
       }
 
@@ -614,7 +646,11 @@ int main( int argc, char* argv[ ] )
             }
 
             console_command_processor processor( cmd_handler );
-            processor.process_commands( );
+
+            if( g_single_command.empty( ) )
+               processor.process_commands( );
+            else
+               processor.execute_command( g_single_command );
          }
          else
             throw runtime_error( "unable to connect to host '"
