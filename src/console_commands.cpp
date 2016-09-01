@@ -60,7 +60,7 @@ const char* const c_default_value_prompt = "VALUE=";
 #ifdef _WIN32
 const char* const c_startup_alt_help = "/?";
 #else
-const char* const c_startup_alt_help = "--help";
+const char* const c_startup_alt_help = "-help";
 #endif
 
 const char c_read_input_prefix = '<';

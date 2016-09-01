@@ -1426,8 +1426,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_mime( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_mime ) );
          bool is_text( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_text ) );
          bool is_blob( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_blob ) );
-         bool is_item( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_item ) );
-         bool is_tree( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tree ) );
+         bool is_list( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_list ) );
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
          string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tag ) );
 
@@ -1437,10 +1436,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( is_blob )
                data = c_file_type_str_blob + data;
-            else if( is_item )
-               data = c_file_type_str_item + data;
-            else if( is_tree )
-               data = c_file_type_str_tree + data;
+            else if( is_list )
+               data = c_file_type_str_list + data;
             else
                throw runtime_error( "unexpected unknown type" );
          }
@@ -1448,10 +1445,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( is_blob )
                data = c_file_type_char_core_blob + data;
-            else if( is_item )
-               data = c_file_type_char_core_item + data;
-            else if( is_tree )
-               data = c_file_type_char_core_tree + data;
+            else if( is_list )
+               data = c_file_type_char_core_list + data;
             else
                throw runtime_error( "unexpected unknown core type" );
 
@@ -1501,7 +1496,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( content )
             expansion = e_file_expansion_content;
          else if( recurse )
-            expansion = e_file_expansion_recursive;
+         {
+            if( depth_val >= 0 )
+               expansion = e_file_expansion_recursive;
+            else
+            {
+               depth_val = 0;
+               expansion = e_file_expansion_recursive_hashes;
+            }
+         }
 
          response = file_type_info( tag_or_hash, expansion, depth_val, 0, true );
       }
@@ -1509,9 +1512,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_pat ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_hash ) );
+         bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_recurse ) );
 
          if( !hash.empty( ) )
-            delete_file( hash );
+         {
+            if( !recurse )
+               delete_file( hash );
+            else
+               delete_file_tree( hash );
+         }
          else
             delete_files_for_tags( pat );
       }

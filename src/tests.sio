@@ -911,7 +911,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Test version, license and encrypt server operations (and console command handling).
+     <description>Test version, license, encrypt operations, console features and file system commands.
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet
@@ -920,6 +920,12 @@
      </test_step>
      <test_step/>
       <name>a
+      <exec>ciyam_client -echo -quiet
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
       <exec>ciyam_client -echo -quiet
       <input>true
       <output>generate
@@ -941,7 +947,7 @@
       <output>generate
      </test_step>
      <test_step/>
-      <name>c
+      <name>*term*
       <exec>$touch ciyam_server.stop
       <input>false
       <output>none

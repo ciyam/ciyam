@@ -44,7 +44,8 @@ enum file_expansion
 {
    e_file_expansion_none,
    e_file_expansion_content,
-   e_file_expansion_recursive
+   e_file_expansion_recursive,
+   e_file_expansion_recursive_hashes
 };
 
 std::string CLASS_BASE_DECL_SPEC file_type_info( const std::string& tag_or_hash,
@@ -73,6 +74,8 @@ void CLASS_BASE_DECL_SPEC store_file( const std::string& hash,
  tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0 );
 
 void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
+
+void CLASS_BASE_DECL_SPEC delete_file_tree( const std::string& hash );
 
 void CLASS_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat );
 
