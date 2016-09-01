@@ -96,12 +96,17 @@ string construct_file_name_from_hash( const string& hash,
    return filename;
 }
 
-void validate_item_or_tree( int type, const string& data, bool* p_rc = 0 )
+void validate_list( const string& data, bool* p_rc = 0 )
 {
-   if( type == c_file_type_val_item )
+   vector< string > list_items;
+   split( data, list_items, '\n' );
+
+   for( size_t i = 0; i < list_items.size( ); i++ )
    {
-      string::size_type pos = data.find( '\n' );
-      if( pos == string::npos )
+      string next_list_item( list_items[ i ] );
+      string::size_type pos = next_list_item.find( ' ' );
+
+      if( !has_file( next_list_item.substr( 0, pos ) ) )
       {
          if( p_rc )
          {
@@ -109,39 +114,7 @@ void validate_item_or_tree( int type, const string& data, bool* p_rc = 0 )
             return;
          }
          else
-            throw runtime_error( "item missing expected line-feed" );
-      }
-
-      valid_file_name( data.substr( 0, pos ) );
-
-      if( !has_file( data.substr( pos + 1 ) ) )
-      {
-         if( p_rc )
-         {
-            *p_rc = false;
-            return;
-         }
-         else
-            throw runtime_error( "file '" + data.substr( pos + 1 ) + "' does not exist" );
-      }
-   }
-   else if( type == c_file_type_val_tree )
-   {
-      vector< string > tree_items;
-      split( data, tree_items, '\n' );
-
-      for( size_t i = 0; i < tree_items.size( ); i++ )
-      {
-         if( !has_file( tree_items[ i ] ) )
-         {
-            if( p_rc )
-            {
-               *p_rc = false;
-               return;
-            }
-            else
-               throw runtime_error( "file '" + tree_items[ i ] + "' does not exist" );
-         }
+            throw runtime_error( "file '" + next_list_item.substr( 0, pos ) + "' does not exist" );
       }
    }
 
@@ -384,8 +357,7 @@ string file_type_info( const string& tag_or_hash,
    bool is_core = ( data[ 0 ] & c_file_type_val_extra_core );
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
-   if( file_type != c_file_type_val_blob
-    && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
+   if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    if( !is_compressed )
@@ -417,21 +389,24 @@ string file_type_info( const string& tag_or_hash,
    }
 #endif
 
+   string retval;
+
    // NOTE: As other functions rely upon the output format care should be taken to not alter this
    // without the use of additional function arguments (that default to keeping the format as is).
-   string retval( indent, ' ' );
+   if( expansion != e_file_expansion_recursive_hashes )
+   {
+      retval += string( indent, ' ' );
 
-   retval += '[';
+      retval += '[';
 
-   if( is_core )
-      retval += "core-";
+      if( is_core )
+         retval += "core-";
 
-   if( file_type == c_file_type_val_blob )
-      retval += "blob]";
-   else if( file_type == c_file_type_val_item )
-      retval += "item]";
-   else if( file_type == c_file_type_val_tree )
-      retval += "tree]";
+      if( file_type == c_file_type_val_blob )
+         retval += "blob]";
+      else if( file_type == c_file_type_val_list )
+         retval += "list]";
+   }
 
    string size_info( "(" + format_bytes( final_data.size( ) ) + ")" );
 
@@ -453,93 +428,83 @@ string file_type_info( const string& tag_or_hash,
    {
       if( file_type == c_file_type_val_blob )
       {
-         string blob_info( final_data.substr( 1 ) );
-
-         if( is_valid_utf8( blob_info ) )
+         if( expansion == e_file_expansion_recursive_hashes )
+            retval += lower( hash );
+         else
          {
-            retval += " " + lower( hash );
+            string blob_info( final_data.substr( 1 ) );
 
-            if( add_size )
-               retval += " " + size_info;
+            if( is_valid_utf8( blob_info ) )
+            {
+               retval += " " + lower( hash );
 
-            retval += " [utf8]";
+               if( add_size )
+                  retval += " " + size_info;
 
-            retval += "\n" + utf8_replace( blob_info, "\r", "" );
+               if( max_depth && indent >= max_depth )
+                  retval += "\n" + string( indent, ' ' ) + "...";
+               else
+               {
+                  retval += " [utf8]";
+                  retval += "\n" + utf8_replace( blob_info, "\r", "" );
+               }
+            }
+            else
+            {
+               retval += " " + lower( hash );
+
+               if( add_size )
+                  retval += " " + size_info;
+
+               if( max_depth && indent >= max_depth )
+                  retval += "\n" + string( indent, ' ' ) + "...";
+               else
+               {
+                  retval += " [base64]";
+
+                  retval += "\n" + base64::encode( blob_info );
+               }
+            }
          }
+      }
+      else if( file_type == c_file_type_val_list )
+      {
+         string list_info( final_data.substr( 1 ) );
+
+         vector< string > list_items;
+         split( list_info, list_items, '\n' );
+
+         if( expansion == e_file_expansion_recursive_hashes )
+            retval += lower( hash );
          else
          {
             retval += " " + lower( hash );
 
             if( add_size )
                retval += " " + size_info;
-
-            retval += " [base64]";
-
-            retval += "\n" + base64::encode( blob_info );
          }
-      }
-      else if( file_type == c_file_type_val_item )
-      {
-         string item_info( final_data.substr( 1 ) );
-         string::size_type pos = item_info.find( '\n' );
 
-         if( pos == string::npos )
-            throw runtime_error( "invalid 'item' info for '" + hash + "'" );
-
-         retval += ' ' + item_info.substr( 0, pos );
-
-         if( expansion == e_file_expansion_content )
+         for( size_t i = 0; i < list_items.size( ); i++ )
          {
-            retval += " " + lower( hash );
+            string next_list_item( list_items[ i ] );
 
-            if( add_size )
-               retval += " " + size_info;
-
-            retval += "\n" + string( indent, ' ' ) + item_info.substr( pos + 1 );
-         }
-         else if( max_depth && indent >= max_depth )
-         {
-            retval += " " + lower( hash );
-
-            if( add_size )
-               retval += " " + size_info;
-
-            retval += "\n" + string( indent, ' ' ) + "...";
-         }
-         else
-         {
-            retval += " " + lower( hash );
-
-            if( add_size )
-               retval += " " + size_info;
-
-            retval += "\n" + file_type_info(
-             item_info.substr( pos + 1 ), expansion, max_depth, indent + 1, add_size );
-         }
-      }
-      else if( file_type == c_file_type_val_tree )
-      {
-         string tree_info( final_data.substr( 1 ) );
-
-         vector< string > tree_items;
-         split( tree_info, tree_items, '\n' );
-
-         retval += " " + lower( hash );
-
-         if( add_size )
-            retval += " " + size_info;
-
-         for( size_t i = 0; i < tree_items.size( ); i++ )
-         {
             if( expansion == e_file_expansion_content )
-               retval += "\n" + string( indent, ' ' ) + tree_items[ i ];
-            else if( max_depth && indent >= max_depth )
+               retval += "\n" + string( indent, ' ' ) + next_list_item;
+            else if( max_depth && indent >= max_depth
+             && expansion != e_file_expansion_recursive_hashes )
             {
                if( i == 0 )
                   retval += "\n" + string( indent, ' ' ) + "...";
             }
             else
-               retval += "\n" + file_type_info( tree_items[ i ], expansion, max_depth, indent + 1, add_size );
+            {
+               string::size_type pos = next_list_item.find( ' ' );
+
+               if( pos != string::npos && expansion != e_file_expansion_recursive_hashes )
+                  retval += "\n" + string( indent, ' ' ) + next_list_item.substr( pos + 1 );
+
+               retval += "\n" + file_type_info( next_list_item.substr( 0, pos ), expansion, max_depth, indent + 1, add_size );
+            }
          }
       }
    }
@@ -562,8 +527,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( is_compressed )
       throw runtime_error( "create_raw_file doesn't support already compressed files" );
 
-   if( file_type != c_file_type_val_blob
-    && file_type != c_file_type_val_item && file_type != c_file_type_val_tree )
+   if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    string final_data( data );
@@ -630,12 +594,12 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
          if( file_type != c_file_type_val_blob )
-            validate_item_or_tree( file_type, string( ( const char* )file_buffer.get_buffer( ), usize ) );
+            validate_list( string( ( const char* )file_buffer.get_buffer( ), usize ) );
       }
 #endif
 
       if( !is_compressed && file_type != c_file_type_val_blob )
-         validate_item_or_tree( file_type, final_data.substr( 1 ) );
+         validate_list( final_data.substr( 1 ) );
 
 #ifndef _WIN32
       int um = umask( 077 );
@@ -694,12 +658,11 @@ string create_raw_file_with_extras( const string& data,
             delete_file( extras[ i ].second );
          else
          {
-            // NOTE: If a core blob, item or tree is being added then hash of the
-            // main file being added can be expanded using @0 and also the hashes
+            // NOTE: If a core blob or list is being added then the hash of the
+            // main file being added can be expanded using @0 as well as hashes
             // of other extra files using @1..@n.
             if( extras[ i ].first[ 0 ] == c_file_type_char_core_blob
-             || extras[ i ].first[ 0 ] == c_file_type_char_core_item
-             || extras[ i ].first[ 0 ] == c_file_type_char_core_tree )
+             || extras[ i ].first[ 0 ] == c_file_type_char_core_list )
             {
                string details( extras[ i ].first.substr( 1 ) );
 
@@ -1106,20 +1069,20 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag, prog
          bool rc = true;
 
          if( file_type != c_file_type_val_blob )
-            validate_item_or_tree( file_type, ( const char* )&file_buffer.get_buffer( )[ size ], &rc );
+            validate_list( ( const char* )&file_buffer.get_buffer( )[ size ], &rc );
 
          if( !rc )
-            throw runtime_error( "invalid 'item' or 'tree' file" );
+            throw runtime_error( "invalid 'list' file" );
       }
 #endif
 
       bool rc = true;
 
       if( !is_compressed && file_type != c_file_type_val_blob )
-         validate_item_or_tree( file_type, ( const char* )file_buffer.get_buffer( ), &rc );
+         validate_list( ( const char* )file_buffer.get_buffer( ), &rc );
 
       if( !rc )
-         throw runtime_error( "invalid 'item' or 'tree' file" );
+         throw runtime_error( "invalid 'list' file" );
 
       if( !is_compressed )
       {
@@ -1197,6 +1160,17 @@ void delete_file( const string& hash, bool even_if_tagged )
       --g_total_files;
       g_total_bytes -= existing_bytes;
    }   
+}
+
+void delete_file_tree( const string& hash )
+{
+   string all_hashes( file_type_info( hash, e_file_expansion_recursive_hashes ) );
+
+   vector< string > hashes;
+   split( all_hashes, hashes, '\n' );
+
+   for( size_t i = 0; i < hashes.size( ); i++ )
+      delete_file( hashes[ i ] );
 }
 
 void delete_files_for_tags( const string& pat )

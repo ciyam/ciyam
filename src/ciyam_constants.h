@@ -20,10 +20,11 @@ const size_t c_file_transfer_initial_timeout = 60000;
 const size_t c_file_transfer_max_line_size = 100000;
 
 const int c_file_type_val_blob = 0x01;
-const int c_file_type_val_item = 0x02;
-const int c_file_type_val_tree = 0x03;
+const int c_file_type_val_list = 0x02;
 
-const int c_file_type_val_mask = 0x07;
+const int c_file_type_val_mask = 0x03;
+
+// NOTE: The 0x04 bit is available for future usage.
 
 const int c_file_type_val_compressed = 0x08;
 
@@ -32,35 +33,31 @@ const int c_file_type_val_extra_mime = 0x20;
 
 const int c_file_type_val_extra_mask = 0x30;
 
+// NOTE: The 0x40 and 0x80 bits are available for future usage.
+
 const char c_file_type_char_blob = '\x01';
-const char c_file_type_char_item = '\x02';
-const char c_file_type_char_tree = '\x03';
+const char c_file_type_char_list = '\x02';
 
 const char c_file_type_char_core_blob = '\x11';
-const char c_file_type_char_core_item = '\x12';
-const char c_file_type_char_core_tree = '\x13';
+const char c_file_type_char_core_list = '\x12';
 
 const char c_file_type_char_mime_blob = '\x21';
 
 const char c_file_type_char_compressed = '\x08';
 
 const char c_file_type_char_blob_compressed = '\x09';
-const char c_file_type_char_item_compressed = '\x0a';
-const char c_file_type_char_tree_compressed = '\x0b';
+const char c_file_type_char_list_compressed = '\x0a';
 
-const char c_file_type_char_core_blob_compressed = '\x91';
-const char c_file_type_char_core_item_compressed = '\x92';
-const char c_file_type_char_core_tree_compressed = '\x93';
+const char c_file_type_char_core_blob_compressed = '\x19';
+const char c_file_type_char_core_list_compressed = '\x1a';
 
-const char c_file_type_char_mime_blob_compressed = '\xa1';
+const char c_file_type_char_mime_blob_compressed = '\x29';
 
 const char* const c_file_type_str_blob = "\x01";
-const char* const c_file_type_str_item = "\x02";
-const char* const c_file_type_str_tree = "\x03";
+const char* const c_file_type_str_list = "\x02";
 
 const char* const c_file_type_str_core_blob = "\x11";
-const char* const c_file_type_str_core_item = "\x12";
-const char* const c_file_type_str_core_tree = "\x13";
+const char* const c_file_type_str_core_list = "\x12";
 
 const char* const c_file_type_core_block_object = "blk";
 const char* const c_file_type_core_rewind_object = "rwd";
