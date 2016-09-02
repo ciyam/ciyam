@@ -80,20 +80,21 @@ enum error_stop_point
    e_error_stop_point_group
 };
 
-bool is_quiet = false;
+bool g_is_quiet = false;
 
-size_t num_test_steps_captured = 0;
-size_t num_test_steps_attempted = 0;
-size_t num_test_steps_succeeded = 0;
-size_t num_test_steps_mismatched = 0;
+size_t g_num_test_steps_captured = 0;
+size_t g_num_test_steps_attempted = 0;
+size_t g_num_test_steps_succeeded = 0;
+size_t g_num_test_steps_mismatched = 0;
 
-error_stop_point error_stop( e_error_stop_point_step );
+error_stop_point g_error_stop( e_error_stop_point_step );
 
-vector< group > groups;
-typedef vector< group >::size_type group_size_type;
+vector< group > g_groups;
+
 typedef vector< group >::iterator group_iterator;
+typedef vector< group >::size_type group_size_type;
 
-vector< string > all_kills;
+vector< string > g_all_kills;
 
 const char* const c_true = "true";
 const char* const c_false = "false";
@@ -120,6 +121,9 @@ const char* const c_test_step_output_value = "output";
 const char* const c_output_type_none = "none";
 const char* const c_output_type_generate = "generate";
 const char* const c_output_type_automatic = "automatic";
+
+const char* const c_special_test_step_name_init = "*init*";
+const char* const c_special_test_step_name_term = "*term*";
 
 #ifdef _WIN32
 const char* const c_null_device_name = "nul";
@@ -328,8 +332,8 @@ struct specific_test_spec
 
 size_t group_index( const string& group_name )
 {
-   for( size_t i = 0; i < groups.size( ); i++ )
-      if( groups[ i ].name == group_name )
+   for( size_t i = 0; i < g_groups.size( ); i++ )
+      if( g_groups[ i ].name == group_name )
          return i + 1;
 
    return 0;
@@ -357,7 +361,7 @@ void init_group( const group& g, string& group_name )
 {
    group_name = g.name;
 
-   if( !is_quiet )
+   if( !g_is_quiet )
       cout << '[' << group_name << "]\n";
 }
 
@@ -366,19 +370,19 @@ void init_group_test( const test& t, string& test_name )
    test_name += '_';
    test_name += t.name;
 
-   if( !is_quiet )
+   if( !g_is_quiet )
       cout << ' ' << test_name << " - " << t.description << '\n';
 
    for( vector< string >::size_type i = 0; i < t.kills.size( ); i++ )
    {
-      all_kills.push_back( t.kills[ i ] );
+      g_all_kills.push_back( t.kills[ i ] );
       remove_file( t.kills[ i ].c_str( ) );
    }
 }
 
 void perform_test_step( const test_step& s, const string& test_name )
 {
-   ++num_test_steps_attempted;
+   ++g_num_test_steps_attempted;
 
 #ifdef _WIN32
    string command;
@@ -464,11 +468,12 @@ void perform_test_step( const test_step& s, const string& test_name )
       {
          if( files_differ( test_output_file_name.c_str( ), temp_output_file_name.c_str( ) ) )
          {
-            ++num_test_steps_mismatched;
+            ++g_num_test_steps_mismatched;
+
             cout << "  " << test_step_name << ": *** failed *** "
              << "diff " << test_output_file_name << ' ' << temp_output_file_name << endl;
 
-            if( !is_quiet )
+            if( !g_is_quiet )
             {
 #ifdef _WIN32
                string str( "diff -q " );
@@ -483,8 +488,8 @@ void perform_test_step( const test_step& s, const string& test_name )
          }
          else
          {
-            ++num_test_steps_succeeded;
-            if( !is_quiet )
+            ++g_num_test_steps_succeeded;
+            if( !g_is_quiet )
                cout << "  " << test_step_name << ": passed" << endl;
 
             remove_file( temp_output_file_name.c_str( ) );
@@ -494,15 +499,15 @@ void perform_test_step( const test_step& s, const string& test_name )
       {
          copy_file( temp_output_file_name.c_str( ), test_output_file_name.c_str( ) );
 
-         ++num_test_steps_captured;
-         if( !is_quiet )
+         ++g_num_test_steps_captured;
+         if( !g_is_quiet )
             cout << "  " << test_step_name << ": (captured)" << endl;
 
          remove_file( temp_output_file_name.c_str( ) );
       }
    }
    else
-      ++num_test_steps_succeeded; // NOTE: If no output to capture then simply assume that the test step has succeeded.
+      ++g_num_test_steps_succeeded; // NOTE: If no output to capture then simply assume that the test step has succeeded.
 }
 
 int main( int argc, char* argv[ ] )
@@ -526,18 +531,18 @@ int main( int argc, char* argv[ ] )
       while( next_arg.size( ) > 1 && next_arg[ 0 ] == '-' )
       {
          if( next_arg == string( "-q" ) )
-            is_quiet = true;
+            g_is_quiet = true;
          else if( next_arg.substr( 0, 2 ) == string( "-e" ) )
          {
             next_arg.erase( 0, 2 );
             if( next_arg == string( "none" ) )
-               error_stop = e_error_stop_point_none;
+               g_error_stop = e_error_stop_point_none;
             else if( next_arg == string( "step" ) )
-               error_stop = e_error_stop_point_step;
+               g_error_stop = e_error_stop_point_step;
             else if( next_arg == string( "test" ) )
-               error_stop = e_error_stop_point_test;
+               g_error_stop = e_error_stop_point_test;
             else if( next_arg == string( "group" ) )
-               error_stop = e_error_stop_point_group;
+               g_error_stop = e_error_stop_point_group;
             else
             {
                cerr << "error: unknown error stop point '" << next_arg << "'" << endl;
@@ -684,7 +689,7 @@ int main( int argc, char* argv[ ] )
          }
          reader.finish_section( c_section_tests );
 
-         groups.push_back( g );
+         g_groups.push_back( g );
          reader.finish_section( c_section_group );
       }
       reader.finish_section( c_section_groups );
@@ -693,29 +698,59 @@ int main( int argc, char* argv[ ] )
 
       if( specific_tests.empty( ) )
       {
-         for( group_size_type g = 0; g < groups.size( ); g++ )
+         for( group_size_type g = 0; g < g_groups.size( ); g++ )
          {
             string group_name;
-            init_group( groups[ g ], group_name );
+            init_group( g_groups[ g ], group_name );
 
-            for( vector< test >::size_type t = 0; t < groups[ g ].tests.size( ); t++ )
+            bool had_init = false;
+            size_t num_tests = g_groups[ g ].tests.size( );
+
+            for( vector< test >::size_type t = 0; t < num_tests; t++ )
             {
                string test_name( group_name );
-               init_group_test( groups[ g ].tests[ t ], test_name );
+               init_group_test( g_groups[ g ].tests[ t ], test_name );
 
-               for( vector< test_step >::size_type s = 0; s < groups[ g ].tests[ t ].test_steps.size( ); s++ )
+               size_t num_steps = g_groups[ g ].tests[ t ].test_steps.size( );
+
+               for( vector< test_step >::size_type s = 0; s < num_steps; s++ )
                {
-                  perform_test_step( groups[ g ].tests[ t ].test_steps[ s ], test_name );
+                  perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                  if( error_stop == e_error_stop_point_step && num_test_steps_mismatched )
-                     return 1;
+                  if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                     break;
+
+                  // NOTE: If the very first step in the first group test is named as an init
+                  // step then remember that this has been executed so a matching term in the
+                  // very last step of the last group test will be executed on an error exit.
+                  if( t == 0 && s == 0
+                   && g_groups[ g ].tests[ t ].test_steps[ s ].name == string( c_special_test_step_name_init ) )
+                     had_init = true;
                }
 
-               if( error_stop == e_error_stop_point_test && num_test_steps_mismatched )
-                  return 1;
+               if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
+                  break;
+
+               if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+                  break;
             }
 
-            if( error_stop == e_error_stop_point_group && num_test_steps_mismatched )
+            size_t final_steps = g_groups[ g ].tests[ num_tests - 1 ].test_steps.size( );
+
+            string final_step_name = g_groups[ g ].tests[ num_tests - 1 ].test_steps[ final_steps - 1 ].name;
+
+            if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched
+             || g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
+            {
+               // NOTE: If an init step had been executed in the first group test then if
+               // the final step of the final group test is a term step then execute it.
+               if( had_init && final_step_name == string( c_special_test_step_name_term ) )
+                  perform_test_step( g_groups[ g ].tests[ num_tests - 1 ].test_steps[ final_steps - 1 ], group_name );
+
+               return 1;
+            }
+
+            if( g_error_stop == e_error_stop_point_group && g_num_test_steps_mismatched )
                return 1;
          }
       }
@@ -732,25 +767,25 @@ int main( int argc, char* argv[ ] )
 
             size_t g = gi - 1;
             string group_name;
-            init_group( groups[ g ], group_name );
+            init_group( g_groups[ g ], group_name );
 
             string tests( specific_tests[ i ].tests );
             if( tests.empty( ) )
             {
-               for( vector< test >::size_type t = 0; t < groups[ g ].tests.size( ); t++ )
+               for( vector< test >::size_type t = 0; t < g_groups[ g ].tests.size( ); t++ )
                {
                   string test_name( group_name );
-                  init_group_test( groups[ g ].tests[ t ], test_name );
+                  init_group_test( g_groups[ g ].tests[ t ], test_name );
 
-                  for( vector< test_step >::size_type s = 0; s < groups[ g ].tests[ t ].test_steps.size( ); s++ )
+                  for( vector< test_step >::size_type s = 0; s < g_groups[ g ].tests[ t ].test_steps.size( ); s++ )
                   {
-                     perform_test_step( groups[ g ].tests[ t ].test_steps[ s ], test_name );
+                     perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                     if( error_stop == e_error_stop_point_step && num_test_steps_mismatched )
+                     if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
                         return 1;
                   }
 
-                  if( error_stop == e_error_stop_point_test && num_test_steps_mismatched )
+                  if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
                      return 1;
                }
             }
@@ -762,7 +797,7 @@ int main( int argc, char* argv[ ] )
                   string next_test( tests.substr( 0, tpos ) );
 
                   string test_name( group_name );
-                  size_t ti = group_test_index( groups[ g ], next_test );
+                  size_t ti = group_test_index( g_groups[ g ], next_test );
                   if( ti == 0 )
                   {
                      cerr << "error: unknown test name '"
@@ -771,16 +806,16 @@ int main( int argc, char* argv[ ] )
                   }
 
                   size_t t = ti - 1;
-                  init_group_test( groups[ g ].tests[ t ], test_name );
+                  init_group_test( g_groups[ g ].tests[ t ], test_name );
 
                   string steps( specific_tests[ i ].steps );
                   if( steps.empty( ) )
                   {
-                     for( vector< test_step >::size_type s = 0; s < groups[ g ].tests[ t ].test_steps.size( ); s++ )
+                     for( vector< test_step >::size_type s = 0; s < g_groups[ g ].tests[ t ].test_steps.size( ); s++ )
                      {
-                        perform_test_step( groups[ g ].tests[ t ].test_steps[ s ], test_name );
+                        perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( error_stop == e_error_stop_point_step && num_test_steps_mismatched )
+                        if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
                            return 1;
                      }
                   }
@@ -791,7 +826,7 @@ int main( int argc, char* argv[ ] )
                      {
                         string next_step( steps.substr( 0, spos ) );
 
-                        size_t si = group_test_step_index( groups[ g ].tests[ t ], next_step );
+                        size_t si = group_test_step_index( g_groups[ g ].tests[ t ], next_step );
                         if( si == 0 )
                         {
                            cerr << "error: unknown test step '" << next_step
@@ -800,9 +835,9 @@ int main( int argc, char* argv[ ] )
                         }
 
                         size_t s = si - 1;
-                        perform_test_step( groups[ g ].tests[ t ].test_steps[ s ], test_name );
+                        perform_test_step( g_groups[ g ].tests[ t ].test_steps[ s ], test_name );
 
-                        if( error_stop == e_error_stop_point_step && num_test_steps_mismatched )
+                        if( g_error_stop == e_error_stop_point_step && g_num_test_steps_mismatched )
                            return 1;
 
                         if( spos == string::npos )
@@ -813,7 +848,7 @@ int main( int argc, char* argv[ ] )
                      }
                   }
 
-                  if( error_stop == e_error_stop_point_test && num_test_steps_mismatched )
+                  if( g_error_stop == e_error_stop_point_test && g_num_test_steps_mismatched )
                      return 1;
 
                   if( tpos == string::npos )
@@ -824,26 +859,26 @@ int main( int argc, char* argv[ ] )
                }
             }
 
-            if( error_stop == e_error_stop_point_group && num_test_steps_mismatched )
+            if( g_error_stop == e_error_stop_point_group && g_num_test_steps_mismatched )
                return 1;
          }
       }
 
-      if( !is_quiet )
+      if( !g_is_quiet )
          cout << endl;
          
-      if( num_test_steps_succeeded + num_test_steps_captured == num_test_steps_attempted )
+      if( g_num_test_steps_succeeded + g_num_test_steps_captured == g_num_test_steps_attempted )
       {
-         cout << "summary: passed (" << num_test_steps_succeeded;
-         if( num_test_steps_succeeded == 1 )
+         cout << "summary: passed (" << g_num_test_steps_succeeded;
+         if( g_num_test_steps_succeeded == 1 )
             cout << " test step succeeded";
          else
             cout << " test steps succeeded";
 
-         if( num_test_steps_captured )
+         if( g_num_test_steps_captured )
          {
-            cout << " and " << num_test_steps_captured;
-            if( num_test_steps_captured == 1 )
+            cout << " and " << g_num_test_steps_captured;
+            if( g_num_test_steps_captured == 1 )
                cout << " test was captured";
             else
                cout << " tests were captured";
@@ -852,40 +887,40 @@ int main( int argc, char* argv[ ] )
          cout << ')' << endl;
 
          // NOTE: If tests completed successfully then repeat any kills that were performed during testing (i.e. clean up).
-         for( vector< string >::size_type i = 0; i < all_kills.size( ); i++ )
-            remove_file( all_kills[ i ].c_str( ) );
+         for( vector< string >::size_type i = 0; i < g_all_kills.size( ); i++ )
+            remove_file( g_all_kills[ i ].c_str( ) );
       }
       else
       {
-         cerr << "summary: *** failed *** (" << num_test_steps_attempted;
-         if( num_test_steps_attempted == 1 )
+         cerr << "summary: *** failed *** (" << g_num_test_steps_attempted;
+         if( g_num_test_steps_attempted == 1 )
             cerr << " was attempted";
          else
             cerr << " were attempted";
 
-         if( num_test_steps_captured )
+         if( g_num_test_steps_captured )
          {
-            cerr << " and " << num_test_steps_captured;
-            if( num_test_steps_captured == 1 )
+            cerr << " and " << g_num_test_steps_captured;
+            if( g_num_test_steps_captured == 1 )
                cerr << " test was captured";
             else
                cerr << " tests were captured";
          }
 
-         if( num_test_steps_mismatched )
+         if( g_num_test_steps_mismatched )
          {
-            cerr << " with " << num_test_steps_mismatched;
-            if( num_test_steps_mismatched == 1 )
+            cerr << " with " << g_num_test_steps_mismatched;
+            if( g_num_test_steps_mismatched == 1 )
                cerr << " failure";
             else
                cerr << " failures";
          }
 
          size_t num_accounted
-          = num_test_steps_succeeded + num_test_steps_captured + num_test_steps_mismatched;
+          = g_num_test_steps_succeeded + g_num_test_steps_captured + g_num_test_steps_mismatched;
 
-         if( num_accounted != num_test_steps_attempted )
-            cerr << " and " << ( num_test_steps_attempted - num_accounted ) << " unaccounted for";
+         if( num_accounted != g_num_test_steps_attempted )
+            cerr << " and " << ( g_num_test_steps_attempted - num_accounted ) << " unaccounted for";
 
          cerr << ')' << endl;
       }
