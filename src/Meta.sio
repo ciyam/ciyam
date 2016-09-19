@@ -18166,6 +18166,10 @@
         <id>600207
         <item>field
        </specification>
+       <specification/>
+        <id>600208
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -35897,6 +35901,7 @@
      <field_info>301470:104101;104100={enum_item}
      <field_info>301470:104102;104100={enum_value}
      <field_info>115102={value}
+     <field_info>115129={value_leftpart}
      <field_info>115130={value_rightpart}
      <is_transient>true
     </data>
@@ -36374,8 +36379,8 @@
      <field_info>301410:114120;no_edit+full_height+notes
      <field_info>301420:106101!@fkey1:300600+106101;link+fkey2+force
      <field_info>301430:107101!@fkey2:300700+107101;link+force
-     <field_info>301435:107101!@fkey2:300700+107101
-     <field_info>301436:107101!@fkey2:300700+107101
+     <field_info>301435:107101!@fkey2:300700+107101;link
+     <field_info>301436:107101!@fkey2:300700+107101;link
      <field_info>115102
      <field_info>301421:106101!@fkey1:300600+106101;link+fkey9
      <field_info>301437:107101!@fkey9:300700+107101

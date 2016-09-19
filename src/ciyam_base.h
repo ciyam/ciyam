@@ -624,6 +624,9 @@ void CIYAM_BASE_DECL_SPEC instance_prepare_execute( size_t handle,
 std::string CIYAM_BASE_DECL_SPEC instance_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& method_name_and_args );
 
+std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values(
+ size_t handle, const std::string& context, const std::string& key );
+
 enum iter_direction
 {
    e_iter_direction_forwards,

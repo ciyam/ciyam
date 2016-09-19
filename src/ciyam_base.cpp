@@ -10311,6 +10311,17 @@ string instance_execute( size_t handle,
    return instance.execute( method_name_and_args );
 }
 
+string instance_get_fields_and_values( size_t handle, const string& context, const string& key )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+   class_base_accessor instance_accessor( instance );
+
+   bool is_traditional_app( storage_blockchain( ).empty( ) );
+
+   return instance.get_fields_and_values(
+    is_traditional_app ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
+}
+
 bool instance_iterate( size_t handle, const string& context,
  const string& key_info, const string& fields, const string& text,
  const string& query, const string& security_info, iter_direction direction,

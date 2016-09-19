@@ -1598,6 +1598,7 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string field_key_info( to_string( Meta_Field::static_get_field_id( Meta_Field::e_field_id_Name ) ) + ' ' );
+
             if( is_null( get_obj( ).child_Class( ).Source_Class( ) )
              && get_obj( ).child_Class( ).child_Field( ).iterate_forwards( field_key_info ) )
             {
@@ -1619,6 +1620,7 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             string procedure_key_info( to_string( Meta_Procedure::static_get_field_id( Meta_Procedure::e_field_id_Name ) ) + ' ' );
+
             if( is_null( get_obj( ).child_Class( ).Source_Class( ) )
              && get_obj( ).child_Class( ).child_Procedure( ).iterate_forwards( procedure_key_info ) )
             {
@@ -1715,6 +1717,7 @@ void Meta_Model::impl::impl_Generate( )
 
                      string next_string(
                       get_obj( ).child_Specification( ).Id( ) + "_" + name + " \"" + value + "\"" );
+
                      all_class_strings[ get_obj( ).child_Specification( ).Class( ).Id( ) ].push_back( next_string );
 
                      if( pos == string::npos )
@@ -5868,6 +5871,7 @@ void Meta_Model::impl::impl_Generate( )
       for( size_t i = 0; i < class_num; i++ )
       {
          vector< string >& next( all_class_strings[ class_ids[ i ] ] );
+
          for( size_t j = 0; j < next.size( ); j++ )
             outs << next[ j ] << '\n';
       }

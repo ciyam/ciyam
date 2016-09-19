@@ -1,16 +1,23 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start permit_ignore_uneditable)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)`&`@eq`(`$arg_var`,`'`'`)\
+`{`@eq`(`$arg_modifier`,`'`'`)\
    state |= c_state_ignore_uneditable;\
-`,`@eq`(`$arg_tfield`,`'`'`)\
-   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}!is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) ) )
+`,\
+   if( state & c_modifier_`{`$arg_modifier`} )
+      state |= c_state_ignore_uneditable;\
+`}`,`@eq`(`$arg_tfield`,`'`'`)\
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `{`!`@eq`(`$arg_modifier`,`'`'`)( `}`}\
+!is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`{`@eq`(`$arg_admin_always`,`'true`'`) )`}`} )
       state |= c_state_ignore_uneditable;\
 `,`@eq`(`$arg_var`,`'`'`)\
-   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}get_obj( ).`{`$arg_tfield`}( ) )
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `{`!`@eq`(`$arg_modifier`,`'`'`)( `}`}\
+get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`{`@eq`(`$arg_admin_always`,`'true`'`) )`}`} )
       state |= c_state_ignore_uneditable;\
 `,\
    if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( )
-    || ( `}get_obj( ).`{`$arg_tfield`}( ) && !is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) )`{`@eq`(`$arg_admin_always`,`'true`'`) )`} )
+    || ( `}get_obj( ).`{`$arg_tfield`}( ) && !is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) )\
+`{`!`@eq`(`$arg_modifier`,`'`'`) && state & c_modifier_`{`$arg_modifier`}`}`{`@eq`(`$arg_admin_always`,`'true`'`) )`} )
       state |= c_state_ignore_uneditable;\
 `}
    // [(finish permit_ignore_uneditable)] `{`$arg_id`}

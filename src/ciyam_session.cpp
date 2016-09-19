@@ -3400,6 +3400,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
+         bool log_as_update = false;
          bool log_transaction = true;
          bool skip_transaction = false;
 
@@ -3419,6 +3420,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !method.empty( ) && method[ 0 ] == '-' )
             {
                skip_transaction = true;
+               method.erase( 0, 1 );
+            }
+
+            // NOTE: If method id/name is prefixed by a forward slash then the command will not be
+            // logged as an execute but as though an update command had been issued instead. It is
+            // not valid to attempt to use this with multiple key values.
+            if( !method.empty( ) && method[ 0 ] == '/' )
+            {
+               if( skip_transaction )
+                  throw runtime_error( "invalid attempt to use log_as_update with skip_transaction in perform_execute" );
+
+               log_as_update = true;
                method.erase( 0, 1 );
             }
 
@@ -3581,6 +3594,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
                }
 
+               if( log_as_update && log_as_update && all_keys.size( ) != 1 )
+                  throw runtime_error( "perform_execute cannot log_as_update with multiple keys" );
+
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
                   throw runtime_error( "unexpected # keys ("
                    + to_string( all_keys.size( ) ) + ") not equal to # vers (" + to_string( all_vers.size( ) ) + ")" );
@@ -3666,7 +3682,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
                   }
 
-                  if( i == 0 && log_transaction )
+                  if( i == 0 && log_transaction && !log_as_update )
                   {
                      remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
 
@@ -3693,6 +3709,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      prepare_object_instance( handle, "", false, false );
 
                   string next_response( instance_execute( handle, "", next_key, method_and_args ) );
+
+                  if( i == 0 && log_transaction && log_as_update )
+                  {
+                     next_command = "pu " + uid + " " + dtm + " "
+                      + module + " " + mclass + " " + next_key + " =" + next_ver
+                      + " \"" + instance_get_fields_and_values( handle, "", next_key ) + "\"";
+
+                     remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+
+                     if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                        ap_commit_helper.reset(
+                         new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
+
+                     transaction_log_command( next_command, ap_commit_helper.get( ) );
+                  }
 
                   // NOTE: For simple executes a special object instance variable can be supplied as the
                   // return value (so a return value is possible even if the procedure does not have any

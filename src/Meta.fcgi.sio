@@ -5593,7 +5593,7 @@
      <name>field_specification_other_field
      <field>301435
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>100000:relegate
      <pclass>107100
@@ -5605,7 +5605,7 @@
      <name>field_specification_other_field_2
      <field>301436
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>200000:relegate
      <pclass>107100

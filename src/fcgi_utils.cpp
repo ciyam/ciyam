@@ -1380,7 +1380,7 @@ void output_actions( ostream& os,
 
    // NOTE: Full action syntax is as follows (spaces are just here for clarity):
    //
-   // [*?][@~#%] [<][>] [!][^][-][_] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
+   // [*?][@~#%] [<][>] [!][^][-][_][/] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
    //
    // where args can be: @rfields|@rvalues|value
 
