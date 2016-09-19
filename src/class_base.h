@@ -375,7 +375,15 @@ class CLASS_BASE_DECL_SPEC class_base
       return get_original_field_value( get_field_num( field ) );
    }
 
-   std::string get_fields_and_values( bool use_field_names = false,
+   enum field_label_type
+   {
+      e_field_label_type_name,
+      e_field_label_type_full_id,
+      e_field_label_type_short_id
+   };
+
+   std::string get_fields_and_values(
+    field_label_type label_type = e_field_label_type_full_id,
     bool include_unchanged = false, bool include_transients = false ) const;
 
    virtual std::string get_field_value( int field ) const = 0;
@@ -394,6 +402,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual std::string get_field_id( int field ) const = 0;
    virtual std::string get_field_name( int field ) const = 0;
+
+   std::string get_short_field_id( int field ) const;
 
    virtual int get_field_num( const std::string& field ) const = 0;
 

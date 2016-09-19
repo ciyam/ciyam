@@ -7357,6 +7357,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Strings", "{enum_item}", to_rep_string( get_obj( ).Enum_Item( ).Label( ) ) );
       get_obj( ).add_search_replacement( "Strings", "{enum_value}", to_rep_string( get_obj( ).Enum_Item( ).Value( ) ) );
       get_obj( ).add_search_replacement( "Strings", "{value}", to_rep_string( get_obj( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{value_leftpart}", to_rep_string( get_obj( ).Value_Left_Part( ) ) );
       get_obj( ).add_search_replacement( "Strings", "{value_rightpart}", to_rep_string( get_obj( ).Value_Right_Part( ) ) );
    }
    // [(finish field_from_search_replace)] 600208
@@ -14330,6 +14331,15 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Value ) )
        || ( !use_transients && !is_field_transient( e_field_id_Value ) ) )
          names.insert( "Value" );
+   }
+
+   if( needs_field_value( "Strings", dependents ) )
+   {
+      dependents.insert( "Value_Left_Part" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Value_Left_Part ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Value_Left_Part ) ) )
+         names.insert( "Value_Left_Part" );
    }
 
    if( needs_field_value( "Strings", dependents ) )

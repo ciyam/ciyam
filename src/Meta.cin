@@ -1764,7 +1764,8 @@ specification_add -id=600208 {Specification}_Strings_from_search_replace field_f
 ,{Modifier}:Name={modifier},Source_Parent:Name={spfield},Source_Child:Name={scfield},Source_Field:Name={sfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Field_Class:Name={tfclass},Test_Value={tvalue}\
 ,{Procedure}:Name={procedure},Child_Relationship:Child_Name={child}\
-,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},{Enum_Item}:Value={enum_value},Value={value},Value_Right_Part={value_rightpart} -transient"
+,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},{Enum_Item}:Value={enum_value}\
+,Value={value},Value_Left_Part={value_leftpart},Value_Right_Part={value_rightpart} -transient"
 specification_add -id=600209 {Specification}_All_Vars_from_procedure_call field_from_procedure_call\
  "Specification All_Vars Generate_All_Vars \"\" -transient"
 specification_add -id=600210 {Specification}_All_Strings_from_procedure_call field_from_procedure_call\
@@ -2090,7 +2091,7 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
  {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit,Comments\
 ,{Specification_Type}:Name;no_edit+link,{Specification_Type}:Notes;no_edit+full_height\
 ,{Class}:Name!@fkey1:{Model}+Name;link+fkey2+force,{Field}:Name!@fkey2:{Class}+Name;link+force\
-,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name,Value\
+,Other_Field:Name!@fkey2:{Class}+Name;link,Other_Field_2:Name!@fkey2:{Class}+Name;link,Value\
 ,Other_Class:Name!@fkey1:{Model}+Name;link+fkey9,Other_Class_Field:Name!@fkey9:{Class}+Name\
 ,{Modifier}:Name!@fkey2:{Class}+Name;link,Other_Modifier:Name!@fkey2:{Class}+Name;link,Other_Modifier_2:Name!@fkey2:{Class}+Name;link\
 ,{Procedure}:Name!@fkey2:{Class}+Name;link+fkey5,{Procedure_Arg}:Name!@fkey5:{Procedure}+Name\

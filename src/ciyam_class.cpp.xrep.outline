@@ -958,7 +958,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_fname=$specification_\\0_fname arg_fvalue=$specification_\\0_fvalue arg_tfield=$specification_\\0_tfield\
  arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2\
  arg_use_trans=$specification_\\0_use_trans arg_skip_restore=$specification_\\0_skip_restore\
- arg_update=$specification_\\0_update arg_message=$specification_\\0_message arg_session_var=$specification_\\0_session_var`}\
+ arg_update=$specification_\\0_update arg_message=$specification_\\0_message\
+ arg_modifier=$specification_\\0_modifier arg_session_var=$specification_\\0_session_var`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
@@ -1212,7 +1213,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)
 `{`#permit_ignore_uneditable.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_var=$specification_\0_var\
- arg_tfield=$specification_\0_tfield arg_admin_always=$specification_\0_admin_always`}\
+ arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'permit_update_always`'`)
 `{`#permit_update_always.spec.xrep section=get_state\
@@ -1784,7 +1785,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
  arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
  arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
- arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans arg_state=$specification_\0_state\
+ arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
+ arg_log_as_update=$specification_\0_log_as_update arg_state=$specification_\0_state\
  arg_admin_never=$specification_\0_admin_never arg_even_when_changing=$specification_\0_even_when_changing`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
@@ -1807,7 +1809,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
  arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
  arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
- arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans arg_not_sess_var=$specification_\0_not_sess_var\
+ arg_no_log=$specification_\0_no_log arg_no_trans=$specification_\0_no_trans\
+ arg_log_as_update=$specification_\0_log_as_update arg_not_sess_var=$specification_\0_not_sess_var\
  arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)`&`@eq`(`$specification_\0_finalise_fetch`,`'`'`)

@@ -190,6 +190,9 @@ get_perms( ).count( "`{`$arg_permission_id`}" )`{`!`@eq`(`$arg_altfield`,`'`'`) 
 `{`@eq`(`$arg_no_trans`,`'true`'`)\
       actions += '-';
 `}\
+`{`@eq`(`$arg_log_as_update`,`'true`'`)\
+      actions += '/';
+`}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );

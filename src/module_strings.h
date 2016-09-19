@@ -141,6 +141,9 @@ const char* const c_str_parm_has_one_or_more_active_children_class = "{@class}";
 const char* const c_str_parm_has_one_or_more_active_children_cfield = "{@cfield}";
 const char* const c_str_parm_has_one_or_more_active_children_children = "{@children}";
 const char* const c_str_no_reply_email_text = "IMPORTANT: Remember, this is just a notification. Please do not reply to this email.";
+const char* const c_str_unable_to_create_using_external = "Unable to create {@class} for {@symbol} (external service not available?).";
+const char* const c_str_parm_unable_to_create_using_external_class = "{@class}";
+const char* const c_str_parm_unable_to_create_using_external_symbol = "{@symbol}";
 
 #endif
 

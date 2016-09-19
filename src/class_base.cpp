@@ -1338,8 +1338,39 @@ string class_base::get_original_field_value( int field ) const
    return str;
 }
 
+string class_base::get_short_field_id( int field ) const
+{
+   string class_id( get_class_id( ) );
+   string module_id( get_module_id( ) );
+
+   string field_id( get_field_id( field ) );
+
+   // KLUDGE: If module_id starts with a number assume it is Meta (which doesn't support field shortening).
+   if( !module_id.empty( ) && module_id[ 0 ] >= '0' && module_id[ 0 ] <= '9' )
+      return field_id;
+
+   string::size_type pos = field_id.find( class_id );
+
+   if( pos == 0 )
+      pos = class_id.size( );
+   else
+   {
+      pos = field_id.find( module_id );
+
+      if( pos == 0 )
+         pos = module_id.size( );
+      else
+         pos = string::npos;
+   }
+
+   if( pos == string::npos )
+      return field_id;
+   else
+      return field_id.substr( pos );
+}
+
 string class_base::get_fields_and_values(
- bool use_field_names, bool include_unchanged, bool include_transients ) const
+ field_label_type label_type, bool include_unchanged, bool include_transients ) const
 {
    string str;
 
@@ -1357,10 +1388,10 @@ string class_base::get_fields_and_values(
          else
             str += ",";
 
-         if( !use_field_names )
-            str += get_field_id( i );
-         else
+         if( label_type == e_field_label_type_name )
             str += get_field_name( i ) ;
+         else
+            str += ( label_type == e_field_label_type_full_id ) ? get_field_id( i ) : get_short_field_id( i );
 
          str += "=" + escaped( get_field_value( i ), ",\"" );
       }
