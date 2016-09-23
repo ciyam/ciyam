@@ -1415,10 +1415,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_put )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_hash ) );
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_filename ) );
          string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_tag ) );
 
-         store_file( hash, socket, tag.empty( ) ? 0 : tag.c_str( ) );
+         // NOTE: Although "filename" is used to make the command usage easier to understand for
+         // end users it is expected that the value provided will actually be the SHA256 hash of
+         // the file content (which "ciyam_client" does automatically).
+         store_file( filename, socket, tag.empty( ) ? 0 : tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_raw )
       {

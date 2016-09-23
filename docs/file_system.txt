@@ -15,95 +15,186 @@ Because the name of the file is a secure hash of its content files cannot be edi
 course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
 could ever hope to remember "tags" can be used for labelling and later locating files.
 
+To see the list and usage of all the file system commands issue the following command from "ciyam_client":
+
+> ? file*
+
 Fundamental File Types
 ----------------------
 
-In a very similar manner to "git" the file system there are only three fundamental file types: Blob, Item and
-Tree. The first byte of every file is used to identify the file type as well as holding some other flags that
-will be explained further on.
+The file system supports two fundamental file types which are Blob and List. The first byte of each file will
+identify the fundamental file type as well as holding some other flags that will be explained further on.
 
 The Blob file type is used to store any kind of arbitrary data (without any formal meta-data so that it isn't
-possible to actually know what kind of data it is that is being stored). The Item file type provides a method
-of tying a name to another file and the Tree file type holds a directed acyclic graph of other files.
+possible to actually know what kind of data it is that is being stored). The List file type provides a method
+of both tying names to other files and constructing a directed acyclic graph of other files through the items
+being themselves other List files.
 
-The following illustrates the type, full path and the content of each of the fundamental types of file:
+The following illustrates the type, full path and the content of the fundamental files types:
 
 [blob - files/cc/eeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef]
 ^Ahello
 
-[item - files/73/c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff]
-^Bhello
-cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
-
-[tree - files/38/9c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460]
-^C73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+[list - files/02/9eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a]
+^Bcceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first
 
 It should be noted that the caret symbol is being used to indicate control characters in the above content so
-the actual values of the first character in each of the files above are 0x01, 0x02 and 0x03 respectively. The
-above files can be created using the standard application server protocol with the following commands:
+the actual values of the first character in each of the files above are 0x01 and 0x02 respectively. The above
+files can be created using the standard application server protocol with the following commands:
 
 > file_raw -text blob hello
-> file_raw -text item hello\ncceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
-> file_raw -text tree 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
+> file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef first"
 
 The "-text" option is used to prevent file compression which is useful for testing purposes (but not normally
 recommended). The "file_info" command can be used to examine the information about a file, and if the file is
-an "item" or a "tree", to examine the information of any referenced files as well.
+a List, to examine the information of referenced files as well.
 
-> file_info -recurse -d=2 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
-[tree] 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
- [item] hello 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
-  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+> file_info -recurse -d=2 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a
+[list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
+first
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
 hello
 
-The above shows us that the "tree" that had been created contains a single "item" with the name "hello" which
-then points to a "blob" that contains the text "hello". Whilst it is clear that this is an extremely flexible
-approach it is not clear at all as to how the hash for the "tree", "item" or "blob" can be found which brings
-us to the next main feature of the file system.
+The above shows the List that had been created contains a single "list item" with the name "first" which then
+points to a Blob that contains the text "hello". Considering that any of the "list items" can also themselves
+be lists it should be clear that this is extremely flexible, however it is not clear from such an example how
+the hash for a particular List (or Blob if desired) could easily be found which brings us to the next feature
+of the file system.
 
 Tags
 ----
 
 File "tags" enable the linking of human readible file names to the file hashes in the file system. These tags
 function in much the same way as "branch tags" in "git" work. To illustrate how this is useful let's tag just
-the "tree" file that was created before.
+the List file that was created before.
 
-> file_tag 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460 hello
+> file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start
 
 Now we can see the same "file info" output we saw above with the following far more user friendly command:
 
-> file_info -recurse -d=2 hello
-[tree] 389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460
- [item] hello 73c3e168e4ee7fa520206a2443c4c9b285ade8f3df957c6ae53b10ea0e1cf1ff
-  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+> file_info -recurse -d=2 start
+[list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
+first
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
 hello
 
-So rather than trying to recall "389c29735fe47fd25bb69cb50e0e56b4fef565bb1c3a8d8fc3c7c508aa9ed460" it is only
-required to recall "hello". So if the "item" represents a traditional "file name" then let's say we wanted to
-rename the file with the content "hello" to "greetings".
+A simplified version that doesn't expand the file item content is as follows:
 
-Firstly we'd create a new "item" with the following command:
+> file_info -recurse start
+[list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
+first
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B)
+ ...
 
-> file_raw -text item greetings\ncceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+So rather than trying to recall "029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a" it is only
+required to recall "start". So if the List represents a traditional "file name" then imagine that we now want
+to rename the "file" named "first" to "greetings".
 
-This will create a new file which will require a new tree as well which we would next create using this:
+Firstly we'd create a new List with the following command:
 
-> file_raw -text tree 6157266eef1b081e83fdf2b4103bae00717470652ae9405ec92fe40a803e36b2 greetings
+> file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef greetings"
 
-Note that this time the Tag was added along with the creation of the new Tree file.
+Then secondly we would switch the "start" tag to the hash of the newly created List as follows:
 
-If we take a look at the content starting from the "greetings" tag (recursing from the tree) the output which
-we will now see differs from the output from the "hello" tag but not entirely.
+> file_tag 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 start
 
-> file_info -recurse -d=2 greetings
-[tree] 2ff855f2b47220fb99e472aacf8ae3d44c6b9ae1f54531ef482af10c1db35a04
- [item] greetings 6157266eef1b081e83fdf2b4103bae00717470652ae9405ec92fe40a803e36b2
-  [blob] utf8 cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
-hello
+It should also be noted that the tag could have been included in the "file_raw" command with this usage:
 
-What can be seen here is that the Blob in both the "hello" and "greetings" Trees is the same file (so only is
-physically stored as a single file). So in this way Blobs can be used with different Items and Trees but disk
-space is never wasted (as only one file per "hash" ever exists).
+> file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef greetings" start
+
+Now we repeat our List recurse command as follows:
+
+> file_info -recurse start
+[list] 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 (75 B)
+greetings
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
+ ...
+
+What can be seen here is that the Blob in both the above and previous "list recurse" output is the same which
+also means that although we have two List files we actually only have a single file with the "hello" content.
+So in this way Blobs can be used with different Lists but disk space is not being wasted as only one file per
+"hash" ever exists.
+
+Although only one file per hash exists each file can have multiple tags which can be particularly useful when
+identifying things by a specific version or simply as the latest version. To illustrate we'll add two version
+specific tags to the two List files we had previously created.
+
+> file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start1
+> file_tag 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 start2
+
+To list all of the tags matching a wildcard pattern use the following:
+
+> file_tags -p=start*
+
+and to see the file hash for a specific tag use the following:
+
+> file_hash start
+
+To remove file tags use the "file_tag" command with either the "-delete" or "-unlink" option. If "-unlink" is
+used then the file itself will be removed if no other tags are linked to it whereas the "-delete" option will
+only ever delete the tag and will never remove the file that it links to.
+
+Copying Files
+-------------
+
+A simple way to copy a file into the file system from the current directory is illustrated as follows:
+
+> file_put ciyam_server.sio xxx
+
+This command will copy the "ciyam_server.sio" configuration file into the file system and create a tag for it
+with the name "xxx".
+
+In order to fetch this copy from the file system use the following:
+
+> file_get xxx
+
+It should be noted that the file content (which was originally copied from "ciyam_server.sio") will have been
+copied into a file called "xxx" in the current directory (to use a different filename add another argument to
+the "file_get" command).
+
+Removing Files
+--------------
+
+For the "xxx" tag created previously the file could be removed using the "file_tag" command as follows:
+
+> file_tag -unlink xxx
+
+But if another tag was linked to the same file content this command would not actually remove the file at all
+so the best method for removing a file is the "file_kill" command which will be used with the file's hash and
+therefore you'd first determine the file's hash using:
+
+> file_hash xxx
+655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
+
+Then remove the file itself using:
+
+> file_kill 655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
+
+It should be noted that any tags that were linked to this file will now have been deleted.
+
+File System Statistics
+----------------------
+
+The "file_stats" command can be used to see a summary of the file system usage:
+
+> file_stats
+[3/1000]152 B/97.7 MiB 3 tag(s)
+
+This indicates that 3 out of a possible 1,000 files are currently stored with 152 bytes of the total capacity
+of 97.7 MiB being used with 3 file tags in existence.
+
+There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
+are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
+
+# <files_area_item_max_num>1000
+# <files_area_item_max_size>100K
+
+It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
+is possible to re-synchronise the application server with the following command:
+
+> file_resync
+
+Note that this command's output mimics that of "file_stats" as a way to easily check if changes had occurred.
 
 Core Files
 ----------
@@ -117,5 +208,5 @@ id being assigned a value (e.g. a=123,b=xyz). Some of the core files will includ
 may or may not be prefixed by a detail type followed by a colon.
 
 Core files (much like configuration files) are essential for the application server so should not be manually
-tagged, created or removed (doing so would risk corrupting application behaviour).
+tagged, created or removed (doing so could risk corrupting application behaviour).
 
