@@ -600,8 +600,8 @@ template< typename T, typename L = std::less< T >,
 
       uchar num_levels;
 
-      size_t total_nodes;
-      size_t total_items;
+      uint total_nodes;
+      uint total_items;
 
       uint root_node;
       uint lft_leaf_node;
@@ -612,6 +612,7 @@ template< typename T, typename L = std::less< T >,
 
       float node_fill_factor;
       bool allow_duplicates;
+
    } state;
 
    state_t& get_state( ) { return state; }
