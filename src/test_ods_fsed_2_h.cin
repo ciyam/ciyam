@@ -1,0 +1,18 @@
+folder_add 111
+cd 111
+folder_add 222
+cd 222
+folder_add 333
+cd /
+file_move aaa 111
+file_move bbb 111
+file_move ccc 111
+file_move ddd 111/222
+file_move eee 111/222
+file_move fff 111/222
+file_move ggg 111/222/333
+file_move hhh 111/222/333
+file_move iii 111/222/333
+branch objects
+dump
+exit

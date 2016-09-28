@@ -1,0 +1,6 @@
+file_replace xxx user2.jpg
+branch objects
+file_replace yyy user2.jpg
+branch objects
+dump
+exit
