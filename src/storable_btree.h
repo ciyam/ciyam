@@ -17,11 +17,11 @@
 #  include "read_write_stream.h"
 
 #  ifndef STORABLE_BTREE_SIZE
-#     define STORABLE_BTREE_SIZE 4096
+#     define STORABLE_BTREE_SIZE 256
 #  endif
 
 #  ifndef STORABLE_BTREE_NODE_SIZE
-#     define STORABLE_BTREE_NODE_SIZE 4096
+#     define STORABLE_BTREE_NODE_SIZE 1024
 #  endif
 
 using namespace btree;
@@ -41,6 +41,7 @@ template< typename T > class storable_node_base : public bt_node< T >, public st
    friend read_stream& operator >> < T >( read_stream& rs, storable_node_base< T >& s );
    friend write_stream& operator << < T >( write_stream& ws, const storable_node_base< T >& s );
 
+   static const short c_version = 1;
    static const size_t c_round_to_value = STORABLE_BTREE_NODE_SIZE;
 };
 
@@ -48,7 +49,7 @@ template< typename T > int_t size_of( const storable_node_base< T >& s )
 {
    short num = s.size( );
 
-   size_t total = sizeof( typename storable_node_base< T >::node_data ) + sizeof( num );
+   size_t total = sizeof( short ) + sizeof( typename storable_node_base< T >::node_data ) + sizeof( num );
 
    for( short i = 0; i < num; i++ )
    {
@@ -66,7 +67,14 @@ template< typename T > read_stream& operator >>( read_stream& rs, storable_node_
 
    s.reset( );
 
-   short num;
+   short ver, num;
+   rs >> ver;
+
+   // FUTURE: If the persistent data structure is extended then the version should be used in
+   // order to handle legacy objects.
+   if( ver != storable_node_base< T >::c_version )
+      throw std::runtime_error( "found unexpected storable_node_base version: " + to_string( ver ) );
+
    rs >> s.data.flags >> s.data.dge_link >> s.data.lft_link >> s.data.rgt_link >> num;
 
    for( short i = 0; i < num; i++ )
@@ -80,8 +88,10 @@ template< typename T > read_stream& operator >>( read_stream& rs, storable_node_
 
 template< typename T > write_stream& operator <<( write_stream& ws, const storable_node_base< T >& s )
 {
+   short ver = storable_node_base< T >::c_version;
    short num = s.size( );
-   ws << s.data.flags << s.data.dge_link << s.data.lft_link << s.data.rgt_link << num;
+
+   ws << ver << s.data.flags << s.data.dge_link << s.data.lft_link << s.data.rgt_link << num;
 
    for( short i = 0; i < num; i++ )
    {
@@ -259,10 +269,12 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    friend read_stream& operator >> < T, L >( read_stream& rs, storable_btree_base< T, L >& s );
    friend write_stream& operator << < T, L >( write_stream& ws, const storable_btree_base< T, L >& s );
 
+   static const short c_version = 1;
+   static const size_t c_round_to_value = STORABLE_BTREE_SIZE;
+
    private:
    ods& o;
    int last_tran_id;
-   static const size_t c_round_to_value = STORABLE_BTREE_SIZE;
 
    protected:
    virtual void commit( )
@@ -273,21 +285,23 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
 
 template< typename T, typename L > int_t size_of( const storable_btree_base< T, L >& bt )
 {
-   size_t total = sizeof( short ) + sizeof( bt.state.num_levels )
+   size_t total = ( sizeof( short ) * 2 ) + sizeof( bt.state.num_levels )
     + ( sizeof( size_t ) * 2 ) + ( sizeof( bt.state.root_node ) * 6 )
     + sizeof( bt.state.node_fill_factor ) + sizeof( bt.state.allow_duplicates );
-
-   if( total > static_cast< size_t >( bt.get_last_size( ) )
-    && total % storable_btree_base< T, L >::c_round_to_value )
-      total += storable_btree_base< T, L >::c_round_to_value
-       - ( total % storable_btree_base< T, L >::c_round_to_value );
 
    return total;
 }
 
 template< typename T, typename L > read_stream& operator >>( read_stream& rs, storable_btree_base< T, L >& s )
 {
-   short items_per_node;
+   short ver, items_per_node;
+
+   rs >> ver;
+
+   // FUTURE: If the persistent data structure is extended then the version should be used in
+   // order to handle legacy objects.
+   if( ver != storable_btree_base< T, L >::c_version )
+      throw std::runtime_error( "found unexpected storable_btree_base version: " + to_string( ver ) );
 
    rs >> items_per_node
     >> s.state.num_levels >> s.state.total_nodes
@@ -303,9 +317,10 @@ template< typename T, typename L > read_stream& operator >>( read_stream& rs, st
 template< typename T, typename L >
  write_stream& operator <<( write_stream& ws, const storable_btree_base< T, L >& s )
 {
+   short ver = storable_btree_base< T, L >::c_version;
    short items_per_node = s.get_node_manager( ).get_items_per_node( );
 
-   ws << items_per_node
+   ws << ver << items_per_node
     << s.state.num_levels << s.state.total_nodes
     << s.state.total_items << s.state.root_node << s.state.lft_leaf_node
     << s.state.rgt_leaf_node << s.state.free_list_node << s.state.first_append_node

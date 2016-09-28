@@ -10,7 +10,7 @@ The essential components of the system are as follows:
 Name              Role/Description
 ---------------   --------------------------------------------------------
 ciyam_client      Single-threaded console client.
-ciyam_interface   Multi-threaded FCGI www client.
+ciyam_interface   Multi-threaded FCGI CIYAM client.
 ciyam_server      Multi-threaded application server.
 upload            Multi-threaded FCGI file uploader.
 
@@ -30,20 +30,20 @@ check_source      Tool used for pre-commit source code format checking.
 construct         Used to construct template file outlines from packages.
 diff              Text file diff tool (similar to standard *nix tool).
 diffp             Diff patching tool (to patch one or merge two diffs).
-dump              Object Data Storage hex data dump tool.
 extract           Tool used to extract manual code from generated source.
 generate_commands Tool to transform a .cms source file into .cmh include.
 modeller          Legacy modelling tool used to maintain the Meta model.
-test              Basic regression test utility (see test_system.txt).
-test_cache        Testbed application for the ODS caching implementation.
+ods_dump          Object Data Storage hex data dump tool.
+ods_fsed          Object Data Storage file system editing tool.
+test              Basic regression test utility.
+test_cache        Testbed for the generic cache implementation.
 test_fcgi         Test FCGI application (to check if FCGI is working).
 test_numeric      Testbed for the numeric class.
 test_ods          Testbed for the Object Data Storage system.
 test_parser       Testbed for the (RPC) command parser.
-test_pdf_gen      Testbed for the PDF generator.
 test_sql          Test tool for issuing SQL queries.
 xrep              Expression replacement tool for expanding templates.
-xvars             Tool used by the make system (see make_system.txt).
+xvars             Tool used by the make system.
 
 The following batch/script files are required for development installations:
 
@@ -53,13 +53,14 @@ config            Generates config.h from config.h.xrep (and config.info).
 create_db         Creates an empty DB.
 dotests           Runs basic tool and system regression tests.
 drop_db           Drops an existing DB.
-genmake           Generates the makefile (see make_system.txt).
+genmake           Generates the project makefile.
 genmodule         Used explicitly to generate the Meta model.
 
-Various other batch/scripts that are used internally by development installations are not listed here.
+Various other batch/script files that are used internally by development installations are not listed here.
 
 Module and Storage Concepts
 ---------------------------
+
 An application instance consists of one or more modules (which are shared/dynamic libraries) plus one storage
 (which is one SQL and one ODS DB). The web interface (if present) is stored in an application directory below
 that nominated by the WEBDIR environment variable.
@@ -69,19 +70,21 @@ it should be noted that a storage can only be used by one application instance.
 
 Application Server Basics
 -------------------------
+
 The application server is a multi-threaded program that concurrently handles clients that connect in order to
 invoke RPC commands. Multiple storages can be used and shared by the various connected clients, however, each
 client connection can itself only operate with the one storage at a time.
 
 As well as direct storage operations via RPC commands the application server provides a framework that allows
 class objects to be created/destroyed and sent commands. In this manner actual DB operations are performed by
-clients without invoking any direct SQL (i.e. object to relational DB mapping).
+clients without invoking any direct SQL (i.e. automatic object to relational DB mapping).
 
 In line with the CIYAM methodology all SQL queries are generated (via object methods) and therefore "raw" SQL
 should never be found coded in any module (excluding DDL/SQL generated via the class template itself).
 
 Storage Log File
 ----------------
+
 An essential part of the storage approach is the log file named <storage>.log which is a transaction log that
 contains every *write* operation performed with the storage. Immediately before a transaction is committed to
 the storage the log file is appended to with the relevant protocol command(s).
@@ -106,6 +109,7 @@ entire log must be able to be made available in order to do a "rebuild" (which i
 
 Uploaded and Rules Created Files
 --------------------------------
+
 Files that application users upload are not kept in the storage (only there existence is) so another key part
 of backing up is to ensure all of the application files have been periodically backed up. The provided backup
 batch/script files can be used to include these external files, however, this is not advisable for situations

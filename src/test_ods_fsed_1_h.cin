@@ -1,0 +1,16 @@
+cd
+cd def
+folder_add test_3
+folder_add test_2
+folder_add test_1
+branch objects
+cd /xyz
+folder_add test_C
+folder_add test_B
+folder_add test_A
+branch objects
+cd /
+branch folders
+branch objects
+dump
+exit

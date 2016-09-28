@@ -38,7 +38,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    inline std::string get_folder( ) const { return current_folder; }
 
-   std::string determine_folder( const std::string& folder, std::ostream* p_os = 0 );
+   std::string determine_folder( const std::string& folder,
+    std::ostream* p_os = 0, bool explicit_child_only = false );
 
    std::string determine_strip_and_change_folder( std::string& name, std::ostream* p_os = 0 );
 
@@ -60,9 +61,12 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files_or_objects( expr, os, false, style );
    }
 
-   void list_files( const std::string& expr, std::vector< std::string >& list );
+   void list_files( const std::string& expr, std::vector< std::string >& list, bool include_links = true );
 
-   inline void list_files( std::vector< std::string >& list ) { list_files( "", list ); }
+   inline void list_files( std::vector< std::string >& list, bool include_links = true )
+   {
+      list_files( "", list, include_links );
+   }
 
    void list_folders( const std::string& expr, std::vector< std::string >& list );
 
@@ -100,6 +104,10 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    {
       branch_files_or_objects( os, current_folder, expr, style );
    }
+
+   void branch_files( const std::string& expr, std::vector< std::string >& files );
+
+   void branch_folders( const std::string& expr, std::vector< std::string >& folders );
 
    void branch_folders(
     const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default );
@@ -190,7 +198,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    void move_folder( const std::string& name,
     const std::string& destination, bool overwrite = false, std::ostream* p_os = 0 );
 
-   void remove_folder( const std::string& name, std::ostream* p_os = 0 );
+   void remove_folder( const std::string& name, std::ostream* p_os = 0, bool remove_branch = false );
 
    void rebuild_index( );
 
@@ -229,6 +237,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    bool move_files_and_folders( const std::string& source,
     const std::string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );
 
+   bool remove_items_for_file( const std::string& name, std::ostream* p_os = 0 );
+   bool remove_items_for_folder( const std::string& name, std::ostream* p_os = 0 );
+
    private:
    ods& o;
 
@@ -236,6 +247,25 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    impl* p_impl;
 
    std::string current_folder;
+};
+
+struct temporary_set_folder
+{
+   temporary_set_folder( ods_file_system& ofs, const std::string& tmp_folder )
+    :
+    ofs( ofs )
+   {
+      old_folder = ofs.get_folder( );
+      ofs.set_folder( tmp_folder );
+   }
+
+   ~temporary_set_folder( )
+   {
+      ofs.set_folder( old_folder );
+   }
+
+   ods_file_system& ofs;
+   std::string old_folder;
 };
 
 #endif

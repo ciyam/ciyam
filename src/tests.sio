@@ -879,6 +879,179 @@
    </tests>
   </group>
   <group/>
+   <name>test_ods_fsed
+   <tests/>
+    <test/>
+     <name>1
+     <description>Test an initially empty DB then add, move and remove some folders.
+     <kill>ods_fsed.dat
+     <kill>ods_fsed.idx
+     <kill>ods_fsed.hdr
+     <kill>ods_fsed.dat.lck
+     <kill>ods_fsed.idx.lck
+     <test_step/>
+      <name>a
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ods_dump -d 0 ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>ods_dump -d 0 ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>ods_dump -d 1 ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>l
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>m
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>n
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>2
+     <description>Test an initially empty DB then add, link, move, replace and remove some files.
+     <kill>ods_fsed.dat
+     <kill>ods_fsed.idx
+     <kill>ods_fsed.hdr
+     <kill>ods_fsed.dat.lck
+     <kill>ods_fsed.idx.lck
+     <test_step/>
+      <name>a
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ods_dump -d 0-4 ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>ods_dump all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>ods_dump all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>ods_fsed -quiet -echo -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>ods_dump all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_parser
    <tests/>
     <test/>

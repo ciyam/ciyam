@@ -1,0 +1,11 @@
+cd
+cd def
+folder_move test_2 test_1
+branch objects
+folder_move test_3 test_1/test_2
+branch objects
+cd /
+branch folders
+branch objects
+dump
+exit

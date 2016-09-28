@@ -216,7 +216,7 @@ template< class S > struct wildcard_compare_equal_functor : public binary_functi
    }
 };
 
-typedef storable< storable_btree_base< ofs_object > > btree_type;
+typedef storable< storable_btree_base< ofs_object >, storable_btree_base< ofs_object >::c_round_to_value > btree_type;
 typedef storable< storable_node_base< ofs_object >, storable_node_base< ofs_object >::c_round_to_value > btree_node_type;
 
 typedef storable_node_manager< ofs_object > btree_node_manager_type;
@@ -241,7 +241,7 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
 
    btree_type& bt( p_impl->bt );
 
-   if( o.get_total_entries( ) > i + 1 )
+   if( o.get_total_entries( ) > i )
    {
       bt.set_id( i );
       o >> bt;
@@ -277,12 +277,25 @@ void ods_file_system::set_folder( const string& new_folder, bool* p_rc )
    }
 }
 
-string ods_file_system::determine_folder( const string& folder, ostream* p_os )
+string ods_file_system::determine_folder( const string& folder, ostream* p_os, bool explicit_child_only )
 {
    string new_folder( folder );
    string old_current_folder( current_folder );
 
    btree_type& bt( p_impl->bt );
+
+   if( explicit_child_only )
+   {
+      string::size_type pos = new_folder.find( c_parent_folder );
+
+      if( pos != string::npos || ( !new_folder.empty( ) && new_folder[ 0 ] == c_folder ) )
+      {
+         if( p_os )
+            *p_os << "*** invalid non-explicit or non-child folder ***" << endl;
+
+         new_folder.erase( );
+      }
+   }
 
    if( !new_folder.empty( ) )
    {
@@ -347,7 +360,7 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os )
    return new_folder;
 }
 
-string ods_file_system::determine_strip_and_change_folder( string& name, std::ostream* p_os )
+string ods_file_system::determine_strip_and_change_folder( string& name, ostream* p_os )
 {
    string original_folder;
 
@@ -371,7 +384,7 @@ string ods_file_system::determine_strip_and_change_folder( string& name, std::os
    return original_folder;
 }
 
-void ods_file_system::list_files( const string& expr, vector< string >& list )
+void ods_file_system::list_files( const string& expr, vector< string >& list, bool include_links )
 {
    ostringstream osstr;
 
@@ -384,6 +397,20 @@ void ods_file_system::list_files( const string& expr, vector< string >& list )
 
    if( !file_list.empty( ) )
       split( file_list, list, '\n' );
+
+   if( !include_links )
+   {
+      vector< string > non_link_files;
+
+      for( size_t i = 0; i < list.size( ); i++ )
+      {
+         string::size_type pos = list[ i ].find( '*' );
+         if( pos == string::npos )
+            non_link_files.push_back( list[ i ] );
+      }
+
+      list = non_link_files;
+   }
 }
 
 void ods_file_system::list_folders( const string& expr, vector< string >& list )
@@ -433,6 +460,36 @@ void ods_file_system::list_folders( const string& expr, ostream& os, bool full_p
 
       perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0, full_path ? '\0' : c_folder );
    }
+}
+
+void ods_file_system::branch_files( const std::string& expr, vector< string >& files )
+{
+   ostringstream osstr;
+
+   branch_files( expr, osstr );
+
+   string file_list( osstr.str( ) );
+
+   if( !file_list.empty( ) && file_list[ file_list.length( ) - 1 ] == '\n' )
+      file_list = file_list.substr( 0, file_list.length( ) - 1 );
+
+   if( !file_list.empty( ) )
+      split( file_list, files, '\n' );
+}
+
+void ods_file_system::branch_folders( const string& expr, vector< string >& folders )
+{
+   ostringstream osstr;
+
+   branch_folders( expr, osstr );
+
+   string folder_list( osstr.str( ) );
+
+   if( !folder_list.empty( ) && folder_list[ folder_list.length( ) - 1 ] == '\n' )
+      folder_list = folder_list.substr( 0, folder_list.length( ) - 1 );
+
+   if( !folder_list.empty( ) )
+      split( folder_list, folders, '\n' );
 }
 
 void ods_file_system::branch_folders( const string& expr, ostream& os, branch_style style )
@@ -690,7 +747,7 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
 
             string source_name( source.substr( pos == string::npos ? 0 : pos + 1 ) );
 
-            string source_folder( determine_folder( source ) );
+            string source_folder( determine_folder( source.substr( 0, pos ) ) );
 
             if( source_folder.empty( ) )
                source_folder = string( c_root_folder );
@@ -909,75 +966,12 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
    if( !o.is_bulk_write_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   btree_type::iterator tmp_iter;
-   btree_type::item_type tmp_item;
-
    o >> bt;
 
    auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
 
-   tmp_item.val = c_pipe_separator + current_folder + name;
-
-   tmp_iter = bt.find( tmp_item );
-
-   if( tmp_iter == bt.end( ) )
-   {
-      if( p_os )
-         *p_os << "*** file '" << name << "' not found ***" << endl;
-      else
-         throw runtime_error( "file '" + name + "' not found" );
-   }
-   else
-   {
-      oid id( tmp_iter->get_file( ).get_id( ) );
-
-      bool is_link = tmp_iter->get_is_link( );
-
-      bt.erase( tmp_iter );
-
-      if( !id.is_new( ) )
-      {
-         if( is_link )
-         {
-            tmp_item.val = to_string( id.get_num( ) ) + tmp_item.val;
-
-            tmp_iter = bt.find( tmp_item );
-
-            if( tmp_iter != bt.end( ) )
-               bt.erase( tmp_iter );
-         }
-         else
-         {
-            o.destroy( id );
-
-            string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
-
-            // NOTE: Now need to delete any existing links to the file.
-            while( true )
-            {
-               tmp_item.val = link_prefix;
-
-               tmp_iter = bt.lower_bound( tmp_item );
-
-               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
-                  break;
-
-               string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
-
-               bt.erase( tmp_iter );
-
-               tmp_item.val = link_name;
-
-               tmp_iter = bt.find( tmp_item );
-
-               if( tmp_iter != bt.end( ) )
-                  bt.erase( tmp_iter );
-            }
-         }
-      }
-
+   if( remove_items_for_file( name, p_os ) )
       ap_tx->commit( );
-   }
 }
 
 void ods_file_system::replace_file( const string& name, const string& source, ostream* p_os, istream* p_is )
@@ -1338,8 +1332,10 @@ void ods_file_system::move_folder( const string& name, const string& destination
    }
 }
 
-void ods_file_system::remove_folder( const string& name, ostream* p_os )
+void ods_file_system::remove_folder( const string& name, ostream* p_os, bool remove_branch )
 {
+   bool okay = true;
+
    btree_type& bt( p_impl->bt );
 
    auto_ptr< ods::bulk_write > ap_bulk;
@@ -1347,46 +1343,61 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os )
    if( !o.is_bulk_write_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   btree_type::item_type tmp_item;
-
    o >> bt;
 
-   if( current_folder == string( c_root_folder ) )
-   {
-      tmp_item.val = current_folder + name;
+   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
 
-      if( !bt.erase( tmp_item ) )
-      {
-         if( p_os )
-            *p_os << "*** folder '" << name << "' not found ***" << endl;
-         else
-            throw runtime_error( "folder '" + name + "' not found" );
-      }
-      else
-      {
-         tmp_item.val = c_colon + tmp_item.val;
-         bt.erase( tmp_item );
-      }
-   }
+   string tmp_folder( determine_folder( name, p_os, true ) );
+
+   if( tmp_folder.empty( ) )
+      okay = false;
    else
    {
-      string name_1( current_folder + c_folder + name );
-      string name_2( replaced( current_folder, c_folder_separator, c_colon_separator ) + c_folder + name );
+      restorable< string > tmp_current_folder( current_folder, tmp_folder );
 
-      tmp_item.val = name_1;
+      vector< string > child_folders;
+      branch_folders( "", child_folders );
 
-      if( !bt.erase( tmp_item ) )
+      if( !remove_branch && !child_folders.empty( ) )
       {
          if( p_os )
-            *p_os << "*** folder '" << name << "' not found ***" << endl;
+         {
+            okay = false;
+            *p_os << "*** cannot remove '" << name << "' as it has one or more child folders ***" << endl;
+         }
          else
-            throw runtime_error( "folder '" + name + "' not found" );
+            throw runtime_error( "cannot remove '" + name + "' as it has one or more child folders" );
       }
       else
       {
-         tmp_item.val = name_2;
-         bt.erase( tmp_item );
+         vector< string > child_files;
+         branch_files( "", child_files );
+
+         if( !remove_branch && !child_files.empty( ) )
+         {
+            if( p_os )
+            {
+               okay = false;
+               *p_os << "*** cannot remove '" << name << "' as it has one or more files ***" << endl;
+            }
+            else
+               throw runtime_error( "cannot remove '" + name + "' as it has one or more files" );
+         }
+         else
+         {
+            for( size_t i = 0; i < child_files.size( ); i++ )
+               remove_file( child_files[ i ] );
+
+            for( size_t i = 0; i < child_folders.size( ); i++ )
+               remove_items_for_folder( child_folders[ i ] );
+         }
       }
+   }
+
+   if( okay )
+   {
+      if( remove_items_for_folder( name, p_os ) )
+         ap_tx->commit( );
    }
 }
 
@@ -1413,6 +1424,7 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
    o >> bt;
+
    if( file_name.length( ) )
    {
       ofstream outf( file_name.c_str( ) );
@@ -2168,5 +2180,167 @@ bool ods_file_system::move_files_and_folders( const string& source,
    }
 
    return true;
+}
+
+bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os )
+{
+   bool okay = true;
+
+   btree_type& bt( p_impl->bt );
+
+   btree_type::iterator tmp_iter;
+   btree_type::item_type tmp_item;
+
+   if( current_folder == string( c_root_folder ) )
+      tmp_item.val = current_folder + name;
+   else
+      tmp_item.val = current_folder + c_folder_separator + name;
+
+   replace( tmp_item.val, c_folder_separator, c_pipe_separator );
+
+   string::size_type pos = tmp_item.val.rfind( c_pipe_separator );
+
+   if( pos != string::npos )
+   {
+      tmp_item.val[ pos ] = c_folder;
+
+      if( pos == 0 )
+         tmp_item.val = c_pipe + tmp_item.val;
+   }
+
+   tmp_iter = bt.find( tmp_item );
+
+   if( tmp_iter == bt.end( ) )
+   {
+      if( p_os )
+      {
+         okay = false;
+         *p_os << "*** file '" << name << "' not found ***" << endl;
+      }
+      else
+         throw runtime_error( "file '" + name + "' not found" );
+   }
+   else
+   {
+      oid id( tmp_iter->get_file( ).get_id( ) );
+
+      bool is_link = tmp_iter->get_is_link( );
+
+      bt.erase( tmp_iter );
+
+      if( !id.is_new( ) )
+      {
+         if( is_link )
+         {
+            tmp_item.val = to_string( id.get_num( ) ) + tmp_item.val;
+
+            tmp_iter = bt.find( tmp_item );
+
+            if( tmp_iter != bt.end( ) )
+               bt.erase( tmp_iter );
+         }
+         else
+         {
+            o.destroy( id );
+
+            string link_prefix( to_string( id.get_num( ) ) + c_pipe_separator );
+
+            // NOTE: Now need to delete any existing links to the file.
+            while( true )
+            {
+               tmp_item.val = link_prefix;
+
+               tmp_iter = bt.lower_bound( tmp_item );
+
+               if( tmp_iter == bt.end( ) || tmp_iter->val.find( link_prefix ) != 0 )
+                  break;
+
+               string link_name = tmp_iter->val.substr( link_prefix.length( ) - 1 );
+
+               bt.erase( tmp_iter );
+
+               tmp_item.val = link_name;
+
+               tmp_iter = bt.find( tmp_item );
+
+               if( tmp_iter != bt.end( ) )
+                  bt.erase( tmp_iter );
+            }
+         }
+      }
+   }
+
+   return okay;
+}
+
+bool ods_file_system::remove_items_for_folder( const string& name, ostream* p_os )
+{
+   bool okay = true;
+
+   btree_type& bt( p_impl->bt );
+
+   btree_type::item_type tmp_item;
+
+   if( current_folder == string( c_root_folder ) )
+   {
+      tmp_item.val = current_folder + name;
+
+      if( !bt.erase( tmp_item ) )
+      {
+         if( p_os )
+         {
+            okay = false;
+            *p_os << "*** folder '" << name << "' not found ***" << endl;
+         }
+         else
+            throw runtime_error( "folder '" + name + "' not found" );
+      }
+      else
+      {
+         if( name.find( c_folder_separator ) == string::npos )
+            tmp_item.val = c_colon_separator + current_folder + name;
+         else
+         {
+            replace( tmp_item.val, c_folder_separator, c_colon_separator );
+
+            string::size_type pos = tmp_item.val.rfind( c_colon_separator );
+
+            if( pos != string::npos )
+               tmp_item.val[ pos ] = c_folder;
+         }
+
+         bt.erase( tmp_item );
+      }
+   }
+   else
+   {
+      string name_1( current_folder + c_folder + name );
+      string name_2( replaced( name_1, c_folder_separator, c_colon_separator ) );
+
+      string::size_type pos = name_2.rfind( c_colon_separator );
+
+      if( pos != string::npos )
+         name_2[ pos ] = c_folder;
+
+      tmp_item.val = name_1;
+
+      if( !bt.erase( tmp_item ) )
+      {
+         if( p_os )
+         {
+            okay = false;
+            *p_os << "*** folder '" << name << "' not found ***" << endl;
+         }
+         else
+            throw runtime_error( "folder '" + name + "' not found" );
+      }
+      else
+      {
+         tmp_item.val = name_2;
+         bt.erase( tmp_item );
+      }
+   }
+
+   return okay;
 }
 

@@ -72,7 +72,7 @@ void export_objects( ods_file_system& ofs )
 {
    vector< string > files;
 
-   ofs.list_files( files );
+   ofs.list_files( files, false );
 
    for( size_t i = 0; i < files.size( ); i++ )
    {
@@ -421,8 +421,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_ods_fsed_folder_remove )
    {
       string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_folder_remove_name ) );
+      bool recurse( has_parm_val( parameters, c_cmd_parm_ods_fsed_folder_remove_recurse ) );
 
-      ap_ofs->remove_folder( name, &cout );
+      ap_ofs->remove_folder( name, &cout, recurse );
    }
    else if( command == c_cmd_ods_fsed_export )
    {

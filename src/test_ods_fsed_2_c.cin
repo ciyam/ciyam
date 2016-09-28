@@ -1,0 +1,14 @@
+file_link aaa zzz
+file_link bbb yyy
+file_link ccc xxx
+branch objects
+file_link ddd zzz
+file_link eee yyy
+file_link fff xxx
+branch objects
+file_link ggg zzz
+file_link hhh yyy
+file_link iii xxx
+branch objects
+dump
+exit
