@@ -41,17 +41,17 @@ template< typename T > class storable_node_base : public bt_node< T >, public st
    friend read_stream& operator >> < T >( read_stream& rs, storable_node_base< T >& s );
    friend write_stream& operator << < T >( write_stream& ws, const storable_node_base< T >& s );
 
-   static const short c_version = 1;
+   static const uint8_t c_version = 1;
    static const size_t c_round_to_value = STORABLE_BTREE_NODE_SIZE;
 };
 
 template< typename T > int_t size_of( const storable_node_base< T >& s )
 {
-   short num = s.size( );
+   uint8_t num = s.size( );
 
-   size_t total = sizeof( short ) + sizeof( typename storable_node_base< T >::node_data ) + sizeof( num );
+   size_t total = ( sizeof( uint8_t ) * 2 ) + sizeof( typename storable_node_base< T >::node_data );
 
-   for( short i = 0; i < num; i++ )
+   for( uint8_t i = 0; i < num; i++ )
    {
       T& t = const_cast< T& >( s.get_item_data( i ) );
       total += size_of( t ) + sizeof( oid );
@@ -63,21 +63,21 @@ template< typename T > int_t size_of( const storable_node_base< T >& s )
 template< typename T > read_stream& operator >>( read_stream& rs, storable_node_base< T >& s )
 {
    T t;
-   uint link;
+   uint64_t link;
 
    s.reset( );
 
-   short ver, num;
-   rs >> ver;
+   uint8_t ver, num;
+   rs >> ver >> num;
 
    // FUTURE: If the persistent data structure is extended then the version should be used in
    // order to handle legacy objects.
    if( ver != storable_node_base< T >::c_version )
       throw std::runtime_error( "found unexpected storable_node_base version: " + to_string( ver ) );
 
-   rs >> s.data.flags >> s.data.dge_link >> s.data.lft_link >> s.data.rgt_link >> num;
+   rs >> s.data.flags >> s.data.padding >> s.data.dge_link >> s.data.lft_link >> s.data.rgt_link;
 
-   for( short i = 0; i < num; i++ )
+   for( uint8_t i = 0; i < num; i++ )
    {
       rs >> t >> link;
       s.append_item( t, link );
@@ -88,12 +88,13 @@ template< typename T > read_stream& operator >>( read_stream& rs, storable_node_
 
 template< typename T > write_stream& operator <<( write_stream& ws, const storable_node_base< T >& s )
 {
-   short ver = storable_node_base< T >::c_version;
-   short num = s.size( );
+   uint8_t ver = storable_node_base< T >::c_version;
+   uint8_t num = s.size( );
 
-   ws << ver << s.data.flags << s.data.dge_link << s.data.lft_link << s.data.rgt_link << num;
+   ws << ver << num
+    << s.data.flags << s.data.padding << s.data.dge_link << s.data.lft_link << s.data.rgt_link;
 
-   for( short i = 0; i < num; i++ )
+   for( uint8_t i = 0; i < num; i++ )
    {
       T& t = const_cast< T& >( s.get_item_data( i ) );
       ws << t << s.get_item_link( i );
@@ -117,10 +118,10 @@ template< typename T > class storable_node_manager
 
    void clear_nodes( );
 
-   virtual uint create_node( );
-   virtual void destroy_node( uint id ) { p_ods->destroy( id ); }
+   virtual uint64_t create_node( );
+   virtual void destroy_node( uint64_t id ) { p_ods->destroy( id ); }
 
-   virtual void access_node( uint id, bt_node< T >*& p_node );
+   virtual void access_node( uint64_t id, bt_node< T >*& p_node );
 
    virtual void commit( );
    virtual void rollback( );
@@ -139,21 +140,23 @@ template< typename T > void storable_node_manager< T >::clear_nodes( )
    nodes.resize( c_max_buffer_nodes );
 }
 
-template< typename T > uint storable_node_manager< T >::create_node( )
+template< typename T > uint64_t storable_node_manager< T >::create_node( )
 {
    size_t index = UINT_MAX;
+
    for( size_t i = 0; i < nodes.size( ); i++ )
    {
       if( !nodes[ i ].referenced( ) )
       {
          index = i;
+
          if( !nodes[ i ].touched( ) )
             break;
       }
    }
 
    if( index == UINT_MAX )
-      throw std::runtime_error( "unexpected storable node manager has no room for node #0" );
+      throw std::runtime_error( "unexpected storable node manager has no room for node in create_node" );
 
    if( nodes[ index ].touched( ) )
    {
@@ -169,9 +172,10 @@ template< typename T > uint storable_node_manager< T >::create_node( )
    return node.get_id( ).get_num( );
 }
 
-template< typename T > void storable_node_manager< T >::access_node( uint id, bt_node< T >*& p_node )
+template< typename T > void storable_node_manager< T >::access_node( uint64_t id, bt_node< T >*& p_node )
 {
    size_t index = UINT_MAX;
+
    for( size_t i = 0; i < nodes.size( ); i++ )
    {
       if( nodes[ i ].get_id( ) == id )
@@ -187,7 +191,7 @@ template< typename T > void storable_node_manager< T >::access_node( uint id, bt
    }
 
    if( index == UINT_MAX )
-      throw std::runtime_error( "unexpected storable node manager has no room for node #1" );
+      throw std::runtime_error( "unexpected storable node manager has no room for node in access_node" );
 
    if( !nodes[ index ].referenced( ) && nodes[ index ].get_id( ) != id )
    {
@@ -244,21 +248,17 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
 
    public:
    storable_btree_base( const L& compare_less = std::less< T >( ) )
-    : bt_base< T, L,
-    storable< storable_node_base< T >,
-     storable_node_base< T >::c_round_to_value >, storable_node_manager< T > >( compare_less ),
-    o( *ods::instance( ) ),
-    last_tran_id( -1 )
+    : bt_base< T, L, storable< storable_node_base< T >, storable_node_base< T >::c_round_to_value >,
+    storable_node_manager< T > >( compare_less ),
+    o( *ods::instance( ) )
    {
       bt_base_class::get_node_manager( ).set_ods( o );
    }
 
    storable_btree_base( ods& o, const L& compare_less = std::less< T >( ) )
-    : bt_base< T, L,
-    storable< storable_node_base< T >,
-     storable_node_base< T >::c_round_to_value >, storable_node_manager< T > >( compare_less ),
-    o( o ),
-    last_tran_id( -1 )
+    : bt_base< T, L, storable< storable_node_base< T >, storable_node_base< T >::c_round_to_value >,
+    storable_node_manager< T > >( compare_less ),
+    o( o )
    {
       bt_base_class::get_node_manager( ).set_ods( o );
    }
@@ -269,12 +269,11 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    friend read_stream& operator >> < T, L >( read_stream& rs, storable_btree_base< T, L >& s );
    friend write_stream& operator << < T, L >( write_stream& ws, const storable_btree_base< T, L >& s );
 
-   static const short c_version = 1;
+   static const uint8_t c_version = 1;
    static const size_t c_round_to_value = STORABLE_BTREE_SIZE;
 
    private:
    ods& o;
-   int last_tran_id;
 
    protected:
    virtual void commit( )
@@ -285,31 +284,29 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
 
 template< typename T, typename L > int_t size_of( const storable_btree_base< T, L >& bt )
 {
-   size_t total = ( sizeof( short ) * 2 ) + sizeof( bt.state.num_levels )
-    + ( sizeof( size_t ) * 2 ) + ( sizeof( bt.state.root_node ) * 6 )
-    + sizeof( bt.state.node_fill_factor ) + sizeof( bt.state.allow_duplicates );
+   size_t total = ( sizeof( uint8_t ) * 2 ) + sizeof( typename storable_btree_base< T, L >::state_t );
 
    return total;
 }
 
 template< typename T, typename L > read_stream& operator >>( read_stream& rs, storable_btree_base< T, L >& s )
 {
-   short ver, items_per_node;
+   uint8_t ver, items_per_node;
 
-   rs >> ver;
+   rs >> ver >> items_per_node;
 
    // FUTURE: If the persistent data structure is extended then the version should be used in
    // order to handle legacy objects.
    if( ver != storable_btree_base< T, L >::c_version )
       throw std::runtime_error( "found unexpected storable_btree_base version: " + to_string( ver ) );
 
-   rs >> items_per_node
-    >> s.state.num_levels >> s.state.total_nodes
-    >> s.state.total_items >> s.state.root_node >> s.state.lft_leaf_node
-    >> s.state.rgt_leaf_node >> s.state.free_list_node >> s.state.first_append_node
-    >> s.state.current_append_node >> s.state.node_fill_factor >> s.state.allow_duplicates;
+   rs >> s.state.num_levels
+    >> s.state.node_fill_factor >> s.state.allow_duplicates
+    >> s.state.padding >> s.state.total_nodes >> s.state.total_items
+    >> s.state.root_node >> s.state.lft_leaf_node >> s.state.rgt_leaf_node
+    >> s.state.free_list_node >> s.state.first_append_node >> s.state.current_append_node;
 
-   s.get_node_manager( ).set_items_per_node( ( unsigned char )items_per_node );
+   s.get_node_manager( ).set_items_per_node( items_per_node );
 
    return rs;
 }
@@ -317,14 +314,14 @@ template< typename T, typename L > read_stream& operator >>( read_stream& rs, st
 template< typename T, typename L >
  write_stream& operator <<( write_stream& ws, const storable_btree_base< T, L >& s )
 {
-   short ver = storable_btree_base< T, L >::c_version;
-   short items_per_node = s.get_node_manager( ).get_items_per_node( );
+   uint8_t ver = storable_btree_base< T, L >::c_version;
+   uint8_t items_per_node = s.get_node_manager( ).get_items_per_node( );
 
-   ws << ver << items_per_node
-    << s.state.num_levels << s.state.total_nodes
-    << s.state.total_items << s.state.root_node << s.state.lft_leaf_node
-    << s.state.rgt_leaf_node << s.state.free_list_node << s.state.first_append_node
-    << s.state.current_append_node << s.state.node_fill_factor << s.state.allow_duplicates;
+   ws << ver << items_per_node << s.state.num_levels
+    << s.state.node_fill_factor << s.state.allow_duplicates
+    << s.state.padding << s.state.total_nodes << s.state.total_items
+    << s.state.root_node << s.state.lft_leaf_node << s.state.rgt_leaf_node
+    << s.state.free_list_node << s.state.first_append_node << s.state.current_append_node;
 
    return ws;
 }

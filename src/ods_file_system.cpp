@@ -544,7 +544,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
       auto_ptr< ods::bulk_write > ap_bulk;
 
-      if( !o.is_bulk_write_locked( ) )
+      if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
       btree_type::iterator tmp_iter;
@@ -618,7 +618,8 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
    }
 }
 
-void ods_file_system::get_file( const string& name, const string& destination, ostream* p_os, bool output_to_stream )
+void ods_file_system::get_file( const string& name,
+ const string& destination, ostream* p_os, bool output_to_stream )
 {
    string file_name( destination );
 
@@ -819,7 +820,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
    {
       auto_ptr< ods::bulk_write > ap_bulk;
 
-      if( !o.is_bulk_write_locked( ) )
+      if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
       o >> bt;
@@ -948,7 +949,7 @@ void ods_file_system::store_file( const string& name,
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    if( !has_file( name ) )
@@ -963,7 +964,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    o >> bt;
@@ -985,7 +986,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    btree_type::iterator tmp_iter;
@@ -1120,7 +1121,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
    {
       auto_ptr< ods::bulk_write > ap_bulk;
 
-      if( !o.is_bulk_write_locked( ) )
+      if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
       btree_type::iterator tmp_iter;
@@ -1241,7 +1242,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    o >> bt;
@@ -1340,7 +1341,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    o >> bt;
@@ -1407,7 +1408,7 @@ void ods_file_system::rebuild_index( )
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
-   if( !o.is_bulk_write_locked( ) )
+   if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    o >> bt;

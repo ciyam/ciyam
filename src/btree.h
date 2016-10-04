@@ -36,19 +36,15 @@ namespace btree
 {
 #  endif
 
-#  ifndef __GNUG__
-typedef unsigned int uint;
-#  endif
-typedef unsigned char uchar;
+const uint8_t c_none = 0xffu;
 
-const uint c_npos = ~0u;
-const uchar c_none = 0xffu;
+const uint64_t c_npos = UINT64_C( 0xffffffffffffffff );
 
-const uchar c_node_flag_is_leaf = 0x01u;
-const uchar c_node_flag_is_rgt_leaf = 0x02u;
-const uchar c_node_flag_has_dup_split = 0x04u;
+const uint8_t c_node_flag_is_leaf = 0x01u;
+const uint8_t c_node_flag_is_rgt_leaf = 0x02u;
+const uint8_t c_node_flag_has_dup_split = 0x04u;
 
-const uchar c_maximum_items_per_node = 255;
+const uint8_t c_maximum_items_per_node = 255;
 
 #  ifdef BTREE_DEBUG
 size_t total_number_of_node_splits = 0;
@@ -63,10 +59,10 @@ template< typename T > class bt_node_mgr_base
 
    virtual ~bt_node_mgr_base( ) { }
 
-   virtual uint create_node( ) = 0;
-   virtual void destroy_node( uint ) { }
+   virtual uint64_t create_node( ) = 0;
+   virtual void destroy_node( uint64_t ) { }
 
-   virtual void access_node( uint id, bt_node< T >*& p_node ) = 0;
+   virtual void access_node( uint64_t id, bt_node< T >*& p_node ) = 0;
 
    virtual void commit( ) { }
    virtual void rollback( ) { }
@@ -105,7 +101,7 @@ template< typename T > class bt_node
 
    bool referenced( ) const { return ref_count > 0; }
 
-   void append_item( const T& item, uint link )
+   void append_item( const T& item, uint64_t link )
    {
       item_pairs.push_back( std::make_pair( item, link ) );
    }
@@ -126,7 +122,7 @@ template< typename T > class bt_node
       item_pairs.erase( item_pairs.begin( ) + pos, item_pairs.end( ) );
    }
 
-   void insert_item( size_t pos, const T& item, uint link )
+   void insert_item( size_t pos, const T& item, uint64_t link )
    {
       item_pairs.insert( item_pairs.begin( ) + pos, std::make_pair( item, link ) );
    }
@@ -152,42 +148,44 @@ template< typename T > class bt_node
       item_pairs.clear( );
    }
 
-   uchar size( ) const { return ( uchar )item_pairs.size( ); }
+   uint8_t size( ) const { return ( uint8_t )item_pairs.size( ); }
 
    void set_link( int new_link ) { link = new_link; }
 
    const T& get_item_data( size_t pos ) const { return item_pairs[ pos ].first; }
-   uint get_item_link( size_t pos ) const { return item_pairs[ pos ].second; }
+   uint64_t get_item_link( size_t pos ) const { return item_pairs[ pos ].second; }
 
-   void set_item_link( size_t pos, uint link ) { item_pairs[ pos ].second = link; }
+   void set_item_link( size_t pos, uint64_t link ) { item_pairs[ pos ].second = link; }
 
    struct node_data;
    node_data& ref_data( ) { return data; }
 
    protected:
-   uint link;
-   uint ref_count;
+   uint64_t link;
+   uint64_t ref_count;
+
    bool was_touched;
 
    struct node_data
    {
-      node_data( ) : flags( c_node_flag_is_leaf ),
+      node_data( ) : flags( c_node_flag_is_leaf ), padding( 0 ),
        dge_link( c_npos ), lft_link( c_npos ), rgt_link( c_npos ) { }
 
-      uchar flags;
+      uint8_t flags;
+      uint8_t padding;
 
-      uint dge_link;
-      uint lft_link;
-      uint rgt_link;
+      uint64_t dge_link;
+      uint64_t lft_link;
+      uint64_t rgt_link;
    } data;
 
-   std::deque< std::pair< T, uint > > item_pairs;
+   std::deque< std::pair< T, uint64_t > > item_pairs;
 };
 
 template< typename T > class bt_node_ref
 {
    public:
-   bt_node_ref( uint id, bt_node_mgr_base< T >& node_manager )
+   bt_node_ref( uint64_t id, bt_node_mgr_base< T >& node_manager )
     :
     id( id )
    {
@@ -213,7 +211,7 @@ template< typename T > class bt_node_ref
    bt_node_ref( const bt_node_ref& );
    bt_node_ref& operator =( const bt_node_ref& );
 
-   uint id;
+   uint64_t id;
    bt_node< T >* p_node;
 };
 
@@ -225,9 +223,9 @@ template< typename T, typename N = bt_node< T > > class bt_node_manager : public
 
    bt_node_manager( ) : items_per_node( c_maximum_items_per_node ) { }
 
-   uchar get_items_per_node( ) const { return items_per_node; }
+   uint8_t get_items_per_node( ) const { return items_per_node; }
 
-   void set_items_per_node( uchar val )
+   void set_items_per_node( uint8_t val )
    {
       if( val % 2 == 0 || val < 3 )
          throw std::runtime_error( "unexpected invalid items per node" );
@@ -236,11 +234,11 @@ template< typename T, typename N = bt_node< T > > class bt_node_manager : public
    }
 
    private:
-   uchar items_per_node;
+   uint8_t items_per_node;
 };
 
 const size_t c_default_num_to_reserve = 1000;
-const uchar c_default_num_items_per_node = 5;
+const uint8_t c_default_num_items_per_node = 5;
 
 template< typename T, typename N = bt_node< T > > class heap_node_manager : public bt_node_manager< T, N >
 {
@@ -257,21 +255,21 @@ template< typename T, typename N = bt_node< T > > class heap_node_manager : publ
       bt_base_type::set_items_per_node( c_default_num_items_per_node );
    }
 
-   virtual uint create_node( );
+   virtual uint64_t create_node( );
 
    virtual void reset( ) { clear( ); }
 
-   virtual void access_node( uint id, node_type*& p_node )
+   virtual void access_node( uint64_t id, node_type*& p_node )
    {
       nodes[ id ].inc_ref_count( );
       p_node = &nodes[ id ];
    }
 
    protected:
-   void setmax( size_t s ) { max_node = s; }
-   void reserve( size_t size ) { nodes.reserve( size ); }
+   void setmax( uint64_t s ) { max_node = s; }
+   void reserve( uint64_t size ) { nodes.reserve( size ); }
 
-   uint size( ) { return nodes.size( ); }
+   uint64_t size( ) { return nodes.size( ); }
 
    void clear( ) { nodes.resize( 0 ); max_node = 0; }
 
@@ -279,21 +277,22 @@ template< typename T, typename N = bt_node< T > > class heap_node_manager : publ
    {
       if( nodes.size( ) == nodes.capacity( ) )
          throw std::runtime_error( "max number of permitted nodes exceeded" );
+
       nodes.push_back( node );
    }
 
-   node_type& get_node_ref( uint index )
+   node_type& get_node_ref( uint64_t index )
    {
       return nodes[ index ];
    }
 
    private:
-   uint max_node;
+   uint64_t max_node;
 
    std::vector< node_type > nodes;
 };
 
-template< typename T, typename N > uint heap_node_manager< T, N >::create_node( )
+template< typename T, typename N > uint64_t heap_node_manager< T, N >::create_node( )
 {
    if( max_node != nodes.size( ) )
       throw std::runtime_error( "unexpected max node value" );
@@ -351,16 +350,16 @@ template< typename T, typename L = std::less< T >,
    bool get_allow_duplicates( ) const { return state.allow_duplicates; }
    void set_allow_duplicates( bool val ) { state.allow_duplicates = val; }
 
-   void set_fill_factor( float val ) { state.node_fill_factor = val; }
+   void set_fill_factor( uint8_t val ) { state.node_fill_factor = val; }
 
-   uchar get_items_per_node( ) const { return node_manager.get_items_per_node( ); }
-   void set_items_per_node( uchar val );
+   uint8_t get_items_per_node( ) const { return node_manager.get_items_per_node( ); }
+   void set_items_per_node( uint8_t val );
 
    key_compare key_comp( ) const { return compare_less; }
 
    void dump_root( std::ostream& outs ) const;
 
-   void dump_node( std::ostream& outs, uint num ) const;
+   void dump_node( std::ostream& outs, uint64_t num ) const;
 
    void dump_all_info( std::ostream& outs ) const;
 
@@ -371,15 +370,15 @@ template< typename T, typename L = std::less< T >,
       template< typename T1, typename T2, typename T3, typename T4 > friend class bt_base;
 
       protected:
-      uint node;
-      uchar item;
+      uint64_t node;
+      uint8_t item;
 
       const bt_base< T, L, N, M >* p_bt_base;
       ref_count_ptr< bt_node_ref< T > > rp_node_ref;
 
-      const_iterator( const bt_base< T, L, N, M >* p_bt_base, uint new_node );
+      const_iterator( const bt_base< T, L, N, M >* p_bt_base, uint64_t new_node );
 
-      const_iterator( const bt_base< T, L, N, M >* p_bt_base, uint node, uchar item )
+      const_iterator( const bt_base< T, L, N, M >* p_bt_base, uint64_t node, uint8_t item )
        : p_bt_base( p_bt_base ), node( node ), item( item )
       {
          rp_node_ref = p_bt_base->allocate_node_ref( node );
@@ -521,7 +520,7 @@ template< typename T, typename L = std::less< T >,
    size_type size( ) const { return state.total_items; }
    size_type max_size( ) const { return UINT_MAX; }
 
-   uchar depth( ) const { return state.num_levels; }
+   uint8_t depth( ) const { return state.num_levels; }
 
    bool empty( ) const { return state.total_items == 0; }
 
@@ -552,8 +551,8 @@ template< typename T, typename L = std::less< T >,
    void build_index_nodes( );
 
    private:
-   uint insert_item( uint& node_link, T& item,
-    uint& last_insert_node, uchar& last_insert_item, uint& new_duplicate_dge_node );
+   uint64_t insert_item( uint64_t& node_link, T& item,
+    uint64_t& last_insert_node, uint8_t& last_insert_item, uint64_t& new_duplicate_dge_node );
 
    enum find_type
    {
@@ -562,7 +561,7 @@ template< typename T, typename L = std::less< T >,
       e_find_equal_to_or_greater_than
    };
 
-   int find_item( uint& node_link, const key_type& key, find_type type_of_find ) const;
+   int find_item( uint64_t& node_link, const key_type& key, find_type type_of_find ) const;
 
    bool keys_are_equal( const key_type& lhs, const key_type& rhs ) const;
 
@@ -578,13 +577,16 @@ template< typename T, typename L = std::less< T >,
 
    protected:
    M& get_node_manager( ) const { return node_manager; }
-   bt_node_ref< T >* allocate_node_ref( uint link ) const;
+   bt_node_ref< T >* allocate_node_ref( uint64_t link ) const;
 
    struct state_t
    {
       state_t( )
        :
        num_levels( 0 ),
+       node_fill_factor( 85 ),
+       allow_duplicates( true ),
+       padding( 0 ),
        total_nodes( 0 ),
        total_items( 0 ),
        root_node( c_npos ),
@@ -592,26 +594,24 @@ template< typename T, typename L = std::less< T >,
        rgt_leaf_node( c_npos ),
        free_list_node( c_npos ),
        first_append_node( c_npos ),
-       current_append_node( c_npos ),
-       node_fill_factor( ( float )0.85 ),
-       allow_duplicates( true )
+       current_append_node( c_npos )
       {
       }
 
-      uchar num_levels;
+      uint8_t num_levels;
+      uint8_t node_fill_factor;
+      uint8_t allow_duplicates;
+      uint8_t padding;
 
-      uint total_nodes;
-      uint total_items;
+      uint64_t total_nodes;
+      uint64_t total_items;
 
-      uint root_node;
-      uint lft_leaf_node;
-      uint rgt_leaf_node;
-      uint free_list_node;
-      uint first_append_node;
-      uint current_append_node;
-
-      float node_fill_factor;
-      bool allow_duplicates;
+      uint64_t root_node;
+      uint64_t lft_leaf_node;
+      uint64_t rgt_leaf_node;
+      uint64_t free_list_node;
+      uint64_t first_append_node;
+      uint64_t current_append_node;
 
    } state;
 
@@ -640,7 +640,7 @@ template< typename T, typename L = std::less< T >,
    bt_transaction( bt_base< T, L, N, M >& btree_base, bool );
 
    bool completed;
-   uint first_append_node;
+   uint64_t first_append_node;
    bt_base< T, L, N, M >& btree_base;
 
    restorable< typename bt_base< T, L, N, M >::state_t > bt_base_state;
@@ -675,7 +675,7 @@ template< typename T, typename L, typename N, typename M >
 }
 
 template< typename T, typename L, typename N, typename M >
- void bt_base< T, L, N, M >::set_items_per_node( uchar val )
+ void bt_base< T, L, N, M >::set_items_per_node( uint8_t val )
 {
    if( state.total_nodes && val < node_manager.get_items_per_node( ) )
       throw std::runtime_error( "cannot shrink items per node" );
@@ -699,7 +699,7 @@ template< typename T, typename L, typename N, typename M >
 }
 
 template< typename T, typename L, typename N, typename M >
- void bt_base< T, L, N, M >::dump_node( std::ostream& outs, uint num ) const
+ void bt_base< T, L, N, M >::dump_node( std::ostream& outs, uint64_t num ) const
 {
    std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( num ) );
 
@@ -723,14 +723,15 @@ template< typename T, typename L, typename N, typename M >
    outs << "\nTotal number of items = " << state.total_items << "\n\n";
 
    int level = 0;
-   uint first_node_in_level( state.root_node );
+   uint64_t first_node_in_level( state.root_node );
+
    while( first_node_in_level != c_npos )
    {
       if( level > 0 )
          outs << '\n';
 
       outs << "Dumping level #" << level++ << '\n';
-      uint current_node( first_node_in_level );
+      uint64_t current_node( first_node_in_level );
 
       first_node_in_level = c_npos;
       while( true )
@@ -753,7 +754,7 @@ template< typename T, typename L, typename N, typename M >
 
    if( state.first_append_node != c_npos )
    {
-      uint current_node( state.first_append_node );
+      uint64_t current_node( state.first_append_node );
       outs << "Dumping appended node(s)\n";
 
       while( true )
@@ -772,7 +773,7 @@ template< typename T, typename L, typename N, typename M >
 
 template< typename T, typename L, typename N, typename M >
  bt_base< T, L, N, M >::const_iterator::const_iterator(
- const bt_base< T, L, N, M >* p_bt_base, uint new_node )
+ const bt_base< T, L, N, M >* p_bt_base, uint64_t new_node )
  :
  p_bt_base( p_bt_base ),
  node( new_node )
@@ -886,7 +887,7 @@ template< typename T, typename L, typename N, typename M >
             node = rp_node_ref->get_node( ).ref_data( ).lft_link;
          }
 
-         item = ( uchar )( rp_node_ref->get_node( ).size( ) - 1 );
+         item = ( uint8_t )( rp_node_ref->get_node( ).size( ) - 1 );
       }
       else
          throw std::runtime_error( "invalid iterator #1" );
@@ -913,7 +914,7 @@ template< typename T, typename L, typename N, typename M >
          if( rp_node_ref->get_node( ).size( ) == 0 )
             continue;
 
-         item = ( uchar )( rp_node_ref->get_node( ).size( ) - 1 );
+         item = ( uint8_t )( rp_node_ref->get_node( ).size( ) - 1 );
          break;
       }
    }
@@ -955,11 +956,11 @@ template< typename T, typename L, typename N, typename M >
    if( state.root_node == c_npos )
       return const_iterator( this, c_npos );
 
-   uint node_found( state.root_node );
+   uint64_t node_found( state.root_node );
    int item_pos = find_item( node_found, key, e_find_equal_to );
 
    if( item_pos != -1 )
-      return const_iterator( this, node_found, ( uchar )item_pos );
+      return const_iterator( this, node_found, ( uint8_t )item_pos );
    else
       return const_iterator( this, c_npos );
 }
@@ -974,10 +975,11 @@ template< typename T, typename L, typename N, typename M >
    if( state.root_node == c_npos )
       return const_iterator( this, c_npos );
 
-   uint node_found( state.root_node );
+   uint64_t node_found( state.root_node );
    int item_pos = find_item( node_found, key, e_find_equal_to_or_greater_than );
+
    if( item_pos != -1 )
-      return const_iterator( this, node_found, ( uchar )item_pos );
+      return const_iterator( this, node_found, ( uint8_t )item_pos );
    else
       return const_iterator( this, c_npos );
 }
@@ -992,19 +994,19 @@ template< typename T, typename L, typename N, typename M >
    if( state.root_node == c_npos )
       return const_iterator( this, c_npos );
 
-   uint node_found( state.root_node );
+   uint64_t node_found( state.root_node );
    int item_pos = find_item( node_found, key, e_find_greater_than );
 
    if( item_pos != -1 )
-      return const_iterator( this, node_found, ( uchar )item_pos );
+      return const_iterator( this, node_found, ( uint8_t )item_pos );
    else
       return const_iterator( this, c_npos );
 }
 
 template< typename T, typename L, typename N, typename M >
- int bt_base< T, L, N, M >::find_item( uint& node_link, const key_type& key, find_type type_of_find ) const
+ int bt_base< T, L, N, M >::find_item( uint64_t& node_link, const key_type& key, find_type type_of_find ) const
 {
-   uchar s;
+   uint8_t s;
    int pos = -1;
 
 #  ifdef BTREE_DEBUG
@@ -1169,7 +1171,7 @@ template< typename T, typename L, typename N, typename M >
 }
 
 template< typename T, typename L, typename N, typename M >
- bt_node_ref< T >* bt_base< T, L, N, M >::allocate_node_ref( uint link ) const
+ bt_node_ref< T >* bt_base< T, L, N, M >::allocate_node_ref( uint64_t link ) const
 {
    return new bt_node_ref< T >( link, node_manager );
 }
@@ -1188,7 +1190,7 @@ template< typename T, typename L, typename N, typename M >
 
    std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( state.current_append_node ) );
 
-   uchar size = ap_node_ref->get_node( ).size( );
+   uint8_t size = ap_node_ref->get_node( ).size( );
 
    bool is_duplicate = false;
 
@@ -1219,18 +1221,18 @@ template< typename T, typename L, typename N, typename M >
       }
    }
 
-   float fill_factor( state.node_fill_factor );
+   float fill_factor( state.node_fill_factor / 100.0 );
    if( is_duplicate )
       fill_factor = 1.0;
 
-   uchar items_per_node( node_manager.get_items_per_node( ) );
+   uint8_t items_per_node( node_manager.get_items_per_node( ) );
 
-   if( size < ( uchar )( items_per_node * fill_factor )
+   if( size < ( uint8_t )( items_per_node * fill_factor )
     && ( is_duplicate || ap_node_ref->get_node( ).ref_data( ).dge_link == c_npos ) )
       ap_node_ref->get_node( ).append_item( item, c_npos );
    else
    {
-      uint new_append_node = node_manager.create_node( );
+      uint64_t new_append_node = node_manager.create_node( );
 
       ++state.total_nodes;
 
@@ -1240,7 +1242,7 @@ template< typename T, typename L, typename N, typename M >
 
       if( is_duplicate )
       {
-         uchar first_dup;
+         uint8_t first_dup;
          for( first_dup = 0; first_dup < items_per_node; first_dup++ )
          {
             if( keys_are_equal( item, ap_node_ref->get_node( ).get_item_data( first_dup ) ) )
@@ -1249,7 +1251,7 @@ template< typename T, typename L, typename N, typename M >
 
          if( first_dup != 0 )
          {
-            for( uchar i = first_dup; i < items_per_node; i++ )
+            for( uint8_t i = first_dup; i < items_per_node; i++ )
                ap_new_node_ref->get_node( ).append_item(
                 ap_node_ref->get_node( ).get_item_data( i ),
                 ap_node_ref->get_node( ).get_item_link( i ) );
@@ -1258,7 +1260,8 @@ template< typename T, typename L, typename N, typename M >
          }
          else
          {
-            uint dup_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+            uint64_t dup_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+
             if( dup_link != c_npos )
             {
                std::auto_ptr< bt_node_ref< T > > ap_dup_node_ref( allocate_node_ref( dup_link ) );
@@ -1318,14 +1321,14 @@ template< typename T, typename L, typename N, typename M >
       ap_node_ref->get_node( ).touch( );
    }
 
-   uint last_insert_node = c_npos;
-   uchar last_insert_item = c_none;
+   uint64_t last_insert_node = c_npos;
+   uint8_t last_insert_item = c_none;
 
-   uint new_duplicate_dge_node = c_npos;
+   uint64_t new_duplicate_dge_node = c_npos;
 
    T tmp_item( item );
-   uint tmp_link( state.root_node );
-   uint link = insert_item( tmp_link, tmp_item, last_insert_node, last_insert_item, new_duplicate_dge_node );
+   uint64_t tmp_link( state.root_node );
+   uint64_t link = insert_item( tmp_link, tmp_item, last_insert_node, last_insert_item, new_duplicate_dge_node );
 
    ++state.total_items;
 
@@ -1334,7 +1337,7 @@ template< typename T, typename L, typename N, typename M >
 #  ifdef BTREE_DEBUG
       std::cout << "create new root node\n";
 #  endif
-      uint left( state.root_node );
+      uint64_t left( state.root_node );
       if( state.free_list_node != c_npos )
          state.root_node = state.free_list_node;
       else
@@ -1380,15 +1383,15 @@ template< typename T, typename L, typename N, typename M >
 }
 
 template< typename T, typename L, typename N, typename M >
- uint bt_base< T, L, N, M >::insert_item( uint& node_link,
- T& item, uint& last_insert_node, uchar& last_insert_item, uint& new_duplicate_dge_node )
+ uint64_t bt_base< T, L, N, M >::insert_item( uint64_t& node_link,
+ T& item, uint64_t& last_insert_node, uint8_t& last_insert_item, uint64_t& new_duplicate_dge_node )
 {
-   uchar s = 0;
+   uint8_t s = 0;
    int pos = -1;
 
-   uint link = c_npos;
-   uint new_link = c_npos;
-   uint dup_node_link = c_npos;
+   uint64_t link = c_npos;
+   uint64_t new_link = c_npos;
+   uint64_t dup_node_link = c_npos;
 
    bool has_changed = false;
 
@@ -1400,7 +1403,7 @@ template< typename T, typename L, typename N, typename M >
 
    std::auto_ptr< bt_node_ref< T > > ap_node_ref( allocate_node_ref( node_link ) );
 
-   uchar size = ap_node_ref->get_node( ).size( );
+   uint8_t size = ap_node_ref->get_node( ).size( );
 
    while( true )
    {
@@ -1437,15 +1440,17 @@ template< typename T, typename L, typename N, typename M >
       }
       else
       {
-         s = ( uchar )( size - 1 );
+         s = ( uint8_t )( size - 1 );
 
          if( size >= 2 )
          {
-            uchar lower = 1;
-            uchar upper = ( uchar )( size - 1 );
+            uint8_t lower = 1;
+            uint8_t upper = ( uint8_t )( size - 1 );
+
             while( lower != upper )
             {
-               uchar middle = ( uchar )( ( lower + upper ) / 2 );
+               uint8_t middle = ( uint8_t )( ( lower + upper ) / 2 );
+
                if( middle == size - 1
                 || compare_less( item, ap_node_ref->get_node( ).get_item_data( middle ) ) )
                {
@@ -1458,7 +1463,7 @@ template< typename T, typename L, typename N, typename M >
                {
                   if( lower == middle )
                      break;
-                  lower = ( uchar )( middle + 1 );
+                  lower = ( uint8_t )( middle + 1 );
                }
             }
          }
@@ -1468,7 +1473,8 @@ template< typename T, typename L, typename N, typename M >
          pos = s;
       else
       {
-         uint tmp_link( ap_node_ref->get_node( ).get_item_link( s ) );
+         uint64_t tmp_link( ap_node_ref->get_node( ).get_item_link( s ) );
+
          new_link = insert_item( tmp_link, item,
           last_insert_node, last_insert_item, new_duplicate_dge_node );
 
@@ -1493,7 +1499,8 @@ template< typename T, typename L, typename N, typename M >
          pos = s;
       else
       {
-         uint tmp_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+         uint64_t tmp_link( ap_node_ref->get_node( ).ref_data( ).dge_link );
+
          if( tmp_link == c_npos )
             throw std::runtime_error( "bad node link #1" );
 
@@ -1541,7 +1548,7 @@ template< typename T, typename L, typename N, typename M >
 
          if( is_leaf_node )
          {
-            last_insert_item = ( uchar )pos;
+            last_insert_item = ( uint8_t )pos;
             last_insert_node = node_link;
          }
 #  ifdef BTREE_DEBUG
@@ -1569,11 +1576,12 @@ template< typename T, typename L, typename N, typename M >
             ap_new_node_ref->get_node( ).reset( );
          }
 
-         uchar items_per_node = node_manager.get_items_per_node( );
+         uint8_t items_per_node = node_manager.get_items_per_node( );
 
-         uchar split = ( uchar )( items_per_node / 2 );
+         uint8_t split = ( uint8_t )( items_per_node / 2 );
+
          if( split >= size )
-            split = ( uchar )( size - 1 );
+            split = ( uint8_t )( size - 1 );
 #  ifdef BTREE_DEBUG
          std::cout << "initial split point = " << ( int )split << '\n';
 #  endif
@@ -1604,8 +1612,8 @@ template< typename T, typename L, typename N, typename M >
          }
          else
          {
-            for( uchar s1 = ( uchar )( split - 1 ),
-             s2 = ( uchar )( split + 1 ); ; s1--, s2++ )
+            for( uint8_t s1 = ( uint8_t )( split - 1 ),
+             s2 = ( uint8_t )( split + 1 ); ; s1--, s2++ )
             {
                if( !( keys_are_equal(
                 ap_node_ref->get_node( ).get_item_data( s1 ),
@@ -1643,7 +1651,7 @@ template< typename T, typename L, typename N, typename M >
              ap_node_ref->get_node( ).get_item_data( pos ? items_per_node - 1 : 0 ) ) ) )
             {
                split_okay = true;
-               split = pos ? ( uchar )( items_per_node - 1 ) : ( uchar )0;
+               split = pos ? ( uint8_t )( items_per_node - 1 ) : ( uint8_t )0;
 #  ifdef BTREE_DEBUG
                std::cout << "split point passed item compare at " << ( int )split << '\n';
 #  endif
@@ -1656,7 +1664,7 @@ template< typename T, typename L, typename N, typename M >
             std::cout << "split point set to "
              << ( int )( items_per_node - 1 ) << " and duplicate flagged\n";
 #  endif
-            split = ( uchar )( items_per_node - 1 );
+            split = ( uint8_t )( items_per_node - 1 );
             ap_node_ref->get_node( ).ref_data( ).flags |= c_node_flag_has_dup_split;
          }
 
@@ -1680,7 +1688,7 @@ template< typename T, typename L, typename N, typename M >
 
             if( is_leaf_node )
             {
-               last_insert_item = ( uchar )pos;
+               last_insert_item = ( uint8_t )pos;
                last_insert_node = node_link;
             }
          }
@@ -1691,7 +1699,7 @@ template< typename T, typename L, typename N, typename M >
 #  endif
             ap_new_node_ref->get_node( ).append_item( item, link );
 
-            for( s = ( uchar )pos; s < size; s++ )
+            for( s = ( uint8_t )pos; s < size; s++ )
                ap_new_node_ref->get_node( ).append_item(
                 ap_node_ref->get_node( ).get_item_data( s ),
                 ap_node_ref->get_node( ).get_item_link( s ) );
@@ -1709,7 +1717,7 @@ template< typename T, typename L, typename N, typename M >
 #  ifdef BTREE_DEBUG
             std::cout << "insert item into new node\n";
 #  endif
-            uchar new_pos = ( uchar )( pos - split - 1 );
+            uint8_t new_pos = ( uint8_t )( pos - split - 1 );
 
             for( s = 0; s < new_pos; s++ )
                ap_new_node_ref->get_node( ).append_item(
@@ -1718,7 +1726,7 @@ template< typename T, typename L, typename N, typename M >
 
             ap_new_node_ref->get_node( ).append_item( item, link );
 
-            for( s = ( uchar )pos; s < size; s++ )
+            for( s = ( uint8_t )pos; s < size; s++ )
                ap_new_node_ref->get_node( ).append_item(
                 ap_node_ref->get_node( ).get_item_data( s ),
                 ap_node_ref->get_node( ).get_item_link( s ) );
@@ -1885,7 +1893,7 @@ template< typename T, typename L, typename N, typename M >
    if( position.node != c_npos )
    {
       bool removed_position_count_info = false;
-      uint orig_rgt_leaf_node = state.rgt_leaf_node;
+      uint64_t orig_rgt_leaf_node = state.rgt_leaf_node;
 
       if( !position.rp_node_ref->get_node( ).ref_data( ).flags & c_node_flag_is_leaf )
          throw std::runtime_error( "invalid iterator #7" );
@@ -1914,7 +1922,8 @@ template< typename T, typename L, typename N, typename M >
                   position.rp_node_ref->get_node( ).ref_data( ).flags &= ~c_node_flag_has_dup_split;
                }
 
-               uint old_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
+               uint64_t old_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
+
                position.rp_node_ref->get_node( ).ref_data( ).rgt_link
                 = ap_rgt_node_ref->get_node( ).ref_data( ).rgt_link;
 
@@ -1977,7 +1986,8 @@ template< typename T, typename L, typename N, typename M >
 
                ap_lft_node_ref->get_node( ).touch( );
 
-               uint rgt_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
+               uint64_t rgt_link = position.rp_node_ref->get_node( ).ref_data( ).rgt_link;
+
                if( rgt_link != c_npos )
                {
                   std::auto_ptr< bt_node_ref< T > > ap_rgt_node_ref( allocate_node_ref( rgt_link ) );
@@ -2045,8 +2055,8 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    if( p_transaction )
       throw std::runtime_error( "unexpected transaction found in clear" );
 
-   uint next_node = state.root_node;
-   uint first_node_in_next_level = c_npos;
+   uint64_t next_node = state.root_node;
+   uint64_t first_node_in_next_level = c_npos;
    std::auto_ptr< bt_node_ref< T > > ap_node_ref;
 
    while( next_node != c_npos )
@@ -2102,10 +2112,10 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    if( p_transaction )
       throw std::runtime_error( "unexpected transaction found in build" );
 
-   uint next_node, next_index_node, first_new_index_node;
-   uint first_old_index_node_in_next_level = c_npos;
+   uint64_t next_node, next_index_node, first_new_index_node;
+   uint64_t first_old_index_node_in_next_level = c_npos;
 
-   uchar old_num_levels( state.num_levels );
+   uint8_t old_num_levels( state.num_levels );
 
    std::auto_ptr< bt_node_ref< T > > ap_node_ref;
    std::auto_ptr< bt_node_ref< T > > ap_index_node_ref;
@@ -2161,13 +2171,15 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
       is_processing_appended = true;
    }
 
-   uint dup_node( c_npos );
-   uint last_node( next_node );
+   uint64_t dup_node( c_npos );
+   uint64_t last_node( next_node );
 
    state.lft_leaf_node = next_node;
 
-   uchar items_per_node( node_manager.get_items_per_node( ) );
-   uchar items_to_fill_per_node( ( uchar )( items_per_node * state.node_fill_factor ) );
+   float fill_factor( state.node_fill_factor / 100.0 );
+
+   uint8_t items_per_node( node_manager.get_items_per_node( ) );
+   uint8_t items_to_fill_per_node( ( uint8_t )( items_per_node * fill_factor ) );
 
    state.num_levels = 0;
 
@@ -2224,7 +2236,8 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
          if( !ap_index_node_ref.get( )
           || ap_index_node_ref->get_node( ).size( ) == items_to_fill_per_node )
          {
-            uint last_index_node( next_index_node );
+            uint64_t last_index_node( next_index_node );
+
             if( ap_index_node_ref.get( ) )
             {
                ap_index_node_ref->get_node( ).touch( );
@@ -2417,9 +2430,11 @@ template< typename T, typename L, typename N, typename M > void bt_base< T, L, N
    if( state.num_levels == 1 )
    {
       std::auto_ptr< bt_node_ref< T > > ap_root_node_ref( allocate_node_ref( state.root_node ) );
+
       if( !ap_root_node_ref->get_node( ).size( ) )
       {
-         uint new_root_node = ap_root_node_ref->get_node( ).ref_data( ).dge_link;
+         uint64_t new_root_node = ap_root_node_ref->get_node( ).ref_data( ).dge_link;
+
          ap_root_node_ref->get_node( ).ref_data( ).dge_link = state.free_list_node;
          ap_root_node_ref->get_node( ).touch( );
 
@@ -2456,18 +2471,16 @@ template< typename T, typename L, typename N, typename M >
    btree_base.p_transaction = this;
 }
 
-template< typename T, typename L, typename N, typename M >
- bt_transaction< T, L, N, M >::~bt_transaction( )
+template< typename T, typename L, typename N, typename M > bt_transaction< T, L, N, M >::~bt_transaction( )
 {
    if( !completed && btree_base.allow_auto_rollback( ) )
       rollback( );
 }
 
-template< typename T, typename L, typename N, typename M >
- void bt_transaction< T, L, N, M >::commit( )
+template< typename T, typename L, typename N, typename M > void bt_transaction< T, L, N, M >::commit( )
 {
    if( completed )
-      throw std::runtime_error( "transaction already completed #0" );
+      throw std::runtime_error( "transaction already completed (commit)" );
 
    completed = true;
 
@@ -2484,11 +2497,10 @@ template< typename T, typename L, typename N, typename M >
    bt_base_state.commit( );
 }
 
-template< typename T, typename L, typename N, typename M >
- void bt_transaction< T, L, N, M >::rollback( )
+template< typename T, typename L, typename N, typename M > void bt_transaction< T, L, N, M >::rollback( )
 {
    if( completed )
-      throw std::runtime_error( "transaction already completed #1" );
+      throw std::runtime_error( "transaction already completed (rollback)" );
 
    completed = true;
 
