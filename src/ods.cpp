@@ -101,6 +101,12 @@ const int c_delete_attempt_sleep_time = 250;
 
 const int c_bulk_pause_sleep_time = 250;
 
+const int c_bulk_dump_max_attempts = 10;
+const int c_bulk_dump_attempt_sleep_time = 100;
+
+const int c_bulk_read_max_attempts = 25;
+const int c_bulk_read_attempt_sleep_time = 100;
+
 const int c_bulk_write_max_attempts = 50;
 const int c_bulk_write_attempt_sleep_time = 100;
 
@@ -1510,11 +1516,15 @@ struct ods::impl
 
    bool force_padding;
 
+   thread_id dummy_thread_id;
+
    ref_count_ptr< int > rp_bulk_mode;
    ref_count_ptr< int > rp_bulk_level;
    ref_count_ptr< bool > rp_has_changed;
    ref_count_ptr< bool > rp_is_in_bulk_pause;
-   ref_count_ptr< thread_id > rp_bulk_thread_id;
+
+   ref_count_ptr< thread_id > rp_bulk_read_thread_id;
+   ref_count_ptr< thread_id > rp_bulk_write_thread_id;
 
    ref_count_ptr< header_file > rp_header_file;
    ref_count_ptr< header_info > rp_header_info;
@@ -1814,7 +1824,8 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode )
    p_impl->rp_bulk_level = new int( 0 );
    p_impl->rp_has_changed = new bool( false );
    p_impl->rp_is_in_bulk_pause = new bool( false );
-   p_impl->rp_bulk_thread_id = new thread_id;
+   p_impl->rp_bulk_read_thread_id = new thread_id;
+   p_impl->rp_bulk_write_thread_id = new thread_id;
 #ifdef ODS_DEBUG
    if( s_mode == e_share_mode_exclusive )
       DEBUG_LOG( "********** capturing exclusive file use **********" );
@@ -2052,25 +2063,36 @@ void ods::bulk_base::pause( )
 ods::bulk_dump::bulk_dump( ods& o )
  : bulk_base( o )
 {
-   guard lock_write( o.write_lock );
-   guard lock_read( o.read_lock );
-   guard lock_impl( *o.p_impl->rp_impl_lock );
-
-   if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_dump )
-      throw ods_error( "attempt to lock for bulk dump whilst locked for bulk read or write" );
-
-   impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
-
-   *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_dump;
-   try
+   int i;
+   for( i = 0; i < c_bulk_dump_max_attempts; i++ )
    {
-      o.bulk_operation_start( );
+      if( i > 0 )
+         msleep( c_bulk_dump_attempt_sleep_time );
+
+      guard lock_write( o.write_lock );
+      guard lock_read( o.read_lock );
+      guard lock_impl( *o.p_impl->rp_impl_lock );
+
+      if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none )
+         continue;
+
+      impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
+
+      *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_dump;
+      try
+      {
+         o.bulk_operation_start( );
+         break;
+      }
+      catch( ... )
+      {
+         *o.p_impl->rp_bulk_mode = old_bulk_mode;
+         throw;
+      }
    }
-   catch( ... )
-   {
-      *o.p_impl->rp_bulk_mode = old_bulk_mode;
-      throw;
-   }
+
+   if( i == c_bulk_dump_max_attempts )
+      throw ods_error( "thread cannot obtain bulk dump lock (max. attempts exceeded)..." );
 }
 
 ods::bulk_dump::~bulk_dump( )
@@ -2082,6 +2104,7 @@ ods::bulk_dump::~bulk_dump( )
    if( o.is_okay( ) )
    {
       o.bulk_operation_finish( );
+
       if( !*o.p_impl->rp_bulk_level )
          *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_none;
    }
@@ -2090,25 +2113,47 @@ ods::bulk_dump::~bulk_dump( )
 ods::bulk_read::bulk_read( ods& o )
  : bulk_base( o )
 {
-   guard lock_write( o.write_lock );
-   guard lock_read( o.read_lock );
-   guard lock_impl( *o.p_impl->rp_impl_lock );
-
-   if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_read )
-      throw ods_error( "attempt to lock for bulk read whilst locked for bulk dump or write" );
-
-   impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
-
-   *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_read;
-   try
+   int i;
+   for( i = 0; i < c_bulk_read_max_attempts; i++ )
    {
-      o.bulk_operation_start( );
+      if( i > 0 )
+         msleep( c_bulk_read_attempt_sleep_time );
+
+      guard lock_write( o.write_lock );
+      guard lock_read( o.read_lock );
+      guard lock_impl( *o.p_impl->rp_impl_lock );
+
+      if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none
+       && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_read )
+      {
+         if( *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) )
+            continue;
+         else
+            throw runtime_error( "invalid attempt to obtain bulk read lock whilst already bulk write locked" );
+      }
+
+      if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_read
+       && *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
+         continue;
+
+      impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
+
+      *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_read;
+      try
+      {
+         o.bulk_operation_start( );
+         *o.p_impl->rp_bulk_read_thread_id = current_thread_id( );
+         break;
+      }
+      catch( ... )
+      {
+         *o.p_impl->rp_bulk_mode = old_bulk_mode;
+         throw;
+      }
    }
-   catch( ... )
-   {
-      *o.p_impl->rp_bulk_mode = old_bulk_mode;
-      throw;
-   }
+
+   if( i == c_bulk_read_max_attempts )
+      throw ods_error( "thread cannot obtain bulk read lock (max. attempts exceeded)..." );
 }
 
 ods::bulk_read::~bulk_read( )
@@ -2120,8 +2165,12 @@ ods::bulk_read::~bulk_read( )
    if( o.is_okay( ) )
    {
       o.bulk_operation_finish( );
+
       if( !*o.p_impl->rp_bulk_level )
+      {
          *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_none;
+         *o.p_impl->rp_bulk_read_thread_id = o.p_impl->dummy_thread_id;
+      }
    }
 }
 
@@ -2140,10 +2189,15 @@ ods::bulk_write::bulk_write( ods& o )
 
       if( *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_none
        && *o.p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-         throw ods_error( "attempt to lock for bulk write whilst locked for bulk dump or read" );
+      {
+         if( *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
+            continue;
+         else
+            throw runtime_error( "invalid attempt to obtain bulk write lock whilst already bulk read locked" );
+      }
 
       if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write
-       && *o.p_impl->rp_bulk_thread_id != current_thread_id( ) )
+       && *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) )
          continue;
 
       impl::bulk_mode old_bulk_mode( ( impl::bulk_mode )*o.p_impl->rp_bulk_mode );
@@ -2152,7 +2206,7 @@ ods::bulk_write::bulk_write( ods& o )
       try
       {
          o.bulk_operation_start( );
-         *o.p_impl->rp_bulk_thread_id = current_thread_id( );
+         *o.p_impl->rp_bulk_write_thread_id = current_thread_id( );
          break;
       }
       catch( ... )
@@ -2175,8 +2229,12 @@ ods::bulk_write::~bulk_write( )
    if( o.is_okay( ) )
    {
       o.bulk_operation_finish( );
+
       if( !*o.p_impl->rp_bulk_level )
+      {
          *o.p_impl->rp_bulk_mode = impl::e_bulk_mode_none;
+         *o.p_impl->rp_bulk_write_thread_id = o.p_impl->dummy_thread_id;
+      }
    }
 }
 
@@ -2243,6 +2301,7 @@ void ods::destroy( const oid& id )
 
    bool deleted = false;
    int attempts = c_delete_max_attempts;
+
    while( attempts-- )
    {
       { // start of file lock section...
@@ -2356,6 +2415,7 @@ int_t ods::get_size( const oid& id )
 
    bool found = false;
    int attempts = c_review_max_attempts;
+
    while( attempts-- )
    {
       { // start of file lock section...
@@ -2413,6 +2473,7 @@ void ods::move_free_data_to_end( )
    set< ods_index_entry_pos > entries;
 
    ods_index_entry index_entry;
+
    for( int_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
    {
       read_index_entry( index_entry, i );
@@ -2438,6 +2499,7 @@ void ods::move_free_data_to_end( )
    int_t read_pos = 0;
    int_t actual_size = 0;
    set< ods_index_entry_pos >::const_iterator ci, end;
+
    for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
    {
       int_t next_id = ci->id;
@@ -2524,6 +2586,7 @@ void ods::rollback_dead_transactions( )
    index_item_buffer_num = -1;
 
    ods_index_entry index_entry;
+
    for( int_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
    {
       read_index_entry( index_entry, i );
@@ -2667,6 +2730,7 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
    else
    {
       read_index_entry( index_entry, num );
+
       if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
       {
          os << "(freelist entry)";

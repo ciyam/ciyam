@@ -76,21 +76,6 @@ class ODS_DECL_SPEC char_buffer
       c.init_copy( *this );
    }
 
-   class lock
-   {
-      public:
-      lock( const char_buffer& c )
-       :
-       buf_lock( c.buffer_lock )
-      {
-      }
-
-      private:
-      guard buf_lock;
-   };
-
-   friend class lock;
-
    void init_copy( char_buffer& copy ) const
    {
       guard lock_buffer( buffer_lock );

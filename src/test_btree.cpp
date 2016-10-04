@@ -183,7 +183,7 @@ template< typename T > void test_heap_node_manager< T >::load_node_data( ifstrea
    base_class::reserve( c_test_max_nodes );
 
    T item;
-   uint link;
+   uint64_t link;
    typename test_heap_node_manager< T >::node_type node;
 
    for( i = 0; i < s; i++ )
@@ -264,7 +264,7 @@ template< typename T, typename L = std::less< T > > class test_btree
 
    void create_as_directory_info( ostream& outf );
 
-   void dump_node_info( ostream& outf, uint node, bool output_as_xml, int indent );
+   void dump_node_info( ostream& outf, uint64_t node, bool output_as_xml, int indent );
 
    void load_btree_data( ifstream& inpf );
 
@@ -292,7 +292,7 @@ template< typename T, typename L > void test_btree< T, L >::create_as_directory_
 }
 
 template< typename T, typename L >
- void test_btree< T, L >::dump_node_info( ostream& outf, uint node, bool output_as_xml, int indent )
+ void test_btree< T, L >::dump_node_info( ostream& outf, uint64_t node, bool output_as_xml, int indent )
 {
    auto_ptr< bt_node_ref< T > > ap_node_ref( base_class::allocate_node_ref( node ) );
 
