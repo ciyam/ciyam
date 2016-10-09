@@ -64,7 +64,7 @@ const char* const c_startup_alt_help = "-help";
 #endif
 
 const char c_read_input_prefix = '<';
-const char c_write_history_prefix = '>';
+const char c_write_output_prefix = '>';
 const char c_quiet_command_prefix = '.';
 const char c_output_command_usage = '?';
 const char c_prompted_input_prefix = '&';
@@ -98,13 +98,15 @@ const char* const c_cmd_echo = "echo";
 const char* const c_cmd_quiet = "quiet";
 const char* const c_cmd_no_pause = "no_pause";
 const char* const c_cmd_no_prompt = "no_prompt";
+const char* const c_cmd_no_stderr = "no_stderr";
 
 command_definition startup_command_definitions[ ] =
 {
-   { c_cmd_echo, "", "switch on local echoing of input" },
+   { c_cmd_echo, "", "switch on local echo of input" },
    { c_cmd_quiet, "", "switch on quiet operating mode" },
    { c_cmd_no_pause, "", "switch off support for pausing" },
-   { c_cmd_no_prompt, "", "switch off console command prompt" }
+   { c_cmd_no_prompt, "", "switch off console command prompt" },
+   { c_cmd_no_stderr, "", "switch off outputting errors to stderr" }
 };
 
 const char* const c_command_prompt = "\n> ";
@@ -191,6 +193,8 @@ void startup_command_functor::operator ( )( const string& command, const paramet
       handler.add_option( c_cmd_no_pause );
    else if( command == c_cmd_no_prompt )
       handler.add_option( c_cmd_no_prompt );
+   else if( command == c_cmd_no_stderr )
+      handler.add_option( c_cmd_no_stderr );
 }
 
 command_functor* startup_command_functor_factory( const string& /*name*/, command_handler& handler )
@@ -2109,6 +2113,8 @@ void process_fissile_commands(
 
 struct console_command_handler::impl
 {
+   ~impl( ) { output_file.close( ); }
+
    fissile_string fissile_data;
 
    string last_fissile_line;
@@ -2120,11 +2126,15 @@ struct console_command_handler::impl
    impl( ) : use_special_fissile_character( false ) { }
 
    map< string, fissile_string > fissile_values;
+
+   fstream output_file;
 };
 
 console_command_handler::console_command_handler( )
  :
  line_number( 0 ),
+ p_std_err( &cerr ),
+ p_std_out( &cout ),
  description_offset( 0 ),
  num_custom_startup_options( 0 ),
  is_executing_commands( false ),
@@ -2300,7 +2310,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          else if( str[ 0 ] != c_quiet_command_prefix
           && str[ 0 ] != c_comment_command_prefix && str[ 0 ] != c_history_command_prefix
           && ( ( apos == string::npos && str[ 0 ] != c_read_input_prefix
-          && str[ 0 ] != c_write_history_prefix && str[ 0 ] != c_system_command_prefix
+          && str[ 0 ] != c_write_output_prefix && str[ 0 ] != c_system_command_prefix
           && str[ 0 ] != c_envcond_command_prefix && str[ 0 ] != c_message_command_prefix )
           || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
@@ -2632,26 +2642,34 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                str.erase( );
             }
-            else if( str[ 0 ] == c_write_history_prefix )
+            else if( str[ 0 ] == c_write_output_prefix )
             {
                add_to_history = false;
                size_t file_name_offset = 1;
                ios::openmode output_flags = ios::out;
 
-               // NOTE: If the write history prefix is repeated then open the output file for append.
-               if( str.size( ) > 1 && str[ 1 ] == c_write_history_prefix )
+               // NOTE: If the write output prefix is repeated then open the output file for append.
+               if( str.size( ) > 1 && str[ 1 ] == c_write_output_prefix )
                {
                   ++file_name_offset;
                   output_flags = ios::app;
                }
 
-               ofstream outf( str.c_str( ) + file_name_offset, output_flags );
-               if( !outf )
-                  throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
+               if( file_name_offset > str.size( ) - 1 )
+               {
+                  p_impl->output_file.close( );
 
-               if( !command_history.empty( ) )
-                  for( deque< string >::size_type i = 0; i < command_history.size( ); i++ )
-                     outf << command_history[ i ] << '\n';
+                  p_std_out = &cout;
+                  p_std_err = &cerr;
+               }
+               else
+               {
+                  p_impl->output_file.open( str.c_str( ) + file_name_offset, output_flags );
+                  if( !p_impl->output_file )
+                     throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
+
+                  p_std_out = p_std_err = &p_impl->output_file;
+               }
 
                str.erase( );
             }
@@ -2682,48 +2700,73 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                {
                   if( str.size( ) > 1 )
                   {
-                     size_t offset = 1;
-                     bool remove = false;
-
-                     if( str.size( ) > 2 && str[ 1 ] == '-' )
+                     if( str.size( ) > 2 && str[ 1 ] == c_write_output_prefix )
                      {
-                        offset = 2;
-                        remove = true;
-                     }
+                        str.erase( 0, 1 );
 
-                     int n;
-                     if( str.size( ) == 2 && str[ 1 ] == c_history_command_prefix )
-                        n = ( int )command_history.size( );
-                     else
-                        n = atoi( str.substr( offset ).c_str( ) );
+                        size_t file_name_offset = 1;
+                        ios::openmode output_flags = ios::out;
 
-                     if( n < 0 || n > ( int )( command_history.size( ) ) )
-                        throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
-
-                     if( !remove )
-                     {
-                        restorable< bool > tmp_executing_commands( is_executing_commands, true );
-
-                        if( n > 0 )
+                        // NOTE: If the write output prefix is repeated then open the output file for append.
+                        if( str.size( ) > 1 && str[ 1 ] == c_write_output_prefix )
                         {
-                           execute_command( command_history[ n - 1 ] );
-                           command_history.pop_back( );
+                           ++file_name_offset;
+                           output_flags = ios::app;
                         }
-                        else
+
+                        ofstream outf( str.c_str( ) + file_name_offset, output_flags );
+                        if( !outf )
+                           throw runtime_error( "unable to open file '" + str.substr( file_name_offset ) + "' for output" );
+
+                        if( !command_history.empty( ) )
+                           for( deque< string >::size_type i = 0; i < command_history.size( ); i++ )
+                              outf << command_history[ i ] << '\n';
+                     }
+                     else
+                     {
+                        size_t offset = 1;
+                        bool remove = false;
+
+                        if( str.size( ) > 2 && str[ 1 ] == '-' )
                         {
-                           for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
+                           offset = 2;
+                           remove = true;
+                        }
+
+                        int n;
+                        if( str.size( ) == 2 && str[ 1 ] == c_history_command_prefix )
+                           n = ( int )command_history.size( );
+                        else
+                           n = atoi( str.substr( offset ).c_str( ) );
+
+                        if( n < 0 || n > ( int )( command_history.size( ) ) )
+                           throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
+
+                        if( !remove )
+                        {
+                           restorable< bool > tmp_executing_commands( is_executing_commands, true );
+
+                           if( n > 0 )
                            {
-                              execute_command( command_history[ i ] );
+                              execute_command( command_history[ n - 1 ] );
                               command_history.pop_back( );
                            }
+                           else
+                           {
+                              for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
+                              {
+                                 execute_command( command_history[ i ] );
+                                 command_history.pop_back( );
+                              }
+                           }
                         }
-                     }
-                     else
-                     {
-                        if( n == 0 )
-                           command_history.clear( );
                         else
-                           command_history.erase( command_history.begin( ) + ( n - 1 ) );
+                        {
+                           if( n == 0 )
+                              command_history.clear( );
+                           else
+                              command_history.erase( command_history.begin( ) + ( n - 1 ) );
+                        }
                      }
                   }
                   else
@@ -2902,10 +2945,10 @@ void console_command_handler::handle_invalid_command( const command_parser&, con
 
 void console_command_handler::handle_command_response( const string& response, bool is_special )
 {
-   if( !is_special )
-      cout << response << endl;
+   if( !is_special || has_option( c_cmd_no_stderr ) )
+      *p_std_out << response << endl;
    else
-      cerr << response << endl;
+      *p_std_err << response << endl;
 }
 
 void console_command_handler::handle_extraneous_custom_option( const string& option )
@@ -2926,6 +2969,7 @@ string console_command_processor::get_cmd_and_args( )
    {
       prompt = string( c_command_prompt );
       string prefix( handler.get_option_value( c_prompt_prefix_option ) );
+
       if( !prefix.empty( ) )
          prompt.insert( 1, prefix );
    }

@@ -14,7 +14,7 @@
      </test_step>
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -25,19 +25,19 @@
      <kill>ciyam.backup.bun.gz
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -47,7 +47,7 @@
      <description>Test removing all packages and deleting Model.
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>

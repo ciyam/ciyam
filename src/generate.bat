@@ -15,7 +15,7 @@ if '%CIYAM_MODEL%' == '' goto error1
 
 echo Starting generate...
 echo ^<generate.cin %CIYAM_MODEL%>~generate.cin
-ciyam_client -quiet -no_prompt< ~generate.cin >~generate.tmp
+ciyam_client -quiet -no_prompt -no_stderr < ~generate.cin >~generate.tmp
 del ~generate.cin
 
 type ~generate.tmp
@@ -29,7 +29,7 @@ del ~generate.tmp
 call genmodule.bat -rdbms %1 %2 %3
 
 echo ^<genlinks.cin %CIYAM_MODEL%>~genlinks.cin
-ciyam_client -quiet -no_prompt< ~genlinks.cin >~genlinks.tmp
+ciyam_client -quiet -no_prompt -no_stderr < ~genlinks.cin >~genlinks.tmp
 type ~genlinks.tmp
 del ~genlinks.tmp
 del ~genlinks.cin

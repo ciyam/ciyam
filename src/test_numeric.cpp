@@ -28,6 +28,8 @@ using namespace std;
 const char* const c_app_title = "test_numeric";
 const char* const c_app_version = "0.1";
 
+const char* const c_error_prefix = "error: ";
+
 bool g_application_title_called = false;
 
 string application_title( app_info_request request )
@@ -89,107 +91,103 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
    try
    {
       if( command == c_cmd_test_numeric_inc )
-         cout << ++num << endl;
+         handler.issue_command_reponse( to_string( ++num ) );
       else if( command == c_cmd_test_numeric_dec )
-         cout << --num << endl;
+         handler.issue_command_reponse( to_string( --num ) );
       else if( command == c_cmd_test_numeric_min )
-         cout << numeric::min( ) << endl;
+         handler.issue_command_reponse( to_string( numeric::min( ) ) );
       else if( command == c_cmd_test_numeric_max )
-         cout << numeric::max( ) << endl;
+         handler.issue_command_reponse( to_string( numeric::max( ) ) );
       else if( command == c_cmd_test_numeric_e )
-         cout << numeric::e( ) << endl;
+         handler.issue_command_reponse( to_string( numeric::e( ) ) );
       else if( command == c_cmd_test_numeric_pi )
-         cout << numeric::pi( ) << endl;
+         handler.issue_command_reponse( to_string( numeric::pi( ) ) );
       else if( command == c_cmd_test_numeric_phi )
-         cout << numeric::phi( ) << endl;
+         handler.issue_command_reponse( to_string( numeric::phi( ) ) );
       else if( command == c_cmd_test_numeric_abs )
-         cout << abs( num ) << endl;
+         handler.issue_command_reponse( to_string( abs( num ) ) );
       else if( command == c_cmd_test_numeric_inv )
-         cout << ( 1 / num ) << endl;
+         handler.issue_command_reponse( to_string( 1 / num ) );
       else if( command == c_cmd_test_numeric_get )
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       else if( command == c_cmd_test_numeric_cmp )
-         cout << num.as_comparable_string( ) << endl;
+         handler.issue_command_reponse( num.as_comparable_string( ) );
       else if( command == c_cmd_test_numeric_set )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_set_num ).c_str( ) );
 
          num = n;
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_add )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_add_num ).c_str( ) );
 
          num += n;
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_sub )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_sub_num ).c_str( ) );
 
          num -= n;
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_mul )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_mul_num ).c_str( ) );
 
          num *= n;
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_div )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_div_num ).c_str( ) );
 
          num /= n;
-         cout << num << endl;
+         handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_sqrt )
-         cout << sqrt( num ) << endl;
+         handler.issue_command_reponse( to_string( sqrt( num ) ) );
       else if( command == c_cmd_test_numeric_is_lt )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_lt_num ).c_str( ) );
 
          bool is_true = num < n;
-         cout << ( is_true ? "true" : "false" ) << endl;
+         handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_gt )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_gt_num ).c_str( ) );
 
          bool is_true = num > n;
-         cout << ( is_true ? "true" : "false" ) << endl;
+         handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_eq )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_eq_num ).c_str( ) );
 
          bool is_true = num == n;
-         cout << ( is_true ? "true" : "false" ) << endl;
+         handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_lteq )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_lteq_num ).c_str( ) );
 
          bool is_true = num <= n;
-         cout << ( is_true ? "true" : "false" ) << endl;
+         handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_gteq )
       {
          numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_gteq_num ).c_str( ) );
 
          bool is_true = num >= n;
-         cout << ( is_true ? "true" : "false" ) << endl;
+         handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_frac )
-      {
-         cout << num.frac( ) << endl;
-      }
+         handler.issue_command_reponse( to_string( num.frac( ) ) );
       else if( command == c_cmd_test_numeric_trunc )
-      {
-         cout << num.trunc( ) << endl;
-      }
+         handler.issue_command_reponse( to_string( num.trunc( ) ) );
       else if( command == c_cmd_test_numeric_round )
       {
          numeric::round_method m( numeric::e_round_method_normal );
@@ -208,11 +206,11 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          try
          {
             num.round( n, m, simplify );
-            cout << num << endl;
+            handler.issue_command_reponse( to_string( num ) );
          }
          catch( exception& x )
          {
-            cout << "error: " << x.what( ) << endl;
+            handler.issue_command_reponse( string( c_error_prefix ) + x.what( ), true );
          }
       }
       else if( command == c_cmd_test_numeric_round_table )
@@ -272,33 +270,33 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
             }
          }
 
-         cout << '\n';
-         cout << "None Up Down Normal Bankers\n";
-         cout << "---------------------------\n";
+         handler.issue_command_reponse( "" );
+         handler.issue_command_reponse( "None Up Down Normal Bankers" );
+         handler.issue_command_reponse( "---------------------------" );
 
          for( size_t i = 0; i < ARRAY_SIZE( values ); i++ )
-            cout << lines[ i ] << '\n';
+            handler.issue_command_reponse( lines[ i ] );
 
-         cout << '\n';
+         handler.issue_command_reponse( "" );
       }
       else if( command == c_cmd_test_numeric_digits )
-         cout << ( int )num.digits( ) << endl;
+         handler.issue_command_reponse( to_string( ( int )num.digits( ) ) );
       else if( command == c_cmd_test_numeric_whole_digits )
-         cout << ( int )num.whole_digits( ) << endl;
+         handler.issue_command_reponse( to_string( ( int )num.whole_digits( ) ) );
       else if( command == c_cmd_test_numeric_decimal_digits )
-         cout << ( int )num.decimal_digits( ) << endl;
+         handler.issue_command_reponse( to_string( ( int )num.decimal_digits( ) ) );
       else if( command == c_cmd_test_numeric_format )
       {
          string mask( get_parm_val( parameters, c_cmd_parm_test_numeric_format_mask ) );
 
-         cout << format_numeric( num, mask );
+         handler.issue_command_reponse( format_numeric( num, mask ) );
       }
       else if( command == c_cmd_test_numeric_exit )
          handler.set_finished( );
    }
    catch( exception& x )
    {
-      cout << "error: " << x.what( ) << endl;
+      handler.issue_command_reponse( string( c_error_prefix ) + x.what( ), true );
    }
 }
 

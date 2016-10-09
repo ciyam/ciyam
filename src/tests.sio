@@ -16,61 +16,61 @@
      <description>Test inserting of items in various orders.
      <test_step/>
       <name>a
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>e
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>f
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>g
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>h
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>i
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>j
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
@@ -80,61 +80,61 @@
      <description>Test various duplicate item splits.
      <test_step/>
       <name>a
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>e
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>f
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>g
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>h
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>i
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>j
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
@@ -144,61 +144,61 @@
      <description>Test various duplicate item deletes.
      <test_step/>
       <name>a
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>e
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>f
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>g
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>h
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>i
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>j
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
@@ -208,31 +208,31 @@
      <description>Test various append and build operations.
      <test_step/>
       <name>a
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
      <test_step/>
       <name>e
-      <exec>test_btree -quiet
+      <exec>test_btree -quiet -no_stderr
       <input>true
       <output>automatic
      </test_step>
@@ -461,7 +461,7 @@
      <kill>test_cache.dat
      <test_step/>
       <name>a
-      <exec>test_cache -quiet 5 10
+      <exec>test_cache -quiet -no_stderr 5 10
       <input>true
       <output>generate
      </test_step>
@@ -495,7 +495,7 @@
      <description>Perform various tests using multiple regions.
      <test_step/>
       <name>a
-      <exec>test_cache -quiet 20 10 4
+      <exec>test_cache -quiet -no_stderr 20 10 4
       <input>true
       <output>generate
      </test_step>
@@ -535,7 +535,7 @@
      <description>Perform various maximum limit tests.
      <test_step/>
       <name>a
-      <exec>test_cache -quiet 65536 65536
+      <exec>test_cache -quiet -no_stderr 65536 65536
       <input>true
       <output>generate
      </test_step>
@@ -766,25 +766,25 @@
      <description>Perform various basic numeric operations.
      <test_step/>
       <name>a
-      <exec>test_numeric -quiet -echo
+      <exec>test_numeric -quiet -echo -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>test_numeric -quiet -echo
+      <exec>test_numeric -quiet -echo -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_numeric -quiet -echo
+      <exec>test_numeric -quiet -echo -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>test_numeric -quiet -echo
+      <exec>test_numeric -quiet -echo -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -804,7 +804,7 @@
      <kill>test_ods.idx.lck
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -x
+      <exec>test_ods -quiet -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -837,7 +837,7 @@
      <kill>test_ods.idx.lck
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -x
+      <exec>test_ods -quiet -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -859,7 +859,7 @@
      <description>Test DB compress operation.
      <test_step/>
       <name>a
-      <exec>test_ods -quiet -x
+      <exec>test_ods -quiet -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -891,7 +891,7 @@
      <kill>ods_fsed.idx.lck
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -903,7 +903,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -921,55 +921,55 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>g
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>h
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>j
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>k
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>l
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>m
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>n
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -984,7 +984,7 @@
      <kill>ods_fsed.idx.lck
      <test_step/>
       <name>a
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -996,13 +996,13 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -1014,7 +1014,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -1026,19 +1026,19 @@
      </test_step>
      <test_step/>
       <name>h
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>j
-      <exec>ods_fsed -quiet -echo -x
+      <exec>ods_fsed -quiet -echo -no_stderr -x
       <input>true
       <output>generate
      </test_step>
@@ -1093,13 +1093,13 @@
      </test_step>
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -1109,13 +1109,13 @@
      <description>Test loading the Meta model, viewing various artifacts and performing basic object operations.
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet
+      <exec>ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>

@@ -204,7 +204,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    virtual void handle_unknown_command( const std::string& command ) = 0;
    virtual void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args ) = 0;
 
-   virtual void handle_command_response( const std::string& response, bool is_special ) { }
+   virtual void handle_command_response( const std::string& response, bool is_special = false ) { }
 
    protected:
    bool get_is_quiet_command( ) const { return quiet_command; }

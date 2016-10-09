@@ -19,7 +19,7 @@ else
  else
   echo Starting generate...
   echo \<generate.cin $CIYAM_MODEL>~generate.cin
-  ./ciyam_client -quiet -no_prompt <~generate.cin >~generate.tmp
+  ./ciyam_client -quiet -no_prompt -no_stderr <~generate.cin >~generate.tmp
   rm ~generate.cin
 
   cat ~generate.tmp
@@ -30,7 +30,7 @@ else
    ./genmodule -rdbms $1 $2 $3
 
    echo \<genlinks.cin $CIYAM_MODEL>~genlinks.cin
-   ./ciyam_client -quiet -no_prompt <~genlinks.cin >~genlinks.tmp
+   ./ciyam_client -quiet -no_prompt -no_stderr <~genlinks.cin >~genlinks.tmp
    cat ~genlinks.tmp
    rm ~genlinks.tmp
    rm ~genlinks.cin

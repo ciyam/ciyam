@@ -9,8 +9,9 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <deque>
-#     include <vector>
+#     include <iosfwd>
 #     include <string>
+#     include <vector>
 #  endif
 
 #  include "command_handler.h"
@@ -46,6 +47,10 @@ class console_command_handler : public command_handler
     const std::string& command, const std::string& usage, const std::string& description ) const;
 
    size_t line_number;
+
+   std::ostream* p_std_err;
+   std::ostream* p_std_out;
+
    std::string script_file;
 
    size_t description_offset;
@@ -73,6 +78,9 @@ class console_command_handler : public command_handler
    protected:
    std::string preprocess_command_and_args( const std::string& cmd_and_args );
 
+   std::ostream* get_std_err( ) const { return p_std_err; }
+   std::ostream* get_std_out( ) const { return p_std_out; }
+
    bool is_special_command( const std::string& cmd_and_args );
 
    void handle_special_command( const std::string& cmd_and_args );
@@ -81,7 +89,7 @@ class console_command_handler : public command_handler
 
    void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args );
 
-   void handle_command_response( const std::string& response, bool is_special );
+   void handle_command_response( const std::string& response, bool is_special = false );
 
    void set_custom_startup_options( size_t num, const std::string& usage )
    {

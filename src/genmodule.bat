@@ -21,7 +21,7 @@ if '%is_rdbms%' == '1' goto rdbms
 echo model_load %1>~genmodule.tmp
 echo generate -cmd=genclass>>~genmodule.tmp
 
-modeller -quiet -no_prompt <~genmodule.tmp
+modeller -quiet -no_prompt -no_stderr <~genmodule.tmp
 if errorlevel 1 goto end
 goto next2
 

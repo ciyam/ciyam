@@ -8,6 +8,7 @@ if '%1' == '' goto usage
 
 echo DROP USER '%1'@'localhost';>~drop_db
 echo DROP DATABASE IF EXISTS %1;>>~drop_db
+echo quit>>~drop_db
 
 if not '%2' == '.' goto pwd
 mysql -uroot<~drop_db
@@ -24,3 +25,4 @@ goto end
 echo Usage: drop_db [db_name] [[.]^|[password]]
 
 :end
+
