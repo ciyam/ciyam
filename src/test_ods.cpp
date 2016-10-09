@@ -440,7 +440,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( temp_node.get_file( ).get_id( ).is_new( ) )
          {
             if( !sorted )
-               cout << temp_node.get_description( ) << '\n';
+               handler.issue_command_reponse( temp_node.get_description( ) );
             else
                folders.insert( temp_node.get_description( ) );
          }
@@ -450,7 +450,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             name += " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ')';
 
             if( !sorted )
-               cout << name << '\n';
+               handler.issue_command_reponse( name );
             else
                file_info.insert( name );
          }
@@ -459,10 +459,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       if( sorted )
       {
          for( set< string >::iterator i = folders.begin( ); i!= folders.end( ); ++i )
-            cout << *i << '\n';
+            handler.issue_command_reponse( *i );
 
          for( set< string >::iterator i = file_info.begin( ); i!= file_info.end( ); ++i )
-            cout << *i << '\n';
+            handler.issue_command_reponse( *i );
       }
    }
    else if( command == c_cmd_test_ods_in )
@@ -523,7 +523,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             {
                if( !next_child_node.get_file( ).get_id( ).is_new( ) )
                {
-                  cout << "'" << error_name << "' is a file not a folder" << endl;
+                  handler.issue_command_reponse( "'" + error_name + "' is a file not a folder" );
                   had_error = true;
                   break;
                }
@@ -544,7 +544,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       }
 
       if( !found && !had_error )
-         cout << "could not find folder: " << error_name << endl;
+         handler.issue_command_reponse( "could not find folder: " + error_name );
 
       if( !found || had_error )
       {
@@ -565,7 +565,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       string name( get_parm_val( parameters, c_cmd_parm_test_ods_add_name ) );
 
       if( name.find( '/' ) != string::npos )
-         cout << "cannot use '" << name << "' for a folder name (contains special characters)" << endl;
+         handler.issue_command_reponse( "cannot use '"
+          + name + "' for a folder name (contains special characters)" );
       else
       {
          ods::bulk_write bulk( o );
@@ -689,14 +690,18 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             found = true;
             if( temp_node.has_children( ) )
             {
-               cout << "cannot delete folder with children" << endl;
+               handler.issue_command_reponse( "cannot delete folder with children" );
                break;
             }
+
             node.del_child( index );
+
             if( !temp_node.get_file( ).get_id( ).is_new( ) )
                o.destroy( temp_node.get_file( ).get_id( ) );
+
             o.destroy( temp_node.get_id( ) );
             o << node;
+
             break;
          }
       }
@@ -708,7 +713,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          o << node;
 
          if( !found )
-            cout << "no folders deleted for: " << name << endl;
+            handler.issue_command_reponse( "no folders deleted for: " + name );
          else
             o << node;
       }
@@ -785,8 +790,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
                *temp_node.get_file( new storable_file_extra( output_name ) );
 
-               cout << "saved " << output_name
-                << " (" << format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) << ')' << endl;
+               handler.issue_command_reponse( "saved " + output_name
+                + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
+
                found = true;
                break;
             }
@@ -794,7 +800,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       }
 
       if( !found )
-         cout << "file '" << file_name << "' not found" << error_extra << endl;
+         handler.issue_command_reponse( "file '" + file_name + "' not found" + error_extra );
    }
    else if( command == c_cmd_test_ods_trans )
    {
@@ -802,27 +808,27 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       {
          trans_stack_levels[ trans_level ] = oid_stack.size( );
          trans_buffer[ trans_level++ ] = new ods::transaction( o );
-         cout << "begin transaction (level = " << trans_level << ")" << endl;
+         handler.issue_command_reponse( "begin transaction (level = " + to_string( trans_level ) + ")" );
       }
       else
-         cout << "cannot exceed max. transaction depth (" << c_max_trans_depth << ")" << endl;
+         handler.issue_command_reponse( "cannot exceed max. transaction depth (" + to_string( c_max_trans_depth ) + ")" );
    }
    else if( command == c_cmd_test_ods_commit )
    {
       if( trans_level )
       {
-         cout << "commit transaction (level = " << trans_level << ")" << endl;
+         handler.issue_command_reponse( "commit transaction (level = " + to_string( trans_level ) + ")" );
          trans_buffer[ trans_level - 1 ]->commit( );
          delete trans_buffer[ --trans_level ];
       }
       else
-         cout << "no transaction to commit" << endl;
+         handler.issue_command_reponse( "no transaction to commit" );
    }
    else if( command == c_cmd_test_ods_rollback )
    {
       if( trans_level )
       {
-         cout << "rollback transaction (level = " << trans_level << ")" << endl;
+         handler.issue_command_reponse( "rollback transaction (level = " + to_string( trans_level ) + ")" );
          while( oid_stack.size( ) > trans_stack_levels[ trans_level - 1 ] )
          {
             oid_stack.pop( );
@@ -831,33 +837,33 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          delete trans_buffer[ --trans_level ];
       }
       else
-         cout << "no transaction to rollback" << endl;
+         handler.issue_command_reponse( "no transaction to rollback" );
    }
    else if( command == c_cmd_test_ods_trans_id )
    {
       if( !o.get_transaction_level( ) )
-         cout << "0" << endl;
+         handler.issue_command_reponse( "0" );
       else
-         cout << o.get_transaction_id( ) << endl;
+         handler.issue_command_reponse( to_string( o.get_transaction_id( ) ) );
    }      
    else if( command == c_cmd_test_ods_trans_level )
-      cout << o.get_transaction_level( ) << endl;
+      handler.issue_command_reponse( to_string( o.get_transaction_level( ) ) );
    else if( command == c_cmd_test_ods_compress )
    {
       if( g_shared_access )
-         cout << "error: must be locked for exclusive use to perform this operation" << endl;
+         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
       else
       {
-         cout << "moving free data to end..." << endl;
+         handler.issue_command_reponse( "moving free data to end..." );
          o.move_free_data_to_end( );
-         cout << "completed" << endl;
+         handler.issue_command_reponse( "completed" );
       }
    }
    else if( command == c_cmd_test_ods_exit )
    {
       while( trans_level )
       {
-         cout << "rollback transaction (level = " << trans_level << ")" << '\n';
+         handler.issue_command_reponse( "rollback transaction (level = " + to_string( trans_level ) + ")" );
          delete trans_buffer[ --trans_level ];
       }
       test_handler.set_finished( );

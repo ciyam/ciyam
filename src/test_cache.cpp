@@ -82,6 +82,8 @@ int total_item_strass_calls;
 const char* const c_app_title = "test_cache";
 const char* const c_app_version = "0.1";
 
+const char* const c_error_prefix = "error: ";
+
 bool g_application_title_called = false;
 
 string application_title( app_info_request request )
@@ -407,6 +409,7 @@ class test_cache_command_functor : public command_functor
    public:
    test_cache_command_functor( test_cache_command_handler& cache_handler )
     : command_functor( cache_handler ),
+    cache_handler( cache_handler ),
     ap_cache( cache_handler.ap_cache ),
     test_item( cache_handler.test_item ),
     retain( cache_handler.retain ),
@@ -417,6 +420,8 @@ class test_cache_command_functor : public command_functor
    void operator ( )( const string& command, const parameter_info& parameters );
 
    private:
+   test_cache_command_handler& cache_handler;
+
    auto_ptr< test_cache< mem_block< c_test_item_size > > >& ap_cache;
 
    mem_block< c_test_item_size >& test_item;
@@ -449,7 +454,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
          if( finish < start )
          {
-            cout << "error: finish must be >= start" << endl;
+            handler.issue_command_reponse( to_string( c_error_prefix ) + "finish must be >= start" );
             return;
          }
 
@@ -457,10 +462,12 @@ void test_cache_command_functor::operator ( )( const string& command, const para
          if( filename.length( ) )
          {
             outf.open( filename.c_str( ), ios::out );
+
             if( !outf )
             {
-               cout << "error: unable to open file '"
-                << filename << "' for output" << endl;
+               handler.issue_command_reponse(
+                to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
+
                return;
             }
          }
@@ -475,22 +482,22 @@ void test_cache_command_functor::operator ( )( const string& command, const para
             if( filename.length( ) )
             {
                items = static_cast< string >( test_item );
-               outf << items << '\n';
+               outf << items << endl;
             }
             else if( !limit || ( finish - i < limit ) )
             {
                items = static_cast< string >( test_item );
-               cout << items << '\n';
+               handler.issue_command_reponse( items );
             }
          }
 
          if( old_fetch_count != total_physical_fetch_count )
-            cout << "*** physical fetch count = "
-             << ( total_physical_fetch_count - old_fetch_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical fetch count = "
+             + to_string( total_physical_fetch_count - old_fetch_count ) + " ***" );
 
          if( old_store_count != total_physical_store_count )
-            cout << "*** physical store count = "
-             << ( total_physical_store_count - old_store_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical store count = "
+             + to_string( total_physical_store_count - old_store_count ) + " ***" );
       }
       else if( command == c_cmd_test_cache_put )
       {
@@ -509,7 +516,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
          if( finish < start )
          {
-            cout << "error: finish must be >= start" << endl;
+            handler.issue_command_reponse( to_string( c_error_prefix ) + "finish must be >= start" );
             return;
          }
 
@@ -528,12 +535,12 @@ void test_cache_command_functor::operator ( )( const string& command, const para
          }
 
          if( old_fetch_count != total_physical_fetch_count )
-            cout << "*** physical fetch count = "
-             << ( total_physical_fetch_count - old_fetch_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical fetch count = "
+             + to_string( total_physical_fetch_count - old_fetch_count ) + " ***" );
 
          if( old_store_count != total_physical_store_count )
-            cout << "*** physical store count = "
-             << ( total_physical_store_count - old_store_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical store count = "
+             + to_string( total_physical_store_count - old_store_count ) + " ***" );
       }
       else if( command == c_cmd_test_cache_mark )
       {
@@ -556,7 +563,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
          if( finish < start )
          {
-            cout << "error: finish must be >= start" << endl;
+            handler.issue_command_reponse( to_string( c_error_prefix ) + "finish must be >= start", true );
             return;
          }
 
@@ -578,21 +585,28 @@ void test_cache_command_functor::operator ( )( const string& command, const para
 
          if( !filename.length( ) )
          {
-            cout << "total_physical_store_count = " << total_physical_store_count << endl;
-            cout << "total_physical_fetch_count = " << total_physical_fetch_count << endl << endl;
-            ap_cache->dump_cached_item_info( cout, dump_type );
+            handler.issue_command_reponse( "total_physical_store_count = " + to_string( total_physical_store_count ) );
+            handler.issue_command_reponse( "total_physical_fetch_count = " + to_string( total_physical_fetch_count ) );
+
+            handler.issue_command_reponse( "" );
+
+            ap_cache->dump_cached_item_info( *cache_handler.get_std_out( ), dump_type );
          }
          else
          {
             ofstream outf( filename.c_str( ) );
+
             if( !outf )
             {
-               cout << "error: unable to open \"" << filename << "\" for output" << endl;
+               handler.issue_command_reponse(
+                to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
+
                return;
             }
 
-            outf << "total_physical_store_count = " << total_physical_store_count << endl;
-            outf << "total_physical_fetch_count = " << total_physical_fetch_count << endl << endl;
+            outf << "total_physical_store_count = " << total_physical_store_count << '\n';
+            outf << "total_physical_fetch_count = " << total_physical_fetch_count << "\n\n";
+
             ap_cache->dump_cached_item_info( outf, dump_type );
          }
       }
@@ -606,15 +620,15 @@ void test_cache_command_functor::operator ( )( const string& command, const para
          ap_cache->flush( is_new );
 
          if( old_store_count != total_physical_store_count )
-            cout << "*** physical store count = "
-             << ( total_physical_store_count - old_store_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical store count = "
+             + to_string( total_physical_store_count - old_store_count ) + " ***" );
       }
       else if( command == c_cmd_test_cache_limit )
       {
          if( has_parm_val( parameters, c_cmd_parm_test_cache_limit_num ) )
             limit = atoi( get_parm_val( parameters, c_cmd_parm_test_cache_limit_num ).c_str( ) );
          else
-            cout << limit << endl;
+            handler.issue_command_reponse( to_string( limit ) );
       }
       else if( command == c_cmd_test_cache_retain )
       {
@@ -660,12 +674,12 @@ void test_cache_command_functor::operator ( )( const string& command, const para
              atoi( get_parm_val( parameters, c_cmd_parm_test_cache_max_num ).c_str( ) ) );
 
          if( old_fetch_count != total_physical_fetch_count )
-            cout << "*** physical fetch count = "
-             << ( total_physical_fetch_count - old_fetch_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical fetch count = "
+             + to_string( total_physical_fetch_count - old_fetch_count ) + " ***" );
 
          if( old_store_count != total_physical_store_count )
-            cout << "*** physical store count = "
-             << ( total_physical_store_count - old_store_count ) << " ***\n";
+            handler.issue_command_reponse( "*** physical store count = "
+             + to_string( total_physical_store_count - old_store_count ) + " ***" );
       }
       else if( command == c_cmd_test_cache_exit )
       {
@@ -680,7 +694,7 @@ void test_cache_command_functor::operator ( )( const string& command, const para
    }
    catch( const char* msg )
    {
-      cout << msg << endl;
+      handler.issue_command_reponse( msg, true );
    }
 }
 

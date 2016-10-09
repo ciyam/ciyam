@@ -64,12 +64,14 @@ const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
+const char* const c_error_output_prefix = "Error: ";
+
 const size_t c_pid_timeout = 5000;
 const size_t c_command_timeout = 60000;
 const size_t c_connect_timeout = 10000;
 const size_t c_greeting_timeout = 10000;
 
-const size_t c_max_length_for_output_env_var = 1024;
+const size_t c_max_length_for_output_env_var = 1000;
 
 const unsigned long c_max_uncompressed_bytes = 100000;
 
@@ -229,7 +231,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                str += sha256( prefix + data ).get_digest_as_string( ) + extra;
 
-               cout << str << endl;
+               handle_command_response( str );
 
                was_chk_tag = false;
             }
@@ -248,7 +250,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                str += sha256( prefix + data ).get_digest_as_string( ) + extra;
 
-               cout << str << endl;
+               handle_command_response( str );
             }
          }
 
@@ -329,10 +331,11 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                if( s.length( ) > err_prefix_length
                 && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
                {
-                  s = "Error: " + s.substr( err_prefix_length );
+                  s = string( c_error_output_prefix ) + s.substr( err_prefix_length );
                }
 
-               cout << s << endl;
+               handle_command_response( str, true );
+
                return str;
             }
 
@@ -364,7 +367,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   // FUTURE: Verify the hash if "was_chk_token".
                   if( was_pip || was_chk_tag || was_chk_token )
                   {
-                     cout << response << endl;
+                     handle_command_response( response );
 
                      response.erase( );
                      socket.read_line( response );
@@ -414,7 +417,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         temp_hash.update( hash, true );
 
                         string hash_val( temp_hash.get_digest_as_string( ) );
-                        cout << hash_val << endl;
+                        handle_command_response( hash_val );
 
                         socket.write_line( hash_val );
                         response.erase( );
@@ -422,7 +425,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      }
                      else if( response.substr( 0, pos ) == "pip" )
                      {
-                        cout << response.substr( pos + 1 ) << endl;
+                        handle_command_response( response.substr( pos + 1 ) );
 
                         socket.write_line( "127.0.0.1" );
                         response.erase( );
@@ -484,16 +487,18 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      start = msg_prefix_length;
                   }
 
+                  string final_response( response.substr( start ) );
+
                   if( is_error )
-                     cout << "Error: ";
+                     final_response = string( c_error_output_prefix ) + final_response;
 
                   if( is_error || !get_is_quiet_command( ) )
-                     cout << response.substr( start ) << endl;
+                     handle_command_response( final_response, is_error );
 
                   if( is_error && getenv( c_env_var_error ) == 0 )
                      set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
-                  if( !is_error && !is_message && response.length( ) < c_max_length_for_output_env_var )
+                  if( !is_error && !is_message && response.length( ) <= c_max_length_for_output_env_var )
                      set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
 
                   // NOTE: Make sure that progress messages do not end the conversation.

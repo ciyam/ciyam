@@ -9,7 +9,8 @@ if [ $# -lt 1 ]; then
 else
  echo DROP USER \'$1\'@\'localhost\'\;>~drop_db
  echo DROP DATABASE IF EXISTS $1\;>>~drop_db
- 
+ echo quit>>~drop_db
+
  if [ "$2" = "." ]; then
   mysql -uroot<~drop_db
  else

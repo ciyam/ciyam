@@ -44,6 +44,8 @@ const int c_test_items_per_node = 5;
 const char* const c_app_title = "test_btree";
 const char* const c_app_version = "0.1";
 
+const char* const c_error_prefix = "error: ";
+
 bool g_application_title_called = false;
 
 string application_title( app_info_request request )
@@ -475,6 +477,7 @@ class test_btree_command_functor : public command_functor
     bt( btree_handler.bt ),
     iter( btree_handler.iter ),
     item( btree_handler.item ),
+    btree_handler( btree_handler ),
     compare_less( btree_handler.compare_less ),
     compare_equal( btree_handler.compare_equal ),
     list_iter_limit( btree_handler.list_iter_limit )
@@ -490,6 +493,8 @@ class test_btree_command_functor : public command_functor
 
    btree_type::iterator& iter;
    btree_type::item_type& item;
+
+   test_btree_command_handler& btree_handler;
 
    wildcard_compare_less_functor< btree_type::item_type >& compare_less;
    wildcard_compare_equal_functor< btree_type::item_type >& compare_equal;
@@ -507,9 +512,9 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       item.val = get_parm_val( parameters, c_cmd_parm_test_btree_find_item );
       iter = bt.find( item );
       if( iter == bt.end( ) )
-         cout << "*** item not found ***" << endl;
+         handler.issue_command_reponse( "*** item not found ***", true );
       else
-         cout << iter->val << endl;
+         handler.issue_command_reponse( iter->val );
    }
    else if( command == c_cmd_test_btree_match || command == c_cmd_test_btree_mcount )
    {
@@ -541,15 +546,15 @@ void test_btree_command_functor::operator ( )( const string& command, const para
             {
                ++count;
                if( command != c_cmd_test_btree_mcount )
-                  cout << iter->val << endl;
+                  handler.issue_command_reponse( iter->val );
             }
          } while( ++iter != bt.end( ) && compare_less( *iter, item ) );
       }
 
       if( command == c_cmd_test_btree_mcount )
-         cout << count << endl;
+         handler.issue_command_reponse( to_string( count ) );
       else if( count == 0 )
-         cout << "*** item not found ***" << endl;
+         handler.issue_command_reponse( "*** item not found ***", true );
 
       compare_less.use_truncated_comparison( false );
    }
@@ -559,18 +564,18 @@ void test_btree_command_functor::operator ( )( const string& command, const para
 
       iter = bt.lower_bound( item );
       if( iter == bt.end( ) )
-         cout << "*** past the end ***" << endl;
+         handler.issue_command_reponse( "*** past the end ***", true );
       else
-         cout << iter->val << endl;
+         handler.issue_command_reponse( iter->val );
    }
    else if( command == c_cmd_test_btree_ubound )
    {
       item.val = get_parm_val( parameters, c_cmd_parm_test_btree_lbound_item );
       iter = bt.upper_bound( item );
       if( iter == bt.end( ) )
-         cout << "*** past the end ***" << endl;
+         handler.issue_command_reponse( "*** past the end ***", true );
       else
-         cout << iter->val << endl;
+         handler.issue_command_reponse( iter->val );
    }
    else if( command == c_cmd_test_btree_remove )
    {
@@ -578,14 +583,14 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       {
          item.val = get_parm_val( parameters, c_cmd_parm_test_btree_remove_item );
          if( !bt.erase( item ) )
-            cout << "*** no equal items found ***" << endl;
+            handler.issue_command_reponse( "*** no equal items found ***", true );
          else
             iter = bt.upper_bound( item );
       }
       else
       {
          if( iter == bt.end( ) )
-            cout << "*** past the end ***" << endl;
+            handler.issue_command_reponse( "*** past the end ***", true );
          else
             bt.erase( iter );
       }
@@ -599,22 +604,24 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       range = bt.equal_range( item );
 
       if( range.first == range.second )
-         cout << "*** no equal items found ***" << endl;
+         handler.issue_command_reponse( "*** no equal items found ***", true );
       else
-         cout << *range.first << " --> " << *--range.second << '\n';
+         handler.issue_command_reponse( to_string( *range.first ) + " --> " + to_string( *--range.second ) );
    }
    else if( command == c_cmd_test_btree_count )
    {
       item.val = get_parm_val( parameters, c_cmd_parm_test_btree_count_item );
-      cout << bt.count( item ) << endl;
+      handler.issue_command_reponse( to_string( bt.count( item ) ) );
    }
    else if( command == c_cmd_test_btree_load )
    {
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_load_filename ) );
 
       ifstream inpf( filename.c_str( ), ios::in | ios::binary );
+
       if( !inpf )
-         cout << "error: unable to open file '" << filename << "' for input" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for input", true );
       else
       {
          bt.load_btree_data( inpf );
@@ -626,8 +633,10 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_save_filename ) );
 
       ofstream outf( filename.c_str( ), ios::out | ios::binary );
+
       if( !outf )
-         cout << "error: unable to open file '" << filename << "' for output" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
       else
          bt.save_btree_data( outf );
    }
@@ -636,8 +645,10 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_import_filename ) );
 
       ifstream inpf( filename.c_str( ) );
+
       if( !inpf )
-         cout << "error: unable to open file '" << filename << "' for input" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for input", true );
       else
       {
          while( getline( inpf, item.val ) )
@@ -657,13 +668,15 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_export_filename ) );
 
       ofstream outf( filename.c_str( ) );
+
       if( !outf )
-         cout << "error: unable to open file '" << filename << "' for output" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
       else
       {
          btree_type::iterator iter, end = bt.end( );
          for( iter = bt.begin( ); iter != end; ++iter )
-            outf << iter->val << endl;
+            handler.issue_command_reponse( iter->val );
 
          outf.close( );
       }
@@ -673,8 +686,10 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_append_filename ) );
 
       ifstream inpf( filename.c_str( ) );
+
       if( !inpf )
-         cout << "error: unable to open file '" << filename << "' for input" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for input", true );
       else
       {
          while( getline( inpf, item.val ) )
@@ -698,9 +713,9 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       iter = bt.end( );
    }
    else if( command == c_cmd_test_btree_depth )
-      cout << "index depth = " << ( unsigned )bt.depth( ) << endl;
+      handler.issue_command_reponse( "index depth = " + to_string( ( unsigned )bt.depth( ) ) );
    else if( command == c_cmd_test_btree_size )
-      cout << "number of items in container = " << bt.size( ) << endl;
+      handler.issue_command_reponse( "number of items in container = " + to_string( bt.size( ) ) );
    else if( command == c_cmd_test_btree_goto )
    {
       if( has_parm_val( parameters, c_cmd_parm_test_btree_goto_top ) )
@@ -710,14 +725,14 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       else if( has_parm_val( parameters, c_cmd_parm_test_btree_goto_next ) )
       {
          if( iter == bt.end( ) )
-            cout << "*** past the end ***" << endl;
+            handler.issue_command_reponse( "*** past the end ***", true );
          else
             ++iter;
       }
       else
       {
          if( iter == bt.begin( ) )
-            cout << "*** at the top ***" << endl;
+            handler.issue_command_reponse( "*** at the top ***", true );
          else
             --iter;
       }
@@ -725,30 +740,33 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    else if( command == c_cmd_test_btree_view )
    {
       if( iter == bt.end( ) )
-         cout << "*** past the end ***" << endl;
+         handler.issue_command_reponse( "*** past the end ***", true );
       else
-         cout << iter->val << endl;
+         handler.issue_command_reponse( iter->val );
    }
    else if( command == c_cmd_test_btree_list )
    {
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_list_filename ) );
 
       if( iter == bt.end( ) )
-         cout << "*** past the end ***" << endl;
+         handler.issue_command_reponse( "*** past the end ***", true );
       else
       {
          btree_type::iterator end = bt.end( );
          if( filename.length( ) )
          {
             ofstream outf( filename.c_str( ) );
+
             if( !outf )
-               cout << "error: unable to open file '" << filename << "' for output" << endl;
+               handler.issue_command_reponse(
+                to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
             else
             {
                int num = 0;
                for( ; iter != end; ++iter )
                {
-                  outf << iter->val << endl;
+                  handler.issue_command_reponse( iter->val );
+
                   if( ++num == list_iter_limit )
                   {
                      ++iter;
@@ -762,7 +780,8 @@ void test_btree_command_functor::operator ( )( const string& command, const para
             int num = 0;
             for( ; iter != end; ++iter )
             {
-               cout << iter->val << '\n';
+               handler.issue_command_reponse( iter->val );
+
                if( ++num == list_iter_limit )
                {
                   ++iter;
@@ -777,7 +796,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_rlist_filename ) );
 
       if( iter == bt.begin( ) )
-         cout << "*** at the top ***" << endl;
+         handler.issue_command_reponse( "*** at the top ***", true );
       else
       {
          btree_type::const_reverse_iterator riter( iter ), rend = bt.rend( );
@@ -785,13 +804,15 @@ void test_btree_command_functor::operator ( )( const string& command, const para
          {
             ofstream outf( filename.c_str( ) );
             if( !outf )
-               cout << "error: unable to open file '" << filename << "' for output" << endl;
+               handler.issue_command_reponse(
+                to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
             else
             {
                int num = 0;
                for( ; riter != rend; ++riter )
                {
-                  outf << riter->val << '\n';
+                  handler.issue_command_reponse( riter->val );
+
                   if( ++num == list_iter_limit )
                   {
                      ++riter;
@@ -806,7 +827,8 @@ void test_btree_command_functor::operator ( )( const string& command, const para
             int num = 0;
             for( ; riter != rend; ++riter )
             {
-               cout << riter->val << '\n';
+               handler.issue_command_reponse( riter->val );
+
                if( ++num == list_iter_limit )
                {
                   ++riter;
@@ -822,7 +844,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       if( has_parm_val( parameters, c_cmd_parm_test_btree_limit_num ) )
          list_iter_limit = atoi( get_parm_val( parameters, c_cmd_parm_test_btree_limit_num ).c_str( ) );
       else
-         cout << "limit for listing iteration = " << list_iter_limit << endl;
+         handler.issue_command_reponse( "limit for listing iteration = " + to_string( list_iter_limit ) );
    }
    else if( command == c_cmd_test_btree_dump )
    {
@@ -831,21 +853,25 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       if( filename.length( ) )
       {
          ofstream outf( filename.c_str( ) );
+
          if( !outf )
-            cout << "error: unable to open file '" << filename << "' for output" << endl;
+            handler.issue_command_reponse(
+             to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
          else
             bt.dump_all_info( outf );
       }
       else
-         bt.dump_all_info( cout );
+         bt.dump_all_info( *btree_handler.get_std_out( ) );
    }
    else if( command == c_cmd_test_btree_xml )
    {
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_xml_filename ) );
 
       ofstream outf( filename.c_str( ) );
+
       if( !outf )
-         cout << "error: unable to open file '" << filename << "' for output" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
       else
          bt.create_as_xml_info( outf );
    }
@@ -854,8 +880,10 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       string filename( get_parm_val( parameters, c_cmd_parm_test_btree_mkdirs_filename ) );
 
       ofstream outf( filename.c_str( ) );
+
       if( !outf )
-         cout << "error: unable to open file '" << filename << "' for output" << endl;
+         handler.issue_command_reponse(
+          to_string( c_error_prefix ) + "unable to open file '" + filename + "' for output", true );
       else
          bt.create_as_directory_info( outf );
    }

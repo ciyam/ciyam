@@ -17,7 +17,7 @@ else
   echo model_load $1>~genmodule.tmp
   echo generate -cmd=./genclass>>~genmodule.tmp
 
-  ./modeller -quiet -no_prompt <~genmodule.tmp
+  ./modeller -quiet -no_prompt -no_stderr <~genmodule.tmp
  else
   app_dir=$3
   mod_name=$2
