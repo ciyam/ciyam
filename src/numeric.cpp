@@ -867,6 +867,32 @@ bool operator >( const numeric& lhs, const numeric& rhs )
       return rhs_comparator > lhs_comparator;
 }
 
+bool operator ==( const numeric& lhs, const numeric& rhs )
+{
+   if( lhs.mantissa == rhs.mantissa && lhs.decimals == rhs.decimals )
+      return true;
+
+   if( ( lhs.decimals & c_negative_flag ) != ( rhs.decimals & c_negative_flag ) )
+      return false;
+
+   uint8_t lhs_decimals = lhs.decimals & c_decimals_mask;
+   uint8_t rhs_decimals = rhs.decimals & c_decimals_mask;
+
+   uint64_t lhs_whole = lhs.mantissa / power10[ lhs_decimals ];
+   uint64_t rhs_whole = rhs.mantissa / power10[ rhs_decimals ];
+
+   if( lhs_whole != rhs_whole )
+      return false;
+
+   uint64_t lhs_fraction = lhs.mantissa - ( lhs_whole * power10[ lhs_decimals ] );
+   uint64_t lhs_comparator = lhs_fraction * power10[ numeric::e_max_digits - lhs_decimals ];
+
+   uint64_t rhs_fraction = rhs.mantissa - ( rhs_whole * power10[ rhs_decimals ] );
+   uint64_t rhs_comparator = rhs_fraction * power10[ numeric::e_max_digits - rhs_decimals ];
+
+   return lhs_comparator == rhs_comparator;
+}
+
 ostream& operator <<( ostream& os, const numeric& n )
 {
    char buf[ numeric::e_max_digits + 3 ];

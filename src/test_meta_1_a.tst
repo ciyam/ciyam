@@ -131,7 +131,8 @@ std_timestamp,T135
 std_numeric,T136
 std_percentage,T137
 std_money,T138
-std_cash_amount,T139
-std_crypto_amount,T140
+std_money_amount,T139
+std_crypto,T140
+std_crypto_amount,T141
 
 > 

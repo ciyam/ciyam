@@ -232,11 +232,6 @@ inline bool operator >=( const numeric& lhs, const numeric& rhs )
    return lhs == rhs ? true : lhs > rhs;
 }
 
-inline bool operator ==( const numeric& lhs, const numeric& rhs )
-{
-   return lhs.mantissa == rhs.mantissa && ( lhs.mantissa == 0 || lhs.decimals == rhs.decimals );
-}
-
 inline bool operator !=( const numeric& lhs, const numeric& rhs ) { return !( lhs == rhs ); }
 
 numeric abs( const numeric& n );
