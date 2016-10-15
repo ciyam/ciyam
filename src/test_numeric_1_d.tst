@@ -254,4 +254,28 @@ error: underflow occurred
 > whole_digits
 0
 
+> set 50
+50
+
+> round 2
+50.00
+
+> is_gteq 50
+true
+
+> is_gteq 49.9999
+true
+
+> is_gteq 50.0001
+false
+
+> is_lteq 50
+true
+
+> is_lteq 49.9999
+false
+
+> is_lteq 50.0001
+true
+
 > 

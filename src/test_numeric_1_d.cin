@@ -76,3 +76,11 @@ div -4
 div -4
 digits
 whole_digits
+set 50
+round 2
+is_gteq 50
+is_gteq 49.9999
+is_gteq 50.0001
+is_lteq 50
+is_lteq 49.9999
+is_lteq 50.0001

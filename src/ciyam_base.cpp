@@ -9598,6 +9598,7 @@ void import_package( const string& module,
  const string& replace_info, const string& skip_field_info, bool new_only, bool for_remove )
 {
    string module_id( module );
+
    if( !gtp_session->modules_by_id.count( module ) )
    {
       if( !gtp_session->modules_by_name.count( module ) )
@@ -9609,6 +9610,7 @@ void import_package( const string& module,
    bool is_using_blockchain = gtp_session->p_storage_handler->is_using_blockchain( );
 
    map< string, map< string, string > > skip_fields;
+
    if( !skip_field_info.empty( ) )
    {
       vector< string > skip_field_items;
@@ -9662,6 +9664,7 @@ void import_package( const string& module,
 
    string log_lines;
 
+   string map_file_name;
    bool has_key_list_file = false;
    map< string, string > search_replaces_map;
    vector< pair< string, string > > search_replaces;
@@ -9675,6 +9678,8 @@ void import_package( const string& module,
       else
       {
          has_key_list_file = true;
+         map_file_name = replace_info.substr( 1 ) + ".map";
+
          buffer_file_lines( replace_info.substr( 1 ), replace_items );
       }
 
@@ -9765,7 +9770,6 @@ void import_package( const string& module,
 
       if( !for_remove && has_key_list_file )
       {
-         string map_file_name( replace_info.substr( 1 ) + ".map" );
          ofstream outf( map_file_name.c_str( ) );
 
          for( size_t i = 0; i < search_replaces.size( ); i++ )
@@ -9781,6 +9785,8 @@ void import_package( const string& module,
    set< string > keys_updating;
    map< string, string > keys_created;
    map< string, set< string > > prefixed_class_keys;
+
+   vector< string > map_appends;
 
    try
    {
@@ -9839,12 +9845,21 @@ void import_package( const string& module,
                   get_session_command_handler( ).output_progress( "Processed " + to_string( line_num ) + " lines..." );
                }
 
+               map< string, string > search_replaces_used;
+
                if( !search_replaces.empty( ) )
                {
                   for( size_t i = 0; i < search_replaces.size( ); i++ )
                   {
+                     string original_next_record( next_record );
+
                      next_record = search_replace( next_record,
                       search_replaces[ i ].first, search_replaces[ i ].second );
+
+                     // NOTE: Remember any search replaces that were used in order to be able to append
+                     // entries to the map file (if required) for @<prefix>_<key> usage entries.
+                     if( next_record != original_next_record )
+                        search_replaces_used[ search_replaces[ i ].second ] = search_replaces[ i ].first;
                   }
                }
 
@@ -9903,6 +9918,8 @@ void import_package( const string& module,
                         is_remove_op = true;
                   }
 
+                  string original_key( next_key );
+
                   // NOTE: Allow a key field to be specified in the following manner: @3_20101010101010101010
                   // where the text between the @ and _ (in the case "3") is used to replace the equal number
                   // of leading characters in the key (so the final key will become 30101010101010101010).
@@ -9911,6 +9928,8 @@ void import_package( const string& module,
                      string::size_type pos = next_key.find( '_' );
                      if( pos == string::npos )
                         throw runtime_error( "unexpected key format '" + next_key + "' processing line #" + to_string( line_num ) );
+
+                     original_key.erase( 0, pos + 1 );
 
                      string prefix_replace;
                      if( pos > 1 )
@@ -10050,7 +10069,12 @@ void import_package( const string& module,
                      op_instance_apply( handle, "", false );
 
                      if( !is_update && !for_remove )
+                     {
                         keys_created.insert( make_pair( key_value, mclass ) );
+
+                        if( original_key != key_value && search_replaces_used.count( original_key ) )
+                           map_appends.push_back( search_replaces_used[ original_key ] + "=" + key_value );
+                     }
                   }
 
                   if( !for_remove && !key_prefix.empty( ) )
@@ -10102,6 +10126,14 @@ void import_package( const string& module,
 
    if( has_key_list_file )
    {
+      if( !map_appends.empty( ) )
+      {
+         ofstream outf( map_file_name.c_str( ), ios::out | ios::app );
+
+         for( size_t i = 0; i < map_appends.size( ); i++ )
+            outf << map_appends[ i ] << endl;
+      }
+
       string new_file_name( replace_info.substr( 1 ) + ".new" );
       ofstream outf( new_file_name.c_str( ) );
 
