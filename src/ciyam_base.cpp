@@ -5748,6 +5748,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_id );
       break;
 
+      case  e_special_var_os:
+      s = string( c_special_variable_os );
+      break;
+
       case e_special_var_dtm:
       s = string( c_special_variable_dtm );
       break;
