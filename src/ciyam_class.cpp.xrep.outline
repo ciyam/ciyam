@@ -1804,7 +1804,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_action_for_mod`'`)
 `{`#transient_field_action_for_mod.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
- arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_default=$specification_\0_default\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_default=$specification_\0_default\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
  arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
@@ -2174,7 +2175,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
- arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue`}\
+ arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#default_to_grp.spec.xrep section=to_or_for_store class_name=$class_name\
@@ -2525,7 +2526,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
- arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue`}\
+ arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_grp.spec.xrep section=to_or_for_store class_name=$class_name\

@@ -15,7 +15,8 @@
 `{`!`@eq`(`$arg_cfield`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
     && `'`}`{`$cond`^`'is_null( get_obj( ).`{`$arg_cfield`}( ) )`'`}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
-    && `'`}`{`$cond`^`'`{`@eq`(`$arg_tvalue`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )\
+    && `'`}`{`$cond`^`'`{`@eq`(`$arg_tvalue`,`'`'`)`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}\
+get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}\
 `,get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}`}`'`}`}\
    if( `{`$cond`}
 `{`!`@eq`(`$arg_modifier`,`'`'`)\

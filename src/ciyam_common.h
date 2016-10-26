@@ -46,6 +46,7 @@ enum special_var
 {
    e_special_var_bh,
    e_special_var_id,
+   e_special_var_os,
    e_special_var_dtm,
    e_special_var_key,
    e_special_var_sec,
