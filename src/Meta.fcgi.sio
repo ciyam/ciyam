@@ -6536,6 +6536,38 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_allow_other_modifier
+     <field>114216
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_needs_other_modifier
+     <field>114202
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_allow_other_modifier_2
+     <field>114217
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_needs_other_modifier_2
+     <field>114203
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_allow_enum
      <field>114198
      <ftype>bool

@@ -5769,12 +5769,12 @@ uint64_t Meta_Specification::impl::get_state( ) const
    // [(finish modifier_field_value)] 600105
 
    // [(start modifier_field_value)] 600105a
-   if( get_obj( ).Specification_Type( ).Needs_Other_Modifier( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Other_Modifier( ) == false )
       state |= c_modifier_Hide_Other_Modifier;
    // [(finish modifier_field_value)] 600105a
 
    // [(start modifier_field_value)] 600105b
-   if( get_obj( ).Specification_Type( ).Needs_Other_Modifier_2( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Other_Modifier_2( ) == false )
       state |= c_modifier_Hide_Other_Modifier_2;
    // [(finish modifier_field_value)] 600105b
 
@@ -6764,6 +6764,20 @@ void Meta_Specification::impl::validate( unsigned state, bool is_internal, valid
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
    // [(finish check_cond_non_null)] 600134
+
+   // [(start check_cond_non_null)] 600134a
+   if( get_obj( ).Specification_Type( ).Needs_Other_Modifier( ) && is_null( get_obj( ).Other_Modifier( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Other_Modifier,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier ) ) ) ) );
+   // [(finish check_cond_non_null)] 600134a
+
+   // [(start check_cond_non_null)] 600134b
+   if( get_obj( ).Specification_Type( ).Needs_Other_Modifier_2( ) && is_null( get_obj( ).Other_Modifier_2( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Other_Modifier_2,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Other_Modifier_2 ) ) ) ) );
+   // [(finish check_cond_non_null)] 600134b
 
    // [(start check_cond_non_null)] 600135
    if( get_obj( ).Specification_Type( ).Needs_Enum( ) && is_null( get_obj( ).Enum( ) ) )
