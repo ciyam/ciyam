@@ -3597,7 +3597,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
                }
 
-               if( log_as_update && log_as_update && all_keys.size( ) != 1 )
+               if( log_as_update && all_keys.size( ) != 1 )
                   throw runtime_error( "perform_execute cannot log_as_update with multiple keys" );
 
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
