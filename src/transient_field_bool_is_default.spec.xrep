@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_bool_is_default)] `{`$arg_id`}
 `{`!`@eq`(`$arg_pfield`,`'`'`)`{`$i`=`'`'`}\
 `{`@eq`(`$arg_top_level`,`'true`'`)`{`$i`=`'   `'`}\

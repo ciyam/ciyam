@@ -2367,7 +2367,7 @@
 `{`$specification_Modifier_child_list0_type`=`'child`'`}
 `{`$specification_Modifier_child_list0_acts`=`'`'`}
 `{`$specification_Modifier_child_list0_mods`=`'100:lowlight`'`}
-`{`$specification_Modifier_child_list0_extra`=`'no_limit`'`}
+`{`$specification_Modifier_child_list0_extra`=`'limit=56`'`}
 `{`$specification_Modifier_child_list0_order`=`'forward`'`}
 `{`$specification_Modifier_child_list0_binfo`=`'`'`}
 `{`$specification_Modifier_child_list0_pclass`=`'106100`'`}
