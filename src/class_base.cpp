@@ -4893,10 +4893,53 @@ string create_address_key_pair( const string& ext_key,
 #endif
 }
 
+bool active_external_service( const string& ext_key )
+{
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+   bool okay = false;
+
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+   if( client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "getinfo";
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for has_active_external_service" );
+   }
+
+   if( file_exists( tmp_file_name ) )
+   {
+      string content( buffer_file( tmp_file_name ) );
+
+      if( content.find( "\"version\"" ) != string::npos )
+         okay = true;
+
+      file_remove( tmp_file_name );
+   }
+
+   return okay;
+}
+
 bool can_create_address( const string& ext_key )
 {
    external_client client_info;
    get_external_client_info( ext_key, client_info );
+
+   if( client_info.protocol != c_protocol_bitcoin )
+      return false;
 
    return !client_info.script_name.empty( );
 }
@@ -4983,7 +5026,7 @@ void load_address_information( const string& ext_key, const string& file_name )
       string error, content( buffer_file( file_name ) );
 
       if( content.empty( ) )
-         error = "unexpected emtpy response from 'listaddressgroupings'";
+         error = "unexpected empty response from 'listaddressgroupings'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
@@ -5121,7 +5164,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
       string error, content( buffer_file( file_name ) );
 
       if( content.empty( ) )
-         error = "unexpected emtpy response from 'listunspent'";
+         error = "unexpected empty response from 'listunspent'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 

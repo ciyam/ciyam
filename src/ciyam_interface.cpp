@@ -1555,7 +1555,9 @@ void request_handler::process_request( )
 #endif
                      {
                         is_replacement_session = true;
-                        destroy_user_session_info( p_session_info->user_id, permit_module_switching ? 0 : p_session_info->user_module.c_str( ) );
+
+                        destroy_user_session_info( p_session_info->user_id,
+                         permit_module_switching ? 0 : p_session_info->user_module.c_str( ) );
                      }
                      else
                         throw runtime_error( GDS( c_display_you_are_currently_logged_in ) );
@@ -1652,6 +1654,9 @@ void request_handler::process_request( )
 
                if( !temp_session )
                {
+                  if( p_session_info->user_id.empty( ) && p_session_info->user_name.empty( ) )
+                     throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
                   has_just_logged_in = true;
                   p_session_info->logged_in = true;
 
