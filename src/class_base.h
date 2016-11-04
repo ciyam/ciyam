@@ -1494,6 +1494,8 @@ std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key,
  const std::string& priv_info, bool is_seed = true, bool use_base64 = false );
 
+bool CLASS_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
+
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
 void CLASS_BASE_DECL_SPEC import_address(
