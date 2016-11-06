@@ -1,0 +1,9 @@
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start for_destroy_parent)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
+   {
+      get_obj( ).`{`$arg_spfield`}( ).op_destroy( );
+      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+   }
+   // [(finish for_destroy_parent)] `{`$arg_id`}
+`}   

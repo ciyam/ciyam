@@ -3027,6 +3027,10 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 `{`#file_link.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
+`@eq`(`'\1`'`,`'for_destroy_parent`'`)
+`{`#for_destroy_parent.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield`}\
+`,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)
 `{`#meta_relationship_field.spec.xrep section=for_destroy module_name=$module_name arg_id=$specification_\0_id arg_fclass=$specification_\0_fclass`}\
 `,\
