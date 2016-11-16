@@ -4742,12 +4742,12 @@ string crypto_sign( const string& secret, const string& message, bool decode_hex
 #endif
 }
 
-string crypto_public( const string& privkey, bool is_wif )
+string crypto_public( const string& privkey, bool is_wif, bool use_base64 )
 {
 #ifdef SSL_SUPPORT
    private_key priv( privkey, is_wif );
 
-   return priv.get_public( true, true );
+   return priv.get_public( true, use_base64 );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_public" );
 #endif
@@ -4910,6 +4910,11 @@ bool active_external_service( const string& ext_key )
       cmd += "getinfo";
 
       cmd += " >" + tmp_file_name + " 2>&1";
+   }
+   else if( client_info.protocol == c_protocol_blockchain )
+   {
+      // FUTURE: Some sort of simple request needs to be executed to check if the website is up.
+      okay = true;
    }
 
    if( !cmd.empty( ) )
@@ -5277,6 +5282,9 @@ string construct_p2sh_redeem_transaction(
    vector< output_information > outputs;
 
    auto_ptr< private_key > ap_priv_key;
+
+   if( txid.empty( ) )
+      throw runtime_error( "unexpected missing txid in construct_p2sh_redeem_transaction" );
 
    if( !key.empty( ) )
       ap_priv_key.reset( new private_key( key, is_wif_format ) );

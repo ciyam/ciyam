@@ -591,7 +591,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual void clear( ) = 0;
    
-   virtual void validate( unsigned state, bool is_internal ) = 0;
+   virtual void validate( uint64_t state, bool is_internal ) = 0;
    virtual void validate_set_fields( std::set< std::string >& fields_set ) = 0;
 
    void after_fetch_from_db( );
@@ -1473,7 +1473,8 @@ uint64_t CLASS_BASE_DECL_SPEC crypto_amount( const std::string& amount );
 std::string CLASS_BASE_DECL_SPEC crypto_sign(
  const std::string& secret, const std::string& message, bool decode_hex_message = false );
 
-std::string CLASS_BASE_DECL_SPEC crypto_public( const std::string& privkey, bool is_wif = false );
+std::string CLASS_BASE_DECL_SPEC crypto_public(
+ const std::string& privkey, bool is_wif = false, bool use_base64 = true );
 
 std::string CLASS_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool is_wif = false );
 

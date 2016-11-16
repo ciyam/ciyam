@@ -953,12 +953,15 @@ void setup_directories( )
 
    string cwd( get_cwd( ) );
 
+   string file_directory_note( GDS( c_display_module_file_directory_note ) );
+
    storage_info& sinfo( get_storage_info( ) );
 
    set_cwd( sinfo.web_root );
 
    bool rc;
    set_cwd( c_files_directory, &rc );
+
    if( !rc )
    {
       create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
@@ -968,6 +971,7 @@ void setup_directories( )
    vector< string > dead_sessions;
 
    set_cwd( c_tmp_directory, &rc );
+
    if( !rc )
    {
       create_dir( c_tmp_directory, &rc, ( dir_perms )c_directory_perm_val );
@@ -1028,10 +1032,17 @@ void setup_directories( )
 
       bool rc;
       set_cwd( module_id, &rc );
+
       if( !rc )
       {
          create_dir( module_id, &rc, ( dir_perms )c_directory_perm_val );
          set_cwd( module_id );
+      }
+
+      if( !file_exists( "_note_.txt" ) )
+      {
+         ofstream outf( "_note_.txt" );
+         outf << file_directory_note;
       }
 
       if( !file_exists( ".htaccess" ) )
@@ -1054,18 +1065,11 @@ void setup_directories( )
 
          bool rc;
          set_cwd( name, &rc );
+
          if( rc )
             set_cwd( ".." );
          else
-         {
             create_dir( name, &rc, ( dir_perms )c_directory_perm_val );
-            set_cwd( name );
-
-            ofstream outf( "_NOTE_.TXT" );
-            outf << "NOTE: The files in this directory are tied to a DB and therefore should not be manually added or removed.";
-
-            set_cwd( ".." );
-         }
       }
 
       set_cwd( ".." );

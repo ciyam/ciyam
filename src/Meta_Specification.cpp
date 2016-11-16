@@ -3763,7 +3763,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    bool value_will_be_provided( const string& field_name );
 
-   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate( uint64_t state, bool is_internal, validation_error_container* p_validation_errors );
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
@@ -6614,7 +6614,8 @@ bool Meta_Specification::impl::value_will_be_provided( const string& field_name 
    return false;
 }
 
-void Meta_Specification::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+void Meta_Specification::impl::validate(
+ uint64_t state, bool is_internal, validation_error_container* p_validation_errors )
 {
    ( void )state;
    ( void )is_internal;
@@ -7025,7 +7026,8 @@ void Meta_Specification::impl::validate( unsigned state, bool is_internal, valid
    // [<finish validate>]
 }
 
-void Meta_Specification::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+void Meta_Specification::impl::validate_set_fields(
+ set< string >& fields_set, validation_error_container* p_validation_errors )
 {
    ( void )fields_set;
 
@@ -9792,7 +9794,7 @@ void Meta_Specification::clear( )
    p_impl->clear( );
 }
 
-void Meta_Specification::validate( unsigned state, bool is_internal )
+void Meta_Specification::validate( uint64_t state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
 }

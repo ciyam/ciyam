@@ -3380,13 +3380,17 @@ void default_to_global_specification::add_specification_data( model& m, specific
    if( !tclass_id.empty( ) )
       tclass_name = get_class_name_for_id( m, tclass_id );
 
-   string tfield_name;
+   string tfield_name, tfield_type;
    if( !tfield_id.empty( ) )
-      tfield_name = get_field_name_for_id( m, tclass_name, tfield_id );
+      tfield_name = get_field_name_for_id( m, tclass_name, tfield_id, &tfield_type );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, tfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, test_value ) );
 
+   bool is_text_type( !is_non_string_type( tfield_type ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, is_text_type ? "1" : "0" ) );
+
    spec_data.data_pairs.push_back( make_pair( string( c_data_dflt_only ), default_only ? c_true : "" ) );
+
    spec_data.data_pairs.push_back( make_pair( "ename", "" ) );
    spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "inc_exist", "" ) );

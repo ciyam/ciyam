@@ -713,7 +713,7 @@ struct Meta_Modifier_Affect::impl : public Meta_Modifier_Affect_command_handler
 
    bool value_will_be_provided( const string& field_name );
 
-   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate( uint64_t state, bool is_internal, validation_error_container* p_validation_errors );
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
@@ -1075,7 +1075,8 @@ bool Meta_Modifier_Affect::impl::value_will_be_provided( const string& field_nam
    return false;
 }
 
-void Meta_Modifier_Affect::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+void Meta_Modifier_Affect::impl::validate(
+ uint64_t state, bool is_internal, validation_error_container* p_validation_errors )
 {
    ( void )state;
    ( void )is_internal;
@@ -1119,7 +1120,8 @@ void Meta_Modifier_Affect::impl::validate( unsigned state, bool is_internal, val
    // [<finish validate>]
 }
 
-void Meta_Modifier_Affect::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+void Meta_Modifier_Affect::impl::validate_set_fields(
+ set< string >& fields_set, validation_error_container* p_validation_errors )
 {
    ( void )fields_set;
 
@@ -1572,7 +1574,7 @@ void Meta_Modifier_Affect::clear( )
    p_impl->clear( );
 }
 
-void Meta_Modifier_Affect::validate( unsigned state, bool is_internal )
+void Meta_Modifier_Affect::validate( uint64_t state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
 }

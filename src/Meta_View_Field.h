@@ -264,7 +264,7 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    void clear( );
 
-   void validate( unsigned state, bool is_internal );
+   void validate( uint64_t state, bool is_internal );
    void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );

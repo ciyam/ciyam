@@ -580,7 +580,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
    bool value_will_be_provided( const string& field_name );
 
-   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate( uint64_t state, bool is_internal, validation_error_container* p_validation_errors );
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
@@ -1007,7 +1007,8 @@ bool Meta_Enum_Item::impl::value_will_be_provided( const string& field_name )
    return false;
 }
 
-void Meta_Enum_Item::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+void Meta_Enum_Item::impl::validate(
+ uint64_t state, bool is_internal, validation_error_container* p_validation_errors )
 {
    ( void )state;
    ( void )is_internal;
@@ -1061,7 +1062,8 @@ void Meta_Enum_Item::impl::validate( unsigned state, bool is_internal, validatio
    // [<finish validate>]
 }
 
-void Meta_Enum_Item::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+void Meta_Enum_Item::impl::validate_set_fields(
+ set< string >& fields_set, validation_error_container* p_validation_errors )
 {
    ( void )fields_set;
 
@@ -1511,7 +1513,7 @@ void Meta_Enum_Item::clear( )
    p_impl->clear( );
 }
 
-void Meta_Enum_Item::validate( unsigned state, bool is_internal )
+void Meta_Enum_Item::validate( uint64_t state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
 }

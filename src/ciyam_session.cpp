@@ -1683,6 +1683,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          crypto_verify( pubkey, message, signature, hex_decode );
       }
+      else if( command == c_cmd_ciyam_session_crypto_pub_key )
+      {
+         string privkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_pub_key_privkey ) );
+
+         response = crypto_public( privkey, false, false );
+      }
       else if( command == c_cmd_ciyam_session_crypto_addr_hash )
       {
          string address( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_addr_hash_address ) );
