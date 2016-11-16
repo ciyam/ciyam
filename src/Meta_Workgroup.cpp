@@ -619,7 +619,7 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
 
    bool value_will_be_provided( const string& field_name );
 
-   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate( uint64_t state, bool is_internal, validation_error_container* p_validation_errors );
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
@@ -922,7 +922,8 @@ bool Meta_Workgroup::impl::value_will_be_provided( const string& field_name )
    return false;
 }
 
-void Meta_Workgroup::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+void Meta_Workgroup::impl::validate(
+ uint64_t state, bool is_internal, validation_error_container* p_validation_errors )
 {
    ( void )state;
    ( void )is_internal;
@@ -1007,7 +1008,8 @@ void Meta_Workgroup::impl::validate( unsigned state, bool is_internal, validatio
    // [<finish validate>]
 }
 
-void Meta_Workgroup::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+void Meta_Workgroup::impl::validate_set_fields(
+ set< string >& fields_set, validation_error_container* p_validation_errors )
 {
    ( void )fields_set;
 
@@ -1523,7 +1525,7 @@ void Meta_Workgroup::clear( )
    p_impl->clear( );
 }
 
-void Meta_Workgroup::validate( unsigned state, bool is_internal )
+void Meta_Workgroup::validate( uint64_t state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
 }

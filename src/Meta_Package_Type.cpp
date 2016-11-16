@@ -509,7 +509,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
    bool value_will_be_provided( const string& field_name );
 
-   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate( uint64_t state, bool is_internal, validation_error_container* p_validation_errors );
    void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
@@ -992,7 +992,8 @@ bool Meta_Package_Type::impl::value_will_be_provided( const string& field_name )
    return false;
 }
 
-void Meta_Package_Type::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+void Meta_Package_Type::impl::validate(
+ uint64_t state, bool is_internal, validation_error_container* p_validation_errors )
 {
    ( void )state;
    ( void )is_internal;
@@ -1041,7 +1042,8 @@ void Meta_Package_Type::impl::validate( unsigned state, bool is_internal, valida
    // [<finish validate>]
 }
 
-void Meta_Package_Type::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+void Meta_Package_Type::impl::validate_set_fields(
+ set< string >& fields_set, validation_error_container* p_validation_errors )
 {
    ( void )fields_set;
 
@@ -1481,7 +1483,7 @@ void Meta_Package_Type::clear( )
    p_impl->clear( );
 }
 
-void Meta_Package_Type::validate( unsigned state, bool is_internal )
+void Meta_Package_Type::validate( uint64_t state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
 }

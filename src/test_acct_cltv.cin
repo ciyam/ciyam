@@ -25,13 +25,14 @@
 ;
 <std.fissile
 ;
+@ifndef $LOCK
+LOCK=128
+@endif
+;
 @ifndef $USE_SECRET_REVEAL
 #Redeeming using CLTV refund...
 @ifndef $USE_UNIX_TIMESTAMP
 #(via block number)
-@ifndef $LOCK
-LOCK=128
-@endif
 #$LOCK
 ;
 ; Function to reverse endian (using some std functions).
@@ -42,11 +43,11 @@ LOCK=128
 *@hexmaxs=$@^x=$7_@^y=@?_@^z=_<^z,^y_!hexmaxs.loop_@^x
 @else
 #(via unix timestamp)
-@ifndef SECS
+UNIX=@unix
+@ifndef $SECS
 SECS=5
 @endif
 #$SECS seconds
-UNIX=@unix
 @endif
 @else
 @ifndef $SECRET
@@ -148,15 +149,16 @@ MILI=@$SECS*1000
 ;
 ; Note this attempt will fail due to being non-final (i.e. locktime).
 ;
+~tbitcoin getblockcount
 ~tbitcoin sendrawtransaction $RAW_TX
 ;
 ; Increase the block height then redeem the funds from the P2SH UTXO.
 ;
 NEED=@$LOCK-107
 NUL=@~tbitcoin generate $NEED
-@endif
-@endif
 ~tbitcoin getblockcount
+@endif
+@endif
 TXID=@~tbitcoin sendrawtransaction $RAW_TX
 NEW_TX=@~tbitcoin getrawtransaction $TXID
 ~tbitcoin decoderawtransaction $NEW_TX

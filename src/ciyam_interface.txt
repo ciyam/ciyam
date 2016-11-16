@@ -114,6 +114,7 @@ client_script_out_of_date "This UI is out of date - please refresh your browser 
 old_password_is_incorrect "Old Password is incorrect."
 password_has_been_changed "Password has been changed!"
 sign_in_using_credentials "Sign In Using Credentials"
+module_file_directory_note "NOTE: The files in these directories are tied to a DB and therefore should not be manually added or removed."
 please_re_check_your_email "Please re-check your email (including all junk/spam folders)."
 unknown_or_invalid_user_id "Unknown or invalid user credentials."
 see_attachment_for_details "(see attachment for details)"

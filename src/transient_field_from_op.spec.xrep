@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
 `{`$op`=`$arg_op`}\
 `{`@eq`(`$op`,`'eq`'`)`$op`=`'==`'`}\
 `{`@eq`(`$op`,`'neq`'`)`$op`=`'!=`'`}\

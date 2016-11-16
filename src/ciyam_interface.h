@@ -636,6 +636,7 @@ const char* const c_display_client_script_out_of_date = "This UI is out of date 
 const char* const c_display_old_password_is_incorrect = "Old Password is incorrect.";
 const char* const c_display_password_has_been_changed = "Password has been changed!";
 const char* const c_display_sign_in_using_credentials = "Sign In Using Credentials";
+const char* const c_display_module_file_directory_note = "NOTE: The files in the directories below this are tied to a DB and therefore should not be manually added or removed.";
 const char* const c_display_please_re_check_your_email = "Please re-check your email (including all junk/spam folders).";
 const char* const c_display_unknown_or_invalid_user_id = "Unknown or invalid user credentials.";
 const char* const c_display_see_attachment_for_details = "(see attachment for details)";
