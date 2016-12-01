@@ -60,6 +60,9 @@ const char* const c_cmd_exec = "exec";
 const char* const c_cmd_parm_exec_command = "command";
 const char* const c_cmd_parm_exec_arguments = "arguments";
 
+const char* const c_cmd_args_file = "args_file";
+const char* const c_cmd_parm_args_file_name = "name";
+
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
@@ -101,7 +104,8 @@ string application_title( app_info_request request )
 
 int g_pid = get_pid( );
 
-string g_single_command;
+string g_exec_cmd;
+string g_args_file;
 
 class ciyam_console_startup_functor : public command_functor
 {
@@ -115,13 +119,15 @@ class ciyam_console_startup_functor : public command_functor
    {
       if( command == c_cmd_exec )
       {
-         g_single_command = get_parm_val( parameters, c_cmd_parm_exec_command );
+         g_exec_cmd = get_parm_val( parameters, c_cmd_parm_exec_command );
 
          string arguments( get_parm_val( parameters, c_cmd_parm_exec_arguments ) );
 
          if( !arguments.empty( ) )
-            g_single_command += " " + arguments;
+            g_exec_cmd += " " + arguments;
       }
+      else if( command == c_cmd_args_file )
+         g_args_file = get_parm_val( parameters, c_cmd_parm_args_file_name );
    }
 };
 
@@ -580,6 +586,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_exec, 1,
           "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_args_file, 1,
+          "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
       }
 
@@ -652,10 +661,13 @@ int main( int argc, char* argv[ ] )
 
             console_command_processor processor( cmd_handler );
 
-            if( g_single_command.empty( ) )
+            if( !g_args_file.empty( ) )
+               processor.execute_command( ".session_variable @args_file \"" + g_args_file + "\"" );
+
+            if( g_exec_cmd.empty( ) )
                processor.process_commands( );
             else
-               processor.execute_command( g_single_command );
+               processor.execute_command( g_exec_cmd );
          }
          else
             throw runtime_error( "unable to connect to host '"

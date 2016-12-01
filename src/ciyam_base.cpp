@@ -228,6 +228,7 @@ const char* const c_special_variable_key_info = "@key_info";
 const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_identity = "@identity";
 const char* const c_special_variable_progress = "@progress";
+const char* const c_special_variable_args_file = "@args_file";
 const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_file_hash = "@file_hash";
 const char* const c_special_variable_file_name = "@file_name";
@@ -254,6 +255,7 @@ const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
@@ -734,7 +736,9 @@ class storage_handler
 
    void release_lock( size_t handle, bool force_removal = false );
 
+   bool has_lock_info( size_t handle ) const;
    op_lock get_lock_info( size_t handle ) const;
+
    op_lock get_lock_info( const string& lock_class, const string& lock_instance ) const;
 
    op_lock get_lock_info_for_owner( const string& lock_class, const string& lock_instance, class_base& owner ) const;
@@ -1027,6 +1031,17 @@ void storage_handler::release_lock( size_t handle, bool force_removal )
 
       TRACE_LOG( TRACE_LOCK_OPS, "[dump_locks]\n" + osstr.str( ) );
    }
+}
+
+bool storage_handler::has_lock_info( size_t handle ) const
+{
+   guard g( lock_mutex );
+
+   lock_index_const_iterator lici = lock_index.find( handle );
+   if( lici == lock_index.end( ) )
+      return false;
+
+   return true;
 }
 
 op_lock storage_handler::get_lock_info( size_t handle ) const
@@ -4732,7 +4747,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    return system( s.c_str( ) );
 }
 
-int run_script( const string& script_name, bool async, bool delay )
+int run_script( const string& script_name, bool async, bool delay, bool report_first_delayed_script_error )
 {
    int rc = -1;
 
@@ -4751,6 +4766,7 @@ int run_script( const string& script_name, bool async, bool delay )
    string arguments( process_script_args( g_scripts[ script_name ].arguments ) );
 
    auto_ptr< restorable< bool > > ap_running_script;
+
    if( gtp_session )
    {
       gtp_session->async_or_delayed_temp_file.erase( );
@@ -4775,7 +4791,22 @@ int run_script( const string& script_name, bool async, bool delay )
       }
 
       if( gtp_session )
+      {
          gtp_session->async_or_delayed_temp_file = script_args;
+
+         // NOTE: If wanting to have the first error of a delayed script reported as an error after
+         // the calling session's transaction commit then now set special variables. As each script
+         // sets a session variable to the "script args" unique file name a system variable is thus
+         // set here (to the value "1") with a matching name. If an error occurs in a command being
+         // executed by the delayed script with an "args_file" session variable that has a matching
+         // named system variable for its value and whose value is still "1" (i.e. will only record
+         // the first such error) then its value will be changed to the error message.
+         if( delay && report_first_delayed_script_error )
+         {
+            set_system_variable( script_args, "1" );
+            set_session_variable( c_special_variable_check_script_error, "1" );
+         }
+      }
 
       string is_quiet( get_raw_session_variable( c_special_variable_quiet ) );
 
@@ -5904,6 +5935,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_progress );
       break;
 
+      case e_special_var_args_file:
+      s = string( c_special_variable_args_file );
+      break;
+
       case e_special_var_crypt_key:
       s = string( c_special_variable_crypt_key );
       break;
@@ -6006,6 +6041,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_attached_file_path:
       s = string( c_special_variable_attached_file_path );
+      break;
+
+      case e_special_var_check_script_error:
+      s = string( c_special_variable_check_script_error );
       break;
 
       case e_special_var_blockchain_head_hash:
@@ -6137,17 +6176,12 @@ void set_system_variable( const string& name, const string& value )
          val = to_string( num_value );
    }
 
-   if( val.empty( ) )
-   {
-      if( g_variables.count( name ) )
-         g_variables.erase( name );
-   }
+   if( !val.empty( ) )
+      g_variables[ name ] = val;
    else
    {
       if( g_variables.count( name ) )
-         g_variables[ name ] = val;
-      else
-         g_variables.insert( make_pair( name, val ) );
+         g_variables.erase( name );
    }
 }
 
@@ -6170,15 +6204,13 @@ bool set_system_variable( const string& name, const string& value, const string&
 
    if( retval )
    {
-      if( value.empty( ) )
+      if( !value.empty( ) )
+         g_variables[ name ] = value;
+      else
       {
          if( g_variables.count( name ) )
             g_variables.erase( name );
       }
-      else if( g_variables.count( name ) )
-         g_variables[ name ] = value;
-      else
-         g_variables.insert( make_pair( name, value ) );
    }
 
    return retval;
@@ -8565,7 +8597,8 @@ string get_field_values( size_t handle,
 
    if( p_inserts && p_inserts->count( field_list.size( ) ) )
    {
-      field_values += ',';
+      if( !field_values.empty( ) )
+         field_values += ',';
 
       if( p_inserts->find( field_list.size( ) )->second == c_key_field )
       {
@@ -10527,8 +10560,36 @@ void transaction_commit( )
          ( void )rc;
       }
 
+      // NOTE: If the "args_file" session variable exists and a system variable with a name matching
+      // its value is found then it is expected that the first (if any) error reported for a command
+      // in the executed script will have replaced its value (which was initially set to "1"). Where
+      // such an error message is found it will be thrown as an exception from here (even though the
+      // transaction commit has completed and the command for this session has already been logged).
+      string script_error;
+      string check_script_error( get_raw_session_variable( c_special_variable_check_script_error ) );
+
+      for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
+      {
+         string next( gtp_session->async_or_delayed_temp_files[ i ] );
+
+         if( !check_script_error.empty( ) && script_error.empty( ) )
+         {
+            string value( get_raw_system_variable( next ) );
+
+            if( value != string( "1" ) )
+               script_error = value;
+         }
+
+         set_system_variable( next, "" );
+      }
+
       gtp_session->async_or_delayed_temp_files.clear( );
       gtp_session->async_or_delayed_system_commands.clear( );
+
+      set_session_variable( c_special_variable_check_script_error, "" );
+
+      if( !script_error.empty( ) )
+         throw runtime_error( script_error );
    }
 }
 
@@ -10564,12 +10625,18 @@ void transaction_rollback( )
 
          for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
          {
-            if( file_exists( gtp_session->async_or_delayed_temp_files[ i ] ) )
-               file_remove( gtp_session->async_or_delayed_temp_files[ i ] );
+            string next( gtp_session->async_or_delayed_temp_files[ i ] );
+
+            if( file_exists( next ) )
+               file_remove( next );
+
+            set_system_variable( next, "" );
          }
 
          gtp_session->async_or_delayed_temp_files.clear( );
          gtp_session->async_or_delayed_system_commands.clear( );
+
+         set_session_variable( c_special_variable_check_script_error, "" );
       }
    }
 }
@@ -11175,7 +11242,8 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       bool op_is_in_transaction( !gtp_session->transactions.empty( ) );
 
       if( instance_accessor.get_lock_handle( )
-       && handler.get_lock_info( instance_accessor.get_lock_handle( ) ).transaction_level != p_ods->get_transaction_level( ) )
+       && ( !handler.has_lock_info( instance_accessor.get_lock_handle( ) ) || handler.get_lock_info(
+       instance_accessor.get_lock_handle( ) ).transaction_level != p_ods->get_transaction_level( ) ) )
          throw runtime_error( "attempt to perform apply for operation commenced outside the current transaction scope" );
 
       // NOTE: If a "clone" lock had been obtained when the op was started then release it
@@ -11404,8 +11472,12 @@ void perform_instance_fetch( class_base& instance,
    bool found_in_cache = false;
    bool has_simple_keyinfo = ( key_info.find( ' ' ) == string::npos );
 
-   if( has_simple_keyinfo
-    && !gtp_session->tx_key_info.count( instance.get_class_id( ) + ":" + key_info ) )
+   bool has_tx_key_info = false;
+
+   if( has_simple_keyinfo )
+      has_tx_key_info = gtp_session->tx_key_info.count( instance.get_class_id( ) + ":" + key_info );
+
+   if( !has_tx_key_info )
       found_in_cache = fetch_instance_from_cache( instance, key_info, only_sys_fields );
 
    bool found = found_in_cache;
@@ -11421,10 +11493,11 @@ void perform_instance_fetch( class_base& instance,
 
       split_key_info( key_info, fixed_info, paging_info, order_info, true );
 
-      sql = construct_sql_select( instance,
-       field_info, order_info, query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
+      sql = construct_sql_select( instance, field_info, order_info,
+       query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
 
-      found = fetch_instance_from_db( instance, sql, only_sys_fields, false, has_simple_keyinfo );
+      found = fetch_instance_from_db( instance, sql,
+       only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
    }
 
    if( !found )

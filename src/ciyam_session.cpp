@@ -80,6 +80,8 @@ const int c_pdf_default_limit = 5000;
 
 const size_t c_max_key_append_chars = 7;
 
+const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
+
 const char* const c_log_transformation_scope_any_change = "any_change";
 const char* const c_log_transformation_scope_execute_only = "execute_only";
 const char* const c_log_transformation_scope_any_perform_op = "any_perform_op";
@@ -164,6 +166,21 @@ void set_variable( size_t handle, const string& vname,
    }
    else
       instance_set_variable( handle, "", vname, value );
+}
+
+void set_first_delayed_script_error_if_applicable( const string& error_message )
+{
+   // NOTE: The "run_script" function contains a detail note about this.
+   string args_file( get_raw_session_variable(
+    get_special_var_name( e_special_var_args_file ) ) );
+
+   if( !args_file.empty( ) )
+   {
+      string args_file_value = get_raw_system_variable( args_file );
+
+      if( args_file_value == string( "1" ) )
+         set_system_variable( args_file, error_message );
+   }
 }
 
 void check_instance_op_permission( const string& module,
@@ -3776,6 +3793,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                TRACE_LOG( ( is_auto_uid( ) ? TRACE_ANYTHING : TRACE_SESSIONS ),
                 string( "session error: " ) + x.what( ) + " [" + method_id + "]" );
 
+               set_first_delayed_script_error_if_applicable( x.what( ) );
+
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( x.what( ) );
                else
@@ -3797,15 +3816,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               TRACE_LOG( TRACE_ANYTHING, "session error: unexpected unknown exception caught [" + method_id + "]" );
+               TRACE_LOG( TRACE_ANYTHING, "session error: "
+                + string( c_unexpected_unknown_exception ) + " [" + method_id + "]" );
+
+               set_first_delayed_script_error_if_applicable( c_unexpected_unknown_exception );
 
                if( socket_handler.is_restoring( ) )
-                  socket_handler.set_restore_error( "unexpected unknown exception caught" );
+                  socket_handler.set_restore_error( c_unexpected_unknown_exception );
                else
                {
                   send_okay_response = false;
                   transaction_log_command( "" );
-                  response = string( c_response_error_prefix ) + "unexpected unknown exception caught";
+                  response = string( c_response_error_prefix ) + c_unexpected_unknown_exception;
 
                   // NOTE: As the client is expecting a response for each key provided when an
                   // an exception is thrown fill out any remaining responses with "okay more".
@@ -5109,15 +5131,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    }
    catch( ... )
    {
-      TRACE_LOG( TRACE_ANYTHING, "session error: unexpected unknown exception caught" );
+      TRACE_LOG( TRACE_ANYTHING, "session error: " + string( c_unexpected_unknown_exception ) );
 
       if( socket_handler.is_restoring( ) )
-         socket_handler.set_restore_error( "unexpected unknown exception caught" );
+         socket_handler.set_restore_error( c_unexpected_unknown_exception );
       else
       {
          send_okay_response = false;
          transaction_log_command( "" );
-         response = string( c_response_error_prefix ) + "unexpected unknown exception caught";
+         response = string( c_response_error_prefix ) + c_unexpected_unknown_exception;
       }
    }
 

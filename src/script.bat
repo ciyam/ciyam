@@ -10,7 +10,7 @@ if '%2' == '' goto skip
 echo %date% %time% [%2]>>%1.log
 
 :skip
-ciyam_client -echo -quiet -no_prompt -no_stderr < %1 >>%1.log
+ciyam_client -echo -quiet -no_prompt -no_stderr -args_file=%1 < %1 >>%1.log
 
 type %1.log >> ciyam_script.log
 

@@ -82,7 +82,15 @@ class tdatetime : public nullable_date_time
    }
 
    year get_year( ) const { return static_cast< const date_time& >( *this ).get_year( ); }
+   month get_month( ) const { return static_cast< const date_time& >( *this ).get_month( ); }
    udate get_date( ) const { return static_cast< const date_time& >( *this ).get_date( ); }
+
+   days get_day_of_year( ) const { return static_cast< const date_time& >( *this ).get_day_of_year( ); }
+
+   hour get_hour( ) const { return static_cast< const date_time& >( *this ).get_hour( ); }
+   minute get_minute( ) const { return static_cast< const date_time& >( *this ).get_minute( ); }
+   second get_second( ) const { return static_cast< const date_time& >( *this ).get_second( ); }
+   millisecond get_millisecond( ) const { return static_cast< const date_time& >( *this ).get_millisecond( ); }
 
    std::string as_string( bool use_separators = false, bool include_milliseconds = true ) const
    {
@@ -91,8 +99,6 @@ class tdatetime : public nullable_date_time
       else
          return static_cast< const date_time& >( *this ).as_string( use_separators, include_milliseconds );
    }
-
-   days get_day_of_year( ) const { return static_cast< const date_time& >( *this ).get_day_of_year( ); }
 
    days days_in_year( ) const { return static_cast< const date_time& >( *this ).days_in_year( ); }
 

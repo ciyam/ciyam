@@ -32543,7 +32543,7 @@
     <data/>
      <name>@601920_*
      <type>child
-     <extra>limit=56
+     <extra>fixed,limit=56
      <class_id>109100
      <ordering>forward
      <pclass_id>106100

@@ -3,7 +3,17 @@
 `{`@eq`(`$arg_op`,`'or`'`)`$op`=`'||`'`}\
 `{`@eq`(`$arg_op`,`'and`'`)`$op`=`'&&`'`}\
    // [(start modifier_from_other_mods)] `{`$arg_id`}
-   if( ( state & c_modifier_`{`$arg_lmodifier`} ) `{`$op`} ( state & c_modifier_`{`$arg_rmodifier`} ) )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && ( `}( state & c_modifier_`{`$arg_lmodifier`} ) `{`$op`} ( state & c_modifier_`{`$arg_rmodifier`} ) )`{`!`@eq`(`$arg_tfield`,`'`'`) )`}
       state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_from_other_mods)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start modifier_from_other_mods)] `{`$arg_id`}
+   dependents.insert( "`{`$arg_tfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
    // [(finish modifier_from_other_mods)] `{`$arg_id`}
 `}
