@@ -8821,7 +8821,7 @@
    <cid>109100
    <name>601920_name
    <type>child
-   <extra>limit=56
+   <extra>fixed,limit=56
    <actions>
    <modifiers>100:lowlight
    <view>601910

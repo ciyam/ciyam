@@ -10,7 +10,7 @@ else
  if [ $# -gt 1 ]; then
   echo $(date) [$2] >>$1.log
  fi
- ./ciyam_client -echo -quiet -no_prompt -no_stderr < $1 >>$1.log
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr -args_file=$1 < $1 >>$1.log
 
  cat $1.log >>ciyam_script.log
 

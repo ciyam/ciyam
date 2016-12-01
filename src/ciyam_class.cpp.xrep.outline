@@ -1146,7 +1146,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
    uint64_t state = 0;
 `{`?`$all_get_state_specifications`[`$all_get_state_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'folder`'`)
-`{`#folder.spec.xrep section=get_state name=\0`}\
+`{`#folder.spec.xrep section=get_state arg_id=$specification_\0_id`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_date_notification`'`)
 `{`#modifier_date_notification.spec.xrep section=get_state\
@@ -1185,7 +1185,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'modifier_from_other_mods`'`)
 `{`#modifier_from_other_mods.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_op=$specification_\0_op arg_modifier=$specification_\0_modifier\
- arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier`}\
+ arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier\
+ arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_has_variable`'`)
 `{`#modifier_has_variable.spec.xrep section=get_state\
@@ -4301,6 +4302,10 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#modifier_field_value.spec.xrep section=get_always_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
+`,\
+`@eq`(`'\1`'`,`'modifier_from_other_mods`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
+`{`#modifier_from_other_mods.spec.xrep section=get_always_required_field_names\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_past_date_time`'`)
 `{`#modifier_past_date_time.spec.xrep section=get_always_required_field_names\
