@@ -2059,7 +2059,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !context.empty( ) != found_parent_key )
             throw runtime_error( "must provide both child context and parent key or neither" );
 
-         map< int, string > field_inserts;
+         multimap< size_t, string > field_inserts;
 
          vector< string > field_list;
          if( !fields.empty( ) )
@@ -2070,7 +2070,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          vector< summary_info > summaries;
          for( size_t i = 0; i < field_list.size( ); i++ )
          {
-            if( field_list[ i ] == c_key_field )
+            if( !field_list[ i ].empty( ) && field_list[ i ][ 0 ] == '@' )
             {
                field_inserts.insert( make_pair( non_inserts, field_list[ i ] ) );
                field_list.erase( field_list.begin( ) + i );
@@ -2168,6 +2168,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
           !context.empty( ) || get_module_class_has_derivations( module, mclass ) );
 
          vector< string > default_values;
+
          if( no_default_values )
             get_field_values( handle, context, field_list, tz_name, true, false, &default_values );
 

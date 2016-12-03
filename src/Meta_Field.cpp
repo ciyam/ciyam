@@ -406,6 +406,8 @@ domain_string_max_size< 10 > g_UOM_Symbol_domain;
 string g_order_field_name;
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -2682,6 +2684,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    uint64_t get_state( ) const;
 
+   string get_state_names( ) const;
+
    const string& execute( const string& cmd_and_args );
 
    void clear_foreign_key( const string& field );
@@ -3544,6 +3548,43 @@ uint64_t Meta_Field::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_Field::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   if( state & c_modifier_Has_Enum )
+      state_names += "|" + string( "Has_Enum" );
+   if( state & c_modifier_Hide_Create_List_Field )
+      state_names += "|" + string( "Hide_Create_List_Field" );
+   if( state & c_modifier_Hide_Create_View_Field )
+      state_names += "|" + string( "Hide_Create_View_Field" );
+   if( state & c_modifier_Is_Any_Non_Text_Type )
+      state_names += "|" + string( "Is_Any_Non_Text_Type" );
+   if( state & c_modifier_Is_Encrypted )
+      state_names += "|" + string( "Is_Encrypted" );
+   if( state & c_modifier_Is_Internal )
+      state_names += "|" + string( "Is_Internal" );
+   if( state & c_modifier_Is_Non_Custom_UOM )
+      state_names += "|" + string( "Is_Non_Custom_UOM" );
+   if( state & c_modifier_Is_Not_Type_string )
+      state_names += "|" + string( "Is_Not_Type_string" );
+   if( state & c_modifier_Is_Transient )
+      state_names += "|" + string( "Is_Transient" );
+   if( state & c_modifier_Is_Type_bool )
+      state_names += "|" + string( "Is_Type_bool" );
+   if( state & c_modifier_Is_Type_date )
+      state_names += "|" + string( "Is_Type_date" );
+   if( state & c_modifier_Is_Type_datetime )
+      state_names += "|" + string( "Is_Type_datetime" );
+   if( state & c_modifier_Is_Type_string )
+      state_names += "|" + string( "Is_Type_string" );
+   if( state & c_modifier_Is_Type_time )
+      state_names += "|" + string( "Is_Type_time" );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_Field::impl::execute( const string& cmd_and_args )
@@ -7237,6 +7278,14 @@ string Meta_Field::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_Field::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_Field::get_create_instance_info( ) const
 {
    return "";
@@ -8376,6 +8425,8 @@ void Meta_Field::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    g_view_access_restrict_enum.insert( 0 );
    g_view_access_restrict_enum.insert( 1 );

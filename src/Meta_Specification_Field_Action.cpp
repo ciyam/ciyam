@@ -447,6 +447,8 @@ domain_string_max_size< 100 > g_New_Record_FK_Value_domain;
 string g_order_field_name;
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -863,6 +865,8 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
    uint64_t get_state( ) const;
 
+   string get_state_names( ) const;
+
    const string& execute( const string& cmd_and_args );
 
    void clear_foreign_key( const string& field );
@@ -1165,6 +1169,109 @@ uint64_t Meta_Specification_Field_Action::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_Specification_Field_Action::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   if( state & c_modifier_Hide_Child_Relationship )
+      state_names += "|" + string( "Hide_Child_Relationship" );
+   if( state & c_modifier_Hide_Enum )
+      state_names += "|" + string( "Hide_Enum" );
+   if( state & c_modifier_Hide_Enum_Item )
+      state_names += "|" + string( "Hide_Enum_Item" );
+   if( state & c_modifier_Hide_Enum_Item_2 )
+      state_names += "|" + string( "Hide_Enum_Item_2" );
+   if( state & c_modifier_Hide_Enum_Item_3 )
+      state_names += "|" + string( "Hide_Enum_Item_3" );
+   if( state & c_modifier_Hide_Enum_Item_4 )
+      state_names += "|" + string( "Hide_Enum_Item_4" );
+   if( state & c_modifier_Hide_Enum_Item_5 )
+      state_names += "|" + string( "Hide_Enum_Item_5" );
+   if( state & c_modifier_Hide_Field )
+      state_names += "|" + string( "Hide_Field" );
+   if( state & c_modifier_Hide_Modifier )
+      state_names += "|" + string( "Hide_Modifier" );
+   if( state & c_modifier_Hide_Options )
+      state_names += "|" + string( "Hide_Options" );
+   if( state & c_modifier_Hide_Other_Class )
+      state_names += "|" + string( "Hide_Other_Class" );
+   if( state & c_modifier_Hide_Other_Class_Field )
+      state_names += "|" + string( "Hide_Other_Class_Field" );
+   if( state & c_modifier_Hide_Other_Field )
+      state_names += "|" + string( "Hide_Other_Field" );
+   if( state & c_modifier_Hide_Other_Field_2 )
+      state_names += "|" + string( "Hide_Other_Field_2" );
+   if( state & c_modifier_Hide_Other_Modifier )
+      state_names += "|" + string( "Hide_Other_Modifier" );
+   if( state & c_modifier_Hide_Other_Modifier_2 )
+      state_names += "|" + string( "Hide_Other_Modifier_2" );
+   if( state & c_modifier_Hide_Other_Permission )
+      state_names += "|" + string( "Hide_Other_Permission" );
+   if( state & c_modifier_Hide_Other_Permission_2 )
+      state_names += "|" + string( "Hide_Other_Permission_2" );
+   if( state & c_modifier_Hide_Other_Procedure )
+      state_names += "|" + string( "Hide_Other_Procedure" );
+   if( state & c_modifier_Hide_Other_Procedure_2 )
+      state_names += "|" + string( "Hide_Other_Procedure_2" );
+   if( state & c_modifier_Hide_Other_Source_Child )
+      state_names += "|" + string( "Hide_Other_Source_Child" );
+   if( state & c_modifier_Hide_Other_Source_Child_2 )
+      state_names += "|" + string( "Hide_Other_Source_Child_2" );
+   if( state & c_modifier_Hide_Permission )
+      state_names += "|" + string( "Hide_Permission" );
+   if( state & c_modifier_Hide_Procedure )
+      state_names += "|" + string( "Hide_Procedure" );
+   if( state & c_modifier_Hide_Procedure_Arg )
+      state_names += "|" + string( "Hide_Procedure_Arg" );
+   if( state & c_modifier_Hide_Procedure_Arg_2 )
+      state_names += "|" + string( "Hide_Procedure_Arg_2" );
+   if( state & c_modifier_Hide_Procedure_Arg_3 )
+      state_names += "|" + string( "Hide_Procedure_Arg_3" );
+   if( state & c_modifier_Hide_Source_Child )
+      state_names += "|" + string( "Hide_Source_Child" );
+   if( state & c_modifier_Hide_Source_Class )
+      state_names += "|" + string( "Hide_Source_Class" );
+   if( state & c_modifier_Hide_Source_Field )
+      state_names += "|" + string( "Hide_Source_Field" );
+   if( state & c_modifier_Hide_Source_Grandchild )
+      state_names += "|" + string( "Hide_Source_Grandchild" );
+   if( state & c_modifier_Hide_Source_Parent )
+      state_names += "|" + string( "Hide_Source_Parent" );
+   if( state & c_modifier_Hide_Test_Child )
+      state_names += "|" + string( "Hide_Test_Child" );
+   if( state & c_modifier_Hide_Test_Field )
+      state_names += "|" + string( "Hide_Test_Field" );
+   if( state & c_modifier_Hide_Test_Parent )
+      state_names += "|" + string( "Hide_Test_Parent" );
+   if( state & c_modifier_Hide_Test_Value )
+      state_names += "|" + string( "Hide_Test_Value" );
+   if( state & c_modifier_Hide_Use_Source_Parent )
+      state_names += "|" + string( "Hide_Use_Source_Parent" );
+   if( state & c_modifier_Hide_Use_Test_Parent_Child )
+      state_names += "|" + string( "Hide_Use_Test_Parent_Child" );
+   if( state & c_modifier_Hide_Value )
+      state_names += "|" + string( "Hide_Value" );
+   if( state & c_modifier_Is_Comment )
+      state_names += "|" + string( "Is_Comment" );
+   if( state & c_modifier_Protect_Child_Relationship )
+      state_names += "|" + string( "Protect_Child_Relationship" );
+   if( state & c_modifier_Protect_Class )
+      state_names += "|" + string( "Protect_Class" );
+   if( state & c_modifier_Protect_Enum )
+      state_names += "|" + string( "Protect_Enum" );
+   if( state & c_modifier_Protect_Other_Class )
+      state_names += "|" + string( "Protect_Other_Class" );
+   if( state & c_modifier_Protect_Procedure )
+      state_names += "|" + string( "Protect_Procedure" );
+   if( state & c_modifier_Protect_Source_Parent )
+      state_names += "|" + string( "Protect_Source_Parent" );
+   if( state & c_modifier_Hide_Record_Create_Info )
+      state_names += "|" + string( "Hide_Record_Create_Info" );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_Specification_Field_Action::impl::execute( const string& cmd_and_args )
@@ -2268,6 +2375,14 @@ string Meta_Specification_Field_Action::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_Specification_Field_Action::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_Specification_Field_Action::get_create_instance_info( ) const
 {
    return "";
@@ -2850,6 +2965,8 @@ void Meta_Specification_Field_Action::static_class_init( const char* p_module_na
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    Meta_Specification::static_insert_derivation( "Meta_Specification_Field_Action" );
    g_field_action_create_access_restriction_enum.insert( 0 );

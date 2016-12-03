@@ -358,9 +358,9 @@ class CLASS_BASE_DECL_SPEC class_base
 
    const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
-   std::string get_raw_variable( const std::string& name ) const;
-   std::string get_variable( const std::string& name_or_expr ) const;
+   virtual std::string get_raw_variable( const std::string& name ) const;
 
+   std::string get_variable( const std::string& name_or_expr ) const;
    void set_variable( const std::string& name, const std::string& value );
 
    bool has_field_changed( int field ) const;

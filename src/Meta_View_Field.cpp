@@ -422,6 +422,8 @@ aggregate_domain< string,
 string g_order_field_name( "Order" );
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -2241,6 +2243,8 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    uint64_t get_state( ) const;
 
+   string get_state_names( ) const;
+
    const string& execute( const string& cmd_and_args );
 
    void clear_foreign_key( const string& field );
@@ -3311,6 +3315,45 @@ uint64_t Meta_View_Field::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_View_Field::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   if( state & c_modifier_Hide_FK_Fields )
+      state_names += "|" + string( "Hide_FK_Fields" );
+   if( state & c_modifier_Hide_New_Value )
+      state_names += "|" + string( "Hide_New_Value" );
+   if( state & c_modifier_Hide_Non_FK_Fields )
+      state_names += "|" + string( "Hide_Non_FK_Fields" );
+   if( state & c_modifier_Is_Field )
+      state_names += "|" + string( "Is_Field" );
+   if( state & c_modifier_Is_File_Or_Image )
+      state_names += "|" + string( "Is_File_Or_Image" );
+   if( state & c_modifier_Is_Key )
+      state_names += "|" + string( "Is_Key" );
+   if( state & c_modifier_Is_Not_Date )
+      state_names += "|" + string( "Is_Not_Date" );
+   if( state & c_modifier_Is_Not_Enum )
+      state_names += "|" + string( "Is_Not_Enum" );
+   if( state & c_modifier_Is_Not_Image )
+      state_names += "|" + string( "Is_Not_Image" );
+   if( state & c_modifier_Is_Print_Version )
+      state_names += "|" + string( "Is_Print_Version" );
+   if( state & c_modifier_Is_Tab )
+      state_names += "|" + string( "Is_Tab" );
+   if( state & c_modifier_Protect_Access_Restriction )
+      state_names += "|" + string( "Protect_Access_Restriction" );
+   if( state & c_modifier_Protect_Access_Scope )
+      state_names += "|" + string( "Protect_Access_Scope" );
+   if( state & c_modifier_Protect_Change_Restriction )
+      state_names += "|" + string( "Protect_Change_Restriction" );
+   if( state & c_modifier_Protect_Change_Scope )
+      state_names += "|" + string( "Protect_Change_Scope" );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_View_Field::impl::execute( const string& cmd_and_args )
@@ -6152,6 +6195,14 @@ string Meta_View_Field::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_View_Field::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_View_Field::get_create_instance_info( ) const
 {
    return "";
@@ -7346,6 +7397,8 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    g_view_field_restrict_enum.insert( 0 );
    g_view_field_restrict_enum.insert( 1 );

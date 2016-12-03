@@ -243,6 +243,7 @@ const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_skip_update = "@skip_update";
+const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_rewind_height = "@rewind_height";
@@ -5995,6 +5996,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_skip_update );
       break;
 
+      case e_special_var_state_names:
+      s = string( c_special_variable_state_names );
+      break;
+
       case e_special_var_transaction:
       s = string( c_special_variable_transaction );
       break;
@@ -8479,7 +8484,7 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  const string& tz_name, bool is_default, bool as_csv, vector< string >* p_raw_values,
- const map< int, string >* p_inserts, const map< string, string >* p_replace_map,
+ const multimap< size_t, string >* p_inserts, const map< string, string >* p_replace_map,
  const vector< string >* p_omit_matching, bool decrypt_for_blockchain_minter )
 {
    string field_values;
@@ -8512,24 +8517,40 @@ string get_field_values( size_t handle,
 
       string next_value;
 
-      if( p_inserts && p_inserts->count( i ) )
+      size_t num_inserts = 0;
+
+      if( p_inserts )
+         num_inserts = p_inserts->count( i );
+
+      for( size_t n = 0; n < num_inserts; n++ )
       {
          if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
             field_values += ',';
 
-         if( p_inserts->find( i )->second == c_key_field )
+         multimap< size_t, string >::const_iterator ci = p_inserts->find( i );
+
+         advance( ci, n );
+
+         string insert_name( ci->second );
+
+         if( insert_name == c_key_field )
          {
             if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
                add_next_value( as_csv, key_value, field_values );
             else
                add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
          }
+         else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
+            add_next_value( as_csv,
+             instance_get_variable( handle, parent_context, insert_name ), field_values );
          else
-            add_next_value( as_csv, p_inserts->find( i )->second, field_values );
+            add_next_value( as_csv, insert_name, field_values );
       }
 
       if( field == c_key_field )
          next_value = key_value;
+      else if( !field.empty( ) && field[ 0 ] == '@' )
+         next_value = instance_get_variable( handle, context, field );
       else if( field != c_ignore_field )
          next_value = execute_object_command( handle, context, "get " + field );
 
@@ -8595,20 +8616,34 @@ string get_field_values( size_t handle,
       }
    }
 
-   if( p_inserts && p_inserts->count( field_list.size( ) ) )
+   size_t num_inserts = 0;
+
+   if( p_inserts )
+      num_inserts = p_inserts->count( field_list.size( ) );
+
+   for( size_t n = 0; n < num_inserts; n++ )
    {
       if( !field_values.empty( ) )
          field_values += ',';
 
-      if( p_inserts->find( field_list.size( ) )->second == c_key_field )
+      multimap< size_t, string >::const_iterator ci = p_inserts->find( field_list.size( ) );
+
+      advance( ci, n );
+
+      string insert_name( ci->second );
+
+      if( insert_name == c_key_field )
       {
          if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
             add_next_value( as_csv, key_value, field_values );
          else
             add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
       }
+      else if( !insert_name.empty( ) && insert_name[ 0 ] == '@' )
+         add_next_value( as_csv,
+          instance_get_variable( handle, parent_context, insert_name ), field_values );
       else
-         add_next_value( as_csv, p_inserts->find( field_list.size( ) )->second, field_values );
+         add_next_value( as_csv, insert_name, field_values );
    }
 
    return field_values;

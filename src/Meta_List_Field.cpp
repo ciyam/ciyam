@@ -530,6 +530,8 @@ domain_string_max_size< 100 > g_Select_Key_Exclusions_domain;
 string g_order_field_name( "Order" );
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -2778,6 +2780,8 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    uint64_t get_state( ) const;
 
+   string get_state_names( ) const;
+
    const string& execute( const string& cmd_and_args );
 
    void clear_foreign_key( const string& field );
@@ -4173,6 +4177,77 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_List_Field::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   if( state & c_modifier_Hide_Child_Rel_FK_Fields )
+      state_names += "|" + string( "Hide_Child_Rel_FK_Fields" );
+   if( state & c_modifier_Hide_Child_Rel_Non_FK_Field )
+      state_names += "|" + string( "Hide_Child_Rel_Non_FK_Field" );
+   if( state & c_modifier_Hide_Child_Rel_Select_Specifics )
+      state_names += "|" + string( "Hide_Child_Rel_Select_Specifics" );
+   if( state & c_modifier_Hide_Exclude_In_Use_FK )
+      state_names += "|" + string( "Hide_Exclude_In_Use_FK" );
+   if( state & c_modifier_Hide_FK_Fields )
+      state_names += "|" + string( "Hide_FK_Fields" );
+   if( state & c_modifier_Hide_Fields_For_Trivial_Field )
+      state_names += "|" + string( "Hide_Fields_For_Trivial_Field" );
+   if( state & c_modifier_Hide_For_Child_Rel_Select )
+      state_names += "|" + string( "Hide_For_Child_Rel_Select" );
+   if( state & c_modifier_Hide_For_Restriction_Field )
+      state_names += "|" + string( "Hide_For_Restriction_Field" );
+   if( state & c_modifier_Hide_Link_Empty_Restriction )
+      state_names += "|" + string( "Hide_Link_Empty_Restriction" );
+   if( state & c_modifier_Hide_Link_Permission_Field )
+      state_names += "|" + string( "Hide_Link_Permission_Field" );
+   if( state & c_modifier_Hide_Link_Specifics )
+      state_names += "|" + string( "Hide_Link_Specifics" );
+   if( state & c_modifier_Hide_Link_Type )
+      state_names += "|" + string( "Hide_Link_Type" );
+   if( state & c_modifier_Hide_Non_FK_Field )
+      state_names += "|" + string( "Hide_Non_FK_Field" );
+   if( state & c_modifier_Hide_Non_Procedure_Fields )
+      state_names += "|" + string( "Hide_Non_Procedure_Fields" );
+   if( state & c_modifier_Hide_Non_Simple_Fields )
+      state_names += "|" + string( "Hide_Non_Simple_Fields" );
+   if( state & c_modifier_Hide_Procedure_Fields )
+      state_names += "|" + string( "Hide_Procedure_Fields" );
+   if( state & c_modifier_Hide_Restriction_Field )
+      state_names += "|" + string( "Hide_Restriction_Field" );
+   if( state & c_modifier_Hide_Restriction_Spec )
+      state_names += "|" + string( "Hide_Restriction_Spec" );
+   if( state & c_modifier_Hide_Restriction_Value )
+      state_names += "|" + string( "Hide_Restriction_Value" );
+   if( state & c_modifier_Hide_Search_Option_Limit )
+      state_names += "|" + string( "Hide_Search_Option_Limit" );
+   if( state & c_modifier_Hide_Select_Specifics )
+      state_names += "|" + string( "Hide_Select_Specifics" );
+   if( state & c_modifier_Hide_Sort_Manually )
+      state_names += "|" + string( "Hide_Sort_Manually" );
+   if( state & c_modifier_Hide_Switch_Type )
+      state_names += "|" + string( "Hide_Switch_Type" );
+   if( state & c_modifier_Hide_View_Parent_Extra )
+      state_names += "|" + string( "Hide_View_Parent_Extra" );
+   if( state & c_modifier_Is_File_Or_Image )
+      state_names += "|" + string( "Is_File_Or_Image" );
+   if( state & c_modifier_Is_Non_Instance_Procedure )
+      state_names += "|" + string( "Is_Non_Instance_Procedure" );
+   if( state & c_modifier_Is_Not_Image )
+      state_names += "|" + string( "Is_Not_Image" );
+   if( state & c_modifier_Is_Not_Restrict_Search )
+      state_names += "|" + string( "Is_Not_Restrict_Search" );
+   if( state & c_modifier_Is_Not_View_Child )
+      state_names += "|" + string( "Is_Not_View_Child" );
+   if( state & c_modifier_Is_Restrict_Search )
+      state_names += "|" + string( "Is_Restrict_Search" );
+   if( state & c_modifier_Protect_Access )
+      state_names += "|" + string( "Protect_Access" );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_List_Field::impl::execute( const string& cmd_and_args )
@@ -7818,6 +7893,14 @@ string Meta_List_Field::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_List_Field::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_List_Field::get_create_instance_info( ) const
 {
    return "";
@@ -9412,6 +9495,8 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    g_list_field_restrict_enum.insert( 0 );
    g_list_field_restrict_enum.insert( 1 );

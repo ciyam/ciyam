@@ -120,6 +120,8 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
 
    size_t get_class_type( ) const { return static_class_type( ); }
 
+   std::string get_raw_variable( const std::string& name ) const;
+
    std::string get_create_instance_info( ) const;
    std::string get_update_instance_info( ) const;
    std::string get_destroy_instance_info( ) const;
