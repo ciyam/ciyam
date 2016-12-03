@@ -113,6 +113,8 @@ domain_string_max_size< 30 > g_Next_domain;
 string g_order_field_name;
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -328,6 +330,8 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
    bool is_field_default( int field ) const;
 
    uint64_t get_state( ) const;
+
+   string get_state_names( ) const;
 
    const string& execute( const string& cmd_and_args );
 
@@ -567,6 +571,14 @@ uint64_t Meta_Auto_Code::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_Auto_Code::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_Auto_Code::impl::execute( const string& cmd_and_args )
@@ -1377,6 +1389,14 @@ string Meta_Auto_Code::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_Auto_Code::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_Auto_Code::get_create_instance_info( ) const
 {
    return "";
@@ -1710,6 +1730,8 @@ void Meta_Auto_Code::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

@@ -533,14 +533,18 @@ std::string CIYAM_BASE_DECL_SPEC get_field_type_name(
  size_t handle, const std::string& context, const std::string& id_or_name,
  bool* p_is_encrypted = 0, bool* p_is_transient = 0, bool* p_is_file_field = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol( size_t handle, const std::string& context, const std::string& id_or_name );
-std::string CIYAM_BASE_DECL_SPEC get_field_display_name( size_t handle, const std::string& context, const std::string& id_or_name );
+std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol(
+ size_t handle, const std::string& context, const std::string& id_or_name );
 
-std::string CIYAM_BASE_DECL_SPEC get_field_values(
- size_t handle, const std::string& parent_context,
- const std::vector< std::string >& field_list, const std::string& tz_name,
- bool is_default = false, bool as_csv = false, std::vector< std::string >* p_raw_values = 0,
- const std::map< int, std::string >* p_inserts = 0, const std::map< std::string, std::string >* p_replace_map = 0,
+std::string CIYAM_BASE_DECL_SPEC get_field_display_name(
+ size_t handle, const std::string& context, const std::string& id_or_name );
+
+std::string CIYAM_BASE_DECL_SPEC get_field_values( size_t handle,
+ const std::string& parent_context, const std::vector< std::string >& field_list,
+ const std::string& tz_name, bool is_default = false, bool as_csv = false,
+ std::vector< std::string >* p_raw_values = 0,
+ const std::multimap< size_t, std::string >* p_inserts = 0,
+ const std::map< std::string, std::string >* p_replace_map = 0,
  const std::vector< std::string >* p_omit_matching = 0, bool decrypt_for_blockchain_minter = false );
 
 void CIYAM_BASE_DECL_SPEC set_any_field_ids_to_names( size_t handle,

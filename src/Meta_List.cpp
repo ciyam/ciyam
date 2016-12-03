@@ -467,6 +467,8 @@ domain_string_max_size< 100 > g_Variation_Name_domain;
 string g_order_field_name;
 string g_owner_field_name;
 
+string g_state_names_variable;
+
 set< string > g_derivations;
 
 set< string > g_file_field_ids;
@@ -2188,6 +2190,8 @@ struct Meta_List::impl : public Meta_List_command_handler
    bool is_field_default( int field ) const;
 
    uint64_t get_state( ) const;
+
+   string get_state_names( ) const;
 
    const string& execute( const string& cmd_and_args );
 
@@ -4241,6 +4245,43 @@ uint64_t Meta_List::impl::get_state( ) const
    // [<finish get_state>]
 
    return state;
+}
+
+string Meta_List::impl::get_state_names( ) const
+{
+   string state_names;
+   uint64_t state = get_state( );
+
+   if( state & c_modifier_Anonymous_Disallowed )
+      state_names += "|" + string( "Anonymous_Disallowed" );
+   if( state & c_modifier_Cannot_Text_Search )
+      state_names += "|" + string( "Cannot_Text_Search" );
+   if( state & c_modifier_Is_Admin )
+      state_names += "|" + string( "Is_Admin" );
+   if( state & c_modifier_Is_Child )
+      state_names += "|" + string( "Is_Child" );
+   if( state & c_modifier_Is_Home )
+      state_names += "|" + string( "Is_Home" );
+   if( state & c_modifier_Is_Not_Child )
+      state_names += "|" + string( "Is_Not_Child" );
+   if( state & c_modifier_Is_Not_Search_Style )
+      state_names += "|" + string( "Is_Not_Search_Style" );
+   if( state & c_modifier_Is_Not_Unlimited )
+      state_names += "|" + string( "Is_Not_Unlimited" );
+   if( state & c_modifier_PDF_List_Is_Custom )
+      state_names += "|" + string( "PDF_List_Is_Custom" );
+   if( state & c_modifier_PDF_List_Is_None )
+      state_names += "|" + string( "PDF_List_Is_None" );
+   if( state & c_modifier_Protect_Access )
+      state_names += "|" + string( "Protect_Access" );
+   if( state & c_modifier_Protect_Create )
+      state_names += "|" + string( "Protect_Create" );
+   if( state & c_modifier_Protect_Destroy )
+      state_names += "|" + string( "Protect_Destroy" );
+   if( state & c_modifier_Will_Sort_Rows_In_UI )
+      state_names += "|" + string( "Will_Sort_Rows_In_UI" );
+
+   return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
 
 const string& Meta_List::impl::execute( const string& cmd_and_args )
@@ -7455,6 +7496,14 @@ string Meta_List::get_display_name( bool plural ) const
    return get_module_string( key );
 }
 
+string Meta_List::get_raw_variable( const std::string& name ) const
+{
+   if( name == g_state_names_variable )
+      return p_impl->get_state_names( );
+   else
+      return class_base::get_raw_variable( name );
+}
+
 string Meta_List::get_create_instance_info( ) const
 {
    return "";
@@ -8786,6 +8835,8 @@ void Meta_List::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    g_list_restrict_enum.insert( 0 );
    g_list_restrict_enum.insert( 1 );
