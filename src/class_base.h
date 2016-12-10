@@ -1499,6 +1499,11 @@ bool CLASS_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
+std::string CLASS_BASE_DECL_SPEC create_new_address( const std::string& ext_key, const std::string& label );
+
+std::string CLASS_BASE_DECL_SPEC send_funds_to_address(
+ const std::string& ext_key, const std::string& address, const numeric& amount );
+
 void CLASS_BASE_DECL_SPEC import_address(
  const std::string& ext_key, const std::string& address, const std::string& label );
 

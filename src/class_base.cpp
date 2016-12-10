@@ -4949,6 +4949,108 @@ bool can_create_address( const string& ext_key )
    return !client_info.script_name.empty( );
 }
 
+string create_new_address( const string& ext_key, const string& label )
+{
+   string s;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+   if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "getnewaddress \"" + label + "\"";
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for create_new_address" );
+   }
+
+   if( file_exists( tmp_file_name ) )
+   {
+      string error, content( buffer_file( tmp_file_name ) );
+
+      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
+
+      file_remove( tmp_file_name );
+
+      if( !error.empty( ) )
+      {
+         string::size_type pos = error.find_first_of( "\r\n" );
+
+         throw runtime_error( error.substr( 0, pos ) );
+      }
+
+      string::size_type pos = content.find_first_of( "\r\n" );
+
+      s = content.substr( 0, pos );
+   }
+
+   return s;
+}
+
+string send_funds_to_address( const string& ext_key, const string& address, const numeric& amount )
+{
+   string s;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+   if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "sendtoaddress \"" + address + "\" " + to_string( amount );
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for send_funds_to_address" );
+   }
+
+   if( file_exists( tmp_file_name ) )
+   {
+      string error, content( buffer_file( tmp_file_name ) );
+
+      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
+
+      file_remove( tmp_file_name );
+
+      if( !error.empty( ) )
+      {
+         string::size_type pos = error.find_first_of( "\r\n" );
+
+         throw runtime_error( error.substr( 0, pos ) );
+      }
+
+      string::size_type pos = content.find_first_of( "\r\n" );
+
+      s = content.substr( 0, pos );
+   }
+
+   return s;
+}
+
 void import_address( const string& ext_key, const string& address, const string& label )
 {
    string s;
@@ -4993,9 +5095,13 @@ void import_address( const string& ext_key, const string& address, const string&
 
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find_first_of( "\r\n" );
+         string::size_type pos = error.find( "\"code\":-4," ); // i.e. ignore if already known to the wallet
 
-         throw runtime_error( error.substr( 0, pos ) );
+         if( pos == string::npos )
+         {
+            pos = error.find_first_of( "\r\n" );
+            throw runtime_error( error.substr( 0, pos ) );
+         }
       }
    }
 }

@@ -2851,6 +2851,9 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
    if( get_obj( ).Extra( ) == c_enum_field_extra_notes )
       Result = e_sql_char_type_very_large;
 
+   if( get_obj( ).Extra( ) == c_enum_field_extra_manual_link )
+      Result = e_sql_char_type_very_large;
+
    if( get_obj( ).Type( ).Max_Size( )
     && get_obj( ).Type( ).Max_Size( ) <= c_sql_std_char_size )
       Result = e_sql_char_type_std;
