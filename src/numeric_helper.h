@@ -35,6 +35,14 @@ template< > inline numeric from_string< numeric >( const std::string& s )
    return n;
 }
 
+template< > inline std::string to_formatted_string< numeric >( const numeric& n, const char* p_fmt )
+{
+   if( !p_fmt || std::string( p_fmt ).empty( ) )
+      return to_string( n );
+   else
+      return format_numeric( n, p_fmt );
+}
+
 template< > inline int to_integer( const numeric& n ) { return ( int )n.as_double( ); }
 
 template< > inline bool is_valid_str_val< numeric >( const std::string& s ) { return is_valid_numeric( s ); }

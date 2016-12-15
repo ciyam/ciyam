@@ -298,6 +298,18 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+struct validate_formatter
+{
+   string get( const string& name ) { return masks[ name ]; }
+
+   void set( const string& name, const string& mask )
+   {
+      masks.insert( make_pair( name, mask ) );
+   }
+
+   map< string, string > masks;
+};
+
 string g_default_Access_Permission = string( );
 int g_default_Access_Restriction = int( 0 );
 bool g_default_Allow_Copy_Action = bool( 0 );
@@ -2337,6 +2349,8 @@ void Meta_View::impl::validate(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
    string error_message;
+   validate_formatter vf;
+
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )

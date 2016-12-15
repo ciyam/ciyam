@@ -464,6 +464,18 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+struct validate_formatter
+{
+   string get( const string& name ) { return masks[ name ]; }
+
+   void set( const string& name, const string& mask )
+   {
+      masks.insert( make_pair( name, mask ) );
+   }
+
+   map< string, string > masks;
+};
+
 int g_default_Access_Restriction = int( 0 );
 string g_default_Clone_Key = string( );
 int g_default_Create_Type = int( 0 );
@@ -1376,6 +1388,8 @@ void Meta_Specification_Field_Action::impl::validate(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
+
    if( !is_null( v_Clone_Key )
     && ( v_Clone_Key != g_default_Clone_Key
     || !value_will_be_provided( c_field_name_Clone_Key ) )

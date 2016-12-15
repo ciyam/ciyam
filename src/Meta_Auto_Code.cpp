@@ -130,6 +130,18 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+struct validate_formatter
+{
+   string get( const string& name ) { return masks[ name ]; }
+
+   void set( const string& name, const string& mask )
+   {
+      masks.insert( make_pair( name, mask ) );
+   }
+
+   map< string, string > masks;
+};
+
 bool g_default_Exhausted = bool( 0 );
 string g_default_Mask = string( );
 string g_default_Next = string( );
@@ -664,6 +676,8 @@ void Meta_Auto_Code::impl::validate(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Mask ) ) ) ) );
 
    string error_message;
+   validate_formatter vf;
+
    if( !is_null( v_Mask )
     && ( v_Mask != g_default_Mask
     || !value_will_be_provided( c_field_name_Mask ) )

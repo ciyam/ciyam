@@ -202,6 +202,18 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+struct validate_formatter
+{
+   string get( const string& name ) { return masks[ name ]; }
+
+   void set( const string& name, const string& mask )
+   {
+      masks.insert( make_pair( name, mask ) );
+   }
+
+   map< string, string > masks;
+};
+
 string g_default_Class = string( );
 int g_default_Extra = int( 0 );
 string g_default_Field = string( );
@@ -1110,6 +1122,9 @@ void Meta_Modifier_Affect::impl::validate(
       p_validation_errors->insert( validation_error_value_type( c_field_name_Modifier,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
+
+   string error_message;
+   validate_formatter vf;
 
    if( !g_modifier_affect_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
