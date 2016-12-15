@@ -237,6 +237,18 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+struct validate_formatter
+{
+   string get( const string& name ) { return masks[ name ]; }
+
+   void set( const string& name, const string& mask )
+   {
+      masks.insert( make_pair( name, mask ) );
+   }
+
+   map< string, string > masks;
+};
+
 string g_default_Actions = string( "136410" );
 string g_default_Install_Details = string( );
 bool g_default_Installed = bool( 0 );
@@ -2014,6 +2026,8 @@ void Meta_Package::impl::validate(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Package_Type ) ) ) ) );
 
    string error_message;
+   validate_formatter vf;
+
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )

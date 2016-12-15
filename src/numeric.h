@@ -237,7 +237,7 @@ inline bool operator !=( const numeric& lhs, const numeric& rhs ) { return !( lh
 numeric abs( const numeric& n );
 numeric sqrt( const numeric& n );
 
-std::string format_numeric( const numeric& n, const std::string& mask,
+std::string NUMERIC_DECL_SPEC format_numeric( const numeric& n, const std::string& mask,
  const char* p_decimal_point = 0, const char* p_plus = 0, const char* p_minus = 0,
  const char* p_group_separator = 0, const char* p_plus_left = 0, const char* p_plus_right = 0,
  const char* p_minus_left = 0, const char* p_minus_right = 0, const char* p_currency_symbol = 0 );

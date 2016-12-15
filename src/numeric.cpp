@@ -1011,6 +1011,9 @@ string format_numeric( const numeric& n, const string& mask,
    {
       whole_digits = basic_output.substr( 0, pos );
       decimal_digits = basic_output.substr( pos + 1 );
+
+      while( decimal_digits.size( ) && decimal_digits[ decimal_digits.size( ) - 1 ] == '0' )
+         decimal_digits.erase( decimal_digits.size( ) - 1 );
    }
    else
       whole_digits = basic_output;

@@ -11083,7 +11083,7 @@ void begin_instance_op( instance_op op, class_base& instance,
              make_pair( c_str_parm_version_mismatch_found, instance.get_version_info( ) ),
              make_pair( c_str_parm_version_mismatch_expected, ver_expected ) ) );
 
-         if( op == e_instance_op_update
+         if( op == e_instance_op_update && !storage_locked_for_admin( )
           && ( !internal_modification
           && ( instance.get_state( ) & c_state_uneditable )
           && !( instance.get_state( ) & c_state_ignore_uneditable ) ) )

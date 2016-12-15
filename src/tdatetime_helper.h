@@ -140,11 +140,14 @@ template< > inline tdatetime from_string< tdatetime >( const std::string& s )
    return tdt;
 }
 
-template< > inline std::string to_formatted_string< tdatetime >( const tdatetime& tdt )
+template< > inline std::string to_formatted_string< tdatetime >( const tdatetime& tdt, const char* p_fmt )
 {
+   ( void )p_fmt;
+
    std::string s;
    if( !tdt.is_null( ) )
-      s = to_formatted_string( *tdt );
+      s = to_formatted_string( *tdt, p_fmt );
+
    return s;
 }
 
