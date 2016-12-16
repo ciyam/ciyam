@@ -70,8 +70,11 @@ const int c_max_pin_time_difference = 30;
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
+const int c_auto_refresh_seconds_hello = 3;
 const int c_auto_refresh_seconds_local = 5;
 const int c_auto_refresh_seconds_remote = 10;
+
+const int c_warn_refresh_seconds = c_timeout_seconds - 30;
 
 const char* const c_checked = "@@checked";
 const char* const c_app_name = "@@app_name";
@@ -2600,7 +2603,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                extra_content << "<p align=\"center\"><b>"
                 << GDS( c_display_welcome_aboard ) << " " << req_username << " !</p>\n";
 
-               extra_content_func += "auto_refresh_seconds = 3;\nauto_refresh( );";
+               extra_content_func += "auto_refresh_seconds = "
+                + to_string( c_auto_refresh_seconds_hello ) + ";\nauto_refresh( );";
             }
          }
 
@@ -3094,6 +3098,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       if( !is_in_edit && has_any_changing_records )
       {
          string seconds;
+
          if( p_session_info->ip_addr == string( c_local_ip_addr ) )
             seconds = to_string( c_auto_refresh_seconds_local );
          else
@@ -3209,9 +3214,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       {
          // NOTE: If editing then the timeout warning needs to result in a 'cont' action
          // (rather than just a page refresh) to ensure data entered/modified is not lost.
-         if( !edit_timeout_func.empty( ) )
+         if( !is_in_edit )
+            extra_content_func += "warn_refresh_func = '';\n";
+         else
             extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
-         extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
+
+         extra_content_func += "warn_refresh_seconds = " + to_string( c_warn_refresh_seconds ) + ";\n";
          extra_content_func += "warn_refresh( );";
       }
 

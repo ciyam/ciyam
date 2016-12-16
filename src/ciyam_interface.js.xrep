@@ -92,9 +92,8 @@ var extra_values = '';
 
 var warn_refresh_func = '';
 
-var auto_refresh_seconds = 30;
-var warn_refresh_default = 550;
-var warn_refresh_seconds = warn_refresh_default;
+var auto_refresh_seconds = 10;
+var warn_refresh_seconds = 1150;
 
 var warn_refresh_timer_id = 0;
 
