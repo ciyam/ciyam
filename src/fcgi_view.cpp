@@ -637,9 +637,9 @@ bool output_view_form( ostream& os, const string& act,
          is_record_owner = true;
    }
 
-   // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
-   if( source.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
-      is_record_owner = true;
+   // NOTE: If is "user_info" then set "is_record_owner" according to the record and current user's key.
+   if( source.vici->second->id == get_storage_info( ).user_info_view_id )
+      is_record_owner = ( data == sess_info.user_key );
 
    // NOTE: If session is anonymous then will never be considered as a record owner.
    if( sess_info.user_id.empty( ) )
@@ -1525,6 +1525,7 @@ bool output_view_form( ostream& os, const string& act,
          is_special_field = true;
 
       bool is_protected_field = false;
+
       if( view_edit_effect == c_modifier_effect_protect
        || new_field_and_values.count( source_field_id ) || source.protected_fields.count( source_value_id ) )
       {
@@ -1532,11 +1533,11 @@ bool output_view_form( ostream& os, const string& act,
          is_protected_field = true;
       }
 
-      if( owner != sess_info.user_key
+      if( !is_record_owner
        && has_perm_extra( c_view_field_extra_owner_edit, extra_data, sess_info ) )
          is_protected_field = true;
 
-      if( !sess_info.is_admin_user && owner != sess_info.user_key
+      if( !sess_info.is_admin_user && !is_record_owner
        && has_perm_extra( c_view_field_extra_admin_owner_edit, extra_data, sess_info ) )
          is_protected_field = true;
 
@@ -2250,6 +2251,9 @@ bool output_view_form( ostream& os, const string& act,
 
             bool can_attach_or_remove_file = true;
 
+            if( is_protected_field )
+               can_attach_or_remove_file = false;
+
             if( is_admin_edit && !sess_info.is_admin_user )
                can_attach_or_remove_file = false;
 
@@ -2262,10 +2266,13 @@ bool output_view_form( ostream& os, const string& act,
             if( !extra_data.count( c_field_extra_file ) && !extra_data.count( c_field_extra_image ) )
                can_attach_or_remove_file = false;
 
-            if( source.protected_fields.count( source_value_id ) )
+            if( is_in_edit || ( source.state & c_state_uneditable ) || ( source.state & c_state_is_changing ) )
                can_attach_or_remove_file = false;
 
-            if( is_in_edit || ( source.state & c_state_uneditable ) || ( source.state & c_state_is_changing ) )
+            // NOTE: In the same way that a "user" record is being prevented from being edited by any
+            // other user (except admin) this also applies to the attaching or removing "user" files.
+            if( !sess_info.is_admin_user
+             && mod_info.user_info_view_id == source.vici->second->id && data != sess_info.user_key )
                can_attach_or_remove_file = false;
 
             // NOTE: If an instance can be identified as having been created by the currently logged in
