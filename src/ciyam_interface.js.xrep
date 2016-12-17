@@ -135,6 +135,17 @@ function can_write_to_session_storage( )
    return can_write_to_storage( false );
 }
 
+function clear_local_storage( )
+{
+   if( can_write_to_local_storage( ) )
+   {
+      localStorage.removeItem( 'key' );
+      localStorage.removeItem( 'hash' );
+      localStorage.removeItem( 'skey' );
+      localStorage.removeItem( 'user' );
+   }
+}
+
 function refresh( back )
 {
    if( isIE )

@@ -2,7 +2,7 @@
 
 <div align="center">
 <form method="POST" name="login" id="login"
-onsubmit="
+onsubmit="clear_local_storage( );
 var pwd_hash = hash_password( document.login.username.value, document.login.password.value );
 var user_hash = hash_username( document.login.username.value, document.login.password.value, pwd_hash );
 
