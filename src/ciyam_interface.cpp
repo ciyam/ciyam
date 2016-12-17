@@ -1028,6 +1028,15 @@ void request_handler::process_request( )
             }
          }
 
+         // NOTE: If persistent logins are not permitted ignore any attempt to use them.
+         if( !get_storage_info( ).login_days )
+         {
+            persistent.erase( );
+
+            if( password.empty( ) )
+               userhash.erase( );
+         }
+
          if( username.empty( ) && userhash.empty( ) && password.empty( )
           && ( !using_anonymous || ( is_activation && file_exists( activation_file ) ) ) )
          {
