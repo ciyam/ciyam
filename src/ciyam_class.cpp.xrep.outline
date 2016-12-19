@@ -4239,7 +4239,8 @@ void `{`$full_class_name`}::get_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_is_default`'`)
 `{`#transient_field_bool_is_default.spec.xrep section=get_required_field_names\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_has_child_for_uid`'`)`&`!`@eq`(`'`'`,`$specification_\0_ufield`)
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=get_required_field_names\

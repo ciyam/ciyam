@@ -4949,7 +4949,7 @@ bool can_create_address( const string& ext_key )
    return !client_info.script_name.empty( );
 }
 
-string create_new_address( const string& ext_key, const string& label )
+string create_new_address( const string& ext_key, const string& label, bool ignore_errors )
 {
    string s;
 
@@ -4987,14 +4987,19 @@ string create_new_address( const string& ext_key, const string& label )
 
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find_first_of( "\r\n" );
+         if( !ignore_errors )
+         {
+            string::size_type pos = error.find_first_of( "\r\n" );
 
-         throw runtime_error( error.substr( 0, pos ) );
+            throw runtime_error( error.substr( 0, pos ) );
+         }   
       }
+      else
+      {
+         string::size_type pos = content.find_first_of( "\r\n" );
 
-      string::size_type pos = content.find_first_of( "\r\n" );
-
-      s = content.substr( 0, pos );
+         s = content.substr( 0, pos );
+      }
    }
 
    return s;
