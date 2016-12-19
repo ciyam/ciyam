@@ -31,6 +31,14 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+`}\
    }
    // [(finish transient_field_bool_is_default)] `{`$arg_id`}
 `}
