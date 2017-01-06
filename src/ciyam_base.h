@@ -187,6 +187,8 @@ bool CIYAM_BASE_DECL_SPEC is_local_external_client( const std::string& key );
 
 void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
 
+void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
+
 std::string CIYAM_BASE_DECL_SPEC decrypt_data(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
@@ -198,7 +200,7 @@ std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false );
 
 int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name,
- bool async = true, bool delay = false, bool report_first_delayed_script_error = false );
+ bool async = true, bool delay = false, bool report_script_error = false );
 
 std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_args );
 

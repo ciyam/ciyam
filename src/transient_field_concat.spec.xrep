@@ -17,9 +17,9 @@
       string dest_value( get_obj( ).`{`$arg_dfield`}( ) );
       string source_value( to_string( get_obj( ).`{`$arg_field3`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
 
-      string other_value( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+      string other_value( to_formatted_string( get_obj( ).`{`$arg_field1`}( ), "`{`$arg_mask1`}" ) );
 `{`!`@eq`(`$arg_field2`,`'`'`)\
-      string other_value_2( to_string( get_obj( ).`{`$arg_field2`}( ) ) );
+      string other_value_2( to_formatted_string( get_obj( ).`{`$arg_field2`}( ), "`{`$arg_mask2`}" ) );
 `}\
 
 `{`@eq`(`$arg_rfield`,`'`'`)\

@@ -46,6 +46,8 @@ const char* const c_str_parm_record_not_found_class = "{@class}";
 const char* const c_str_parm_record_not_found_key = "{@key}";
 const char* const c_str_field_is_incorrect = "{@field} is incorrect.";
 const char* const c_str_parm_field_is_incorrect_field = "{@field}";
+const char* const c_str_external_service_unavailable = "External service {@symbol} does not appear to be currently available.";
+const char* const c_str_parm_external_service_unavailable_symbol = "{@symbol}";
 
 #endif
 

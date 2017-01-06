@@ -184,6 +184,7 @@ const char c_escape = '`';
 const char c_hidden_escape = '\1'; // NOTE: For MBCS '\0' would be better, however, error messages will end up truncated if present.
 
 const char c_variable = '$';
+const char c_optional = '?';
 
 const char c_ordinal = '#';
 const char c_ordinal1 = '+';
@@ -533,7 +534,7 @@ class xrep_info
 
    bool has_variable( const string& identifier );
 
-   string get_variable( const string& identifier );
+   string get_variable( const string& identifier, bool opt = false );
    string set_variable( const string& identifier, const string& value );
 
    void remove_variable( const string& identifier );
@@ -549,28 +550,45 @@ bool xrep_info::has_variable( const string& identifier )
    return variables.find( identifier ) != variables.end( );
 }
 
-string xrep_info::get_variable( const string& identifier )
+string xrep_info::get_variable( const string& identifier, bool opt )
 {
    string retval( c_false );
 
-   if( has_variable( identifier ) )
-      retval = variables[ identifier ];
-   else if( identifier == "i" )
+   string variable( identifier );
+   string::size_type pos = identifier.find( c_variable );
+
+   if( opt && pos != string::npos )
+   {
+      string prefix( identifier.substr( 0, pos ) );
+      string suffix( identifier.substr( pos + 1 ) );
+
+      if( !has_variable( suffix ) )
+         variable.erase( );
+      else
+      {
+         suffix = variables[ suffix ];
+         variable = prefix + suffix;
+      }
+   }
+
+   if( has_variable( variable ) )
+      retval = variables[ variable ];
+   else if( variable == "i" )
    {
       string prompt( "Input: " );
       if( has_variable( "ip" ) && !variables[ "ip" ].empty( ) )
          prompt = variables[ "ip" ];
       retval = get_line( prompt );
    }
-   else if( identifier == "p" )
+   else if( variable == "p" )
    {
       string prompt( "Password: " );
       if( has_variable( "pp" ) && !variables[ "pp" ].empty( ) )
          prompt = variables[ "pp" ];
       retval = get_password( prompt );
    }
-   else if( !optional_variables )
-      throw runtime_error( "variable '" + identifier + "' has not been assigned" );
+   else if( !opt && !optional_variables )
+      throw runtime_error( "variable '" + variable + "' has not been assigned" );
 
    return retval;
 }
@@ -968,6 +986,7 @@ cout << "evaluate include_expression" << endl;
 
    string::size_type pos = str.find( ' ' );
    string filename( str.substr( 0, pos ) );
+
    while( pos != string::npos )
    {
       str.erase( 0, pos + 1 );
@@ -1001,8 +1020,9 @@ cout << "evaluate include_expression" << endl;
       }
 
       string value = str.substr( 0, pos );
-      if( !value.empty( ) && value[ 0 ] == c_variable )
-         value = xi.get_variable( value.substr( 1 ) );
+
+      if( !value.empty( ) && ( value[ 0 ] == c_variable || value[ 0 ] == c_optional ) )
+         value = xi.get_variable( value.substr( 1 ), ( value[ 0 ] == c_optional ) );
       else
          value = unescaped( value, c_special_characters );
 
@@ -3639,7 +3659,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "xrep v0.1s\n";
+               cout << "xrep v0.1t\n";
                cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       If the -x option is used then each line is executed as a system command.\n";
