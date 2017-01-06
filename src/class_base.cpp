@@ -1824,6 +1824,11 @@ void class_base::perform_field_search_replacements( )
 
       if( search_replace_has_opt_prefixing.count( srci->first ) )
       {
+         char separator = '\0';
+
+         if( search_replace_separators.count( srci->first ) )
+            separator = search_replace_separators[ srci->first ];
+
          while( true )
          {
             string::size_type pos = str.find( '[' );
@@ -1835,6 +1840,17 @@ void class_base::perform_field_search_replacements( )
                throw runtime_error( "unexpected missing ']' in '" + str + "'" );
 
             string replace( str.substr( pos + 1, epos - pos - 1 ) );
+
+            bool add_separator_if_not_at_end = false;
+
+            // NOTE: Use [?xx] to provide a separator before
+            // "xx" only if the character prior isn't itself
+            // a separator.
+            if( !replace.empty( ) && replace[ 0 ] == '?' )
+            {
+               replace.erase( 0, 1 );
+               add_separator_if_not_at_end = true;
+            }
 
             string empty_replace;
             string::size_type npos = replace.find( '|' );
@@ -1852,6 +1868,10 @@ void class_base::perform_field_search_replacements( )
                was_at_end = true;
 
             str.erase( pos, epos - pos + 1 );
+
+            if( !was_at_end && separator
+             && add_separator_if_not_at_end && pos > 0 && str[ pos - 1 ] != separator )
+               replace = separator + replace;
 
             if( !was_at_end )
                str.insert( pos, replace );
@@ -5773,6 +5793,8 @@ string send_raw_transaction( const string& ext_key, const string& tx )
 
    if( !storage_locked_for_admin( ) )
    {
+      verify_active_external_service( ext_key );
+
       string s;
 
       external_client client_info;
@@ -5838,7 +5860,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
                string ss( trim( buffer_file( tmp ) ) );
                file_remove( tmp );
 
-               if( ss != "transaction submitted" && ss != "Transaction Submitted" )
+               if( lower( ss ) != "transaction submitted" )
                   throw runtime_error( ss );
             }
          }
@@ -5847,7 +5869,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
       }
 
       if( s != txid )
-         throw runtime_error( "unexpected txid '" + s + "' (was expecting '" + txid + "'" );
+         throw runtime_error( "unexpected txid '" + s + "' (was expecting '" + txid + "')" );
    }
 
    return txid;

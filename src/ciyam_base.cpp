@@ -4641,6 +4641,14 @@ void get_external_client_info( const string& key, external_client& info )
    info = g_external_client_info[ key ];
 }
 
+void verify_active_external_service( const string& ext_key )
+{
+   if( !active_external_service( ext_key ) )
+      throw runtime_error(
+       get_string_message( GS( c_str_external_service_unavailable ),
+       make_pair( c_str_parm_external_service_unavailable_symbol, ext_key ) ) );
+}
+
 string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
    string key, retval;
@@ -4701,6 +4709,8 @@ string totp_secret_key( const string& unique )
 
 int exec_system( const string& cmd, bool async, bool delay )
 {
+   int rc = 0;
+
    string s( cmd );
 
    // NOTE: For security against potentially malicious module code only permit system calls
@@ -4739,16 +4749,36 @@ int exec_system( const string& cmd, bool async, bool delay )
          if( !gtp_session->async_or_delayed_temp_file.empty( ) )
             gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
 
-         return 0;
+         return rc;
       }
    }
 
    TRACE_LOG( TRACE_SESSIONS, s );
 
-   return system( s.c_str( ) );
+   rc = system( s.c_str( ) );
+
+   // NOTE: If the script had an error and the caller should throw this as an error then do so.
+   string check_script_error( get_raw_session_variable( c_special_variable_check_script_error ) );
+
+   if( !check_script_error.empty( ) )
+   {
+      set_session_variable( c_special_variable_check_script_error, "" );
+
+      if( gtp_session && !gtp_session->async_or_delayed_temp_file.empty( ) )
+      {
+         string value( get_raw_system_variable( gtp_session->async_or_delayed_temp_file ) );
+
+         set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
+
+         if( value != string( "1" ) )
+            throw runtime_error( value );
+      }
+   }
+
+   return rc;
 }
 
-int run_script( const string& script_name, bool async, bool delay, bool report_first_delayed_script_error )
+int run_script( const string& script_name, bool async, bool delay, bool report_script_error )
 {
    int rc = -1;
 
@@ -4795,14 +4825,16 @@ int run_script( const string& script_name, bool async, bool delay, bool report_f
       {
          gtp_session->async_or_delayed_temp_file = script_args;
 
-         // NOTE: If wanting to have the first error of a delayed script reported as an error after
-         // the calling session's transaction commit then now set special variables. As each script
-         // sets a session variable to the "script args" unique file name a system variable is thus
-         // set here (to the value "1") with a matching name. If an error occurs in a command being
-         // executed by the delayed script with an "args_file" session variable that has a matching
-         // named system variable for its value and whose value is still "1" (i.e. will only record
-         // the first such error) then its value will be changed to the error message.
-         if( delay && report_first_delayed_script_error )
+         // NOTE: If wanting to have a (first if delayed) script error thrown as an exception after
+         // the calling session's exec (or after a transaction commit for delayed scripts) then set
+         // special variables for that here. As "ciyam_client" will set a session variable for each
+         // script to the "script args" unique file name (via the "-args_file" command-line option)
+         // a system variable with this same name is being set here (to the value "1"). If an error
+         // occurs in a command being executed by the script and system variable with the same name
+         // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
+         // multiple delayed scripts will only record the first such error) then this value will be
+         // changed to that of the error message.
+         if( report_script_error )
          {
             set_system_variable( script_args, "1" );
             set_session_variable( c_special_variable_check_script_error, "1" );

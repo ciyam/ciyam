@@ -6547,6 +6547,12 @@ void Meta_View_Field::get_always_required_field_names(
    if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
       names.insert( "Source_Field" );
+
+   dependents.insert( "Use_Source_Parent" ); // (for Is_Not_Date modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Use_Source_Parent ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Use_Source_Parent ) ) )
+      names.insert( "Use_Source_Parent" );
    // [(finish modifier_field_value)] 600396
 
    // [(start modifier_field_value)] 600397
@@ -6555,6 +6561,12 @@ void Meta_View_Field::get_always_required_field_names(
    if( ( use_transients && is_field_transient( e_field_id_Source_Child ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Child ) ) )
       names.insert( "Source_Child" );
+
+   dependents.insert( "Use_Source_Parent" ); // (for Is_Not_Date modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Use_Source_Parent ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Use_Source_Parent ) ) )
+      names.insert( "Use_Source_Parent" );
    // [(finish modifier_field_value)] 600397
 
    // [(start modifier_field_null)] 600398

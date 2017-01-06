@@ -1887,11 +1887,13 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_concat`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
- arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator\
- arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse arg_non_empty=$specification_\0_non_empty\
- arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_top_level=$specification_\0_top_level\
- arg_always_use_separator=$specification_\0_always_use_separator`}\
+ arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
+ arg_mask1=?domain_mask_$specification_\0_field1 arg_mask2=?domain_mask_$specification_\0_field2\
+ arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield\
+ arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
+ arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_dtm`'`)
 `{`#transient_field_from_dtm.spec.xrep section=after_fetch class_name=$class_name\
@@ -4167,7 +4169,7 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field\
  arg_dest_field=$specification_\0_dest_field arg_ext_field=$specification_\0_ext_field`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)`&`@eq`(`$specification_\0_ftransient`,`'`'`)
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_op.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield`}\

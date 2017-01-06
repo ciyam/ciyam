@@ -168,7 +168,7 @@ void set_variable( size_t handle, const string& vname,
       instance_set_variable( handle, "", vname, value );
 }
 
-void set_first_delayed_script_error_if_applicable( const string& error_message )
+void set_script_error_if_applicable( const string& error_message )
 {
    // NOTE: The "run_script" function contains a detail note about this.
    string args_file( get_raw_session_variable(
@@ -3794,7 +3794,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                TRACE_LOG( ( is_auto_uid( ) ? TRACE_ANYTHING : TRACE_SESSIONS ),
                 string( "session error: " ) + x.what( ) + " [" + method_id + "]" );
 
-               set_first_delayed_script_error_if_applicable( x.what( ) );
+               set_script_error_if_applicable( x.what( ) );
 
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( x.what( ) );
@@ -3820,7 +3820,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                TRACE_LOG( TRACE_ANYTHING, "session error: "
                 + string( c_unexpected_unknown_exception ) + " [" + method_id + "]" );
 
-               set_first_delayed_script_error_if_applicable( c_unexpected_unknown_exception );
+               set_script_error_if_applicable( c_unexpected_unknown_exception );
 
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( c_unexpected_unknown_exception );
@@ -5121,6 +5121,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       TRACE_LOG( ( possibly_expected_error
        ? TRACE_COMMANDS | TRACE_SESSIONS : TRACE_ANYTHING ), string( "session error: " ) + x.what( ) );
 
+      set_script_error_if_applicable( x.what( ) );
+
       if( socket_handler.is_restoring( ) )
          socket_handler.set_restore_error( x.what( ) );
       else
@@ -5133,6 +5135,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    catch( ... )
    {
       TRACE_LOG( TRACE_ANYTHING, "session error: " + string( c_unexpected_unknown_exception ) );
+
+      set_script_error_if_applicable( c_unexpected_unknown_exception );
 
       if( socket_handler.is_restoring( ) )
          socket_handler.set_restore_error( c_unexpected_unknown_exception );
