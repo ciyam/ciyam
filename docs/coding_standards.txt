@@ -16,16 +16,17 @@ Format
 - no CAPITAL letters use underscore (e.g. my_identifier)
 - use CAPITAL letters only for macros (e.g. #define MY_MACRO)
 
-Type          Prefixes   Example
-----          --------   -------
-const         c_         const char c_ch; 
-enum          e_         enum etype e_etype_one; 
+Type           Prefixes    Example
+----           --------    -------
+const          c_          const char c_ch;
+enum           e_          enum etype e_etype_one;
 
-globals	     g_         char* gp_ch;
-thread 	     gt_        static TLS( session )* gtp_session;
+globals        g_          char g_ch;
+thread         gt_         static TLS( session )* gtp_session;
  (these next prefixes can also be suffixes to the previous)
-pointer	     p_         char* p_ch;
-auto pointer  ap_        auto_ptr< char > ap_char; 
+pointer        p_          char* p_ch;
+auto pointer   ap_         auto_ptr< char > ap_char;
+ref count ptr  rp_         ref_count_ptr< private_key > rp_private_key;
  
 Operator Space Rules
 --------------------
@@ -49,7 +50,7 @@ There must always be a space either side of an operator with the following excep
   : in member access ( e.g. private: )
   [ when accessing or declaring an array ( e.g. arr[ i ]; )
   < when opening a template parameter list ( e.g. ref_count_ptr< T >; )
-  > when closeing an include ( e.g. #include <header>; )
+  > when closeing an include ( e.g. #include <iostream> )
 
   No space after
   --------------
@@ -61,8 +62,8 @@ There must always be a space either side of an operator with the following excep
   prefix operators ( e.g. ++i; )
   ) when casting ( e.g return ( char )other_type; )  
   operators following the reserved word 'operator' ( e.g. char obj::operator =( char ch ) )
-  < when opening an include ( e.g. #include <header>; )
-  # in non-indented macro ( e.g. #ifdef MACRO )
+  < when opening an include ( e.g. #include <iostream> )
+  # in non-indented macro ( e.g. #ifdef DEBUG )
 
 Blank Lines
 -----------
