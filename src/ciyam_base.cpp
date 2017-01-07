@@ -7872,134 +7872,137 @@ void module_load( const string& module_name,
             bool is_first = true;
             bool file_existed( file_exists( sql_file_name ) );
 
-            ofstream out1( sql_file_name.c_str( ), ios::out | ios::app );
-            if( !out1 )
-               throw runtime_error(
-                "unable to open file '" + sql_file_name + "' for output/append in module_load" );
-
-            ofstream out2( temp_sql_file_name.c_str( ) );
-            if( !out2 )
-               throw runtime_error(
-                "unable to open file '" + temp_sql_file_name + "' for output in module_load" );
-
-            if( file_existed )
-               out1 << '\n';
-
-            tee_stream outf( out1, out2 );
-            outf << "BEGIN;\n";
-
-            for( size_t i = 0; i < class_list.size( ); i++ )
+            // NOTE: Empty code block for scope purposes.
             {
-               vector< string > columns;
-               string sql_columns( get_sql_columns_for_module_class( module_name, class_list[ i ] ) );
+               ofstream out1( sql_file_name.c_str( ), ios::out | ios::app );
+               if( !out1 )
+                  throw runtime_error(
+                   "unable to open file '" + sql_file_name + "' for output/append in module_load" );
 
-               if( !sql_columns.empty( ) )
+               ofstream out2( temp_sql_file_name.c_str( ) );
+               if( !out2 )
+                  throw runtime_error(
+                   "unable to open file '" + temp_sql_file_name + "' for output in module_load" );
+
+               if( file_existed )
+                  out1 << '\n';
+
+               tee_stream outf( out1, out2 );
+               outf << "BEGIN;\n";
+
+               for( size_t i = 0; i < class_list.size( ); i++ )
                {
-                  split( sql_columns, columns );
+                  vector< string > columns;
+                  string sql_columns( get_sql_columns_for_module_class( module_name, class_list[ i ] ) );
 
-                  string table_name( "T_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
-
-                  outf << "\nDROP TABLE IF EXISTS " << table_name << ";\n";
-
-                  // FUTURE: This message should be handled as a server string message.
-                  outf << "\n#Creating table and indexes for " << module_name
-                   << "_" << class_ids_and_names[ class_list[ i ] ] << "...\n";
-
-                  outf << "\nCREATE TABLE " << table_name << '\n';
-                  outf << "(\n";
-                  for( size_t j = 0; j < columns.size( ); j++ )
+                  if( !sql_columns.empty( ) )
                   {
-                     if( j > 0 )
-                        outf << ",\n";
-                     outf << " " << columns[ j ];
-                  }
-                  outf << "\n);\n";
+                     split( sql_columns, columns );
 
-                  vector< string > sql_indexes;
-                  get_sql_indexes_for_module_class( module_name, class_list[ i ], sql_indexes );
+                     string table_name( "T_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
 
-                  string index_prefix( "I_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
+                     outf << "\nDROP TABLE IF EXISTS " << table_name << ";\n";
 
-                  for( size_t j = 0; j < sql_indexes.size( ); j++ )
-                  {
-                     vector< string > index_columns;
-                     split( sql_indexes[ j ], index_columns );
+                     // FUTURE: This message should be handled as a server string message.
+                     outf << "\n#Creating table and indexes for " << module_name
+                      << "_" << class_ids_and_names[ class_list[ i ] ] << "...\n";
 
-                     outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
-                     if( j < 10 )
-                        outf << '0';
-                     outf << j << " ON " << table_name << '\n';
+                     outf << "\nCREATE TABLE " << table_name << '\n';
                      outf << "(\n";
-                     for( size_t k = 0; k < index_columns.size( ); k++ )
+                     for( size_t j = 0; j < columns.size( ); j++ )
                      {
-                        if( k > 0 )
+                        if( j > 0 )
                            outf << ",\n";
-                        outf << " " << index_columns[ k ];
+                        outf << " " << columns[ j ];
                      }
                      outf << "\n);\n";
+
+                     vector< string > sql_indexes;
+                     get_sql_indexes_for_module_class( module_name, class_list[ i ], sql_indexes );
+
+                     string index_prefix( "I_" + module_name + "_" + class_ids_and_names[ class_list[ i ] ] );
+
+                     for( size_t j = 0; j < sql_indexes.size( ); j++ )
+                     {
+                        vector< string > index_columns;
+                        split( sql_indexes[ j ], index_columns );
+
+                        outf << "\nCREATE UNIQUE INDEX " << index_prefix << "_";
+                        if( j < 10 )
+                           outf << '0';
+                        outf << j << " ON " << table_name << '\n';
+                        outf << "(\n";
+                        for( size_t k = 0; k < index_columns.size( ); k++ )
+                        {
+                           if( k > 0 )
+                              outf << ",\n";
+                           outf << " " << index_columns[ k ];
+                        }
+                        outf << "\n);\n";
+                     }
                   }
                }
-            }
 
-            outf << "\nCOMMIT;\n";
-            outf.flush( );
+               outf << "\nCOMMIT;\n";
+               outf.flush( );
 
-            if( gtp_session->ap_db.get( ) )
-            {
-               // NOTE: As MySQL DDL operations with InnoDB can be very slow the global
-               // thread lock is released whilst performing the DDL. As the storage has
-               // already been locked for administration this should be of no concern.
-               ap_guard.reset( );
-               try
+               if( gtp_session->ap_db.get( ) )
                {
-                  exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
+                  // NOTE: As MySQL DDL operations with InnoDB can be very slow the global
+                  // thread lock is released whilst performing the DDL. As the storage has
+                  // already been locked for administration this should be of no concern.
+                  ap_guard.reset( );
+                  try
+                  {
+                     exec_sql_from_file( *gtp_session->ap_db, temp_sql_file_name, &cmd_handler );
+                  }
+                  catch( ... )
+                  {
+                     gtp_session->storage_controlled_modules.pop_back( );
+
+                     // NOTE: Restore the storage state (otherwise a SQL error can be lost
+                     // due to the fact that the storage is left in an inconsistent state).
+                     ods_file_system ofs( *p_ods );
+                     handler.get_root( ).fetch_from_text_files( ofs );
+
+                     throw;
+                  }
+
+                  ap_guard.reset( new guard( g_mutex ) );
                }
-               catch( ... )
+
+               ods_file_system ofs( *p_ods );
+
+               ofs.set_folder( c_storable_folder_name_modules );
+
+               string prefix( to_comparable_string( handler.get_root( ).module_list.size( ), false, 3 ) );
+
+               ofs.add_folder( prefix + c_module_order_prefix_separator + module_name );
+
+               if( log_tx_comment )
                {
-                  gtp_session->storage_controlled_modules.pop_back( );
-
-                  // NOTE: Restore the storage state (otherwise a SQL error can be lost
-                  // due to the fact that the storage is left in an inconsistent state).
-                  ods_file_system ofs( *p_ods );
-                  handler.get_root( ).fetch_from_text_files( ofs );
-
-                  throw;
+                  gtp_session->transaction_log_command = ";module ==> " + module_name;
+                  append_transaction_log_command( handler, true, handler.get_root( ).module_list.size( ) );
                }
 
-               ap_guard.reset( new guard( g_mutex ) );
-            }
-
-            ods_file_system ofs( *p_ods );
-
-            ofs.set_folder( c_storable_folder_name_modules );
-
-            string prefix( to_comparable_string( handler.get_root( ).module_list.size( ), false, 3 ) );
-
-            ofs.add_folder( prefix + c_module_order_prefix_separator + module_name );
-
-            if( log_tx_comment )
-            {
-               gtp_session->transaction_log_command = ";module ==> " + module_name;
-               append_transaction_log_command( handler, true, handler.get_root( ).module_list.size( ) );
-            }
-
-            if( append_to_module_list )
-            {
-               string module_list_file( handler.get_name( ) + ".modules.lst" );
-
-               set< string > existing_modules;
-
-               if( file_exists( module_list_file ) )
-                  buffer_file_lines( module_list_file, existing_modules );
-
-               if( !existing_modules.count( module_name ) )
+               if( append_to_module_list )
                {
-                  ofstream modf( module_list_file.c_str( ), ios::out | ios::app );
+                  string module_list_file( handler.get_name( ) + ".modules.lst" );
 
-                  if( !modf )
-                     throw runtime_error( "unexpected error opening '" + module_list_file + "' for output/append" );
+                  set< string > existing_modules;
 
-                  modf << module_name << endl;
+                  if( file_exists( module_list_file ) )
+                     buffer_file_lines( module_list_file, existing_modules );
+
+                  if( !existing_modules.count( module_name ) )
+                  {
+                     ofstream modf( module_list_file.c_str( ), ios::out | ios::app );
+
+                     if( !modf )
+                        throw runtime_error( "unexpected error opening '" + module_list_file + "' for output/append" );
+
+                     modf << module_name << endl;
+                  }
                }
             }
 
