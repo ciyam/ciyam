@@ -44,7 +44,7 @@ make all
 
 8. Run any more specific regression tests that could potentially be affected by your changes.
 
-(steps 7 and 9 are not applicable if all changes made do not affect the software such as just docco changes)
+(steps 7 and 8 are not applicable if all changes made do not affect the software such as just docco changes)
 
 9. Now commit your changes and push to your branch.
 
@@ -52,6 +52,5 @@ git commit -m "Added new features to satisfy specified requirements."
 git push git@github.com:your_github_name/ciyam.git task_branch_name:task_branch_name
  
 10. Finally submit a "pull" request by going to your fork's GitHub page and selecting the branch that has all
-the changes you want pulled ("task_branch_name" in the above example) and finally clicking the "Pull Request"
-button.
+the changes you want pulled ("task_branch_name" in the above example) and clicking the "Pull Request" button.
 
