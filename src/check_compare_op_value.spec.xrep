@@ -7,7 +7,7 @@
 `{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
 `{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
 `{`$dvalue`=`$arg_value`}\
-`{`!`@eq`(`$arg_enum_item`,`'`'`)`$dvalue`=`$arg_enum_item`}\
+`{`!`@eq`(`$arg_enum_item`,`'`'`)`$dvalue`=`$arg_enum_item`/_`/ `}\
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_value`,`'@uid`'`)`$cond`=`'!is_init_uid( )`'`}\
 `{`@eq`(`$arg_value`,`'@uid`'`)`$value`=`'get_uid( )`'`,\

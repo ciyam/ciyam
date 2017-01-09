@@ -1,16 +1,11 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_concat)] `{`$arg_id`}
-   if( !get_obj( ).get_key( ).empty( )
-`{`@eq`(`$arg_top_level`,`'true`'`)\
-    && !get_obj( ).get_graph_parent( )
-`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
-    && get_obj( ).`{`$arg_tfield`}( )
-`}\
-`{`!`@eq`(`$arg_modifier`,`'`'`)\
-    && ( state & c_modifier_`{`$arg_modifier`} )
-`}\
-    && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
+   if( `{`@eq`(`$arg_new_only`,`'true`'`)get_obj( ).get_key( ).empty( )
+    && `,`{`@eq`(`$arg_inc_dflt`,`'`'`)!get_obj( ).get_key( ).empty( )
+    && `}`}`{`@eq`(`$arg_top_level`,`'true`'`)!get_obj( ).get_graph_parent( )
+    && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
     || required_transients.count( "`{`$arg_dfield`}" ) ) )
    {
       string sep_value( "`{`$arg_separator`}" );
