@@ -1885,12 +1885,13 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_class.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_concat`'`)
+`@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_mask1=?domain_mask_$specification_\0_field1 arg_mask2=?domain_mask_$specification_\0_field2\
  arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield\
+ arg_new_only=$specification_\0_new_only arg_inc_dflt=$specification_\0_inc_dflt\
  arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
  arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}\
@@ -2146,6 +2147,17 @@ void `{`$full_class_name`}::impl::post_init( )
 `@eq`(`'\1`'`,`'transient_field_bool_is_in_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_bool_is_in_op.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_value=$specification_\0_value`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#transient_field_concat.spec.xrep section=post_init class_name=$class_name\
+ arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
+ arg_mask1=?domain_mask_$specification_\0_field1 arg_mask2=?domain_mask_$specification_\0_field2\
+ arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield\
+ arg_new_only=$specification_\0_new_only arg_inc_dflt=$specification_\0_inc_dflt\
+ arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
+ arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_key.spec.xrep section=post_init class_name=$class_name\
