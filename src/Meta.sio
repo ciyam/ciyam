@@ -36108,7 +36108,6 @@
      <sclass_id>
      <sfield_id>115103
      <dfield_id>115132
-     <check_null>true
      <function>value_label
     </data>
    </specification>
@@ -36148,7 +36147,6 @@
      <sclass_id>
      <sfield_id>115102
      <dfield_id>115131
-     <check_null>true
      <function>value_label
     </data>
    </specification>
@@ -36161,7 +36159,6 @@
      <sclass_id>
      <sfield_id>115102
      <dfield_id>115129
-     <check_null>true
      <function>value_leftpart
     </data>
    </specification>
@@ -36202,7 +36199,6 @@
      <sclass_id>
      <sfield_id>115102
      <dfield_id>115127
-     <check_null>true
      <function>numeric_name
     </data>
    </specification>
@@ -36215,7 +36211,6 @@
      <sclass_id>
      <sfield_id>115102
      <dfield_id>115130
-     <check_null>true
      <function>value_rightpart
     </data>
    </specification>
@@ -36228,7 +36223,6 @@
      <sclass_id>
      <sfield_id>115102
      <dfield_id>115125
-     <check_null>true
      <function>unquoted_literal
     </data>
    </specification>
