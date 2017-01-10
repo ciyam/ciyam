@@ -466,6 +466,19 @@ string escape_sep_if_quoted( const string& s, char sep )
    return str;
 }
 
+string process_script_name( const string& script_name )
+{
+   string s( script_name );
+
+#ifndef _WIN32
+   string::size_type pos = script_name.find( '/' );
+   if( pos == string::npos )
+      s = "./" + s;
+#endif
+
+   return s;
+}
+
 void validate_addresses( const string& addresses )
 {
    if( addresses.find_first_not_of( "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz " ) != string::npos )
@@ -4931,7 +4944,7 @@ bool active_external_service( const string& ext_key )
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "getinfo";
 
@@ -4987,7 +5000,7 @@ string create_new_address( const string& ext_key, const string& label, bool igno
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "getnewaddress \"" + label + "\"";
 
@@ -5043,7 +5056,7 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "sendtoaddress \"" + address + "\" " + to_string( amount );
 
@@ -5094,7 +5107,7 @@ void import_address( const string& ext_key, const string& address, const string&
 
    if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "importaddress";
 
@@ -5148,7 +5161,7 @@ void load_address_information( const string& ext_key, const string& file_name )
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "listaddressgroupings";
 
@@ -5259,7 +5272,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       string comma_sep_addresses( replaced( source_addresses, " ", ",", "|", "," ) );
 
@@ -5374,7 +5387,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 
       if( client_info.protocol == c_protocol_bitcoin )
       {
-         cmd = escaped( client_info.script_name ) + " ";
+         cmd = process_script_name( client_info.script_name ) + " ";
 
          cmd += "getnewaddress";
 
@@ -5453,7 +5466,7 @@ string retreive_p2sh_redeem_extra_info(
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += "listtransactions \"*\" 25 0 true";
 
@@ -5518,7 +5531,7 @@ string retreive_p2sh_redeem_extra_info(
 
          if( !txid.empty( ) )
          {
-            cmd = escaped( client_info.script_name ) + " ";
+            cmd = process_script_name( client_info.script_name ) + " ";
             cmd += "getrawtransaction " + txid;
             cmd += " >" + tmp + " 2>&1";
 
@@ -5536,7 +5549,7 @@ string retreive_p2sh_redeem_extra_info(
                if( pos != string::npos )
                   raw_tx.erase( pos );
 
-               cmd = escaped( client_info.script_name ) + " ";
+               cmd = process_script_name( client_info.script_name ) + " ";
                cmd += "decoderawtransaction " + raw_tx;
                cmd += " >" + tmp + " 2>&1";
 
@@ -5681,7 +5694,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name ) + " ";
+      cmd = process_script_name( client_info.script_name ) + " ";
 
       cmd += raw_tx_cmd;
 
@@ -5809,7 +5822,8 @@ string send_raw_transaction( const string& ext_key, const string& tx )
       if( client_info.protocol == c_protocol_bitcoin )
       {
          string tmp( "~" + uuid( ).as_string( ) );
-         string cmd( escaped( client_info.script_name ) + " " );
+
+         string cmd( process_script_name( client_info.script_name ) + " " );
 
          cmd += "sendrawtransaction " + tx;
 
