@@ -10,5 +10,5 @@ else
  if [ "$TBITCOIN" = "" ]; then
   TBITCOIN="./bitcoin-cli -rpcpassword=not_what_you_think_it_is -regtest"
  fi
- $TBITCOIN $*
+ $TBITCOIN "$@"
 fi
