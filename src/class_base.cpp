@@ -3570,12 +3570,18 @@ string value_label( const string& s )
 
 string value_leftpart( const string& s )
 {
+   if( s.empty( ) )
+      return s;
+
    string::size_type pos = s.find( ' ' );
    return s.substr( 0, pos );
 }
 
 string value_rightpart( const string& s )
 {
+   if( s.empty( ) )
+      return s;
+
    string::size_type pos = s.find( ' ' );
 
    if( pos == string::npos )

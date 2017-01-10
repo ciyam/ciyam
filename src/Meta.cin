@@ -1671,17 +1671,17 @@ specification_add -id=600185 {Specification}_Value_Literal_from_other_field_1 fi
 specification_add -id=600186 {Specification}_Value_Literal_from_other_field_2 field_from_other_field\
  "Specification Value Value_Literal -func=quoted_literal -check_null -test={Field}:Is_Text_Type=true"
 specification_add -id=600187 {Specification}_Value_String_from_other_field field_from_other_field\
- "Specification Value Value_String -func=unquoted_literal -check_null"
+ "Specification Value Value_String -func=unquoted_literal"
 specification_add -id=600188 {Specification}_Value_Numeric_String_from_other_field field_from_other_field\
- "Specification Value Value_Numeric_String -func=numeric_name -check_null"
+ "Specification Value Value_Numeric_String -func=numeric_name"
 specification_add -id=600189 {Specification}_Value_Left_Part_from_other_field field_from_other_field\
- "Specification Value Value_Left_Part -func=value_leftpart -check_null"
+ "Specification Value Value_Left_Part -func=value_leftpart"
 specification_add -id=600190 {Specification}_Value_Right_Part_from_other_field field_from_other_field\
- "Specification Value Value_Right_Part -func=value_rightpart -check_null"
+ "Specification Value Value_Right_Part -func=value_rightpart"
 specification_add -id=600190a {Specification}_Value_Label_from_other_field field_from_other_field\
- "Specification Value Value_Label -func=value_label -check_null"
+ "Specification Value Value_Label -func=value_label"
 specification_add -id=600190b {Specification}_Test_Value_Label_from_other_field field_from_other_field\
- "Specification Test_Value Test_Value_Label -func=value_label -check_null"
+ "Specification Test_Value Test_Value_Label -func=value_label"
 specification_add -id=600191 {Specification}_{Enum}_from_other_field_1 field_from_other_field\
  "Specification {Field}:{Enum} {Enum} -test={Specification_Type}:Use_Field_Enum=true"
 specification_add -id=600191a {Specification}_{Enum}_from_other_field_2 field_from_other_field\

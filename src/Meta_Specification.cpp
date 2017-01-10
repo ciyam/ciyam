@@ -7844,33 +7844,27 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600186
 
    // [(start field_from_other_field)] 600187
-   if( !is_null( get_obj( ).Value( ) ) )
-      get_obj( ).Value_String( unquoted_literal( get_obj( ).Value( ) ) );
+   get_obj( ).Value_String( unquoted_literal( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600187
 
    // [(start field_from_other_field)] 600188
-   if( !is_null( get_obj( ).Value( ) ) )
-      get_obj( ).Value_Numeric_String( numeric_name( get_obj( ).Value( ) ) );
+   get_obj( ).Value_Numeric_String( numeric_name( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600188
 
    // [(start field_from_other_field)] 600189
-   if( !is_null( get_obj( ).Value( ) ) )
-      get_obj( ).Value_Left_Part( value_leftpart( get_obj( ).Value( ) ) );
+   get_obj( ).Value_Left_Part( value_leftpart( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600189
 
    // [(start field_from_other_field)] 600190
-   if( !is_null( get_obj( ).Value( ) ) )
-      get_obj( ).Value_Right_Part( value_rightpart( get_obj( ).Value( ) ) );
+   get_obj( ).Value_Right_Part( value_rightpart( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600190
 
    // [(start field_from_other_field)] 600190a
-   if( !is_null( get_obj( ).Value( ) ) )
-      get_obj( ).Value_Label( value_label( get_obj( ).Value( ) ) );
+   get_obj( ).Value_Label( value_label( get_obj( ).Value( ) ) );
    // [(finish field_from_other_field)] 600190a
 
    // [(start field_from_other_field)] 600190b
-   if( !is_null( get_obj( ).Test_Value( ) ) )
-      get_obj( ).Test_Value_Label( value_label( get_obj( ).Test_Value( ) ) );
+   get_obj( ).Test_Value_Label( value_label( get_obj( ).Test_Value( ) ) );
    // [(finish field_from_other_field)] 600190b
 
    // [(start field_from_other_field)] 600191
