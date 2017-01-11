@@ -86,6 +86,8 @@ const size_t c_cascade_progress_seconds = 10;
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
 
+const char* const c_error_message_prefix = "error message:";
+
 const char* const c_crypto_info_testnet = "testnet";
 const char* const c_crypto_info_addr_prefix = "addr_prefix";
 const char* const c_crypto_info_p2sh_prefix = "p2sh_prefix";
@@ -5014,7 +5016,7 @@ string create_new_address( const string& ext_key, const string& label, bool igno
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp_file_name ) )
          throw runtime_error( "unexpected system failure for create_new_address" );
    }
 
@@ -5022,7 +5024,11 @@ string create_new_address( const string& ext_key, const string& label, bool igno
    {
       string error, content( buffer_file( tmp_file_name ) );
 
-      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       file_remove( tmp_file_name );
@@ -5031,15 +5037,13 @@ string create_new_address( const string& ext_key, const string& label, bool igno
       {
          if( !ignore_errors )
          {
-            string::size_type pos = error.find_first_of( "\r\n" );
-
+            pos = error.find_first_of( "\r\n" );
             throw runtime_error( error.substr( 0, pos ) );
          }   
       }
       else
       {
-         string::size_type pos = content.find_first_of( "\r\n" );
-
+         pos = content.find_first_of( "\r\n" );
          s = content.substr( 0, pos );
       }
    }
@@ -5070,7 +5074,7 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp_file_name ) )
          throw runtime_error( "unexpected system failure for send_funds_to_address" );
    }
 
@@ -5078,20 +5082,22 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
    {
       string error, content( buffer_file( tmp_file_name ) );
 
-      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       file_remove( tmp_file_name );
 
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find_first_of( "\r\n" );
-
+         pos = error.find_first_of( "\r\n" );
          throw runtime_error( error.substr( 0, pos ) );
       }
 
-      string::size_type pos = content.find_first_of( "\r\n" );
-
+      pos = content.find_first_of( "\r\n" );
       s = content.substr( 0, pos );
    }
 
@@ -5127,7 +5133,7 @@ void import_address( const string& ext_key, const string& address, const string&
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp_file_name ) )
          throw runtime_error( "unexpected system failure for import_address" );
    }
 
@@ -5135,20 +5141,22 @@ void import_address( const string& ext_key, const string& address, const string&
    {
       string error, content( buffer_file( tmp_file_name ) );
 
-      if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
-         error = trim( replace( content, "error:", "", "Exception:", "" ) );
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( content.find( "already contains" ) == string::npos ) // i.e. ignore if already known to the wallet
+      {
+         if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+            error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+         else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+            error = trim( replace( content, "error:", "", "Exception:", "" ) );
+      }
 
       file_remove( tmp_file_name );
 
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find( "\"code\":-4," ); // i.e. ignore if already known to the wallet
-
-         if( pos == string::npos )
-         {
-            pos = error.find_first_of( "\r\n" );
-            throw runtime_error( error.substr( 0, pos ) );
-         }
+         pos = error.find_first_of( "\r\n" );
+         throw runtime_error( error.substr( 0, pos ) );
       }
    }
 }
@@ -5175,7 +5183,7 @@ void load_address_information( const string& ext_key, const string& file_name )
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( file_name ) )
          throw runtime_error( "unexpected system failure for load_address_information" );
    }
 
@@ -5183,16 +5191,20 @@ void load_address_information( const string& ext_key, const string& file_name )
    {
       string error, content( buffer_file( file_name ) );
 
-      if( content.empty( ) )
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      else if( content.empty( ) )
          error = "unexpected empty response from 'listaddressgroupings'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
+      file_remove( file_name );
+
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find_first_of( "\r\n" );
-
-         file_remove( file_name );
+         pos = error.find_first_of( "\r\n" );
          throw runtime_error( error.substr( 0, pos ) );
       }
    }
@@ -5313,7 +5325,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( file_name ) )
          throw runtime_error( "unexpected system failure for load_utxo_information" );
    }
 
@@ -5321,16 +5333,20 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
    {
       string error, content( buffer_file( file_name ) );
 
-      if( content.empty( ) )
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      else if( content.empty( ) )
          error = "unexpected empty response from 'listunspent'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
+      file_remove( file_name );
+
       if( !error.empty( ) )
       {
-         string::size_type pos = error.find_first_of( "\r\n" );
-
-         file_remove( file_name );
+         pos = error.find_first_of( "\r\n" );
          throw runtime_error( error.substr( 0, pos ) );
       }
    }
@@ -5401,7 +5417,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
       {
          TRACE_LOG( TRACE_SESSIONS, cmd );
 
-         if( system( cmd.c_str( ) ) != 0 )
+         if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
             throw runtime_error( "unexpected system failure in construct_raw_transaction" );
 
          if( file_exists( tmp ) )
@@ -5409,10 +5425,14 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
             string new_change_address = trim( buffer_file( tmp ) );
             file_remove( tmp );
 
-            if( new_change_address.find( "error:" ) != string::npos )
+            string::size_type pos = new_change_address.find( c_error_message_prefix );
+
+            if( pos != string::npos && new_change_address.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+               throw runtime_error( new_change_address.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+            else if( new_change_address.find( "error:" ) != string::npos )
                throw runtime_error( new_change_address );
 
-            string::size_type pos = raw_tx_request.rfind( change_address );
+            pos = raw_tx_request.rfind( change_address );
             if( pos == string::npos )
                throw runtime_error( "unexpected failure to find change address in raw_tx_request output" );
 
@@ -5480,13 +5500,18 @@ string retreive_p2sh_redeem_extra_info(
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
-         throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
+         throw runtime_error( "unexpected system failure (1) in retreive_p2sh_redeem_extra_info" );
 
       if( file_exists( tmp ) )
       {
          string all_lines( buffer_file( tmp ) );
          file_remove( tmp );
+
+         string::size_type pos = all_lines.find( c_error_message_prefix );
+
+         if( pos != string::npos && all_lines.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+            throw runtime_error( all_lines.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
 
          vector< string > lines;
          split( all_lines, lines, '\n' );
@@ -5542,15 +5567,22 @@ string retreive_p2sh_redeem_extra_info(
 
             TRACE_LOG( TRACE_SESSIONS, cmd );
 
-            if( system( cmd.c_str( ) ) != 0 )
-               throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+            if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
+               throw runtime_error( "unexpected system failure (2) in retreive_p2sh_redeem_extra_info" );
 
             if( file_exists( tmp ) )
             {
                string raw_tx( buffer_file( tmp ) );
                file_remove( tmp );
 
-               string::size_type pos = raw_tx.find_first_not_of( "0123456789abcdef" );
+               string::size_type pos = raw_tx.find( c_error_message_prefix );
+
+               if( pos != string::npos && raw_tx.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+                  throw runtime_error( raw_tx.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+               else if( raw_tx.find( "error:" ) != string::npos )
+                  throw runtime_error( raw_tx );
+
+               pos = raw_tx.find_first_not_of( "0123456789abcdef" );
                if( pos != string::npos )
                   raw_tx.erase( pos );
 
@@ -5562,13 +5594,20 @@ string retreive_p2sh_redeem_extra_info(
 
                TRACE_LOG( TRACE_SESSIONS, cmd );
 
-               if( system( cmd.c_str( ) ) != 0 )
-                  throw runtime_error( "unexpected system failure in retreive_p2sh_redeem_extra_info" );
+               if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
+                  throw runtime_error( "unexpected system failure (3) in retreive_p2sh_redeem_extra_info" );
 
                if( file_exists( tmp ) )
                {
                   string all_lines( buffer_file( tmp ) );
                   file_remove( tmp );
+
+                  string::size_type pos = raw_tx.find( c_error_message_prefix );
+
+                  if( pos != string::npos && all_lines.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+                     throw runtime_error( all_lines.substr( pos + strlen( c_error_message_prefix ) + 1 ) );
+                  else if( all_lines.find( "error:" ) != string::npos )
+                     throw runtime_error( all_lines );
 
                   vector< string > lines;
                   split( all_lines, lines, '\n' );
@@ -5578,7 +5617,7 @@ string retreive_p2sh_redeem_extra_info(
                   {
                      string next( lines[ i ] );
 
-                     string::size_type pos = next.find( "\"scriptSig\"" );
+                     pos = next.find( "\"scriptSig\"" );
 
                      if( pos != string::npos )
                         found_script_sig = true;
@@ -5712,7 +5751,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
          throw runtime_error( "unexpected system failure in create_or_sign_raw_transaction" );
 
       bool okay = false;
@@ -5723,7 +5762,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
          retval = trim( buffer_file( tmp ) );
          file_remove( tmp );
 
-         if( retval.find( "error:" ) == string::npos )
+         if( retval.find( "error:" ) == string::npos && retval.find( c_error_message_prefix ) == string::npos )
          {
             okay = true;
 
@@ -5838,14 +5877,17 @@ string send_raw_transaction( const string& ext_key, const string& tx )
 
          TRACE_LOG( TRACE_SESSIONS, cmd );
 
-         if( system( cmd.c_str( ) ) != 0 )
+         if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp ) )
             throw runtime_error( "unexpected system failure for send_raw_transaction" );
 
-         s = trim( buffer_file( tmp ) );
-         file_remove( tmp );
+         if( file_exists( tmp ) )
+         {
+            s = trim( buffer_file( tmp ) );
+            file_remove( tmp );
 
-         if( s.find( "error:" ) != string::npos )
-            throw runtime_error( s );
+            if( s.find( "error:" ) != string::npos || s.find( c_error_message_prefix ) != string::npos )
+               throw runtime_error( s );
+         }
       }
       else if( client_info.protocol == c_protocol_blockchain )
       {
