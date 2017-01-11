@@ -5200,10 +5200,10 @@ void load_address_information( const string& ext_key, const string& file_name )
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
-      file_remove( file_name );
-
       if( !error.empty( ) )
       {
+         file_remove( file_name );
+
          pos = error.find_first_of( "\r\n" );
          throw runtime_error( error.substr( 0, pos ) );
       }
@@ -5342,10 +5342,10 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
-      file_remove( file_name );
-
       if( !error.empty( ) )
       {
+         file_remove( file_name );
+
          pos = error.find_first_of( "\r\n" );
          throw runtime_error( error.substr( 0, pos ) );
       }
@@ -5491,7 +5491,7 @@ string retreive_p2sh_redeem_extra_info(
    {
       cmd = expanded_script_name( client_info.script_name ) + " ";
 
-      cmd += "listtransactions \"*\" 25 0 true";
+      cmd += "listtransactions \"*\" 250 0 true";
 
       cmd += " >" + tmp + " 2>&1";
    }
