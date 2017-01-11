@@ -5293,10 +5293,10 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
             if( i > 0 )
                cmd += ",";
 
-#ifndef _WIN32
-            cmd += "\"" + addresses[ i ] + "\"";
-#else
+#ifdef _WIN32
             cmd += "\\\"" + addresses[ i ] + "\\\"";
+#else
+            cmd += escaped_shell_arg( "\"" + addresses[ i ] + "\"" );
 #endif
          }
 
