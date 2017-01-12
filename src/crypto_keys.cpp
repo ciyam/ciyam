@@ -259,23 +259,35 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    BN_CTX_free( p_ctx );
 }
 
-inline uint32_t as_big_endian( uint32_t x )
+bool is_big_endian( )
 {
-#ifdef BIG_ENDIAN
-   return x;
-#else
-   return ( ( ( x & 0x000000ff ) << 24 ) | ( ( x & 0x0000ff00 ) << 8 )
-    | ( ( x & 0x00ff0000 ) >> 8 ) | ( ( x & 0xff000000 ) >> 24 ) );
-#endif
+   union
+   {
+      uint32_t i;
+      char c[ 4 ];
+   } bint = { 0x01020304 };
+
+   return bint.c[ 0 ] == 1;
 }
 
-inline uint64_t as_big_endian( uint64_t x )
+inline uint32_t fix_endian( uint32_t x )
 {
-#ifdef LITTLE_ENDIAN
-   x = ( x & 0x00000000ffffffff ) << 32 | ( x & 0xffffffff00000000 ) >> 32;
-   x = ( x & 0x0000ffff0000ffff ) << 16 | ( x & 0xffff0000ffff0000 ) >> 16;
-   x = ( x & 0x00ff00ff00ff00ff ) << 8 | ( x & 0xff00ff00ff00ff00 ) >> 8;
-#endif
+   if( is_big_endian( ) )
+      return x;
+   else
+      return ( ( ( x & 0x000000ff ) << 24 ) | ( ( x & 0x0000ff00 ) << 8 )
+       | ( ( x & 0x00ff0000 ) >> 8 ) | ( ( x & 0xff000000 ) >> 24 ) );
+}
+
+inline uint64_t fix_endian( uint64_t x )
+{
+   if( !is_big_endian( ) )
+   {
+      x = ( x & 0x00000000ffffffff ) << 32 | ( x & 0xffffffff00000000 ) >> 32;
+      x = ( x & 0x0000ffff0000ffff ) << 16 | ( x & 0xffff0000ffff0000 ) >> 16;
+      x = ( x & 0x00ff00ff00ff00ff ) << 8 | ( x & 0xff00ff00ff00ff00 ) >> 8;
+   }
+
    return x;
 }
 
@@ -828,7 +840,7 @@ string construct_raw_transaction(
       string next_empty_sig_info, next_input_sig_info;
 
       ostringstream outs;
-      outs << hex << setw( 8 ) << setfill( '0' ) << as_big_endian( inputs[ i ].index );
+      outs << hex << setw( 8 ) << setfill( '0' ) << fix_endian( inputs[ i ].index );
 
       raw_transaction += inputs[ i ].reversed_txid + outs.str( );
       next_empty_sig_info += inputs[ i ].reversed_txid + outs.str( );
@@ -902,7 +914,7 @@ string construct_raw_transaction(
    for( map< string, int >::iterator i = ordering.begin( ); i != ordering.end( ); ++i )
    {
       ostringstream outs;
-      outs << hex << setw( 16 ) << setfill( '0' ) << as_big_endian( outputs[ i->second ].amount );
+      outs << hex << setw( 16 ) << setfill( '0' ) << fix_endian( outputs[ i->second ].amount );
 
       raw_transaction += outs.str( );
       signing_info_suffix += outs.str( );
