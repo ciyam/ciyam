@@ -5298,21 +5298,25 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
          cmd += "listunspent 1";
       else
       {
+#ifdef _WIN32
          cmd += "listunspent 1 999999999 [";
+#else
+         cmd += "listunspent 1 999999999 \"[";
+#endif
 
          for( size_t i = 0; i < addresses.size( ); i++ )
          {
             if( i > 0 )
                cmd += ",";
 
-#ifdef _WIN32
             cmd += "\\\"" + addresses[ i ] + "\\\"";
-#else
-            cmd += escaped_shell_arg( "\"" + addresses[ i ] + "\"" );
-#endif
          }
 
+#ifdef _WIN32
          cmd += "]";
+#else
+         cmd += "]\"";
+#endif
       }
 
       cmd += " >" + file_name + " 2>&1";

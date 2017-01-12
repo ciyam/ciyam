@@ -4711,7 +4711,13 @@ int exec_system( const string& cmd, bool async, bool delay )
 {
    int rc = 0;
 
-   string s( cmd );
+   string async_cmd( cmd );
+
+#ifdef _WIN32
+   async_cmd = "start /min " + async_cmd;
+#else
+   async_cmd += " &";
+#endif
 
    // NOTE: For security against potentially malicious module code only permit system calls
    // from the autoscript session, via "run_script", or from either the "Meta" or "default"
@@ -4730,13 +4736,6 @@ int exec_system( const string& cmd, bool async, bool delay )
 
    if( async || delay )
    {
-      string os( s );
-#ifdef _WIN32
-      s = "start /min " + s;
-#else
-      s += " &";
-#endif
-
       // NOTE: It is expected that synchronous system calls are needed as a part
       // of the transaction itself, however, for async calls they will only ever
       // be issued after the transaction is successfully committed. If one wants
@@ -4744,7 +4743,7 @@ int exec_system( const string& cmd, bool async, bool delay )
       // to be issued synchronously then use "delay".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
-         gtp_session->async_or_delayed_system_commands.push_back( async ? s  : os );
+         gtp_session->async_or_delayed_system_commands.push_back( async ? async_cmd : cmd );
 
          if( !gtp_session->async_or_delayed_temp_file.empty( ) )
             gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
@@ -4753,9 +4752,9 @@ int exec_system( const string& cmd, bool async, bool delay )
       }
    }
 
-   TRACE_LOG( TRACE_SESSIONS, s );
+   TRACE_LOG( TRACE_SESSIONS, async ? async_cmd : cmd );
 
-   rc = system( s.c_str( ) );
+   rc = system( async ? async_cmd.c_str( ) : cmd.c_str( ) );
 
    // NOTE: If the script had an error and the caller should throw this as an error then do so.
    string check_script_error( get_raw_session_variable( c_special_variable_check_script_error ) );
