@@ -3890,7 +3890,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( dtm == c_dtm_now )
             dtm = date_time::standard( ).as_string( );
 
-         import_package( module, uid, dtm, filename, key_prefix, replace_info, skip_field_info, new_only, for_remove );
+         try
+         {
+            import_package( module, uid, dtm, filename, key_prefix, replace_info, skip_field_info, new_only, for_remove );
+         }
+         catch( exception& )
+         {
+            possibly_expected_error = true;
+            throw;
+         }
       }
       else if( command == c_cmd_ciyam_session_session_list )
       {

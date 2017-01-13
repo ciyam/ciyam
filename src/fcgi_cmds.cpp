@@ -2539,9 +2539,16 @@ void save_record( const string& module_id,
    {
       string field_id( fields[ i ] );
 
-      original_field_values.insert( make_pair( field_id, values.at( num ) ) );
+      string next;
+      if( num >= values.size( ) )
+         original_field_values.insert( make_pair( field_id, "" ) );
+      else
+      {
+         original_field_values.insert(
+          make_pair( field_id, values.at( num ) ) );
 
-      string next( escaped( values.at( num++ ), "," ) );
+         next = escaped( values.at( num++ ), "," );
+      }
 
       if( field_id == c_key_field )
       {

@@ -2519,9 +2519,11 @@ void request_handler::process_request( )
       osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
 
       bool is_logged_in = false;
+      bool has_output_go_back = false;
       if( !created_session && p_session_info && p_session_info->logged_in )
       {
          is_logged_in = true;
+         has_output_go_back = true;
 
          osstr << "<p class=\"text_with_back\">"
           << string_message( GDS( c_display_click_here_to_go_back ),
@@ -2535,6 +2537,7 @@ void request_handler::process_request( )
          if( force_refresh )
          {
             is_logged_in = true;
+            has_output_go_back = true;
 
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_go_back ),
@@ -2573,23 +2576,28 @@ void request_handler::process_request( )
 
          extra_content << osstr.str( );
 
-         extra_content << "<p align=\"center\">"
-          << string_message( GDS( c_display_click_here_to_retry ),
-          make_pair( c_display_click_here_to_retry_parm_href,
-          "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+         if( !has_output_go_back )
+         {
+            extra_content << "<p align=\"center\">"
+             << string_message( GDS( c_display_click_here_to_retry ),
+             make_pair( c_display_click_here_to_retry_parm_href,
+             "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+         }
 
          extra_content << g_footer_html;
          extra_content << "</div>\n";
       }
 
       if( is_logged_in )
-         extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
+         extra_content << "<input type=\"hidden\" value=\"loggedIn = true; had_act_error = true;\" id=\"extra_content_func\"/>\n";
       else
       {
          if( g_is_blockchain_application )
-            extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '';\" id=\"extra_content_func\"/>\n";
+            extra_content << "<input type=\"hidden\" value=\"serverId = '"
+             + g_id + "'; uniqueId = ''; had_act_error = true;\" id=\"extra_content_func\"/>\n";
          else
-            extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
+            extra_content << "<input type=\"hidden\" value=\"serverId = '"
+             + g_id + "'; uniqueId = '" + unique_id + "'; had_act_error = true;\" id=\"extra_content_func\"/>\n";
       }
    }
    catch( ... )
@@ -2605,7 +2613,7 @@ void request_handler::process_request( )
           make_pair( c_display_click_here_to_go_back_parm_href,
           "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>\n";
 
-         extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
+         extra_content << "<input type=\"hidden\" value=\"loggedIn = true; had_act_error = true\" id=\"extra_content_func\"/>\n";
       }
       else
       {
