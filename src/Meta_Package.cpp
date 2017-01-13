@@ -1267,9 +1267,9 @@ void Meta_Package::impl::impl_Install( )
             throw runtime_error( "unable to open '" + script_filename + "' for output" );
 #ifdef _WIN32
          outs << "@echo off\n";
-         outs << "ciyam_client -quiet -no_prompt < ";
+         outs << "ciyam_client -quiet -no_prompt -no_stderr < ";
 #else
-         outs << "./ciyam_client -quiet -no_prompt < ";
+         outs << "./ciyam_client -quiet -no_prompt -no_stderr < ";
 #endif
          outs << commands_filename << " >>" << install_log << "\n";
          outs << "echo Finished Install..." << ">>" << install_log << "\n"; // FUTURE: Should be a module string...

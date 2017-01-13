@@ -5091,6 +5091,12 @@ string send_funds_to_address( const string& ext_key, const string& address, cons
 
       file_remove( tmp_file_name );
 
+      if( !error.empty( ) && lower( error ).find( "insufficient funds" ) != string::npos )
+      {
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "There are insufficient funds to perform this send." );
+      }
+
       if( !error.empty( ) )
       {
          pos = error.find_first_of( "\r\n" );
@@ -5889,8 +5895,28 @@ string send_raw_transaction( const string& ext_key, const string& tx )
             s = trim( buffer_file( tmp ) );
             file_remove( tmp );
 
-            if( s.find( "error:" ) != string::npos || s.find( c_error_message_prefix ) != string::npos )
-               throw runtime_error( s );
+            string error;
+            string::size_type pos = s.find( c_error_message_prefix );
+
+            if( pos != string::npos && s.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+               error = s.substr( pos + strlen( c_error_message_prefix ) + 1 );
+            else if( s.find( "error:" ) != string::npos || s.find( "Exception:" ) != string::npos )
+               error = trim( replace( s, "error:", "", "Exception:", "" ) );
+
+            if( !error.empty( ) && lower( error ).find( "non-final" ) != string::npos )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "This transaction cannot be sent until later." );
+            }
+
+            if( !error.empty( ) && lower( error ).find( "insufficient priority" ) != string::npos )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "This transaction is too low priority to be sent now." );
+            }
+
+            if( !error.empty( ) )
+               throw runtime_error( error );
          }
       }
       else if( client_info.protocol == c_protocol_blockchain )

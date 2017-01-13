@@ -1590,6 +1590,9 @@ void output_actions( ostream& os,
          if( record_key != string( c_new_record ) )
             os << "&act=edit";
 
+         if( mod_info.view_cids.find( child_class ) == mod_info.view_cids.end( ) )
+            throw runtime_error( "unexpected missing view id for class: " + child_class );
+
          os << "&extra=" << child_key << "&field=" << child_field
           << "&ident=" << mod_info.view_cids.find( child_class )->second;
 
