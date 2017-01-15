@@ -5,8 +5,15 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: restore [app name]
+ echo Usage: restore [[-quicker]] [app name]
+elif [ $# -lt 2 ] && [ "$1" = "-quicker" ]; then
+ echo Usage: restore [[-quicker]] [app name]
 else
- export CIYAM_STORAGE=$1
- ./ciyam_client -quiet -no_prompt < restore.cin
+ if [ ! "$1" = "-quicker" ]; then
+  export CIYAM_STORAGE=$1
+  ./ciyam_client -quiet -no_prompt < restore.cin
+ else
+  export CIYAM_STORAGE=$2
+  ./ciyam_client -quiet -no_prompt < restore_quicker.cin
+ fi
 fi
