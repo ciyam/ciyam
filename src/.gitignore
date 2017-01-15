@@ -17,7 +17,6 @@ tmp
 *.lib
 *.exe
 *.exp
-btstore
 bundle
 calendar
 check_source
@@ -28,10 +27,11 @@ construct
 crypt
 diff
 diffp
-dump
 extract
 generate_commands
 modeller
+ods_dump
+ods_fsed
 test
 test_blockchain
 test_btree

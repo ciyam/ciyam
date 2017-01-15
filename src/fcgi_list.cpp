@@ -3148,11 +3148,11 @@ void output_list_form( ostream& os,
                }
             }
 
+            // NOTE: Only provide a hyperlink to the first non-fk link permitted field.
             if( !is_foreign_link
              && ( had_link || source.non_link_fields.count( source_value_id )
-             || ( source.owner_link_fields.count( source_value_id ) && !has_owner_parent )
-             || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) ) )
-               view_id.erase( ); // NOTE: Only provide a hyperlink to the first non-fk link permitted field.
+             || ( source.owner_link_fields.count( source_value_id ) && !has_owner_parent ) ) )
+               view_id.erase( );
 
             if( inc_fk_column )
                ++fk_column;
