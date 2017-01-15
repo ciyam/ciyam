@@ -7,12 +7,19 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 setlocal
 if '%1' == '' goto usage
 
+if '%1' == '-quicker' goto next
 set CIYAM_STORAGE=%1
 ciyam_client -quiet -no_prompt < restore.cin
 goto end
 
+:next
+if '%2' == '' goto usage
+set CIYAM_STORAGE=%2
+ciyam_client -quiet -no_prompt < restore_quicker.cin
+goto end
+
 :usage
-echo Usage: restore [app name]
+echo Usage: restore [[-quicker]] [app name]
 
 :end
 endlocal
