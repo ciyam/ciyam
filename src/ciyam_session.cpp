@@ -4553,6 +4553,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             bool is_first = true;
             bool first_op = true;
             bool performed_init = false;
+            bool is_skipping_legacy = false;
+            bool finished_skipping_legacy = false;
 
             while( getline( inpf, next ) )
             {
@@ -4646,28 +4648,52 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   bool old_skip_fetches = session_skip_fk_fetches( );
                   session_skip_fk_fetches( true );
 
-                  for( size_t i = 0; i < module_list.size( ); i++ )
+                  if( name == "Meta" )
                   {
-                     string module_init_list( module_list[ i ] + ".init.lst" );
-                     if( file_exists( module_init_list ) )
+                     ifstream std_inpf( "Meta_init_std.cin" );
+                     if( !std_inpf )
+                        throw runtime_error( "unable to open Meta_init_std.cin for input" );
+
+                     string std_next;
+
+                     while( getline( std_inpf, std_next ) )
                      {
-                        vector< string > init_classes;
-                        buffer_file_lines( module_init_list, init_classes );
+                        if( std_next.empty( ) )
+                           continue;
 
-                        for( size_t j = 0; j < init_classes.size( ); j++ )
+                        if( std_next[ 0 ] != ';' )
+                           handler.execute_command( std_next );
+
+                        if( !socket_handler.get_restore_error( ).empty( ) )
+                           throw runtime_error( "unexpected error: " + socket_handler.get_restore_error( )
+                            + "\nprocessing transaction log line #" + to_string( line ) + " with std ==> " + std_next );
+                     }
+                  }
+                  else
+                  {
+                     for( size_t i = 0; i < module_list.size( ); i++ )
+                     {
+                        string module_init_list( module_list[ i ] + ".init.lst" );
+                        if( file_exists( module_init_list ) )
                         {
-                           string bulk_init_cmd( "perform_bulk_ops init " );
+                           vector< string > init_classes;
+                           buffer_file_lines( module_init_list, init_classes );
 
-                           bulk_init_cmd += "20011111111002 ";
-                           bulk_init_cmd += module_list[ i ] + " " + init_classes[ j ] + " ";
-                           bulk_init_cmd += module_list[ i ] + "_" + init_classes[ j ] + ".csv";
+                           for( size_t j = 0; j < init_classes.size( ); j++ )
+                           {
+                              string bulk_init_cmd( "perform_bulk_ops init " );
 
-                           handler.execute_command( bulk_init_cmd );
+                              bulk_init_cmd += "20011111111002 ";
+                              bulk_init_cmd += module_list[ i ] + " " + init_classes[ j ] + " ";
+                              bulk_init_cmd += module_list[ i ] + "_" + init_classes[ j ] + ".csv";
 
-                           string init_output( module_list[ i ] + "_" + init_classes[ j ] + ".csv: " );
-                           init_output += buffer_file( module_list[ i ] + "_" + init_classes[ j ] + ".log" );
+                              handler.execute_command( bulk_init_cmd );
 
-                           handler.output_progress( init_output );
+                              string init_output( module_list[ i ] + "_" + init_classes[ j ] + ".csv: " );
+                              init_output += buffer_file( module_list[ i ] + "_" + init_classes[ j ] + ".log" );
+
+                              handler.output_progress( init_output );
+                           }
                         }
                      }
                   }
@@ -4676,6 +4702,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      storage_comment( "block 0" );
 
                   session_skip_fk_fetches( old_skip_fetches );
+               }
+
+               // FUTURE: This code can be removed after all legacy Meta applications have been restored.
+               if( name == "Meta" && ( tran_id >= 5 || is_skipping_legacy ) && !finished_skipping_legacy )
+               {
+                  if( tran_info.find( "pc sys 20120102 Meta 102100 string" ) == 0 )
+                  {
+                     tran_info.erase( );
+                     is_skipping_legacy = true;
+                  }
+                  else if( tran_info.find( "pc sys 20120102 Meta 114100 sys_info" ) == 0 )
+                  {
+                     tran_info.erase( );
+                     is_skipping_legacy = false;
+                     finished_skipping_legacy = true;
+                  }
+
+                  if( is_skipping_legacy )
+                     tran_info.erase( );
                }
 
                // NOTE: Any operations whose transaction id is less than five is skipped during a restore.

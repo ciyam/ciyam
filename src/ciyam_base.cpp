@@ -239,6 +239,7 @@ const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
+const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
@@ -3106,6 +3107,12 @@ void append_transaction_log_command( storage_handler& handler,
 
       int32_t tx_id;
 
+      bool use_init_tx_id = false;
+      string init_log_id( get_raw_session_variable( c_special_variable_init_log_id ) );
+
+      if( init_log_id == "1" || init_log_id == c_true )
+         use_init_tx_id = true;
+
       // NOTE: When log file is truncated during a backup no transaction is active, so
       // change the tx id to 2 to ensure the restore can recognise a partial log file.
       // Any "init" ops will also get the tx id of 2 and the tx id of any module loads
@@ -3114,7 +3121,8 @@ void append_transaction_log_command( storage_handler& handler,
          tx_id = use_tx_id;
       else if( load_module_id )
          tx_id = 1;
-      else if( !ods::instance( )->get_transaction_id( ) || handler.get_alternative_log_file( ) )
+      else if( use_init_tx_id
+       || !ods::instance( )->get_transaction_id( ) || handler.get_alternative_log_file( ) )
          tx_id = 2;
       else
       {
@@ -6619,10 +6627,21 @@ void storage_comment( const string& comment )
 
       log_identity& identity( handler.get_root( ).log_id );
 
-      // NOTE: During a "restore" the comment does not need to be logged unless it follows initial data
-      // records (as others will be appended to the new log file by the "storage restore" code itself).
-      if( !storage_locked_for_admin( ) || identity.next_id == 2 )
-         append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
+      bool use_init_tx_id = false;
+      string init_log_id( get_raw_session_variable( c_special_variable_init_log_id ) );
+
+      if( init_log_id == "1" || init_log_id == c_true )
+         use_init_tx_id = true;
+
+      // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
+      // the initial data records (such comments prior are appended by the "storage restore" code itself).
+      if( use_init_tx_id || !storage_locked_for_admin( ) || identity.next_id >= 2 )
+      {
+         if( use_init_tx_id || identity.next_id == 2 )
+            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, 2 );
+         else
+            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
+      }
 
       if( handler.is_using_blockchain( ) )
       {
