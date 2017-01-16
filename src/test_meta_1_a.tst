@@ -3,29 +3,29 @@
 
 > session_variable @attached_file_path .
 
-> perform_create guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0"
+> pc guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0"
 guest_model
 
-> perform_fetch 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114"
+> pf 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114"
 [guest_model =1.0 512 100:105100] Sample,0.1,2012,M001,M001C100,M001S1000,M001L100,M001V100,,,,2,0,
 
-> perform_create guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=standard,302800=guest_model"
+> pc guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=standard,302800=guest_model"
 guest_standard
 
-> perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
+> pe guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
 Installing Standard Package...
 
-> perform_create guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=user,302800=guest_model"
+> pc guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=user,302800=guest_model"
 guest_user
 
-> perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
+> pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
 Installing User Package...
 
-> perform_fetch Meta Class "Id " Name,Plural,Id -min
+> pf Meta Class "Id " Name,Plural,Id -min
 System_Information,System_Information,M001C100
 User,User,M001C101
 
-> perform_fetch Meta Field "Id " Name,Id -min
+> pf Meta Field "Id " Name,Id -min
 Name,M001C100F100
 Vendor,M001C100F101
 Reference,M001C100F102
@@ -59,7 +59,7 @@ No_Email,M001C101F124
 No_Email_Padding,M001C101F125
 Dummy_Self,M001C101F126
 
-> perform_fetch Meta Enum "Id " Name,Id -min
+> pf Meta Enum "Id " Name,Id -min
 primitive,E000
 primitive,E000
 Currency,E100
@@ -75,7 +75,7 @@ Minutes,E109
 Occurrence,E110
 Orientation,E111
 
-> perform_fetch Meta Type "Id " Name,Id -min
+> pf Meta Type "Id " Name,Id -min
 string,T000
 string,T000
 datetime,T001

@@ -11,7 +11,9 @@ storage_init -admin %CIYAM_STORAGE%
 module_load Meta
 storage_term
 storage_init %CIYAM_STORAGE%
+session_variable @init_log_id true
 <Meta_init_std.cin
+session_variable @init_log_id ""
 session_variable @allow_async false
 session_variable @package_type_path .
 @ifdef %CIYAM_TEST_STORAGE%
