@@ -6,24 +6,22 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if not '%1' == 'okay' goto usage
 
-REM Retreive the lines from the log file which were package installations (this is being
-REM done in order to make sure the packages will be reinstalled in the exact same order).
-findstr /R " 135410$" Meta.log >package_lines.lst
+ciyam_client -quiet -no_prompt < get_acyclic_package_types.cin
 
-if not exist package_lines.lst goto error1
+if not exist packages.acyclic.lst goto error1
 
 ciyam_client -quiet -no_prompt < destroy_meta.cin
 
-xrep @reinstall_packages.cin.xrep package_lines=@package_lines.lst >reinstall_packages.cin
+xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin
 
 ciyam_client -quiet -no_prompt < reinstall_packages.cin
 
 del reinstall_packages.cin
-del package_lines.lst
+del packages.acyclic.lst
 goto end
 
 :error1
-echo Error: File 'package_lines.lst' does not exist.
+echo Error: File 'packages.acyclic.lst' does not exist.
 goto end
 
 :usage

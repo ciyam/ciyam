@@ -9,13 +9,13 @@ guest_model
 > pf 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114"
 [guest_model =1.0 512 100:105100] Sample,0.1,2012,M001,M001C100,M001S1000,M001L100,M001V100,,,,2,0,
 
-> pc guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=standard,302800=guest_model"
+> pc guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=Standard,302800=guest_model"
 guest_standard
 
 > pe guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
 Installing Standard Package...
 
-> pc guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=user,302800=guest_model"
+> pc guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=User,302800=guest_model"
 guest_user
 
 > pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410

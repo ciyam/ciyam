@@ -27906,6 +27906,14 @@
       <args/>
       </args>
      </procedure>
+     <procedure/>
+      <id>101420
+      <name>Get_Acyclic_Package_Type_List
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
     </procedures>
    </class>
   </classes>
