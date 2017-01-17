@@ -20,21 +20,21 @@ session_variable @package_type_path .
 session_variable @attached_file_path .
 @endif
 ~cp Standard.package.bun.gz new.package.bun.gz
-pc admin 20120102 100 135100 standard "135101=New_Package_Type"
-pu admin 20120102 100 135100 standard "135103=new.package.bun.gz"
-pe admin 20120102 100 135100 standard 135410
+pc admin 20120102 100 135100 Standard "135101=New_Package_Type"
+pu admin 20120102 100 135100 Standard "135103=new.package.bun.gz"
+pe admin 20120102 100 135100 Standard 135410
 ~cp Auto_Code.package.bun.gz new.package.bun.gz
-pc admin 20120102 100 135100 auto_code "135101=New_Package_Type"
-pu admin 20120102 100 135100 auto_code "135103=new.package.bun.gz"
-pe admin 20120102 100 135100 auto_code 135410
+pc admin 20120102 100 135100 Auto_Code "135101=New_Package_Type"
+pu admin 20120102 100 135100 Auto_Code "135103=new.package.bun.gz"
+pe admin 20120102 100 135100 Auto_Code 135410
 ~cp User.package.bun.gz new.package.bun.gz
-pc admin 20120102 100 135100 user "135101=New_Package_Type"
-pu admin 20120102 100 135100 user "135103=new.package.bun.gz"
-pe admin 20120102 100 135100 user 135410
+pc admin 20120102 100 135100 User "135101=New_Package_Type"
+pu admin 20120102 100 135100 User "135103=new.package.bun.gz"
+pe admin 20120102 100 135100 User 135410
 ~cp Group.package.bun.gz new.package.bun.gz
-pc admin 20120102 100 135100 group "135101=New_Package_Type"
-pu admin 20120102 100 135100 group "135103=new.package.bun.gz"
-pe admin 20120102 100 135100 group 135410
+pc admin 20120102 100 135100 Group "135101=New_Package_Type"
+pu admin 20120102 100 135100 Group "135103=new.package.bun.gz"
+pe admin 20120102 100 135100 Group 135410
 ~rm new.package.bun.gz
 storage_term
 quit

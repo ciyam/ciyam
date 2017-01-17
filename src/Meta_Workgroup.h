@@ -97,6 +97,8 @@ class META_WORKGROUP_DECL_SPEC Meta_Workgroup : public class_base
 
    virtual void Destroy_Apps_And_Models( );
 
+   virtual void Get_Acyclic_Package_Type_List( );
+
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 

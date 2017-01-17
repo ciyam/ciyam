@@ -7,14 +7,14 @@
 if [ $# -ne 1 ]; then
  echo Usage: reinstall_packages [okay]
 else
- grep " 135410$" Meta.log >package_lines.lst
- if [ ! -f package_lines.lst ]; then
-  echo Error: File 'package_lines.lst' does not exist.
+ ./ciyam_client -quiet -no_prompt < get_acyclic_package_types.cin
+ if [ ! -f packages.acyclic.lst ]; then
+  echo Error: File 'packages.acyclic.lst' does not exist.
  else
   ./ciyam_client -quiet -no_prompt < destroy_meta.cin
-  ./xrep @reinstall_packages.cin.xrep package_lines=@package_lines.lst >reinstall_packages.cin
+  ./xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin
   ./ciyam_client -quiet -no_prompt < reinstall_packages.cin
   rm reinstall_packages.cin
-  rm package_lines.lst
+  rm packages.acyclic.lst
  fi
 fi

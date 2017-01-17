@@ -148,6 +148,7 @@ const int c_num_transient_fields = 0;
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
 const char* const c_procedure_id_Destroy_Apps_And_Models = "101410";
+const char* const c_procedure_id_Get_Acyclic_Package_Type_List = "101420";
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -415,6 +416,12 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
 
       cmd_handler.retval.erase( );
    }
+   else if( command == c_cmd_Meta_Workgroup_Get_Acyclic_Package_Type_List )
+   {
+      cmd_handler.p_Meta_Workgroup->Get_Acyclic_Package_Type_List( );
+
+      cmd_handler.retval.erase( );
+   }
 }
 
 struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
@@ -618,6 +625,8 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
 
    void impl_Destroy_Apps_And_Models( );
 
+   void impl_Get_Acyclic_Package_Type_List( );
+
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
    void set_field_default( int field );
@@ -738,6 +747,62 @@ void Meta_Workgroup::impl::impl_Destroy_Apps_And_Models( )
       } while( get_obj( ).child_Model( ).iterate_next( ) );
    }
    // [<finish Destroy_Apps_And_Models_impl>]
+}
+
+void Meta_Workgroup::impl::impl_Get_Acyclic_Package_Type_List( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Get_Acyclic_Package_Type_List_impl>]
+//nyi
+   if( !storage_locked_for_admin( ) )
+   {
+      vector< string > packages;
+
+      read_file_lines( "packages.lst", packages );
+
+      map< string, int > reference_counted_packages;
+
+      for( size_t i = 0; i < packages.size( ); i++ )
+      {
+         string next( packages[ i ] );
+
+         if( reference_counted_packages.find( next ) == reference_counted_packages.end( ) )
+            reference_counted_packages[ next ] = 999;
+
+         vector< string > next_info;
+         read_file_lines( next + ".package.info", next_info );
+
+         if( next_info.size( ) > 1 )
+         {
+            for( size_t j = 1; j < next_info.size( ); j++ )
+            {
+               string next_dependency( next_info[ j ] );
+
+               string::size_type pos = next_dependency.find( ' ' );
+
+               if( pos != string::npos )
+                  next_dependency.erase( pos );
+
+               if( reference_counted_packages.find( next_dependency ) == reference_counted_packages.end( ) )
+                  reference_counted_packages[ next_dependency ] = 999;
+
+               --reference_counted_packages[ next_dependency ];
+            }
+         }
+      }
+
+      multimap< int, string > reference_ordered_packages;
+
+      for( map< string, int >::iterator mi = reference_counted_packages.begin( ); mi != reference_counted_packages.end( ); ++mi )
+         reference_ordered_packages.insert( make_pair( mi->second, mi->first ) );
+
+      ofstream outf( "packages.acyclic.lst" );
+      for( multimap< int, string >::const_iterator mci = reference_ordered_packages.begin( ); mci != reference_ordered_packages.end( ); ++mci )
+         outf << mci->second << endl;
+   }
+   // [<finish Get_Acyclic_Package_Type_List_impl>]
 }
 
 string Meta_Workgroup::impl::get_field_value( int field ) const
@@ -1516,6 +1581,11 @@ void Meta_Workgroup::Destroy_Apps_And_Models( )
    p_impl->impl_Destroy_Apps_And_Models( );
 }
 
+void Meta_Workgroup::Get_Acyclic_Package_Type_List( )
+{
+   p_impl->impl_Get_Acyclic_Package_Type_List( );
+}
+
 string Meta_Workgroup::get_field_value( int field ) const
 {
    return p_impl->get_field_value( field );
@@ -2186,6 +2256,8 @@ string Meta_Workgroup::get_execute_procedure_info( const string& procedure_id ) 
       throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
    else if( procedure_id == "101410" ) // i.e. Destroy_Apps_And_Models
       retval = "";
+   else if( procedure_id == "101420" ) // i.e. Get_Acyclic_Package_Type_List
+      retval = "";
 
    return retval;
 }
@@ -2493,6 +2565,7 @@ procedure_info_container& Meta_Workgroup::static_get_procedure_info( )
    {
       initialised = true;
       procedures.insert( make_pair( "101410", procedure_info( "Destroy_Apps_And_Models" ) ) );
+      procedures.insert( make_pair( "101420", procedure_info( "Get_Acyclic_Package_Type_List" ) ) );
    }
 
    return procedures;

@@ -1,11 +1,12 @@
 storage_init Meta
 session_variable @allow_async false
 session_variable @package_type_path .
-session_variable @attached_file_path .`{`[`$package_lines`*]`% `,`{`!`@eq`(`'\5`'`,`'`'`)
-~cp \5.package.bun.gz new.package.bun.gz
-pc admin 20120102 100 135100 \5 "135101=New_Package_Type"
-pu admin 20120102 100 135100 \5 "135103=new.package.bun.gz"
-pe admin 20120102 100 135100 \5 135410`}`]`}
+session_variable @attached_file_path .
+`{`[`$packages`,\
+~cp \$.package.bun.gz new.package.bun.gz
+pc admin 20120102 100 135100 \$ "135101=New_Package_Type"
+pu admin 20120102 100 135100 \$ "135103=new.package.bun.gz"
+pe admin 20120102 100 135100 \$ 135410`+\n`]`}
 ~rm new.package.bun.gz
 storage_term
 quit
