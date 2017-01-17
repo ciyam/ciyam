@@ -1,0 +1,1 @@
+storage_restore -stop_at_tx=5 -rebuild Meta

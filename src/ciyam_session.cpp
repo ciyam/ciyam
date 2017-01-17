@@ -4600,7 +4600,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                size_t tran_id = from_string< size_t >( next.substr( 1, pos - 1 ) );
                string tran_info = next.substr( pos + 1 );
 
-               if( stop_at_tx && tran_id == stop_at_tx )
+               if( stop_at_tx && tran_id >= stop_at_tx )
                   break;
 
                if( !in_trans && tran_id >= 5 && line >= tline )

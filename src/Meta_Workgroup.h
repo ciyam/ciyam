@@ -95,6 +95,8 @@ class META_WORKGROUP_DECL_SPEC Meta_Workgroup : public class_base
    Meta_User& child_User( );
    const Meta_User& child_User( ) const;
 
+   virtual void Destroy_Apps_And_Models( );
+
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 
