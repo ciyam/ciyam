@@ -134,6 +134,7 @@ field_add -id=101105 Workgroup Next_Type_Id identifier mand -def=T100
 field_add -id=101106 Workgroup Next_Permission_Id identifier mand -def=P100
 index_add -id=101201 Workgroup Name unique
 index_add -id=101202 Workgroup Id unique
+procedure_add -id=101410 Workgroup Destroy_Apps_And_Models
 class_add -id=102100 Type Types
 field_add -id=102101 Type Name str100 mand
 field_add -id=102102 Type Primitive int mand -def=0 -e=primitive

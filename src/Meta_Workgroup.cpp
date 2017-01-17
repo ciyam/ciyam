@@ -147,6 +147,8 @@ const int c_num_transient_fields = 0;
 
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
+const char* const c_procedure_id_Destroy_Apps_And_Models = "101410";
+
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
@@ -407,6 +409,12 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
+   else if( command == c_cmd_Meta_Workgroup_Destroy_Apps_And_Models )
+   {
+      cmd_handler.p_Meta_Workgroup->Destroy_Apps_And_Models( );
+
+      cmd_handler.retval.erase( );
+   }
 }
 
 struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
@@ -608,6 +616,8 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
       return *cp_child_User;
    }
 
+   void impl_Destroy_Apps_And_Models( );
+
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
    void set_field_default( int field );
@@ -685,6 +695,50 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
    mutable class_pointer< Meta_Type > cp_child_Type;
    mutable class_pointer< Meta_User > cp_child_User;
 };
+
+void Meta_Workgroup::impl::impl_Destroy_Apps_And_Models( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Destroy_Apps_And_Models_impl>]
+//nyi
+   string key_info( FIELD_ID( Meta, Application, Name ) );
+   key_info += ' ';
+
+   if( get_obj( ).child_Application( ).iterate_forwards( key_info ) )
+   {
+      do
+      {
+         output_progress_message( "Destroying Application "
+          + get_obj( ).child_Application( ).Name( ) + "..." );
+
+         get_obj( ).child_Application( ).op_destroy( );
+         get_obj( ).child_Application( ).op_apply( );
+
+      } while( get_obj( ).child_Application( ).iterate_next( ) );
+   }
+
+   key_info = string( FIELD_ID( Meta, Model, Name ) );
+   key_info += ' ';
+
+   if( get_obj( ).child_Model( ).iterate_forwards( key_info ) )
+   {
+      do
+      {
+         output_progress_message( "Destroying Model " + get_obj( ).child_Model( ).Name( ) + "..." );
+
+         get_obj( ).child_Model( ).set_variable( get_special_var_name( e_special_var_async ), "0" );
+
+         get_obj( ).child_Model( ).Remove_All_Packages( );
+
+         get_obj( ).child_Model( ).op_destroy( );
+         get_obj( ).child_Model( ).op_apply( );
+
+      } while( get_obj( ).child_Model( ).iterate_next( ) );
+   }
+   // [<finish Destroy_Apps_And_Models_impl>]
+}
 
 string Meta_Workgroup::impl::get_field_value( int field ) const
 {
@@ -1457,6 +1511,11 @@ const Meta_User& Meta_Workgroup::child_User( ) const
    return p_impl->impl_child_User( );
 }
 
+void Meta_Workgroup::Destroy_Apps_And_Models( )
+{
+   p_impl->impl_Destroy_Apps_And_Models( );
+}
+
 string Meta_Workgroup::get_field_value( int field ) const
 {
    return p_impl->get_field_value( field );
@@ -2125,6 +2184,8 @@ string Meta_Workgroup::get_execute_procedure_info( const string& procedure_id ) 
 
    if( procedure_id.empty( ) )
       throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "101410" ) // i.e. Destroy_Apps_And_Models
+      retval = "";
 
    return retval;
 }
@@ -2425,7 +2486,14 @@ int Meta_Workgroup::static_get_field_num( const string& field )
 
 procedure_info_container& Meta_Workgroup::static_get_procedure_info( )
 {
+   static bool initialised = false;
    static procedure_info_container procedures;
+
+   if( !initialised )
+   {
+      initialised = true;
+      procedures.insert( make_pair( "101410", procedure_info( "Destroy_Apps_And_Models" ) ) );
+   }
 
    return procedures;
 }
