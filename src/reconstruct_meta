@@ -6,6 +6,8 @@
 
 if [ $# -ne 1 ]; then
  echo Usage: reconstruct_meta [okay]
+ echo ""
+ echo "WARNING: APPLICATIONS AND MODEL ARTIFACTS WILL BE DESTROYED."
 else
  if [ -f packages.lst ]; then
   ./construct @packages.lst ciyam_class.cpp.xrep

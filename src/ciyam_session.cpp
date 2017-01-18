@@ -4545,9 +4545,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             // NOTE: As multiple ops can have the same transaction id the test below is >= but we must
             // skip any ops that were part of the last transaction in the storage if it is not new.
-            size_t next_tran_id = 0;
+            size_t start_tran_id = 5;
+
             if( !is_new )
-               next_tran_id = next_transaction_id( ) + 1;
+               start_tran_id = next_transaction_id( ) + 1;
+
+            size_t new_tran_id = start_tran_id;
+            size_t last_tran_id = start_tran_id;
 
             size_t tline = 0;
             bool is_first = true;
@@ -4618,6 +4622,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( is_new && !verified )
                   {
                      new_logf << "[0]" << storage_identity( ) << '\n';
+
                      for( size_t i = 0; i < module_tx_info.size( ); i++ )
                         new_logf << module_tx_info[ i ] << '\n';
                   }
@@ -4731,21 +4736,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      first_op = false;
 
                      if( is_new )
-                        next_tran_id = next_transaction_id( );
+                        start_tran_id = next_transaction_id( );
                   }
 
-                  size_t new_tran_id( next_tran_id );
+                  if( tran_id > last_tran_id )
+                     ++new_tran_id;
+
+                  last_tran_id = tran_id;
 
                   if( tran_info[ 0 ] == ';' )
                      storage_comment( tran_info.substr( 1 ) );
 
-                  if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= next_tran_id ) )
+                  if( tran_info[ 0 ] != ';' && ( is_new || tran_id >= start_tran_id ) )
                   {
-                     new_tran_id = next_tran_id = set_transaction_id( tran_id );
+                     set_transaction_id( new_tran_id );
                      handler.execute_command( tran_info );
                   }
-                  else if( tran_info[ 0 ] == ';' )
-                     new_tran_id = tran_id;
 
                   if( is_new )
                      new_logf << '[' << new_tran_id << ']' << tran_info << '\n';

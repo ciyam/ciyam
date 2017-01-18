@@ -11,7 +11,7 @@ else
  if [ ! -f packages.acyclic.lst ]; then
   echo Error: File 'packages.acyclic.lst' does not exist.
  else
-  ./ciyam_client -quiet -no_prompt < destroy_meta.cin
+  ./ciyam_client -quiet -no_prompt < recreate_meta.cin
   ./xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin
   ./ciyam_client -quiet -no_prompt < reinstall_packages.cin
   rm reinstall_packages.cin

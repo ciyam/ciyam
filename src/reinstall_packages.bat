@@ -10,7 +10,7 @@ ciyam_client -quiet -no_prompt < get_acyclic_package_types.cin
 
 if not exist packages.acyclic.lst goto error1
 
-ciyam_client -quiet -no_prompt < destroy_meta.cin
+ciyam_client -quiet -no_prompt < recreate_meta.cin
 
 xrep @reinstall_packages.cin.xrep packages=@packages.acyclic.lst >reinstall_packages.cin
 
