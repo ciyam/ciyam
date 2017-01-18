@@ -18,6 +18,8 @@ goto end
 
 :usage
 echo Usage: reconstruct_meta [okay]
+echo.
+echo WARNING: APPLICATIONS AND MODEL ARTIFACTS WILL BE DESTROYED.
 
 :end
 
