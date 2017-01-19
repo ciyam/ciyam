@@ -4545,7 +4545,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             // NOTE: As multiple ops can have the same transaction id the test below is >= but we must
             // skip any ops that were part of the last transaction in the storage if it is not new.
-            size_t start_tran_id = 5;
+            size_t start_tran_id = c_tx_id_standard;
 
             if( !is_new )
                start_tran_id = next_transaction_id( ) + 1;
@@ -4607,7 +4607,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( stop_at_tx && tran_id >= stop_at_tx )
                   break;
 
-               if( !in_trans && tran_id >= 5 && line >= tline )
+               if( !in_trans && line >= tline && tran_id >= c_tx_id_standard )
                {
                   in_trans = true;
                   transaction_start( );
@@ -4621,7 +4621,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   if( is_new && !verified )
                   {
-                     new_logf << "[0]" << storage_identity( ) << '\n';
+                     new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
 
                      for( size_t i = 0; i < module_tx_info.size( ); i++ )
                         new_logf << module_tx_info[ i ] << '\n';
@@ -4632,12 +4632,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                else if( !verified )
                   throw runtime_error( "unexpected DB identity missing from transaction log" );
 
-               if( tran_id == 1 )
+               if( tran_id == c_tx_id_module )
                   is_partial = false;
-               else if( tran_id >= 2 && is_new && is_partial )
+               else if( tran_id >= c_tx_id_initial && is_new && is_partial )
                   throw runtime_error( "cannot restore from empty DB with a partial transaction log" );
 
-               if( tran_id > 1 && is_new && !performed_init )
+               if( tran_id > c_tx_id_module && is_new && !performed_init )
                {
                   if( in_trans )
                      transaction_commit( );
@@ -4646,14 +4646,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   in_trans = false;
                   performed_init = true;
 
-                  // NOTE: Transaction id #2 is used for initial data records.
-                  set_transaction_id( 2 );
+                  // NOTE: Set the special transaction id for initial data records.
+                  set_transaction_id( c_tx_id_initial );
                   record_initialiser init( new_logf );
 
                   bool old_skip_fetches = session_skip_fk_fetches( );
                   session_skip_fk_fetches( true );
 
-                  if( name == "Meta" )
+                  if( name == c_meta_model )
                   {
                      ifstream std_inpf( "Meta_init_std.cin" );
                      if( !std_inpf )
@@ -4710,7 +4710,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                // FUTURE: This code can be removed after all legacy Meta applications have been restored.
-               if( name == "Meta" && ( tran_id >= 5 || is_skipping_legacy ) && !finished_skipping_legacy )
+               if( name == c_meta_model
+                && ( tran_id >= c_tx_id_standard || is_skipping_legacy ) && !finished_skipping_legacy )
                {
                   if( tran_info.find( "pc sys 20120102 Meta 102100 string" ) == 0 )
                   {
@@ -4728,8 +4729,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      tran_info.erase( );
                }
 
-               // NOTE: Any operations whose transaction id is less than five is skipped during a restore.
-               if( !tran_info.empty( ) && tran_id >= 5 )
+               // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
+               if( !tran_info.empty( ) && tran_id >= c_tx_id_standard )
                {
                   if( first_op )
                   {
@@ -4738,8 +4739,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( is_new )
                         start_tran_id = next_transaction_id( );
                   }
-
-                  if( tran_id > last_tran_id )
+                  else if( tran_id > last_tran_id )
                      ++new_tran_id;
 
                   last_tran_id = tran_id;
@@ -4779,8 +4779,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                transaction_commit( );
 
             // NOTE: Ensure that reserved transaction id's cannot be used later.
-            if( next_transaction_id( ) < 4 )
-               set_transaction_id( 4 );
+            if( next_transaction_id( ) < c_tx_id_standard - 1 )
+               set_transaction_id( c_tx_id_standard - 1 );
 
             storage_unlock_all_tables( );
 

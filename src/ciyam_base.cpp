@@ -612,10 +612,10 @@ typedef lock_index_container::value_type lock_index_value_type;
 
 const int c_storage_format_version = 1;
 
-// NOTE: Log identity values less than 5 are reserved for system purposes.
+// NOTE: Log identity values less than standard are reserved for system purposes.
 struct log_identity
 {
-   log_identity( ) : next_id( 4 ), ceiling( 0 ) { }
+   log_identity( ) : next_id( c_tx_id_standard - 1 ), ceiling( 0 ) { }
 
    int32_t next_id;
    int32_t ceiling;
@@ -3114,16 +3114,15 @@ void append_transaction_log_command( storage_handler& handler,
          use_init_tx_id = true;
 
       // NOTE: When log file is truncated during a backup no transaction is active, so
-      // change the tx id to 2 to ensure the restore can recognise a partial log file.
-      // Any "init" ops will also get the tx id of 2 and the tx id of any module loads
-      // will always be 1.
+      // change the tx id to 'initial' to ensure that a restore is able to understand
+      // it's dealing with a partial log file.
       if( use_tx_id )
          tx_id = use_tx_id;
       else if( load_module_id )
-         tx_id = 1;
+         tx_id = c_tx_id_module;
       else if( use_init_tx_id
        || !ods::instance( )->get_transaction_id( ) || handler.get_alternative_log_file( ) )
-         tx_id = 2;
+         tx_id = c_tx_id_initial;
       else
       {
          log_identity& identity( handler.get_root( ).log_id );
@@ -6635,10 +6634,10 @@ void storage_comment( const string& comment )
 
       // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
       // the initial data records (such comments prior are appended by the "storage restore" code itself).
-      if( use_init_tx_id || !storage_locked_for_admin( ) || identity.next_id >= 2 )
+      if( use_init_tx_id || !storage_locked_for_admin( ) || identity.next_id >= c_tx_id_initial )
       {
-         if( use_init_tx_id || identity.next_id == 2 )
-            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, 2 );
+         if( use_init_tx_id || identity.next_id == c_tx_id_initial )
+            append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, c_tx_id_initial );
          else
             append_transaction_log_command( *gtp_session->p_storage_handler, false, 0, identity.next_id + 1 );
       }
@@ -6653,7 +6652,7 @@ void storage_comment( const string& comment )
 
          if( comment.find( block_comment ) == 0 )
          {
-            if( storage_locked_for_admin( ) && identity.next_id + 1 >= 5 )
+            if( storage_locked_for_admin( ) && identity.next_id + 1 >= c_tx_id_standard )
                gtp_session->sql_undo_statements.push_back( "#" + comment );
             else
             {
