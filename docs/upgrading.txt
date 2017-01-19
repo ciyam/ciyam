@@ -1,0 +1,123 @@
+Upgrading Legacy Systems
+------------------------
+
+As changes to the application server, packages, scripts and various source code templates occur it is going to
+be necessary to upgrade an existing system in order to reap the benefits of improvements that have been made.
+
+Unfortunately some changes are easier than others to add to an existing system so some care must be taken when
+upgrading to decide exactly what changes are necessary to be made to an existing application.
+
+Keeping a record of Repository changes
+--------------------------------------
+
+An upgrade will start with either a "git pull" or a "git fetch upstream" (the latter in the case of working on
+a forked repository as described in the "Development Cycle Steps" document). It is highly recommended that one
+keeps a record of the repository changes as reported by "git" in order to be able to carefully review them.
+
+Clear descriptions of each of the different types of changes and how to incorporate them into existing systems
+is what follows.
+
+Basic Changes to the Application Server and FCGI User Interface
+---------------------------------------------------------------
+
+After updating the repository files (via "git") the first thing to do is to change to the "src" directory then
+run the script "config" (use "./config" for Linux). Although it is most likely that this script will have zero
+affect it is possible that it might need to be run (to know whether this step needs to be performed just check
+whether either of the files "config.info.default" or "config.h.xrep" have changed).
+
+The next step is to execute "make all" which will compile any source code changes that affects the application
+server as well as the FCGI user interface software and various tools that are a part of the software platform.
+Attention should be paid to the output of this in order to determine what to do next.
+
+Assuming "ciyam_server" was re-linked then the application server is going to need to be restarted.
+
+If either the "upload" or "ciyam_interface" applications were re-linked by the "make" then the web server will
+need to be restarted and then depending upon which of them was rebuilt one of the following batch/script files
+will need to be executed (once for each application with Windows users omitting the "./"):
+
+./install_fcgi upload <app>
+./install_fcgi ciyam_interface <app>
+
+For the second of these batch/script files there may be other files that need to be included after the "<app>"
+name. One possibility is that the file "ciyam_interface.txt" has changed (check the repository changes record)
+and others are any ".htms" files that have changed. An example with a few of these is as follows:
+
+./install_fcgi ciyam_interface meta ciyam_interface.txt identity.htms ciyam_interface.htms
+
+Possible Changes to Standard Specifications
+-------------------------------------------
+
+It is possible that one or more of the standard source code templates was changed and this can be detected via
+the repository changes record by looking for any "*.spec.xrep" or "ciyam_class.cpp.xrep.outline" file updates.
+
+Assuming such changes were found then the following script should be executed from the "src" directory:
+
+./construct @packages.lst ciyam_class.cpp.xrep
+
+It should be noted that assuming the above does indicate that it has changed "ciyam_class.cpp.xrep" then it is
+recommended that all existing applications should be "re-generated" (which is described later). The reason for
+this being that the changes made to the standard specifications may include bug fixes that would otherwise not
+be included.
+
+Changes to the Standard Specification Types
+-------------------------------------------
+
+Along with potential changes to the standard specifications it is possible that changes might have occurred in
+the standard specification types. Any such changes are identified in the repository changes record if the file
+"Meta_init_std.cin" has changed.
+
+Assuming that this has occurred then the "Meta" application needs to be "restored" which can be performed with
+the following script (run again from the "src" directory).
+
+./restore Meta
+
+Regenerating Applications
+-------------------------
+
+Assuming that there were changes to either the standard specifications or standard specification types then it
+is recommended that all existing applications should be regenerated (after "./restore Meta" if that was needed
+to be executed).
+
+To be certain that changes are not missed it is recommended to delete all of the applications ".sav" files and
+this can be done using the following:
+
+rm <app>*.sav
+
+After removing the ".sav" files the following script (run from the "src" directory) perform the re-generate:
+
+./generate <app>
+
+(repeat both of these commands for each application)
+
+Assuming any changes to the application source files are reported then the application should be rebuilt which
+can be done with another "make all" (do after re-generating all applications).
+
+Each application that is re-linked should then also be "restored" such as the following example shows:
+
+./restore Sample
+
+Reconstructing Meta
+-------------------
+
+Assuming that one or more ".package.bun.gz" files were changed then verify if the packages that have been thus
+updated have been used by any application (if not then it no issue although if a package type that hasn't been
+used had been installed then it should be removed and re-installed in "Meta").
+
+Unfortunately package changes often will not be able to be used by existing applications as they might include
+changes that alter the model artifacts that the package provides. For a legacy application if "manual upgrade"
+notes have been provided then those instructions should be followed before issuing the following command which
+will update the package source templates and other details:
+
+./unbundle -q <name>.package
+
+If there are no "manual upgrade" notes then it would be best to simply not do the above as it is possible that
+an existing system might otherwise end up becoming unusable.
+
+In the case of the applications being only "demo" ones (and can be discarded without any problem) then use the
+following:
+
+./reconstruct_meta
+
+It should be noted (the batch/script issues a warning) that this destroys all existing applications along with
+their model artifacts (i.e. you'll need to re-create your applications from "Meta").
+

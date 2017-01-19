@@ -6,6 +6,14 @@
 #ifndef CIYAM_CONSTANTS_H
 #  define CIYAM_CONSTANTS_H
 
+const int c_tx_id_module = 1;
+const int c_tx_id_initial = 2;
+const int c_tx_id_standard = 5;
+
+const char* const c_meta_model = "Meta";
+
+const char* const c_storage_identity_tx_id = "[0]";
+
 const char* const c_block_prefix = "block";
 const char* const c_files_directory = "files";
 
