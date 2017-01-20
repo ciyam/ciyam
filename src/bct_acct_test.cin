@@ -20,52 +20,59 @@
 ^If bitcoind is running then stop it now and press any key to continue...
 ~bct1
 ^When bct1 is ready press any key to continue...
-#Generating a spendable amount of RHS for "user1"...
+#Generating a spendable amount of coins for "user1"...
 NUL=@~tbitcoin generate 101
 ~tbitcoin importprivkey cRamM8VxjrrdpdQfoeidK4MpTTyTJvvaN4EgMWic6Qc7UrbGWQRQ "user1 (refund)"
 ^Shutdown bct1 now and press any key to continue...
 ~bct2
 ^When bct2 is ready press any key to continue...
-#Generating a spendable amount of LHS for "user2"...
+#Generating a spendable amount of coins for "user2"...
 NUL=@~tbitcoin generate 101
 ~tbitcoin importprivkey cNAxEFeb4cRx6bmxHkU9bDQ2WhhW1PUEduZqKf1VxryD3GsqieRP "user2 (refund)"
 #
 ^Shutdown bct2 now and press any key to continue...
-#Login as "user1" and create a Trade Offer (with Maximum Amount as at least 25) and then Logout.
+#Login as "user1" and create a Trade Offer (Maximum Amount at least 25) save then Open Offer and Logout.
 ^
 #
-#Now login as "user2" and create a tx from the offer in the All Open Offers list with the following details:
+#Now login as "user2" and Start New Trade from the offer in All Open Offers with the following details:
 #
 #Sending Amount: 25
 #Refund Address: mtW4pzRHXwNwkHa2mdy2EokKy5GZ4aMWtu
+#Refund Lock Address: (same as above)
+#
 #Receiving Address: mkoJtKoxHmdL8aXJvPudmUgZKC1xXHb9KT
+#Receiving Lock Address: (same as above)
+#
 #Secret Hash: 2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b
 #
 ^Save the record and then click the Proceed button and Logout...
-#Now login as "user1" and edit the Trade Transaction in the My Trade Transactions list with the following:
+#Now login as "user1" and edit the Trade Record in the My Trade Transactions list with the following:
 #
 #Refund Address: mids4AKKn42KmcJTvaynUzmnhWnmfgwRMw
+#Refund Lock Address: (same as above)
+#
 #Receiving Address: mgF67ucKz7CddjuJwDvDUgC5HiJBRDGNBx
+#Receiving Lock Address: (same as above)
 #
 ^Save the record then click the Proceed button and Logout...
-#Now login as "user2" and from the tx click on the Waiting tx and copy and paste the Sending Address:
+#Now login as "user2" and from My Trade Records click on the Waiting record and copy the Sending P2SH Address:
 #
 &USER2_P2SH=
 ~bct2
 #
 ^Now Logout and when bct2 is ready press any key to continue...
-#Now "user2" sends LHS to their P2SH address.
+#Now "user2" sends coins to their Sending P2SH address.
 NUL=@~tbitcoin sendtoaddress $USER2_P2SH 25
 NUL=@~tbitcoin generate 4
 #
-#Now login as "user1" and from the tx click on the Waiting tx and copy and paste the Sending Address:
+#Now login as "user1" and from My Trade Records click on the Waiting record and copy the Sending P2SH Address:
 #
 &USER1_P2SH=
 #
 ^Now Logout and also shutdown bct2 and press any key to continue...
 ~bct1
 ^When bct1 is ready press any key to continue...
-#Now "user1" sends RHS to their P2SH address...
+#Now "user1" sends coins to their Sending P2SH address...
 NUL=@~tbitcoin sendtoaddress $USER1_P2SH 25
 NUL=@~tbitcoin generate 4
 #
@@ -80,7 +87,7 @@ NUL=@~tbitcoin generate 4
 &TXID=
 &VOUT=
 #
-#Now login as "user2" and from the tx click the Receive Checked button and paste the Secret Reveal Script:
+#Now login as "user2" and from the Trade Record click Incoming Checked and paste the Secret Reveal Script:
 SECRET=secret
 HEX_SCRT=@aschex:$SECRET
 &SCRIPT=
@@ -91,17 +98,17 @@ crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 25.0 $WKEY -e=$HEX_SCRT
 RAW_TX=$OUTPUT
 ;~tbitcoin decoderawtransaction $RAW_TX
 #
-#Now "user2" will redeem RHS from the "user1" P2SH address tx (exposing their secret).
+#Now "user2" will redeem coins from the "user1" P2SH address tx (exposing their secret).
 ^
 NUL=@~tbitcoin sendrawtransaction $RAW_TX
 NUL=@~tbitcoin generate 1
 #
-#Balance of RHS for "user2" is:
+#Balance of coins for "user2" is:
 ~tbitcoin getbalance
 #
 ^Now Logout and shutdown bct4 and press any key to continue...
 ~bct1
-#Now login as "user1" and from the tx click the Receive Checked button and paste the new Check Address:
+#Now login as "user1" and from the Trade Record click Incoming Checked and paste the new Check Address:
 &ADDR=
 ~tbitcoin importaddress $ADDR "user1 (user2's reveal)"
 #
@@ -129,19 +136,19 @@ RAW_TX=@~tbitcoin getrawtransaction $TXID
 ADDR=mgF67ucKz7CddjuJwDvDUgC5HiJBRDGNBx
 WKEY=cNLhr36maZTyS84dXXf2WyWq43pHdix53FEoMaRhUEywi5vpP6Y3
 #
-#Now click the Secret Checked button and paste the Secret Reveal Script:
+#Now click the Secret Reveal Checked button and paste the Secret Reveal Script:
 &SCRIPT=
 #
 crypto_p2sh_redeem $TXID $VOUT $SCRIPT $ADDR 25.0 $WKEY -e=$HEX_SCRT
 RAW_TX=$OUTPUT
 ;~tbitcoin decoderawtransaction $RAW_TX
 #
-#Now "user1" will redeem LHS from the "user2" P2SH address tx.
+#Now "user1" will redeem coins from the "user2" P2SH address tx.
 ^
 NUL=@~tbitcoin sendrawtransaction $RAW_TX
 NUL=@~tbitcoin generate 1
 #
-#Balance of LHS for "user1" is:
+#Balance of coins for "user1" is:
 ~tbitcoin getbalance
 ^Now Logout and shutdown bct3 and press any key to finish...
 #
