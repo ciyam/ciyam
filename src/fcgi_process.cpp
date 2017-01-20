@@ -74,7 +74,7 @@ const int c_auto_refresh_seconds_hello = 3;
 const int c_auto_refresh_seconds_local = 5;
 const int c_auto_refresh_seconds_remote = 10;
 
-const int c_warn_refresh_seconds = c_timeout_seconds - 30;
+const int c_warn_refresh_seconds = c_timeout_seconds / 2;
 
 const char* const c_checked = "@@checked";
 const char* const c_app_name = "@@app_name";

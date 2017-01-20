@@ -44,6 +44,9 @@ and others are any ".htms" files that have changed. An example with a few of the
 
 ./install_fcgi ciyam_interface meta ciyam_interface.txt identity.htms ciyam_interface.htms
 
+It should be noted that if the web server was restarted then any browser tabs for any application will need to
+be closed.
+
 Possible Changes to Standard Specifications
 -------------------------------------------
 

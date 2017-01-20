@@ -93,7 +93,7 @@ var extra_values = '';
 var warn_refresh_func = '';
 
 var auto_refresh_seconds = 10;
-var warn_refresh_seconds = 1150;
+var warn_refresh_seconds = 900;
 
 var warn_refresh_timer_id = 0;
 
