@@ -1099,8 +1099,11 @@ void Meta_Package::impl::impl_Install( )
       string keys_filename( type_name + ".keys.lst" );
 
       bool async = true;
+
       if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
-       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false" )
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
          async = false;
 
       // NOTE: Empty code block for scope purposes.

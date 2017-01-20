@@ -7,7 +7,7 @@
 #ifndef CIYAM_INTERFACE_H
 #  define CIYAM_INTERFACE_H
 
-const int c_timeout_seconds = 1200;
+const int c_timeout_seconds = 1800;
 
 const int c_default_row_limit = 10;
 

@@ -6298,8 +6298,11 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
 
       bool async = true;
+
       if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
-       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false" )
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "0"
+       || get_session_variable( get_special_var_name( e_special_var_allow_async ) ) == "false" )
          async = false;
 
       if( !packages.empty( ) )
