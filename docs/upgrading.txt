@@ -15,14 +15,14 @@ a forked repository as described in the "Development Cycle Steps" document). It 
 keeps a record of the repository changes as reported by "git" in order to be able to carefully review them.
 
 Clear descriptions of each of the different types of changes and how to incorporate them into existing systems
-is what follows.
+follows.
 
 Basic Changes to the Application Server and FCGI User Interface
 ---------------------------------------------------------------
 
 After updating the repository files (via "git") the first thing to do is to change to the "src" directory then
 run the script "config" (use "./config" for Linux). Although it is most likely that this script will have zero
-affect it is possible that it might need to be run (to know whether this step needs to be performed just check
+effect it is possible that it might need to be run (to know whether this step needs to be performed just check
 whether either of the files "config.info.default" or "config.h.xrep" have changed).
 
 The next step is to execute "make all" which will compile any source code changes that affects the application
@@ -46,6 +46,14 @@ and others are any ".htms" files that have changed. An example with a few of the
 
 It should be noted that if the web server was restarted then any browser tabs for any application will need to
 be closed.
+
+If the file "ciyam_interface.js.xrep" had been updated then run the "install_fcgi_js" script for each existing
+application. An example is as follows:
+
+./install_fcgi_js Meta meta
+
+It should be noted that changes to the "ciyam_interface.js" will often require all end-users to perform a hard
+refresh of the browser for every application being used.
 
 Possible Changes to Standard Specifications
 -------------------------------------------
