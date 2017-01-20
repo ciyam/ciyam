@@ -1,0 +1,18 @@
+#!/bin/sh
+# Copyright (c) 2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 2 ]; then
+ echo Usage: install_fcgi_js [app name] [app dir] [[web dir]]
+else
+ if [ $# -gt 2 ]; then
+  export WEBDIR=$3
+ fi
+ if [ "$WEBDIR" = "" ]; then
+  echo Error: Missing environment variable 'WEBDIR'.
+ else
+  ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep > $WEBDIR/$2/ciyam_interface.js
+ fi
+fi
