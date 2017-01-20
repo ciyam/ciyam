@@ -35,12 +35,12 @@ If either the "upload" or "ciyam_interface" applications were re-linked by the "
 need to be restarted and then depending upon which of them was rebuilt one of the following batch/script files
 will need to be executed (once for each application with Windows users omitting the "./"):
 
-./install_fcgi upload <app>
-./install_fcgi ciyam_interface <app>
+./install_fcgi upload <app dir>
+./install_fcgi ciyam_interface <app dir>
 
-For the second of these batch/script files there may be other files that need to be included after the "<app>"
-name. One possibility is that the file "ciyam_interface.txt" has changed (check the repository changes record)
-and others are any ".htms" files that have changed. An example with a few of these is as follows:
+For the second of these batch/script files there may be other files required to be included after "<app dir>".
+One possibility is that the file "ciyam_interface.txt" has changed (check the repository changes record) while
+others are any ".htms" files that have changed. An example with a few of these is as follows:
 
 ./install_fcgi ciyam_interface meta ciyam_interface.txt identity.htms ciyam_interface.htms
 
@@ -92,11 +92,11 @@ to be executed).
 To be certain that changes are not missed it is recommended to delete all of the applications ".sav" files and
 this can be done using the following:
 
-rm <app>*.sav
+rm <app name>*.sav
 
 After removing the ".sav" files the following script (run from the "src" directory) perform the re-generate:
 
-./generate <app>
+./generate <app name>
 
 (repeat both of these commands for each application)
 
