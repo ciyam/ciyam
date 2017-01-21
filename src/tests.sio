@@ -1093,13 +1093,13 @@
      </test_step>
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -1109,13 +1109,13 @@
      <description>Test loading the Meta model, viewing various artifacts and performing basic object operations.
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
