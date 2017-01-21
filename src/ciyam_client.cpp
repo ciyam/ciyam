@@ -104,6 +104,8 @@ string application_title( app_info_request request )
 
 int g_pid = get_pid( );
 
+bool g_had_error = false;
+
 string g_exec_cmd;
 string g_args_file;
 
@@ -480,6 +482,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                    && response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
                   {
                      is_error = true;
+                     g_had_error = true;
                      start = err_prefix_length;
                   }
 
@@ -560,6 +563,8 @@ void ciyam_console_command_handler::process_custom_startup_option( size_t num, c
 
 int main( int argc, char* argv[ ] )
 {
+   int rc = 0;
+
 #ifdef _WIN32
    winsock_init wsi;
 #endif   
@@ -682,11 +687,22 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& x )
    {
+      rc = 2;
       cerr << "error: " << x.what( ) << endl;
+   }
+   catch( ... )
+   {
+      rc = 3;
+      cerr << "error: unexpected unknown exception caught" << endl;
    }
 
 #ifdef SSL_SUPPORT
    term_ssl( );
 #endif
+
+   if( g_had_error )
+      rc = 1;
+
+   return rc;
 }
 

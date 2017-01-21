@@ -1,4 +1,9 @@
 <sio/>
+# Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+# Copyright (c) 2012-2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
  <groups/>
   <group/>
    <name>test_meta
@@ -14,7 +19,7 @@
      </test_step>
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -25,19 +30,19 @@
      <kill>ciyam.backup.bun.gz
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>
@@ -47,7 +52,7 @@
      <description>Test removing all packages and deleting Model.
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet -no_stderr
+      <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
      </test_step>

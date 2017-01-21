@@ -4,15 +4,41 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+do_not_log=0
+log_on_error=0
+
+if [ "$1" = "-do_not_log" ]; then
+ shift
+ do_not_log=1
+fi
+ 
+if [ "$1" = "-log_on_error" ]; then
+ shift
+ log_on_error=1
+fi
+
 if [ $# -lt 1 ]; then
- echo Usage: script [script and args file] [[script name]]
+ echo Usage: script [[-do_not_log\|-log_on_error]] [script and args file] [[script name]]
 else
  if [ $# -gt 1 ]; then
   echo $(date) [$2] >>$1.log
  fi
+
+ log=1
+
+ if [ $do_not_log = 1 ]; then
+  log=0
+ fi
+
  ./ciyam_client -echo -quiet -no_prompt -no_stderr -args_file=$1 < $1 >>$1.log
 
- cat $1.log >>ciyam_script.log
+ if [ $? -eq 0 ] && [ $log_on_error = 1 ]; then
+  log=0
+ fi
+
+ if [ $log = 1 ]; then
+  cat $1.log >>ciyam_script.log
+ fi
 
  rm $1
  rm $1.log
