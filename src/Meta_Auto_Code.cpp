@@ -132,6 +132,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -139,8 +141,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 bool g_default_Exhausted = bool( 0 );
 string g_default_Mask = string( );
@@ -670,26 +681,27 @@ void Meta_Auto_Code::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Mask ) && !value_will_be_provided( c_field_name_Mask ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Mask,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Mask,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Mask ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Mask )
     && ( v_Mask != g_default_Mask
     || !value_will_be_provided( c_field_name_Mask ) )
     && !g_Mask_domain.is_valid( v_Mask, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Mask,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Mask,
        get_module_string( c_field_display_name_Mask ) + " " + error_message ) );
 
    if( !is_null( v_Next )
     && ( v_Next != g_default_Next
     || !value_will_be_provided( c_field_name_Next ) )
     && !g_Next_domain.is_valid( v_Next, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next,
        get_module_string( c_field_display_name_Next ) + " " + error_message ) );
 
    // [(start for_auto_code)] 600295
@@ -728,8 +740,8 @@ void Meta_Auto_Code::impl::validate(
       }
 
       if( !okay )
-         p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
-          get_string_message( GS( c_str_field_mismatch ), make_pair(
+         p_validation_errors->insert( construct_validation_error( vf.num,
+          c_field_name_Next, get_string_message( GS( c_str_field_mismatch ), make_pair(
           c_str_parm_field_mismatch_field, get_module_string( c_field_display_name_Next ) ),
           make_pair( c_str_parm_field_mismatch_field2, get_module_string( c_field_display_name_Mask ) ) ) ) );
    }
@@ -748,17 +760,18 @@ void Meta_Auto_Code::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Mask )
     && ( fields_set.count( c_field_id_Mask ) || fields_set.count( c_field_name_Mask ) )
     && !g_Mask_domain.is_valid( v_Mask, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Mask,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Mask,
        get_module_string( c_field_display_name_Mask ) + " " + error_message ) );
 
    if( !is_null( v_Next )
     && ( fields_set.count( c_field_id_Next ) || fields_set.count( c_field_name_Next ) )
     && !g_Next_domain.is_valid( v_Next, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next,
        get_module_string( c_field_display_name_Next ) + " " + error_message ) );
 }
 

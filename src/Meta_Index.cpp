@@ -205,6 +205,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -212,8 +214,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Class = string( );
 string g_default_Field_1 = string( );
@@ -1376,44 +1387,45 @@ void Meta_Index::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Order,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Class,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( v_Field_1.empty( ) && !value_will_be_provided( c_field_name_Field_1 ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_1,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Field_1,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field_1 ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    // [(start check_null_match)] 600066
    if( is_null( get_obj( ).Field_2( ) ) && !is_null( get_obj( ).Field_3( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_2,
-       get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_Field_2, get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_3 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_2 ) ) ) ) );
    // [(finish check_null_match)] 600066
 
    // [(start check_null_match)] 600067
    if( is_null( get_obj( ).Field_3( ) ) && !is_null( get_obj( ).Field_4( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_3,
-       get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_Field_3, get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_4 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_3 ) ) ) ) );
    // [(finish check_null_match)] 600067
 
    // [(start check_null_match)] 600068
    if( is_null( get_obj( ).Field_4( ) ) && !is_null( get_obj( ).Field_5( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_4,
-       get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_Field_4, get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_5 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_4 ) ) ) ) );
    // [(finish check_null_match)] 600068
@@ -1471,7 +1483,7 @@ void Meta_Index::impl::validate(
 
       for( size_t i = 0; i < duplicate_fields.size( ); i++ )
       {
-         p_validation_errors->insert( validation_error_value_type( duplicate_fields[ i ].first,
+         p_validation_errors->insert( construct_validation_error( vf.num, duplicate_fields[ i ].first,
           get_string_message( GS( c_str_invalid_duplicate_field_value ), make_pair(
           c_str_parm_invalid_duplicate_field_value_field, get_module_string( duplicate_fields[ i ].second ) ) ) ) );
 
@@ -1490,6 +1502,9 @@ void Meta_Index::impl::validate_set_fields(
 
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+   validate_formatter vf;
 }
 
 void Meta_Index::impl::after_fetch( )

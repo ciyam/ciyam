@@ -317,6 +317,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -324,8 +326,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Actions = string( );
 int g_default_Add_Packages = int( 2 );
@@ -6974,99 +6985,100 @@ void Meta_Model::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( is_null( v_Version ) && !value_will_be_provided( c_field_name_Version ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Version ) ) ) ) );
 
    if( v_Workgroup.empty( ) && !value_will_be_provided( c_field_name_Workgroup ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Workgroup,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Workgroup,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Home_Title )
     && ( v_Home_Title != g_default_Home_Title
     || !value_will_be_provided( c_field_name_Home_Title ) )
     && !g_Home_Title_domain.is_valid( v_Home_Title, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Home_Title,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Home_Title,
        get_module_string( c_field_display_name_Home_Title ) + " " + error_message ) );
 
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Next_Class_Id )
     && ( v_Next_Class_Id != g_default_Next_Class_Id
     || !value_will_be_provided( c_field_name_Next_Class_Id ) )
     && !g_Next_Class_Id_domain.is_valid( v_Next_Class_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Class_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Class_Id,
        get_module_string( c_field_display_name_Next_Class_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_List_Id )
     && ( v_Next_List_Id != g_default_Next_List_Id
     || !value_will_be_provided( c_field_name_Next_List_Id ) )
     && !g_Next_List_Id_domain.is_valid( v_Next_List_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_List_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_List_Id,
        get_module_string( c_field_display_name_Next_List_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Specification_Id )
     && ( v_Next_Specification_Id != g_default_Next_Specification_Id
     || !value_will_be_provided( c_field_name_Next_Specification_Id ) )
     && !g_Next_Specification_Id_domain.is_valid( v_Next_Specification_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Specification_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Specification_Id,
        get_module_string( c_field_display_name_Next_Specification_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_View_Id )
     && ( v_Next_View_Id != g_default_Next_View_Id
     || !value_will_be_provided( c_field_name_Next_View_Id ) )
     && !g_Next_View_Id_domain.is_valid( v_Next_View_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_View_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_View_Id,
        get_module_string( c_field_display_name_Next_View_Id ) + " " + error_message ) );
 
    if( !is_null( v_Version )
     && ( v_Version != g_default_Version
     || !value_will_be_provided( c_field_name_Version ) )
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
        get_module_string( c_field_display_name_Version ) + " " + error_message ) );
 
    if( !is_null( v_Year_Created )
     && ( v_Year_Created != g_default_Year_Created
     || !value_will_be_provided( c_field_name_Year_Created ) )
     && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Year_Created,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Year_Created,
        get_module_string( c_field_display_name_Year_Created ) + " " + error_message ) );
 
    if( !g_add_packages_enum.count( v_Add_Packages ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Add_Packages,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Add_Packages,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Add_Packages ) ) ) ) );
 
    if( !g_model_type_enum.count( v_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
@@ -7083,59 +7095,60 @@ void Meta_Model::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Home_Title )
     && ( fields_set.count( c_field_id_Home_Title ) || fields_set.count( c_field_name_Home_Title ) )
     && !g_Home_Title_domain.is_valid( v_Home_Title, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Home_Title,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Home_Title,
        get_module_string( c_field_display_name_Home_Title ) + " " + error_message ) );
 
    if( !is_null( v_Id )
     && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Next_Class_Id )
     && ( fields_set.count( c_field_id_Next_Class_Id ) || fields_set.count( c_field_name_Next_Class_Id ) )
     && !g_Next_Class_Id_domain.is_valid( v_Next_Class_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Class_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Class_Id,
        get_module_string( c_field_display_name_Next_Class_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_List_Id )
     && ( fields_set.count( c_field_id_Next_List_Id ) || fields_set.count( c_field_name_Next_List_Id ) )
     && !g_Next_List_Id_domain.is_valid( v_Next_List_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_List_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_List_Id,
        get_module_string( c_field_display_name_Next_List_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Specification_Id )
     && ( fields_set.count( c_field_id_Next_Specification_Id ) || fields_set.count( c_field_name_Next_Specification_Id ) )
     && !g_Next_Specification_Id_domain.is_valid( v_Next_Specification_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Specification_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_Specification_Id,
        get_module_string( c_field_display_name_Next_Specification_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_View_Id )
     && ( fields_set.count( c_field_id_Next_View_Id ) || fields_set.count( c_field_name_Next_View_Id ) )
     && !g_Next_View_Id_domain.is_valid( v_Next_View_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_View_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Next_View_Id,
        get_module_string( c_field_display_name_Next_View_Id ) + " " + error_message ) );
 
    if( !is_null( v_Version )
     && ( fields_set.count( c_field_id_Version ) || fields_set.count( c_field_name_Version ) )
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Version,
        get_module_string( c_field_display_name_Version ) + " " + error_message ) );
 
    if( !is_null( v_Year_Created )
     && ( fields_set.count( c_field_id_Year_Created ) || fields_set.count( c_field_name_Year_Created ) )
     && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Year_Created,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Year_Created,
        get_module_string( c_field_display_name_Year_Created ) + " " + error_message ) );
 }
 

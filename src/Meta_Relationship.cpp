@@ -341,6 +341,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -348,8 +350,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Access_Permission = string( );
 int g_default_Access_Restriction = int( 0 );
@@ -2092,86 +2103,87 @@ void Meta_Relationship::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( v_Child_Class.empty( ) && !value_will_be_provided( c_field_name_Child_Class ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Child_Class ) ) ) ) );
 
    if( v_Model.empty( ) && !value_will_be_provided( c_field_name_Model ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Model,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Model,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Model ) ) ) ) );
 
    if( v_Parent_Class.empty( ) && !value_will_be_provided( c_field_name_Parent_Class ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Parent_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Parent_Class ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Child_Class_Id )
     && ( v_Child_Class_Id != g_default_Child_Class_Id
     || !value_will_be_provided( c_field_name_Child_Class_Id ) )
     && !g_Child_Class_Id_domain.is_valid( v_Child_Class_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Class_Id,
        get_module_string( c_field_display_name_Child_Class_Id ) + " " + error_message ) );
 
    if( !is_null( v_Child_Class_Name )
     && ( v_Child_Class_Name != g_default_Child_Class_Name
     || !value_will_be_provided( c_field_name_Child_Class_Name ) )
     && !g_Child_Class_Name_domain.is_valid( v_Child_Class_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Class_Name,
        get_module_string( c_field_display_name_Child_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_Child_Name )
     && ( v_Child_Name != g_default_Child_Name
     || !value_will_be_provided( c_field_name_Child_Name ) )
     && !g_Child_Name_domain.is_valid( v_Child_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Name,
        get_module_string( c_field_display_name_Child_Name ) + " " + error_message ) );
 
    if( !is_null( v_Field_Id )
     && ( v_Field_Id != g_default_Field_Id
     || !value_will_be_provided( c_field_name_Field_Id ) )
     && !g_Field_Id_domain.is_valid( v_Field_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Field_Id,
        get_module_string( c_field_display_name_Field_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
    if( !g_view_field_access_scope_enum.count( v_Access_Scope ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Scope,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Scope,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Scope ) ) ) ) );
 
    if( !g_cascade_op_enum.count( v_Cascade_Op ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Cascade_Op,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Cascade_Op,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Cascade_Op ) ) ) ) );
 
    if( !g_view_change_restrict_enum.count( v_Change_Restriction ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Restriction,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Change_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Restriction ) ) ) ) );
 
    if( !g_view_field_change_scope_enum.count( v_Change_Scope ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Scope,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Change_Scope,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Scope ) ) ) ) );
 
    if( !g_relationship_extra_enum.count( v_Extra ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Extra ) ) ) ) );
 
@@ -2188,35 +2200,36 @@ void Meta_Relationship::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Child_Class_Id )
     && ( fields_set.count( c_field_id_Child_Class_Id ) || fields_set.count( c_field_name_Child_Class_Id ) )
     && !g_Child_Class_Id_domain.is_valid( v_Child_Class_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Class_Id,
        get_module_string( c_field_display_name_Child_Class_Id ) + " " + error_message ) );
 
    if( !is_null( v_Child_Class_Name )
     && ( fields_set.count( c_field_id_Child_Class_Name ) || fields_set.count( c_field_name_Child_Class_Name ) )
     && !g_Child_Class_Name_domain.is_valid( v_Child_Class_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Class_Name,
        get_module_string( c_field_display_name_Child_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_Child_Name )
     && ( fields_set.count( c_field_id_Child_Name ) || fields_set.count( c_field_name_Child_Name ) )
     && !g_Child_Name_domain.is_valid( v_Child_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Child_Name,
        get_module_string( c_field_display_name_Child_Name ) + " " + error_message ) );
 
    if( !is_null( v_Field_Id )
     && ( fields_set.count( c_field_id_Field_Id ) || fields_set.count( c_field_name_Field_Id ) )
     && !g_Field_Id_domain.is_valid( v_Field_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Field_Id,
        get_module_string( c_field_display_name_Field_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 }
 

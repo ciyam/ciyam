@@ -5,30 +5,54 @@
 ;
 @ifndef $CIYAM_MODEL
 #Error: Missing CIYAM_MODEL environment variable.
-@else
+@label END
+@endif
+@skip
+;
 storage_init Meta
-@ifndef $ERROR
+@ifdef $ERROR
+@label END
+@endif
+@skip
+;
 .pf 100 135100 -q=135101=Transaction "" @key -min
 TRANSACTION_TYPE_KEY=$OUTPUT
 @ifndef $TRANSACTION_TYPE_KEY
 #Error: Package Type key 'Transaction' was not found.
-@else
+@label END
+@endif
+@skip
+;
 .pf 100 135100 -q=135101=Wallet "" @key -min
 WALLET_TYPE_KEY=$OUTPUT
 @ifndef $WALLET_TYPE_KEY
 #Error: Package Type key 'Wallet' was not found.
-@else
+@label END
+@endif
+@skip
+;
 .pf 100 135100 -q=135101=Trade "" @key -min
 TRADE_TYPE_KEY=$OUTPUT
 @ifndef $TRADE_TYPE_KEY
 #Error: Package Type key 'Trade' was not found.
-@else
+@label END
+@endif
+@skip
+;
 #Creating Model $CIYAM_MODEL...
 .pc guest @now 100 105100 " " "105101=$CIYAM_MODEL,300500=guests,105103=2017,105112=0"
-@ifndef $ERROR
+@ifdef $ERROR
+@label END
+@endif
+@skip
+;
 MODEL_KEY=$OUTPUT
 .pc guest @now 100 136100 " " "136101=Standard,136107=Standard,302810=Standard,302800=$MODEL_KEY"
-@ifndef $ERROR
+@ifdef $ERROR
+@label END
+@endif
+@skip
+;
 STANDARD_KEY=$OUTPUT
 pe guest @now 100 136100 "-v=@async=false,@message=Installing Standard Package..." $STANDARD_KEY -136410
 .pc guest @now 100 136100 " " "136101=User,136107=User,302810=User,302800=$MODEL_KEY"
@@ -52,13 +76,9 @@ TRADE_WALLET_OPT_SUFFIX=00001
 TRADE_WALLET_OPTION_KEY=$TRADE_PACKAGE_KEY$TRADE_WALLET_OPT_SUFFIX
 pu guest @now 100 137100 $TRADE_WALLET_OPTION_KEY "302830=$WALLET_PACKAGE_KEY"
 pe guest @now 100 136100 "-v=@async=false,@message=Installing Trade Package..." $TRADE_PACKAGE_KEY -136410
+;
 #Creating Application $CIYAM_MODEL...
 .pc guest @now 100 Application " " "127101=$CIYAM_MODEL,302220=guests"
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
-@endif
+;
+@:END
 .quit

@@ -239,6 +239,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -246,8 +248,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Actions = string( "136410" );
 string g_default_Install_Details = string( );
@@ -2003,46 +2014,47 @@ void Meta_Package::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Key ) && !value_will_be_provided( c_field_name_Key ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Key,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Key ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( is_null( v_Plural ) && !value_will_be_provided( c_field_name_Plural ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Plural,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Plural ) ) ) ) );
 
    if( v_Model.empty( ) && !value_will_be_provided( c_field_name_Model ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Model,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Model,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Model ) ) ) ) );
 
    if( v_Package_Type.empty( ) && !value_will_be_provided( c_field_name_Package_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Package_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Package_Type,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Package_Type ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Plural )
     && ( v_Plural != g_default_Plural
     || !value_will_be_provided( c_field_name_Plural ) )
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Plural,
        get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
 
    // [<start validate>]
@@ -2058,17 +2070,18 @@ void Meta_Package::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Plural )
     && ( fields_set.count( c_field_id_Plural ) || fields_set.count( c_field_name_Plural ) )
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Plural,
        get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
 }
 

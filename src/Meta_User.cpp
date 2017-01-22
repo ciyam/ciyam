@@ -207,6 +207,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -214,8 +216,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 bool g_default_Active = bool( 1 );
 string g_default_Description = string( );
@@ -902,43 +913,44 @@ void Meta_User::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Description ) && !value_will_be_provided( c_field_name_Description ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Description,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Description ) ) ) ) );
 
    if( is_null( v_Password ) && !value_will_be_provided( c_field_name_Password ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Password,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Password ) ) ) ) );
 
    if( is_null( v_User_Id ) && !value_will_be_provided( c_field_name_User_Id ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_User_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_User_Id ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Description )
     && ( v_Description != g_default_Description
     || !value_will_be_provided( c_field_name_Description ) )
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Description,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
 
    if( !is_null( v_Password )
     && ( v_Password != g_default_Password
     || !value_will_be_provided( c_field_name_Password ) )
     && !g_Password_domain.is_valid( v_Password, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Password,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_module_string( c_field_display_name_Password ) + " " + error_message ) );
 
    if( !is_null( v_User_Id )
     && ( v_User_Id != g_default_User_Id
     || !value_will_be_provided( c_field_name_User_Id ) )
     && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_User_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
        get_module_string( c_field_display_name_User_Id ) + " " + error_message ) );
 
    // [<start validate>]
@@ -954,23 +966,24 @@ void Meta_User::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Description )
     && ( fields_set.count( c_field_id_Description ) || fields_set.count( c_field_name_Description ) )
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Description,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
 
    if( !is_null( v_Password )
     && ( fields_set.count( c_field_id_Password ) || fields_set.count( c_field_name_Password ) )
     && !g_Password_domain.is_valid( v_Password, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Password,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Password,
        get_module_string( c_field_display_name_Password ) + " " + error_message ) );
 
    if( !is_null( v_User_Id )
     && ( fields_set.count( c_field_id_User_Id ) || fields_set.count( c_field_name_User_Id ) )
     && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_User_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_User_Id,
        get_module_string( c_field_display_name_User_Id ) + " " + error_message ) );
 }
 

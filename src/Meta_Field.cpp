@@ -425,6 +425,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -432,8 +434,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Access_Permission = string( );
 int g_default_Access_Restriction = int( 0 );
@@ -3794,110 +3805,111 @@ void Meta_Field::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Class,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
    if( v_Type.empty( ) && !value_will_be_provided( c_field_name_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Default )
     && ( v_Default != g_default_Default
     || !value_will_be_provided( c_field_name_Default ) )
     && !g_Default_domain.is_valid( v_Default, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Default,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Default,
        get_module_string( c_field_display_name_Default ) + " " + error_message ) );
 
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Parent_Class_Name )
     && ( v_Parent_Class_Name != g_default_Parent_Class_Name
     || !value_will_be_provided( c_field_name_Parent_Class_Name ) )
     && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Parent_Class_Name,
        get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Name )
     && ( v_UOM_Name != g_default_UOM_Name
     || !value_will_be_provided( c_field_name_UOM_Name ) )
     && !g_UOM_Name_domain.is_valid( v_UOM_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_UOM_Name,
        get_module_string( c_field_display_name_UOM_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Symbol )
     && ( v_UOM_Symbol != g_default_UOM_Symbol
     || !value_will_be_provided( c_field_name_UOM_Symbol ) )
     && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_UOM_Symbol,
        get_module_string( c_field_display_name_UOM_Symbol ) + " " + error_message ) );
 
    if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
    if( !g_view_field_access_scope_enum.count( v_Access_Scope ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Scope,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Scope,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Scope ) ) ) ) );
 
    if( !g_view_change_restrict_enum.count( v_Change_Restriction ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Restriction,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Change_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Restriction ) ) ) ) );
 
    if( !g_view_field_change_scope_enum.count( v_Change_Scope ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Scope,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Change_Scope,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Scope ) ) ) ) );
 
    if( !g_field_extra_enum.count( v_Extra ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Extra ) ) ) ) );
 
    if( !g_primitive_enum.count( v_Primitive ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Primitive,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Primitive,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Primitive ) ) ) ) );
 
    if( !g_uom_enum.count( v_UOM ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_UOM,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_UOM ) ) ) ) );
 
    // [(start check_cond_non_null)] 600045
    if( get_obj( ).UOM( ) == 999 && get_obj( ).Dummy_1( ) && is_null( get_obj( ).UOM_Name( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_UOM_Name, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_UOM_Name ) ) ) ) );
    // [(finish check_cond_non_null)] 600045
 
@@ -3967,41 +3979,42 @@ void Meta_Field::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Default )
     && ( fields_set.count( c_field_id_Default ) || fields_set.count( c_field_name_Default ) )
     && !g_Default_domain.is_valid( v_Default, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Default,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Default,
        get_module_string( c_field_display_name_Default ) + " " + error_message ) );
 
    if( !is_null( v_Id )
     && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Parent_Class_Name )
     && ( fields_set.count( c_field_id_Parent_Class_Name ) || fields_set.count( c_field_name_Parent_Class_Name ) )
     && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Parent_Class_Name,
        get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Name )
     && ( fields_set.count( c_field_id_UOM_Name ) || fields_set.count( c_field_name_UOM_Name ) )
     && !g_UOM_Name_domain.is_valid( v_UOM_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_UOM_Name,
        get_module_string( c_field_display_name_UOM_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Symbol )
     && ( fields_set.count( c_field_id_UOM_Symbol ) || fields_set.count( c_field_name_UOM_Symbol ) )
     && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_UOM_Symbol,
        get_module_string( c_field_display_name_UOM_Symbol ) + " " + error_message ) );
 }
 

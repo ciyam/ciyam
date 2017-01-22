@@ -3,8 +3,8 @@
    if(`{`!`@eq`(`$arg_tfield`,`'`'`) get_obj( ).`{`$arg_tfield`}( )
     && (`} get_obj( ).`{`$arg_field`}( ) < get_obj( ).`{`$arg_lfield`}( )
     || get_obj( ).`{`$arg_field`}( ) > get_obj( ).`{`$arg_rfield`}( )`{`!`@eq`(`$arg_tfield`,`'`'`) )`} )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
-       get_string_message( GS( c_str_field_must_be_between ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_field_must_be_between ), make_pair(
        c_str_parm_field_must_be_between_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
        make_pair( c_str_parm_field_must_be_between_lvalue,
        to_formatted_string( get_obj( ).`{`$arg_lfield`}( ), vf.get( "`{`$arg_lfield`}" ).c_str( ) ) ),

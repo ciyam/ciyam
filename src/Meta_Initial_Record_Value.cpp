@@ -152,6 +152,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -159,8 +161,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Field = string( );
 string g_default_Initial_Record = string( );
@@ -678,18 +689,19 @@ void Meta_Initial_Record_Value::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( v_Field.empty( ) && !value_will_be_provided( c_field_name_Field ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Field,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Field,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
 
    if( v_Initial_Record.empty( ) && !value_will_be_provided( c_field_name_Initial_Record ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Initial_Record,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Initial_Record,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Initial_Record ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    // [<start validate>]
 //nyi
@@ -709,6 +721,9 @@ void Meta_Initial_Record_Value::impl::validate_set_fields(
 
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+   validate_formatter vf;
 }
 
 void Meta_Initial_Record_Value::impl::after_fetch( )
