@@ -96,6 +96,7 @@ enum special_var
    e_special_var_permission,
    e_special_var_allow_async,
    e_special_var_application,
+   e_special_var_errors_only,
    e_special_var_output_file,
    e_special_var_path_prefix,
    e_special_var_permissions,

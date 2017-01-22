@@ -5912,7 +5912,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
             if( !error.empty( ) && lower( error ).find( "insufficient priority" ) != string::npos )
             {
                // FUTURE: This message should be handled as a server string message.
-               throw runtime_error( "This transaction is too low priority to be sent now." );
+               throw runtime_error( "The transaction is too low priority to be sent now." );
             }
 
             if( !error.empty( ) )

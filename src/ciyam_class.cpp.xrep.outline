@@ -1083,6 +1083,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_fname=$specification_\\0_fname\
  arg_fvalue=$specification_\\0_fvalue arg_sfield=$specification_\\0_sfield arg_tfield=$specification_\\0_tfield\
  arg_script=$specification_\\0_script arg_async=$specification_\\0_async arg_delay=$specification_\\0_delay\
+ arg_logging_none=$specification_\\0_logging_none arg_logging_errors=$specification_\\0_logging_errors\
  arg_skip_restore=$specification_\\0_skip_restore arg_has_key_already=$specification_\\0_has_key_already\
  arg_func=$specification_\\0_func arg_session_var=$specification_\\0_session_var\
  arg_src_is_for_func=$specification_\\0_src_is_for_func arg_sess_var_is_test=$specification_\\0_sess_var_is_test`}\
@@ -2870,6 +2871,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fname=$specification_\0_fname\
  arg_fvalue=$specification_\0_fvalue arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
+ arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
  arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test`}\
@@ -3008,6 +3010,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fname=$specification_\0_fname\
  arg_fvalue=$specification_\0_fvalue arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_script=$specification_\0_script arg_async=$specification_\0_async arg_delay=$specification_\0_delay\
+ arg_logging_none=$specification_\0_logging_none arg_logging_errors=$specification_\0_logging_errors\
  arg_skip_restore=$specification_\0_skip_restore arg_has_key_already=$specification_\0_has_key_already\
  arg_func=$specification_\0_func arg_session_var=$specification_\0_session_var\
  arg_src_is_for_func=$specification_\0_src_is_for_func arg_sess_var_is_test=$specification_\0_sess_var_is_test`}\

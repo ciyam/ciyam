@@ -239,6 +239,7 @@ const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
+const char* const c_special_variable_errors_only = "@errors_only";
 const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
@@ -4776,7 +4777,7 @@ int exec_system( const string& cmd, bool async, bool delay )
 
          set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
 
-         if( value != string( "1" ) )
+         if( !value.empty( ) && value != string( "1" ) )
             throw runtime_error( value );
       }
    }
@@ -4784,7 +4785,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    return rc;
 }
 
-int run_script( const string& script_name, bool async, bool delay, bool report_script_error )
+int run_script( const string& script_name, bool async, bool delay, bool no_logging )
 {
    int rc = -1;
 
@@ -4812,27 +4813,29 @@ int run_script( const string& script_name, bool async, bool delay, bool report_s
 
    if( is_script )
    {
-      string script_args( "~" + uuid( ).as_string( ) );
+      string args_file( "~" + uuid( ).as_string( ) );
 
       // NOTE: Empty code block for scope purposes.
       {
-         ofstream outf( script_args.c_str( ) );
+         ofstream outf( args_file.c_str( ) );
          if( !outf )
-            throw runtime_error( "unable to open '" + script_args + "' for output" );
+            throw runtime_error( "unable to open '" + args_file + "' for output" );
 
          outf << "<" << arguments << endl;
 
          outf.flush( );
          if( !outf.good( ) )
-            throw runtime_error( "*** unexpected error occurred writing to script args file ***" );
+            throw runtime_error( "*** unexpected bad file '" + args_file + "' in run_script ***" );
       }
 
       if( gtp_session )
       {
-         gtp_session->async_or_delayed_temp_file = script_args;
+         gtp_session->async_or_delayed_temp_file = args_file;
 
-         // NOTE: If wanting to have a (first if delayed) script error thrown as an exception after
-         // the calling session's exec (or after a transaction commit for delayed scripts) then set
+         // NOTE: If the script is intended to be synchronous and "no_logging" argument is set true
+         // then the first error that occurs in the the external script (or scripts if multiple are
+         // run using "delay") will thrown as an exception after the calling session's "system" (in
+         // the case of delayed scripts that will occur at the end of transaction commit). Thus set
          // special variables for that here. As "ciyam_client" will set a session variable for each
          // script to the "script args" unique file name (via the "-args_file" command-line option)
          // a system variable with this same name is being set here (to the value "1"). If an error
@@ -4840,19 +4843,38 @@ int run_script( const string& script_name, bool async, bool delay, bool report_s
          // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
          // multiple delayed scripts will only record the first such error) then this value will be
          // changed to that of the error message.
-         if( report_script_error )
+         if( !async && no_logging )
          {
-            set_system_variable( script_args, "1" );
+            set_system_variable( args_file, "1" );
             set_session_variable( c_special_variable_check_script_error, "1" );
          }
       }
 
-      string is_quiet( get_raw_session_variable( c_special_variable_quiet ) );
+      string script_args( args_file );
+
+      // NOTE: If the "no_logging" argument is set true then make sure that "script" execution
+      // won't be logged (even in the case of an error). For synchronous scripts an error will
+      // be handled (per the special variables set above) as though it had happened within the
+      // caller's session but if the script is intended to be asynchronously executed (even if
+      // it ends up being finally called synchronously) this will result in no record (without
+      // using specific tracing flags) of the script's execution or errors (so it would not be
+      // generally advisable to use it in this manner).
+      if( no_logging )
+         script_args = "-do_not_log " + script_args;
+      else
+      {
+         string errors_only( get_raw_session_variable( c_special_variable_errors_only ) );
+
+         if( errors_only == "1" || errors_only == "true" )
+            script_args = "-log_on_error " + script_args;
+      }
 
       // NOTE: For cases where one script may end up calling numerous others (i.e.
       // such as a scan across records) this special session variable is available
       // to prevent excess log entries appearing in the script log file.
-      if( is_quiet != "1" && is_quiet != "true" )
+      string quiet( get_raw_session_variable( c_special_variable_quiet ) );
+
+      if( quiet != "1" && quiet != "true" )
          script_args += " " + script_name;
 
 #ifdef _WIN32
@@ -6016,6 +6038,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_application:
       s = string( c_special_variable_application );
+      break;
+
+      case e_special_var_errors_only:
+      s = string( c_special_variable_errors_only );
       break;
 
       case e_special_var_output_file:
@@ -10663,7 +10689,7 @@ void transaction_commit( )
          {
             string value( get_raw_system_variable( next ) );
 
-            if( value != string( "1" ) )
+            if( !value.empty( ) && value != string( "1" ) )
                script_error = value;
          }
 
