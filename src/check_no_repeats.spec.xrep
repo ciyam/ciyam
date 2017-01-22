@@ -24,7 +24,7 @@
 
       for( size_t i = 0; i < duplicate_fields.size( ); i++ )
       {
-         p_validation_errors->insert( validation_error_value_type( duplicate_fields[ i ].first,
+         p_validation_errors->insert( construct_validation_error( vf.num, duplicate_fields[ i ].first,
           get_string_message( GS( c_str_invalid_duplicate_field_value ), make_pair(
           c_str_parm_invalid_duplicate_field_value_field, get_module_string( duplicate_fields[ i ].second ) ) ) ) );
 

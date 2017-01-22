@@ -157,6 +157,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -164,8 +166,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Class = string( );
 string g_default_Comments = string( );
@@ -859,36 +870,37 @@ void Meta_Initial_Record::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Key ) && !value_will_be_provided( c_field_name_Key ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Key,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Key ) ) ) ) );
 
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Order,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( v_Class.empty( ) && !value_will_be_provided( c_field_name_Class ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Class,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Class ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Comments )
     && ( v_Comments != g_default_Comments
     || !value_will_be_provided( c_field_name_Comments ) )
     && !g_Comments_domain.is_valid( v_Comments, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Comments,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Comments,
        get_module_string( c_field_display_name_Comments ) + " " + error_message ) );
 
    if( !is_null( v_Key )
     && ( v_Key != g_default_Key
     || !value_will_be_provided( c_field_name_Key ) )
     && !g_Key_domain.is_valid( v_Key, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Key,
        get_module_string( c_field_display_name_Key ) + " " + error_message ) );
 
    // [<start validate>]
@@ -904,17 +916,18 @@ void Meta_Initial_Record::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Comments )
     && ( fields_set.count( c_field_id_Comments ) || fields_set.count( c_field_name_Comments ) )
     && !g_Comments_domain.is_valid( v_Comments, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Comments,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Comments,
        get_module_string( c_field_display_name_Comments ) + " " + error_message ) );
 
    if( !is_null( v_Key )
     && ( fields_set.count( c_field_id_Key ) || fields_set.count( c_field_name_Key ) )
     && !g_Key_domain.is_valid( v_Key, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Key,
        get_module_string( c_field_display_name_Key ) + " " + error_message ) );
 }
 

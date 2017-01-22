@@ -90,8 +90,10 @@ const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
 
 const char* const c_envcond_command_else = "else";
+const char* const c_envcond_command_skip = "skip";
 const char* const c_envcond_command_endif = "endif";
 const char* const c_envcond_command_ifdef = "ifdef";
+const char* const c_envcond_command_label = "label";
 const char* const c_envcond_command_ifndef = "ifndef";
 
 const char* const c_cmd_echo = "echo";
@@ -2137,6 +2139,7 @@ console_command_handler::console_command_handler( )
  p_std_out( &cout ),
  description_offset( 0 ),
  num_custom_startup_options( 0 ),
+ is_skipping_to_label( false ),
  is_executing_commands( false ),
  allow_history_addition( true ),
  handling_startup_options( false )
@@ -2277,11 +2280,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       if( !script_file.empty( ) )
          error_context = " processing script '" + script_file + "' at line #" + to_string( line_number );
 
-      if( !conditions.empty( ) )
+      if( is_skipping_to_label || !conditions.empty( ) )
       {
          if( !str.empty( ) && str[ 0 ] != c_envcond_command_prefix )
          {
-            if( !conditions.back( ) || !dummy_conditions.empty( ) )
+            if( is_skipping_to_label || !conditions.back( ) || !dummy_conditions.empty( ) )
                str.erase( );
          }
       }
@@ -2785,6 +2788,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             else if( str[ 0 ] == c_envcond_command_prefix )
             {
                size_t pos = 0;
+
                for( size_t i = 1; i < str.length( ); i++ )
                {
                   if( str[ i ] != ' ' )
@@ -2798,6 +2802,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
 
                string expression( str.substr( pos ) );
+
                if( !expression.empty( ) )
                {
                   string::size_type pos = expression.find( ' ' );
@@ -2815,7 +2820,21 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         symbol.erase( );
                   }
 
-                  if( token == c_envcond_command_ifdef )
+                  // NOTE: If currently within an inactive conditional section
+                  // then need to ignore any 'skip' and 'label' commands found.
+                  if( !conditions.empty( )
+                   && ( !conditions.back( ) || !dummy_conditions.empty( ) )
+                   && ( token == c_envcond_command_skip || token == c_envcond_command_label ) )
+                     token.erase( );
+
+                  if( !token.empty( ) && token[ 0 ] == ':' )
+                  {
+                     if( is_skipping_to_label && token.substr( 1 ) == label )
+                        is_skipping_to_label = false;
+                  }
+                  else if( token.empty( ) || is_skipping_to_label )
+                     ; // i.e. do nothing
+                  else if( token == c_envcond_command_ifdef )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
                         dummy_conditions.push_back( 0 );
@@ -2872,6 +2891,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         conditions.pop_back( );
                      }
                   }
+                  else if( token == c_envcond_command_skip )
+                  {
+                     if( !label.empty( ) )
+                        is_skipping_to_label = true;
+                  }
+                  else if( token == c_envcond_command_label )
+                     label = symbol;
                   else
                      throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
                }
@@ -2880,7 +2906,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             }
             else if( str[ 0 ] == c_message_command_prefix )
             {
-               cout << str.substr( 1 ) << '\n';
+               if( str.size( ) > 1 )
+                  cout << str.substr( 1 ) << '\n';
                str.erase( );
             }
             else if( str[ 0 ] == c_pause_message_command_prefix )

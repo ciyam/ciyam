@@ -466,6 +466,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -473,8 +475,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 int g_default_Access_Restriction = int( 0 );
 string g_default_Clone_Key = string( );
@@ -1390,46 +1401,47 @@ void Meta_Specification_Field_Action::impl::validate(
    string error_message;
    validate_formatter vf;
 
+
    if( !is_null( v_Clone_Key )
     && ( v_Clone_Key != g_default_Clone_Key
     || !value_will_be_provided( c_field_name_Clone_Key ) )
     && !g_Clone_Key_domain.is_valid( v_Clone_Key, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Clone_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Clone_Key,
        get_module_string( c_field_display_name_Clone_Key ) + " " + error_message ) );
 
    if( !is_null( v_New_Record_FK_Value )
     && ( v_New_Record_FK_Value != g_default_New_Record_FK_Value
     || !value_will_be_provided( c_field_name_New_Record_FK_Value ) )
     && !g_New_Record_FK_Value_domain.is_valid( v_New_Record_FK_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_New_Record_FK_Value,
        get_module_string( c_field_display_name_New_Record_FK_Value ) + " " + error_message ) );
 
    if( !g_field_action_create_access_restriction_enum.count( v_Access_Restriction ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Access_Restriction,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
    if( !g_field_action_create_type_enum.count( v_Create_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Create_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Create_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Create_Type ) ) ) ) );
 
    if( !g_field_action_type_enum.count( v_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
    // [(start check_cond_non_null)] 600270
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_Class( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_Class,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_New_Record_Class, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_Class ) ) ) ) );
    // [(finish check_cond_non_null)] 600270
 
    // [(start check_cond_non_null)] 600271
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_FK_Field( ) ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Field,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+      p_validation_errors->insert( construct_validation_error( vf.num,
+       c_field_name_New_Record_FK_Field, get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_FK_Field ) ) ) ) );
    // [(finish check_cond_non_null)] 600271
 
@@ -1446,17 +1458,18 @@ void Meta_Specification_Field_Action::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Clone_Key )
     && ( fields_set.count( c_field_id_Clone_Key ) || fields_set.count( c_field_name_Clone_Key ) )
     && !g_Clone_Key_domain.is_valid( v_Clone_Key, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Clone_Key,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Clone_Key,
        get_module_string( c_field_display_name_Clone_Key ) + " " + error_message ) );
 
    if( !is_null( v_New_Record_FK_Value )
     && ( fields_set.count( c_field_id_New_Record_FK_Value ) || fields_set.count( c_field_name_New_Record_FK_Value ) )
     && !g_New_Record_FK_Value_domain.is_valid( v_New_Record_FK_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_New_Record_FK_Value,
        get_module_string( c_field_display_name_New_Record_FK_Value ) + " " + error_message ) );
 }
 

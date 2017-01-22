@@ -18,8 +18,8 @@
       check_with_regex( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ), `{`$arg_func`}( `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`} ), &okay );
 `}`}
       if( !okay )
-         p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
-          get_string_message( GS( c_str_invalid_type ), make_pair(
+         p_validation_errors->insert( construct_validation_error( vf.num,
+          c_field_name_`{`$arg_field`}, get_string_message( GS( c_str_invalid_type ), make_pair(
           c_str_parm_invalid_type_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
           make_pair( c_str_parm_invalid_type_label, get_module_string( "`{`$arg_id`}_label" ) ) ) ) );
    }

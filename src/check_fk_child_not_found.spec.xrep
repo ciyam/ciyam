@@ -52,9 +52,9 @@
 `{`$i`}      message = search_replace( message, "@source_child", get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
 `}\
 
-`{`$i`}      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_sfield`}, message ) );
+`{`$i`}      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_`{`$arg_sfield`}, message ) );
 `,\
-`{`$i`}      p_validation_errors->insert( validation_error_value_type( "",
+`{`$i`}      p_validation_errors->insert( construct_validation_error( vf.num, "",
 `{`$i`}       get_string_message( GS( c_str_found_child_record ),
 `{`$i`}       make_pair( c_str_parm_found_child_record_class, cp_key_source->get_display_name( ) ),
 `{`@eq`(`$arg_scfield`,`'`'`)\

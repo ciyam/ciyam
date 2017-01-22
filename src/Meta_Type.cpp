@@ -259,6 +259,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -266,8 +268,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 bool g_default_Auto_Round = bool( 0 );
 int g_default_Date_Precision = int( 0 );
@@ -1768,115 +1779,116 @@ void Meta_Type::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Id ) && !value_will_be_provided( c_field_name_Id ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
    if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Max_Size )
     && ( v_Max_Size != g_default_Max_Size
     || !value_will_be_provided( c_field_name_Max_Size ) )
     && !g_Max_Size_domain.is_valid( v_Max_Size, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Size,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Max_Size,
        get_module_string( c_field_display_name_Max_Size ) + " " + error_message ) );
 
    if( !is_null( v_Max_Value )
     && ( v_Max_Value != g_default_Max_Value
     || !value_will_be_provided( c_field_name_Max_Value ) )
     && !g_Max_Value_domain.is_valid( v_Max_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Max_Value,
        get_module_string( c_field_display_name_Max_Value ) + " " + error_message ) );
 
    if( !is_null( v_Min_Value )
     && ( v_Min_Value != g_default_Min_Value
     || !value_will_be_provided( c_field_name_Min_Value ) )
     && !g_Min_Value_domain.is_valid( v_Min_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Min_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Min_Value,
        get_module_string( c_field_display_name_Min_Value ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Decimals )
     && ( v_Numeric_Decimals != g_default_Numeric_Decimals
     || !value_will_be_provided( c_field_name_Numeric_Decimals ) )
     && !g_Numeric_Decimals_domain.is_valid( v_Numeric_Decimals, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Decimals,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Numeric_Decimals,
        get_module_string( c_field_display_name_Numeric_Decimals ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Digits )
     && ( v_Numeric_Digits != g_default_Numeric_Digits
     || !value_will_be_provided( c_field_name_Numeric_Digits ) )
     && !g_Numeric_Digits_domain.is_valid( v_Numeric_Digits, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Digits,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Numeric_Digits,
        get_module_string( c_field_display_name_Numeric_Digits ) + " " + error_message ) );
 
    if( !g_date_precision_enum.count( v_Date_Precision ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Date_Precision,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Date_Precision,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Date_Precision ) ) ) ) );
 
    if( !g_uom_enum.count( v_Default_UOM ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Default_UOM,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Default_UOM,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Default_UOM ) ) ) ) );
 
    if( !g_fraction_limit_enum.count( v_Fraction_Limit ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Fraction_Limit,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Fraction_Limit,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Fraction_Limit ) ) ) ) );
 
    if( !g_int_type_enum.count( v_Int_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Int_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Int_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Int_Type ) ) ) ) );
 
    if( !g_numeric_type_enum.count( v_Numeric_Type ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Type,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Numeric_Type,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Numeric_Type ) ) ) ) );
 
    if( !g_primitive_enum.count( v_Primitive ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Primitive,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Primitive,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Primitive ) ) ) ) );
 
    if( !g_round_type_enum.count( v_Rounding_Method ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Rounding_Method,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Rounding_Method,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Rounding_Method ) ) ) ) );
 
    if( !g_string_domain_enum.count( v_String_Domain ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_String_Domain,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_String_Domain,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_String_Domain ) ) ) ) );
 
    if( !g_time_precision_enum.count( v_Time_Precision ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Time_Precision,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Time_Precision,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Time_Precision ) ) ) ) );
 
    if( !g_zero_padding_enum.count( v_Zero_Padding ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Zero_Padding,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Zero_Padding,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Zero_Padding ) ) ) ) );
 
@@ -2054,47 +2066,48 @@ void Meta_Type::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Id )
     && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Max_Size )
     && ( fields_set.count( c_field_id_Max_Size ) || fields_set.count( c_field_name_Max_Size ) )
     && !g_Max_Size_domain.is_valid( v_Max_Size, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Size,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Max_Size,
        get_module_string( c_field_display_name_Max_Size ) + " " + error_message ) );
 
    if( !is_null( v_Max_Value )
     && ( fields_set.count( c_field_id_Max_Value ) || fields_set.count( c_field_name_Max_Value ) )
     && !g_Max_Value_domain.is_valid( v_Max_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Max_Value,
        get_module_string( c_field_display_name_Max_Value ) + " " + error_message ) );
 
    if( !is_null( v_Min_Value )
     && ( fields_set.count( c_field_id_Min_Value ) || fields_set.count( c_field_name_Min_Value ) )
     && !g_Min_Value_domain.is_valid( v_Min_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Min_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Min_Value,
        get_module_string( c_field_display_name_Min_Value ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Decimals )
     && ( fields_set.count( c_field_id_Numeric_Decimals ) || fields_set.count( c_field_name_Numeric_Decimals ) )
     && !g_Numeric_Decimals_domain.is_valid( v_Numeric_Decimals, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Decimals,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Numeric_Decimals,
        get_module_string( c_field_display_name_Numeric_Decimals ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Digits )
     && ( fields_set.count( c_field_id_Numeric_Digits ) || fields_set.count( c_field_name_Numeric_Digits ) )
     && !g_Numeric_Digits_domain.is_valid( v_Numeric_Digits, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Digits,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Numeric_Digits,
        get_module_string( c_field_display_name_Numeric_Digits ) + " " + error_message ) );
 }
 

@@ -55,6 +55,7 @@ class console_command_handler : public command_handler
 
    size_t description_offset;
 
+   bool is_skipping_to_label;
    bool is_executing_commands;
    bool allow_history_addition;
    bool handling_startup_options;
@@ -67,6 +68,8 @@ class console_command_handler : public command_handler
    std::vector< bool > completed;
    std::vector< bool > conditions;
    std::vector< bool > dummy_conditions;
+
+   std::string label;
 
    std::string last_command;
    std::string prompt_prefix;

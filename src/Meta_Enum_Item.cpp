@@ -166,6 +166,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 struct validate_formatter
 {
+   validate_formatter( ) : num( 0 ) { }
+
    string get( const string& name ) { return masks[ name ]; }
 
    void set( const string& name, const string& mask )
@@ -173,8 +175,17 @@ struct validate_formatter
       masks.insert( make_pair( name, mask ) );
    }
 
+   int num;
+
    map< string, string > masks;
 };
+
+inline validation_error_value_type
+ construct_validation_error( int& num, const string& field_name, const string& error_message )
+{
+   return validation_error_value_type(
+    construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
+}
 
 string g_default_Enum = string( );
 string g_default_Filter = string( );
@@ -1043,48 +1054,49 @@ void Meta_Enum_Item::impl::validate(
    if( !p_validation_errors )
       throw runtime_error( "unexpected null validation_errors container" );
 
+   string error_message;
+   validate_formatter vf;
+
    if( is_null( v_Label ) && !value_will_be_provided( c_field_name_Label ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Label,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Label ) ) ) ) );
 
    if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Order,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Order,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( is_null( v_Value ) && !value_will_be_provided( c_field_name_Value ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Value,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
 
    if( v_Enum.empty( ) && !value_will_be_provided( c_field_name_Enum ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Enum,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Enum,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
 
-   string error_message;
-   validate_formatter vf;
 
    if( !is_null( v_Filter )
     && ( v_Filter != g_default_Filter
     || !value_will_be_provided( c_field_name_Filter ) )
     && !g_Filter_domain.is_valid( v_Filter, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Filter,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Filter,
        get_module_string( c_field_display_name_Filter ) + " " + error_message ) );
 
    if( !is_null( v_Label )
     && ( v_Label != g_default_Label
     || !value_will_be_provided( c_field_name_Label ) )
     && !g_Label_domain.is_valid( v_Label, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Label,
        get_module_string( c_field_display_name_Label ) + " " + error_message ) );
 
    if( !is_null( v_Value )
     && ( v_Value != g_default_Value
     || !value_will_be_provided( c_field_name_Value ) )
     && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Value,
        get_module_string( c_field_display_name_Value ) + " " + error_message ) );
 
    // [<start validate>]
@@ -1100,23 +1112,24 @@ void Meta_Enum_Item::impl::validate_set_fields(
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+   validate_formatter vf;
 
    if( !is_null( v_Filter )
     && ( fields_set.count( c_field_id_Filter ) || fields_set.count( c_field_name_Filter ) )
     && !g_Filter_domain.is_valid( v_Filter, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Filter,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Filter,
        get_module_string( c_field_display_name_Filter ) + " " + error_message ) );
 
    if( !is_null( v_Label )
     && ( fields_set.count( c_field_id_Label ) || fields_set.count( c_field_name_Label ) )
     && !g_Label_domain.is_valid( v_Label, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Label,
        get_module_string( c_field_display_name_Label ) + " " + error_message ) );
 
    if( !is_null( v_Value )
     && ( fields_set.count( c_field_id_Value ) || fields_set.count( c_field_name_Value ) )
     && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Value,
        get_module_string( c_field_display_name_Value ) + " " + error_message ) );
 }
 
