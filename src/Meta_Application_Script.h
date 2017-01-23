@@ -4,8 +4,8 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef META_APPLICATION_H
-#  define META_APPLICATION_H
+#ifndef META_APPLICATION_SCRIPT_H
+#  define META_APPLICATION_SCRIPT_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <string>
@@ -14,204 +14,38 @@
 #  include "class_base.h"
 
 #  ifdef MODULE_META_IMPL
-#     define META_APPLICATION_DECL_SPEC DYNAMIC_EXPORT
+#     define META_APPLICATION_SCRIPT_DECL_SPEC DYNAMIC_EXPORT
 #  else
-#     define META_APPLICATION_DECL_SPEC DYNAMIC_IMPORT
+#     define META_APPLICATION_SCRIPT_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-class Meta_Module;
-class Meta_Application_Script;
-class Meta_Workgroup;
+class Meta_Application;
 
-class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
+class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_base
 {
-   friend class Meta_Module;
-   friend class Meta_Application_Script;
-   friend class Meta_Workgroup;
+   friend class Meta_Application;
 
    public:
-   typedef Meta_Application class_type;
+   typedef Meta_Application_Script class_type;
 
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Actions = 1,
-      e_field_id_Add_Modules_Automatically = 2,
-      e_field_id_Allow_Duplicate_Logins = 3,
-      e_field_id_Allow_Module_Switching = 4,
-      e_field_id_Auto_Login_Days = 5,
-      e_field_id_Blockchain_Id = 6,
-      e_field_id_Create_Database = 7,
-      e_field_id_Created_Database = 8,
-      e_field_id_Creation_Script = 9,
-      e_field_id_Default_Image_Height = 10,
-      e_field_id_Default_Image_Width = 11,
-      e_field_id_Default_List_Print_Row_Limit = 12,
-      e_field_id_Default_List_Row_Limit = 13,
-      e_field_id_Default_Max_Attached_File_Size = 14,
-      e_field_id_Default_Multiline_Max_Rows = 15,
-      e_field_id_Default_Multiline_Min_Rows = 16,
-      e_field_id_Default_Multiline_Text_Limit = 17,
-      e_field_id_Default_Multiline_Text_Trunc = 18,
-      e_field_id_Encrypt_Dynamic_Content = 19,
-      e_field_id_Generate_Details = 20,
-      e_field_id_Generate_Status = 21,
-      e_field_id_Generate_Type = 22,
-      e_field_id_Installing_Script = 23,
-      e_field_id_Keep_Existing_Data = 24,
-      e_field_id_Module_Prefix = 25,
-      e_field_id_Name = 26,
-      e_field_id_Print_Lists_With_Check_Boxes = 27,
-      e_field_id_Print_Lists_With_Row_Numbers = 28,
-      e_field_id_Registration_Key = 29,
-      e_field_id_Show_Inaccessible_Modules = 30,
-      e_field_id_Type = 31,
-      e_field_id_Use_Check_Boxes_for_Bools = 32,
-      e_field_id_Use_Embedded_Images = 33,
-      e_field_id_Use_Script = 34,
-      e_field_id_Use_TLS_Sessions = 35,
-      e_field_id_Use_URL_Checksum = 36,
-      e_field_id_Use_Vertical_Menu = 37,
-      e_field_id_Version = 38,
-      e_field_id_Workgroup = 39
+      e_field_id_Name = 1,
+      e_field_id_Script_Name = 2
    };
 
-   Meta_Application( );
-   ~Meta_Application( );
-
-   const std::string& Actions( ) const;
-   void Actions( const std::string& Actions );
-
-   bool Add_Modules_Automatically( ) const;
-   void Add_Modules_Automatically( bool Add_Modules_Automatically );
-
-   bool Allow_Duplicate_Logins( ) const;
-   void Allow_Duplicate_Logins( bool Allow_Duplicate_Logins );
-
-   bool Allow_Module_Switching( ) const;
-   void Allow_Module_Switching( bool Allow_Module_Switching );
-
-   int Auto_Login_Days( ) const;
-   void Auto_Login_Days( int Auto_Login_Days );
-
-   const std::string& Blockchain_Id( ) const;
-   void Blockchain_Id( const std::string& Blockchain_Id );
-
-   bool Create_Database( ) const;
-   void Create_Database( bool Create_Database );
-
-   bool Created_Database( ) const;
-   void Created_Database( bool Created_Database );
-
-   int Default_Image_Height( ) const;
-   void Default_Image_Height( int Default_Image_Height );
-
-   int Default_Image_Width( ) const;
-   void Default_Image_Width( int Default_Image_Width );
-
-   int Default_List_Print_Row_Limit( ) const;
-   void Default_List_Print_Row_Limit( int Default_List_Print_Row_Limit );
-
-   int Default_List_Row_Limit( ) const;
-   void Default_List_Row_Limit( int Default_List_Row_Limit );
-
-   int Default_Max_Attached_File_Size( ) const;
-   void Default_Max_Attached_File_Size( int Default_Max_Attached_File_Size );
-
-   int Default_Multiline_Max_Rows( ) const;
-   void Default_Multiline_Max_Rows( int Default_Multiline_Max_Rows );
-
-   int Default_Multiline_Min_Rows( ) const;
-   void Default_Multiline_Min_Rows( int Default_Multiline_Min_Rows );
-
-   int Default_Multiline_Text_Limit( ) const;
-   void Default_Multiline_Text_Limit( int Default_Multiline_Text_Limit );
-
-   int Default_Multiline_Text_Trunc( ) const;
-   void Default_Multiline_Text_Trunc( int Default_Multiline_Text_Trunc );
-
-   bool Encrypt_Dynamic_Content( ) const;
-   void Encrypt_Dynamic_Content( bool Encrypt_Dynamic_Content );
-
-   const std::string& Generate_Details( ) const;
-   void Generate_Details( const std::string& Generate_Details );
-
-   const std::string& Generate_Status( ) const;
-   void Generate_Status( const std::string& Generate_Status );
-
-   int Generate_Type( ) const;
-   void Generate_Type( int Generate_Type );
-
-   bool Installing_Script( ) const;
-   void Installing_Script( bool Installing_Script );
-
-   bool Keep_Existing_Data( ) const;
-   void Keep_Existing_Data( bool Keep_Existing_Data );
-
-   const std::string& Module_Prefix( ) const;
-   void Module_Prefix( const std::string& Module_Prefix );
+   Meta_Application_Script( );
+   ~Meta_Application_Script( );
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
 
-   bool Print_Lists_With_Check_Boxes( ) const;
-   void Print_Lists_With_Check_Boxes( bool Print_Lists_With_Check_Boxes );
+   const std::string& Script_Name( ) const;
+   void Script_Name( const std::string& Script_Name );
 
-   bool Print_Lists_With_Row_Numbers( ) const;
-   void Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_Numbers );
-
-   const std::string& Registration_Key( ) const;
-   void Registration_Key( const std::string& Registration_Key );
-
-   bool Show_Inaccessible_Modules( ) const;
-   void Show_Inaccessible_Modules( bool Show_Inaccessible_Modules );
-
-   bool Type( ) const;
-   void Type( bool Type );
-
-   bool Use_Check_Boxes_for_Bools( ) const;
-   void Use_Check_Boxes_for_Bools( bool Use_Check_Boxes_for_Bools );
-
-   bool Use_Embedded_Images( ) const;
-   void Use_Embedded_Images( bool Use_Embedded_Images );
-
-   bool Use_Script( ) const;
-   void Use_Script( bool Use_Script );
-
-   bool Use_TLS_Sessions( ) const;
-   void Use_TLS_Sessions( bool Use_TLS_Sessions );
-
-   bool Use_URL_Checksum( ) const;
-   void Use_URL_Checksum( bool Use_URL_Checksum );
-
-   bool Use_Vertical_Menu( ) const;
-   void Use_Vertical_Menu( bool Use_Vertical_Menu );
-
-   const std::string& Version( ) const;
-   void Version( const std::string& Version );
-
-   Meta_Application_Script& Creation_Script( );
-   const Meta_Application_Script& Creation_Script( ) const;
-   void Creation_Script( const std::string& key );
-
-   Meta_Workgroup& Workgroup( );
-   const Meta_Workgroup& Workgroup( ) const;
-   void Workgroup( const std::string& key );
-
-   Meta_Module& child_Module( );
-   const Meta_Module& child_Module( ) const;
-
-   virtual void Generate( );
-
-   virtual void Generate_File_Links( );
-
-   virtual void Generate_Modules( );
-
-   virtual void Generate_Upgrade_DDL( );
-
-   virtual void Test_Proc_1( std::string& Output );
-
-   virtual void Test_Proc_2( const std::string& Input, std::string& Output );
+   Meta_Application& child_Application_Creation_Script( );
+   const Meta_Application& child_Application_Creation_Script( ) const;
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
@@ -344,9 +178,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );
 
-   static const char* static_class_id( ) { return "127100"; }
-   static const char* static_class_name( ) { return "Application"; }
-   static const char* static_plural_name( ) { return "Applications"; }
+   static const char* static_class_id( ) { return "138100"; }
+   static const char* static_class_name( ) { return "Application_Script"; }
+   static const char* static_plural_name( ) { return "Application_Scripts"; }
 
    static const char* static_module_id( ) { return "100"; }
    static const char* static_module_name( ) { return "Meta"; }
@@ -389,12 +223,12 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    static void static_insert_derivation( const std::string& module_and_class_id );
    static void static_remove_derivation( const std::string& module_and_class_id );
 
-   static void static_insert_external_alias( const std::string& module_and_class_id, Meta_Application* p_instance );
+   static void static_insert_external_alias( const std::string& module_and_class_id, Meta_Application_Script* p_instance );
    static void static_remove_external_alias( const std::string& module_and_class_id );
 
    private:
-   Meta_Application( const Meta_Application& );
-   Meta_Application& operator =( const Meta_Application& );
+   Meta_Application_Script( const Meta_Application_Script& );
+   Meta_Application_Script& operator =( const Meta_Application_Script& );
 
    struct impl;
    friend struct impl;
@@ -407,16 +241,7 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
-   virtual void setup_foreign_key( Meta_Application_Script& o, const std::string& value );
-   virtual void setup_foreign_key( Meta_Workgroup& o, const std::string& value );
-
-   virtual void setup_graph_parent( Meta_Module& o, const std::string& foreign_key_field );
-
-   virtual void setup_graph_parent( Meta_Application_Script& o,
-    const std::string& foreign_key_field, const std::string& init_value );
-
-   virtual void setup_graph_parent( Meta_Workgroup& o,
-    const std::string& foreign_key_field, const std::string& init_value );
+   virtual void setup_graph_parent( Meta_Application& o, const std::string& foreign_key_field );
 
    size_t get_total_child_relationships( ) const;
    void set_total_child_relationships( size_t new_total_child_relationships ) const;
@@ -430,12 +255,12 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const;
 };
 
-inline std::string to_string( const Meta_Application& c ) { return c.get_key( ); }
+inline std::string to_string( const Meta_Application_Script& c ) { return c.get_key( ); }
 
-inline bool is_null( const Meta_Application& c ) { return c.get_key( ).empty( ); }
+inline bool is_null( const Meta_Application_Script& c ) { return c.get_key( ).empty( ); }
 
-inline bool check_equal( const Meta_Application& c, const char* p ) { return c.get_key( ) == p; }
-inline bool check_not_equal( const Meta_Application& c, const char* p ) { return !( c.get_key( ) == p ); }
+inline bool check_equal( const Meta_Application_Script& c, const char* p ) { return c.get_key( ) == p; }
+inline bool check_not_equal( const Meta_Application_Script& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
 

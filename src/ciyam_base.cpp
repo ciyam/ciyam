@@ -190,6 +190,7 @@ const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
 const char* const c_special_variable_dtm = "@dtm";
+const char* const c_special_variable_grp = "@grp";
 const char* const c_special_variable_key = "@key";
 const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_uid = "@uid";
@@ -214,6 +215,7 @@ const char* const c_special_variable_images = "@images";
 const char* const c_special_variable_module = "@module";
 const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
+const char* const c_special_variable_script = "@script";
 const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
@@ -5848,6 +5850,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_dtm );
       break;
 
+      case e_special_var_grp:
+      s = string( c_special_variable_grp );
+      break;
+
       case e_special_var_key:
       s = string( c_special_variable_key );
       break;
@@ -5942,6 +5948,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_return:
       s = string( c_special_variable_return );
+      break;
+
+      case e_special_var_script:
+      s = string( c_special_variable_script );
       break;
 
       case e_special_var_do_exec:
@@ -7661,7 +7671,10 @@ string get_grp( )
 void set_grp( const string& grp )
 {
    if( gtp_session )
+   {
       gtp_session->grp = grp;
+      set_session_variable( c_special_variable_grp, grp );
+   }
 }
 
 string get_dtm( )

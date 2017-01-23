@@ -1,6 +1,7 @@
 `{`$Meta_dylk`=`'ciyam_base`'`}
 `{`$Meta_cpps`=`'Meta.cpp\
  Meta_Application.cpp\
+ Meta_Application_Script.cpp\
  Meta_Auto_Code.cpp\
  Meta_Class.cpp\
  Meta_Enum.cpp\
@@ -36,6 +37,7 @@
  Meta_Workgroup.cpp`'`}
 `{`$Meta_cmss`=`'Meta.cms\
  Meta_Application.cms\
+ Meta_Application_Script.cms\
  Meta_Auto_Code.cms\
  Meta_Class.cms\
  Meta_Enum.cms\

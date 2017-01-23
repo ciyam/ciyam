@@ -2489,7 +2489,7 @@
      <ftype>string
      <extra>non_new+max_size=30
      <mandatory>false
-     <modifiers>800:relegate
+     <modifiers>2000:relegate
     </field>
     <field/>
      <name>field_application_generate_type
@@ -2497,7 +2497,51 @@
      <ftype>int
      <extra>non_new+always_editable+force+enum=905
      <mandatory>true
+     <modifiers>200:relegate
+    </field>
+    <field/>
+     <name>field_application_use_script
+     <field>127137
+     <ftype>bool
+     <extra>new_only+force
+     <mandatory>true
+     <modifiers>8000:relegate
+    </field>
+    <field/>
+     <name>field_application_creation_script
+     <field>302225
+     <ftype>@class
+     <extra>new_edit+max_size=100
+     <mandatory>false
+     <modifiers>1000:relegate
+     <pclass>138100
+     <pfield>138101
+     <pfname>field_application_script_name
+     <pextra>
+    </field>
+    <field/>
+     <name>field_application_installing_script
+     <field>127138
+     <ftype>bool
+     <extra>hidden
+     <mandatory>true
      <modifiers>
+    </field>
+    <field/>
+     <name>field_application_create_database
+     <field>127125
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>4000:relegate
+    </field>
+    <field/>
+     <name>field_application_add_modules_automatically
+     <field>127128
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>8000:relegate,4000:relegate
     </field>
     <field/>
      <name>field_application_generate_status
@@ -2513,23 +2557,7 @@
      <ftype>bool
      <extra>non_new+always_editable
      <mandatory>true
-     <modifiers>400:relegate,100:relegate
-    </field>
-    <field/>
-     <name>field_application_create_database
-     <field>127125
-     <ftype>bool
-     <extra>new_only
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_application_add_modules_automatically
-     <field>127128
-     <ftype>bool
-     <extra>new_only
-     <mandatory>true
-     <modifiers>1000:relegate
+     <modifiers>800:relegate,100:relegate
     </field>
     <field/>
      <name>tab_generate_details
@@ -2553,7 +2581,7 @@
      <ftype>string
      <extra>show+non_new+no_edit+full_height+notes
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>8000:relegate,200:relegate
     </field>
     <field/>
      <name>tab_display_settings
@@ -2721,7 +2749,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_application_encrypt_dynamic_content
@@ -2729,7 +2757,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_application_auto_login_days
@@ -2737,7 +2765,7 @@
      <ftype>int
      <extra>enum=906
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_application_allow_duplicate_logins
@@ -2745,7 +2773,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_application_registration_key
@@ -2753,7 +2781,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_application_actions

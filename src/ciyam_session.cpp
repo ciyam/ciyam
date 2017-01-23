@@ -3572,7 +3572,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             string client_message = instance_get_variable( handle, "", get_special_var_name( e_special_var_message ) );
-            if( !client_message.empty( ) )
+
+            if( !client_message.empty( ) && !storage_locked_for_admin( ) )
                handler.output_progress( client_message );
 
             vector< string > all_keys;

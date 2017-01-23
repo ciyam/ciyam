@@ -33,6 +33,22 @@
       <item>class
      </specification>
      <specification/>
+      <id>600527
+      <item>class
+     </specification>
+     <specification/>
+      <id>600528
+      <item>class
+     </specification>
+     <specification/>
+      <id>600529
+      <item>class
+     </specification>
+     <specification/>
+      <id>600530
+      <item>class
+     </specification>
+     <specification/>
       <id>602900
       <item>class
      </specification>
@@ -76,6 +92,10 @@
       <modifiers/>
        <modifier/>
         <id>500921
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500923
         <affect>relegate
        </modifier>
       </modifiers>
@@ -176,6 +196,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500923
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -195,6 +219,32 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>302225
+      <name>Creation_Script
+      <type>@class
+      <mandatory>false
+      <class_id>138100
+      <relationship_id>202225
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500924
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600530
+        <item>field
+       </specification>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -392,6 +442,10 @@
         <id>500921
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500925
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -434,10 +488,35 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500925
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>600520
+        <item>field
+       </specification>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>127138
+      <name>Installing_Script
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600529
         <item>field
        </specification>
        <specification/>
@@ -652,6 +731,39 @@
       </specifications>
      </field>
      <field/>
+      <id>127137
+      <name>Use_Script
+      <type>bool
+      <mandatory>true
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500921
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600527
+        <item>field
+       </specification>
+       <specification/>
+        <id>600528
+        <item>field
+       </specification>
+       <specification/>
+        <id>600530
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127134
       <name>Use_TLS_Sessions
       <type>bool
@@ -755,6 +867,10 @@
       <name>Has_No_Application_Log
      </modifier>
      <modifier/>
+      <id>500925
+      <name>Is_Installing_Script
+     </modifier>
+     <modifier/>
       <id>127311
       <name>Is_Non_Traditional
      </modifier>
@@ -763,8 +879,16 @@
       <name>Is_Not_Full_Generate
      </modifier>
      <modifier/>
+      <id>500924
+      <name>Is_Not_Using_Script
+     </modifier>
+     <modifier/>
       <id>127310
       <name>Is_Traditional
+     </modifier>
+     <modifier/>
+      <id>500923
+      <name>Is_Using_Script
      </modifier>
      <modifier/>
       <id>500921
@@ -844,6 +968,55 @@
        </arg>
       </args>
      </procedure>
+    </procedures>
+   </class>
+   <class/>
+    <id>138100
+    <name>Application_Script
+    <plural>Application_Scripts
+    <version>
+    <specifications/>
+    </specifications>
+    <fields/>
+     <field/>
+      <id>138101
+      <name>Name
+      <type>1020
+      <mandatory>true
+      <indexes/>
+       <index/>
+        <id>138201
+        <num>0
+       </index>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>138102
+      <name>Script_Name
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+    </fields>
+    <indexes/>
+     <index/>
+      <id>138201
+      <name>[Name]
+      <unique>true
+     </index>
+    </indexes>
+    <modifiers/>
+    </modifiers>
+    <procedures/>
     </procedures>
    </class>
    <class/>
@@ -28198,6 +28371,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202225
+    <name>Creation_Script_{Application}
+    <parent_id>138100
+    <child_id>127100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201998b
     <name>Destroy_Parent_Modifier_{List}
     <parent_id>109100
@@ -29529,6 +29711,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600529
+    <name>{Application}_Is_Installing_Script
+    <type>modifier_field_value
+    <data/>
+     <class_id>127100
+     <modifier_id>500925
+     <field_id>127138
+     <field_value>1
+    </data>
+   </specification>
+   <specification/>
     <id>600526
     <name>{Application}_Is_Non_Traditional
     <type>modifier_field_value
@@ -29552,6 +29745,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600528
+    <name>{Application}_Is_Not_Using_Script
+    <type>modifier_field_value
+    <data/>
+     <class_id>127100
+     <modifier_id>500924
+     <field_id>127137
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
     <id>600525
     <name>{Application}_Is_Traditional
     <type>modifier_field_value
@@ -29560,6 +29764,27 @@
      <modifier_id>127310
      <field_id>127136
      <field_value>1
+    </data>
+   </specification>
+   <specification/>
+    <id>600527
+    <name>{Application}_Is_Using_Script
+    <type>modifier_field_value
+    <data/>
+     <class_id>127100
+     <modifier_id>500923
+     <field_id>127137
+     <field_value>1
+    </data>
+   </specification>
+   <specification/>
+    <id>600530
+    <name>{Application}_Needs_Script_cond_check
+    <type>check_cond_non_null
+    <data/>
+     <class_id>127100
+     <field_id>302225
+     <cfield_id>127137
     </data>
    </specification>
    <specification/>
@@ -29592,10 +29817,13 @@
      <field_info>127136;non_new+no_edit+enum=907
      <field_info>127135;non_new
      <field_info>127120;non_new+always_editable+force+enum=905
-     <field_info>127105;non_new+no_edit
-     <field_info>127129;non_new+always_editable
+     <field_info>127137;new_only+force
+     <field_info>302225:138101;new_edit+max_size=100
+     <field_info>127138;hidden
      <field_info>127125;new_only
      <field_info>127128;new_only
+     <field_info>127105;non_new+no_edit
+     <field_info>127129;non_new+always_editable
      <field_info>@tab:Generate_Details
      <field_info>127102
      <field_info>127106;show+non_new+no_edit+full_height
