@@ -1,0 +1,14 @@
+#!/bin/sh
+# Copyright (c) 2016-2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo Usage: litecoin [command] [[arg1 [arg2 [...]]]
+else
+ if [ "$LITECOIN" = "" ]; then
+  LITECOIN="./litecoin-cli -rpcpassword=not_what_you_think_it_is -datadir=/home/tux/.litecoin"
+ fi
+ $LITECOIN "$@"
+fi
