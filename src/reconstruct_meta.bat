@@ -10,10 +10,25 @@ if not exist packages.lst goto skip
 construct @packages.lst ciyam_class.cpp.xrep
 
 :skip
-
 call destroy_apps_and_models.bat %1
 call reinstall_packages.bat %1
 
+fd autoscript.sio.default autoscript.sio >nul
+if errorlevel 1 goto auto
+goto skip2
+
+:auto
+copy autoscript.sio.default autoscript.sio >nul
+
+:skip2
+fd manuscript.sio.default manuscript.sio >nul
+if errorlevel 1 goto manu
+goto skip3
+
+:manu
+copy manuscript.sio.default manuscript.sio >nul
+
+:skip3
 goto end
 
 :usage

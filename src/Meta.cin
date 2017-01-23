@@ -766,6 +766,8 @@ field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 field_add -id=127135 Application Blockchain_Id str30 opt
 field_add -id=127136 Application Type bool mand -def=1 -transient -e=app_type
+field_add -id=127137 Application Use_Script bool mand -def=1
+field_add -id=127138 Application Installing_Script bool mand -def=0
 modifier_add -id=127310 Application Is_Traditional Blockchain_Id:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\
 ,Encrypt_Dynamic_Content:relegate,Use_Embedded_Images:relegate,Registration_Key:relegate
@@ -868,6 +870,10 @@ field_add -id=137137 Package_Option Is_Mandatory_Other_Source_Field bool mand -d
 procedure_add -id=137410 Package_Option Edit
 procedure_add -id=137420 Package_Option Select
 procedure_add -id=137430 Package_Option Clear
+class_add -id=138100 Application_Script Application_Scripts
+field_add -id=138101 Application_Script Name str100 mand
+field_add -id=138102 Application_Script Script_Name str100 mand
+index_add -id=138201 Application_Script Name unique
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -1022,6 +1028,7 @@ relationship_add -id=202199 -fid=302199 List_Field Access_Parent_Modifier Modifi
 relationship_add -id=202200 -fid=302200 Module {Model} Model mand restrict
 relationship_add -id=202210 -fid=302210 Module {Application} Application mand destroy
 relationship_add -id=202220 -fid=302220 Application {Workgroup} Workgroup mand restrict
+relationship_add -id=202225 -fid=302225 Application Creation_Script Application_Script opt restrict
 relationship_add -id=202300 -fid=302300 Specification_Field_Action New_Record_Class Class opt restrict
 relationship_add -id=202310 -fid=302310 Specification_Field_Action New_Record_FK_Field Field opt restrict
 relationship_add -id=202410 -fid=302410 Initial_Record {Class} Class mand destroy
@@ -1288,8 +1295,11 @@ modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
 modifier_add -id=500920 Application Is_Not_Full_Generate Keep_Existing_Data:relegate
-modifier_add -id=500921 Application Was_Cloned Add_Modules_Automatically:relegate,Generate_Details:relegate
+modifier_add -id=500921 Application Was_Cloned Use_Script:relegate,Add_Modules_Automatically:relegate,Generate_Details:relegate
 modifier_add -id=500922 Application Has_No_Application_Log Keep_Existing_Data:relegate
+modifier_add -id=500923 Application Is_Using_Script Create_Database:relegate,Add_Modules_Automatically:relegate
+modifier_add -id=500924 Application Is_Not_Using_Script Creation_Script:relegate
+modifier_add -id=500925 Application Is_Installing_Script Generate_Type:relegate,Generate_Details:relegate
 modifier_add -id=500950 Package_Type Is_Installed File:relegate
 modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
 modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\
@@ -1939,6 +1949,10 @@ specification_add -id=600510 {Application}_Generate_Details transient_field_from
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
 specification_add -id=600525 {Application}_Is_Traditional modifier_field_value "Application Is_Traditional Type 1"
 specification_add -id=600526 {Application}_Is_Non_Traditional modifier_field_value "Application Is_Non_Traditional Type 0"
+specification_add -id=600527 {Application}_Is_Using_Script modifier_field_value "Application Is_Using_Script Use_Script 1"
+specification_add -id=600528 {Application}_Is_Not_Using_Script modifier_field_value "Application Is_Not_Using_Script Use_Script 0"
+specification_add -id=600529 {Application}_Is_Installing_Script modifier_field_value "Application Is_Installing_Script Installing_Script 1"
+specification_add -id=600530 {Application}_Needs_Script_cond_check check_cond_non_null "Application Creation_Script Use_Script"
 specification_add -id=600600 {Initial_Record}_copy_{Class}_{Field}_children copy_child_links_from_fk\
  "Initial_Record Initial_Record_Value Class Field Value-Default -child_field={Field} -combine_keys"
 specification_add -id=600601 {Initial_Record}_Order_default default_from_key "Initial_Record Order -check_null"
@@ -2184,8 +2198,9 @@ specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_l
 specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version,Generate_Status {Workgroup}"
 specification_add -id=602910 {Application}_view view "? standard:can_copy Application\
  Name;new_edit,Type;non_new+no_edit,Blockchain_Id;non_new,Generate_Type;non_new+always_editable+force\
-,Generate_Status;non_new+no_edit,Keep_Existing_Data;non_new+always_editable\
+,Use_Script;new_only+force,Creation_Script:Name;new_edit,Installing_Script;hidden\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
+,Generate_Status;non_new+no_edit,Keep_Existing_Data;non_new+always_editable\
 ,@tab:Generate_Details,Version,Generate_Details;show+non_new+no_edit+full_height\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
 ,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\

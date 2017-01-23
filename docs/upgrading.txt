@@ -132,3 +132,9 @@ following:
 It should be noted (the batch/script issues a warning) that this destroys all existing applications along with
 their model artifacts (i.e. you'll need to re-create your applications from "Meta").
 
+If changes were made to either "autoscript.sio.default" or "manuscript.sio.default" then these will be applied
+when "reconstruct_meta" is executed as well.
+
+If changes were made to the "ciyam_server.sio.default" file then these will need to be manually applied (which
+should rarely occur and normally would be optional to apply anyway).
+
