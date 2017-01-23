@@ -766,7 +766,7 @@ field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 field_add -id=127135 Application Blockchain_Id str30 opt
 field_add -id=127136 Application Type bool mand -def=1 -transient -e=app_type
-field_add -id=127137 Application Use_Script bool mand -def=1
+field_add -id=127137 Application Use_Script bool mand -def=0
 field_add -id=127138 Application Installing_Script bool mand -def=0
 modifier_add -id=127310 Application Is_Traditional Blockchain_Id:relegate
 modifier_add -id=127311 Application Is_Non_Traditional Allow_Duplicate_Logins:relegate,Auto_Login_Days:relegate\

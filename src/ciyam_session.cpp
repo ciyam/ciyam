@@ -4710,26 +4710,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   session_skip_fk_fetches( old_skip_fetches );
                }
 
-               // FUTURE: This code can be removed after all legacy Meta applications have been restored.
-               if( name == c_meta_model
-                && ( tran_id >= c_tx_id_standard || is_skipping_legacy ) && !finished_skipping_legacy )
-               {
-                  if( tran_info.find( "pc sys 20120102 Meta 102100 string" ) == 0 )
-                  {
-                     tran_info.erase( );
-                     is_skipping_legacy = true;
-                  }
-                  else if( tran_info.find( "pc sys 20120102 Meta 114100 sys_info" ) == 0 )
-                  {
-                     tran_info.erase( );
-                     is_skipping_legacy = false;
-                     finished_skipping_legacy = true;
-                  }
-
-                  if( is_skipping_legacy )
-                     tran_info.erase( );
-               }
-
                // NOTE: Any operation whose transaction id is less than standard is skipped during a restore.
                if( !tran_info.empty( ) && tran_id >= c_tx_id_standard )
                {
