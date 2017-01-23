@@ -735,7 +735,7 @@
       <name>Use_Script
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
