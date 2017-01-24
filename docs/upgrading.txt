@@ -130,7 +130,9 @@ following:
 ./reconstruct_meta
 
 It should be noted (the batch/script issues a warning) that this destroys all existing applications along with
-their model artifacts (i.e. you'll need to re-create your applications from "Meta").
+their model artifacts (i.e. you'll need to re-create your applications from scratch).
+
+If changes were made to "Meta.fcgi.sio" then these will be also applied when "reconstruct_meta" is executed.
 
 If changes were made to either "autoscript.sio.default" or "manuscript.sio.default" then these will be applied
 when "reconstruct_meta" is executed as well.
