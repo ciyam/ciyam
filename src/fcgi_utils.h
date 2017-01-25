@@ -154,7 +154,8 @@ void output_actions( std::ostream& os,
  const session_info& sess_info, const std::string& ident, const std::string& key_and_version,
  const std::string& class_id, const std::string& class_name, const std::string& actions_value,
  const std::string& owner, const std::string& session_id, const std::string& user_select_key,
- bool using_session_cookie, bool use_url_checksum, bool has_hashval, std::string* p_default = 0 );
+ const std::string& listarg, bool using_session_cookie, bool use_url_checksum, bool has_hashval,
+ std::string* p_default = 0 );
 
 void parse_field_extra( const std::string& extra, std::map< std::string, std::string >& extra_data );
 

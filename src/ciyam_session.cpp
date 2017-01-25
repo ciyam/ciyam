@@ -3753,11 +3753,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
 
-                  // NOTE: For simple executes a special object instance variable can be supplied as the
-                  // return value (so a return value is possible even if the procedure does not have any
-                  // output arguments).
-                  if( next_response.empty( ) && all_keys.size( ) == 1 )
-                     next_response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
+                  // NOTE: A special object instance variable can be supplied as the return value (so a
+                  // return value is possible even if the procedure does not have any output arguments).
+                  if( next_response.empty( ) )
+                  {
+                     next_response = instance_get_variable(
+                      handle, "", get_special_var_name( e_special_var_return ) );
+
+                     instance_set_variable( handle, "", get_special_var_name( e_special_var_return ), "" );
+                  }
 
                   string return_response;
                   // NOTE: Cannot have CR/LF pairs in a response (as the client will get confused) so if
@@ -3786,6 +3790,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   skip_transaction = true;
                   transaction_commit( );
+
+                  response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
                }
 
                destroy_object_instance( handle );
