@@ -4780,7 +4780,14 @@ int exec_system( const string& cmd, bool async, bool delay )
          set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
 
          if( !value.empty( ) && value != string( "1" ) )
-            throw runtime_error( value );
+         {
+            // NOTE: If the error starts with '@' then assume that it is actually
+            // intended to be an execute "return" message rather than an error.
+            if( value[ 0 ] == '@' )
+               set_session_variable( c_special_variable_return, value.substr( 1 ) );
+            else
+               throw runtime_error( value );
+         }
       }
    }
 
@@ -10715,7 +10722,14 @@ void transaction_commit( )
       set_session_variable( c_special_variable_check_script_error, "" );
 
       if( !script_error.empty( ) )
-         throw runtime_error( script_error );
+      {
+         // NOTE: If the error starts with '@' then assume that it is actually
+         // intended to be an execute "return" message rather than an error.
+         if( script_error[ 0 ] == '@' )
+            set_session_variable( c_special_variable_return, script_error.substr( 1 ) );
+         else
+            throw runtime_error( script_error );
+      }
    }
 }
 

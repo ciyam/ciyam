@@ -1368,7 +1368,8 @@ void output_actions( ostream& os,
  const session_info& sess_info, const string& ident, const string& key_and_version,
  const string& class_id, const string& class_name, const string& actions_value,
  const string& owner, const string& session_id, const string& user_select_key,
- bool using_session_cookie, bool use_url_checksum, bool has_hashval, string* p_default )
+ const string& listarg, bool using_session_cookie, bool use_url_checksum, bool has_hashval,
+ string* p_default )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( src.module )->second );
 
@@ -1573,6 +1574,9 @@ void output_actions( ostream& os,
             os << "&app=" << key_and_version << "&cls=" << class_id
              << "&extra=' + get_all_field_values( document." << src.id << " ) + '";
 
+         if( !listarg.empty( ) )
+            os << "&listarg=" << listarg;
+
          if( go_back )
             os << "&back=1";
          os << "&exec=" << next_action << "', false );";
@@ -1595,6 +1599,9 @@ void output_actions( ostream& os,
 
          os << "&extra=" << child_key << "&field=" << child_field
           << "&ident=" << mod_info.view_cids.find( child_class )->second;
+
+         if( !listarg.empty( ) )
+            os << "&listarg=" << listarg;
 
          if( !user_select_key.empty( ) )
             os << "&" << c_param_uselect << "=" << user_select_key;

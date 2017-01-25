@@ -2349,9 +2349,9 @@ void request_handler::process_request( )
                   if( act == c_act_qlink )
                      add_quick_link( module_ref, cmd, findinfo, quicklink, listsrch, listsort, oident,
                       uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info, &list_selections );
-                  else if( !perform_action( list.module, list.cid, act, app,
-                      field, "", exec, extra, list.row_errors, *p_session_info ) )
-                        had_send_or_recv_error = true;
+                  else if( !perform_action( list.module,
+                   list.cid, act, app, field, "", exec, extra, list.row_errors, *p_session_info ) )
+                     had_send_or_recv_error = true;
 
                   // NOTE: Handle an error/response (is stored as the first record in "row_errors").
                   // Also if no message was returned for a non-instance procedure call then output

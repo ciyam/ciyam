@@ -3005,10 +3005,14 @@ void output_list_form( ostream& os,
                ident = pident;
             }
 
+            string listarg;
+            if( is_child_list )
+               listarg = source.id;
+
             if( !is_printable && allow_list_actions && !cell_data.empty( ) && !sess_info.user_id.empty( ) )
                output_actions( os, source, cmd, parent_key, sess_info, ident,
                 key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data,
-                "", session_id, user_select_key, using_session_cookie, use_url_checksum, has_hashval );
+                "", session_id, user_select_key, listarg, using_session_cookie, use_url_checksum, has_hashval );
             else
                os << c_nbsp;
 
@@ -3626,19 +3630,31 @@ void output_list_form( ostream& os,
 
       if( !checked.empty( ) && rci != source.row_errors.end( ) )
       {
+         string error( rci->second );
+
+         bool is_real_error = false;
+
+         // NOTE: The "row_errors" container is also used to store non-error action response messages
+         // so need to differentiate between them here in order to display them in the correct manner.
+         if( error.length( ) > strlen( c_response_error_prefix )
+          && error.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+         {
+            is_real_error = true;
+            error = string( GDS( c_display_error ) ) + ": " + remove_key( error.substr( strlen( c_response_error_prefix ) ) );
+         }
+
          if( !was_odd )
             os << "<tr class=\"error\">\n";
          else
             os << "<tr class=\"odd_error\">\n";
 
-         string error( rci->second );
-
-         if( error.length( ) > strlen( c_response_error_prefix )
-          && error.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
-            error = string( GDS( c_display_error ) ) + ": " + remove_key( error.substr( strlen( c_response_error_prefix ) ) );
-
          os << "  <td width=\"25\">&nbsp;</td>\n";
-         os << "  <td class=\"error\" colspan=\"" << ( source.field_ids.size( ) ) << "\">" << error << "</td>\n";
+
+         if( !is_real_error )
+            os << "  <td class=\"list\" colspan=\"" << ( source.field_ids.size( ) ) << "\">" << error << "</td>\n";
+         else
+            os << "  <td class=\"error\" colspan=\"" << ( source.field_ids.size( ) ) << "\">" << error << "</td>\n";
+
          os << "</tr>\n";
       }
    }
