@@ -3805,7 +3805,7 @@ void output_list_form( ostream& os,
             else
                os << "<select class=\"newrecord_select\" name=\"new_record\" onchange=\"sel_new_loc( document." << source.id << ".new_record );\">\n";
 
-            os << "<option>" << GDS( c_display_new_record ) << "</option>\n";
+            os << "<option>" << GDS( c_display_create_new ) << "</option>\n";
 
             for( size_t i = 0; i < source.new_record_list.size( ); i++ )
             {
@@ -3924,7 +3924,7 @@ void output_list_form( ostream& os,
 
             os << "&chksum=" << get_checksum( sess_info, checksum_values );
 
-            os << "\">" << GDS( c_display_new_record ) << "</a>";
+            os << "\">" << GDS( c_display_create_new ) << "</a>";
          }
 
          if( !is_ui_prototype( ) )
