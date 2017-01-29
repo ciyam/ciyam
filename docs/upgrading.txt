@@ -82,6 +82,9 @@ the following script (run again from the "src" directory).
 
 ./restore Meta
 
+It should be noted that this script performs the "construct" step described above as well (so there is no need
+to explicitly issue the "construct" if running this one).
+
 Regenerating Applications
 -------------------------
 

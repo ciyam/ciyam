@@ -9,6 +9,9 @@ if [ $# -lt 1 ]; then
 elif [ $# -lt 2 ] && [ "$1" = "-quicker" ]; then
  echo Usage: restore [[-quicker]] [app name]
 else
+ if [ -f packages.lst ]; then
+  ./construct @packages.lst ciyam_class.cpp.xrep
+ fi
  if [ ! "$1" = "-quicker" ]; then
   export CIYAM_STORAGE=$1
   ./ciyam_client -quiet -no_prompt < restore.cin

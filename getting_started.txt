@@ -22,7 +22,7 @@ testing the system, populate this DB with tables and data and check that all is 
 The "ciyam" DB should only be used for regression test purposes (by repeating the above steps) so now another
 DB needs to be created for the IDE itself:
 
-NOTE: In order for this second init to work the user must have rwx permissions for the WEBROOT directory.
+NOTE: In order for this second init to work the user must have "rwx" permissions for the WEBROOT directory.
 
 ./create_db Meta
 ./init Meta Meta
@@ -100,7 +100,7 @@ off/false.
 Creating an Application
 -----------------------
 
-Once you have logged in click on "Models" (in the navigation sidebar) and then click "New Record" in order to
+Once you have logged in click on "Models" (in the navigation sidebar) and then click "Create New" in order to
 begin the application creation process. The "New Model" form will require a Name to be entered (for this test
 the name "Sample" should be used).
 
@@ -118,7 +118,7 @@ was (the "Standard" package has no installation options).
 For the purposes of creating a test "demonstration" Application the "User" package should simply be installed
 with the "Package Options" as they are by default. After the "User" package has been installed (assuming that
 no error occurred during installation) then click on "Applications" from the navigation sidebar and as before
-click "New Record" to create the Application. In order to simplify creating a new Application enter the exact
+click "Create New" to create the Application. In order to simplify creating a new Application enter the exact
 same text for Name as you used for the Model (in this case "Sample"). After typing in the Name next click the
 "Save Details" button and you should see in the child "Modules" list that the Model "Sample" has been created
 for you (if not then most likely the Name was not an exact match or "Add Modules Automatically" was not set).
@@ -154,7 +154,7 @@ id "!admin" and password "admin" (logout first if still logged in as "guest" fro
 The navigation sidebar will look very different when you are logged in as "admin" as this special user is not
 intended to perform standard activities but instead to perform "system configuration" and "user maintenance".
 After clicking on "Package Types" you should see a small list of the automatically included packages. Too add
-a new package type click "New Record". The Type Name will default to "New_Package_Type" and as this name will
+a new package type click "Create New". The Type Name will default to "New_Package_Type" and as this name will
 be automatically changed during the Package Type "Install" it does not need to be changed so you just need to
 click "Save Details" to continue.
 

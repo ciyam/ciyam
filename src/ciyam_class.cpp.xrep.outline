@@ -1208,7 +1208,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `,\
 `@eq`(`'\1`'`,`'modifier_from_not_other_mod`'`)
 `{`#modifier_from_not_other_mod.spec.xrep section=get_state\
- arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_omodifier=$specification_\0_omodifier`}\
+ arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier\
+ arg_omodifier=$specification_\0_omodifier arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_from_other_mods`'`)
 `{`#modifier_from_other_mods.spec.xrep section=get_state\
