@@ -1597,7 +1597,8 @@ void `{`$full_class_name`}::impl::validate(
  arg_spfield=$specification_\0_spfield arg_spclass=$specification_\0_spclass arg_op=$specification_\0_op\
  arg_tfield=$specification_\0_tfield arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit\
  arg_modifier=$specification_\0_modifier arg_create_only=$specification_\0_create_only arg_create_also=$specification_\0_create_also\
- arg_update_only=$specification_\0_update_only arg_primary_only=$specification_\0_primary_only arg_allow_internal=$specification_\0_allow_internal`}\
+ arg_update_only=$specification_\0_update_only arg_primary_only=$specification_\0_primary_only\
+ arg_allow_internal=$specification_\0_allow_internal arg_use_source_value=$specification_\0_use_source_value`}\
 `,\
 `@eq`(`'\1`'`,`'check_compare_op_value`'`)
 `{`#check_compare_op_value.spec.xrep section=validate class_name=$class_name module_name=$module_name\
