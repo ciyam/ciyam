@@ -212,51 +212,67 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    BN_set_word( &bn, 0 );
    BN_set_word( &bn58, 58 );
 
-   for( size_t i = 0; i < encoded.size( ); i++ )
+   string error;
+
+   try
    {
-      const char* pc = strchr( gp_base58, encoded[ i ] );
-      if( !pc )
-         throw runtime_error( "invalid base58 encoded input '" + encoded + "'" );
+      for( size_t i = 0; i < encoded.size( ); i++ )
+      {
+         const char* pc = strchr( gp_base58, encoded[ i ] );
+         if( !pc )
+            throw runtime_error( "invalid base58 encoded input '" + encoded + "'" );
 
-      BN_set_word( &bnchar, pc - gp_base58 );
+         BN_set_word( &bnchar, pc - gp_base58 );
 
-      if( !BN_mul( &bn, &bn, &bn58, p_ctx ) )
-         throw runtime_error( "unexpected BN_mul failure in base58_decode" );
+         if( !BN_mul( &bn, &bn, &bn58, p_ctx ) )
+            throw runtime_error( "unexpected BN_mul failure in base58_decode" );
 
-      BN_add( &bn, &bn, &bnchar );
+         BN_add( &bn, &bn, &bnchar );
+      }
+
+      vector< unsigned char > temp_buf;
+
+      unsigned int size = BN_bn2mpi( &bn, 0 );
+      if( size > 4 )
+      {
+         temp_buf.resize( size );
+         BN_bn2mpi( &bn, &temp_buf[ 0 ] );
+         temp_buf.erase( temp_buf.begin( ), temp_buf.begin( ) + 4 );
+         reverse( temp_buf.begin( ), temp_buf.end( ) );
+      }
+
+      if( temp_buf.size( ) >= 2 && temp_buf.end( )[ -1 ] == 0 && temp_buf.end( )[ -2 ] >= 0x80 )
+         temp_buf.erase( temp_buf.end( ) - 1 );
+
+      int leading = 0;
+      for( size_t i = 0; i < encoded.size( ); i++ )
+      {
+         if( encoded[ i ] == gp_base58[ 0 ] )
+            ++leading;
+         else
+            break;
+      }
+
+      buf.assign( leading + temp_buf.size( ), 0 );
+      reverse_copy( temp_buf.begin( ), temp_buf.end( ), buf.end( ) - temp_buf.size( ) );
    }
-
-   vector< unsigned char > temp_buf;
-
-   unsigned int size = BN_bn2mpi( &bn, 0 );
-   if( size > 4 )
+   catch( exception& x )
    {
-      temp_buf.resize( size );
-      BN_bn2mpi( &bn, &temp_buf[ 0 ] );
-      temp_buf.erase( temp_buf.begin( ), temp_buf.begin( ) + 4 );
-      reverse( temp_buf.begin( ), temp_buf.end( ) );
+      error = x.what( );
    }
-
-   if( temp_buf.size( ) >= 2 && temp_buf.end( )[ -1 ] == 0 && temp_buf.end( )[ -2 ] >= 0x80 )
-      temp_buf.erase( temp_buf.end( ) - 1 );
-
-   int leading = 0;
-   for( size_t i = 0; i < encoded.size( ); i++ )
+   catch( ... )
    {
-      if( encoded[ i ] == gp_base58[ 0 ] )
-         ++leading;
-      else
-         break;
+      error = "unexpected unknown exception occurred in base58_decode";
    }
-
-   buf.assign( leading + temp_buf.size( ), 0 );
-   reverse_copy( temp_buf.begin( ), temp_buf.end( ), buf.end( ) - temp_buf.size( ) );
 
    BN_clear_free( &bnchar );
    BN_clear_free( &bn58 );
    BN_clear_free( &bn );
 
    BN_CTX_free( p_ctx );
+
+   if( !error.empty( ) )
+      throw runtime_error( error );
 }
 
 bool is_big_endian( )

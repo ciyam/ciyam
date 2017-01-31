@@ -374,4 +374,5 @@ pc sys 20120102 Meta 114100 qlink_info "114101=qlink_info,114102=qlink_info,1141
 pc sys 20120102 Meta 114100 sys_info "114101=sys_info,114102=sys_info,114103=sys_info,114104=1,114124=1,114105=1,114128=1,114154=1,114174=1,114183=1,114184=1,114126=1,114114=1,114120=Field is for \"actions\"\\, Other Field for \"message\" and Other Field 2 for \"name\". Source Field is for \"reference\" field and Test Field is for \"vendor\".,114163=1,114158=cid={class_id}\nclass={class}\nactions={field_id}\nmessage={ofield_id}\nname={o2field_id}\nreference={sfield_id}\nvendor={tfield_id}"
 pc sys 20120102 Meta 138100 demo_blog "138101=Blog Demonstration,138102=create_demo_blog_application"
 pc sys 20120102 Meta 138100 demo_trade "138101=Trade Demonstration,138102=create_demo_trade_application"
+pc sys 20120102 Meta 138100 demo_wallet "138101=Wallet Demonstration,138102=create_demo_wallet_application"
 storage_comment "meta std (finish)"

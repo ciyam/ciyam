@@ -39,14 +39,6 @@ WALLET_TYPE_KEY=$OUTPUT
 @endif
 @skip
 ;
-.pf 100 135100 -q=135101=Trade "" @key -min
-TRADE_TYPE_KEY=$OUTPUT
-@ifndef $TRADE_TYPE_KEY
-#Error: Package Type 'Trade' was not found.
-@label END
-@endif
-@skip
-;
 #Creating Model $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 105100 " " "105101=$CIYAM_MODEL,300500=$CIYAM_GRP,105103=2017,105112=0"
 @ifdef $ERROR
@@ -109,19 +101,6 @@ WALLET_USER_OPTION_KEY=$OUTPUT
 .pu $CIYAM_UID @now 100 137100 $WALLET_KEY_PLURAL_OPTION_KEY "137109=IDs"
 .pu $CIYAM_UID @now 100 137100 $WALLET_USER_OPTION_KEY "302830=$USER_PACKAGE_KEY"
 .pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Wallet Package..." $WALLET_PACKAGE_KEY -136410
-;
-.pc $CIYAM_UID @now 100 136100 " " "136101=Trade,136107=Trades,302810=$TRADE_TYPE_KEY,302800=$MODEL_KEY"
-TRADE_PACKAGE_KEY=$OUTPUT
-;
-.pf 100 137100 -q=302820=$TRADE_PACKAGE_KEY,137101=opt_trade_package_wallet_package "" @key -min
-@ifdef $ERROR
-@label END
-@endif
-@skip
-;
-TRADE_WALLET_OPTION_KEY=$OUTPUT
-.pu $CIYAM_UID @now 100 137100 $TRADE_WALLET_OPTION_KEY "302830=$WALLET_PACKAGE_KEY"
-.pe $CIYAM_UID @now 100 136100 "-v=@async=false,@message=Installing Trade Package..." $TRADE_PACKAGE_KEY -136410
 ;
 @ifdef $CIYAM_APP_KEY
 .pc $CIYAM_UID @now 100 126100 " " "302200=$MODEL_KEY,302210=$CIYAM_APP_KEY"

@@ -4936,6 +4936,10 @@ string create_address_key_pair( const string& ext_key,
 
 bool active_external_service( const string& ext_key )
 {
+   // FUTURE: To avoid unnecessary repeated calls it might be useful to keep the timestamp
+   // of the last time the service was found to be active and assuming that the last check
+   // was within a reasonable number of seconds from the current timestamp then can assume
+   // that the service is still active (also add a "force_check" to never skip the check).
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
@@ -4963,7 +4967,7 @@ bool active_external_service( const string& ext_key )
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
       if( system( cmd.c_str( ) ) != 0 )
-         throw runtime_error( "unexpected system failure for has_active_external_service" );
+         throw runtime_error( "unexpected system failure for active_external_service" );
    }
 
    if( file_exists( tmp_file_name ) )

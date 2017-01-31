@@ -176,6 +176,7 @@ struct external_client
 
    int port;
    bool is_local;
+
    std::string protocol;
    std::string extra_info;
    std::string script_name;
@@ -200,7 +201,7 @@ std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false, bool delay = false );
 
 int CIYAM_BASE_DECL_SPEC run_script(
- const std::string& script_name,  bool async = true, bool delay = false, bool no_logging = false );
+ const std::string& script_name, bool async = true, bool delay = false, bool no_logging = false );
 
 std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_args );
 
