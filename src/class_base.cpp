@@ -5505,7 +5505,7 @@ string retreive_p2sh_redeem_extra_info(
    {
       cmd = expanded_script_name( client_info.script_name ) + " ";
 
-      cmd += "listtransactions \"*\" 250 0 true";
+      cmd += "listtransactions \"*\" 1000 0 true";
 
       cmd += " >" + tmp + " 2>&1";
    }

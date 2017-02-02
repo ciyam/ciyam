@@ -3791,7 +3791,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   skip_transaction = true;
                   transaction_commit( );
 
-                  response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
+                  string sess_retval( get_raw_session_variable( get_special_var_name( e_special_var_return ) ) );
+
+                  if( !sess_retval.empty( ) )
+                  {
+                     response = sess_retval;
+                     set_session_variable( get_special_var_name( e_special_var_return ), "" );
+                  }
+                  else
+                     response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
                }
 
                destroy_object_instance( handle );
