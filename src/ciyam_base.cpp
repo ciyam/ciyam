@@ -4852,7 +4852,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          // as the "args_file" session variable (and whose value is still "1") (i.e. in the case of
          // multiple delayed scripts will only record the first such error) then this value will be
          // changed to that of the error message.
-         if( !async && no_logging )
+         if( !async && no_logging
+          && get_raw_session_variable( c_special_variable_check_script_error ).empty( ) )
          {
             set_system_variable( args_file, "1" );
             set_session_variable( c_special_variable_check_script_error, "1" );
