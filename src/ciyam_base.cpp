@@ -4769,7 +4769,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    // NOTE: If the script had an error and the caller should throw this as an error then do so.
    string check_script_error( get_raw_session_variable( c_special_variable_check_script_error ) );
 
-   if( !check_script_error.empty( ) )
+   if( check_script_error == "1" || check_script_error == c_true )
    {
       set_session_variable( c_special_variable_check_script_error, "" );
 
@@ -4841,6 +4841,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
       {
          gtp_session->async_or_delayed_temp_file = args_file;
 
+         string check_script_error( get_raw_session_variable( c_special_variable_check_script_error ) );
+
          // NOTE: If the script is intended to be synchronous and "no_logging" argument is set true
          // then the first error that occurs in the the external script (or scripts if multiple are
          // run using "delay") will thrown as an exception after the calling session's "system" (in
@@ -4853,7 +4855,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          // multiple delayed scripts will only record the first such error) then this value will be
          // changed to that of the error message.
          if( !async && no_logging
-          && get_raw_session_variable( c_special_variable_check_script_error ).empty( ) )
+          && check_script_error != "0" && check_script_error != c_false )
          {
             set_system_variable( args_file, "1" );
             set_session_variable( c_special_variable_check_script_error, "1" );
@@ -10706,7 +10708,8 @@ void transaction_commit( )
       {
          string next( gtp_session->async_or_delayed_temp_files[ i ] );
 
-         if( !check_script_error.empty( ) && script_error.empty( ) )
+         if( script_error.empty( )
+          && ( check_script_error == "1" || check_script_error == c_true ) )
          {
             string value( get_raw_system_variable( next ) );
 
