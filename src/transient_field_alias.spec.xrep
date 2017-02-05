@@ -12,21 +12,31 @@
     || required_transients.count( "`{`$arg_field`}" ) )\
 `,\
     || required_transients.count( "`{`$arg_field`}" ) )
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( ) )\
-`}`,\
+`,\
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )\
+`}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
     || required_transients.count( "`{`$arg_field`}" ) )
     && ( state & c_modifier_`{`$arg_check_mod`} ) )\
 `,\
     || required_transients.count( "`{`$arg_field`}" ) )
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
+`,\
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}\
     && ( state & c_modifier_`{`$arg_check_mod`} ) )\
 `}`}`,\
    if( get_obj( ).get_is_iterating( )`{`@eq`(`$arg_top_level`,`'true`'`)
     && !get_obj( ).get_graph_parent( )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
-`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+`,\
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
     && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
@@ -38,8 +48,11 @@
     && `}( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
-`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+`,\
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
     && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
@@ -49,8 +62,11 @@
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
-`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+`,\
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}`}`{`!`@eq`(`$arg_check_mod`,`'`'`)\
     && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\

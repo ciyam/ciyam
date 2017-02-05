@@ -5671,6 +5671,7 @@ string get_raw_session_variable( const string& name )
    string retval;
 
    bool found = false;
+
    if( gtp_session )
    {
       if( gtp_session->variables.count( name ) )

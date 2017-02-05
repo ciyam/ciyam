@@ -88,9 +88,12 @@ const char* const c_protocol_blockchain = "blockchain";
 
 const char* const c_error_message_prefix = "error message:";
 
+const char* const c_crypto_info_min_fee = "min_fee";
 const char* const c_crypto_info_testnet = "testnet";
 const char* const c_crypto_info_addr_prefix = "addr_prefix";
 const char* const c_crypto_info_p2sh_prefix = "p2sh_prefix";
+const char* const c_crypto_info_acct_min_fee = "acct_min_fee";
+const char* const c_crypto_info_acct_p2sh_fee = "acct_p2sh_fee";
 
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
@@ -494,12 +497,20 @@ struct crypto_info
    crypto_info( )
     :
     override( false ),
+    min_fee( 0.0001 ),
+    acct_min_fee( 0.0002 ),
+    acct_p2sh_fee( 0.0002 ),
     addr_prefix( e_address_prefix_use_default ),
     p2sh_prefix( e_address_prefix_use_default )
    {
    }
 
    bool override;
+
+   float min_fee;
+   float acct_min_fee;
+   float acct_p2sh_fee;
+
    address_prefix addr_prefix;
    address_prefix p2sh_prefix;
 };
@@ -507,6 +518,7 @@ struct crypto_info
 void get_crypto_info( const string& extra_info, crypto_info& info )
 {
    vector< string > extras;
+
    if( !extra_info.empty( ) )
       split( extra_info, extras );
 
@@ -529,6 +541,11 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
    if( extra_details.count( c_crypto_info_testnet ) )
       info.override = true;
 
+   string min_fee( extra_details[ c_crypto_info_min_fee ] );
+
+   if( !min_fee.empty( ) )
+      info.min_fee = atof( min_fee.c_str( ) );
+
    string addr_prefix( extra_details[ c_crypto_info_addr_prefix ] );
 
    if( !addr_prefix.empty( ) )
@@ -543,6 +560,16 @@ void get_crypto_info( const string& extra_info, crypto_info& info )
       info.override = true;
       info.p2sh_prefix = ( address_prefix )atoi( p2sh_prefix.c_str( ) );
    }
+
+   string acct_min_fee( extra_details[ c_crypto_info_acct_min_fee ] );
+
+   if( !acct_min_fee.empty( ) )
+      info.acct_min_fee = atof( acct_min_fee.c_str( ) );
+
+   string acct_p2sh_fee( extra_details[ c_crypto_info_acct_p2sh_fee ] );
+
+   if( !acct_p2sh_fee.empty( ) )
+      info.acct_p2sh_fee = atof( acct_p2sh_fee.c_str( ) );
 }
 
 }
@@ -4981,6 +5008,33 @@ bool active_external_service( const string& ext_key )
    }
 
    return okay;
+}
+
+string get_external_extra( const string& ext_key, const string& extra )
+{
+   string retval;
+
+   if( !ext_key.empty( ) )
+   {
+      external_client client_info;
+      get_external_client_info( ext_key, client_info );
+
+      crypto_info info;
+      get_crypto_info( client_info.extra_info, info );
+
+      if( extra == string( c_crypto_info_min_fee ) )
+         retval = to_string( info.min_fee );
+      else if( extra == string( c_crypto_info_addr_prefix ) )
+         retval = info.addr_prefix;
+      else if( extra == string( c_crypto_info_p2sh_prefix ) )
+         retval = info.p2sh_prefix;
+      else if( extra == string( c_crypto_info_acct_min_fee ) )
+         retval = to_string( info.acct_min_fee );
+      else if( extra == string( c_crypto_info_acct_p2sh_fee ) )
+         retval = to_string( info.acct_p2sh_fee );
+   }      
+
+   return retval;
 }
 
 bool can_create_address( const string& ext_key )

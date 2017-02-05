@@ -6,7 +6,19 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_to_global)] `{`$arg_id`}
-`{`$cond`=`'`'`}\
+`{`$cond`=`'`'`}`{`$changed`=`'`'`}`{`$value`=`$arg_value`}`{`$sfield`=`$arg_cfield`}\
+`{`@eq`(`$arg_value`,`'@min_fee`'`)`$value`=`'from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+      get_external_extra( get_obj( ).`{`$sfield`}( ), "min_fee" ) )`'`}\
+`{`@eq`(`$arg_value`,`'@min_fee`'`)`$arg_cfield`=`'`'`}\
+`{`@eq`(`$arg_value`,`'@min_fee`'`)`$changed`=`$sfield`}\
+`{`@eq`(`$arg_value`,`'@acct_min_fee`'`)`$value`=`'from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+      get_external_extra( get_obj( ).`{`$sfield`}( ), "acct_min_fee" ) )`'`}\
+`{`@eq`(`$arg_value`,`'@acct_min_fee`'`)`$arg_cfield`=`'`'`}\
+`{`@eq`(`$arg_value`,`'@acct_min_fee`'`)`$changed`=`$sfield`}\
+`{`@eq`(`$arg_value`,`'@acct_p2sh_fee`'`)`$value`=`'from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >(
+      get_external_extra( get_obj( ).`{`$sfield`}( ), "acct_p2sh_fee" ) )`'`}\
+`{`@eq`(`$arg_value`,`'@acct_p2sh_fee`'`)`$arg_cfield`=`'`'`}\
+`{`@eq`(`$arg_value`,`'@acct_p2sh_fee`'`)`$changed`=`$sfield`}\
 `{`@eq`(`$arg_inc_exist`,`'`'`)`$cond`=`'is_create`'`}\
 `{`!`@eq`(`$arg_dflt_only`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
     && `'`}`}`{`!`@eq`(`$arg_dflt_only`,`'`'`)`$cond`^`'get_obj( ).get_key( ).empty( )`'`}\
@@ -22,11 +34,12 @@ get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`
 `{`!`@eq`(`$arg_modifier`,`'`'`)\
     && ( state & c_modifier_`{`$arg_modifier`} )
 `}\
-    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
-`{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)\
-      get_obj( ).`{`$arg_field`}( `{`$arg_value`} );`{`!`@eq`(`$arg_ename`,`'`'`) // i.e. `{`$arg_ename`}`}\
+    && `{`!`@eq`(`$changed`,`'`'`)( `}get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`}\
+`{`!`@eq`(`$changed`,`'`'`) || get_obj( ).has_field_changed( c_field_id_`{`$sfield`} ) )`} )
+`{`$test`=`$value`/@`/ `}`{`@eq`(`$test`,`$value`)\
+      get_obj( ).`{`$arg_field`}( `{`$value`} );`{`!`@eq`(`$arg_ename`,`'`'`) // i.e. `{`$arg_ename`}`}\
 `,\
-      get_obj( ).`{`$arg_field`}( get_session_variable( `{`$arg_value`} ) );\
+      get_obj( ).`{`$arg_field`}( get_session_variable( `{`$value`} ) );\
 `}
    // [(finish default_to_global)] `{`$arg_id`}
 `}

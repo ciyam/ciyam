@@ -1875,7 +1875,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
- arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
+ arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield arg_tfistexttype=$specification_\0_tfistexttype\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}\
@@ -2041,7 +2041,7 @@ void `{`$full_class_name`}::impl::finalise_fetch( bool skip_set_original )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
- arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
+ arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield arg_tfistexttype=$specification_\0_tfistexttype\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}
@@ -2153,7 +2153,7 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_func=$specification_\0_func arg_func_arg1=$specification_\0_func_arg1 arg_func_arg2=$specification_\0_func_arg2\
- arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield\
+ arg_mfunc=$specification_\0_mfunc arg_tfield=$specification_\0_tfield arg_tfistexttype=$specification_\0_tfistexttype\
  arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}

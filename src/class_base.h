@@ -1497,6 +1497,8 @@ std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
 
 bool CLASS_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
+std::string CLASS_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );
+
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
 std::string CLASS_BASE_DECL_SPEC create_new_address(
