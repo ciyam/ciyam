@@ -1137,7 +1137,6 @@ void Meta_Modifier_Affect::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Modifier ) ) ) ) );
 
-
    if( !g_modifier_affect_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(

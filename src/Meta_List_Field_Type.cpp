@@ -1385,7 +1385,6 @@ void Meta_List_Field_Type::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
 
-
    if( !is_null( v_List_Field_Name )
     && ( v_List_Field_Name != g_default_List_Field_Name
     || !value_will_be_provided( c_field_name_List_Field_Name ) )

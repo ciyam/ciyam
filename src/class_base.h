@@ -1499,6 +1499,8 @@ bool CLASS_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
 std::string CLASS_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );
 
+void CLASS_BASE_DECL_SPEC get_external_balance( const std::string& ext_key, numeric& balance );
+
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
 std::string CLASS_BASE_DECL_SPEC create_new_address(

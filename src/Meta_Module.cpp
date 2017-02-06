@@ -866,7 +866,6 @@ void Meta_Module::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Model ) ) ) ) );
 
-
    // [<start validate>]
    // [<finish validate>]
 }

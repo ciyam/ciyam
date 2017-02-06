@@ -1401,7 +1401,6 @@ void Meta_Specification_Field_Action::impl::validate(
    string error_message;
    validate_formatter vf;
 
-
    if( !is_null( v_Clone_Key )
     && ( v_Clone_Key != g_default_Clone_Key
     || !value_will_be_provided( c_field_name_Clone_Key ) )

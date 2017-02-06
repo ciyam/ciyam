@@ -5037,6 +5037,59 @@ string get_external_extra( const string& ext_key, const string& extra )
    return retval;
 }
 
+void get_external_balance( const string& ext_key, numeric& balance )
+{
+   string s;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+
+   if( client_info.is_local && client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = expanded_script_name( client_info.script_name ) + " ";
+
+      cmd += "getbalance";
+
+      cmd += " >" + tmp_file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp_file_name ) )
+         throw runtime_error( "unexpected system failure for get_external_balance" );
+   }
+
+   if( file_exists( tmp_file_name ) )
+   {
+      string error, content( buffer_file( tmp_file_name ) );
+
+      string::size_type pos = content.find( c_error_message_prefix );
+
+      if( pos != string::npos && content.length( ) > pos + strlen( c_error_message_prefix ) + 1 )
+         error = content.substr( pos + strlen( c_error_message_prefix ) + 1 );
+      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
+
+      file_remove( tmp_file_name );
+
+      if( !error.empty( ) )
+      {
+         pos = error.find_first_of( "\r\n" );
+         throw runtime_error( error.substr( 0, pos ) );
+      }
+      else
+      {
+         pos = content.find_first_of( "\r\n" );
+         balance = numeric( content.substr( 0, pos ).c_str( ) );
+      }
+   }
+}
+
 bool can_create_address( const string& ext_key )
 {
    external_client client_info;

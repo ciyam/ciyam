@@ -702,7 +702,6 @@ void Meta_Initial_Record_Value::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Initial_Record ) ) ) ) );
 
-
    // [<start validate>]
 //nyi
    if( !get_obj( ).Value( ).empty( ) && !is_valid_value( get_obj( ).Value( ),

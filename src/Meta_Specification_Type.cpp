@@ -6040,7 +6040,6 @@ void Meta_Specification_Type::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Specification_Object ) ) ) ) );
 
-
    if( !is_null( v_Child_Prefix )
     && ( v_Child_Prefix != g_default_Child_Prefix
     || !value_will_be_provided( c_field_name_Child_Prefix ) )

@@ -3828,7 +3828,6 @@ void Meta_Field::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-
    if( !is_null( v_Default )
     && ( v_Default != g_default_Default
     || !value_will_be_provided( c_field_name_Default ) )

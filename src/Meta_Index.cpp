@@ -1405,7 +1405,6 @@ void Meta_Index::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field_1 ) ) ) ) );
 
-
    // [(start check_null_match)] 600066
    if( is_null( get_obj( ).Field_2( ) ) && !is_null( get_obj( ).Field_3( ) ) )
       p_validation_errors->insert( construct_validation_error( vf.num,

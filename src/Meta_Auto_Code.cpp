@@ -689,7 +689,6 @@ void Meta_Auto_Code::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Mask ) ) ) ) );
 
-
    if( !is_null( v_Mask )
     && ( v_Mask != g_default_Mask
     || !value_will_be_provided( c_field_name_Mask ) )
@@ -740,8 +739,8 @@ void Meta_Auto_Code::impl::validate(
       }
 
       if( !okay )
-         p_validation_errors->insert( construct_validation_error( vf.num,
-          c_field_name_Next, get_string_message( GS( c_str_field_mismatch ), make_pair(
+         p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
+          get_string_message( GS( c_str_field_mismatch ), make_pair(
           c_str_parm_field_mismatch_field, get_module_string( c_field_display_name_Next ) ),
           make_pair( c_str_parm_field_mismatch_field2, get_module_string( c_field_display_name_Mask ) ) ) ) );
    }
