@@ -976,6 +976,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
       if( block_height == 0 && !get_is_known_blockchain( account ) )
          throw runtime_error( "invalid unrecognised blockchain '" + account + "'" );
+
+      if( block_height < cinfo.checkpoint_start_height )
+         throw runtime_error( "invalid block height is below current checkpoint" );
    }
 
    if( p_extras && block_height )
@@ -1239,6 +1242,12 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             {
                has_secondary_account = true;
 
+               // NOTE: If the account charge is explicitly provided with a zero value
+               // then this determines that the blockchain will not allow the creation
+               // of any secondary accounts.
+               if( cinfo.account_charge == 0 )
+                  throw runtime_error( "secondary account creation not permitted" );
+
                string extra( c_file_type_str_core_blob );
                extra += string( c_file_type_core_account_object ) + ':';
 
@@ -1379,16 +1388,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       }
       else
       {
-         if( block_height < cinfo.checkpoint_start_height )
-            throw runtime_error( "invalid block height is below current checkpoint" );
-
          num_accounts = cinfo.num_accounts;
-
-         // NOTE: If the account charge is explicitly provided with a zero value
-         // then this will determine that the blockchain will not allow creation
-         // of any secondary accounts.
-         if( cinfo.account_charge == 0 && has_secondary_account )
-            throw runtime_error( "secondary account creation not permitted" );
 
          map< string, uint64_t > account_balances;
 
