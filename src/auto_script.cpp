@@ -446,6 +446,11 @@ void autoscript_session::on_start( )
                   {
                      string cmd_and_args( filename );
 
+#ifndef _WIN32
+                     if( cmd_and_args.find( '/' ) == string::npos )
+                        cmd_and_args = "./" + cmd_and_args;
+#endif
+
                      if( !arguments.empty( ) )
                         cmd_and_args += " " + arguments;
 

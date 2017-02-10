@@ -1927,6 +1927,8 @@ bool output_view_form( ostream& os, const string& act,
 
             os << "\" onkeypress=\"return form_keys( event, " << enter_action << ", " << cancel_action << " );\"";
 
+            bool was_special_parent = false;
+
             // NOTE: If a field has been marked with "force" or as an "key/fkey" then its select is
             // expected to affect one or more other fields so a "cont" action is executed on change
             // to ensure that the dependent fields (or select lists) can be correctly determined.
@@ -1943,6 +1945,7 @@ bool output_view_form( ostream& os, const string& act,
              || extra_data.count( c_view_field_extra_fkey8 ) || extra_data.count( c_view_field_extra_fkey9 ) )
             {
                os << " onchange=\"";
+               was_special_parent = true;
 
                if( use_url_checksum )
                {
@@ -2015,8 +2018,11 @@ bool output_view_form( ostream& os, const string& act,
              && ( source.root_folder.empty( ) || !source.self_relationships.count( source_field_id ) ) )
                os << "<option value=\"\">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
 
-            // NOTE: If mandatory then put "Choose" as an indicator that something needs to be selected.
-            if( source.mandatory_fields.count( source_value_id ) )
+            // NOTE: If mandatory then put "Choose" as an indicator that something needs to be selected
+            // unless it isn't a "special" and there is only a single item (in which case it can simply
+            // be automatically selected).
+            if( source.mandatory_fields.count( source_value_id )
+             && ( was_special_parent || parent_row_data.size( ) != 1 ) )
                os << "<option value=\"\">&lt;" << GDS( c_display_choose ) << "&gt;&nbsp;&nbsp;</option>\n";
 
             for( size_t j = 0; j < parent_row_data.size( ); j++ )
@@ -2032,7 +2038,8 @@ bool output_view_form( ostream& os, const string& act,
                if( display.empty( ) )
                   display = key;
 
-               // NOTE: For "self relationships" do not allow the record being edited to be chosen as its own parent.
+               // NOTE: For "self relationships" do not allow the record being edited to be chosen as
+               // its own parent.
                if( key == data && source.self_relationships.count( source_field_id ) )
                   continue;
 
@@ -2048,14 +2055,18 @@ bool output_view_form( ostream& os, const string& act,
                   display = ss.str( );
                }
 
-               // NOTE: The "default" selection is based upon name rather than key (unless values have been submitted).
+               // NOTE: The "default" selection is based upon name rather than key (unless values have been
+               // submitted). Also if this selection is a "special" one but it's mandatory and has only the
+               // one item then that item will become automatically selected.
                os << "<option";
                if( has_new_value )
                {
                   if( key == cell_data )
                      os << " selected";
                }
-               else if( ( has_value && key == cell_data ) || ( !has_value && original_display == cell_data ) )
+               else if( ( has_value && key == cell_data )
+                || ( !has_value && original_display == cell_data )
+                || ( !was_special_parent && source.mandatory_fields.count( source_value_id ) && parent_row_data.size( ) == 1 ) )
                   os << " selected";
 
                os << " value=\"" << key << "\">";

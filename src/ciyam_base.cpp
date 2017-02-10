@@ -4897,10 +4897,11 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    }
    else
    {
-#ifdef _WIN32
       string cmd_and_args( filename );
-#else
-      string cmd_and_args( "./" + filename );
+
+#ifndef _WIN32
+      if( cmd_and_args.find( '/' ) == string::npos )
+         cmd_and_args = "./" + cmd_and_args;
 #endif
 
       if( !arguments.empty( ) )
