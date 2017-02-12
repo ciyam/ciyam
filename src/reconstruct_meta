@@ -15,14 +15,4 @@ else
  ./destroy_apps_and_models $1
  ./reinstall_packages $1
  ./install Meta meta
-
- cmp -s autoscript.sio.default autoscript.sio
- if [ $? -eq 1 ]; then
-  cp autoscript.sio.default autoscript.sio
- fi
-
- cmp -s manuscript.sio.default manuscript.sio
- if [ $? -eq 1 ]; then
-  cp manuscript.sio.default manuscript.sio
- fi
 fi

@@ -4993,7 +4993,7 @@ bool active_external_service( const string& ext_key )
    {
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      if( system( cmd.c_str( ) ) != 0 )
+      if( system( cmd.c_str( ) ) != 0 && !file_exists( tmp_file_name ) )
          throw runtime_error( "unexpected system failure for active_external_service" );
    }
 
