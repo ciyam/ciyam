@@ -16362,6 +16362,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
         <id>600207
         <item>field
        </specification>
@@ -35320,6 +35324,7 @@
      <dfield_id>115101
      <sfield_id>301410
      <cfield_id>114102
+     <field_info>115117={id}
      <field_info>301400:105101;105100={model}
      <field_info>301420:106101;106100={class}
      <field_info>301430:107101;107100={field}

@@ -7510,6 +7510,25 @@ void Meta_Specification::impl::after_fetch( )
    // [(finish field_from_search_replace)] 600208
 
    // [<start after_fetch>]
+//nyi
+   // NOTE: Restriction specification names can be problematic because one such
+   // name can end up being identical to that of another simply due to the step
+   // by step nature of adding fields to the field list (this can especially be
+   // problemic if shorter such names preceed longer ones). In order to prevent
+   // this from being an issue the "id" is appended to the name itself but here
+   // this is removed to make it look neater for display purposes.
+   if( get_obj( ).Specification_Type( ).get_key( ) == "restriction" )
+   {
+      string name( get_obj( ).Name( ) );
+      string id_suffix( "_"  + get_obj( ).Id( ) );
+
+      if( name.length( ) > id_suffix.length( )
+       && name.substr( name.length( ) - id_suffix.length( ) ) == id_suffix )
+      {
+         name.erase( name.length( ) - id_suffix.length( ) );
+         get_obj( ).Name( name );
+      }
+   }
    // [<finish after_fetch>]
 }
 
@@ -8239,6 +8258,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
       get_obj( ).Name( str );
 
+      get_obj( ).add_search_replacement( "Name", "{id}", to_rep_string( get_obj( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Name", "{model}", to_rep_string( get_obj( ).Model( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{field}", to_rep_string( get_obj( ).Field( ).Name( ) ) );
@@ -13088,6 +13108,15 @@ void Meta_Specification::get_required_field_names(
    // [(finish field_from_other_field)] 600194
 
    // [(start field_from_search_replace)] 600204
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Id" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Id ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Id ) ) )
+         names.insert( "Id" );
+   }
+
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Model" );

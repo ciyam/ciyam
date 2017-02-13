@@ -1732,7 +1732,7 @@ specification_add -id=600203 {Specification}_Field_Pairs_meta3 meta_spec_field_p
 specification_add -id=600203a {Specification}_Field_Pairs_meta4 meta_spec_field_pairs "Specification\
  Field_Pairs Order Specification:Parent_{Specification} Name=field_ocpair_list"
 specification_add -id=600204 {Specification}_Name_from_search_replace field_from_search_replace "Specification Name\
- {Specification_Type}:Specification_Name {Model}:Name={model},{Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
+ {Specification_Type}:Specification_Name Id={id},{Model}:Name={model},{Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
 ,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Other_Modifier:Name={omodifier},Other_Modifier_2:Name={o2modifier}\
 ,Other_Class:Name={oclass},Other_Class_Field:Name={ocfield},Other_Class_Field:Id={ocfield_id}\
 ,Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
