@@ -243,7 +243,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void init( bool for_create );
    void prepare( bool for_create, bool call_to_store = true );
 
-   bool is_valid( bool is_internal, std::set< std::string >* p_fields_set = 0 );
+   bool is_valid( bool is_internal = false, std::set< std::string >* p_fields_set = 0 );
    bool has_changed( ) const;
 
    void link_to_graph_parent( );
