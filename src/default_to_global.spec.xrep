@@ -20,8 +20,8 @@
 `{`@eq`(`$arg_value`,`'@acct_p2sh_fee`'`)`$arg_cfield`=`'`'`}\
 `{`@eq`(`$arg_value`,`'@acct_p2sh_fee`'`)`$changed`=`$sfield`}\
 `{`@eq`(`$arg_inc_exist`,`'`'`)`$cond`=`'is_create`'`}\
-`{`!`@eq`(`$arg_dflt_only`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
-    && `'`}`}`{`!`@eq`(`$arg_dflt_only`,`'`'`)`$cond`^`'get_obj( ).get_key( ).empty( )`'`}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
+    && `'`}`}`{`!`@eq`(`$arg_new_only`,`'`'`)`$cond`^`'get_obj( ).get_key( ).empty( )`'`}\
 `{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
     && `'`}`{`$cond`^`'get_obj( ).get_clone_key( ).empty( )`'`}\
 `{`!`@eq`(`$arg_cfield`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'

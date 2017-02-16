@@ -2257,7 +2257,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#default_to_global.spec.xrep section=to_or_for_store\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
- arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
+ arg_cfield=$specification_\0_cfield arg_new_only=$specification_\0_new_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
  arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
@@ -2608,7 +2608,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_global.spec.xrep section=to_or_for_store\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
- arg_cfield=$specification_\0_cfield arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist\
+ arg_cfield=$specification_\0_cfield arg_new_only=$specification_\0_new_only arg_inc_exist=$specification_\0_inc_exist\
  arg_value=$specification_\0_value arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield\
  arg_ename=$specification_\0_ename arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
