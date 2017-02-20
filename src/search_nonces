@@ -1,0 +1,20 @@
+#!/bin/sh
+# Copyright (c) 2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 3 ]; then
+ echo Usage: search_nonces [data] [start num] [num searches] [[search range]]
+else
+ if [ "$4" = "0" ] || [ "$4" = "1" ]; then
+  echo Error: If supplied then 'search range' must be greater than or equal to 2.
+ else
+  export CIYAM_DATA=$1
+  export CIYAM_START_NUM=$2
+  export CIYAM_NUM_SEARCHES=$3
+  export CIYAM_SEARCH_RANGE=$4
+
+  ./ciyam_client -quiet -no_prompt < search_nonces.cin
+ fi
+fi
