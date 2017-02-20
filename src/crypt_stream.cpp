@@ -396,7 +396,7 @@ string harden_key_with_salt( const string& key, const string& salt )
 }
 
 string check_for_proof_of_work(
- const string& data, uint32_t start, uint32_t range, nonce_difficulty difficulty )
+ const string& data, uint32_t start, uint32_t range, nonce_difficulty difficulty, bool pause_between_passes )
 {
    unsigned char hash_buffer[ c_sha256_digest_size ];
    unsigned char orig_buffer[ c_sha256_digest_size ];
@@ -486,7 +486,8 @@ string check_for_proof_of_work(
          break;
 
       // NOTE: Take a short break after each pass to let any other threads process.
-      msleep( 250 );
+      if( pause_between_passes )
+         msleep( 250 );
    }
 
    if( range == 1 )

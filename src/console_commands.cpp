@@ -86,6 +86,7 @@ const char* const c_function_aschex = "aschex";
 const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
 const char* const c_function_hexlit = "hexlit";
+const char* const c_function_padlen = "padlen";
 const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
 
@@ -2319,6 +2320,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             cout << str << endl;
       }
 
+      bool add_to_history = allow_history_addition;
+
       if( !str.empty( ) )
       {
          string assign_env_var_name;
@@ -2337,8 +2340,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
          str = replace_input_arg_values( args, str, c_environment_variable_marker_1 );
          str = replace_unquoted_environment_variables( str.c_str( ), c_environment_variable_marker_1 );
-
-         bool add_to_history = allow_history_addition;
 
          // NOTE: For environment variable assignment support VAR=@<fname> to set the variable to the
          // contents of a file (if wanting to literally assign VAR to "@fname" use "@@fname" instead)
@@ -2475,6 +2476,28 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               if( lhs == c_function_hexlit )
                                  str = hex_reverse( str );
 #endif
+                           }
+                           else if( lhs == c_function_padlen )
+                           {
+                              pos = str.find( op, pos + 1 );
+
+                              if( pos != string::npos )
+                              {
+                                 string rhs( str.substr( pos + 1 ) );
+
+                                 char pad = '0';
+
+                                 str.erase( pos );
+                                 pos = str.find( ',' );
+
+                                 if( pos != string::npos )
+                                    pad = str[ pos + 1 ];
+
+                                 while( rhs.length( ) < rval )
+                                    rhs = pad + rhs;
+
+                                 str = rhs;
+                              }
                            }
                            else if( lhs == c_function_sha256 )
                               str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
@@ -2647,7 +2670,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             }
             else if( str[ 0 ] == c_write_output_prefix )
             {
-               add_to_history = false;
                size_t file_name_offset = 1;
                ios::openmode output_flags = ios::out;
 
@@ -2736,9 +2758,32 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                            remove = true;
                         }
 
-                        int n;
-                        if( str.size( ) == 2 && str[ 1 ] == c_history_command_prefix )
-                           n = ( int )command_history.size( );
+                        int n = 0;
+                        int s = 0;
+
+                        bool is_loop = false;
+
+                        if( str.size( ) >= 2 && str[ 1 ] == c_history_command_prefix )
+                        {
+                           if( str.size( ) > 2 && str[ 2 ] == '@' )
+                           {
+                              for( vector< string >::size_type i = command_history.size( ) - 1; i > 0; i-- )
+                              {
+                                 if( command_history[ i ] == str.substr( 2 ) )
+                                 {
+                                    s = i;
+                                    is_loop = true;
+
+                                    break;
+                                 }
+                              }
+
+                              if( !is_loop )
+                                 throw runtime_error( "command '" + str.substr( 2 ) + "' not found in history" );
+                           }
+                           else
+                              n = ( int )command_history.size( );
+                        }
                         else
                            n = atoi( str.substr( offset ).c_str( ) );
 
@@ -2748,19 +2793,20 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         if( !remove )
                         {
                            restorable< bool > tmp_executing_commands( is_executing_commands, true );
+                           restorable< bool > tmp_allow_history_addition( allow_history_addition, false );
 
                            if( n > 0 )
-                           {
                               execute_command( command_history[ n - 1 ] );
-                              command_history.pop_back( );
-                           }
                            else
                            {
-                              for( vector< string >::size_type i = 0; i < command_history.size( ); i++ )
-                              {
+                              for( vector< string >::size_type i = s; i < command_history.size( ); i++ )
                                  execute_command( command_history[ i ] );
-                                 command_history.pop_back( );
-                              }
+
+                              // NOTE: The format !!@<label> is intended for looping (and thus should have
+                              // some test with a @skip in order to break out of the loop) so therefore it
+                              // is now re-executed (unlike any normal history command).
+                              if( is_loop )
+                                 execute_command( str );
                            }
                         }
                         else
@@ -2875,6 +2921,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   else if( token == c_envcond_command_endif )
                   {
                      bool pop_cond = true;
+
                      if( !dummy_conditions.empty( ) )
                      {
                         if( !dummy_conditions.back( ) )
@@ -2907,7 +2954,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             else if( str[ 0 ] == c_message_command_prefix )
             {
                if( str.size( ) > 1 )
-                  cout << str.substr( 1 ) << '\n';
+               {
+                  if( str[ 1 ] == c_message_command_prefix )
+                     cout << str.substr( 2 ) << endl;
+                  else
+                     handle_command_response( str.substr( 1 ) );
+               }
+
                str.erase( );
             }
             else if( str[ 0 ] == c_pause_message_command_prefix )
@@ -2920,6 +2973,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                   str.erase( );
                   get_char( msg.c_str( ) );
+
                   cout << '\r' << string( msg.length( )
                    + prompt_prefix.length( ) + strlen( c_command_prompt ), ' ' ) << '\r';
                }
@@ -2927,14 +2981,14 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   str.erase( );
             }
          }
+      }
 
-         if( add_to_history )
-         {
-            command_history.push_back( str_for_history );
+      if( add_to_history && !str_for_history.empty( ) )
+      {
+         command_history.push_back( str_for_history );
 
-            if( command_history.size( ) > c_max_history )
-               command_history.pop_front( );
-         }
+         if( command_history.size( ) > c_max_history )
+            command_history.pop_front( );
       }
    }
 

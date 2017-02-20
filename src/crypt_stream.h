@@ -52,7 +52,9 @@ enum nonce_difficulty
    e_nonce_difficulty_most
 };
 
-std::string check_for_proof_of_work( const std::string& data, uint32_t start,
- uint32_t range = 1, nonce_difficulty difficulty = e_nonce_difficulty_easy );
+std::string check_for_proof_of_work(
+ const std::string& data, uint32_t start, uint32_t range = 1,
+ nonce_difficulty difficulty = e_nonce_difficulty_easy, bool pause_between_passes = true );
 
 #endif
+

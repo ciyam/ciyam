@@ -170,7 +170,7 @@ void set_variable( size_t handle, const string& vname,
 
 void set_script_error_if_applicable( const string& error_message )
 {
-   // NOTE: The "run_script" function contains a detail note about this.
+   // NOTE: The "run_script" function contains a detailed note about this.
    string args_file( get_raw_session_variable(
     get_special_var_name( e_special_var_args_file ) ) );
 
@@ -1738,6 +1738,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_nonce_search )
       {
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_data ) );
+         bool faster( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_faster ) );
          string start( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_start ) );
          string range( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_range ) );
          string difficulty( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_nonce_search_difficulty ) );
@@ -1761,7 +1762,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: To make sure the console client doesn't time out issue a progress message.
          handler.output_progress( "(checking for a valid nonce)" );
 
-         response = check_for_proof_of_work( data, start_val, range_val, difficulty_val );
+         response = check_for_proof_of_work( data, start_val, range_val, difficulty_val, !faster );
       }
       else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
       {
@@ -3800,6 +3801,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                   else
                      response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
+
+                  if( !response.empty( ) )
+                     set_script_error_if_applicable( "@" + response );
                }
 
                destroy_object_instance( handle );

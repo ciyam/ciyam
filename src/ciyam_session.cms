@@ -27,7 +27,7 @@ crypto_pub_key "output a public key" <val//privkey>
 crypto_addr_hash "output an address hash" <val//address>
 crypto_p2sh_addr "output a P2SH address" <val//extkey><val//script>
 crypto_p2sh_redeem "outputs a P2SH redeem raw tx" <val//txid><val//index><val//script><val//address><val//amount><val//wif_privkey>[<list/-e=/extras>][<val//lock_time>]
-crypto_nonce_search "searches for a proof of work nonce for given data" <val//data>[<oval//start>][<oval//range>][<val//difficulty>]
+crypto_nonce_search "searches for a proof of work nonce for given data" <val//data>[<opt/-faster/faster>][<oval//start>][<oval//range>][<val//difficulty>]
 crypto_nonce_verify "verifies if a proof of work nonce is valid for given data" <val//data><val//nonce>[<val//difficulty>]
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>

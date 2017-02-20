@@ -1,0 +1,57 @@
+; Copyright (c) 2017 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+START_NUM=$CIYAM_START_NUM
+;
+.session_variable @uuid
+NONCE_FILE=~$OUTPUT
+;
+#Searching for up to $CIYAM_NUM_SEARCHES nonces for '$CIYAM_DATA'...
+;
+SEARCH_RANGE=10
+@ifdef $CIYAM_SEARCH_RANGE
+SEARCH_RANGE=$CIYAM_SEARCH_RANGE
+@endif
+;
+.session_variable test $CIYAM_NUM_SEARCHES
+NUM=0
+FOUND=0
+LAST_NUM=0
+;
+@:LOOP
+OUTPUT=
+.session_variable test
+@ifndef $OUTPUT
+@label DONE
+@endif
+@skip
+;
+NUM=@$NUM+1
+OUTPUT=
+;
+LAST_NUM=@$START_NUM+$SEARCH_RANGE
+LAST_NUM=@$LAST_NUM-1
+#Searching for a valid '$CIYAM_DATA' nonce between $START_NUM and $LAST_NUM...
+.crypto_nonce_search $CIYAM_DATA -faster $START_NUM $SEARCH_RANGE
+;
+@ifdef $OUTPUT
+#(found $OUTPUT)
+LAST_NUM=$OUTPUT
+>>$NONCE_FILE
+#$OUTPUT
+>>
+FOUND=@$FOUND+1
+@endif
+;
+START_NUM=@$START_NUM+$SEARCH_RANGE
+.session_variable test @decrement
+!!@:LOOP
+;
+@:DONE
+START_NUM=@$START_NUM-1
+#Total number of nonces found for '$CIYAM_DATA' between $CIYAM_START_NUM and $LAST_NUM was $FOUND:
+~print $NONCE_FILE
+~rm $NONCE_FILE
+.quit

@@ -190,6 +190,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool was_pip = false;
          bool was_chk_tag = false;
          bool was_chk_token = false;
+
          string get_dest_file, put_source_file;
 
          if( str.substr( 0, pos ) == "pip" )
@@ -348,8 +349,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             }
 
             string response;
+
             bool had_not_found = false;
             bool is_in_progress = false;
+
             while( response.empty( ) || response[ 0 ] != '(' )
             {
                response.erase( );

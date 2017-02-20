@@ -5736,7 +5736,26 @@ void set_session_variable( const string& name, const string& value )
 
    if( gtp_session )
    {
-      if( value.empty( ) )
+      string val( value );
+
+      if( val == c_special_variable_value_increment
+       || val == c_special_variable_value_decrement )
+      {
+         int num_value = !gtp_session->variables.count( name )
+          ? 0 : from_string< int >( gtp_session->variables[ name ] );
+
+         if( val == c_special_variable_value_increment )
+            ++num_value;
+         else if( num_value > 0 )
+            --num_value;
+
+         if( num_value == 0 )
+            val.clear( );
+         else
+            val = to_string( num_value );
+      }
+
+      if( val.empty( ) )
       {
          if( gtp_session->variables.count( name ) )
             gtp_session->variables.erase( name );
@@ -5744,9 +5763,9 @@ void set_session_variable( const string& name, const string& value )
       else
       {
          if( gtp_session->variables.count( name ) )
-            gtp_session->variables[ name ] = value;
+            gtp_session->variables[ name ] = val;
          else
-            gtp_session->variables.insert( make_pair( name, value ) );
+            gtp_session->variables.insert( make_pair( name, val ) );
       }
    }
 }
@@ -6254,7 +6273,8 @@ void set_system_variable( const string& name, const string& value )
    if( val == c_special_variable_value_increment
     || val == c_special_variable_value_decrement )
    {
-      int num_value = from_string< int >( g_variables[ name ] );
+      int num_value = !g_variables.count( name )
+       ? 0 : from_string< int >( g_variables[ name ] );
 
       if( val == c_special_variable_value_increment )
          ++num_value;
