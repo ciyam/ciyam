@@ -268,7 +268,7 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -280,7 +280,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -292,7 +292,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -310,7 +310,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -328,7 +328,7 @@
      </test_step>
      <test_step/>
       <name>l
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -340,7 +340,7 @@
      </test_step>
      <test_step/>
       <name>n
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -358,7 +358,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -370,7 +370,7 @@
      </test_step>
      <test_step/>
       <name>s
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -382,7 +382,7 @@
      </test_step>
      <test_step/>
       <name>u
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>
@@ -412,7 +412,7 @@
      </test_step>
      <test_step/>
       <name>z
-      <exec>print test.bun
+      <exec>type test.bun
       <input>false
       <output>generate
      </test_step>

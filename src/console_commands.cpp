@@ -2677,7 +2677,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                if( str.size( ) > 1 && str[ 1 ] == c_write_output_prefix )
                {
                   ++file_name_offset;
-                  output_flags = ios::app;
+                  output_flags |= ios::app;
                }
 
                if( file_name_offset > str.size( ) - 1 )
