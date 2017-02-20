@@ -52,6 +52,6 @@ START_NUM=@$START_NUM+$SEARCH_RANGE
 @:DONE
 START_NUM=@$START_NUM-1
 #Total number of nonces found for '$CIYAM_DATA' between $CIYAM_START_NUM and $LAST_NUM was $FOUND:
-~print $NONCE_FILE
+~cat $NONCE_FILE
 ~rm $NONCE_FILE
 .quit
