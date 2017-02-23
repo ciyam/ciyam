@@ -99,6 +99,7 @@ const char* const c_okay = "okay";
 const char* const c_field_id_Actions = "115108";
 const char* const c_field_id_All_Strings = "115124";
 const char* const c_field_id_All_Vars = "115123";
+const char* const c_field_id_Can_Access_Below_Model = "115133";
 const char* const c_field_id_Child_Rel_Child_Class = "301491";
 const char* const c_field_id_Child_Rel_Field_Key = "115121";
 const char* const c_field_id_Child_Relationship = "301475";
@@ -184,6 +185,7 @@ const char* const c_field_id_Type = "128104";
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_All_Strings = "All_Strings";
 const char* const c_field_name_All_Vars = "All_Vars";
+const char* const c_field_name_Can_Access_Below_Model = "Can_Access_Below_Model";
 const char* const c_field_name_Child_Rel_Child_Class = "Child_Rel_Child_Class";
 const char* const c_field_name_Child_Rel_Field_Key = "Child_Rel_Field_Key";
 const char* const c_field_name_Child_Relationship = "Child_Relationship";
@@ -269,6 +271,7 @@ const char* const c_field_name_Type = "Type";
 const char* const c_field_display_name_Actions = "field_specification_actions";
 const char* const c_field_display_name_All_Strings = "field_specification_all_strings";
 const char* const c_field_display_name_All_Vars = "field_specification_all_vars";
+const char* const c_field_display_name_Can_Access_Below_Model = "field_specification_can_access_below_model";
 const char* const c_field_display_name_Child_Rel_Child_Class = "field_specification_child_rel_child_class";
 const char* const c_field_display_name_Child_Rel_Field_Key = "field_specification_child_rel_field_key";
 const char* const c_field_display_name_Child_Relationship = "field_specification_child_relationship";
@@ -2848,6 +2851,7 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Rev_ BIGINT UNSIGNED NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Actions VARCHAR(200) NOT NULL,"
+    "C_Can_Access_Below_Model INTEGER NOT NULL,"
     "C_Child_Rel_Child_Class VARCHAR(75) NOT NULL,"
     "C_Child_Rel_Field_Key VARCHAR(200) NOT NULL,"
     "C_Child_Relationship VARCHAR(75) NOT NULL,"

@@ -15506,6 +15506,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600182a
+      <item>class
+     </specification>
+     <specification/>
       <id>600183
       <item>class
      </specification>
@@ -15905,6 +15909,31 @@
        <specification/>
         <id>603100
         <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>115133
+      <name>Can_Access_Below_Model
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+       <index/>
+        <id>401406
+        <num>2
+       </index>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600182a
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>602550
+        <item>rfield
        </specification>
       </specifications>
      </field>
@@ -16390,10 +16419,6 @@
       <mandatory>true
       <default_value>0
       <indexes/>
-       <index/>
-        <id>401406
-        <num>2
-       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -16401,10 +16426,6 @@
        <specification/>
         <id>600182
         <item>dest_field
-       </specification>
-       <specification/>
-        <id>602550
-        <item>rfield
        </specification>
       </specifications>
      </field>
@@ -19466,6 +19487,10 @@
         <item>src_pfield
        </specification>
        <specification/>
+        <id>600182a
+        <item>src_pfield
+       </specification>
+       <specification/>
         <id>600183
         <item>test_pfield
        </specification>
@@ -19700,13 +19725,13 @@
       <unique>true
      </index>
      <index/>
-      <id>401430
-      <name>[{Model}],[Parent_{Specification}],[Id]
+      <id>401406
+      <name>[{Model}],[Parent_{Specification}],[Can_Access_Below_Model],[Order]
       <unique>true
      </index>
      <index/>
-      <id>401406
-      <name>[{Model}],[Parent_{Specification}],[Is_Required_For_UI_Gen],[Order]
+      <id>401430
+      <name>[{Model}],[Parent_{Specification}],[Id]
       <unique>true
      </index>
      <index/>
@@ -20808,6 +20833,10 @@
       <item>sclass
      </specification>
      <specification/>
+      <id>600182a
+      <item>sclass
+     </specification>
+     <specification/>
       <id>600183
       <item>tclass
      </specification>
@@ -21703,6 +21732,31 @@
       </specifications>
      </field>
      <field/>
+      <id>114218
+      <name>Can_Access_Below_Model
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+       <index/>
+        <id>401615
+        <num>2
+       </index>
+       <index/>
+        <id>401616
+        <num>3
+       </index>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600182a
+        <item>src_field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114164
       <name>Child_Prefix
       <type>1010
@@ -21870,6 +21924,18 @@
         <id>401610
         <num>0
        </index>
+       <index/>
+        <id>401611
+        <num>0
+       </index>
+       <index/>
+        <id>401615
+        <num>0
+       </index>
+       <index/>
+        <id>401616
+        <num>0
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -21908,6 +21974,14 @@
       <mandatory>true
       <default_value>0
       <indexes/>
+       <index/>
+        <id>401611
+        <num>1
+       </index>
+       <index/>
+        <id>401616
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -21935,6 +22009,18 @@
        <index/>
         <id>401610
         <num>2
+       </index>
+       <index/>
+        <id>401611
+        <num>3
+       </index>
+       <index/>
+        <id>401615
+        <num>3
+       </index>
+       <index/>
+        <id>401616
+        <num>4
        </index>
       </indexes>
       <modifiers/>
@@ -22850,6 +22936,18 @@
         <id>401610
         <num>1
        </index>
+       <index/>
+        <id>401611
+        <num>2
+       </index>
+       <index/>
+        <id>401615
+        <num>1
+       </index>
+       <index/>
+        <id>401616
+        <num>2
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -23676,6 +23774,21 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>401616
+      <name>[Is_Child_Only],[Is_System],[Parent_{Specification_Type}],[Can_Access_Below_Model],[Name]
+      <unique>true
+     </index>
+     <index/>
+      <id>401611
+      <name>[Is_Child_Only],[Is_System],[Parent_{Specification_Type}],[Name]
+      <unique>true
+     </index>
+     <index/>
+      <id>401615
+      <name>[Is_Child_Only],[Parent_{Specification_Type}],[Can_Access_Below_Model],[Name]
+      <unique>true
+     </index>
      <index/>
       <id>401610
       <name>[Is_Child_Only],[Parent_{Specification_Type}],[Name]
@@ -34439,6 +34552,18 @@
     </data>
    </specification>
    <specification/>
+    <id>600182a
+    <name>{Specification}_Can_Access_Below_Model
+    <type>field_from_other_field
+    <data/>
+     <class_id>115100
+     <sclass_id>114100
+     <sfield_id>114218
+     <pfield_id>301410
+     <dfield_id>115133
+    </data>
+   </specification>
+   <specification/>
     <id>600179
     <name>{Specification}_Child_Rel_Child_Class
     <type>field_from_other_field
@@ -36611,7 +36736,7 @@
      <pfield_id>301420
      <new_class_id>114100
      <new_field_id>114101
-     <new_ext_info>@view:114170+114151=0+114147=0+301700=+114101
+     <new_ext_info>@view:114170+114151=0+114147=0+301700=+114218=0
      <dest_field_id>301410
      <field_info>115105;hidden
      <field_info>115101
@@ -36633,12 +36758,12 @@
      <pfield_id>301400
      <new_class_id>114100
      <new_field_id>114101
-     <new_ext_info>@view:114170+114151=0+114147=0+301700=+114163=1+114101
+     <new_ext_info>@view:114170+114151=0+301700=+114218=1
      <dest_field_id>301410
      <field_info>115105;hidden
      <field_info>115101
      <parent_info>301405,115100,@key,restricted
-     <restrict_info>115128,restricted:1
+     <restrict_info>115133,restricted:1
     </data>
    </specification>
    <specification/>

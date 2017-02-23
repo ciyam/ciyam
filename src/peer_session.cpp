@@ -339,7 +339,7 @@ void process_file( const string& hash, const string& blockchain )
 
                create_raw_file_with_extras( "", extras );
 
-               if( !any_has_session_variable(
+               if( !has_any_session_variable(
                 get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
                   process_txs( blockchain, hash.substr( 0, pos ) );
             }
@@ -1373,7 +1373,7 @@ string socket_command_processor::get_cmd_and_args( )
                   new_block_pwd_hash.erase( );
 
                   if( !has_better_block( blockchain, new_block.height, new_block.weight )
-                   && !any_has_session_variable(
+                   && !has_any_session_variable(
                    get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
                      store_new_block( blockchain, tmp_new_block_pwd_hash );
                }
@@ -1381,7 +1381,7 @@ string socket_command_processor::get_cmd_and_args( )
          }
          else if( !blockchain.empty( )
           && is_first_using_session_variable( peer_special_variable, blockchain )
-          && !any_has_session_variable(
+          && !has_any_session_variable(
           get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
          {
             mint_new_block( blockchain, new_block, new_block_pwd_hash, false );

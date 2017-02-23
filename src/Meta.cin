@@ -460,6 +460,7 @@ field_add -id=114214 Specification_Type Protect_Other_Class_From_Edit bool mand 
 field_add -id=114215 Specification_Type Use_Source_Field_Or_Child_Enum bool mand -def=0
 field_add -id=114216 Specification_Type Allow_Other_Modifier bool mand -def=0
 field_add -id=114217 Specification_Type Allow_Other_Modifier_2 bool mand -def=0
+field_add -id=114218 Specification_Type Can_Access_Below_Model bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -502,6 +503,7 @@ field_add -id=115129 Specification Value_Left_Part string opt
 field_add -id=115130 Specification Value_Right_Part string opt
 field_add -id=115131 Specification Value_Label string opt
 field_add -id=115132 Specification Test_Value_Label string opt
+field_add -id=115133 Specification Can_Access_Below_Model bool mand -def=0
 procedure_add -id=115410 Specification Move_Up
 procedure_arg_add -id=115411 Specification Move_Up Restrict_Fields string in
 procedure_arg_add -id=115412 Specification Move_Up Restrict_Values string in
@@ -1077,7 +1079,7 @@ index_add -id=401200 Relationship {Model},Child_Class,Name unique
 index_add -id=401400 Specification {Model},Order unique
 index_add -id=401404 Specification Parent_{Specification},Order unique
 index_add -id=401405 Specification {Model},Parent_{Specification},Order unique
-index_add -id=401406 Specification {Model},Parent_{Specification},Is_Required_For_UI_Gen,Order unique
+index_add -id=401406 Specification {Model},Parent_{Specification},Can_Access_Below_Model,Order unique
 index_add -id=401410 Specification {Model},Parent_{Specification},Name unique
 index_add -id=401415 Specification {Class},Parent_{Specification},Order unique
 index_add -id=401420 Specification {Class},{Specification_Type}
@@ -1088,6 +1090,9 @@ index_add -id=401500 Permission {Workgroup},Name unique
 index_add -id=401510 Permission {Workgroup},Id unique
 index_add -id=401600 Specification_Type Parent_{Specification_Type},Name unique
 index_add -id=401610 Specification_Type Is_Child_Only,Parent_{Specification_Type},Name unique
+index_add -id=401611 Specification_Type Is_Child_Only,Is_System,Parent_{Specification_Type},Name unique
+index_add -id=401615 Specification_Type Is_Child_Only,Parent_{Specification_Type},Can_Access_Below_Model,Name unique
+index_add -id=401616 Specification_Type Is_Child_Only,Is_System,Parent_{Specification_Type},Can_Access_Below_Model,Name unique
 index_add -id=400710 View {Model},Id unique
 index_add -id=400750 View_Field {View},Order unique
 index_add -id=400820 List {Model},Id unique
@@ -1674,6 +1679,7 @@ specification_add -id=600181 {Specification}_Procedure_Parent_default default_to
 specification_add -id=610181 {Specification}_Protect_Procedure modifier_field_value "Specification Protect_Procedure Protect_Procedure true"
 specification_add -id=620181 {Specification}_Protect_Procedure_from_edit modifier_field_value "Specification Protect_Procedure {Specification_Type}:Protect_Procedure_From_Edit true"
 specification_add -id=600182 {Specification}_Is_Required_For_UI_Gen field_from_other_field "Specification {Specification_Type}:Is_Required_For_UI_Gen Is_Required_For_UI_Gen"
+specification_add -id=600182a {Specification}_Can_Access_Below_Model field_from_other_field "Specification {Specification_Type}:Can_Access_Below_Model Can_Access_Below_Model"
 specification_add -id=600183 {Specification}_Field_from_other_field_1 field_from_other_field\
  "Specification Source_Field {Field} -check_null -test={Specification_Type}:Set_Field_To_Source_Field_Or_Child=true"
 specification_add -id=600184 {Specification}_Field_from_other_field_2 field_from_other_field\
@@ -2133,11 +2139,11 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 specification_add -id=602530 {Specification}_child_list0 list "@602530_Child_* child:no_new,no_limit\
  Specification Name -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues Parent_{Specification}"
 specification_add -id=602540 {Specification}_child_list1 list "@602540_* child:no_limit Specification Name\
- -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Is_System=0+Parent_{Specification_Type}=+Name,{Specification_Type}\
+ -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Is_System=0+Parent_{Specification_Type}=+Can_Access_Below_Model=0,{Specification_Type}\
  -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Class} Parent_{Specification},@key,restricted"
 specification_add -id=602550 {Specification}_child_list2 list "@602550_* child:no_limit Specification Name\
- -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Is_System=0+Parent_{Specification_Type}=+Is_Required_For_UI_Gen=1+Name,{Specification_Type}\
- -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Model} Parent_{Specification},@key,restricted Is_Required_For_UI_Gen,restricted:1"
+ -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Parent_{Specification_Type}=+Can_Access_Below_Model=1,{Specification_Type}\
+ -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Model} Parent_{Specification},@key,restricted Can_Access_Below_Model,restricted:1"
 specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_edit+link+fkey1\
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\

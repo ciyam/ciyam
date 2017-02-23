@@ -5801,7 +5801,7 @@ bool set_session_variable( const string& name, const string& value, const string
    return retval;
 }
 
-bool any_has_session_variable( const string& name )
+bool has_any_session_variable( const string& name )
 {
    guard g( g_mutex );
 
@@ -5815,7 +5815,7 @@ bool any_has_session_variable( const string& name )
    return false;
 }
 
-bool any_has_session_variable( const string& name, const string& value )
+bool has_any_session_variable( const string& name, const string& value )
 {
    guard g( g_mutex );
 

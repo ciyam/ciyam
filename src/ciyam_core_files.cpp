@@ -64,7 +64,15 @@ const uint16_t c_tx_max_unconfirmed = 5;
 
 struct block_info
 {
-   block_info( ) : block_height( 0 ), block_weight( 0 ), total_weight( 0 ), had_secondary_account( false ) { }
+   block_info( )
+    :
+    nonce_value( 0 ),
+    block_height( 0 ),
+    block_weight( 0 ),
+    total_weight( 0 ),
+    had_secondary_account( false )
+   {
+   }
 
    string minter_id;
    string minter_hash;
@@ -72,6 +80,8 @@ struct block_info
    string minter_pubkey;
 
    string previous_block;
+
+   uint32_t nonce_value;
 
    uint64_t block_height;
 
@@ -1018,6 +1028,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    bool is_new_chain_head = false;
    bool is_better_chain_head = false;
 
+   uint32_t previous_nonce_value = 0;
+
    unsigned int parallel_block_minted_num_transactions = 0;
    vector< string > parallel_block_minted_transaction_hashes;
 
@@ -1041,7 +1053,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             previous_head = tag_file_hash( block_tag );
 
             block_info binfo;
-            if( get_block_info( binfo, previous_head ).second > total_weight )
+            uint64_t previous_weight = get_block_info( binfo, previous_head ).second;
+
+            if( previous_weight > total_weight )
             {
                is_new_chain_head = true;
                is_better_chain_head = true;
@@ -1053,7 +1067,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                parallel_block_minted_transaction_hashes = binfo.transaction_hashes;
             }
-         }   
+            else if( previous_weight == total_weight )
+               previous_nonce_value = binfo.nonce_value;
+         }
       }
    }
 
@@ -1308,16 +1324,24 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    if( !block_height )
       account_hash = "0" + public_key_base64;
-   else if( p_extras && !had_nonce )
+   else if( p_extras )
    {
-      throw runtime_error( "block proof of work missing" );
+      if( !had_nonce )
+         throw runtime_error( "block proof of work missing" );
 
       // NOTE: As the proof checking does involve considerable effort this
       // is only done after the signature and other header information has
-      // been verified.
+      // already been verified.
       if( check_for_proof_of_work( nonce_data, nonce_value, 1 ).empty( ) )
-         throw runtime_error( "invalid proof of work" );
+         throw runtime_error( "invalid block proof of work" );
    }
+
+   // NOTE: If a new block with the same height and weight as the previous
+   // chain head has been provided then the "better" chain head is decided
+   // by the block with the lowest nonce value. There is a possibility for
+   // forking if blocks share identical height, weight and nonce values.
+   if( previous_nonce_value && nonce_value < previous_nonce_value )
+      is_better_chain_head = true;
 
    if( p_block_info )
    {
@@ -1328,6 +1352,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       p_block_info->minter_pubkey = public_key_base64;
 
       p_block_info->previous_block = previous_block;
+
+      p_block_info->nonce_value = nonce_value;
 
       p_block_info->block_height = block_height;
       p_block_info->block_weight = block_weight;
@@ -1609,51 +1635,11 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          string minter_account_tag( ainfo.tag );
          string minter_account_hash( tag_file_hash( minter_account_tag ) );
 
-         bool had_existing = false;
-
-         // NOTE: If this block conflicts with an existing one at the same height then assuming
-         // the account hash and public key match then do not check those next as the following
-         // code will reject the block after banning the account.
-         if( block_height == ainfo.last_height )
-         {
-            block_info binfo;
-            string existing_block_tag( list_file_tags(
-             "c" + chain + ".b" + to_string( ainfo.last_height ) + "-*.a" + account ) );
-
-            if( !existing_block_tag.empty( ) )
-            {
-               string existing_block_hash( tag_file_hash( existing_block_tag ) );
-
-               get_block_info( binfo, existing_block_hash );
-               if( account_hash == binfo.minter_hash && public_key_base64 == binfo.minter_pubkey )
-                  had_existing = true;
-            }
-         }
-
-         if( !had_existing && !check_if_valid_hash_pair( account_hash, ainfo.block_hash, true ) )
-            throw runtime_error( "invalid hash from minter" );
-
-         if( !had_existing && ainfo.block_lock != mint_address )
+         if( ainfo.block_lock != mint_address )
             throw runtime_error( "invalid public key from minter" );
 
-         // NOTE: If an account has already minted then make sure that this block is higher than
-         // the previous one minted. As any account that is producing such invalid height blocks
-         // is likely trying to cause a fork, the account is set to be banned which will prevent
-         // any further blocks being accepted from it. Assuming accounts are considered to be of
-         // some value (with a "banned" account having none) it is not very likely for such fork
-         // attempts to occur often, however, a mechanism to evaluate which side of the fork has
-         // the lightest weight should be developed in order for a peer to be able to get itself
-         // back onto the best chain rather than to be permanently stuck on a fork.
-         if( block_height <= ainfo.last_height )
-         {
-            string conflict( list_file_tags(
-             "c" + chain + ".b" + to_string( ainfo.last_height ) + "-*.a" + minter_account ) );
-
-            tag_file( "c" + chain + ".a" + account
-             + ".h" + to_string( ainfo.last_height ) + ".b*anned", minter_account_hash );
-
-            throw runtime_error( "invalid block height for minting account" );
-         }
+         if( !check_if_valid_hash_pair( account_hash, ainfo.block_hash, true ) )
+            throw runtime_error( "invalid hash from minter" );
 
          string::size_type pos = minter_account_tag.find( ".b" );
 

@@ -9429,7 +9429,7 @@
    <pfldnm>Class
    <nclass>114100
    <nfield>114101
-   <nextra>@view:114170+114151=0+114147=0+301700=+114101
+   <nextra>@view:114170+114151=0+114147=0+301700=+114218=0
    <dfield>301410
    <module>Meta
    <columns/>
@@ -9484,7 +9484,7 @@
    <pfldnm>Model
    <nclass>114100
    <nfield>114101
-   <nextra>@view:114170+114151=0+114147=0+301700=+114163=1+114101
+   <nextra>@view:114170+114151=0+301700=+114218=1
    <dfield>301410
    <module>Meta
    <columns/>
@@ -9521,8 +9521,8 @@
    </parents>
    <restricts/>
     <restrict/>
-     <name>field_specification_is_required_for_ui_gen
-     <field>115128
+     <name>field_specification_can_access_below_model
+     <field>115133
      <ftype>bool
      <extra>
      <mandatory>true

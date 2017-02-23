@@ -311,8 +311,8 @@ std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_o
 void CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value );
 bool CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value, const std::string& current );
 
-bool CIYAM_BASE_DECL_SPEC any_has_session_variable( const std::string& name );
-bool CIYAM_BASE_DECL_SPEC any_has_session_variable( const std::string& name, const std::string& value );
+bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name );
+bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name, const std::string& value );
 
 bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC is_first_using_session_variable( const std::string& name, const std::string& value );
