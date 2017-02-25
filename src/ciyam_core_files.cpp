@@ -1336,12 +1336,20 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          throw runtime_error( "invalid block proof of work" );
    }
 
+   bool check_hashes_for_better_chain_head = false;
+
    // NOTE: If a new block with the same height and weight as the previous
    // chain head has been provided then the "better" chain head is decided
-   // by the block with the lowest nonce value. There is a possibility for
-   // forking if blocks share identical height, weight and nonce values.
-   if( previous_nonce_value && nonce_value < previous_nonce_value )
-      is_better_chain_head = true;
+   // by the block with the lowest nonce value. If both the weight and the
+   // nonce are identical then the lowest valued hash of the two blocks is
+   // used to decide the better chain head.
+   if( previous_nonce_value )
+   {
+      if( nonce_value < previous_nonce_value )
+         is_better_chain_head = true;
+      else if( nonce_value == previous_nonce_value )
+         check_hashes_for_better_chain_head = true;
+   }
 
    if( p_block_info )
    {
@@ -1369,7 +1377,12 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       string raw_block_data( c_file_type_str_core_blob );
       raw_block_data += verify;
 
-      string block_id( sha256( raw_block_data ).get_digest_as_string( ).substr( 0, c_id_length ) );
+      string new_block_hash( sha256( raw_block_data ).get_digest_as_string( ) );
+
+      if( check_hashes_for_better_chain_head && new_block_hash < previous_head )
+         is_better_chain_head = true;
+
+      string block_id( new_block_hash.substr( 0, c_id_length ) );
 
       string block_file_tag( "c" + chain + ".b" + to_string( block_height ) );
 
@@ -1435,7 +1448,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                parallel_block_height = block_height;
 
                string prior_block_minter_hash;
-               uint64_t previous_balance = get_balance_from_minter_id( parallel_block_minted_minter_id, &prior_block_minter_hash );
+               uint64_t previous_balance = get_balance_from_minter_id(
+                parallel_block_minted_minter_id, &prior_block_minter_hash );
 
                uint64_t total_reward = cinfo.mint_reward
                 + ( cinfo.transaction_reward * parallel_block_minted_num_transactions );
@@ -3616,7 +3630,7 @@ void get_checkpoint_info( const string& blockchain, const string& content, check
    verify_checkpoint_info( content.substr( pos + 1 ), 0, &cp_info );
 }
 
-bool has_better_block( const string& blockchain, uint64_t height, uint64_t weight )
+bool has_better_block( const string& blockchain, uint64_t height, uint64_t weight, string* p_acct )
 {
    bool retval = false;
 
@@ -3644,6 +3658,16 @@ bool has_better_block( const string& blockchain, uint64_t height, uint64_t weigh
             if( next_weight < weight )
             {
                retval = true;
+
+               if( p_acct )
+               {
+                  account_info ainfo;
+                  get_account_info( ainfo, *p_acct );
+
+                  if( ainfo.last_height >= height )
+                     p_acct->erase( );
+               }
+
                break;
             }
          }
@@ -3721,6 +3745,8 @@ string construct_new_block(
       {
          chain_info cinfo;
          get_chain_info( cinfo, chain );
+
+         p_new_block_info->acct = acct;
 
          p_new_block_info->height = height;
          p_new_block_info->weight = weight;

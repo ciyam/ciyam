@@ -67,7 +67,7 @@ class peer_listener : public thread
 void list_mutex_lock_ids_for_peer_session( std::ostream& outs );
 
 std::string use_peer_account(
- const std::string& blockchain, const std::string& password, bool release = false );
+ const std::string& blockchain, const std::string& password, bool release = false, bool is_pwd_hash = false );
 
 std::string get_account_password( const std::string& blockchain, const std::string& account );
 

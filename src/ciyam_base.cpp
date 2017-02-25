@@ -263,6 +263,7 @@ const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
+const char* const c_special_variable_locally_minted_block = "@locally_minted_block";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
@@ -6163,6 +6164,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_info_hash:
       s = string( c_special_variable_blockchain_info_hash );
+      break;
+
+      case e_special_var_locally_minted_block:
+      s = string( c_special_variable_locally_minted_block );
       break;
 
       case e_special_var_secondary_validation:

@@ -41,6 +41,8 @@ struct new_block_info
    {
    }
 
+   std::string acct;
+
    bool can_mint;
 
    size_t num_txs;
@@ -111,7 +113,7 @@ void CLASS_BASE_DECL_SPEC get_checkpoint_info(
  const std::string& blockchain, const std::string& conbtent, checkpoint_info& cp_info );
 
 bool CLASS_BASE_DECL_SPEC has_better_block(
- const std::string& blockchain, uint64_t height, uint64_t weight );
+ const std::string& blockchain, uint64_t height, uint64_t weight, std::string* p_acct = 0 );
 
 std::string CLASS_BASE_DECL_SPEC check_account( const std::string& blockchain, const std::string& password );
 

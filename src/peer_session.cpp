@@ -269,6 +269,9 @@ string store_new_block( const string& blockchain, const string& password_hash )
 
    vector< pair< string, string > > extras;
 
+   temporary_session_variable tmp_session_is_peer_minted_block(
+    get_special_var_name( e_special_var_locally_minted_block ), "1" );
+
    verify_core_file( data, true, &extras );
    create_raw_file_with_extras( "", extras );
 
@@ -1348,15 +1351,24 @@ string socket_command_processor::get_cmd_and_args( )
 
       if( !g_server_shutdown && !is_condemned_session( ) )
       {
+         string new_acct( new_block.acct );
+
          // NOTE: If either a better block at the newly minted block's height or a better previous block than
          // the one it is currently linked to has been processed then will need to mint another new block. If
-         // a minting account was released then also mint another new block.
+         // a minting account was released then also mint another new block. Also if the same account that is
+         // minting had created the better block (i.e. from a Sybil peer) then will need to stop this account
+         // from minting (to minimise wasting any further resources).
          if( !new_block_pwd_hash.empty( )
-          && ( has_better_block( blockchain, new_block.height, new_block.weight )
+          && ( has_better_block( blockchain, new_block.height, new_block.weight, &new_acct )
           || was_released( blockchain )
           || ( new_block.height > 1
           && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
+         {
+            if( new_acct.empty( ) )
+               use_peer_account( blockchain, new_block_pwd_hash, true, true );
+
             new_block_pwd_hash.erase( );
+         }
 
          if( !new_block_pwd_hash.empty( ) )
          {
@@ -1372,8 +1384,7 @@ string socket_command_processor::get_cmd_and_args( )
 
                   new_block_pwd_hash.erase( );
 
-                  if( !has_better_block( blockchain, new_block.height, new_block.weight )
-                   && !has_any_session_variable(
+                  if( !has_any_session_variable(
                    get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
                      store_new_block( blockchain, tmp_new_block_pwd_hash );
                }
@@ -1823,7 +1834,7 @@ void list_mutex_lock_ids_for_peer_session( std::ostream& outs )
    outs << "peer_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
 }
 
-string use_peer_account( const string& blockchain, const string& password, bool release )
+string use_peer_account( const string& blockchain, const string& password, bool release, bool is_pwd_hash )
 {
    guard g( get_core_files_trace_mutex( ), "use_peer_account" );
 
@@ -1866,10 +1877,26 @@ string use_peer_account( const string& blockchain, const string& password, bool 
       {
          if( g_blockchain_passwords.count( blockchain ) )
          {
-            set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, password ), "" );
+            string tmp_password( password );
+
+            if( is_pwd_hash )
+            {
+               set< string >& passwords( g_blockchain_passwords[ blockchain ] );
+
+               for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
+               {
+                  if( sha256( *i ).get_digest_as_string( ) == password )
+                  {
+                     tmp_password = *i;
+                     break;
+                  }
+               }
+            }
+
+            set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, tmp_password ), "" );
 
             g_blockchain_release.insert( blockchain );
-            g_blockchain_passwords[ blockchain ].erase( password );
+            g_blockchain_passwords[ blockchain ].erase( tmp_password );
          }
       }
       else
