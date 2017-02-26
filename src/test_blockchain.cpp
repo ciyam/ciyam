@@ -416,9 +416,9 @@ string generate_blockchain_script( const string& chain_meta,
       if( !skipped.empty( ) )
          script += "#skipped " + skipped + "\n";
 
-      script += "file_tags -p=c" + to_string( root_id ) + ".b*-*\n";
-      script += "file_tags -p=c" + to_string( root_id ) + ".a*.b*\n";
-      script += "file_tags -p=c" + to_string( root_id ) + ".c*\n";
+      script += "file_tags c" + to_string( root_id ) + ".b*-*\n";
+      script += "file_tags c" + to_string( root_id ) + ".a*.b*\n";
+      script += "file_tags c" + to_string( root_id ) + ".c*\n";
 
       last_hash = next_last_hash;
       block_hash = next_block_hash;

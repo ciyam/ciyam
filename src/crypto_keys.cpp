@@ -606,43 +606,53 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
    unsigned char buf[ c_num_secret_bytes ];
 
    if( secret.length( ) < 30 )
-      throw runtime_error( "invalid secret '" + secret + "' for private key contruction" );
-
-   if( !is_wif_format )
    {
-      if( secret.length( ) > 50 )
-         hex_decode( secret, buf, c_num_secret_bytes );
-      else
-         base64::decode( secret, buf, c_num_secret_bytes );
+      if( is_wif_format )
+         throw runtime_error( "invalid WIF '" + secret + "' in private_key ctor" );
+
+      // NOTE: Allow an insecure secret to be used for testing purposes (i.e. do
+      // *not* use this method for anything other than performing simple tests).
+      for( size_t i = 0; i < secret.length( ); i++ )
+         buf[ i ] = secret[ i ];
    }
    else
    {
-      // NOTE: If the first encoded byte is K, L or c then is compressed.
-      if( p_is_compressed && !secret.empty( ) )
+      if( !is_wif_format )
       {
-         if( secret[ 0 ] == 'K' || secret[ 0 ] == 'L' || secret[ 0 ] == 'c' )
-            *p_is_compressed = true;
+         if( secret.length( ) > 50 )
+            hex_decode( secret, buf, c_num_secret_bytes );
          else
-            *p_is_compressed = false;
+            base64::decode( secret, buf, c_num_secret_bytes );
       }
+      else
+      {
+         // NOTE: If the first encoded byte is K, L or c then is compressed.
+         if( p_is_compressed && !secret.empty( ) )
+         {
+            if( secret[ 0 ] == 'K' || secret[ 0 ] == 'L' || secret[ 0 ] == 'c' )
+               *p_is_compressed = true;
+            else
+               *p_is_compressed = false;
+         }
 
-      vector< unsigned char > dbuf;
+         vector< unsigned char > dbuf;
 
-      base58_decode( secret, dbuf );
+         base58_decode( secret, dbuf );
 
-      if( dbuf.size( ) < c_num_secret_bytes + 5 )
-         throw runtime_error( "invalid WIF '" + secret + "' in private_key ctor" );
+         if( dbuf.size( ) < c_num_secret_bytes + 5 )
+            throw runtime_error( "invalid WIF '" + secret + "' in private_key ctor" );
 
-      sha256 hash( &dbuf[ 0 ], dbuf.size( ) - 4 );
-      hash.copy_digest_to_buffer( buf );
+         sha256 hash( &dbuf[ 0 ], dbuf.size( ) - 4 );
+         hash.copy_digest_to_buffer( buf );
 
-      hash.update( buf, c_sha256_digest_size );
-      hash.copy_digest_to_buffer( buf );
+         hash.update( buf, c_sha256_digest_size );
+         hash.copy_digest_to_buffer( buf );
 
-      if( memcmp( buf, &dbuf[ dbuf.size( ) - 4 ], 4 ) != 0 )
-         throw runtime_error( "invalid WIF checksum for '" + secret + "' in private_key ctor" );
+         if( memcmp( buf, &dbuf[ dbuf.size( ) - 4 ], 4 ) != 0 )
+            throw runtime_error( "invalid WIF checksum for '" + secret + "' in private_key ctor" );
 
-      memcpy( buf, &dbuf[ 1 ], c_num_secret_bytes );
+         memcpy( buf, &dbuf[ 1 ], c_num_secret_bytes );
+      }
    }
 
    if( !check_secret( buf ) )

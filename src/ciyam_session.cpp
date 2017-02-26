@@ -1546,13 +1546,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
-         string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat ) );
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_hash ) );
+         string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat_or_hash ) );
 
-         if( !hash.empty( ) )
-            response = get_hash_tags( hash );
+         if( !pat_or_hash.empty( ) && pat_or_hash.find_first_of( "?*" ) == string::npos )
+            response = get_hash_tags( pat_or_hash );
          else
-            response = list_file_tags( pat );
+            response = list_file_tags( pat_or_hash );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );

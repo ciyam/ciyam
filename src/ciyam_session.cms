@@ -7,8 +7,8 @@ file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>][<
 file_tag "set/delete/unlink a tag for a file in the files area" <opt/-delete/delete>|<opt/-unlink/unlink>|<val//hash><val//name>
 file_hash "get the hash for a tag in the files area" <val//tag>
 file_info "get information for a file in the files area" [<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>]}]<val//tag_or_hash>
-file_kill "remove file(s) for a hash or wildcard tag pattern" <val/-p=/pat>|{[<opt/-recurse/recurse>]<val//hash>}
-file_tags "get file tags for a hash or wildcard tag pattern" [<val/-p=/pat>|<val//hash>]
+file_kill "remove one or more files from the files area" <val/-p=/pat>|{[<opt/-recurse/recurse>]<val//hash>}
+file_tags "get file tags for a file or wildcard pattern" [<val//pat_or_hash>]
 file_stats "get file area stats"
 file_resync "resync file area info"
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
