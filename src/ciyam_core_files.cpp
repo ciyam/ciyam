@@ -1324,7 +1324,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    if( !block_height )
       account_hash = "0" + public_key_base64;
-   else if( p_extras )
+   else if( p_extras && !cinfo.is_test )
    {
       if( !had_nonce )
          throw runtime_error( "block proof of work missing" );
@@ -1867,7 +1867,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
       uint64_t checkpoint_height = 0;
 
-      // NOTE: Determine whether or not a new checkpoint has occurred.
+      // NOTE: Determine whether or not a new automatic checkpoint has occurred.
       if( cinfo.checkpoint_length
        && block_height > cinfo.checkpoint_start_height + ( cinfo.checkpoint_length * 2 ) )
       {
@@ -1948,7 +1948,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
          if( num_found >= cinfo.checkpoint_length )
          {
-            TRACE_LOG( TRACE_CORE_FLS, "new checkpoint for " + chain + " at height " + to_string( checkpoint_height ) );
+            TRACE_LOG( TRACE_CORE_FLS, "new checkpoint for "
+             + chain + " at height " + to_string( checkpoint_height ) );
 
             map< string, unsigned int > account_new_others;
             map< string, unsigned int > account_new_transactions;
@@ -2000,9 +2001,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
             num_accounts = has_secondary_account ? 1 : 0;
 
-            // NOTE: All accounts have their balance set to the default (apart from
-            // the current minter and those minters of blocks that occurred between
-            // the current blockchain head and the new checkpoint).
             for( size_t i = 0; i < account_tags.size( ); i++ )
             {
                string next_account_tag( account_tags[ i ] );
@@ -2013,87 +2011,10 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                if( pos == string::npos || hpos == string::npos )
                   continue;
 
-               uint64_t account_height
-                = from_string< uint64_t >( next_account_tag.substr( hpos + 2, pos - hpos - 2 ) );
-
                bool is_banned = ( next_account_tag.find( "banned" ) != string::npos );
 
                if( !is_banned )
                   ++num_accounts;
-
-               uint64_t balance = 0;
-
-               string next_account( next_account_tag.substr( 0, hpos ) );
-
-               // NOTE: If the account is that of the minter then the tag that already
-               // had been added as an extra to the minter's new account blob needs to
-               // be instead modified.
-               if( next_account_tag.substr( 1, hpos - 1 ) == chain + ".a" + account )
-               {
-                  string account_tags( ( *p_extras )[ account_extra_offset ].second );
-                  string::size_type pos = account_tags.rfind( '\n' );
-
-                  if( pos == string::npos )
-                     throw runtime_error( "unexpected extra account_tags '" + account_tags + "' for minting account" );
-
-                  account_tags.erase( pos + 1 );
-
-                  int num_new_accts = account_new_others[ next_account ];
-                  int num_consensus = account_new_mint_info[ next_account ].first;
-                  int num_non_consensus = account_new_mint_info[ next_account ].second;
-
-                  balance = ( cinfo.mint_reward - cinfo.mint_charge ) * 2;
-                  balance += transaction_hashes.size( ) * cinfo.transaction_reward;
-
-                  balance += ( cinfo.mint_reward - cinfo.mint_charge ) * num_consensus;
-                  balance += account_new_transactions[ next_account ] * cinfo.transaction_reward;
-
-                  if( cinfo.mint_charge * num_non_consensus > balance )
-                     balance = 0;
-                  else
-                     balance -= ( cinfo.mint_charge * num_non_consensus );
-
-                  if( !cinfo.account_charge && num_new_accts )
-                     balance = 0;
-                  else if( num_new_accts * cinfo.account_charge > balance )
-                     balance = 0;
-                  else
-                     balance -= ( num_new_accts * cinfo.account_charge );
-
-                  account_tags += "c" + chain + ".a" + account
-                   + ".h*" + to_string( block_height ) + ".b" + to_string( balance );
-
-                  ( *p_extras )[ account_extra_offset ].second = account_tags;
-               }
-               else if( !is_banned )
-               {
-                  string account_file_hash( tag_file_hash( next_account_tag ) );
-
-                  int num_new_accts = account_new_others[ next_account ];
-                  int num_consensus = account_new_mint_info[ next_account ].first;
-                  int num_non_consensus = account_new_mint_info[ next_account ].second;
-
-                  balance = ( cinfo.mint_reward - cinfo.mint_charge );
-
-                  balance += ( cinfo.mint_reward - cinfo.mint_charge ) * num_consensus;
-                  balance += account_new_transactions[ next_account ] * cinfo.transaction_reward;
-
-                  if( cinfo.mint_charge * num_non_consensus > balance )
-                     balance = 0;
-                  else
-                     balance -= ( cinfo.mint_charge * num_non_consensus );
-
-                  if( !cinfo.account_charge && num_new_accts )
-                     balance = 0;
-                  else if( num_new_accts * cinfo.account_charge > balance )
-                     balance = 0;
-                  else
-                     balance -= ( num_new_accts * cinfo.account_charge );
-
-                  ++non_blob_extras;
-                  p_extras->push_back( make_pair( account_file_hash,
-                   next_account + ".h*" + to_string( account_height ) + ".b" + to_string( balance ) ) );
-               }
             }
 
             // NOTE: Add checkpoint files.

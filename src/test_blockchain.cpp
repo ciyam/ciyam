@@ -155,6 +155,9 @@ string generate_blockchain_script( const string& chain_meta,
        + "," + string( c_file_type_core_block_detail_account_hash_prefix ) + encoded_bhash
        + "," + string( c_file_type_core_block_detail_account_lock_prefix ) + priv_key.get_address( true, true ) );
 
+      next_account += ","
+       + string( c_file_type_core_block_detail_account_msg_key_prefix ) + priv_key.get_public( false, true );
+
       string encoded_thash( base64::encode( get_hash( new_account.rseed, 0, rounds ) ) );
 
       next_account += "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + encoded_thash
@@ -252,10 +255,10 @@ string generate_blockchain_script( const string& chain_meta,
          string unique( to_string( i - 1 ) + "X" + to_string( j ) );
 
          tx_next = "\n" + string( c_file_type_core_transaction_detail_log_prefix )
-          + "pc " + date_time::standard( ).as_string( ) + " M100 C101 F102=Sample " + unique + ",F108=test";
+          + "pc " + date_time::standard( ).as_string( ) + " M100 C101 \\\"F102=Sample " + unique + ",F108=test\\\"";
 
          tx_data += tx_next;
-         tx_validate += tx_next;
+         tx_validate += replaced( tx_next, "\\", "" );
 
          tx_data += "\\n\\";
 
