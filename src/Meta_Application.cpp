@@ -3729,7 +3729,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
 
       get_obj( ).Installing_Script( true );
 
-      get_obj( ).Generate_Status( "Creating Application..." ); // FUTURE: This should be a module string.
+      get_obj( ).Generate_Status( "Installing Packages..." ); // FUTURE: This should be a module string.
 
       set_session_variable( get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
       set_session_variable( get_special_var_name( e_special_var_grp ), get_obj( ).Workgroup( ).get_key( ) );

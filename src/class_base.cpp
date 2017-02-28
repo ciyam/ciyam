@@ -884,6 +884,8 @@ void class_base::init( bool for_create )
 {
    bool is_create( op == e_op_type_create );
 
+   set_key( "", true );
+
    set_default_values( );
 
    if( is_create || for_create )
@@ -1144,7 +1146,6 @@ void class_base::iterate_stop( )
    }
 
    init( false );
-   set_key( "", true );
 
    row_cache.clear( );
    transient_filter_field_values.clear( );

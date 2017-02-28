@@ -10905,6 +10905,16 @@ void transaction_log_command( const string& log_command,
    }
 }
 
+void append_transaction_log_command( const string& log_command )
+{
+   if( !log_command.empty( ) )
+   {
+      if( !gtp_session->transaction_log_command.empty( ) )
+         gtp_session->transaction_log_command += '\n';
+      gtp_session->transaction_log_command += log_command;
+   }
+}
+
 void append_transaction_for_blockchain_application(
  const string& application, const string& transaction_hash )
 {
