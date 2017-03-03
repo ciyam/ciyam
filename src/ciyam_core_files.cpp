@@ -98,7 +98,6 @@ struct chain_info
    chain_info( )
     :
     is_test( false ),
-    mint_charge( 0 ),
     mint_reward( 0 ),
     account_charge( 0 ),
     transaction_reward( 0 ),
@@ -112,7 +111,6 @@ struct chain_info
 
    bool is_test;
 
-   uint64_t mint_charge;
    uint64_t mint_reward;
    uint64_t account_charge;
    uint64_t transaction_reward;
@@ -283,16 +281,6 @@ string get_chain_info( chain_info& info, const string& chain )
       requisites.erase( pos );
    }
 
-   pos = requisites.find( '-' );
-   if( pos != string::npos )
-   {
-      info.mint_charge = from_string< uint64_t >( requisites.substr( pos + 1 ) );
-      requisites.erase( pos );
-
-      if( !info.transaction_reward )
-         info.transaction_reward = info.mint_charge;
-   }
-
    info.mint_reward = from_string< uint64_t >( requisites );
 
    string extras( chain_info_items[ 1 ] );
@@ -322,9 +310,6 @@ string chain_info_blob( const chain_info& cinfo, bool had_zero_explicit_account_
       extra += 'T';
 
    extra += to_string( cinfo.mint_reward );
-
-   if( cinfo.mint_charge )
-      extra += '-' + to_string( cinfo.mint_charge );
 
    if( cinfo.transaction_reward )
       extra += '+' + to_string( cinfo.transaction_reward );
@@ -920,16 +905,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                         next_meta.erase( pos );
                      }
 
-                     pos = next_meta.find( '-' );
-                     if( pos != string::npos )
-                     {
-                        cinfo.mint_charge = from_string< uint64_t >( next_meta.substr( pos + 1 ) );
-                        next_meta.erase( pos );
-
-                        if( !cinfo.transaction_reward )
-                           cinfo.transaction_reward = cinfo.mint_charge;
-                     }
-
                      has_reward = true;
                      cinfo.mint_reward = from_string< uint64_t >( next_meta );
                   }
@@ -1251,7 +1226,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                ++num_accounts;
 
-               string tags( "c" + chain + ".a" + id + ".h0.b" + to_string( cinfo.mint_reward - cinfo.mint_charge ) );
+               string tags( "c" + chain + ".a" + id + ".h0.b" + to_string( cinfo.mint_reward ) );
                p_extras->push_back( make_pair( extra, tags ) );
             }
             else if( !has_secondary_account )
@@ -1663,9 +1638,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          if( account_balances.count( minter_account ) )
             ainfo.balance = account_balances[ minter_account ];
 
-         if( ainfo.balance < cinfo.mint_charge )
-            throw runtime_error( "insufficient balance to mint" );
-
          if( has_secondary_account && ainfo.balance < cinfo.account_charge )
             throw runtime_error( "insufficient balance to create an account" );
 
@@ -1676,8 +1648,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             else
                ainfo.balance -= cinfo.account_charge;
          }
-         else
-            ainfo.balance -= cinfo.mint_charge;
 
          pos = minter_account_tag.find( ".h" );
          if( pos != string::npos )
@@ -2282,8 +2252,6 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
 
       string destination_block_hash( tag_file_hash( content ) );
 
-      uint64_t block_reward = cinfo.mint_reward - cinfo.mint_charge;
-
       map< string, string > account_block_locks;
       map< string, string > account_block_hashes;
 
@@ -2365,12 +2333,13 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
             {
                if( chain_blocks.count( next_account_block_hash ) )
                {
-                  uint64_t total_reward = block_reward + ( cinfo.transaction_reward * next_account_binfo.transaction_hashes.size( ) );
+                  uint64_t total_reward = cinfo.mint_reward
+                   + ( cinfo.transaction_reward * next_account_binfo.transaction_hashes.size( ) );
 
                   if( next_account_binfo.had_secondary_account )
                   {
                      if( !cinfo.account_charge )
-                        balance = block_reward;
+                        balance = cinfo.mint_reward;
                      else if( balance > cinfo.account_charge )
                         balance -= cinfo.account_charge;
                      else
@@ -2381,8 +2350,6 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
                   else
                      balance = 0;
                }
-               else if( next_account_binfo.block_height > new_block_height )
-                  balance += cinfo.mint_charge;
 
                height = next_account_binfo.block_height;
 
@@ -3675,8 +3642,6 @@ string construct_new_block(
          p_new_block_info->total_weight = total_weight;
          p_new_block_info->previous_block_weight = binfo.block_weight;
 
-         p_new_block_info->can_mint = ( balance > cinfo.mint_charge );
-
          if( !cinfo.checkpoint_tolerance || weight < cinfo.checkpoint_tolerance )
             p_new_block_info->range = new_block_info::e_target_range_optimal;
          else if( weight < cinfo.checkpoint_tolerance * 2 )
@@ -3757,8 +3722,8 @@ string construct_new_block(
    string nonce;
 
    // NOTE: If there were no txs found then there is no need to expend the effort
-   // to try and find a valid nonce.
-   if( num_txs && search_for_proof_of_work_nonce )
+   // to try and find a valid nonce (also skip this for "test only" blockchains).
+   if( num_txs && !cinfo.is_test && search_for_proof_of_work_nonce )
       nonce = check_for_proof_of_work( data, start, 16 );
 
    if( p_new_block_info )

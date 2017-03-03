@@ -879,8 +879,8 @@ string tag_file_hash( const string& name )
 
    string retval;
 
-   // NOTE: If the name is just "*" then return all the hashes that have been tagged (which can be of
-   // use if trying to find out which files do not have tags.
+   // NOTE: If the name is just "*" then return all the hashes that have been tagged or if is just "?"
+   // then will return all the hashes of files that have not been tagged.
    if( name == "*" )
    {
       set< string > hashes;

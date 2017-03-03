@@ -1598,7 +1598,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_password ) );
          string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_account ) );
 
-         response = construct_new_block( blockchain, password, account, false );
+         // NOTE: To make sure the console client doesn't time out issue a progress message.
+         handler.output_progress( "(creating new block)" );
+
+         response = construct_new_block( blockchain, password, account, false, 0, true );
       }
       else if( command == c_cmd_ciyam_session_peer_account_info )
       {

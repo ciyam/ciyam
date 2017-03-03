@@ -1,5 +1,5 @@
 #Creating genesis block for 27243366536...
-.file_raw -core blob blk:a=27243366536,h=0,cm=r:1100-100+10!500~5<50000000000,pk=AhGYzbaAibP6aRtYyg48IYRjelqz/PufjQcGQEZ0LFvn\n\
+.file_raw -core blob blk:a=27243366536,h=0,cm=r:1100+10!500~5<50000000000,pk=AhGYzbaAibP6aRtYyg48IYRjelqz/PufjQcGQEZ0LFvn\n\
 a:27243366536,e=5,h=ozC58KhNnaPx2DSSz1DqIhe3bAme3xNZZjvuFRxHLQw=,l=n4WfozUAJpkZRNfszhQczggVXyLowKuE7H\
 ,mk=AtIVmiMTL3zNze+OuEe5FABRRnsi8+YJixRtI4zPoQun,th=MJDMR0OLePPzLcJYRG+UEF9MUSbNU7uBkBfql6heNsY=,tl=mxyijGSmMUPLzBWfYvhXCaQQfxC8mSqaq7\n\
 a:43927774761,e=5,h=AaqCEYwJ72GR6n6Z/KSGk0eTjenQ3GVvnUwKkVBa58M=,l=mqR6dnhMdga8y81WgA6iz9q5yDwc74Nd1d\
