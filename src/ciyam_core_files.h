@@ -147,6 +147,14 @@ std::string CLASS_BASE_DECL_SPEC construct_account_info(
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0,
  uint64_t* p_balance = 0, uint64_t* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
 
+inline std::string CLASS_BASE_DECL_SPEC construct_account_info(
+ const std::string& blockchain, const std::string& password, unsigned int exp )
+{
+   std::string account;
+
+   return construct_account_info( blockchain, password, exp, account );
+}
+
 std::string CLASS_BASE_DECL_SPEC get_account_msg_secret(
  const std::string& blockchain, const std::string& password, const std::string& account );
 

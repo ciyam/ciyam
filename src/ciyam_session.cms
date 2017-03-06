@@ -4,7 +4,7 @@ file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]
 file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>][<opt/-text/text>]<opt/blob>|<opt/list><val//data>[<val//tag>]
-file_tag "set/delete/unlink a tag for a file in the files area" <opt/-delete/delete>|<opt/-unlink/unlink>|<val//hash><val//name>
+file_tag "add/remove/unlink a tag for a file in the files area" <opt/-remove/remove>|<opt/-unlink/unlink>|<val//hash><val//name>
 file_hash "get the hash for a tag in the files area" <val//tag>
 file_info "get information for a file in the files area" [<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>]}]<val//tag_or_hash>
 file_kill "remove one or more files from the files area" <val/-p=/pat>|{[<opt/-recurse/recurse>]<val//hash>}
@@ -15,7 +15,7 @@ peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
 peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]
 peer_block_info "get new peer block information" <val//blockchain><val//password>[<val//account>]
-peer_account_info "get peer account information" <val//blockchain><val//password>[<val//exponent>][<val//account>]
+peer_account_info "get new peer account information" <val//blockchain><val//password>[<val//exponent>]
 peer_account_mint "start or stop minting or list minting peer accounts" <val//blockchain>[<val/-k=/pubkey>|<opt/-stop/stop>][<val//password>]
 peer_transactions "create and process application tx scripts" <val//blockchain>
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>

@@ -34,6 +34,8 @@ void CLASS_BASE_DECL_SPEC init_files_area( std::vector< std::string >* p_untagge
 
 void CLASS_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untagged = 0 );
 
+std::string CLASS_BASE_DECL_SPEC current_timestamp_tag( bool truncated = false );
+
 bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
 
 bool CLASS_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
@@ -64,14 +66,16 @@ std::string CLASS_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CLASS_BASE_DECL_SPEC tag_file_hash( const std::string& name );
 
-std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat );
+std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat, size_t max_tags = 0 );
+
+void CLASS_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );
 
 std::string CLASS_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const std::string& nonce );
 
 void CLASS_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
 void CLASS_BASE_DECL_SPEC store_file( const std::string& hash,
- tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0 );
+ tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0, bool allow_core_file = true );
 
 void CLASS_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
 

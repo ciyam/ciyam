@@ -30,6 +30,7 @@
 #include "sha256.h"
 #include "sockets.h"
 #include "threads.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "file_utils.h"
@@ -43,6 +44,8 @@ using namespace std;
 
 namespace
 {
+
+const char* const c_timestamp_tag_prefix = "ts.";
 
 #include "ciyam_constants.h"
 
@@ -290,6 +293,20 @@ void resync_files_area( vector< string >* p_untagged )
    init_files_area( p_untagged );
 }
 
+string current_timestamp_tag( bool truncated )
+{
+   string retval( c_timestamp_tag_prefix );
+
+   date_time dt( date_time::local( ) );
+
+   if( truncated )
+      retval += dt.as_string( e_time_format_hhmmssth, false );
+   else
+      retval += dt.as_string( e_time_format_hhmmsstht, false ) + "00000000";
+
+   return retval;
+}
+
 bool has_tag( const string& name )
 {
    guard g( g_mutex );
@@ -519,8 +536,13 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( data.empty( ) )
       throw runtime_error( "cannot create a raw file empty data" );
 
+   bool file_extra_is_core = false;
+
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
    unsigned char file_extra = ( data[ 0 ] & c_file_type_val_extra_mask );
+
+   if( file_extra & c_file_type_val_extra_core )
+      file_extra_is_core = true;
 
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
@@ -625,6 +647,8 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    if( !tag_name.empty( ) )
       tag_file( tag_name, hash );
+   else if( !file_extra_is_core )
+      tag_file( current_timestamp_tag( ), hash );
 
    return hash;
 }
@@ -768,6 +792,9 @@ void tag_del( const string& name, bool unlink )
    }
    else
    {
+      if( name == "*" )
+         throw runtime_error( "invalid attempt to delete all file system tags (use ** if really wanting to do this)" );
+
       string prefix( name.substr( 0, pos ) );
       map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
 
@@ -814,14 +841,19 @@ void tag_file( const string& name, const string& hash )
       // NOTE: If a question mark preceeds the asterisk then only the exact tag
       // will be removed.
       if( pos > 1 && name[ pos - 1 ] == '?' )
-         tag_del( name.substr( 0, pos - 1 ) );
+         remove_file_tags( hash, name.substr( 0, pos - 1 ) );
       else
-         tag_del( name.substr( 0, pos + 1 ) );
+         remove_file_tags( hash, name.substr( 0, pos + 1 ) );
 
       if( pos != name.length( ) - 1 )
          tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
       else if( pos > 1 && name[ pos - 1 ] == '*' )
          tag_name = name.substr( 0, pos - 1 );
+
+      // NOTE: If a question mark as found at the end then the tag will become
+      // instead a "current time stamp" tag.
+      if( tag_name[ tag_name.length( ) - 1 ] == '?' )
+         tag_name = current_timestamp_tag( );
    }
 
    if( !tag_name.empty( ) )
@@ -922,11 +954,12 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string list_file_tags( const string& pat )
+string list_file_tags( const string& pat, size_t max_tags )
 {
    guard g( g_mutex );
 
    string retval;
+   size_t num_tags = 0;
 
    if( !pat.empty( ) )
    {
@@ -939,10 +972,15 @@ string list_file_tags( const string& pat )
       {
          if( wildcard_match( pat, i->first ) )
          {
+            ++num_tags;
+
             if( !retval.empty( ) )
                retval += "\n";
             retval += i->first;
          }
+
+         if( max_tags && num_tags >= max_tags )
+            break;
 
          if( i->first.length( ) < prefix.length( ) || i->first.substr( 0, prefix.length( ) ) != prefix )
             break;
@@ -952,13 +990,35 @@ string list_file_tags( const string& pat )
    {
       for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
       {
+         ++num_tags;
+
          if( !retval.empty( ) )
             retval += "\n";
          retval += i->first;
+
+         if( max_tags && num_tags >= max_tags )
+            break;
       }
    }
 
    return retval;
+}
+
+void remove_file_tags( const string& hash, const string& pat )
+{
+   string tags( get_hash_tags( hash ) );
+
+   if( !tags.empty( ) )
+   {
+      vector< string > all_tags;
+      split( tags, all_tags, '\n' );
+
+      for( size_t i = 0; i < all_tags.size( ); i++ )
+      {
+         if( wildcard_match( pat, all_tags[ i ] ) )
+            tag_del( all_tags[ i ] );
+      }
+   }
 }
 
 string hash_with_nonce( const string& hash, const string& nonce )
@@ -1018,13 +1078,16 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
    }
 }
 
-void store_file( const string& hash, tcp_socket& socket, const char* p_tag, progress* p_progress )
+void store_file( const string& hash, tcp_socket& socket,
+ const char* p_tag, progress* p_progress, bool allow_core_file )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash, true ) );
 
    bool existing = false;
    int64_t existing_bytes = 0;
+
+   bool file_extra_is_core = false;
 
    if( !filename.empty( ) )
    {
@@ -1050,6 +1113,17 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag, prog
 
       unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
+
+      if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+         throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
+
+      if( file_extra & c_file_type_val_extra_core )
+      {
+         if( allow_core_file )
+            file_extra_is_core = true;
+         else
+            throw runtime_error( "core file not allowed for this store_file" );
+      }
 
       bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
 
@@ -1130,6 +1204,8 @@ void store_file( const string& hash, tcp_socket& socket, const char* p_tag, prog
 
    if( !tag_name.empty( ) )
       tag_file( tag_name, hash );
+   else if( !file_extra_is_core )
+      tag_file( current_timestamp_tag( ), hash );
 }
 
 void delete_file( const string& hash, bool even_if_tagged )
@@ -1177,17 +1253,17 @@ void delete_files_for_tags( const string& pat )
 {
    guard g( g_mutex );
 
-   string all_tags( list_file_tags( pat ) );
+   string tags( list_file_tags( pat ) );
 
-   if( !all_tags.empty( ) )
+   if( !tags.empty( ) )
    {
-      vector< string > tags;
-      split( all_tags, tags, '\n' );
+      vector< string > all_tags;
+      split( tags, all_tags, '\n' );
 
       set< string > hashes;
 
-      for( size_t i = 0; i < tags.size( ); i++ )
-         hashes.insert( tag_file_hash( tags[ i ] ) );
+      for( size_t i = 0; i < all_tags.size( ); i++ )
+         hashes.insert( tag_file_hash( all_tags[ i ] ) );
 
       for( set< string >::iterator i = hashes.begin( ); i != hashes.end( ); ++i )
          delete_file( *i );

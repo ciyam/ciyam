@@ -1437,7 +1437,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: Although "filename" is used to make the command usage easier to understand for
          // end users it is expected that the value provided will actually be the SHA256 hash of
-         // the file content (which "ciyam_client" does automatically).
+         // the file content (which "ciyam_client" determines automatically).
          store_file( filename, socket, tag.empty( ) ? 0 : tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_raw )
@@ -1490,12 +1490,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_tag )
       {
-         bool is_delete( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_delete ) );
+         bool is_remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_remove ) );
          bool is_unlink( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_unlink ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_hash ) );
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_name ) );
 
-         if( is_delete || is_unlink )
+         if( is_remove || is_unlink )
             tag_del( name, is_unlink );
          else
             tag_file( name, hash );
@@ -1599,7 +1599,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_block_info_account ) );
 
          // NOTE: To make sure the console client doesn't time out issue a progress message.
-         handler.output_progress( "(creating new block)" );
+         handler.output_progress( "(creating a new block)" );
 
          response = construct_new_block( blockchain, password, account, false, 0, true );
       }
@@ -1608,9 +1608,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_blockchain ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_password ) );
          unsigned int exponent( atoi( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_exponent ).c_str( ) ) );
-         string account( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_account_info_account ) );
 
-         response = construct_account_info( blockchain, password, exponent, account );
+         response = construct_account_info( blockchain, password, exponent );
       }
       else if( command == c_cmd_ciyam_session_peer_account_mint )
       {

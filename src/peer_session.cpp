@@ -460,6 +460,11 @@ void process_file( const string& hash, const string& blockchain )
             throw;
          }
       }
+      else
+      {
+         delete_file( hash.substr( 0, pos ), false );
+         throw runtime_error( "unexpected core file type '" + core_type + "' found in process_file" );
+      }
    }
 }
 
@@ -1141,7 +1146,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          socket.set_delay( );
 
          if( !has_file( hash ) )
-            store_file( hash, socket, 0, p_progress );
+            store_file( hash, socket, 0, p_progress, false );
          else
          {
             string temp_file_name( "~" + uuid( ).as_string( ) );

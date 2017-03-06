@@ -31,6 +31,7 @@
 #include "config.h"
 #include "sha256.h"
 #include "utilities.h"
+#include "class_base.h"
 #include "ciyam_base.h"
 #ifdef SSL_SUPPORT
 #  include "crypto_keys.h"
@@ -725,9 +726,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    string chain, account, account_hash, account_lock, previous_head, previous_block, public_key_base64;
 
    chain_info cinfo;
-
-   size_t non_blob_extras = 0;
-   size_t account_extra_offset = 0;
 
    string block_signature, past_previous_block, parallel_block_minted_minter_id, parallel_block_minted_previous_block;
 
@@ -1436,7 +1434,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                account_balances.insert( make_pair( parallel_block_minted_minter_id, previous_balance ) );
 
-               ++non_blob_extras;
                p_extras->push_back(
                 make_pair( prior_block_minter_hash, parallel_block_minted_minter_id
                 + ".h" + to_string( block_height ) + ".b*" + to_string( previous_balance ) ) );
@@ -1461,7 +1458,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                      string tx_tag( parallel_block_minted_minter_id + ".t" + to_string( tinfo.sequence ) );
 
-                     ++non_blob_extras;
                      p_extras->push_back( make_pair( *i, tx_tag ) );
                   }
                }
@@ -1493,7 +1489,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   new_chain_height_blocks.insert( make_pair( parallel_block_height, new_previous_block ) );
 
-                  ++non_blob_extras;
                   p_extras->push_back( make_pair( new_previous_block,
                    "c" + chain + ".b" + to_string( parallel_block_height ) ) );
 
@@ -1538,7 +1533,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   old_minter_tag.erase( pos );
 
-                  ++non_blob_extras;
                   p_extras->push_back( make_pair( old_minter_hash,
                    old_minter_tag + ".b*" + to_string( previous_balance ) ) );
 
@@ -1576,7 +1570,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   new_minter_tag.erase( pos );
 
-                  ++non_blob_extras;
                   p_extras->push_back( make_pair( new_minter_hash,
                    new_minter_tag + ".b*" + to_string( new_account_balance ) ) );
 
@@ -1600,7 +1593,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                      string tx_tag( "c" + chain + ".a" + i->second + ".t" + to_string( tinfo.sequence ) );
 
-                     ++non_blob_extras;
                      p_extras->push_back( make_pair( i->first, tx_tag ) );
                   }
                }
@@ -1689,11 +1681,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                included_transactions.insert( transaction_hashes[ i ] );
 
                if( !reused_transactions.count( transaction_hashes[ i ] ) )
-               {
-                  ++non_blob_extras;
                   p_extras->push_back( make_pair(
                    transaction_hashes[ i ], get_hash_tags( transaction_hashes[ i ] ) + "*" ) );
-               }    
             }
 
             for( set< string >::iterator i = new_transaction_hashes.begin( ); i != new_transaction_hashes.end( ); ++i )
@@ -1703,10 +1692,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   string hash_tags( get_hash_tags( *i ) );
 
                   if( !hash_tags.empty( ) )
-                  {
-                     ++non_blob_extras;
                      p_extras->push_back( make_pair( *i, hash_tags + "*" ) );
-                  }
                }
             }
          }
@@ -1719,11 +1705,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          // NOTE: The line feed is required to ensure that the tag is applied as a secondary one.
          tags += "\n" + minter_account_tag + ".h*" + to_string( block_height ) + ".b" + to_string( ainfo.balance );
 
-         account_extra_offset = p_extras->size( );
          p_extras->push_back( make_pair( extra, tags ) );
 
          // NOTE: The previous account blob instance will be removed.
-         ++non_blob_extras;
          p_extras->push_back( make_pair( "", minter_account_hash ) );
       }
 
@@ -2210,7 +2194,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          p_extras->push_back( make_pair( extra, chain_info_tag ) );
 
          // NOTE: Remove the previous blockchain meta information blob.
-         ++non_blob_extras;
          p_extras->push_back( make_pair( "", chain_info_hash ) );
       }
    }
@@ -3301,15 +3284,26 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
       vector< string > checkpoint_transactions;
       split( all_checkpoint_transactions, checkpoint_transactions, '\n' );
 
+      // NOTE: All of the relevant checkpoint files will be re-tagged using the
+      // a special current timestamp tag so that they will be later archived or
+      // removed (to ensure each tag is unique a counter is being appended).
+      string replace_with_timestamp_tag( "*" + current_timestamp_tag( true ) );
+
+      int timestamp_counter = 0;
+
+      // NOTE: Re-tag all of the checkpoint transaction blobs.
       for( size_t i = 1; i < checkpoint_transactions.size( ); i++ )
       {
          if( has_file( checkpoint_transactions[ i ] ) )
-            p_extras->push_back( make_pair( "", checkpoint_transactions[ i ] ) );
+         {
+            p_extras->push_back( make_pair( checkpoint_transactions[ i ],
+             construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
+         }
       }
 
       uint64_t height = checkpoint_height;
 
-      // NOTE: Remove all block blobs that are at or below the checkpoint height.
+      // NOTE: Re-tag all block blobs that are at or below the checkpoint height.
       while( true )
       {
          string all_block_tags( list_file_tags( "c" + chain_id + ".b" + to_string( height ) + "-*" ) );
@@ -3321,17 +3315,27 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
          split( all_block_tags, block_tags, '\n' );
 
          for( size_t i = 0; i < block_tags.size( ); i++ )
-            p_extras->push_back( make_pair( "", tag_file_hash( block_tags[ i ] ) ) );
+         {
+            p_extras->push_back( make_pair( tag_file_hash( block_tags[ i ] ),
+             construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
+         }
 
          if( height-- == 0 )
             break;
       }
 
-      // NOTE: The checkpoint blobs will also be removed.
-      p_extras->push_back( make_pair( "", lines[ 1 ] ) );
-      p_extras->push_back( make_pair( "", lines[ 2 ] ) );
-      p_extras->push_back( make_pair( "", checkpoint_hash ) );
-      p_extras->push_back( make_pair( "", checkpoint_info_hash ) );
+      // NOTE: The checkpoint blobs themselves are finally re-tagged.
+      p_extras->push_back( make_pair( lines[ 1 ],
+       construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
+
+      p_extras->push_back( make_pair( lines[ 2 ],
+       construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
+
+      p_extras->push_back( make_pair( checkpoint_hash,
+       construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
+
+      p_extras->push_back( make_pair( checkpoint_info_hash,
+       construct_key_from_int( replace_with_timestamp_tag, ++timestamp_counter, 9 ) ) );
    }
 }
 
