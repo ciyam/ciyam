@@ -124,15 +124,15 @@ specific tags to the two List files we had previously created.
 
 To list all of the tags matching a wildcard pattern use the following:
 
-> file_tags -p=start*
+> file_tags start*
 
 and to see the file hash for a specific tag use the following:
 
 > file_hash start
 
-To remove file tags use the "file_tag" command with either the "-delete" or "-unlink" option. If "-unlink" is
-used then the file itself will be removed if no other tags are linked to it whereas the "-delete" option will
-only ever delete the tag and will never remove the file that it links to.
+To remove file tags use the "file_tag" command with either the "-remove" or "-unlink" option. If "-unlink" is
+used then the file itself will be deleted if no other tags are linked to it whereas the "-remove" option will
+only ever remove the tag and will never delete the file that it links to.
 
 Copying Files
 -------------
@@ -152,25 +152,27 @@ It should be noted that the file content (which was originally copied from "ciya
 copied into a file called "xxx" in the current directory (to use a different filename add another argument to
 the "file_get" command).
 
-Removing Files
+Deleting Files
 --------------
 
-For the "xxx" tag created previously the file could be removed using the "file_tag" command as follows:
+For the "xxx" tag created previously the file could be deleted using the "file_tag" command as follows:
 
 > file_tag -unlink xxx
 
-But if another tag was linked to the same file content this command would not actually remove the file at all
-so the best method for removing a file is the "file_kill" command which will be used with the file's hash and
-therefore you'd first determine the file's hash using:
+But if any other tags are linked to the same file content then this command will not actually delete the file
+therefore to force file deletion the "file_kill" command would instead be used which requires the file's hash
+to be first determined from the tag using:
 
 > file_hash xxx
 655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
 
-Then remove the file itself using:
+Then delete the file itself using:
 
 > file_kill 655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
 
-It should be noted that any tags that were linked to this file will now have been deleted.
+It should be noted that any tags that were linked to this file will now have been removed but some care would
+be advised before deciding to use "file_kill" as this could effectively leave "list" content with now invalid
+entries.
 
 File System Statistics
 ----------------------
