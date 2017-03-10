@@ -110,7 +110,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-const char* const c_okay = "okay";
 
 const char* const c_field_id_Access_Permission = "301825";
 const char* const c_field_id_Access_Restriction = "118102";

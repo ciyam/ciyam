@@ -819,12 +819,12 @@ struct scoped_ods_instance
     :
     p_ods( ods::instance( ) )
    {
-      ods::instance( &ods );
+      ods::instance( &ods, true );
    }
 
    ~scoped_ods_instance( )
    {
-      ods::instance( p_ods );
+      ods::instance( p_ods, true );
    }
 
    ods* p_ods;

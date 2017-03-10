@@ -49,7 +49,6 @@ const char* const c_arg_exact_match = "-exact_match";
 const char* const c_arg_not_default = "-not_default";
 const char* const c_arg_create_only = "-create_only";
 const char* const c_arg_combine_keys = "-combine_keys";
-const char* const c_arg_default_only = "-default_only";
 const char* const c_arg_grand_parent = "-grand_parent";
 const char* const c_arg_allow_internal = "-allow_internal";
 const char* const c_arg_include_clones = "-include_clones";
@@ -191,7 +190,6 @@ const char* const c_attribute_act_field_id = "act_field_id";
 const char* const c_attribute_append_value = "append_value";
 const char* const c_attribute_combine_keys = "combine_keys";
 const char* const c_attribute_crpmfield_id = "crpmfield_id";
-const char* const c_attribute_default_only = "default_only";
 const char* const c_attribute_field_key_id = "field_key_id";
 const char* const c_attribute_fkcffield_id = "fkcffield_id";
 const char* const c_attribute_is_transient = "is_transient";
@@ -438,7 +436,6 @@ const char* const c_data_sftfield = "sftfield";
 const char* const c_data_not_dflt = "not_dflt";
 const char* const c_data_act_field = "act_field";
 const char* const c_data_crpmfield = "crpmfield";
-const char* const c_data_dflt_only = "dflt_only";
 const char* const c_data_dn_fields = "dn_fields";
 const char* const c_data_dn_values = "dn_values";
 const char* const c_data_fkcffield = "fkcffield";
@@ -3214,7 +3211,7 @@ struct default_to_global_specification : specification
    string tpfield_id;
    string test_value;
 
-   bool default_only;
+   bool new_only;
 };
 
 void default_to_global_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
@@ -3229,7 +3226,7 @@ void default_to_global_specification::add( model& m, const vector< string >& arg
    string test_field_info;
    string check_field_name;
 
-   default_only = false;
+   new_only = false;
    for( size_t arg = 3; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
@@ -3238,8 +3235,8 @@ void default_to_global_specification::add( model& m, const vector< string >& arg
          test_field_info = next_arg.substr( strlen( c_arg_test_prefix ) );
       else if( next_arg.find( c_arg_check_prefix ) == 0 )
          check_field_name = next_arg.substr( strlen( c_arg_check_prefix ) );
-      else if( next_arg == string( c_arg_default_only ) )
-         default_only = true;
+      else if( next_arg == string( c_arg_new_only ) )
+         new_only = true;
       else
          throw runtime_error( "unexpected extra argument '" + next_arg + "' for 'default_to_global' specification" );
    }
@@ -3333,7 +3330,7 @@ void default_to_global_specification::read_data( sio_reader& reader )
    tpfield_id = reader.read_opt_attribute( c_attribute_tpfield_id );
    test_value = reader.read_opt_attribute( c_attribute_test_value );
 
-   default_only = ( reader.read_opt_attribute( c_attribute_default_only ) == c_true );
+   new_only = ( reader.read_opt_attribute( c_attribute_new_only ) == c_true );
 }
 
 void default_to_global_specification::write_data( sio_writer& writer ) const
@@ -3349,7 +3346,7 @@ void default_to_global_specification::write_data( sio_writer& writer ) const
    writer.write_opt_attribute( c_attribute_tpfield_id, tpfield_id );
    writer.write_opt_attribute( c_attribute_test_value, test_value );
 
-   writer.write_opt_attribute( c_attribute_default_only, default_only ? c_true : "" );
+   writer.write_opt_attribute( c_attribute_new_only, new_only ? c_true : "" );
 }
 
 void default_to_global_specification::add_specification_data( model& m, specification_data& spec_data ) const
@@ -3389,7 +3386,7 @@ void default_to_global_specification::add_specification_data( model& m, specific
    bool is_text_type( !is_non_string_type( tfield_type ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, is_text_type ? "1" : "0" ) );
 
-   spec_data.data_pairs.push_back( make_pair( string( c_data_dflt_only ), default_only ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( string( c_data_new_only ), new_only ? c_true : "" ) );
 
    spec_data.data_pairs.push_back( make_pair( "ename", "" ) );
    spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );

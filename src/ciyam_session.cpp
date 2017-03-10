@@ -1560,6 +1560,47 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          resync_files_area( );
          response = get_file_stats( );
       }
+      else if( command == c_cmd_ciyam_session_file_archive )
+      {
+         bool add( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_add ) );
+         bool remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_remove ) );
+         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_name ) );
+         string path( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_path ) );
+         string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_size_limit ) );
+
+         if( add )
+            add_file_archive( name, path, unformat_bytes( size_limit ) );
+         else if( remove )
+         {
+            // NOTE: To make sure the console client doesn't time out issue a progress message.
+            handler.output_progress( "(removing file archive)" );
+
+            remove_file_archive( name );
+         }
+      }
+      else if( command == c_cmd_ciyam_session_file_archives )
+      {
+         bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_minimal ) );
+         bool status_update( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_update_status ) );
+
+         if( status_update )
+            archives_status_update( );
+
+         response = list_file_archives( minimal );
+      }
+      else if( command == c_cmd_ciyam_session_file_relegate )
+      {
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_hash ) );
+
+         response = relegate_file_to_archive( hash );
+      }
+      else if( command == c_cmd_ciyam_session_file_retrieve )
+      {
+         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_retrieve_hash ) );
+         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_retrieve_tag ) );
+
+         response = retrieve_file_from_archive( hash, tag );
+      }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
          string port( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_listen_port ) );

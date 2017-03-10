@@ -32,6 +32,7 @@
 class ods;
 class class_base;
 class command_handler;
+class ods_file_system;
 
 #  define TRACE_COMMANDS   0x00000001
 #  define TRACE_SQLSTMTS   0x00000002
@@ -416,6 +417,10 @@ void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 
 ods CIYAM_BASE_DECL_SPEC& storage_instance( );
+
+ods CIYAM_BASE_DECL_SPEC& ciyam_ods_instance( );
+
+ods_file_system CIYAM_BASE_DECL_SPEC& ciyam_ods_file_system( );
 
 std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool append_slot_num = true );
 

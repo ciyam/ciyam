@@ -11,6 +11,10 @@ file_kill "remove one or more files from the files area" <val/-p=/pat>|{[<opt/-r
 file_tags "get file tags for a file or wildcard pattern" [<val//pat_or_hash>]
 file_stats "get file area stats"
 file_resync "resync file area info"
+file_archive "add/remove a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove><val//name>
+file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|<opt/-status_update/update_status>]
+file_relegate "relegate one or more files from the files area into the archives" <val//hash>
+file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val//tag>]
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
 peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]

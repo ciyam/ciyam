@@ -82,7 +82,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-const char* const c_okay = "okay";
 
 const char* const c_field_id_Application = "302210";
 const char* const c_field_id_Model = "302200";

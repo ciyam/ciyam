@@ -23,6 +23,7 @@
 
 #include "ciyam_files.h"
 
+#include "ods.h"
 #include "regex.h"
 #include "base64.h"
 #include "config.h"
@@ -30,11 +31,13 @@
 #include "sha256.h"
 #include "sockets.h"
 #include "threads.h"
+#include "progress.h"
 #include "date_time.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "file_utils.h"
 #include "fs_iterator.h"
+#include "ods_file_system.h"
 
 #ifdef ZLIB_SUPPORT
 #  include <zlib.h>
@@ -45,7 +48,23 @@ using namespace std;
 namespace
 {
 
+const int c_status_info_pad_len = 10;
+
+const char* const c_archives = "archives";
+
 const char* const c_timestamp_tag_prefix = "ts.";
+
+const char* const c_file_archive_path = "path";
+const char* const c_file_archive_size_avail = "size_avail";
+const char* const c_file_archive_size_limit = "size_limit";
+const char* const c_file_archive_status_info = "status_info";
+
+const char* const c_folder_archive_stored_files = "stored_files";
+
+const char* const c_file_archive_status_is_full = "is full";
+const char* const c_file_archive_status_bad_write = "bad write";
+const char* const c_file_archive_status_bad_access = "bad access";
+const char* const c_file_archive_status_status_bad_create = "bad create";
 
 #include "ciyam_constants.h"
 
@@ -151,6 +170,111 @@ void validate_hash_with_uncompressed_content( const string& hash, unsigned char*
 
    if( !okay )
       throw runtime_error( "invalid content for file hash '" + hash + "'" );
+}
+
+string get_archive_status( const string& path )
+{
+   string retval( c_okay );
+   string cwd( get_cwd( ) );
+
+   string tmp_filename( "~" + uuid( ).as_string( ) );
+
+   try
+   {
+      bool rc;
+      set_cwd( path, &rc );
+
+      if( !rc )
+         retval = string( c_file_archive_status_bad_access );
+      else
+      {
+         ofstream outf( tmp_filename.c_str( ), ios::out );
+         if( !outf )
+            retval = string( c_file_archive_status_status_bad_create );
+         else
+         {
+            outf << "." << endl;
+
+            outf.flush( );
+
+            if( !outf.good( ) )
+               retval = string( c_file_archive_status_bad_write );
+         }
+      }
+
+      file_remove( tmp_filename );
+      set_cwd( cwd );
+
+      return retval;
+   }
+   catch( ... )
+   {
+      file_remove( tmp_filename );
+      set_cwd( cwd );
+      throw;
+   }
+}
+
+bool path_already_used_in_archive( const string& path )
+{
+   bool retval = false;
+
+   vector< string > paths;
+
+   list_file_archives( true, &paths );
+
+   for( size_t i = 0; i < paths.size( ); i++ )
+   {
+      if( paths[ i ] == path )
+      {
+         retval = true;
+         break;
+      }
+   }
+
+   return retval;
+}
+
+bool has_archived_file( const string& hash, string* p_archive = 0 )
+{
+   bool retval = false;
+
+   vector< string > paths;
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   string archive;
+   vector< string > archives;
+
+   split( all_archives, archives, '\n' );
+
+   if( paths.size( ) != archives.size( ) )
+      throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   for( size_t i = 0; i < archives.size( ); i++ )
+   {
+      archive = archives[ i ];
+
+      ods_fs.set_root_folder( c_file_archives_folder );
+
+      ods_fs.set_folder( archive );
+      ods_fs.set_folder( c_folder_archive_stored_files );
+
+      if( ods_fs.has_folder( hash ) )
+      {
+         retval = true;
+
+         if( p_archive )
+            *p_archive = archive;
+
+         break;
+      }
+   }
+
+   return retval;
 }
 
 }
@@ -291,6 +415,11 @@ void resync_files_area( vector< string >* p_untagged )
    g_total_bytes = g_total_files = 0;
 
    init_files_area( p_untagged );
+}
+
+void term_files_area( )
+{
+   // FUTURE: Implementation to be added.
 }
 
 string current_timestamp_tag( bool truncated )
@@ -544,23 +673,45 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( file_extra & c_file_type_val_extra_core )
       file_extra_is_core = true;
 
-   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
-
-   if( is_compressed )
-      throw runtime_error( "create_raw_file doesn't support already compressed files" );
-
    if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
    string final_data( data );
 
-   string hash( sha256( final_data ).get_digest_as_string( ) );
-
-   string filename( construct_file_name_from_hash( hash, true ) );
+   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
 #ifdef ZLIB_SUPPORT
    session_file_buffer_access file_buffer;
 
+   if( is_compressed )
+   {
+      unsigned long size = final_data.size( ) - 1;
+      unsigned long usize = file_buffer.get_size( ) - size;
+
+      size_t offset = 1;
+
+      if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
+       &usize, ( Bytef * )&final_data[ offset ], size ) != Z_OK )
+         throw runtime_error( "invalid content for create_raw_file (bad compressed or uncompressed too large)" );
+
+      compress = true;
+      is_compressed = false;
+
+      final_data = string( ( const char* )file_buffer.get_buffer( ) );
+   }
+#else
+   if( is_compressed )
+      throw runtime_error( "create_raw_file doesn't support compressed files (without ZLIB support)" );
+#endif
+
+   string hash( sha256( final_data ).get_digest_as_string( ) );
+
+   string filename( construct_file_name_from_hash( hash, true ) );
+
+   if( file_type != c_file_type_val_blob )
+      validate_list( final_data.substr( 1 ) );
+
+#ifdef ZLIB_SUPPORT
    if( compress && !is_compressed && data.size( ) > 32 ) // i.e. don't even bother trying to compress tiny files
    {
       unsigned long size = data.size( ) - 1;
@@ -602,26 +753,6 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
       if( g_total_bytes + final_data.size( ) > max_bytes )
          throw runtime_error( "maximum file area size limit cannot be exceeded" );
-
-#ifdef ZLIB_SUPPORT
-      if( is_compressed )
-      {
-         unsigned long size = final_data.size( ) - 1;
-         unsigned long usize = file_buffer.get_size( ) - size;
-
-         size_t offset = 1;
-
-         if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
-          &usize, ( Bytef * )&final_data[ offset ], size ) != Z_OK )
-            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
-
-         if( file_type != c_file_type_val_blob )
-            validate_list( string( ( const char* )file_buffer.get_buffer( ), usize ) );
-      }
-#endif
-
-      if( !is_compressed && file_type != c_file_type_val_blob )
-         validate_list( final_data.substr( 1 ) );
 
 #ifndef _WIN32
       int um = umask( 077 );
@@ -1372,5 +1503,280 @@ string extract_file( const string& hash, const string& dest_filename, unsigned c
    }
 
    return data;
+}
+
+void add_file_archive( const string& name, const string& path, int64_t size_limit )
+{
+   guard g( g_mutex );
+
+   if( size_limit < 0 )
+      throw runtime_error( "unexpected negative size_limit provided to add_file_archive" );
+
+   string cwd( get_cwd( ) );
+   string tmp_filename( "~" + uuid( ).as_string( ) );
+
+   if( path.empty( )
+    || path[ path.length( ) - 1 ] == '\\' || path[ path.length( ) - 1 ] == '/' )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "invalid path '" + path + "' for add_file_archive" );
+
+   if( path_already_used_in_archive( path ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "an archive with the path '" + path + "' already exists" );
+
+   string status_info( get_archive_status( path ) );
+
+   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   if( ods_fs.has_folder( name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "archive '" + name + "' already exists" );
+
+   ods_fs.add_folder( name );
+   ods_fs.set_folder( name );
+
+   ods_fs.store_as_text_file( c_file_archive_path, path );
+   ods_fs.store_as_text_file( c_file_archive_size_avail, size_limit );
+   ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
+
+   ods_fs.store_as_text_file( c_file_archive_status_info, status_info, c_status_info_pad_len );
+
+   ods_fs.add_folder( c_folder_archive_stored_files );
+}
+
+void remove_file_archive( const string& name )
+{
+   guard g( g_mutex );
+
+   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   if( !ods_fs.has_folder( name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "archive '" + name + "' not found" );
+   else
+      ods_fs.remove_folder( name, 0, true );
+}
+
+void archives_status_update( )
+{
+   guard g( g_mutex );
+
+   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   vector< string > names;
+   ods_fs.list_folders( names );
+
+   for( size_t i = 0; i < names.size( ); i++ )
+   {
+      string next( names[ i ] );
+
+      ods_fs.set_folder( next );
+
+      string path;
+      ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      int64_t avail = 0;
+      ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+      string status_info;
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+
+      string new_status_info;
+
+      if( avail == 0 )
+         new_status_info = string( c_file_archive_status_is_full );
+      else
+         new_status_info = get_archive_status( path );
+
+      if( status_info != new_status_info )
+         ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
+
+      ods_fs.set_folder( ".." );
+   }
+}
+
+string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_avail, bool stop_after_first )
+{
+   guard g( g_mutex );
+
+   string retval;
+   vector< string > names;
+
+   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   ods_fs.list_folders( names );
+
+   for( size_t i = 0; i < names.size( ); i++ )
+   {
+      string next( names[ i ] );
+
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      ods_fs.set_folder( next );
+
+      string path;
+      ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      int64_t avail = 0;
+      int64_t limit = 0;
+      string status_info;
+
+      ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+      ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+
+      if( min_avail <= 0 || avail >= min_avail )
+      {
+         retval += next;
+
+         if( !minimal )
+            retval += " [" + status_info + "] ("
+             + format_bytes( limit - avail ) + '/' + format_bytes( limit ) + ") " + path;
+
+         if( p_paths )
+            p_paths->push_back( path );
+
+         if( stop_after_first )
+            break;
+      }
+
+      ods_fs.set_folder( ".." );
+   }
+
+   return retval;
+}
+
+string relegate_file_to_archive( const string& hash )
+{
+   guard g( g_mutex );
+
+   vector< string > paths;
+   int64_t num_bytes = file_bytes( hash );
+
+   string all_archives( list_file_archives( true, &paths, num_bytes ) );
+
+   string archive;
+   vector< string > archives;
+
+   if( !all_archives.empty( ) )
+   {
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      if( has_archived_file( hash, &archive ) )
+         delete_file( hash, true );
+      else
+      {
+         ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+         ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+         for( size_t i = 0; i < archives.size( ); i++ )
+         {
+            string dest( paths[ i ] + "/" + hash );
+
+            copy_raw_file( hash, dest );
+
+            if( !temp_file_is_identical( dest, hash ) )
+               file_remove( dest );
+            else
+            {
+               archive = archives[ i ];
+
+               ods_fs.set_root_folder( c_file_archives_folder );
+
+               ods_fs.set_folder( archive );
+
+               int64_t avail = 0;
+               ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+               avail -= num_bytes;
+               ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
+
+               ods_fs.set_folder( c_folder_archive_stored_files );
+
+               ods_fs.add_folder( hash );
+               delete_file( hash, true );
+
+               break;
+            }
+         }
+      }
+   }
+
+   return archive;
+}
+
+string retrieve_file_from_archive( const string& hash, const string& tag )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( !has_file( hash ) )
+   {
+      vector< string > paths;
+
+      string all_archives( list_file_archives( true, &paths ) );
+
+      string archive;
+      vector< string > archives;
+
+      string tag_for_file( tag );
+      if( tag_for_file.empty( ) )
+         tag_for_file = current_timestamp_tag( );
+
+      if( !all_archives.empty( ) )
+      {
+         split( all_archives, archives, '\n' );
+
+         if( paths.size( ) != archives.size( ) )
+            throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+         ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+         ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+         for( size_t i = 0; i < archives.size( ); i++ )
+         {
+            archive = archives[ i ];
+
+            ods_fs.set_root_folder( c_file_archives_folder );
+
+            ods_fs.set_folder( archive );
+            ods_fs.set_folder( c_folder_archive_stored_files );
+
+            if( ods_fs.has_folder( hash ) )
+            {
+               retval = archive;
+
+               string src_file( paths[ i ] + "/" + hash );
+
+               if( file_exists( src_file ) )
+               {
+                  string file_data( buffer_file( src_file ) );
+                  create_raw_file( file_data, false, tag_for_file.c_str( ) );
+
+                  break;
+               }
+            }
+         }
+      }
+   }
+
+   return retval;
 }
 

@@ -61,7 +61,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-const char* const c_okay = "okay";
 
 const char* const c_field_id_Allow_Child_Rel_Select_Specifics = "123113";
 const char* const c_field_id_Allow_Exclude_In_Use_FK = "123106";

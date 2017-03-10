@@ -343,7 +343,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = `{`$class_version`};
 
-const char* const c_okay = "okay";
 `{`?`$base_fields`[`$base_fields`%,`,
 const char* const c_field_id_\0 = "\1";\
 `]`}

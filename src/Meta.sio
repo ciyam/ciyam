@@ -30008,7 +30008,7 @@
      <class_id>106100
      <field_id>106123
      <field_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -30019,7 +30019,7 @@
      <class_id>106100
      <field_id>106122
      <field_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -30563,7 +30563,7 @@
      <class_id>107100
      <field_id>107120
      <field_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -30574,7 +30574,7 @@
      <class_id>107100
      <field_id>107119
      <field_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -31883,7 +31883,7 @@
      <cfield_id>302140
      <tfield_id>124104
      <test_value>0
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -31897,7 +31897,7 @@
      <cfield_id>302150
      <tfield_id>124104
      <test_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -34131,7 +34131,7 @@
      <tfield_id>106107
      <tpfield_id>301320
      <test_value>1
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -34146,7 +34146,7 @@
      <tfield_id>106107
      <tpfield_id>301320
      <test_value>2
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>
@@ -34161,7 +34161,7 @@
      <tfield_id>106107
      <tpfield_id>301320
      <test_value>3
-     <default_only>true
+     <new_only>true
     </data>
    </specification>
    <specification/>

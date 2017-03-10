@@ -96,6 +96,8 @@ const int c_max_file_buffer_expansion = 10;
 const char* const c_true = "true";
 const char* const c_false = "false";
 
+const char* const c_ciyam_server = "ciyam_server";
+
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 
@@ -1299,6 +1301,39 @@ const char* const c_default_storage_identity = "<default>";
 
 const char* const c_ignore_field = "@ignore";
 
+auto_ptr< ods > gap_ods;
+auto_ptr< ods_file_system > gap_ofs;
+
+void init_ciyam_ods( )
+{
+   gap_ods.reset( new ods( c_ciyam_server,
+    ods::e_open_mode_create_if_not_exist, ods::e_share_mode_exclusive ) );
+
+   ods::bulk_write bulk_write( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   bool was_just_created = false;
+
+   if( gap_ods->is_new( ) )
+      was_just_created = true;
+   else
+      gap_ods->rollback_dead_transactions( );
+
+   gap_ofs.reset( new ods_file_system( *gap_ods ) );
+
+   if( was_just_created )
+   {
+      gap_ofs->add_folder( c_file_archives_folder );
+      gap_ofs->add_folder( c_system_variables_folder );
+   }
+}
+
+void term_ciyam_ods( )
+{
+   gap_ofs.reset( );
+   gap_ods.reset( );
+}
+
 map< string, string > g_variables;
 map< string, map< string, string > > g_crypt_keys;
 
@@ -1506,6 +1541,11 @@ void perform_storage_op( storage_op op,
       {
          ods::instance( 0, true );
          throw runtime_error( err.what( ) );
+      }
+      catch( ... )
+      {
+         ods::instance( 0, true );
+         throw;
       }
    }
 
@@ -4170,6 +4210,8 @@ void init_globals( )
 
    read_server_configuration( );
 
+   init_ciyam_ods( );
+
    init_files_area( );
 
    check_timezone_info( );
@@ -4240,6 +4282,10 @@ void term_globals( )
          g_storage_handlers[ i ] = 0;
       }
    }
+
+   term_files_area( );
+
+   term_ciyam_ods( );
 
    g_scripts.clear( );
 
@@ -7539,6 +7585,16 @@ ods& storage_instance( )
       throw runtime_error( "storage has not been initialised" );
 
    return *ods::instance( );
+}
+
+ods& ciyam_ods_instance( )
+{
+   return *gap_ods;
+}
+
+ods_file_system& ciyam_ods_file_system( )
+{
+   return *gap_ofs;
 }
 
 string gen_key( const char* p_suffix, bool append_slot_num )

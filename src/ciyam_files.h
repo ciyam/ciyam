@@ -34,6 +34,8 @@ void CLASS_BASE_DECL_SPEC init_files_area( std::vector< std::string >* p_untagge
 
 void CLASS_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untagged = 0 );
 
+void CLASS_BASE_DECL_SPEC term_files_area( );
+
 std::string CLASS_BASE_DECL_SPEC current_timestamp_tag( bool truncated = false );
 
 bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
@@ -95,6 +97,20 @@ bool CLASS_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, 
 
 std::string CLASS_BASE_DECL_SPEC extract_file(
  const std::string& hash, const std::string& dest_filename, unsigned char check_file_type_and_extra = '\0' );
+
+void CLASS_BASE_DECL_SPEC add_file_archive(
+ const std::string& name, const std::string& path, int64_t size_limit );
+
+void CLASS_BASE_DECL_SPEC remove_file_archive( const std::string& name );
+
+void CLASS_BASE_DECL_SPEC archives_status_update( );
+
+std::string CLASS_BASE_DECL_SPEC list_file_archives( bool minimal = false,
+ std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
+
+std::string CLASS_BASE_DECL_SPEC relegate_file_to_archive( const std::string& hash );
+
+std::string CLASS_BASE_DECL_SPEC retrieve_file_from_archive( const std::string& hash, const std::string& tag );
 
 #endif
 

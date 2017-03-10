@@ -61,7 +61,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-const char* const c_okay = "okay";
 
 const char* const c_field_id_Name = "117101";
 const char* const c_field_id_View_Name = "117102";

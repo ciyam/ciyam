@@ -114,11 +114,6 @@ photo_*.jpg
 gen_photo_*.xrep
 Forum_*.png
 
-# Ignore bstore ODS DB files.
-btstore.dat
-btstore.hdr
-btstore.idx
-
 # Ignore ciyam test storage and related.
 ciyam.dat
 ciyam.hdr
@@ -126,6 +121,9 @@ ciyam.idx
 ciyam.sql
 modules.lst
 packages.lst
+ciyam_server.dat
+ciyam_server.hdr
+ciyam_server.idx
 ciyam_server.sid
 ciyam_server.sio
 

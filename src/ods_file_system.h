@@ -35,6 +35,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    ~ods_file_system( );
 
    void set_folder( const std::string& new_folder, bool* p_rc = 0 );
+   void set_root_folder( const std::string& new_folder, bool* p_rc = 0 );
 
    inline std::string get_folder( ) const { return current_folder; }
 
@@ -105,9 +106,11 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       branch_files_or_objects( os, current_folder, expr, style );
    }
 
-   void branch_files( const std::string& expr, std::vector< std::string >& files );
+   void branch_files( const std::string& expr,
+    std::vector< std::string >& files, branch_style style = e_branch_style_default );
 
-   void branch_folders( const std::string& expr, std::vector< std::string >& folders );
+   void branch_folders( const std::string& expr,
+    std::vector< std::string >& folders, branch_style style = e_branch_style_default );
 
    void branch_folders(
     const std::string& expr, std::ostream& os, branch_style style = e_branch_style_default );
