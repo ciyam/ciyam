@@ -12,6 +12,7 @@
 #  include <cstring>
 #  include <map>
 #  include <set>
+#  include <memory>
 #  include <fstream>
 #  include <stdexcept>
 #  ifdef __GNUG__
