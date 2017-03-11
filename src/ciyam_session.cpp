@@ -1564,6 +1564,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool add( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_add ) );
          bool remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_remove ) );
+         bool repair( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_repair ) );
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_name ) );
          string path( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_path ) );
          string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_size_limit ) );
@@ -1572,10 +1573,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             add_file_archive( name, path, unformat_bytes( size_limit ) );
          else if( remove )
          {
-            // NOTE: To make sure the console client doesn't time out issue a progress message.
+            // NOTE: To make sure that the console client doesn't time out issue a progress message.
             handler.output_progress( "(removing file archive)" );
 
             remove_file_archive( name );
+         }
+         else if( repair )
+         {
+            // NOTE: To make sure that the console client doesn't time out issue a progress message.
+            handler.output_progress( "(repairing file archive)" );
+
+            repair_file_archive( name );
          }
       }
       else if( command == c_cmd_ciyam_session_file_archives )
@@ -1590,9 +1598,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_relegate )
       {
+         string num_files( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_num_files ) );
+         string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_size_limit ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_hash ) );
+         string archive( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_archive ) );
 
-         response = relegate_file_to_archive( hash );
+         uint32_t num = 0;
+         if( !num_files.empty( ) )
+            num = from_string< uint32_t >( num_files );
+
+         int64_t size = 0;
+         if( !size_limit.empty( ) )
+            size = unformat_bytes( size_limit );
+
+         response = relegate_files_to_archive( hash, archive, num, size );
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )
       {

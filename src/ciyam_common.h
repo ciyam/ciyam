@@ -111,6 +111,7 @@ enum special_var
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
    e_special_var_unix_timestamp,
+   e_special_var_dummy_timestamp,
    e_special_var_check_if_changed,
    e_special_var_skip_after_fetch,
    e_special_var_fields_and_values,

@@ -257,6 +257,7 @@ const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_unix_timestamp = "@unix_timestamp";
+const char* const c_special_variable_dummy_timestamp = "@dummy_timestamp";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
@@ -6178,6 +6179,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_unix_timestamp:
       s = string( c_special_variable_unix_timestamp );
+      break;
+
+      case e_special_var_dummy_timestamp:
+      s = string( c_special_variable_dummy_timestamp );
       break;
 
       case e_special_var_check_if_changed:

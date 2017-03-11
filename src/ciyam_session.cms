@@ -11,9 +11,9 @@ file_kill "remove one or more files from the files area" <val/-p=/pat>|{[<opt/-r
 file_tags "get file tags for a file or wildcard pattern" [<val//pat_or_hash>]
 file_stats "get file area stats"
 file_resync "resync file area info"
-file_archive "add/remove a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove><val//name>
+file_archive "add/remove/repair a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove>|<opt/-repair/repair><val//name>
 file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|<opt/-status_update/update_status>]
-file_relegate "relegate one or more files from the files area into the archives" <val//hash>
+file_relegate "relegate one or more files from the files area into the archives" <val/-n=/num_files>|<val/-s=/size_limit>|<val//hash>[<val//archive>]
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val//tag>]
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
@@ -105,7 +105,7 @@ schedule "display autoscript schedule"
 smtpinfo "retrieves the sendmail sender address"
 starttls "start TLS session"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
-externals "display a list of known external clients"
+externals "display a list of known external services"
 runscript "run an external script or program" [<val//script_name>]
 timezones "display a list of known timezones"
 utc_now "get the current UTC time"

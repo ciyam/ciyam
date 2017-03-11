@@ -14,13 +14,13 @@ const char* const c_okay = "okay";
 
 const char* const c_meta_model = "Meta";
 
+const char* const c_file_archives_folder = "arch";
+const char* const c_system_variables_folder = "vars";
+
 const char* const c_storage_identity_tx_id = "[0]";
 
 const char* const c_block_prefix = "block";
 const char* const c_files_directory = "files";
-
-const char* const c_file_archives_folder = "file_archives";
-const char* const c_system_variables_folder = "system_variables";
 
 const char* const c_file_copy_command = "file_copy";
 const char* const c_file_kill_command = "file_kill";

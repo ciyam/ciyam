@@ -8,6 +8,7 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <iosfwd>
+#     include <deque>
 #     include <string>
 #     include <vector>
 #  endif
@@ -68,7 +69,8 @@ std::string CLASS_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CLASS_BASE_DECL_SPEC tag_file_hash( const std::string& name );
 
-std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat, size_t max_tags = 0 );
+std::string CLASS_BASE_DECL_SPEC list_file_tags( const std::string& pat, size_t max_tags = 0,
+ int64_t max_bytes = 0, int64_t* p_min_bytes = 0, std::deque< std::string >* p_hashes = 0 );
 
 void CLASS_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );
 
@@ -102,13 +104,15 @@ void CLASS_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );
 
 void CLASS_BASE_DECL_SPEC remove_file_archive( const std::string& name );
+void CLASS_BASE_DECL_SPEC repair_file_archive( const std::string& name );
 
 void CLASS_BASE_DECL_SPEC archives_status_update( );
 
 std::string CLASS_BASE_DECL_SPEC list_file_archives( bool minimal = false,
  std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
 
-std::string CLASS_BASE_DECL_SPEC relegate_file_to_archive( const std::string& hash );
+std::string CLASS_BASE_DECL_SPEC relegate_files_to_archive(
+ const std::string& hash, const std::string& archive, uint32_t max_files, int64_t max_bytes );
 
 std::string CLASS_BASE_DECL_SPEC retrieve_file_from_archive( const std::string& hash, const std::string& tag );
 

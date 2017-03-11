@@ -50,8 +50,6 @@ namespace
 
 const int c_status_info_pad_len = 10;
 
-const char* const c_archives = "archives";
-
 const char* const c_timestamp_tag_prefix = "ts.";
 
 const char* const c_file_archive_path = "path";
@@ -59,7 +57,7 @@ const char* const c_file_archive_size_avail = "size_avail";
 const char* const c_file_archive_size_limit = "size_limit";
 const char* const c_file_archive_status_info = "status_info";
 
-const char* const c_folder_archive_stored_files = "stored_files";
+const char* const c_folder_archive_files_folder = "files";
 
 const char* const c_file_archive_status_is_full = "is full";
 const char* const c_file_archive_status_bad_write = "bad write";
@@ -235,9 +233,11 @@ bool path_already_used_in_archive( const string& path )
    return retval;
 }
 
-bool has_archived_file( const string& hash, string* p_archive = 0 )
+bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_archive = 0 )
 {
    bool retval = false;
+
+   temporary_set_folder tmp_folder( ods_fs, "/" );
 
    vector< string > paths;
 
@@ -251,17 +251,17 @@ bool has_archived_file( const string& hash, string* p_archive = 0 )
    if( paths.size( ) != archives.size( ) )
       throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
-
    for( size_t i = 0; i < archives.size( ); i++ )
    {
       archive = archives[ i ];
 
+      if( p_archive && !p_archive->empty( ) && archive != *p_archive )
+         continue;
+
       ods_fs.set_root_folder( c_file_archives_folder );
 
       ods_fs.set_folder( archive );
-      ods_fs.set_folder( c_folder_archive_stored_files );
+      ods_fs.set_folder( c_folder_archive_files_folder );
 
       if( ods_fs.has_folder( hash ) )
       {
@@ -426,12 +426,22 @@ string current_timestamp_tag( bool truncated )
 {
    string retval( c_timestamp_tag_prefix );
 
-   date_time dt( date_time::local( ) );
+   string dummy_timestamp( get_session_variable( get_special_var_name( e_special_var_dummy_timestamp ) ) );
 
-   if( truncated )
-      retval += dt.as_string( e_time_format_hhmmssth, false );
+   if( !dummy_timestamp.empty( ) )
+   {
+      retval += dummy_timestamp;
+      set_session_variable( get_special_var_name( e_special_var_dummy_timestamp ), "" );
+   }
    else
-      retval += dt.as_string( e_time_format_hhmmsstht, false ) + "00000000";
+   {
+      date_time dt( date_time::local( ) );
+
+      if( truncated )
+         retval += dt.as_string( e_time_format_hhmmssth, false );
+      else
+         retval += dt.as_string( e_time_format_hhmmsstht, false ) + "00000000";
+   }
 
    return retval;
 }
@@ -1042,8 +1052,8 @@ string tag_file_hash( const string& name )
 
    string retval;
 
-   // NOTE: If the name is just "*" then return all the hashes that have been tagged or if is just "?"
-   // then will return all the hashes of files that have not been tagged.
+   // NOTE: If the name is just "*" then return the hashes of all files that have been tagged or
+   // if is just "?" then will instead return all the hashes of files that have not been tagged.
    if( name == "*" )
    {
       set< string > hashes;
@@ -1085,12 +1095,16 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string list_file_tags( const string& pat, size_t max_tags )
+string list_file_tags( const string& pat,
+ size_t max_tags, int64_t max_bytes, int64_t* p_min_bytes, deque< string >* p_hashes )
 {
    guard g( g_mutex );
 
    string retval;
+
    size_t num_tags = 0;
+   int64_t min_bytes = 0;
+   int64_t num_bytes = 0;
 
    if( !pat.empty( ) )
    {
@@ -1105,9 +1119,22 @@ string list_file_tags( const string& pat, size_t max_tags )
          {
             ++num_tags;
 
+            int64_t next_bytes = file_bytes( i->second );
+
+            if( max_bytes && num_bytes + next_bytes > max_bytes )
+               continue;
+
+            if( !min_bytes || next_bytes < min_bytes )
+               min_bytes = next_bytes;
+
+            num_bytes += next_bytes;
+
             if( !retval.empty( ) )
                retval += "\n";
             retval += i->first;
+
+            if( p_hashes )
+               p_hashes->push_back( i->second );
          }
 
          if( max_tags && num_tags >= max_tags )
@@ -1123,9 +1150,22 @@ string list_file_tags( const string& pat, size_t max_tags )
       {
          ++num_tags;
 
+         int64_t next_bytes = file_bytes( i->second );
+
+         if( max_bytes && num_bytes + next_bytes > max_bytes )
+            break;
+
+         if( !min_bytes || next_bytes < min_bytes )
+            min_bytes = next_bytes;
+
+         num_bytes += next_bytes;
+
          if( !retval.empty( ) )
             retval += "\n";
          retval += i->first;
+
+         if( p_hashes )
+            p_hashes->push_back( i->second );
 
          if( max_tags && num_tags >= max_tags )
             break;
@@ -1544,7 +1584,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    ods_fs.store_as_text_file( c_file_archive_status_info, status_info, c_status_info_pad_len );
 
-   ods_fs.add_folder( c_folder_archive_stored_files );
+   ods_fs.add_folder( c_folder_archive_files_folder );
 }
 
 void remove_file_archive( const string& name )
@@ -1561,6 +1601,65 @@ void remove_file_archive( const string& name )
       throw runtime_error( "archive '" + name + "' not found" );
    else
       ods_fs.remove_folder( name, 0, true );
+}
+
+void repair_file_archive( const std::string& name )
+{
+   guard g( g_mutex );
+
+   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_archives_folder );
+
+   if( !ods_fs.has_folder( name ) )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "archive '" + name + "' not found" );
+   else
+   {
+      ods_fs.set_folder( name );
+
+      string path;
+      ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+      int64_t size_used = 0;
+      int64_t size_avail = 0;
+
+      int64_t size_limit = 0;
+      ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
+
+      ods_fs.remove_folder( c_folder_archive_files_folder, 0, true );
+
+      ods_fs.add_folder( c_folder_archive_files_folder );
+      ods_fs.set_folder( c_folder_archive_files_folder );
+
+      // NOTE: Iterate through the files in the path adding all
+      // that have names that appear to be valid SHA256 hashes.
+      file_filter ff;
+      fs_iterator fs( path, &ff );
+
+      while( fs.has_next( ) )
+      {
+         string name( fs.get_name( ) );
+         regex expr( c_regex_hash_256 );
+
+         if( expr.search( name ) == 0 )
+         {
+            ods_fs.add_folder( name );
+            size_used += file_size( fs.get_full_name( ) );
+         }
+      }
+
+      ods_fs.set_folder( ".." );
+
+      if( size_used > size_limit )
+         size_limit = size_used;
+      else
+         size_avail = size_limit - size_used;
+
+      ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
+      ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
+   }
 }
 
 void archives_status_update( )
@@ -1611,7 +1710,11 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    string retval;
    vector< string > names;
 
-   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !ciyam_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( ciyam_ods_instance( ) ) );
+
    ods_file_system& ods_fs( ciyam_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
@@ -1659,66 +1762,111 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-string relegate_file_to_archive( const string& hash )
+string relegate_files_to_archive(
+ const string& hash, const string& archive, uint32_t max_files, int64_t max_bytes )
 {
    guard g( g_mutex );
 
+   string retval;
+
    vector< string > paths;
-   int64_t num_bytes = file_bytes( hash );
+   deque< string > all_hashes;
+
+   int64_t min_bytes = 0;
+
+   if( !hash.empty( ) )
+      all_hashes.push_back( hash );
+   else
+   {
+      string timestamp_expr( c_timestamp_tag_prefix );
+      timestamp_expr += "*";
+
+      list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &all_hashes );
+   }
+
+   int64_t num_bytes = hash.empty( ) ? min_bytes : file_bytes( hash );
 
    string all_archives( list_file_archives( true, &paths, num_bytes ) );
 
-   string archive;
-   vector< string > archives;
-
-   if( !all_archives.empty( ) )
+   if( !all_hashes.empty( ) && !all_archives.empty( ) )
    {
+      vector< string > archives;
       split( all_archives, archives, '\n' );
 
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      if( has_archived_file( hash, &archive ) )
-         delete_file( hash, true );
-      else
+      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
       {
-         ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-         ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+         if( !archive.empty( ) && archives[ i ] != archive )
+            continue;
 
-         for( size_t i = 0; i < archives.size( ); i++ )
+         string next_archive = archives[ i ];
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( next_archive );
+
+         int64_t avail = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+         while( !all_hashes.empty( ) )
          {
-            string dest( paths[ i ] + "/" + hash );
+            string next_hash( all_hashes.front( ) );
 
-            copy_raw_file( hash, dest );
+            string archive_found_in( archive );
 
-            if( !temp_file_is_identical( dest, hash ) )
+            if( has_archived_file( ods_fs, next_hash, &archive_found_in ) )
+            {
+               delete_file( next_hash, true );
+
+               if( !retval.empty( ) )
+                  retval += '\n';
+               retval = next_hash + ' ' + archive_found_in;
+
+               all_hashes.pop_front( );
+
+               continue;
+            }
+
+            num_bytes = file_bytes( next_hash );
+
+            if( num_bytes > avail )
+               break;
+
+            string dest( paths[ i ] + "/" + next_hash );
+
+            copy_raw_file( next_hash, dest );
+
+            if( !temp_file_is_identical( dest, next_hash ) )
+            {
                file_remove( dest );
+               break;
+            }
             else
             {
-               archive = archives[ i ];
-
-               ods_fs.set_root_folder( c_file_archives_folder );
-
-               ods_fs.set_folder( archive );
-
-               int64_t avail = 0;
-               ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
-
                avail -= num_bytes;
                ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
 
-               ods_fs.set_folder( c_folder_archive_stored_files );
+               ods_fs.set_folder( c_folder_archive_files_folder );
 
-               ods_fs.add_folder( hash );
-               delete_file( hash, true );
+               ods_fs.add_folder( next_hash );
+               delete_file( next_hash, true );
 
-               break;
+               if( !retval.empty( ) )
+                  retval += '\n';
+               retval += next_hash + ' ' + next_archive;
+
+               all_hashes.pop_front( );
             }
          }
       }
    }
 
-   return archive;
+   return retval;
 }
 
 string retrieve_file_from_archive( const string& hash, const string& tag )
@@ -1757,7 +1905,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
             ods_fs.set_root_folder( c_file_archives_folder );
 
             ods_fs.set_folder( archive );
-            ods_fs.set_folder( c_folder_archive_stored_files );
+            ods_fs.set_folder( c_folder_archive_files_folder );
 
             if( ods_fs.has_folder( hash ) )
             {
