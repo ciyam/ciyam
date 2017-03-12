@@ -72,6 +72,9 @@ const string c_nul_key( 1, '\0' );
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
+const char c_persist_variable_prefix = '/';
+const char c_restore_variable_prefix = '~';
+
 const int c_identity_burn = 100;
 
 const unsigned int c_default_max_peers = 100;
@@ -256,6 +259,7 @@ const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
+const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_unix_timestamp = "@unix_timestamp";
 const char* const c_special_variable_dummy_timestamp = "@dummy_timestamp";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
@@ -1302,6 +1306,10 @@ const char* const c_default_storage_identity = "<default>";
 
 const char* const c_ignore_field = "@ignore";
 
+map< string, string > g_variables;
+
+map< string, map< string, string > > g_crypt_keys;
+
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
 
@@ -1327,6 +1335,23 @@ void init_ciyam_ods( )
       gap_ofs->add_folder( c_file_archives_folder );
       gap_ofs->add_folder( c_system_variables_folder );
    }
+   else
+   {
+      // NOTE: Restore all persistent system variable values.
+      vector< string > variable_files;
+
+      gap_ofs->set_root_folder( c_system_variables_folder );
+
+      gap_ofs->list_files( variable_files );
+
+      for( size_t i = 0; i < variable_files.size( ); i++ )
+      {
+         string value;
+         gap_ofs->fetch_from_text_file( variable_files[ i ], value );
+
+         g_variables[ variable_files[ i ] ] = value;
+      }
+   }
 }
 
 void term_ciyam_ods( )
@@ -1334,9 +1359,6 @@ void term_ciyam_ods( )
    gap_ofs.reset( );
    gap_ods.reset( );
 }
-
-map< string, string > g_variables;
-map< string, map< string, string > > g_crypt_keys;
 
 typedef map< int, string > listener_container;
 
@@ -6285,23 +6307,138 @@ string get_raw_system_variable( const string& name )
    guard g( g_mutex );
 
    string retval;
+   string var_name( name );
+
+   bool had_persist_prefix = false;
+   bool had_restore_prefix = false;
+
+   if( !var_name.empty( ) )
+   {
+      if( name[ 0 ] == c_persist_variable_prefix )
+         had_persist_prefix = true;
+      else if( name[ 0 ] == c_restore_variable_prefix )
+         had_restore_prefix = true;
+
+      if( had_persist_prefix || had_restore_prefix )
+         var_name.erase( 0, 1 );
+   }
+
+   string sys_var_prefix;
+
+   // NOTE: The special system variable prefix is only intended for
+   // testing purposes and is only applicable to unrestricted lists.
+   if( g_variables.count( c_special_variable_sys_var_prefix ) )
+      sys_var_prefix = g_variables[ c_special_variable_sys_var_prefix ];
 
    g_variables[ c_special_variable_unix_timestamp ] = to_string( unix_timestamp( ) );
 
-   if( g_variables.count( name ) )
-      retval = g_variables[ name ];
-   else if( name.find_first_of( "?*" ) != string::npos )
+   // NOTE: One or more persistent variables can have their values
+   // either stored or restored depending upon the prefix used and
+   // optional wildcard characters. If the name was the prefix and
+   // nothing else then output all persistent variable names along
+   // with their values (for the persist prefix) or instead output
+   // just those whose values now differ (for the restore prefix).
+   if( had_persist_prefix || had_restore_prefix )
    {
+      bool output_all_persistent_variables = false;
+
+      if( var_name.empty( ) && had_persist_prefix )
+         output_all_persistent_variables = true;
+
+      ods::bulk_write bulk_write( *gap_ods );
+      scoped_ods_instance ods_instance( *gap_ods );
+
+      gap_ofs->set_root_folder( c_system_variables_folder );
+
+      if( !var_name.empty( ) && had_persist_prefix
+       && var_name.find_first_of( "?*" ) == string::npos )
+      {
+         string value;
+
+         if( g_variables.count( var_name ) )
+            value = g_variables[ var_name ];
+
+         if( value.empty( ) )
+         {
+            if( gap_ofs->has_file( var_name ) )
+               gap_ofs->remove_file( var_name );
+         }
+         else
+            gap_ofs->store_as_text_file( var_name, value );
+      }
+      else
+      {
+         vector< string > variable_files;
+
+         string expr( sys_var_prefix );
+
+         if( var_name.empty( ) || var_name == "*" )
+            expr += "*";
+         else
+            expr = var_name;
+
+         gap_ofs->list_files( expr, variable_files );
+
+         for( size_t i = 0; i < variable_files.size( ); i++ )
+         {
+            string next( variable_files[ i ] );
+
+            string value;
+
+            if( had_restore_prefix || output_all_persistent_variables )
+            {
+               gap_ofs->fetch_from_text_file( next, value );
+
+               if( !var_name.empty( ) )
+                  g_variables[ next ] = value;
+               else
+               {
+                  string next_value;
+
+                  if( g_variables.count( next ) )
+                     next_value = g_variables[ next ];
+
+                  if( output_all_persistent_variables || value != next_value )
+                  {
+                     if( !retval.empty( ) )
+                        retval += "\n";
+                     retval += next + ' ' + value;
+                  }
+               }
+            }
+            else
+            {
+               if( g_variables.count( next ) )
+                  value = g_variables[ next ];
+
+               if( value.empty( ) )
+                  gap_ofs->remove_file( next );
+               else
+                  gap_ofs->store_as_text_file( next, value );
+            }
+         }
+      }
+   }
+   else if( var_name.find_first_of( "?*" ) != string::npos )
+   {
+      if( var_name == "*" )
+         var_name = sys_var_prefix + var_name;
+
       map< string, string >::const_iterator ci;
       for( ci = g_variables.begin( ); ci != g_variables.end( ); ++ci )
       {
-         if( wildcard_match( name, ci->first ) )
+         if( wildcard_match( var_name, ci->first ) )
          {
             if( !retval.empty( ) )
                retval += "\n";
             retval += ci->first + ' ' + ci->second;
          }
       }
+   }
+   else
+   {
+      if( g_variables.count( var_name ) )
+         retval = g_variables[ var_name ];
    }
 
    return retval;
@@ -6326,11 +6463,18 @@ void set_system_variable( const string& name, const string& value )
 
    string val( value );
 
+   bool persist = false;
+
+   if( !name.empty( ) && name[ 0 ] == c_persist_variable_prefix )
+      persist = true;
+
+   string var_name( !persist ? name : name.substr( 1 ) );
+
    if( val == c_special_variable_value_increment
     || val == c_special_variable_value_decrement )
    {
-      int num_value = !g_variables.count( name )
-       ? 0 : from_string< int >( g_variables[ name ] );
+      int num_value = !g_variables.count( var_name )
+       ? 0 : from_string< int >( g_variables[ var_name ] );
 
       if( val == c_special_variable_value_increment )
          ++num_value;
@@ -6344,11 +6488,24 @@ void set_system_variable( const string& name, const string& value )
    }
 
    if( !val.empty( ) )
-      g_variables[ name ] = val;
+      g_variables[ var_name ] = val;
    else
    {
-      if( g_variables.count( name ) )
-         g_variables.erase( name );
+      if( g_variables.count( var_name ) )
+         g_variables.erase( var_name );
+   }
+
+   if( persist )
+   {
+      ods::bulk_write bulk_write( *gap_ods );
+      scoped_ods_instance ods_instance( *gap_ods );
+
+      gap_ofs->set_root_folder( c_system_variables_folder );
+
+      if( !val.empty( ) )
+         gap_ofs->store_as_text_file( var_name, val );
+      else if( gap_ofs->has_file( var_name ) )
+         gap_ofs->remove_file( var_name );
    }
 }
 

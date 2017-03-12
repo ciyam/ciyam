@@ -1879,6 +1879,7 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
 
    if( !entity_expr.empty( ) )
    {
+      bool is_folder = has_folder( entity_expr );
       bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
       deque< string > extras;
@@ -1890,7 +1891,7 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
 
       entity_expr = replace( entity_expr, c_folder_separator, c_pipe_separator );
 
-      if( !had_wildcard )
+      if( is_folder && !had_wildcard )
          entity_expr += "/*";
       else
       {

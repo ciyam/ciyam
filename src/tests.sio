@@ -1084,7 +1084,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Test version, license, encrypt operations, console features and file system commands.
+     <description>Test version, license, encryption, console features, file system and system variables.
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet
@@ -1099,6 +1099,12 @@
      </test_step>
      <test_step/>
       <name>b
+      <exec>!ciyam_client -echo -quiet -no_stderr
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
       <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
