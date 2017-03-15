@@ -1209,7 +1209,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
 void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
-   string filename( construct_file_name_from_hash( hash ) );
+   string filename( construct_file_name_from_hash( hash, false, false ) );
 
 #ifndef _WIN32
    int um = umask( 077 );
@@ -1588,7 +1588,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods_fs.add_folder( c_folder_archive_files_folder );
 }
 
-void remove_file_archive( const string& name )
+void remove_file_archive( const string& name, bool destroy_files )
 {
    guard g( g_mutex );
 
@@ -1601,7 +1601,27 @@ void remove_file_archive( const string& name )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "archive '" + name + "' not found" );
    else
+   {
+      if( destroy_files )
+      {
+         ods_fs.set_folder( name );
+
+         string path;
+         ods_fs.fetch_from_text_file( c_file_archive_path, path );
+
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         vector< string > file_names;
+         ods_fs.list_files( file_names );
+
+         for( size_t i = 0; i < file_names.size( ); i++ )
+            file_remove( path + '/' + file_names[ i ] );
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+      }
+
       ods_fs.remove_folder( name, 0, true );
+   }
 }
 
 void repair_file_archive( const std::string& name )
@@ -1646,7 +1666,7 @@ void repair_file_archive( const std::string& name )
 
          if( expr.search( name ) == 0 )
          {
-            ods_fs.add_folder( name );
+            ods_fs.add_file( name, c_file_zero_length );
             size_used += file_size( fs.get_full_name( ) );
          }
       }
@@ -1854,8 +1874,10 @@ string relegate_files_to_archive(
 
                ods_fs.set_folder( c_folder_archive_files_folder );
 
-               ods_fs.add_folder( next_hash );
+               ods_fs.add_file( next_hash, c_file_zero_length );
                delete_file( next_hash, true );
+
+               ods_fs.set_folder( ".." );
 
                if( !retval.empty( ) )
                   retval += '\n';
@@ -1885,10 +1907,6 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
       string archive;
       vector< string > archives;
 
-      string tag_for_file( tag );
-      if( tag_for_file.empty( ) )
-         tag_for_file = current_timestamp_tag( );
-
       if( !all_archives.empty( ) )
       {
          split( all_archives, archives, '\n' );
@@ -1908,7 +1926,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
             ods_fs.set_folder( archive );
             ods_fs.set_folder( c_folder_archive_files_folder );
 
-            if( ods_fs.has_folder( hash ) )
+            if( ods_fs.has_file( hash ) )
             {
                retval = archive;
 
@@ -1917,6 +1935,11 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
                if( file_exists( src_file ) )
                {
                   string file_data( buffer_file( src_file ) );
+
+                  string tag_for_file( tag );
+                  if( tag_for_file.empty( ) )
+                     tag_for_file = current_timestamp_tag( );
+
                   create_raw_file( file_data, false, tag_for_file.c_str( ) );
 
                   break;
@@ -1924,6 +1947,10 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
             }
          }
       }
+
+      if( retval.empty( ) )
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "unable to retrieve file " + hash + " from archival" );
    }
 
    return retval;

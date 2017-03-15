@@ -1416,8 +1416,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( has_tag( tag_or_hash ) )
             response = hash = tag_file_hash( tag_or_hash );
 
-         if( !has_file( hash ) )
+         if( !has_file( hash, false ) )
+         {
+            possibly_expected_error = true;
             throw runtime_error( "file not found" );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_get )
       {
@@ -1427,6 +1430,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( has_tag( tag_or_hash ) )
             hash = tag_file_hash( tag_or_hash );
+
+         if( !has_file( hash, false ) )
+         {
+            possibly_expected_error = true;
+            throw runtime_error( "file not found" );
+         }   
 
          fetch_file( hash, socket );
       }
@@ -1484,9 +1493,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
-         string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_hash_tag ) );
+         string pat_or_tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_hash_pat_or_tag ) );
 
-         response = tag_file_hash( tag );
+         vector< string > tags;
+
+         if( pat_or_tag.find_first_of( "?*" ) == string::npos )
+            tags.push_back( pat_or_tag );
+         else
+         {
+            string all_tags( list_file_tags( pat_or_tag ) );
+            split( all_tags, tags, '\n' );
+         }   
+
+         for( size_t i = 0; i < tags.size( ); i++ )
+         {
+            if( i > 0 )
+               response += '\n';
+            response += tag_file_hash( tags[ i ] );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_tag )
       {
@@ -1505,7 +1529,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recurse ) );
          string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_depth ) );
-         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_tag_or_hash ) );
+         string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_pat_or_hash ) );
 
          int depth_val = 0;
          if( !depth.empty( ) )
@@ -1526,7 +1550,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         response = file_type_info( tag_or_hash, expansion, depth_val, 0, true );
+         deque< string > tags_or_hashes;
+
+         if( pat_or_hash.find_first_of( "?*" ) == string::npos )
+            tags_or_hashes.push_back( pat_or_hash );
+         else
+            list_file_tags( pat_or_hash, 0, 0, 0, &tags_or_hashes );
+
+         for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
+         {
+            if( i > 0 )
+               response += '\n';
+            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val, 0, true );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_kill )
       {
@@ -1565,18 +1601,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool add( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_add ) );
          bool remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_remove ) );
          bool repair( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_repair ) );
+         bool destroy( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_destroy ) );
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_name ) );
          string path( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_path ) );
          string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_size_limit ) );
 
          if( add )
             add_file_archive( name, path, unformat_bytes( size_limit ) );
-         else if( remove )
+         else if( remove || destroy )
          {
             // NOTE: To make sure that the console client doesn't time out issue a progress message.
-            handler.output_progress( "(removing file archive)" );
+            if( remove )
+               handler.output_progress( "(removing file archive)" );
+            else
+               handler.output_progress( "(destroying file archive)" );
 
-            remove_file_archive( name );
+            remove_file_archive( name, destroy );
          }
          else if( repair )
          {

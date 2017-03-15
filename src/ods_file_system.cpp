@@ -607,7 +607,15 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
                scoped_ods_instance so( o );
 
                if( !p_is )
-                  tmp_item.get_file( new storable_file_extra( file_name ) ).store( );
+               {
+                  // NOTE: If the source was "*" or is a zero length file then in order not
+                  // to waste space on a second object the special zero OID is instead used
+                  // as an empty file content indicator.
+                  if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
+                     tmp_item.o_file.set_id( 0 );
+                  else
+                     tmp_item.get_file( new storable_file_extra( file_name ) ).store( );
+               }
                else
                {
                   string next, content;
@@ -1093,8 +1101,43 @@ void ods_file_system::replace_file( const string& name, const string& source, os
          scoped_ods_instance so( o );
 
          if( !p_is )
-            tmp_item.get_file(
-             new storable_file_extra( file_name ) ).store( e_oid_pointer_opt_force_write_skip_read );
+         {
+            bool id_changed = false;
+
+            // NOTE: If the source was "*" or is a zero length file then in order not
+            // to waste space on a second object the special zero OID is instead used
+            // as an empty file content indicator.
+            if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
+            {
+               if( id.get_num( ) )
+               {
+                  o.destroy( id );
+                  id_changed = true;
+               }
+
+               tmp_item.get_file( ).set_id( 0 );
+            }
+            else
+            {
+               if( !id.get_num( ) )
+               {
+                  id.set_new( );
+                  id_changed = true;
+
+                  tmp_item.get_file( ).set_id( id );
+               }
+
+               tmp_item.get_file(
+                new storable_file_extra( file_name ) ).store( e_oid_pointer_opt_force_write_skip_read );
+            }
+
+            // NOTE: If the OID has changed then need to replace the item.
+            if( id_changed )
+            {
+               bt.erase( tmp_iter );
+               bt.insert( tmp_item );
+            }
+         }
          else
          {
             string next, content;
@@ -1723,7 +1766,10 @@ void ods_file_system::perform_match(
                         if( !match_iter->get_file( ).get_id( ).is_new( )
                          && file_size_output != e_file_size_output_type_none )
                         {
-                           int_t size = o.get_size( match_iter->get_file( ).get_id( ) );
+                           int_t size = 0;
+
+                           if( match_iter->get_file( ).get_id( ).get_num( ) )
+                              size = o.get_size( match_iter->get_file( ).get_id( ) );
 
                            if( file_size_output != e_file_size_output_type_scaled )
                               val += " (" + format_int( size ) + ')';
@@ -1879,7 +1925,9 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
 
    if( !entity_expr.empty( ) )
    {
-      bool is_folder = has_folder( entity_expr );
+      bool is_folder = has_folder( entity_expr )
+       || entity_expr == string( c_root_folder );
+
       bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
       deque< string > extras;
@@ -2375,7 +2423,7 @@ bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os )
 
          bt.erase( tmp_iter );
 
-         if( !id.is_new( ) )
+         if( !id.is_new( ) && id.get_num( ) )
          {
             if( is_link )
             {

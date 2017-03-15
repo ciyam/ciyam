@@ -296,6 +296,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
 
+                  if( file_exists( filename ) )
+                     throw runtime_error( "local file '" + filename + "' already exists" );
+
                   file_transfer( filename, socket,
                    e_ft_direction_recv, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_initial_timeout,
@@ -343,7 +346,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   s = string( c_error_output_prefix ) + s.substr( err_prefix_length );
                }
 
-               handle_command_response( str, true );
+               handle_command_response( s, true );
 
                return str;
             }

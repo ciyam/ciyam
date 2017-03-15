@@ -103,7 +103,7 @@ std::string CLASS_BASE_DECL_SPEC extract_file(
 void CLASS_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );
 
-void CLASS_BASE_DECL_SPEC remove_file_archive( const std::string& name );
+void CLASS_BASE_DECL_SPEC remove_file_archive( const std::string& name, bool destroy_files = false );
 void CLASS_BASE_DECL_SPEC repair_file_archive( const std::string& name );
 
 void CLASS_BASE_DECL_SPEC archives_status_update( );

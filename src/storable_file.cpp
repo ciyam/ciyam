@@ -81,7 +81,8 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    if( sf.file_name.empty( ) )
       throw runtime_error( "unexpected missing file_name for storable_file" );
 
-   int64_t size = sf.get_ods( )->get_size( sf.get_id( ) );
+   // NOTE: If the OID has been set to zero then instead treat it as a zero length file.
+   int64_t size = !sf.get_id( ).get_num( ) ? 0 : sf.get_ods( )->get_size( sf.get_id( ) );
 
    auto_ptr< ofstream > ap_outf;
 
