@@ -254,3 +254,33 @@ string get_password( const char* p_prompt )
 }
 #endif
 
+void put_line( const char* p_chars, size_t len )
+{
+#ifdef _WIN32
+   for( size_t i = 0; i < len; i++ )
+      _putch( *( p_chars + i ) );
+   _putch( '\n' );
+#else
+  int outfd = STDOUT_FILENO;
+
+   // NOTE: If standard output is not a terminal (such as is the case with redirected output) then
+   // instead attempt to open the TTY device directly.
+   if( !isatty( outfd ) )
+   {
+      if( ( outfd = open( _PATH_TTY, O_RDWR ) ) == -1 )
+      {
+         cerr << "fatal: unable to open terminal device" << endl;
+         exit( 1 );
+      }
+   }
+
+   char ch = '\n';
+
+   write( outfd, p_chars, len );
+   write( outfd, &ch, 1 );
+
+   if( outfd != STDOUT_FILENO )
+      close( outfd );
+#endif
+}
+

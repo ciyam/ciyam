@@ -188,7 +188,7 @@ void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_L
    SSL_CTX_set_default_passwd_cb( p_ctx, password_cb );
 
    if( !( SSL_CTX_use_PrivateKey_file( p_ctx, p_keyfile, SSL_FILETYPE_PEM ) ) )
-      throw runtime_error( "init_ssl: can't read key file" );
+      throw runtime_error( "init_ssl: can't read key file (invalid password?)" );
 
    if( p_CA_List && !( SSL_CTX_load_verify_locations( p_ctx, p_CA_List, 0 ) ) )
       throw runtime_error( "init_ssl: can't read CA list" );

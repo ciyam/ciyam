@@ -99,6 +99,7 @@ const char* const c_envcond_command_ifndef = "ifndef";
 
 const char* const c_cmd_echo = "echo";
 const char* const c_cmd_quiet = "quiet";
+const char* const c_cmd_monitor = "monitor";
 const char* const c_cmd_no_pause = "no_pause";
 const char* const c_cmd_no_prompt = "no_prompt";
 const char* const c_cmd_no_stderr = "no_stderr";
@@ -107,6 +108,7 @@ command_definition startup_command_definitions[ ] =
 {
    { c_cmd_echo, "", "switch on local echo of input" },
    { c_cmd_quiet, "", "switch on quiet operating mode" },
+   { c_cmd_monitor, "", "switch on progress monitoring" },
    { c_cmd_no_pause, "", "switch off support for pausing" },
    { c_cmd_no_prompt, "", "switch off console command prompt" },
    { c_cmd_no_stderr, "", "switch off outputting errors to stderr" }
@@ -192,6 +194,8 @@ void startup_command_functor::operator ( )( const string& command, const paramet
       handler.add_option( c_cmd_echo );
    else if( command == c_cmd_quiet )
       handler.add_option( c_cmd_quiet );
+   else if( command == c_cmd_monitor )
+      handler.add_option( c_cmd_monitor );
    else if( command == c_cmd_no_pause )
       handler.add_option( c_cmd_no_pause );
    else if( command == c_cmd_no_prompt )
@@ -2955,10 +2959,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             {
                if( str.size( ) > 1 )
                {
-                  if( str[ 1 ] == c_message_command_prefix )
-                     cout << str.substr( 2 ) << endl;
-                  else
+                  if( str[ 1 ] != c_message_command_prefix )
                      handle_command_response( str.substr( 1 ) );
+                  else
+                     handle_progress_message( str.substr( 2 ) );
                }
 
                str.erase( );
@@ -3030,6 +3034,14 @@ void console_command_handler::handle_command_response( const string& response, b
       *p_std_out << response << endl;
    else
       *p_std_err << response << endl;
+}
+
+void console_command_handler::handle_progress_message( const string& message )
+{
+   if( has_option( c_cmd_monitor ) )
+      put_line( message );
+   else
+      *p_std_out << message << endl;
 }
 
 void console_command_handler::handle_extraneous_custom_option( const string& option )

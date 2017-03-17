@@ -94,6 +94,8 @@ class console_command_handler : public command_handler
 
    void handle_command_response( const std::string& response, bool is_special = false );
 
+   void handle_progress_message( const std::string& message );
+
    void set_custom_startup_options( size_t num, const std::string& usage )
    {
       num_custom_startup_options = num;

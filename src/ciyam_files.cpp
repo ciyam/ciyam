@@ -906,8 +906,7 @@ void tag_del( const string& name, bool unlink )
 
       tag_filename += "/" + name;
 
-      if( file_exists( tag_filename ) )
-         file_remove( tag_filename );
+      file_remove( tag_filename );
 
       if( g_tag_hashes.count( name ) )
       {
@@ -994,7 +993,7 @@ void tag_file( const string& name, const string& hash )
 
       // NOTE: If a question mark as found at the end then the tag will become
       // instead a "current time stamp" tag.
-      if( tag_name[ tag_name.length( ) - 1 ] == '?' )
+      if( tag_name.length( ) && tag_name[ tag_name.length( ) - 1 ] == '?' )
          tag_name = current_timestamp_tag( );
    }
 
@@ -1347,7 +1346,13 @@ void store_file( const string& hash, tcp_socket& socket,
          guard g( g_mutex );
 
          if( !existing && g_total_files >= get_files_area_item_max_num( ) )
-            throw runtime_error( "maximum file area item limit has been reached" );
+         {
+            // NOTE: First attempt to relegate an existing file to make room.
+            relegate_timestamped_files( "", "", 1, 0, true );
+
+            if( g_total_files >= get_files_area_item_max_num( ) )
+               throw runtime_error( "maximum file area item limit has been reached" );
+         }
 
          file_copy( tmp_filename, filename );
 
@@ -1783,8 +1788,8 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-string relegate_files_to_archive(
- const string& hash, const string& archive, uint32_t max_files, int64_t max_bytes )
+string relegate_timestamped_files( const string& hash,
+ const string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always )
 {
    guard g( g_mutex );
 
@@ -1886,6 +1891,18 @@ string relegate_files_to_archive(
                all_hashes.pop_front( );
             }
          }
+      }
+   }
+
+   // NOTE: If "delete_files_always" is set true then delete the entire
+   // file list regardless of whether any were relegated to an archive.
+   if( !all_hashes.empty( ) && delete_files_always )
+   {
+      while( !all_hashes.empty( ) )
+      {
+         string next_hash( all_hashes.front( ) );
+         delete_file( next_hash, true );
+         all_hashes.pop_front( );
       }
    }
 

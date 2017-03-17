@@ -507,7 +507,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( is_error )
                      final_response = string( c_error_output_prefix ) + final_response;
 
-                  if( is_error || !get_is_quiet_command( ) )
+                  if( is_message )
+                     handle_progress_message( final_response );
+                  else if( is_error || !get_is_quiet_command( ) )
                      handle_command_response( final_response, is_error );
 
                   if( is_error && getenv( c_env_var_error ) == 0 )

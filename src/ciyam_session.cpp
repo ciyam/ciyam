@@ -1472,6 +1472,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          else if( is_core )
          {
+            if( !data.empty( ) && data[ 0 ] == '@' )
+               data = buffer_file_lines( data.substr( 1 ) );
+
             if( is_blob )
                data = c_file_type_char_core_blob + data;
             else if( is_list )
@@ -1497,7 +1500,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          vector< string > tags;
 
-         if( pat_or_tag.find_first_of( "?*" ) == string::npos )
+         if( pat_or_tag.size( ) == 1
+          || pat_or_tag.find_first_of( "?*" ) == string::npos )
             tags.push_back( pat_or_tag );
          else
          {
@@ -1651,7 +1655,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !size_limit.empty( ) )
             size = unformat_bytes( size_limit );
 
-         response = relegate_files_to_archive( hash, archive, num, size );
+         response = relegate_timestamped_files( hash, archive, num, size );
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )
       {

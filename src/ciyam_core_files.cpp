@@ -3728,7 +3728,7 @@ string construct_new_block(
    // NOTE: If there were no txs found then there is no need to expend the effort
    // to try and find a valid nonce (also skip this for "test only" blockchains).
    if( num_txs && !cinfo.is_test && search_for_proof_of_work_nonce )
-      nonce = check_for_proof_of_work( data, start, 16 );
+      nonce = check_for_proof_of_work( data, start, p_new_block_info ? 32 : 64 );
 
    if( p_new_block_info )
       p_new_block_info->num_txs = ( nonce.empty( ) && search_for_proof_of_work_nonce ) ? 0 : num_txs;
