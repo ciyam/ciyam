@@ -52,6 +52,7 @@ namespace
 const int c_status_info_pad_len = 10;
 
 const char* const c_timestamp_tag_prefix = "ts.";
+const char* const c_important_file_suffix = "!";
 
 const char* const c_file_archive_path = "path";
 const char* const c_file_archive_size_avail = "size_avail";
@@ -264,7 +265,7 @@ bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_a
       ods_fs.set_folder( archive );
       ods_fs.set_folder( c_folder_archive_files_folder );
 
-      if( ods_fs.has_folder( hash ) )
+      if( ods_fs.has_file( hash ) )
       {
          retval = true;
 
@@ -423,7 +424,7 @@ void term_files_area( )
    // FUTURE: Implementation to be added.
 }
 
-string current_timestamp_tag( bool truncated )
+string current_timestamp_tag( bool truncated, size_t days_ahead )
 {
    string retval( c_timestamp_tag_prefix );
 
@@ -437,6 +438,8 @@ string current_timestamp_tag( bool truncated )
    else
    {
       date_time dt( date_time::local( ) );
+
+      dt += ( days )days_ahead;
 
       if( truncated )
          retval += dt.as_string( e_time_format_hhmmssth, false );
@@ -746,7 +749,9 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    }
 #endif
 
-   if( !file_exists( filename ) )
+   bool was_existing( file_exists( filename ) );
+
+   if( !was_existing )
    {
       if( p_is_existing )
          *p_is_existing = false;
@@ -787,10 +792,11 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( p_tag )
       tag_name = string( p_tag );
 
-   if( !tag_name.empty( ) )
+   if( !tag_name.empty( )
+    && tag_name != string( c_important_file_suffix ) )
       tag_file( tag_name, hash );
-   else if( !file_extra_is_core )
-      tag_file( current_timestamp_tag( ), hash );
+   else if( !was_existing && !file_extra_is_core )
+      tag_file( current_timestamp_tag( ) + tag_name, hash );
 
    return hash;
 }
@@ -969,7 +975,7 @@ void tag_file( const string& name, const string& hash )
    // the wildcard expression will be removed first then if the asterisk is at
    // the very end no new tag will be added unless two asterisks were used for
    // the name suffix in which case the new tag name will become the truncated
-   // version (any other wildcard characters included will cause an error).
+   // version.
    string::size_type pos = name.rfind( '*' );
 
    if( pos == string::npos )
@@ -1379,10 +1385,11 @@ void store_file( const string& hash, tcp_socket& socket,
    if( p_tag )
       tag_name = string( p_tag );
 
-   if( !tag_name.empty( ) )
+   if( !tag_name.empty( )
+    && tag_name != string( c_important_file_suffix ) )
       tag_file( tag_name, hash );
-   else if( !file_extra_is_core )
-      tag_file( current_timestamp_tag( ), hash );
+   else if( !existing && !file_extra_is_core )
+      tag_file( current_timestamp_tag( ) + tag_name, hash );
 }
 
 void delete_file( const string& hash, bool even_if_tagged )
@@ -1796,25 +1803,38 @@ string relegate_timestamped_files( const string& hash,
    string retval;
 
    vector< string > paths;
-   deque< string > all_hashes;
+   set< string > importants;
+   deque< string > file_hashes;
 
    int64_t min_bytes = 0;
 
    if( !hash.empty( ) )
-      all_hashes.push_back( hash );
+      file_hashes.push_back( hash );
    else
    {
       string timestamp_expr( c_timestamp_tag_prefix );
       timestamp_expr += "*";
 
-      list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &all_hashes );
+      string all_tags( list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &file_hashes ) );
+
+      vector< string > tags;
+      split( all_tags, tags, '\n' );
+
+      if( tags.size( ) != file_hashes.size( ) )
+         throw runtime_error( "unexpected tags.size( ) != file_hashes.size( )" );
+
+      for( size_t i = 0; i < tags.size( ); i++ )
+      {
+         if( tags[ i ].find( c_important_file_suffix ) != string::npos )
+            importants.insert( file_hashes[ i ] );
+      }
    }
 
    int64_t num_bytes = hash.empty( ) ? min_bytes : file_bytes( hash );
 
    string all_archives( list_file_archives( true, &paths, num_bytes ) );
 
-   if( !all_hashes.empty( ) && !all_archives.empty( ) )
+   if( !file_hashes.empty( ) && !all_archives.empty( ) )
    {
       vector< string > archives;
       split( all_archives, archives, '\n' );
@@ -1830,7 +1850,7 @@ string relegate_timestamped_files( const string& hash,
          if( !archive.empty( ) && archives[ i ] != archive )
             continue;
 
-         string next_archive = archives[ i ];
+         string next_archive( archives[ i ] );
 
          ods_fs.set_root_folder( c_file_archives_folder );
 
@@ -1839,21 +1859,29 @@ string relegate_timestamped_files( const string& hash,
          int64_t avail = 0;
          ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
 
-         while( !all_hashes.empty( ) )
+         while( !file_hashes.empty( ) )
          {
-            string next_hash( all_hashes.front( ) );
+            string next_hash( file_hashes.front( ) );
 
-            string archive_found_in( archive );
-
-            if( has_archived_file( ods_fs, next_hash, &archive_found_in ) )
+            if( has_archived_file( ods_fs, next_hash, &next_archive ) )
             {
+               // NOTE: If the file had been tagged as "important" then even if
+               // it was already archived it will be archived again (which will
+               // ensure that if such files are retrieved and later re-archived
+               // several times then multiple archived copies will exist).
+               if( i < archives.size( ) - 1 && importants.count( next_hash ) )
+                  break;
+
                delete_file( next_hash, true );
 
                if( !retval.empty( ) )
                   retval += '\n';
-               retval = next_hash + ' ' + archive_found_in;
+               retval = next_hash + ' ' + next_archive;
 
-               all_hashes.pop_front( );
+               if( importants.count( next_hash ) )
+                  importants.erase( next_hash );
+
+               file_hashes.pop_front( );
 
                continue;
             }
@@ -1888,7 +1916,10 @@ string relegate_timestamped_files( const string& hash,
                   retval += '\n';
                retval += next_hash + ' ' + next_archive;
 
-               all_hashes.pop_front( );
+               if( importants.count( next_hash ) )
+                  importants.erase( next_hash );
+
+               file_hashes.pop_front( );
             }
          }
       }
@@ -1896,20 +1927,20 @@ string relegate_timestamped_files( const string& hash,
 
    // NOTE: If "delete_files_always" is set true then delete the entire
    // file list regardless of whether any were relegated to an archive.
-   if( !all_hashes.empty( ) && delete_files_always )
+   if( !file_hashes.empty( ) && delete_files_always )
    {
-      while( !all_hashes.empty( ) )
+      while( !file_hashes.empty( ) )
       {
-         string next_hash( all_hashes.front( ) );
+         string next_hash( file_hashes.front( ) );
          delete_file( next_hash, true );
-         all_hashes.pop_front( );
+         file_hashes.pop_front( );
       }
    }
 
    return retval;
 }
 
-string retrieve_file_from_archive( const string& hash, const string& tag )
+string retrieve_file_from_archive( const string& hash, const string& tag, size_t days_ahead )
 {
    guard g( g_mutex );
 
@@ -1955,7 +1986,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
 
                   string tag_for_file( tag );
                   if( tag_for_file.empty( ) )
-                     tag_for_file = current_timestamp_tag( );
+                     tag_for_file = current_timestamp_tag( false, days_ahead );
 
                   create_raw_file( file_data, false, tag_for_file.c_str( ) );
 
@@ -1971,5 +2002,69 @@ string retrieve_file_from_archive( const string& hash, const string& tag )
    }
 
    return retval;
+}
+
+void delete_file_from_archive( const string& hash, const string& archive )
+{
+   guard g( g_mutex );
+
+   vector< string > paths;
+   vector< string > archives;
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   if( !all_archives.empty( ) )
+   {
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         string next_archive( archives[ i ] );
+
+         if( !archive.empty( ) && archive != next_archive )
+            continue;
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( next_archive );
+
+         int64_t avail = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+         int64_t limit = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         if( ods_fs.has_file( hash ) )
+         {
+            ods_fs.remove_file( hash );
+            string src_file( paths[ i ] + "/" + hash );
+
+            if( file_exists( src_file ) )
+            {
+               avail += file_size( src_file );
+               file_remove( src_file );
+
+               if( avail > limit )
+                  avail = 0;
+
+               ods_fs.set_folder( ".." );
+               ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
+            }
+         }
+      }
+   }
+
+   // NOTE: If no archive was specified then will also remove
+   // the file from the files area.
+   if( archive.empty( ) && has_file( hash ) )
+      delete_file( hash, true );
 }
 

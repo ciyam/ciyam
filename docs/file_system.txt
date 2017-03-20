@@ -61,8 +61,8 @@ be lists it should be clear that this is extremely flexible, however it is not c
 the hash for a particular List (or Blob if desired) could easily be found which brings us to the next feature
 of the file system.
 
-Tags
-----
+File Tags
+---------
 
 File "tags" enable the linking of human readible file names to the file hashes in the file system. These tags
 function in much the same way as "branch tags" in "git" work. To illustrate how this is useful let's tag just
@@ -210,5 +210,116 @@ id being assigned a value (e.g. a=123,b=xyz). Some of the core files will includ
 may or may not be prefixed by a detail type followed by a colon.
 
 Core files (much like configuration files) are essential for the application server so should not be manually
-tagged, created or removed (doing so could risk corrupting application behaviour).
+tagged, created or removed (as doing so could risk corrupting application behaviour).
+
+File Archives
+-------------
+
+As the file system has a specific limit to the number of files that it allows a file archiving implementation
+has been created for storing files that are not currently being used. It should be noted that each archive is
+the combination of an external path and information stored about the archive in the server's global ODS DB.
+
+Although disparities between the external file storage and ODS information can be easily fixed direct changes
+to the external storage areas are not recommended.
+
+Archive Maintenance
+-------------------
+
+The "file_archive" command is used to add/remove/repair or even destroy an archive. The path that you wish to
+use for an archive is expected to already exist (i.e. it will not be created) as most often the path would be
+a "mount point" or a "drive" (depending upon whether using Linux or Windows).
+
+Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
+to hold up to 10MiB of data the create command would be as follows:
+
+file_archive -add /mnt/a001 10MiB 001
+
+To see a list of archives that also displays their last known status use "file_archives". Assuming that there
+was no issue with the path (when adding it tests that it can access the path and write to it) then the output
+from the "file_archives" command would be as follows:
+
+001 [okay      ] (0 B/10.0 MiB) /mnt/a001
+
+If the path wasn't accessible then you would instead see the following:
+
+001 [bad access] (0 B/10.0 MiB) /mnt/a001
+
+Assuming the issue with the path was then resolved use the "-status_update" option for "file_archives" for it
+to re-check that it can access and write to the path. It should be noted that the size that was specified for
+the archive creation should be a fair bit less than the physical size of the storage device as the file names
+used are sixty four characters each (and typically an OS uses quite a lot more bytes per file as overhead).
+
+If an archive is removed (by using the "-remove" option with the "file_archive" command) then the files which
+are already in the archive will remain (only the indexing entries are removed from the global ODS DB). If one
+wants to have the archived files removed as well then the "-destroy" option should instead be used. Even when
+using "-destroy" it should be noted that the actual path for the archive will not be removed.
+
+If an archive was unintentionally removed or if it is suspected to be in an inconsistent state then "-repair"
+can be used to rebuild the ODS DB index of files it contains (this command can take some time to execute when
+there are a large number of files in the archive).
+
+It would be recommended to use numbers (maybe use year and month created if starting at "001" as above is not
+appealing) so that one can easily see which archives are older. In this way when all of the available storage
+space has been nearly exhausted one could destroy the oldest archive to make room for a new one.
+
+Archiving Files
+---------------
+
+Typically when a file is stored (that is not a "core file") it will be automatically tagged with a time stamp
+prefixed by "ts.". The following is a repeat of the earlier "file_put" but without providing a tag:
+
+file_put ciyam_server.sio
+
+Now if the command "file_tags ts.*" is issued the output would look something like this:
+
+ts.2017032013404998700000000
+
+As the tag is based upon the current time when multiple such tags are found they will be output in order from
+oldest to most recently added. This is then used to determine which files to automatically archive (or simply
+remove if no archive space is available). Whenever a new file is being added into the file system an existing
+file will be archived (and/or removed) if the file system has already stored its maximum number of files.
+
+Files can be manually archived using the "file_relegate" command. Assuming the file system only contained the
+tag shown above then assuming an archive with available space exists the following command would archive this
+file:
+
+file_relegate -n=1
+
+If more than one archive exists then the first archive (in order of the list of archives) that has sufficient
+space will be chosen. Normally if a file is found to have already been archived then it would just be removed
+but this can be overridden in a couple of ways. Firstly if the optional archive name argument was provided in
+the "file_relegate" then the file will be archived in the named archive even if found to already be stored in
+another existing archive. Secondly certain files can appear with "ts.*" tags that have a "!" character suffix
+which marks the file as being "important". Assuming more than one archive exists such important files will be
+archived in the next archive (in the name order of archives) that they aren't already archived in (supporting
+multiple archived copies of the file).
+
+To manually change a file's time stamp tag to become an "important" file first use the "file_hash" command to
+retrieve the actual file identity and then issue a "file_tag" command such as follows:
+
+file_tag 7c2cff3b3cf3d9661d55ef770fe1173a54a7e8955c5d655834a602f6cfdae539 ts.2017032013404998700000000*!
+
+Assuming that an important file is retrieved and re-archived several times then if several archives exist the
+file should have been arhived in each of these. Thus removing the oldest archive will not prevent these files
+from being later retrieved.
+
+Retrieving Archived Files
+-------------------------
+
+The command "file_retrieve" will move a file from the archives into the files area. The file's identity which
+is the SHA256 "name" must be known in order to retrieve a file from the archives so it this command would not
+generally be manually issued. An optional number of days to be added to the current time stamp can be used so
+the file might stay in the files area longer than other time stamp tagged files. Instead of this one can pass
+the command a specific tag for the file being retrieved which will effectively keep the file from being later
+archived. The following command will retrieve the file archived previously giving it the permanent tag "xxx":
+
+file_retrieve 7c2cff3b3cf3d9661d55ef770fe1173a54a7e8955c5d655834a602f6cfdae539 xxx
+
+If no tag is provided then the "ts.<time stamp>" tag will be automatically supplied for the file.
+
+Permanently Deleting All File Copies
+------------------------------------
+
+The command "file_relegate" has a "-destroy" option which if used will delete every archived copy of the file
+identified as well as remove the file from the files area (if it exists there as well).
 

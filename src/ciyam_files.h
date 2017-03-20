@@ -37,7 +37,7 @@ void CLASS_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untag
 
 void CLASS_BASE_DECL_SPEC term_files_area( );
 
-std::string CLASS_BASE_DECL_SPEC current_timestamp_tag( bool truncated = false );
+std::string CLASS_BASE_DECL_SPEC current_timestamp_tag( bool truncated = false, size_t days_ahead = 0 );
 
 bool CLASS_BASE_DECL_SPEC has_tag( const std::string& name );
 
@@ -114,7 +114,10 @@ std::string CLASS_BASE_DECL_SPEC list_file_archives( bool minimal = false,
 std::string CLASS_BASE_DECL_SPEC relegate_timestamped_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 
-std::string CLASS_BASE_DECL_SPEC retrieve_file_from_archive( const std::string& hash, const std::string& tag );
+std::string CLASS_BASE_DECL_SPEC retrieve_file_from_archive(
+ const std::string& hash, const std::string& tag, size_t days_ahead = 0 );
+
+void CLASS_BASE_DECL_SPEC delete_file_from_archive( const std::string& hash, const std::string& archive );
 
 #endif
 

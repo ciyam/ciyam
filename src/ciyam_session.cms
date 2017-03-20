@@ -13,8 +13,8 @@ file_stats "get file area stats"
 file_resync "resync file area info"
 file_archive "add/remove/repair/destroy a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove>|<opt/-repair/repair>|<opt/-destroy/destroy><val//name>
 file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|<opt/-status_update/update_status>]
-file_relegate "relegate one or more files from the files area into the archives" <val/-n=/num_files>|<val/-s=/size_limit>|<val//hash>[<val//archive>]
-file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val//tag>]
+file_relegate "relegate one or more files from the files area to the archives" <val/-n=/num_files>|<val/-s=/size_limit>|{[<opt/-destroy/destroy>]<val//hash>}[<val//archive>]
+file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
 peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]

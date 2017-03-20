@@ -1644,25 +1644,44 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string num_files( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_num_files ) );
          string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_size_limit ) );
+         bool destroy( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_destroy ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_hash ) );
          string archive( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_archive ) );
 
-         uint32_t num = 0;
-         if( !num_files.empty( ) )
-            num = from_string< uint32_t >( num_files );
+         if( destroy )
+            delete_file_from_archive( hash, archive );
+         else
+         {
+            uint32_t num = 0;
+            if( !num_files.empty( ) )
+               num = from_string< uint32_t >( num_files );
 
-         int64_t size = 0;
-         if( !size_limit.empty( ) )
-            size = unformat_bytes( size_limit );
+            int64_t size = 0;
+            if( !size_limit.empty( ) )
+               size = unformat_bytes( size_limit );
 
-         response = relegate_timestamped_files( hash, archive, num, size );
+            response = relegate_timestamped_files( hash, archive, num, size );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )
       {
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_retrieve_hash ) );
          string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_retrieve_tag ) );
+         string days_ahead( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_retrieve_days_ahead ) );
 
-         response = retrieve_file_from_archive( hash, tag );
+         size_t days = 0;
+         if( !days_ahead.empty( ) )
+            days = from_string< size_t >( days_ahead );
+
+         try
+         {
+            response = retrieve_file_from_archive( hash, tag, days );
+         }
+         catch( ... )
+         {
+            possibly_expected_error = true;
+            throw;
+         }   
       }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
@@ -1977,7 +1996,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string handle( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_validate_handle ) );
          string context( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_validate_context ) );
 
-         validate_object_instance( atoi( handle.c_str( ) ), context );
+         try
+         {
+            validate_object_instance( atoi( handle.c_str( ) ), context );
+         }
+         catch( ... )
+         {
+            possibly_expected_error = true;
+            throw;
+         }
       }
       else if( command == c_cmd_ciyam_session_object_variable )
       {
