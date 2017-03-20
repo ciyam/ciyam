@@ -321,5 +321,8 @@ Permanently Deleting All File Copies
 ------------------------------------
 
 The command "file_relegate" has a "-destroy" option which if used will delete every archived copy of the file
-identified as well as remove the file from the files area (if it exists there as well).
+identified as well as remove the file from the files area (if it exists there as well). A "-blacklist" option
+can be used instead of the "-destroy" one which will add the hash of the file being removed from the archives
+and the files area to a "blacklist" which belongs to the global ODS DB. This will prevent the file from being
+later stored via a "file_put" (or "put" for the blockchain peer protocol) into the files area and archives.
 

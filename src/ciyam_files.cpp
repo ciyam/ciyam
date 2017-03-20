@@ -1264,6 +1264,8 @@ void store_file( const string& hash, tcp_socket& socket,
    bool existing = false;
    int64_t existing_bytes = 0;
 
+   bool is_in_blacklist = false;
+
    bool file_extra_is_core = false;
 
    if( !filename.empty( ) )
@@ -1351,24 +1353,31 @@ void store_file( const string& hash, tcp_socket& socket,
       {
          guard g( g_mutex );
 
-         if( !existing && g_total_files >= get_files_area_item_max_num( ) )
+         if( !existing )
+            is_in_blacklist = file_has_been_blacklisted( hash );
+
+         if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
          {
-            // NOTE: First attempt to relegate an existing file to make room.
+            // NOTE: First attempt to relegate an existing file in order to make room.
             relegate_timestamped_files( "", "", 1, 0, true );
 
             if( g_total_files >= get_files_area_item_max_num( ) )
                throw runtime_error( "maximum file area item limit has been reached" );
          }
 
-         file_copy( tmp_filename, filename );
+         if( !is_in_blacklist )
+            file_copy( tmp_filename, filename );
 
          file_remove( tmp_filename );
 
-         if( !existing )
+         if( !existing && !is_in_blacklist )
             ++g_total_files;
 
-         g_total_bytes -= existing_bytes;
-         g_total_bytes += file_size( filename );
+         if( !is_in_blacklist )
+         {
+            g_total_bytes -= existing_bytes;
+            g_total_bytes += file_size( filename );
+         }
       }
    }
    catch( ... )
@@ -1381,15 +1390,18 @@ void store_file( const string& hash, tcp_socket& socket,
       throw;
    }
 
-   string tag_name;
-   if( p_tag )
-      tag_name = string( p_tag );
+   if( !is_in_blacklist )
+   {
+      string tag_name;
+      if( p_tag )
+         tag_name = string( p_tag );
 
-   if( !tag_name.empty( )
-    && tag_name != string( c_important_file_suffix ) )
-      tag_file( tag_name, hash );
-   else if( !existing && !file_extra_is_core )
-      tag_file( current_timestamp_tag( ) + tag_name, hash );
+      if( !tag_name.empty( )
+       && tag_name != string( c_important_file_suffix ) )
+         tag_file( tag_name, hash );
+      else if( !existing && !file_extra_is_core )
+         tag_file( current_timestamp_tag( ) + tag_name, hash );
+   }
 }
 
 void delete_file( const string& hash, bool even_if_tagged )
@@ -1636,7 +1648,7 @@ void remove_file_archive( const string& name, bool destroy_files )
    }
 }
 
-void repair_file_archive( const std::string& name )
+void repair_file_archive( const string& name )
 {
    guard g( g_mutex );
 
@@ -1734,6 +1746,23 @@ void archives_status_update( )
 
       ods_fs.set_folder( ".." );
    }
+}
+
+bool file_has_been_blacklisted( const string& hash )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_blacklist_folder );
+
+   if( ods_fs.has_file( hash ) )
+      retval = true;
+
+   return retval;
 }
 
 string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_avail, bool stop_after_first )
@@ -2004,7 +2033,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
    return retval;
 }
 
-void delete_file_from_archive( const string& hash, const string& archive )
+void delete_file_from_archive( const string& hash, const string& archive, bool add_to_blacklist )
 {
    guard g( g_mutex );
 
@@ -2013,15 +2042,15 @@ void delete_file_from_archive( const string& hash, const string& archive )
 
    string all_archives( list_file_archives( true, &paths ) );
 
+   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
    if( !all_archives.empty( ) )
    {
       split( all_archives, archives, '\n' );
 
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
-
-      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
 
       for( size_t i = 0; i < archives.size( ); i++ )
       {
@@ -2066,5 +2095,11 @@ void delete_file_from_archive( const string& hash, const string& archive )
    // the file from the files area.
    if( archive.empty( ) && has_file( hash ) )
       delete_file( hash, true );
+
+   if( add_to_blacklist )
+   {
+      ods_fs.set_root_folder( c_file_blacklist_folder );
+      ods_fs.add_file( hash, c_file_zero_length );
+   }
 }
 

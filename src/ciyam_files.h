@@ -108,6 +108,8 @@ void CLASS_BASE_DECL_SPEC repair_file_archive( const std::string& name );
 
 void CLASS_BASE_DECL_SPEC archives_status_update( );
 
+bool CLASS_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );
+
 std::string CLASS_BASE_DECL_SPEC list_file_archives( bool minimal = false,
  std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
 
@@ -117,7 +119,8 @@ std::string CLASS_BASE_DECL_SPEC relegate_timestamped_files( const std::string& 
 std::string CLASS_BASE_DECL_SPEC retrieve_file_from_archive(
  const std::string& hash, const std::string& tag, size_t days_ahead = 0 );
 
-void CLASS_BASE_DECL_SPEC delete_file_from_archive( const std::string& hash, const std::string& archive );
+void CLASS_BASE_DECL_SPEC delete_file_from_archive(
+ const std::string& hash, const std::string& archive, bool add_to_blacklist = false );
 
 #endif
 

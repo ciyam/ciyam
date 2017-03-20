@@ -1448,6 +1448,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // end users it is expected that the value provided will actually be the SHA256 hash of
          // the file content (which "ciyam_client" determines automatically).
          store_file( filename, socket, tag.empty( ) ? 0 : tag.c_str( ) );
+
+         // NOTE: Although it seems a little odd to be checking this *after* the "store_file" it
+         // otherwise would make a mess of the protocol (and the "store_file" just quietly fails
+         // to store a blacklisted file).
+         if( file_has_been_blacklisted( filename ) )
+            throw runtime_error( "file '" + filename + "' has been blacklisted" );
       }
       else if( command == c_cmd_ciyam_session_file_raw )
       {
@@ -1645,11 +1651,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string num_files( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_num_files ) );
          string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_size_limit ) );
          bool destroy( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_destroy ) );
+         bool blacklist( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_blacklist ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_hash ) );
          string archive( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_relegate_archive ) );
 
-         if( destroy )
-            delete_file_from_archive( hash, archive );
+         if( destroy || blacklist )
+            delete_file_from_archive( hash, archive, blacklist );
          else
          {
             uint32_t num = 0;

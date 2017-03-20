@@ -1330,12 +1330,16 @@ void init_ciyam_ods( )
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
-   if( was_just_created )
-   {
+   if( !gap_ofs->has_folder( c_file_archives_folder ) )
       gap_ofs->add_folder( c_file_archives_folder );
+
+   if( !gap_ofs->has_folder( c_file_blacklist_folder ) )
+      gap_ofs->add_folder( c_file_blacklist_folder );
+
+   if( !gap_ofs->has_folder( c_system_variables_folder ) )
       gap_ofs->add_folder( c_system_variables_folder );
-   }
-   else
+
+   if( !was_just_created )
    {
       // NOTE: Restore all persistent system variable values.
       vector< string > variable_files;
