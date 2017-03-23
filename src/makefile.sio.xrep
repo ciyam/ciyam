@@ -91,6 +91,8 @@
      <filename>ciyam_base_ods.cpp
      <filename>ciyam_core_files.cpp
      <filename>ciyam_files.cpp
+     <filename>ciyam_packages.cpp
+     <filename>ciyam_variables.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp

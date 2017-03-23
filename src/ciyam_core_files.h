@@ -15,9 +15,9 @@
 #  include "ptypes.h"
 
 #  ifdef CIYAM_BASE_IMPL
-#     define CLASS_BASE_DECL_SPEC DYNAMIC_EXPORT
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
 #  else
-#     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
 struct new_block_info
@@ -92,37 +92,37 @@ struct account_key_info
 
 class trace_mutex;
 
-void CLASS_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_core_files( std::ostream& outs );
+void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_core_files( std::ostream& outs );
 
-trace_mutex CLASS_BASE_DECL_SPEC& get_core_files_trace_mutex( );
+trace_mutex CIYAM_BASE_DECL_SPEC& get_core_files_trace_mutex( );
 
-void CLASS_BASE_DECL_SPEC verify_core_file( const std::string& content,
+void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content,
  bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
 
-bool CLASS_BASE_DECL_SPEC is_block( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_checkpoint( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_transaction( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_checkpoint_info( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_checkpoint_blocks( const std::string& core_type );
-bool CLASS_BASE_DECL_SPEC is_checkpoint_transactions( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_block( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_checkpoint( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_transaction( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_blockchain_info( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_checkpoint_info( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_checkpoint_blocks( const std::string& core_type );
+bool CIYAM_BASE_DECL_SPEC is_checkpoint_transactions( const std::string& core_type );
 
-void CLASS_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
+void CIYAM_BASE_DECL_SPEC get_blockchain_info( const std::string& content, blockchain_info& bc_info );
 
-void CLASS_BASE_DECL_SPEC get_checkpoint_info(
+void CIYAM_BASE_DECL_SPEC get_checkpoint_info(
  const std::string& blockchain, const std::string& conbtent, checkpoint_info& cp_info );
 
-bool CLASS_BASE_DECL_SPEC has_better_block(
+bool CIYAM_BASE_DECL_SPEC has_better_block(
  const std::string& blockchain, uint64_t height, uint64_t weight, std::string* p_acct = 0 );
 
-std::string CLASS_BASE_DECL_SPEC check_account( const std::string& blockchain, const std::string& password );
+std::string CIYAM_BASE_DECL_SPEC check_account( const std::string& blockchain, const std::string& password );
 
-std::string CLASS_BASE_DECL_SPEC construct_new_block(
+std::string CIYAM_BASE_DECL_SPEC construct_new_block(
  const std::string& blockchain, const std::string& password,
  const std::string& account, bool use_core_file_format = true,
  new_block_info* p_new_block_info = 0, bool search_for_proof_of_work_nonce = false );
 
-inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
+inline std::string CIYAM_BASE_DECL_SPEC construct_new_block(
  const std::string& blockchain, const std::string& password,
  new_block_info* p_new_block_info = 0, bool search_for_proof_of_work_nonce = false )
 {
@@ -130,24 +130,24 @@ inline std::string CLASS_BASE_DECL_SPEC construct_new_block(
     password, "", true, p_new_block_info, search_for_proof_of_work_nonce );
 }
 
-std::string CLASS_BASE_DECL_SPEC construct_new_transaction(
+std::string CIYAM_BASE_DECL_SPEC construct_new_transaction(
  const std::string& blockchain, const std::string& password,
  const std::string& account, const std::string& application,
  const std::string& transaction_log_lines, bool use_core_file_format = true,
  std::string* p_tx_hash = 0, const std::vector< std::string >* p_file_info = 0 );
 
-std::string CLASS_BASE_DECL_SPEC construct_blob_for_block_content(
+std::string CIYAM_BASE_DECL_SPEC construct_blob_for_block_content(
  const std::string& block_content, const std::string& block_signature );
 
-std::string CLASS_BASE_DECL_SPEC construct_blob_for_transaction_content(
+std::string CIYAM_BASE_DECL_SPEC construct_blob_for_transaction_content(
  const std::string& transaction_content, const std::string& transaction_signature );
 
-std::string CLASS_BASE_DECL_SPEC construct_account_info(
+std::string CIYAM_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password,
  unsigned int exp, const std::string& account, account_key_info* p_key_info = 0,
  uint64_t* p_balance = 0, uint64_t* p_num_transactions = 0, std::string* p_last_transaction_id = 0 );
 
-inline std::string CLASS_BASE_DECL_SPEC construct_account_info(
+inline std::string CIYAM_BASE_DECL_SPEC construct_account_info(
  const std::string& blockchain, const std::string& password, unsigned int exp )
 {
    std::string account;
@@ -155,14 +155,14 @@ inline std::string CLASS_BASE_DECL_SPEC construct_account_info(
    return construct_account_info( blockchain, password, exp, account );
 }
 
-std::string CLASS_BASE_DECL_SPEC get_account_msg_secret(
+std::string CIYAM_BASE_DECL_SPEC get_account_msg_secret(
  const std::string& blockchain, const std::string& password, const std::string& account );
 
-void CLASS_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain, uint64_t block_height );
+void CIYAM_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain, uint64_t block_height );
 
-std::string CLASS_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
+std::string CIYAM_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
 
-uint64_t CLASS_BASE_DECL_SPEC construct_transaction_scripts_for_blockchain(
+uint64_t CIYAM_BASE_DECL_SPEC construct_transaction_scripts_for_blockchain(
  const std::string& blockchain, const std::string& tx_hash, std::vector< std::string >& applications );
 
 #endif

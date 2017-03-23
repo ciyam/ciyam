@@ -283,6 +283,7 @@ std::string CIYAM_BASE_DECL_SPEC get_default_storage( );
 void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
 
 std::string CIYAM_BASE_DECL_SPEC get_session_blockchain( );
+bool CIYAM_BASE_DECL_SPEC get_session_is_using_blockchain( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::string& blockchain );
 
@@ -305,6 +306,8 @@ void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
 
 bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
+
+void CIYAM_BASE_DECL_SPEC set_default_session_variables( );
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
@@ -336,24 +339,6 @@ struct temporary_session_variable
    std::string name;
    std::string original_value;
 };
-
-std::string CIYAM_BASE_DECL_SPEC get_special_var_name( special_var var );
-
-void CIYAM_BASE_DECL_SPEC set_default_session_variables( );
-
-struct CIYAM_BASE_DECL_SPEC system_variable_lock
-{
-   system_variable_lock( const std::string& name );
-   ~system_variable_lock( );
-
-   std::string name;
-};
-
-std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name );
-std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
-
-void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
-bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_base( std::ostream& outs );
 
@@ -393,12 +378,6 @@ bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
  const std::string& cid, const std::string& key, std::string* p_key_found = 0 );
 
 void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
-
-struct CIYAM_BASE_DECL_SPEC storage_bulk_write_pause
-{
-   storage_bulk_write_pause( );
-   ~storage_bulk_write_pause( );
-};
 
 std::string CIYAM_BASE_DECL_SPEC storage_name( );
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
@@ -475,15 +454,23 @@ size_t CIYAM_BASE_DECL_SPEC module_count( );
 
 void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ostream& os );
 void CIYAM_BASE_DECL_SPEC module_strings_list( const std::string& module, std::ostream& os );
+
 void CIYAM_BASE_DECL_SPEC module_class_fields_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
+
 void CIYAM_BASE_DECL_SPEC module_class_procedures_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC module_load( const std::string& module_name,
  command_handler& cmd_handler, bool log_tx_comment = false, bool append_to_module_list = true );
-void CIYAM_BASE_DECL_SPEC module_unload( const std::string& module_name, command_handler& cmd_handler, bool check_controlled = false );
+
+void CIYAM_BASE_DECL_SPEC module_unload(
+ const std::string& module_name, command_handler& cmd_handler, bool check_controlled = false );
+
 void CIYAM_BASE_DECL_SPEC module_unload_all( command_handler& cmd_handler );
+
+std::string CIYAM_BASE_DECL_SPEC loaded_module_id( const std::string& module );
+std::string CIYAM_BASE_DECL_SPEC loaded_module_name( const std::string& module );
 
 void CIYAM_BASE_DECL_SPEC register_module_commands( const std::string& module_name, command_handler& handler );
 void CIYAM_BASE_DECL_SPEC unregister_module_commands( const std::string& module_name, command_handler& handler );
@@ -582,15 +569,53 @@ std::string CIYAM_BASE_DECL_SPEC exec_bulk_ops( const std::string& module,
  const std::string& filename, const std::string& export_fields, const std::string& tz_name, bool destroy_records,
  const std::string& search_text, const std::string& search_query, const std::string& fixed_field_values, command_handler& handler );
 
-void CIYAM_BASE_DECL_SPEC export_package( const std::string& module,
- const std::string& mclass, const std::string& key, const std::string& exclude_info,
- const std::string& test_info, const std::string& include_info, const std::string& filename );
+std::string resolve_class_id( const std::string& module,
+ const std::string& id_or_name, const std::string& exception_context );
 
-void CIYAM_BASE_DECL_SPEC import_package(
- const std::string& module, const std::string& uid,
- const std::string& dtm, const std::string& filename,
- const std::string& key_prefix, const std::string& replace_info,
- const std::string& skip_field_info, bool new_only = false, bool for_remove = false );
+std::string resolve_field_id( const std::string& module,
+ const std::string& mclass, const std::string& id_or_name, const std::string& exception_context );
+
+struct field_data
+{
+   field_data( const std::string& id,
+    const std::string& name, const std::string& value,
+    bool mandatory, bool transient, const std::string& class_id, const std::string& type_name )
+    :
+    id( id ),
+    name( name ),
+    value( value ),
+    mandatory( mandatory ),
+    transient( transient ),
+    class_id( class_id ),
+    type_name( type_name )
+   {
+   }
+
+   std::string id;
+   std::string name;
+   std::string value;
+   bool mandatory;
+   bool transient;
+   std::string class_id;
+   std::string type_name;
+};
+
+void get_all_field_data( size_t handle, const std::string& context,
+ const std::string& key, std::vector< field_data >& all_field_data, std::string* p_class_id = 0,
+ std::string* p_class_name = 0, std::vector< std::pair< std::string, std::string > >* p_base_class_info = 0 );
+
+class_base& get_class_base_from_handle( size_t handle, const std::string& context );
+
+enum permit_op_type_value
+{
+   e_permit_op_type_value_any,
+   e_permit_op_type_value_none,
+   e_permit_op_type_value_review,
+   e_permit_op_type_value_create_update_destroy
+};
+
+class_base& get_class_base_from_handle_for_op( size_t handle,
+ const std::string& context, permit_op_type_value permit = e_permit_op_type_value_none, bool use_dynamic_context = true );
 
 std::string CIYAM_BASE_DECL_SPEC instance_class( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC instance_key_info( size_t handle, const std::string& context, bool key_only = false );

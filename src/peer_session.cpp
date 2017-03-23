@@ -32,6 +32,7 @@
 #include "ciyam_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
+#include "ciyam_variables.h"
 #include "command_handler.h"
 #include "ciyam_core_files.h"
 #include "command_processor.h"

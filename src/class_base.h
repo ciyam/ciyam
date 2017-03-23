@@ -22,9 +22,9 @@
 #  include "ciyam_common.h"
 
 #  ifdef CIYAM_BASE_IMPL
-#     define CLASS_BASE_DECL_SPEC DYNAMIC_EXPORT
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
 #  else
-#     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
 #  define MODULE_TRACE( x ) get_obj( ).trace( x )
@@ -170,7 +170,7 @@ typedef search_replace_container::iterator search_replace_iterator;
 typedef search_replace_container::const_iterator search_replace_const_iterator;
 typedef search_replace_container::value_type search_replace_value_type;
 
-struct CLASS_BASE_DECL_SPEC class_cascade
+struct CIYAM_BASE_DECL_SPEC class_cascade
 {
    class_cascade( class_base& cb );
    ~class_cascade( );
@@ -179,7 +179,7 @@ struct CLASS_BASE_DECL_SPEC class_cascade
    impl* p_impl;
 };
 
-struct CLASS_BASE_DECL_SPEC class_after_store
+struct CIYAM_BASE_DECL_SPEC class_after_store
 {
    class_after_store( class_base& cb );
    ~class_after_store( );
@@ -188,7 +188,7 @@ struct CLASS_BASE_DECL_SPEC class_after_store
    impl* p_impl;
 };
 
-class CLASS_BASE_DECL_SPEC class_base
+class CIYAM_BASE_DECL_SPEC class_base
 {
    friend struct class_cascade;
    friend struct class_after_store;
@@ -855,7 +855,7 @@ struct temporary_object_variable
    std::string original_value;
 };
 
-struct CLASS_BASE_DECL_SPEC procedure_progress
+struct CIYAM_BASE_DECL_SPEC procedure_progress
 {
    procedure_progress( size_t seconds = 10 );
    ~procedure_progress( );
@@ -990,7 +990,7 @@ struct class_base_accessor
    class_base& cb;
 };
 
-class CLASS_BASE_DECL_SPEC class_base_filter
+class CIYAM_BASE_DECL_SPEC class_base_filter
 {
    public:
    class_base_filter( class_base& cb, const std::string& filter_ids );
@@ -1006,7 +1006,7 @@ enum create_instance
    e_create_instance
 };
 
-void CLASS_BASE_DECL_SPEC throw_bad_class_pointer_init( class_base& cb );
+void CIYAM_BASE_DECL_SPEC throw_bad_class_pointer_init( class_base& cb );
 
 struct class_pointer_base
 {
@@ -1097,16 +1097,16 @@ template< typename CBD > class class_pointer : class_pointer_base
    typename CBD::class_type* p_ct;
 };
 
-std::string CLASS_BASE_DECL_SPEC sql_quote( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC sql_quote( const std::string& s );
 
-bool CLASS_BASE_DECL_SPEC is_valid_int( const std::string& s );
-bool CLASS_BASE_DECL_SPEC is_valid_bool( const std::string& s );
-bool CLASS_BASE_DECL_SPEC is_valid_date( const std::string& s );
-bool CLASS_BASE_DECL_SPEC is_valid_time( const std::string& s );
-bool CLASS_BASE_DECL_SPEC is_valid_numeric( const std::string& s );
-bool CLASS_BASE_DECL_SPEC is_valid_date_time( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_int( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_bool( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_date( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_time( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_numeric( const std::string& s );
+bool CIYAM_BASE_DECL_SPEC is_valid_date_time( const std::string& s );
 
-bool CLASS_BASE_DECL_SPEC is_valid_value( const std::string& s, primitive p,
+bool CIYAM_BASE_DECL_SPEC is_valid_value( const std::string& s, primitive p,
  unsigned int max_size = 0, const char* p_min_value = 0, const char* p_max_value = 0 );
 
 inline std::string to_string( const std::string& s ) { return s; }
@@ -1118,9 +1118,9 @@ inline std::string to_string( const class_base& cb ) { return cb.get_key( ); }
 inline bool operator ==( const class_base& cb, const std::string& s ) { return s == to_string( cb ); }
 inline bool operator !=( const class_base& cb, const std::string& s ) { return s != to_string( cb ); }
 
-void CLASS_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
+void CIYAM_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num, int num_digits = 5 );
+std::string CIYAM_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num, int num_digits = 5 );
 
 template< typename T > inline int to_integer( const T& t ) { return t; }
 
@@ -1132,37 +1132,37 @@ template< typename T, typename V > inline bool check_not_equal( const T& t, cons
 
 inline void lazy_fetch( class_base* p_cb ) { p_cb->perform_lazy_fetch( ); }
 
-void CLASS_BASE_DECL_SPEC wait( unsigned long ms );
+void CIYAM_BASE_DECL_SPEC wait( unsigned long ms );
 
-std::string CLASS_BASE_DECL_SPEC get_uuid( );
+std::string CIYAM_BASE_DECL_SPEC get_uuid( );
 
-uint32_t CLASS_BASE_DECL_SPEC get_random( );
+uint32_t CIYAM_BASE_DECL_SPEC get_random( );
 
-std::string CLASS_BASE_DECL_SPEC get_random_hash( );
+std::string CIYAM_BASE_DECL_SPEC get_random_hash( );
 
-int64_t CLASS_BASE_DECL_SPEC get_unix_timestamp( bool use_dtm = true );
+int64_t CIYAM_BASE_DECL_SPEC get_unix_timestamp( bool use_dtm = true );
 
-std::string CLASS_BASE_DECL_SPEC get_ext( const std::string& filename );
-std::string CLASS_BASE_DECL_SPEC get_path( const std::string& filename );
+std::string CIYAM_BASE_DECL_SPEC get_ext( const std::string& filename );
+std::string CIYAM_BASE_DECL_SPEC get_path( const std::string& filename );
 
-bool CLASS_BASE_DECL_SPEC exists_file( const std::string& filename, bool check_link_target = true );
-void CLASS_BASE_DECL_SPEC remove_file( const std::string& filename );
-void CLASS_BASE_DECL_SPEC rename_file( const std::string& oldname, const std::string& newname );
+bool CIYAM_BASE_DECL_SPEC exists_file( const std::string& filename, bool check_link_target = true );
+void CIYAM_BASE_DECL_SPEC remove_file( const std::string& filename );
+void CIYAM_BASE_DECL_SPEC rename_file( const std::string& oldname, const std::string& newname );
 
-int64_t CLASS_BASE_DECL_SPEC size_file( const std::string& filename );
-int64_t CLASS_BASE_DECL_SPEC last_mod_time( const std::string& filename );
+int64_t CIYAM_BASE_DECL_SPEC size_file( const std::string& filename );
+int64_t CIYAM_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 
-void CLASS_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
-std::string CLASS_BASE_DECL_SPEC load_file( const std::string& filename, bool is_optional = false );
+void CIYAM_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
+std::string CIYAM_BASE_DECL_SPEC load_file( const std::string& filename, bool is_optional = false );
 
-void CLASS_BASE_DECL_SPEC save_file( const std::string& filename, const std::string& data );
+void CIYAM_BASE_DECL_SPEC save_file( const std::string& filename, const std::string& data );
 
-void CLASS_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::set< std::string >& lines );
-void CLASS_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::vector< std::string >& lines );
+void CIYAM_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::set< std::string >& lines );
+void CIYAM_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::vector< std::string >& lines );
 
-void CLASS_BASE_DECL_SPEC link_file( const std::string& source, const std::string& name );
+void CIYAM_BASE_DECL_SPEC link_file( const std::string& source, const std::string& name );
 
-std::string CLASS_BASE_DECL_SPEC copy_class_file( const std::string& src_path,
+std::string CIYAM_BASE_DECL_SPEC copy_class_file( const std::string& src_path,
  const std::string& dest_class_id, const std::string& dest_file_name, bool return_name_only = false, bool return_full_path = false );
 
 inline void copy_field_or_file_and_field( class_base& dest, const std::string& dest_key,
@@ -1177,102 +1177,102 @@ inline void copy_field_or_file_and_field( class_base& dest, const std::string& d
        src.get_field_value( src.get_field_num( src_field_name ) ) );
 }
 
-void CLASS_BASE_DECL_SPEC copy_class_files( const class_base& src, class_base& dest );
+void CIYAM_BASE_DECL_SPEC copy_class_files( const class_base& src, class_base& dest );
 
-void CLASS_BASE_DECL_SPEC copy_class_files_for_clone(
+void CIYAM_BASE_DECL_SPEC copy_class_files_for_clone(
  const std::vector< std::pair< std::string, std::string > >& file_field_name_and_values, class_base& dest );
 
-std::string CLASS_BASE_DECL_SPEC get_app_dir( );
-std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );
+std::string CIYAM_BASE_DECL_SPEC get_app_dir( );
+std::string CIYAM_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 
-std::string CLASS_BASE_DECL_SPEC get_attached_file_dir( );
+std::string CIYAM_BASE_DECL_SPEC get_attached_file_dir( );
 
-std::string CLASS_BASE_DECL_SPEC get_attached_file_path(
+std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
  const std::string& module_id, const std::string& class_id );
 
-std::string CLASS_BASE_DECL_SPEC get_attached_file_path(
+std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
  const std::string& module_id, const std::string& class_id, const std::string& file_name );
 
-std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
+std::string CIYAM_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 
-void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
+void CIYAM_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 
-void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name );
-std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
+void CIYAM_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name );
+std::string CIYAM_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
-void CLASS_BASE_DECL_SPEC remove_gpg_key( const std::string& gpg_key_id, bool ignore_error = false );
+void CIYAM_BASE_DECL_SPEC remove_gpg_key( const std::string& gpg_key_id, bool ignore_error = false );
 
-void CLASS_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
+void CIYAM_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
 
-void CLASS_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
+void CIYAM_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
  const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint, std::string* p_new_email = 0 );
 
-std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC trim_whitespace( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
+std::string CIYAM_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
 
-size_t CLASS_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
+size_t CIYAM_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
 
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',', bool unescape = true );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, char sep = ',', bool unescape = true );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, char sep = ',', bool unescape = true );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',', bool unescape = true );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, char sep = ',', bool unescape = true );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, char sep = ',', bool unescape = true );
 
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, const std::string& sep );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, const std::string& sep );
-void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, const std::string& sep );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, const std::string& sep );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::deque< std::string >& c, const std::string& sep );
+void CIYAM_BASE_DECL_SPEC split_string( const std::string& s, std::vector< std::string >& c, const std::string& sep );
 
-std::string CLASS_BASE_DECL_SPEC search_replace( const std::string& s, const std::string& search, const std::string& replace );
-std::string CLASS_BASE_DECL_SPEC search_replace( const std::string& s,
+std::string CIYAM_BASE_DECL_SPEC search_replace( const std::string& s, const std::string& search, const std::string& replace );
+std::string CIYAM_BASE_DECL_SPEC search_replace( const std::string& s,
  const std::string& search1, const std::string& replace1, const std::string& search2, const std::string& replace2 );
 
-std::string CLASS_BASE_DECL_SPEC escaped_string( const std::string& s,
+std::string CIYAM_BASE_DECL_SPEC escaped_string( const std::string& s,
  const char* p_chars = 0, char esc = '\\', const char* p_specials = 0 );
 
-std::string CLASS_BASE_DECL_SPEC quoted_literal( const std::string& s, char esc = '\\', bool add_quotes = true );
+std::string CIYAM_BASE_DECL_SPEC quoted_literal( const std::string& s, char esc = '\\', bool add_quotes = true );
 
 inline std::string unquoted_literal( const std::string& s, char esc = '\\' ) { return quoted_literal( s, esc, false ); }
 
-std::string CLASS_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string& s, const std::string& sep, size_t num_spaces );
+std::string CIYAM_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string& s, const std::string& sep, size_t num_spaces );
 
-std::string CLASS_BASE_DECL_SPEC decode_hex( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC encode_hex( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC decode_hex( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC encode_hex( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
+std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
 
-std::string CLASS_BASE_DECL_SPEC hash_sha1( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC hash_sha256( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC hash_sha256( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC decrypt( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC encrypt( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& pw, const std::string& s );
-std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& pw, const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC decrypt( const std::string& pw, const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC encrypt( const std::string& pw, const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC shared_decrypt( const std::string& pk, const std::string& s );
-std::string CLASS_BASE_DECL_SPEC shared_encrypt( const std::string& pk, const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC shared_decrypt( const std::string& pk, const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC shared_encrypt( const std::string& pk, const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC totp_pin( const std::string& secret );
-std::string CLASS_BASE_DECL_SPEC totp_secret( const std::string& unique );
+std::string CIYAM_BASE_DECL_SPEC totp_pin( const std::string& secret );
+std::string CIYAM_BASE_DECL_SPEC totp_secret( const std::string& unique );
 
-std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
-std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
+std::string CIYAM_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
+std::string CIYAM_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 
-std::string CLASS_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_timestamp );
-std::string CLASS_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_timestamp );
+std::string CIYAM_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_timestamp );
+std::string CIYAM_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_timestamp );
 
-std::string CLASS_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
-std::string CLASS_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );
+std::string CIYAM_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
+std::string CIYAM_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );
 
-std::string CLASS_BASE_DECL_SPEC numeric_name( const std::string& s, bool show_plus_if_no_sign = false );
+std::string CIYAM_BASE_DECL_SPEC numeric_name( const std::string& s, bool show_plus_if_no_sign = false );
 
-std::string CLASS_BASE_DECL_SPEC value_label( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC value_leftpart( const std::string& s );
-std::string CLASS_BASE_DECL_SPEC value_rightpart( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC value_label( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC value_leftpart( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC value_rightpart( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC increment_numbers( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC increment_numbers( const std::string& s );
 
-std::string CLASS_BASE_DECL_SPEC auto_int_increment( const std::string& current );
+std::string CIYAM_BASE_DECL_SPEC auto_int_increment( const std::string& current );
 
 struct daylight_info
 {
@@ -1342,7 +1342,7 @@ struct timezone_info
    std::vector< daylight_info > daylight_changes;
 };
 
-void CLASS_BASE_DECL_SPEC generate_timezones_sio( const std::vector< timezone_info >& timezones );
+void CIYAM_BASE_DECL_SPEC generate_timezones_sio( const std::vector< timezone_info >& timezones );
 
 struct daylight_bias_info
 {
@@ -1387,27 +1387,27 @@ typedef timezone_container::iterator timezone_iterator;
 typedef timezone_container::const_iterator timezone_const_iterator;
 typedef timezone_container::value_type timezone_value_type;
 
-void CLASS_BASE_DECL_SPEC setup_timezones( );
+void CIYAM_BASE_DECL_SPEC setup_timezones( );
 
-std::string CLASS_BASE_DECL_SPEC list_timezones( );
+std::string CIYAM_BASE_DECL_SPEC list_timezones( );
 
-std::string CLASS_BASE_DECL_SPEC get_tz_desc( const std::string& tz_name );
-void CLASS_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_name, float& offset );
+std::string CIYAM_BASE_DECL_SPEC get_tz_desc( const std::string& tz_name );
+void CIYAM_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_name, float& offset );
 
-date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt );
-date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, std::string& tz_name );
-date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, const std::string& tz_name );
+date_time CIYAM_BASE_DECL_SPEC utc_to_local( const date_time& dt );
+date_time CIYAM_BASE_DECL_SPEC utc_to_local( const date_time& dt, std::string& tz_name );
+date_time CIYAM_BASE_DECL_SPEC utc_to_local( const date_time& dt, const std::string& tz_name );
 
-date_time CLASS_BASE_DECL_SPEC local_to_utc( const date_time& dt, const std::string& tz_name );
+date_time CIYAM_BASE_DECL_SPEC local_to_utc( const date_time& dt, const std::string& tz_name );
 
-bool CLASS_BASE_DECL_SPEC schedulable_month_and_day( int month, int day );
+bool CIYAM_BASE_DECL_SPEC schedulable_month_and_day( int month, int day );
 
-void CLASS_BASE_DECL_SPEC add_class_map( const std::string& class_id,
+void CIYAM_BASE_DECL_SPEC add_class_map( const std::string& class_id,
  const std::string& map_id, const std::string& file_name, bool in_reverse = false );
 
-void CLASS_BASE_DECL_SPEC remove_class_map( const std::string& class_id, const std::string& map_id );
+void CIYAM_BASE_DECL_SPEC remove_class_map( const std::string& class_id, const std::string& map_id );
 
-std::string CLASS_BASE_DECL_SPEC get_class_map_value(
+std::string CIYAM_BASE_DECL_SPEC get_class_map_value(
  const std::string& class_id, const std::string& map_id, const std::string& key );
 
 struct user_account
@@ -1417,102 +1417,102 @@ struct user_account
    std::string password;
 };
 
-void CLASS_BASE_DECL_SPEC send_email_message( const std::string& recipient,
+void CIYAM_BASE_DECL_SPEC send_email_message( const std::string& recipient,
  const std::string& subject, const std::string& message,
  const std::string& html_source, const std::vector< std::string >* p_extra_headers = 0,
  const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_name = 0,
  const std::vector< std::string >* p_image_names = 0, const std::string* p_image_path_prefix = 0 );
 
-void CLASS_BASE_DECL_SPEC send_email_message( const std::vector< std::string >& recipients,
+void CIYAM_BASE_DECL_SPEC send_email_message( const std::vector< std::string >& recipients,
  const std::string& subject, const std::string& message, const std::string& html_source,
  const std::vector< std::string >* p_extra_headers = 0, const std::vector< std::string >* p_file_names = 0,
  const std::string* p_tz_name = 0, const std::vector< std::string >* p_image_names = 0,
  const std::string* p_image_path_prefix = 0 );
 
-void CLASS_BASE_DECL_SPEC send_email_message( const user_account& account,
+void CIYAM_BASE_DECL_SPEC send_email_message( const user_account& account,
  const std::vector< std::string >& recipients, const std::string& subject, const std::string& message,
  const std::string& html_source, const std::vector< std::string >* p_extra_headers = 0,
  const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_name = 0,
  const std::vector< std::string >* p_image_names = 0, const std::string* p_image_path_prefix = 0 );
 
-std::string CLASS_BASE_DECL_SPEC generate_hashcash( const std::string& recipient );
-bool CLASS_BASE_DECL_SPEC has_valid_hashcash( const std::string& value );
+std::string CIYAM_BASE_DECL_SPEC generate_hashcash( const std::string& recipient );
+bool CIYAM_BASE_DECL_SPEC has_valid_hashcash( const std::string& value );
 
-std::string CLASS_BASE_DECL_SPEC check_email_headers(
+std::string CIYAM_BASE_DECL_SPEC check_email_headers(
  const std::vector< std::string >& headers, bool create_script_output = false );
 
-void CLASS_BASE_DECL_SPEC fetch_email_messages(
+void CIYAM_BASE_DECL_SPEC fetch_email_messages(
  const std::string& file_name_prefix, bool skip_scripts = false );
 
-void CLASS_BASE_DECL_SPEC fetch_email_messages(
+void CIYAM_BASE_DECL_SPEC fetch_email_messages(
  std::vector< std::pair< bool, std::string > >& messages, bool skip_scripts = false );
 
-void CLASS_BASE_DECL_SPEC fetch_email_messages( const user_account& account,
+void CIYAM_BASE_DECL_SPEC fetch_email_messages( const user_account& account,
  std::vector< std::pair< bool, std::string > >& messages, bool skip_scripts = false );
 
-std::string CLASS_BASE_DECL_SPEC decode_email_header( const std::string& header );
+std::string CIYAM_BASE_DECL_SPEC decode_email_header( const std::string& header );
 
-void CLASS_BASE_DECL_SPEC decode_mime_message( const std::string& mime, std::string& message,
+void CIYAM_BASE_DECL_SPEC decode_mime_message( const std::string& mime, std::string& message,
  std::string& html_message, std::vector< std::pair< std::string, std::string > >& attachments );
 
-void CLASS_BASE_DECL_SPEC parse_email_address(
+void CIYAM_BASE_DECL_SPEC parse_email_address(
  const std::string& address, std::string& name, std::string& email );
 
-void CLASS_BASE_DECL_SPEC save_attachment(
+void CIYAM_BASE_DECL_SPEC save_attachment(
  const std::string& encoding, const std::string& data, const std::string& output_file );
 
-std::string CLASS_BASE_DECL_SPEC remove_html_scripts( const std::string& html );
+std::string CIYAM_BASE_DECL_SPEC remove_html_scripts( const std::string& html );
 
-std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
+std::string CIYAM_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
 
-std::string CLASS_BASE_DECL_SPEC create_html_embedded_image(
+std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image(
  const std::string& source_file, bool is_encrypted = false );
 
-uint64_t CLASS_BASE_DECL_SPEC crypto_amount( const std::string& amount );
+uint64_t CIYAM_BASE_DECL_SPEC crypto_amount( const std::string& amount );
 
-std::string CLASS_BASE_DECL_SPEC crypto_sign(
+std::string CIYAM_BASE_DECL_SPEC crypto_sign(
  const std::string& secret, const std::string& message, bool decode_hex_message = false );
 
-std::string CLASS_BASE_DECL_SPEC crypto_public(
+std::string CIYAM_BASE_DECL_SPEC crypto_public(
  const std::string& privkey, bool is_wif = false, bool use_base64 = true );
 
-std::string CLASS_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool is_wif = false );
+std::string CIYAM_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool is_wif = false );
 
-void CLASS_BASE_DECL_SPEC crypto_verify(
+void CIYAM_BASE_DECL_SPEC crypto_verify(
  const std::string& pubkey, const std::string& address, bool* p_rc = 0 );
 
-void CLASS_BASE_DECL_SPEC crypto_verify( const std::string& pubkey,
+void CIYAM_BASE_DECL_SPEC crypto_verify( const std::string& pubkey,
  const std::string& message, const std::string& signature, bool decode_hex_message = false );
 
-std::string CLASS_BASE_DECL_SPEC crypto_address_hash( const std::string& address );
+std::string CIYAM_BASE_DECL_SPEC crypto_address_hash( const std::string& address );
 
-std::string CLASS_BASE_DECL_SPEC crypto_p2sh_address( const std::string& ext_key, const std::string& hex_script );
+std::string CIYAM_BASE_DECL_SPEC crypto_p2sh_address( const std::string& ext_key, const std::string& hex_script );
 
-std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
+std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key, bool use_base64 = false );
 
-std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
+std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key,
  const std::string& priv_info, bool is_seed = true, bool use_base64 = false );
 
-bool CLASS_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
+bool CIYAM_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
-std::string CLASS_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );
+std::string CIYAM_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );
 
-void CLASS_BASE_DECL_SPEC get_external_balance( const std::string& ext_key, numeric& balance );
+void CIYAM_BASE_DECL_SPEC get_external_balance( const std::string& ext_key, numeric& balance );
 
-bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
+bool CIYAM_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
-std::string CLASS_BASE_DECL_SPEC create_new_address(
+std::string CIYAM_BASE_DECL_SPEC create_new_address(
  const std::string& ext_key, const std::string& label, bool ignore_errors = false );
 
-std::string CLASS_BASE_DECL_SPEC send_funds_to_address(
+std::string CIYAM_BASE_DECL_SPEC send_funds_to_address(
  const std::string& ext_key, const std::string& address, const numeric& amount );
 
-void CLASS_BASE_DECL_SPEC import_address(
+void CIYAM_BASE_DECL_SPEC import_address(
  const std::string& ext_key, const std::string& address, const std::string& label );
 
-void CLASS_BASE_DECL_SPEC load_address_information( const std::string& ext_key, const std::string& file_name );
+void CIYAM_BASE_DECL_SPEC load_address_information( const std::string& ext_key, const std::string& file_name );
 
 struct address_info
 {
@@ -1548,7 +1548,7 @@ struct address_info
    uint64_t amount;
 };
 
-void CLASS_BASE_DECL_SPEC parse_address_information(
+void CIYAM_BASE_DECL_SPEC parse_address_information(
  const std::string& file_name, std::vector< address_info >& addresses );
 
 struct utxo_info
@@ -1595,23 +1595,23 @@ struct utxo_info
    unsigned int confirmations;
 };
 
-void CLASS_BASE_DECL_SPEC load_utxo_information(
+void CIYAM_BASE_DECL_SPEC load_utxo_information(
  const std::string& ext_key, const std::string& source_addresses, const std::string& file_name );
 
-void CLASS_BASE_DECL_SPEC parse_utxo_information(
+void CIYAM_BASE_DECL_SPEC parse_utxo_information(
  const std::string& file_name, std::vector< utxo_info >& utxos );
 
-uint64_t CLASS_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
+uint64_t CIYAM_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
 
-std::string CLASS_BASE_DECL_SPEC convert_hash160_to_address( const std::string& ext_key, const std::string& hash160 );
+std::string CIYAM_BASE_DECL_SPEC convert_hash160_to_address( const std::string& ext_key, const std::string& hash160 );
 
-std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
+std::string CIYAM_BASE_DECL_SPEC construct_raw_transaction(
  const std::string& ext_key, bool change_type_is_automatic,
  const std::string& source_addresses, const std::string& destination_addresses,
  std::string& changes_address, uint64_t amount, quote_style qs, uint64_t& fee,
  std::string& sign_tx_template, const std::string& file_name );
 
-std::string CLASS_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
+std::string CIYAM_BASE_DECL_SPEC construct_p2sh_redeem_transaction(
  const std::string& txid, unsigned int index, const std::string& redeem_script,
  const std::string& extras, const std::string& to_address, uint64_t amount, const std::string& key,
  bool is_wif_format = false, uint32_t lock_time = 0 );
@@ -1626,25 +1626,25 @@ enum p2sh_redeem_extra_info_offset
    e_p2sh_redeem_extra_info_offset_acct_secret = 2
 };
 
-std::string CLASS_BASE_DECL_SPEC retreive_p2sh_redeem_extra_info(
+std::string CIYAM_BASE_DECL_SPEC retreive_p2sh_redeem_extra_info(
  const std::string& ext_key, const std::string& check_address,
  p2sh_redeem_extra_info_count count = e_p2sh_redeem_extra_info_count_acct_secret,
  p2sh_redeem_extra_info_offset offset = e_p2sh_redeem_extra_info_offset_acct_secret );
 
-std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
+std::string CIYAM_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
  bool* p_is_complete = 0, std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );
 
-bool CLASS_BASE_DECL_SPEC raw_transaction_was_signed( const std::string& tx_info, std::string& raw_tx );
+bool CIYAM_BASE_DECL_SPEC raw_transaction_was_signed( const std::string& tx_info, std::string& raw_tx );
 
-std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& ext_key, const std::string& tx );
+std::string CIYAM_BASE_DECL_SPEC send_raw_transaction( const std::string& ext_key, const std::string& tx );
 
-bool CLASS_BASE_DECL_SPEC account_has_been_banned( const std::string& account_id );
+bool CIYAM_BASE_DECL_SPEC account_has_been_banned( const std::string& account_id );
 
-void CLASS_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );
-void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_and_args, std::string& retval );
+void CIYAM_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );
+void CIYAM_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_and_args, std::string& retval );
 
-void CLASS_BASE_DECL_SPEC meta_relationship_child_name( std::string& name,
+void CIYAM_BASE_DECL_SPEC meta_relationship_child_name( std::string& name,
  const std::string& child_name, const std::string& parent_name, const std::string& separator );
 
 const int c_sql_std_char_size = 100;
@@ -1661,29 +1661,29 @@ enum sql_char_type
    e_sql_char_type_foreign_key
 };
 
-std::string CLASS_BASE_DECL_SPEC meta_sql_type(
+std::string CIYAM_BASE_DECL_SPEC meta_sql_type(
  const std::string& field_type, bool is_mandatory, sql_char_type char_type );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_uom( int uom );
+std::string CIYAM_BASE_DECL_SPEC meta_field_uom( int uom );
 
-int CLASS_BASE_DECL_SPEC meta_field_type_primitive( const std::string& type );
+int CIYAM_BASE_DECL_SPEC meta_field_type_primitive( const std::string& type );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_type_name( int primitive,
+std::string CIYAM_BASE_DECL_SPEC meta_field_type_name( int primitive,
  bool mandatory, const std::string& parent_class_name, const std::string& model_name, bool* p_is_customised = 0 );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_domain_type( const std::string& enum_id,
+std::string CIYAM_BASE_DECL_SPEC meta_field_domain_type( const std::string& enum_id,
  int primitive, int max_size, const std::string& min_value, const std::string& max_value,
  int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
  bool show_plus_sign, int zero_padding, int fraction_limit, std::string& mask, std::string* p_tmask = 0 );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_extras( int uom,
+std::string CIYAM_BASE_DECL_SPEC meta_field_extras( int uom,
  const std::string& uom_name, int extra, bool encrypted, bool transient,
  int max_size, const std::string& enum_id, const std::string& enum_filter_id, int primitive,
  const std::string& min_value, const std::string& max_value, int numeric_digits, int numeric_decimals,
  int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
  int int_type, int numeric_type );
 
-std::string CLASS_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
+std::string CIYAM_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
 
 #endif
 

@@ -38,6 +38,7 @@ ods_fsed          Object Data Storage file system editing tool.
 test              Basic regression test utility.
 test_cache        Testbed for the generic cache implementation.
 test_fcgi         Test FCGI application (to check if FCGI is working).
+test_hash_chain   Testbed for the hash chain class.
 test_numeric      Testbed for the numeric class.
 test_ods          Testbed for the Object Data Storage system.
 test_parser       Testbed for the (RPC) command parser.

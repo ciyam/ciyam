@@ -33,6 +33,7 @@
 #include "class_domains.h"
 #include "module_strings.h"
 #include "ciyam_constants.h"
+#include "ciyam_variables.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"

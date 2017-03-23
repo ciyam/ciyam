@@ -39,6 +39,7 @@
 #include "hash_chain.h"
 #include "ciyam_files.h"
 #include "crypt_stream.h"
+#include "ciyam_variables.h"
 
 #ifdef SSL_SUPPORT
 #  include <openssl/rand.h>

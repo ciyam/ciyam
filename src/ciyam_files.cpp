@@ -38,6 +38,7 @@
 #include "ciyam_base.h"
 #include "file_utils.h"
 #include "fs_iterator.h"
+#include "ciyam_variables.h"
 #include "ods_file_system.h"
 
 #ifdef ZLIB_SUPPORT

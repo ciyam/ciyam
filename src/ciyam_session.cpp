@@ -50,6 +50,8 @@
 #include "peer_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
+#include "ciyam_packages.h"
+#include "ciyam_variables.h"
 #include "command_handler.h"
 #include "ciyam_core_files.h"
 #include "module_interface.h"
@@ -5086,6 +5088,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          osstr << "ciyam_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
 
+         list_mutex_lock_ids_for_ciyam_variables( osstr );
          list_mutex_lock_ids_for_ciyam_core_files( osstr );
 
          response = osstr.str( );
