@@ -2590,6 +2590,8 @@ void verify_transaction( const string& content, bool check_sigs,
 
       account_hash = get_account_info( ainfo, tx_account );
 
+      // FUTURE: The minimum balance for being able to issue a transaction should
+      // be an attribute of the chain meta data rather than being hard-coded here.
       if( !ainfo.balance )
          throw runtime_error( "zero balance tx not permitted for account '" + account + "' in chain '" + chain + "'" );
 
@@ -2784,16 +2786,8 @@ void verify_transaction( const string& content, bool check_sigs,
       if( ainfo.num_transactions && !has_file( previous_transaction ) )
          error_message = "previous transaction '" + previous_transaction + "' does not exist";
 
-      // NOTE: If an invalid (but correctly signed) tx has been provided by an account
-      // then ban that account (as most likely this would only occur due to an account
-      // trying to cause a fork).
       if( !error_message.empty( ) )
-      {
-         tag_file( "c" + chain + ".a" + account
-          + ".h" + to_string( ainfo.last_height ) + ".b*anned", account_hash );
-
          throw runtime_error( error_message );
-      }
 
       ++ainfo.num_transactions;
 
@@ -4245,7 +4239,7 @@ uint64_t construct_transaction_scripts_for_blockchain(
       string retagged_txs_filename( filename + ".new" );
 
       // NOTE: If any retagged txs exist then buffer them
-      // according to each application that they belong to.
+      // according to the application that they belong to.
       if( file_exists( retagged_txs_filename ) )
       {
          vector< string > new_txs;

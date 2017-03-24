@@ -2013,10 +2013,10 @@ void class_base::generate_sql( const string& class_name, generate_sql_type type,
       throw runtime_error( "unexpected generate_sql_type #" + to_string( type ) );
    }
 
-   string file_hash( get_raw_session_variable( get_special_var_name( e_special_var_file_hash ) ) );
-   string file_name( get_raw_session_variable( get_special_var_name( e_special_var_file_name ) ) );
+   string all_file_names( get_raw_session_variable( get_special_var_name( e_special_var_file_names ) ) );
+   string all_file_hashes( get_raw_session_variable( get_special_var_name( e_special_var_file_hashes ) ) );
 
-   if( !file_hash.empty( ) )
+   if( !all_file_hashes.empty( ) )
    {
       string old_log_cmd( transaction_log_command( ) );
       string new_log_cmd;
@@ -2026,8 +2026,8 @@ void class_base::generate_sql( const string& class_name, generate_sql_type type,
          vector< string > file_names;
          vector< string > file_hashes;
 
-         split( file_name, file_names, '\n' );
-         split( file_hash, file_hashes, '\n' );
+         split( all_file_names, file_names, '\n' );
+         split( all_file_hashes, file_hashes, '\n' );
 
          if( file_names.size( ) != file_hashes.size( ) )
             throw runtime_error( "unexpected file_names.size( ) != file_hashes.size( )" );
@@ -2075,8 +2075,8 @@ void class_base::generate_sql( const string& class_name, generate_sql_type type,
 
       transaction_log_command( new_log_cmd, 0, true );
 
-      set_session_variable( get_special_var_name( e_special_var_file_hash ), "" );
-      set_session_variable( get_special_var_name( e_special_var_file_name ), "" );
+      set_session_variable( get_special_var_name( e_special_var_file_names ), "" );
+      set_session_variable( get_special_var_name( e_special_var_file_hashes ), "" );
    }
 
    if( p_sql_undo_stmts && !undo_stmt.empty( ) )

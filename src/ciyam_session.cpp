@@ -2604,7 +2604,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-         bool is_blockchain_app( !storage_blockchain( ).empty( ) );
+         bool is_blockchain_app = get_session_is_using_blockchain( );
 
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
@@ -2933,7 +2933,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-         bool is_blockchain_app( !storage_blockchain( ).empty( ) );
+         bool is_blockchain_app = get_session_is_using_blockchain( );
 
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
@@ -3272,30 +3272,30 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( !file_names.empty( ) )
                {
-                  string file_name;
+                  string all_file_names;
 
                   for( size_t i = 0; i < file_names.size( ); i++ )
                   {
-                     if( !file_name.empty( ) )
-                        file_name += "\n";
-                     file_name += file_names[ i ];
+                     if( !all_file_names.empty( ) )
+                        all_file_names += "\n";
+                     all_file_names += file_names[ i ];
                   }
 
-                  set_session_variable( get_special_var_name( e_special_var_file_name ), file_name );
+                  set_session_variable( get_special_var_name( e_special_var_file_names ), all_file_names );
                }
 
                if( !file_hashes.empty( ) )
                {
-                  string file_hash;
+                  string all_file_hashes;
 
                   for( size_t i = 0; i < file_hashes.size( ); i++ )
                   {
-                     if( !file_hash.empty( ) )
-                        file_hash += "\n";
-                     file_hash += file_hashes[ i ];
+                     if( !all_file_hashes.empty( ) )
+                        all_file_hashes += "\n";
+                     all_file_hashes += file_hashes[ i ];
                   }
 
-                  set_session_variable( get_special_var_name( e_special_var_file_hash ), file_hash );
+                  set_session_variable( get_special_var_name( e_special_var_file_hashes ), all_file_hashes );
                }
 
                if( !blockchain.empty( ) )
@@ -3372,7 +3372,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-         bool is_blockchain_app( !storage_blockchain( ).empty( ) );
+         bool is_blockchain_app = get_session_is_using_blockchain( );
 
          string module_and_class( module + ' ' + mclass );
 
@@ -3558,7 +3558,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
-         bool is_blockchain_app( !storage_blockchain( ).empty( ) );
+         bool is_blockchain_app = get_session_is_using_blockchain( );
 
          if( !vers.empty( ) && is_blockchain_app )
             throw runtime_error( "version info is not permitted for blockchain applications" );
