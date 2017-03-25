@@ -4271,6 +4271,11 @@ const char* Meta_View::static_check_class_name( )
    return "View";
 }
 
+const char* Meta_View::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_View::static_has_derivations( )
 {
    return !g_derivations.empty( );

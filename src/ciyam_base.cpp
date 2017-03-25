@@ -1786,6 +1786,112 @@ bool fetch_instance_from_db( class_base& instance,
    return found;
 }
 
+bool has_instance_in_global_storage( class_base& instance, const string& key )
+{
+   string persistence_extra( instance.get_persistence_extra( ) );
+
+   string root_child_folder( persistence_extra );
+
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( root_child_folder );
+
+   return gap_ofs->has_folder( key );
+}
+
+void fetch_keys_from_global_storage( class_base& instance,
+ const string& key_info, int row_limit, vector< string >& global_keys )
+{
+   string persistence_extra( instance.get_persistence_extra( ) );
+
+   string root_child_folder( persistence_extra );
+
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( root_child_folder );
+
+   if( row_limit == 1 )
+   {
+      if( gap_ofs->has_folder( key_info ) )
+         global_keys.push_back( key_info );
+   }
+   else
+      // FUTURE: Need to use both "key_info" and "row_limit" here.
+      gap_ofs->list_folders( global_keys );
+}
+
+bool fetch_instance_from_global_storage( class_base& instance, const string& key_info,
+ const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
+{
+   bool found = false;
+
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   class_base_accessor instance_accessor( instance );
+   string persistence_extra( instance.get_persistence_extra( ) );
+
+   string root_child_folder( persistence_extra );
+
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( root_child_folder );
+
+   found = gap_ofs->has_folder( key_info );
+
+   if( found )
+   {
+      gap_ofs->set_folder( key_info );
+
+      if( p_columns )
+      {
+         p_columns->push_back( key_info );
+         p_columns->push_back( "1" );
+         p_columns->push_back( "0" );
+         p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
+      }
+      else
+      {
+         instance_accessor.set_key( key_info, true );
+
+         instance_accessor.set_version( 1 );
+         instance_accessor.set_revision( 0 );
+
+         instance_accessor.set_original_revision( instance.get_revision( ) );
+         instance_accessor.set_original_identity( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
+      }
+
+      for( size_t i = 0; i < field_names.size( ); i++ )
+      {
+         string file_name( lower( field_names[ i ] ) );
+
+         if( gap_ofs->has_file( file_name ) )
+         {
+            string data;
+            gap_ofs->fetch_from_text_file( file_name, data );
+
+            if( p_columns )
+               p_columns->push_back( data );
+            else
+               instance.set_field_value( instance.get_field_num( field_names[ i ] ), data );
+         }
+      }
+
+      if( !p_columns )
+      {
+         instance_accessor.after_fetch_from_db( );
+
+         if( !skip_after_fetch )
+            instance_accessor.perform_after_fetch( );
+      }
+   }
+
+   return found;
+}
+
 void remove_tx_info_from_cache( )
 {
    storage_handler& handler( *gtp_session->p_storage_handler );
@@ -3373,8 +3479,6 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    instance_accessor.clear( );
 
-   TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( ) + "')" );
-
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
    instance_accessor.set_version( from_string< uint16_t >( instance_accessor.row_cache( )[ 0 ][ 1 ] ) );
    instance_accessor.set_revision( from_string< uint64_t >( instance_accessor.row_cache( )[ 0 ][ 2 ] ) );
@@ -3382,20 +3486,37 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    instance_accessor.set_original_revision( instance.get_revision( ) );
    instance_accessor.set_original_identity( instance_accessor.row_cache( )[ 0 ][ 3 ] );
 
-   const map< int, int >& fields( instance_accessor.select_fields( ) );
-   const vector< int >& columns( instance_accessor.select_columns( ) );
-
-   TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
-
-   for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
+   if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
    {
-      if( !fields.count( columns[ i - 4 ] ) )
-         throw runtime_error( "unexpected field # not found for column #" + to_string( i - 4 ) );
+      TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( ) + "')" );
 
-      int fnum( fields.find( columns[ i - 4 ] )->second );
+      const map< int, int >& fields( instance_accessor.select_fields( ) );
+      const vector< int >& columns( instance_accessor.select_columns( ) );
 
-      TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
-      instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
+      TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
+
+      for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
+      {
+         if( !fields.count( columns[ i - 4 ] ) )
+            throw runtime_error( "unexpected field # not found for column #" + to_string( i - 4 ) );
+
+         int fnum = fields.find( columns[ i - 4 ] )->second;
+
+         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + instance_accessor.row_cache( )[ 0 ][ i ] );
+         instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
+      }
+   }
+   else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+   {
+      for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
+      {
+         if( instance_accessor.field_nums( ).size( ) < ( i - 4 ) )
+            throw runtime_error( "unexpected field # not found for for column #" + to_string( i - 4 ) );
+
+         int fnum = instance_accessor.field_nums( )[ i - 4 ];
+
+         instance.set_field_value( fnum, instance_accessor.row_cache( )[ 0 ][ i ] );
+      }
    }
 
    instance_accessor.row_cache( ).pop_front( );
@@ -8953,6 +9074,13 @@ string instance_get_fields_and_values( size_t handle, const string& context, con
     is_traditional_app ? class_base::e_field_label_type_full_id : class_base::e_field_label_type_short_id );
 }
 
+bool instance_persistence_type_is_sql( size_t handle )
+{
+   class_base& instance( get_class_base_from_handle( handle, "" ) );
+
+   return ( instance.get_persistence_type( ) == 0 ); // i.e. SQL persistence
+}
+
 bool instance_iterate( size_t handle, const string& context,
  const string& key_info, const string& fields, const string& text,
  const string& query, const string& security_info, iter_direction direction,
@@ -9510,8 +9638,15 @@ void begin_instance_op( instance_op op, class_base& instance,
 
             instance_accessor.set_key( clone_key, true );
 
-            instance_accessor.fetch( sql, false );
-            bool found = fetch_instance_from_db( instance, sql );
+            bool found = false;
+
+            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            {
+               instance_accessor.fetch( sql, false );
+               found = fetch_instance_from_db( instance, sql );
+            }
+            else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+               found = has_instance_in_global_storage( instance, clone_key );
 
             xlock_holder.release( );
 
@@ -9574,8 +9709,15 @@ void begin_instance_op( instance_op op, class_base& instance,
          // NOTE: Skip this check during a restore as an optimsation to reduce SQL (iff requested).
          if( !storage_locked_for_admin( ) || !session_skip_fk_fetches( ) )
          {
-            instance_accessor.fetch( sql, true );
-            bool found = fetch_instance_from_db( instance, sql, true );
+            bool found = false;
+
+            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            {
+               instance_accessor.fetch( sql, true );
+               found = fetch_instance_from_db( instance, sql, true );
+            }
+            else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+               found = has_instance_in_global_storage( instance, key_for_op );
 
             if( found )
             {
@@ -9601,10 +9743,20 @@ void begin_instance_op( instance_op op, class_base& instance,
       {
          string sql;
 
-         instance_accessor.fetch( sql, false, false );
+         bool found = false;
 
-         bool found = fetch_instance_from_db( instance, sql,
-          false, is_minimal_update && op == e_instance_op_update );
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         {
+            instance_accessor.fetch( sql, false, false );
+
+            found = fetch_instance_from_db( instance, sql,
+             false, is_minimal_update && op == e_instance_op_update );
+         }
+         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         {
+            found = has_instance_in_global_storage( instance, key_for_op );
+            instance_accessor.set_original_identity( instance.get_current_identity( ) );
+         }
 
          if( !found )
          {
@@ -9644,8 +9796,18 @@ void begin_instance_op( instance_op op, class_base& instance,
       else if( op == e_instance_op_destroy )
       {
          // NOTE: In order to correctly determine whether an instance is constrained it must be first fetched.
-         instance_accessor.fetch( sql, false );
-         bool found = fetch_instance_from_db( instance, sql );
+         bool found = false;
+
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         {
+            instance_accessor.fetch( sql, false );
+            found = fetch_instance_from_db( instance, sql );
+         }
+         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         {
+            found = has_instance_in_global_storage( instance, key_for_op );
+            instance_accessor.set_original_identity( instance.get_current_identity( ) );
+         }
 
          if( !found )
          {
@@ -9873,43 +10035,46 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
          bool is_using_blockchain = handler.is_using_blockchain( );
 
-         vector< string > sql_stmts;
-         vector< string > sql_undo_stmts;
-
-         vector< string >* p_sql_undo_stmts = 0;
-
-         if( is_using_blockchain )
-            p_sql_undo_stmts = &sql_undo_stmts;
-
-         if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
-            throw runtime_error( "unexpected get_sql_stmts failure" );
-
-         // NOTE: If updating but no fields apart from the revision one were changed (by any
-         // derivation) then all update statements are discarded to skip the unnecessary SQL.
-         if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
-            sql_stmts.clear( );
-
-         if( !sql_stmts.empty( ) && gtp_session->ap_db.get( ) )
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
-            executing_sql = true;
+            vector< string > sql_stmts;
+            vector< string > sql_undo_stmts;
 
-            for( size_t i = 0; i < sql_stmts.size( ); i++ )
+            vector< string >* p_sql_undo_stmts = 0;
+
+            if( is_using_blockchain )
+               p_sql_undo_stmts = &sql_undo_stmts;
+
+            if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info, p_sql_undo_stmts ) )
+               throw runtime_error( "unexpected get_sql_stmts failure" );
+
+            // NOTE: If updating but no fields apart from the revision one were changed (by any
+            // derivation) then all update statements are discarded to skip the unnecessary SQL.
+            if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
+               sql_stmts.clear( );
+
+            if( !sql_stmts.empty( ) && gtp_session->ap_db.get( ) )
             {
-               if( sql_stmts[ i ].empty( ) )
-                  continue;
+               executing_sql = true;
 
-               TRACE_LOG( TRACE_SQLSTMTS, sql_stmts[ i ] );
-               exec_sql( *gtp_session->ap_db, sql_stmts[ i ] );
+               for( size_t i = 0; i < sql_stmts.size( ); i++ )
+               {
+                  if( sql_stmts[ i ].empty( ) )
+                     continue;
 
-               ++gtp_session->sql_count;
+                  TRACE_LOG( TRACE_SQLSTMTS, sql_stmts[ i ] );
+                  exec_sql( *gtp_session->ap_db, sql_stmts[ i ] );
+
+                  ++gtp_session->sql_count;
+               }
             }
+
+            executing_sql = false;
+
+            if( is_using_blockchain )
+               gtp_session->sql_undo_statements.insert(
+                gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
          }
-
-         executing_sql = false;
-
-         if( is_using_blockchain )
-            gtp_session->sql_undo_statements.insert(
-             gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
 
          // NOTE: In order to be able to create child records (or to review the just created instance)
          // the "create" lock is downgraded to an "update" lock after the SQL is executed but prior to
@@ -10065,20 +10230,38 @@ void perform_instance_fetch( class_base& instance,
 
    if( !found )
    {
-      string sql;
-      vector< string > field_info;
-      vector< string > order_info;
-      vector< pair< string, string > > query_info;
-      vector< pair< string, string > > fixed_info;
-      vector< pair< string, string > > paging_info;
+      if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+      {
+         string sql;
+         vector< string > field_info;
+         vector< string > order_info;
+         vector< pair< string, string > > query_info;
+         vector< pair< string, string > > fixed_info;
+         vector< pair< string, string > > paging_info;
 
-      split_key_info( key_info, fixed_info, paging_info, order_info, true );
+         split_key_info( key_info, fixed_info, paging_info, order_info, true );
 
-      sql = construct_sql_select( instance, field_info, order_info,
-       query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
+         sql = construct_sql_select( instance, field_info, order_info,
+          query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
 
-      found = fetch_instance_from_db( instance, sql,
-       only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
+         found = fetch_instance_from_db( instance, sql,
+          only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
+      }
+      else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+      {
+         field_info_container field_info;
+         instance.get_field_info( field_info );
+
+         vector< string > field_names;
+
+         for( size_t i = 0; i < field_info.size( ); i++ )
+         {
+            if( !field_info[ i ].is_transient )
+               field_names.push_back( field_info[ i ].name );
+         }
+
+         found = fetch_instance_from_global_storage( instance, key_info, field_names );
+      }
    }
 
    if( !found )
@@ -10173,6 +10356,7 @@ bool perform_instance_iterate( class_base& instance,
 
             vector< string > tmp_field_info;
             split( fields, tmp_field_info );
+
             for( size_t i = 0; i < tmp_field_info.size( ); i++ )
             {
                if( tmp_field_info[ i ].find( '.' ) == string::npos )
@@ -10389,20 +10573,26 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
-         sql = construct_sql_select( instance,
-          field_info, order_info, query_info, fixed_info, paging_info, security_info,
-          ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text );
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         {
+            sql = construct_sql_select( instance,
+             field_info, order_info, query_info, fixed_info, paging_info, security_info,
+             ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text );
 
-         TRACE_LOG( TRACE_SQLSTMTS, sql );
+            TRACE_LOG( TRACE_SQLSTMTS, sql );
 
-         if( instance_accessor.p_sql_dataset( ) )
-            delete instance_accessor.p_sql_dataset( );
-         instance_accessor.p_sql_dataset( ) = new sql_dataset( *gtp_session->ap_db, sql );
+            if( instance_accessor.p_sql_dataset( ) )
+               delete instance_accessor.p_sql_dataset( );
+            instance_accessor.p_sql_dataset( ) = new sql_dataset( *gtp_session->ap_db, sql );
 
-         setup_select_columns( instance, field_info );
+            setup_select_columns( instance, field_info );
+         }
       }
 
+      vector< string > global_keys;
+
       bool skip_after_fetch = false;
+
       string skip_after_fetch_var(
        instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
@@ -10422,8 +10612,16 @@ bool perform_instance_iterate( class_base& instance,
           get_special_var_name( e_special_var_loop ),
           to_comparable_string( 0, false, c_loop_variable_digits ) );
 
-         found = fetch_instance_from_db( instance,
-          instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         {
+            found = fetch_instance_from_db( instance,
+             instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
+         }
+         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         {
+            fetch_keys_from_global_storage( instance, key_info, row_limit, global_keys );
+            found = ( global_keys.size( ) > 0 );
+         }
 
          // NOTE: It is expected that the "after_fetch" trigger will be being skipped due to a later
          // "prepare" call which will call the trigger and then clear this flag (otherwise dependent
@@ -10431,55 +10629,107 @@ bool perform_instance_iterate( class_base& instance,
          if( !skip_after_fetch )
             instance_accessor.set_iteration_starting( false );
 
-         ++gtp_session->sql_count;
-
-         IF_IS_TRACING( TRACE_SQLSTMTS )
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
-            string sql_plan( "EXPLAIN " + sql );
-            sql_dataset ds( *gtp_session->ap_db, sql_plan );
+            ++gtp_session->sql_count;
 
-            sql_plan = "QUERY PLAN:";
-            while( ds.next( ) )
+            IF_IS_TRACING( TRACE_SQLSTMTS )
             {
-               sql_plan += '\n';
+               string sql_plan( "EXPLAIN " + sql );
+               sql_dataset ds( *gtp_session->ap_db, sql_plan );
 
-               for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
+               sql_plan = "QUERY PLAN:";
+               while( ds.next( ) )
                {
-                  if( i > 0 )
-                     sql_plan += " | ";
-                  sql_plan += ds.as_string( i );
-               }
-            }
+                  sql_plan += '\n';
 
-            TRACE_LOG( TRACE_SQLSTMTS, sql_plan );
+                  for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
+                  {
+                     if( i > 0 )
+                        sql_plan += " | ";
+                     sql_plan += ds.as_string( i );
+                  }
+               }
+
+               TRACE_LOG( TRACE_SQLSTMTS, sql_plan );
+            }
          }
       }
 
       if( found )
       {
-         if( !instance_accessor.p_sql_dataset( ) )
-            throw runtime_error( "unexpected null dataset in perform_instance_iterate" );
-
-         deque< vector< string > > rows;
-         sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
-
          bool found_next = false;
          bool query_finished = true;
 
-         while( ds.next( ) )
+         deque< vector< string > > rows;
+
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
-            found_next = true;
+            if( !instance_accessor.p_sql_dataset( ) )
+               throw runtime_error( "unexpected null dataset in perform_instance_iterate" );
 
-            vector< string > columns;
-            for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
-               columns.push_back( ds.as_string( i ) );
+            sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
 
-            rows.push_back( columns );
-
-            if( rows.size( ) == c_iteration_row_cache_limit )
+            while( ds.next( ) )
             {
-               query_finished = false;
-               break;
+               found_next = true;
+
+               vector< string > columns;
+               for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
+                  columns.push_back( ds.as_string( i ) );
+
+               rows.push_back( columns );
+
+               if( rows.size( ) == c_iteration_row_cache_limit )
+               {
+                  query_finished = false;
+                  break;
+               }
+            }
+         }
+         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         {
+            if( !global_keys.empty( ) )
+            {
+               vector< int > field_nums;
+               vector< string > field_names;
+               int num_fields = instance.get_num_fields( );
+
+               for( int i = 0; i < num_fields; i++ )
+               {
+                  if( !instance.is_field_transient( i ) )
+                  {
+                     field_nums.push_back( i );
+                     field_names.push_back( instance.get_field_name( i ) );
+                  }
+               }
+
+               instance_accessor.field_nums( ) = field_nums;
+
+               for( size_t i = 0; i < global_keys.size( ); i++ )
+               {
+                  if( i == 0 )
+                  {
+                     fetch_instance_from_global_storage(
+                      instance, global_keys[ i ], field_names, 0, skip_after_fetch );
+                  }
+                  else
+                  {
+                     vector< string > columns;
+
+                     if( !fetch_instance_from_global_storage( instance, global_keys[ i ], field_names, &columns ) )
+                        break;
+
+                     found_next = true;
+                     rows.push_back( columns );
+                  }
+
+                  if( rows.size( ) == c_iteration_row_cache_limit )
+                  {
+                     query_finished = false;
+                     break;
+                  }
+               }
             }
          }
 
@@ -10499,16 +10749,22 @@ bool perform_instance_iterate( class_base& instance,
 
          if( query_finished )
          {
-            delete instance_accessor.p_sql_dataset( );
-            instance_accessor.p_sql_dataset( ) = 0;
+            if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+            {
+               delete instance_accessor.p_sql_dataset( );
+               instance_accessor.p_sql_dataset( ) = 0;
+            }
          }
       }
 
       if( !found )
       {
-         if( instance_accessor.p_sql_dataset( ) )
-            delete instance_accessor.p_sql_dataset( );
-         instance_accessor.p_sql_dataset( ) = 0;
+         if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
+         {
+            if( instance_accessor.p_sql_dataset( ) )
+               delete instance_accessor.p_sql_dataset( );
+            instance_accessor.p_sql_dataset( ) = 0;
+         }
 
          instance_accessor.transient_filter_field_values( ).clear( );
 
@@ -10536,7 +10792,7 @@ bool perform_instance_iterate_next( class_base& instance )
    bool found = false, cache_depleted = false;
    if( !instance_accessor.row_cache( ).empty( ) )
    {
-      if( !instance_accessor.p_sql_dataset( ) && instance_accessor.row_cache( ).size( ) == 1 )
+      if( instance_accessor.row_cache( ).size( ) == 1 )
       {
          cache_depleted = true;
          instance.iterate_stop( );

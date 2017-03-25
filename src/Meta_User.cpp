@@ -2036,6 +2036,11 @@ const char* Meta_User::static_check_class_name( )
    return "User";
 }
 
+const char* Meta_User::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_User::static_has_derivations( )
 {
    return !g_derivations.empty( );

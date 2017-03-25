@@ -1708,7 +1708,7 @@ void repair_file_archive( const string& name )
    }
 }
 
-void archives_status_update( )
+void archives_status_update( const string& name )
 {
    guard g( g_mutex );
 
@@ -1723,6 +1723,9 @@ void archives_status_update( )
    for( size_t i = 0; i < names.size( ); i++ )
    {
       string next( names[ i ] );
+
+      if( !name.empty( ) && next != name )
+         continue;
 
       ods_fs.set_folder( next );
 

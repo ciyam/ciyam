@@ -942,12 +942,14 @@ string get_sql_columns_for_module_class( const string& module_id_or_name, const 
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
-   sql_columns = crci->second->get_sql_columns( );
+   if( crci->second->persistence_type( ) == 0 ) // i.e. SQL persistence
+      sql_columns = crci->second->get_sql_columns( );
 
    return sql_columns;
 }
 
-void get_sql_indexes_for_module_class( const string& module_id_or_name, const string& class_id, vector< string >& indexes )
+void get_sql_indexes_for_module_class(
+ const string& module_id_or_name, const string& class_id, vector< string >& indexes )
 {
    guard g( g_mutex );
 
@@ -971,6 +973,7 @@ void get_sql_indexes_for_module_class( const string& module_id_or_name, const st
    if( crci == p_class_registry->end( ) )
       throw runtime_error( "unable to locate class '" + class_id + "' in the module's class registry" );
 
-   crci->second->get_sql_indexes( indexes );
+   if( crci->second->persistence_type( ) == 0 ) // i.e. SQL persistence
+      crci->second->get_sql_indexes( indexes );
 }
 

@@ -6102,6 +6102,11 @@ const char* Meta_Application::static_check_class_name( )
    return "Application";
 }
 
+const char* Meta_Application::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Application::static_has_derivations( )
 {
    return !g_derivations.empty( );

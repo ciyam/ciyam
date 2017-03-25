@@ -1560,6 +1560,11 @@ const char* Meta_Initial_Record_Value::static_check_class_name( )
    return "Initial_Record_Value";
 }
 
+const char* Meta_Initial_Record_Value::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Initial_Record_Value::static_has_derivations( )
 {
    return !g_derivations.empty( );

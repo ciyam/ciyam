@@ -876,6 +876,15 @@ class_add -id=138100 Application_Script Application_Scripts
 field_add -id=138101 Application_Script Name str100 mand
 field_add -id=138102 Application_Script Script_Name str100 mand
 index_add -id=138201 Application_Script Name unique
+class_add -id=139100 Global_Archive Global_Archives -x=global:arch
+field_add -id=139101 Global_Archive Name str100 opt -transient
+field_add -id=139102 Global_Archive Path str200 mand
+field_add -id=139103 Global_Archive Size_Avail numeric mand -def=0 -x=numeric_type=bytes
+field_add -id=139104 Global_Archive Size_Limit numeric mand -def=0 -x=numeric_type=bytes
+field_add -id=139105 Global_Archive Status_Info str10 opt
+field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
+modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
+procedure_add -id=139410 Global_Archive Status_Update
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -2232,6 +2241,8 @@ specification_add -id=603300 {Initial_Record_Value}_view view "? standard Initia
  {Initial_Record}:Key;no_edit+link,{Field}:Name;no_edit+link,Value"
 specification_add -id=603310 {Initial_Record_Value}_child_list0 list "@603310_* child:no_new,no_erase,sort_no_limit Initial_Record_Value\
  {Field}:Name;non_fk_link,Value {Initial_Record}"
-specification_add -id=603500 {Package_Type}_list list "* admin Package_Type Name,Version"
+specification_add -id=603500 {Package_Type}_list list "* admin:no_limit Package_Type Name,Version"
 specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Single;no_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
+specification_add -id=603800 {Global_Archive}_list list "* admin Global_Archive Name,Path,Size_Avail,Size_Limit,Status_Info"
+specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_back Global_Archive @key,Name;non_new,Path,Size_Avail;non_new+no_edit,Size_Limit,Status_Info;non_new+no_edit,Actions"
 model_save

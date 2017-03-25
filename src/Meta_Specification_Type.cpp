@@ -11736,6 +11736,11 @@ const char* Meta_Specification_Type::static_check_class_name( )
    return "Specification_Type";
 }
 
+const char* Meta_Specification_Type::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Specification_Type::static_has_derivations( )
 {
    return !g_derivations.empty( );

@@ -2417,6 +2417,11 @@ const char* Meta_Procedure_Arg::static_check_class_name( )
    return "Procedure_Arg";
 }
 
+const char* Meta_Procedure_Arg::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Procedure_Arg::static_has_derivations( )
 {
    return !g_derivations.empty( );

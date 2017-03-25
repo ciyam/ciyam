@@ -53,9 +53,12 @@ const char* const c_special_variable_file = "@file";
 const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_name = "@name";
 const char* const c_special_variable_none = "@none";
+const char* const c_special_variable_path = "@path";
 const char* const c_special_variable_peer = "@peer";
+const char* const c_special_variable_size = "@size";
 const char* const c_special_variable_uuid = "@uuid";
 const char* const c_special_variable_async = "@async";
+const char* const c_special_variable_bytes = "@bytes";
 const char* const c_special_variable_class = "@class";
 const char* const c_special_variable_embed = "@embed";
 const char* const c_special_variable_print = "@print";
@@ -200,8 +203,16 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_none );
       break;
 
+      case e_special_var_path:
+      s = string( c_special_variable_path );
+      break;
+
       case e_special_var_peer:
       s = string( c_special_variable_peer );
+      break;
+
+      case e_special_var_size:
+      s = string( c_special_variable_size );
       break;
 
       case e_special_var_uuid:
@@ -210,6 +221,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_async:
       s = string( c_special_variable_async );
+      break;
+
+      case e_special_var_bytes:
+      s = string( c_special_variable_bytes );
       break;
 
       case e_special_var_class:

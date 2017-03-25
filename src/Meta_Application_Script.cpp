@@ -1412,6 +1412,11 @@ const char* Meta_Application_Script::static_check_class_name( )
    return "Application_Script";
 }
 
+const char* Meta_Application_Script::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Application_Script::static_has_derivations( )
 {
    return !g_derivations.empty( );

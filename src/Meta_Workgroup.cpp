@@ -2416,6 +2416,11 @@ const char* Meta_Workgroup::static_check_class_name( )
    return "Workgroup";
 }
 
+const char* Meta_Workgroup::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Workgroup::static_has_derivations( )
 {
    return !g_derivations.empty( );

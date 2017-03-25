@@ -90,17 +90,17 @@ at 1...
 > file_archive -add test3 10MiB test3
 
 > file_archives
-test1 [okay      ] (0 B/10.0 MiB) test1
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [bad access] (0 B/10.0 MiB) test3
+test1 [okay      ] (0 B/10.5 MB) test1
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [bad access] (0 B/10.5 MB) test3
 
 > ~mkdir test3
 
 > 
 > file_archives -status_update
-test1 [okay      ] (0 B/10.0 MiB) test1
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [okay      ] (0 B/10.0 MiB) test3
+test1 [okay      ] (0 B/10.5 MB) test1
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [okay      ] (0 B/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080001
 
@@ -130,16 +130,16 @@ ts.20170313080001
 ts.20170313080002
 
 > file_archives
-test1 [okay      ] (6.6 KiB/10.0 MiB) test1
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [okay      ] (0 B/10.0 MiB) test3
+test1 [okay      ] (6.7 kB/10.5 MB) test1
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [okay      ] (0 B/10.5 MB) test3
 
 > file_archive -remove test1
 (removing file archive)
 
 > file_archives
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [okay      ] (0 B/10.0 MiB) test3
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [okay      ] (0 B/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080003
 
@@ -149,17 +149,17 @@ Error: unable to retrieve file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e
 > file_archive -add test1 10MiB test1
 
 > file_archives
-test1 [okay      ] (0 B/10.0 MiB) test1
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [okay      ] (0 B/10.0 MiB) test3
+test1 [okay      ] (0 B/10.5 MB) test1
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [okay      ] (0 B/10.5 MB) test3
 
 > file_archive -repair test1
 (repairing file archive)
 
 > file_archives
-test1 [okay      ] (6.6 KiB/10.0 MiB) test1
-test2 [okay      ] (0 B/10.0 MiB) test2
-test3 [okay      ] (0 B/10.0 MiB) test3
+test1 [okay      ] (6.7 kB/10.5 MB) test1
+test2 [okay      ] (0 B/10.5 MB) test2
+test3 [okay      ] (0 B/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080003
 
@@ -172,9 +172,9 @@ ts.20170313080002
 ts.20170313080003
 
 > file_info ts.*
-[blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.6 KiB)
-[blob] efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f (3.1 KiB)
-[blob] a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 (6.6 KiB)
+[blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.7 kB)
+[blob] efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f (3.1 kB)
+[blob] a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 (6.7 kB)
 
 > file_relegate -s=9KiB test2
 b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test2
@@ -189,9 +189,9 @@ a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test3
 > file_tags ts.*
 
 > file_archives
-test1 [okay      ] (6.6 KiB/10.0 MiB) test1
-test2 [okay      ] (8.6 KiB/10.0 MiB) test2
-test3 [okay      ] (6.6 KiB/10.0 MiB) test3
+test1 [okay      ] (6.7 kB/10.5 MB) test1
+test2 [okay      ] (8.8 kB/10.5 MB) test2
+test3 [okay      ] (6.7 kB/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080000
 

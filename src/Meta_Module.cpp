@@ -1742,6 +1742,11 @@ const char* Meta_Module::static_check_class_name( )
    return "Module";
 }
 
+const char* Meta_Module::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Module::static_has_derivations( )
 {
    return !g_derivations.empty( );

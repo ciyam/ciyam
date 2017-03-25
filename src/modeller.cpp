@@ -1011,6 +1011,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          {
             string next_class_id( all_class_data[ i ].id );
             string next_class_name( all_class_data[ i ].name );
+            string next_class_extra( all_class_data[ i ].extra );
             string next_plural_name( all_class_data[ i ].plural );
             string next_fixed_key_val( all_class_data[ i ].fixed_key_val );
             string next_base_class_name( all_class_data[ i ].base_class_name );
@@ -1076,6 +1077,17 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                outf << "`{`$class_name`=`'" << next_class_name << "`'`}\n";
                outf << "`{`$plural_name`=`'" << next_plural_name << "`'`}\n";
                outf << "`{`$class_version`=`'1`'`}\n";
+
+               string::size_type pos = next_class_extra.find( "global" );
+               if( pos == 0 )
+               {
+                  outf << "`{`$persistence_type`=`'1`'`}\n";
+
+                  pos = next_class_extra.find( ':' );
+                  if( pos != string::npos )
+                     outf << "`{`$persistence_extra`=`'" << next_class_extra.substr( pos + 1 ) << "`'`}\n";
+               }
+
                outf << "`{`$module_id`=`'" << g_model.get_id( ) << "`'`}\n";
                outf << "`{`$module_name`=`'" << g_model.get_name( ) << "`'`}\n";
                outf << "`{`$year_created`=`'" << to_string( g_model.get_year_created( ) ) << "`'`}\n";

@@ -1,13 +1,28 @@
 <sio/>
  <script/>
+  <name>app_blk_txs
+  <filename>*script*
+  <arguments>app_blk_txs.cin @application @rewind_height @block_height
+ </script>
+ <script/>
   <name>ext_request
   <filename>ext_request
   <arguments>@arg1 @output_file
  </script>
  <script/>
-  <name>app_blk_txs
+  <name>add_archive
   <filename>*script*
-  <arguments>app_blk_txs.cin @application @rewind_height @block_height
+  <arguments>add_archive.cin @storage @path @size @name
+ </script>
+ <script/>
+  <name>remove_archive
+  <filename>*script*
+  <arguments>remove_archive.cin @storage @name
+ </script>
+ <script/>
+  <name>status_archive
+  <filename>*script*
+  <arguments>status_archive.cin @storage @name
  </script>
  <script/>
   <name>install_package

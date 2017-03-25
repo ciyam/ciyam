@@ -4121,42 +4121,48 @@ class_base& `{`$full_class_name`}::get_or_create_graph_child( const string& cont
 void `{`$full_class_name`}::get_sql_column_names(
  vector< string >& names, bool* p_done, const string* p_class_name ) const
 {
-`{`(`?`$parent_class`)\
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid get_sql_column_names call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,`{`(`?`$parent_class`)\
    parent_class_type::get_sql_column_names( names, p_done, p_class_name );
 `,\
 `{`!`(`?`$all_fields`)\
    ( void )names;
-`}`}
+`}`}\
    if( p_done && *p_done )
       return;
 `{`(`?`$non_transient_fields`)\n`}`{`?`$non_transient_fields`[`$non_transient_fields`%,`,\
-   names.push_back( "C_\0" );\
+   names.push_back( "C_\\0" );\
 `+\n`]`}
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
-      *p_done = true;
+      *p_done = true;\
+`}
 }
 
 void `{`$full_class_name`}::get_sql_column_values(
  vector< string >& values, bool* p_done, const string* p_class_name ) const
 {
-`{`(`?`$parent_class`)\
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid get_sql_column_values call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,`{`(`?`$parent_class`)\
    parent_class_type::get_sql_column_values( values, p_done, p_class_name );
 `,\
 `{`!`(`?`$non_transient_fields`)\
    ( void )values;
-`}`}
+`}`}\
    if( p_done && *p_done )
       return;
 `{`(`?`$non_transient_fields`)\n`}`{`?`$non_transient_fields`[`$non_transient_fields`%,`,\
-`{`?`$sql_numeric_fields`&`@in`(`'\0`'`,`$sql_numeric_fields`)\
-   values.push_back( to_string( \0( ) ) );\
+`{`?`$sql_numeric_fields`&`@in`(`'\\0`'`,`$sql_numeric_fields`)\
+   values.push_back( to_string( \\0( ) ) );\
 `,\
-   values.push_back( sql_quote( to_string( \0( ) ) ) );\
+   values.push_back( sql_quote( to_string( \\0( ) ) ) );\
 `}`+\n`]`}
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
-      *p_done = true;
+      *p_done = true;\
+`}
 }
 
 void `{`$full_class_name`}::get_required_field_names(
@@ -4473,10 +4479,13 @@ void `{`$full_class_name`}::get_transient_replacement_field_names( const string&
 void `{`$full_class_name`}::do_generate_sql( generate_sql_type type,
  vector< string >& sql_stmts, set< string >& tx_key_info, vector< string >* p_sql_undo_stmts ) const
 {
-`{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid do_generate_sql call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,`{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
    parent_class_type::do_generate_sql( type, sql_stmts, tx_key_info, p_sql_undo_stmts );
+`}\
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info, p_sql_undo_stmts );\
 `}
-   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info, p_sql_undo_stmts );
 }
 
 const char* `{`$full_class_name`}::static_resolved_module_id( )
@@ -4512,6 +4521,15 @@ const char* `{`$full_class_name`}::static_check_class_name( )
    return parent_class_type::static_check_class_name( );\
 `,\
    return "`{`$class_name`}";\
+`}
+}
+
+const char* `{`$full_class_name`}::static_persistence_extra( )
+{
+`{`(`?`$persistence_extra`)\
+   return "`{`$persistence_extra`}";\
+`,\
+   return "";\
 `}
 }
 
@@ -4683,13 +4701,17 @@ procedure_info_container& `{`$full_class_name`}::static_get_procedure_info( )
 
 string `{`$full_class_name`}::static_get_sql_columns( )
 {
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid static_get_sql_columns call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,\
    string sql_columns;
 
 `{`!`@eq`(`$sql_columns`,`'`'`)\
    sql_columns += `{`$tmp`=`$sql_columns`/ `/~`/\n`/ `}`{`[`$tmp`,
-    "`{`$tmp`=`'\\?`'`}`{`$tmp`/~`/ `}"`]`};
+    "`{`$tmp`=`'\\\\?`'`}`{`$tmp`/~`/ `}"`]`};
 `}
-   return sql_columns;
+   return sql_columns;\
+`}
 }
 
 void `{`$full_class_name`}::static_get_text_search_fields( vector< string >& fields )
@@ -4721,28 +4743,32 @@ void `{`$full_class_name`}::static_get_all_enum_pairs( vector< pair< string, str
 
 void `{`$full_class_name`}::static_get_sql_indexes( vector< string >& indexes )
 {
-`{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid static_get_sql_indexes call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,`{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
    parent_class_type::static_get_sql_indexes( indexes );`{`(`?`$all_sql_indexes`)\n`}\
 `,\
 `{`!`(`?`$all_sql_indexes`)`|`@eq`(`$all_sql_indexes`,`'`'`)\
    ( void )indexes;\
-`}`}
+`}`}\
 `{`?`$all_sql_indexes`[`$all_sql_indexes`,\
-   indexes.push_back( "\$" );\
-`+\n`]`}
+   indexes.push_back( "\\$" );\
+`+\n`]`}`}
 }
 
 void `{`$full_class_name`}::static_get_sql_unique_indexes( vector< string >& indexes )
 {
-`{`(`?`$parent_class`)\
+`{`(`?`$persistence_type`)`&`!`@eq`(`$persistence_type`,`'0`'`)\
+   throw runtime_error( "invalid static_get_sql_unique_indexes call for non-SQL class: " + to_string( static_class_name( ) ) );\
+`,`{`(`?`$parent_class`)\
    parent_class_type::static_get_sql_unique_indexes( indexes );`{`(`?`$all_sql_unique_indexes`)\n`}\
 `,\
 `{`!`(`?`$all_sql_unique_indexes`)`|`@eq`(`$all_sql_unique_indexes`,`'`'`)\
    ( void )indexes;\
-`}`}
+`}`}\
 `{`?`$all_sql_unique_indexes`[`$all_sql_unique_indexes`,\
-   indexes.push_back( "\$" );\
-`+\n`]`}
+   indexes.push_back( "\\$" );\
+`+\n`]`}`}
 }
 
 void `{`$full_class_name`}::static_insert_derivation( const string& module_and_class_id )

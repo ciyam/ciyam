@@ -40,6 +40,7 @@
 136100 Package 0
 137100 Package_Option 0
 138100 Application_Script 0
+139100 Global_Archive 0
 
 > module_class_field_list Meta User
 100102 Active bool normal

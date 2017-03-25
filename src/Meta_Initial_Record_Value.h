@@ -118,7 +118,10 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
 
    std::string get_display_name( bool plural = false ) const;
 
-   size_t get_class_type( ) const { return static_class_type( ); }
+   int get_class_type( ) const { return static_class_type( ); }
+   int get_persistence_type( ) const { return static_persistence_type( ); }
+
+   std::string get_persistence_extra( ) const { return static_persistence_extra( ); }
 
    std::string get_raw_variable( const std::string& name ) const;
 
@@ -196,7 +199,10 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
    static const char* static_lock_class_id( );
    static const char* static_check_class_name( );
 
-   static size_t static_class_type( ) { return 0; }
+   static const char* static_persistence_extra( );
+
+   static int static_class_type( ) { return 0; }
+   static int static_persistence_type( ) { return 0; }
 
    static bool static_has_derivations( );
 

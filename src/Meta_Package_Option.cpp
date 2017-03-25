@@ -6642,6 +6642,11 @@ const char* Meta_Package_Option::static_check_class_name( )
    return "Package_Option";
 }
 
+const char* Meta_Package_Option::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Package_Option::static_has_derivations( )
 {
    return !g_derivations.empty( );

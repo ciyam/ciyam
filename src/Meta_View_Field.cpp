@@ -6636,6 +6636,11 @@ const char* Meta_View_Field::static_check_class_name( )
    return "View_Field";
 }
 
+const char* Meta_View_Field::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_View_Field::static_has_derivations( )
 {
    return !g_derivations.empty( );

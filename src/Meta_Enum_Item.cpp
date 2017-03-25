@@ -2238,6 +2238,11 @@ const char* Meta_Enum_Item::static_check_class_name( )
    return "Enum_Item";
 }
 
+const char* Meta_Enum_Item::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Enum_Item::static_has_derivations( )
 {
    return !g_derivations.empty( );

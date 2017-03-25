@@ -4315,6 +4315,11 @@ const char* Meta_Relationship::static_check_class_name( )
    return "Relationship";
 }
 
+const char* Meta_Relationship::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Relationship::static_has_derivations( )
 {
    return !g_derivations.empty( );

@@ -5,11 +5,11 @@
 111/
 111/222/
 111/222/333/
-111/222/333/hhh* (5.6 KiB)
-111/222/eee* (5.6 KiB)
-111/bbb* (5.6 KiB)
-yyy (5.6 KiB)
-zzz (3.1 KiB)
+111/222/333/hhh* (5.7 kB)
+111/222/eee* (5.7 kB)
+111/bbb* (5.7 kB)
+yyy (5.7 kB)
+zzz (3.1 kB)
 
 /> file_remove yyy
 
@@ -17,7 +17,7 @@ zzz (3.1 KiB)
 111/
 111/222/
 111/222/333/
-zzz (3.1 KiB)
+zzz (3.1 kB)
 
 /> dump
 Total index levels = 0

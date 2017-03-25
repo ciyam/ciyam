@@ -8581,6 +8581,11 @@ const char* Meta_List_Field::static_check_class_name( )
    return "List_Field";
 }
 
+const char* Meta_List_Field::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_List_Field::static_has_derivations( )
 {
    return !g_derivations.empty( );

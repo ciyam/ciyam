@@ -6,9 +6,9 @@
 /> file_add zzz user2.jpg
 
 /> branch objects
-xxx (6.6 KiB)
-yyy (5.6 KiB)
-zzz (3.1 KiB)
+xxx (6.7 kB)
+yyy (5.7 kB)
+zzz (3.1 kB)
 
 /> dump
 Total index levels = 0

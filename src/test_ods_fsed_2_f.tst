@@ -2,34 +2,34 @@
 /> file_replace xxx test.jpg
 
 /> branch objects
-aaa* (3.1 KiB)
-bbb* (3.1 KiB)
-ccc* (6.6 KiB)
-ddd* (3.1 KiB)
-eee* (3.1 KiB)
-fff* (6.6 KiB)
-ggg* (3.1 KiB)
-hhh* (3.1 KiB)
-iii* (6.6 KiB)
-xxx (6.6 KiB)
-yyy (3.1 KiB)
-zzz (3.1 KiB)
+aaa* (3.1 kB)
+bbb* (3.1 kB)
+ccc* (6.7 kB)
+ddd* (3.1 kB)
+eee* (3.1 kB)
+fff* (6.7 kB)
+ggg* (3.1 kB)
+hhh* (3.1 kB)
+iii* (6.7 kB)
+xxx (6.7 kB)
+yyy (3.1 kB)
+zzz (3.1 kB)
 
 /> file_replace yyy user1.jpg
 
 /> branch objects
-aaa* (3.1 KiB)
-bbb* (5.6 KiB)
-ccc* (6.6 KiB)
-ddd* (3.1 KiB)
-eee* (5.6 KiB)
-fff* (6.6 KiB)
-ggg* (3.1 KiB)
-hhh* (5.6 KiB)
-iii* (6.6 KiB)
-xxx (6.6 KiB)
-yyy (5.6 KiB)
-zzz (3.1 KiB)
+aaa* (3.1 kB)
+bbb* (5.7 kB)
+ccc* (6.7 kB)
+ddd* (3.1 kB)
+eee* (5.7 kB)
+fff* (6.7 kB)
+ggg* (3.1 kB)
+hhh* (5.7 kB)
+iii* (6.7 kB)
+xxx (6.7 kB)
+yyy (5.7 kB)
+zzz (3.1 kB)
 
 /> dump
 Total index levels = 0

@@ -1898,14 +1898,28 @@ function validate_element( e, is_first )
                okay = false;
             else
             {
+               var had_iec = false;
                var had_bytes = false;
                var had_decimal = false;
                var found_token = false;
                var had_whitespace = false;
+
                for( var j = 0; j < e.value.length; j++ )
                {
                   if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
                   {
+                     if( e.value.charAt( j ) == 'i' || e.value.charAt( j ) == 'I' )
+                     {
+                        if( had_iec || had_bytes || !found_token )
+                        {
+                           okay = false;
+                           break;
+                        }
+
+                        had_iec = true;
+                        continue;
+                     }
+
                      if( e.value.charAt( j ) == 'b' || e.value.charAt( j ) == 'B'
                       || e.value.charAt( j ) == 'k' || e.value.charAt( j ) == 'K'
                       || e.value.charAt( j ) == 'm' || e.value.charAt( j ) == 'M'

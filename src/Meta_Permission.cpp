@@ -2641,6 +2641,11 @@ const char* Meta_Permission::static_check_class_name( )
    return "Permission";
 }
 
+const char* Meta_Permission::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Permission::static_has_derivations( )
 {
    return !g_derivations.empty( );

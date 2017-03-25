@@ -2273,6 +2273,11 @@ const char* Meta_Modifier::static_check_class_name( )
    return "Modifier";
 }
 
+const char* Meta_Modifier::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Modifier::static_has_derivations( )
 {
    return !g_derivations.empty( );

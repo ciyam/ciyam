@@ -291,47 +291,47 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    std::string get_validation_errors( validation_errors_type type = e_validation_errors_type_all );
 
-   uint16_t get_version( ) const { return version; }
-   uint64_t get_revision( ) const { return revision; }
+   inline uint16_t get_version( ) const { return version; }
+   inline uint64_t get_revision( ) const { return revision; }
 
    std::string get_version_info( ) const;
 
    const std::string get_current_identity( ) const;
-   const std::string& get_original_identity( ) const { return original_identity; }
+   inline const std::string& get_original_identity( ) const { return original_identity; }
 
-   op_type get_op( ) const { return op; }
+   inline op_type get_op( ) const { return op; }
 
-   bool get_is_in_op( ) const { return op != e_op_type_none; }
+   inline bool get_is_in_op( ) const { return op != e_op_type_none; }
 
-   bool get_is_creating( ) const { return op == e_op_type_create; }
-   bool get_is_updating( ) const { return op == e_op_type_update; }
-   bool get_is_reviewing( ) const { return op == e_op_type_review; }
-   bool get_is_destroying( ) const { return op == e_op_type_destroy; }
+   inline bool get_is_creating( ) const { return op == e_op_type_create; }
+   inline bool get_is_updating( ) const { return op == e_op_type_update; }
+   inline bool get_is_reviewing( ) const { return op == e_op_type_review; }
+   inline bool get_is_destroying( ) const { return op == e_op_type_destroy; }
 
-   bool get_is_editing( ) const { return op == e_op_type_create || op == e_op_type_update; }
+   inline bool get_is_editing( ) const { return op == e_op_type_create || op == e_op_type_update; }
 
-   bool get_is_transforming( ) const
+   inline bool get_is_transforming( ) const
    {
       return op == e_op_type_create || op == e_op_type_update || op == e_op_type_destroy;
    }
 
-   bool get_is_minimal_update( ) const { return op == e_op_type_update && utype == e_update_type_minimal; }
+   inline bool get_is_minimal_update( ) const { return op == e_op_type_update && utype == e_update_type_minimal; }
 
-   bool get_is_fetching( ) const { return is_fetching; }
-   bool get_is_executing( ) const { return is_executing; }
-   bool get_is_preparing( ) const { return is_preparing; }
-   bool get_is_iterating( ) const { return in_forwards_iteration || in_backwards_iteration; }
+   inline bool get_is_fetching( ) const { return is_fetching; }
+   inline bool get_is_executing( ) const { return is_executing; }
+   inline bool get_is_preparing( ) const { return is_preparing; }
+   inline bool get_is_iterating( ) const { return in_forwards_iteration || in_backwards_iteration; }
 
-   bool get_is_starting_iteration( ) const { return iteration_starting; }
+   inline bool get_is_starting_iteration( ) const { return iteration_starting; }
 
-   bool get_is_in_forwards_iteration( ) const { return in_forwards_iteration; }
-   bool get_is_in_backwards_iteration( ) const { return in_backwards_iteration; }
+   inline bool get_is_in_forwards_iteration( ) const { return in_forwards_iteration; }
+   inline bool get_is_in_backwards_iteration( ) const { return in_backwards_iteration; }
 
    const std::string& get_key( ) const;
-   operator const std::string& ( ) const { return get_key( ); }
+   inline operator const std::string& ( ) const { return get_key( ); }
 
-   const std::string& get_clone_key( ) const { return clone_key; }
-   void clear_clone_key( ) { clone_key.erase( ); }
+   inline const std::string& get_clone_key( ) const { return clone_key; }
+   inline void clear_clone_key( ) { clone_key.erase( ); }
 
    virtual const std::string& get_fixed_key( ) const;
 
@@ -339,24 +339,24 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    std::string get_attached_file_path( const std::string& file_name ) const;
 
-   bool get_is_singular( ) const { return is_singular; }
+   inline bool get_is_singular( ) const { return is_singular; }
 
-   bool get_is_after_store( ) const { return is_after_store; }
+   inline bool get_is_after_store( ) const { return is_after_store; }
 
-   bool get_is_being_cascaded( ) const { return is_being_cascaded; }
-   bool get_is_dynamic_enabled( ) const { return is_dynamic_enabled; }
+   inline bool get_is_being_cascaded( ) const { return is_being_cascaded; }
+   inline bool get_is_dynamic_enabled( ) const { return is_dynamic_enabled; }
 
-   class_base* get_owning_instance( ) { return p_owning_instance ? p_owning_instance : this; }
-   class_base* get_dynamic_instance( ) const { return p_dynamic_instance; }
+   inline class_base* get_owning_instance( ) { return p_owning_instance ? p_owning_instance : this; }
+   inline class_base* get_dynamic_instance( ) const { return p_dynamic_instance; }
 
    int get_graph_depth( ) const;
 
    class_base* get_graph_root( );
 
-   class_base* get_graph_parent( ) { return p_graph_parent; }
-   const class_base* get_graph_parent( ) const { return p_graph_parent; }
+   inline class_base* get_graph_parent( ) { return p_graph_parent; }
+   inline const class_base* get_graph_parent( ) const { return p_graph_parent; }
 
-   const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
+   inline const std::string& get_graph_parent_fk_field( ) const { return graph_parent_fk_field; }
 
    virtual std::string get_raw_variable( const std::string& name ) const;
 
@@ -426,7 +426,10 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    virtual std::string get_display_name( bool plural = false ) const = 0;
 
-   virtual size_t get_class_type( ) const = 0;
+   virtual int get_class_type( ) const = 0;
+   virtual int get_persistence_type( ) const = 0;
+
+   virtual std::string get_persistence_extra( ) const = 0;
 
    virtual std::string get_create_instance_info( ) const = 0;
    virtual std::string get_update_instance_info( ) const = 0;
@@ -533,6 +536,8 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    sql_dataset* p_sql_dataset;
 
+   std::vector< int > field_nums;
+
    std::vector< int > select_columns;
    std::map< int, int > select_fields;
 
@@ -623,31 +628,31 @@ class CIYAM_BASE_DECL_SPEC class_base
    void destroy_dynamic_instance( );
    void construct_dynamic_instance( );
 
-   std::string get_lazy_fetch_key( ) const { return lazy_fetch_key; }
+   inline std::string get_lazy_fetch_key( ) const { return lazy_fetch_key; }
 
    class_base* fetch_dynamic_instance( std::string& sql, bool check_only );
 
    void set_op( op_type new_op, bool is_new_key );
 
-   void set_iteration_starting( bool starting ) { iteration_starting = starting; }
+   inline void set_iteration_starting( bool starting ) { iteration_starting = starting; }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true );
 
-   void set_is_dynamic_enabled( bool enabled ) { is_dynamic_enabled = enabled; }
+   inline void set_is_dynamic_enabled( bool enabled ) { is_dynamic_enabled = enabled; }
 
-   size_t get_index_num( ) const { return index_num; }
-   void set_index_num( size_t new_index_num ) { index_num = new_index_num; }
+   inline size_t get_index_num( ) const { return index_num; }
+   inline void set_index_num( size_t new_index_num ) { index_num = new_index_num; }
 
-   const std::string& get_ver_exp( ) const { return ver_exp; }
-   void set_ver_exp( const std::string& new_ver_exp ) { ver_exp = new_ver_exp; }
+   inline const std::string& get_ver_exp( ) const { return ver_exp; }
+   inline void set_ver_exp( const std::string& new_ver_exp ) { ver_exp = new_ver_exp; }
 
-   bool get_in_op_begin( ) const { return in_op_begin; }
-   void set_in_op_begin( bool new_in_op_begin ) { in_op_begin = new_in_op_begin; }
+   inline bool get_in_op_begin( ) const { return in_op_begin; }
+   inline void set_in_op_begin( bool new_in_op_begin ) { in_op_begin = new_in_op_begin; }
 
-   size_t get_lock_handle( ) const { return lock_handle; }
-   void set_lock_handle( size_t new_lock_handle ) { lock_handle = new_lock_handle; }
+   inline size_t get_lock_handle( ) const { return lock_handle; }
+   inline void set_lock_handle( size_t new_lock_handle ) { lock_handle = new_lock_handle; }
 
-   size_t get_xlock_handle( ) const { return xlock_handle; }
-   void set_xlock_handle( size_t new_xlock_handle ) { xlock_handle = new_xlock_handle; }
+   inline size_t get_xlock_handle( ) const { return xlock_handle; }
+   inline void set_xlock_handle( size_t new_xlock_handle ) { xlock_handle = new_xlock_handle; }
 
    virtual const char* get_field_id( const std::string& name,
     bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const = 0;
@@ -678,16 +683,19 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void cleanup( );
 
-   bool has_filter( const std::string& id_or_name ) const { return filters.count( "*" ) > 0 || filters.count( id_or_name ) > 0; }
+   inline bool has_filter( const std::string& id_or_name ) const
+   {
+      return filters.count( "*" ) > 0 || filters.count( id_or_name ) > 0;
+   }
 
    void add_search_replacement( const std::string& field, const std::string& search, const std::string& replace );
 
-   void set_search_replace_separator( const std::string& field, char separator )
+   inline void set_search_replace_separator( const std::string& field, char separator )
    {
       search_replace_separators.insert( make_pair( field, separator ) );
    }
 
-   void set_search_replace_has_opt_prefixing( const std::string& field )
+   inline void set_search_replace_has_opt_prefixing( const std::string& field )
    {
       search_replace_has_opt_prefixing.insert( field );
    }
@@ -698,14 +706,14 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void set_new_original_values( );
 
-   void set_key( const std::string& new_key, bool skip_fk_handling = false );
-   void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }
+   inline void set_key( const std::string& new_key, bool skip_fk_handling = false );
+   inline void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }
 
-   void set_version( uint16_t new_version ) { version = new_version; }
-   void set_revision( uint64_t new_revision ) { revision = new_revision; }
+   inline void set_version( uint16_t new_version ) { version = new_version; }
+   inline void set_revision( uint64_t new_revision ) { revision = new_revision; }
 
-   void set_original_revision( uint64_t new_revision ) { original_revision = new_revision; }
-   void set_original_identity( const std::string& new_original_identity ) { original_identity = new_original_identity; }
+   inline void set_original_revision( uint64_t new_revision ) { original_revision = new_revision; }
+   inline void set_original_identity( const std::string& new_original_identity ) { original_identity = new_original_identity; }
 
    void set_graph_parent( class_base* p_parent, const std::string& fk_field, bool is_fk = false );
 
@@ -936,6 +944,8 @@ struct class_base_accessor
    void set_ver_exp( const std::string& new_ver_exp ) { cb.set_ver_exp( new_ver_exp ); }
 
    sql_dataset*& p_sql_dataset( ) { return cb.p_sql_dataset; }
+
+   std::vector< int >& field_nums( ) { return cb.field_nums; }
 
    std::vector< int >& select_columns( ) { return cb.select_columns; }
    std::map< int, int >& select_fields( ) { return cb.select_fields; }

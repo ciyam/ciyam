@@ -9173,6 +9173,11 @@ const char* Meta_Model::static_check_class_name( )
    return "Model";
 }
 
+const char* Meta_Model::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Model::static_has_derivations( )
 {
    return !g_derivations.empty( );

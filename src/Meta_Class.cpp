@@ -7836,6 +7836,11 @@ const char* Meta_Class::static_check_class_name( )
    return "Class";
 }
 
+const char* Meta_Class::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Class::static_has_derivations( )
 {
    return !g_derivations.empty( );

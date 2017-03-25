@@ -2004,6 +2004,11 @@ const char* Meta_Enum::static_check_class_name( )
    return "Enum";
 }
 
+const char* Meta_Enum::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Enum::static_has_derivations( )
 {
    return !g_derivations.empty( );

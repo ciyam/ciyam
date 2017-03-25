@@ -1570,6 +1570,11 @@ const char* Meta_Auto_Code::static_check_class_name( )
    return "Auto_Code";
 }
 
+const char* Meta_Auto_Code::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Auto_Code::static_has_derivations( )
 {
    return !g_derivations.empty( );

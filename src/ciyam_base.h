@@ -665,6 +665,8 @@ std::string CIYAM_BASE_DECL_SPEC instance_execute( size_t handle,
 std::string CIYAM_BASE_DECL_SPEC instance_get_fields_and_values(
  size_t handle, const std::string& context, const std::string& key );
 
+bool CIYAM_BASE_DECL_SPEC instance_persistence_type_is_sql( size_t handle );
+
 enum iter_direction
 {
    e_iter_direction_forwards,

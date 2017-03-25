@@ -1642,9 +1642,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_minimal ) );
          bool status_update( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_update_status ) );
+         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_name ) );
 
          if( status_update )
-            archives_status_update( );
+            archives_status_update( name );
 
          response = list_file_archives( minimal );
       }
@@ -2878,7 +2879,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                       new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
                }
 
-               transaction_log_command( next_command, ap_commit_helper.get( ) );
+               if( instance_persistence_type_is_sql( handle ) )
+                  transaction_log_command( next_command, ap_commit_helper.get( ) );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -3313,7 +3315,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      transaction_log_command( next_command, ap_commit_helper.get( ) );
                   }
                }
-               else
+               else if( instance_persistence_type_is_sql( handle ) )
                   transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -3502,7 +3504,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
 
                   if( blockchain.empty( ) )
-                     transaction_log_command( next_command );
+                  {
+                     if( instance_persistence_type_is_sql( handle ) )
+                        transaction_log_command( next_command );
+                  }
                   else
                   {
                      replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
@@ -3688,6 +3693,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             size_t handle = create_object_instance( module, mclass,
              0, get_module_class_has_derivations( module, mclass ) );
+
+            if( !instance_persistence_type_is_sql( handle ) )
+               log_transaction = false;
 
             bool has_any_set_flds = false;
             for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )

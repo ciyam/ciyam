@@ -2649,6 +2649,11 @@ const char* Meta_Specification_Field_Action::static_check_class_name( )
    return parent_class_type::static_check_class_name( );
 }
 
+const char* Meta_Specification_Field_Action::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Specification_Field_Action::static_has_derivations( )
 {
    return !g_derivations.empty( );

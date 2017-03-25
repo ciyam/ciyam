@@ -67,6 +67,7 @@ const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 
+const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
 const size_t c_pid_timeout = 5000;
@@ -473,8 +474,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 #ifdef DEBUG
                   cout << response;
 #endif
-                  response.erase( );
-                  continue;
+                  response = string( c_not_found_output );
                }
 
                if( response != string( c_response_okay ) )
@@ -525,6 +525,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      response.erase( );
                      is_in_progress = true;
                   }
+
+                  if( had_not_found )
+                     break;
                }
 #ifdef DEBUG
                else

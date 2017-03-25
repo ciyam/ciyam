@@ -8015,6 +8015,11 @@ const char* Meta_List::static_check_class_name( )
    return "List";
 }
 
+const char* Meta_List::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_List::static_has_derivations( )
 {
    return !g_derivations.empty( );

@@ -4,8 +4,8 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef META_PROCEDURE_ARG_H
-#  define META_PROCEDURE_ARG_H
+#ifndef META_GLOBAL_ARCHIVE_H
+#  define META_GLOBAL_ARCHIVE_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <string>
@@ -14,76 +14,51 @@
 #  include "class_base.h"
 
 #  ifdef MODULE_META_IMPL
-#     define META_PROCEDURE_ARG_DECL_SPEC DYNAMIC_EXPORT
+#     define META_GLOBAL_ARCHIVE_DECL_SPEC DYNAMIC_EXPORT
 #  else
-#     define META_PROCEDURE_ARG_DECL_SPEC DYNAMIC_IMPORT
+#     define META_GLOBAL_ARCHIVE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-class Meta_Specification;
-class Meta_Procedure;
-class Meta_Procedure_Arg;
+class numeric;
 
-class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
+class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
 {
-   friend class Meta_Specification;
-   friend class Meta_Procedure;
-
    public:
-   typedef Meta_Procedure_Arg class_type;
+   typedef Meta_Global_Archive class_type;
 
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Internal = 1,
+      e_field_id_Actions = 1,
       e_field_id_Name = 2,
-      e_field_id_Order = 3,
-      e_field_id_Primitive = 4,
-      e_field_id_Procedure = 5,
-      e_field_id_Source_Procedure_Arg = 6,
-      e_field_id_Type = 7
+      e_field_id_Path = 3,
+      e_field_id_Size_Avail = 4,
+      e_field_id_Size_Limit = 5,
+      e_field_id_Status_Info = 6
    };
 
-   Meta_Procedure_Arg( );
-   ~Meta_Procedure_Arg( );
+   Meta_Global_Archive( );
+   ~Meta_Global_Archive( );
 
-   bool Internal( ) const;
-   void Internal( bool Internal );
+   const std::string& Actions( ) const;
+   void Actions( const std::string& Actions );
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
 
-   const std::string& Order( ) const;
-   void Order( const std::string& Order );
+   const std::string& Path( ) const;
+   void Path( const std::string& Path );
 
-   int Primitive( ) const;
-   void Primitive( int Primitive );
+   const numeric& Size_Avail( ) const;
+   void Size_Avail( const numeric& Size_Avail );
 
-   int Type( ) const;
-   void Type( int Type );
+   const numeric& Size_Limit( ) const;
+   void Size_Limit( const numeric& Size_Limit );
 
-   Meta_Procedure& Procedure( );
-   const Meta_Procedure& Procedure( ) const;
-   void Procedure( const std::string& key );
+   const std::string& Status_Info( ) const;
+   void Status_Info( const std::string& Status_Info );
 
-   Meta_Procedure_Arg& Source_Procedure_Arg( );
-   const Meta_Procedure_Arg& Source_Procedure_Arg( ) const;
-   void Source_Procedure_Arg( const std::string& key );
-
-   Meta_Specification& child_Specification_Procedure_Arg_2( );
-   const Meta_Specification& child_Specification_Procedure_Arg_2( ) const;
-
-   Meta_Specification& child_Specification_Procedure_Arg_3( );
-   const Meta_Specification& child_Specification_Procedure_Arg_3( ) const;
-
-   Meta_Procedure_Arg& child_Procedure_Arg_Source( );
-   const Meta_Procedure_Arg& child_Procedure_Arg_Source( ) const;
-
-   Meta_Specification& child_Specification( );
-   const Meta_Specification& child_Specification( ) const;
-
-   virtual void Move_Down( const std::string& Restrict_Fields, const std::string& Restrict_Values );
-
-   virtual void Move_Up( const std::string& Restrict_Fields, const std::string& Restrict_Values );
+   virtual void Status_Update( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
@@ -219,9 +194,9 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );
 
-   static const char* static_class_id( ) { return "112100"; }
-   static const char* static_class_name( ) { return "Procedure_Arg"; }
-   static const char* static_plural_name( ) { return "Procedure_Args"; }
+   static const char* static_class_id( ) { return "139100"; }
+   static const char* static_class_name( ) { return "Global_Archive"; }
+   static const char* static_plural_name( ) { return "Global_Archives"; }
 
    static const char* static_module_id( ) { return "100"; }
    static const char* static_module_name( ) { return "Meta"; }
@@ -235,7 +210,7 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    static const char* static_persistence_extra( );
 
    static int static_class_type( ) { return 0; }
-   static int static_persistence_type( ) { return 0; }
+   static int static_persistence_type( ) { return 1; }
 
    static bool static_has_derivations( );
 
@@ -267,12 +242,12 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    static void static_insert_derivation( const std::string& module_and_class_id );
    static void static_remove_derivation( const std::string& module_and_class_id );
 
-   static void static_insert_external_alias( const std::string& module_and_class_id, Meta_Procedure_Arg* p_instance );
+   static void static_insert_external_alias( const std::string& module_and_class_id, Meta_Global_Archive* p_instance );
    static void static_remove_external_alias( const std::string& module_and_class_id );
 
    private:
-   Meta_Procedure_Arg( const Meta_Procedure_Arg& );
-   Meta_Procedure_Arg& operator =( const Meta_Procedure_Arg& );
+   Meta_Global_Archive( const Meta_Global_Archive& );
+   Meta_Global_Archive& operator =( const Meta_Global_Archive& );
 
    struct impl;
    friend struct impl;
@@ -284,18 +259,6 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    const char* get_field_name( const std::string& id, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
-
-   virtual void setup_foreign_key( Meta_Procedure& o, const std::string& value );
-   virtual void setup_foreign_key( Meta_Procedure_Arg& o, const std::string& value );
-
-   virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Procedure_Arg& o, const std::string& foreign_key_field );
-
-   virtual void setup_graph_parent( Meta_Procedure& o,
-    const std::string& foreign_key_field, const std::string& init_value );
-
-   virtual void setup_graph_parent( Meta_Procedure_Arg& o,
-    const std::string& foreign_key_field, const std::string& init_value );
 
    size_t get_total_child_relationships( ) const;
    void set_total_child_relationships( size_t new_total_child_relationships ) const;
@@ -309,12 +272,12 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const;
 };
 
-inline std::string to_string( const Meta_Procedure_Arg& c ) { return c.get_key( ); }
+inline std::string to_string( const Meta_Global_Archive& c ) { return c.get_key( ); }
 
-inline bool is_null( const Meta_Procedure_Arg& c ) { return c.get_key( ).empty( ); }
+inline bool is_null( const Meta_Global_Archive& c ) { return c.get_key( ).empty( ); }
 
-inline bool check_equal( const Meta_Procedure_Arg& c, const char* p ) { return c.get_key( ) == p; }
-inline bool check_not_equal( const Meta_Procedure_Arg& c, const char* p ) { return !( c.get_key( ) == p ); }
+inline bool check_equal( const Meta_Global_Archive& c, const char* p ) { return c.get_key( ) == p; }
+inline bool check_not_equal( const Meta_Global_Archive& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
 

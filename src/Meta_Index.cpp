@@ -2799,6 +2799,11 @@ const char* Meta_Index::static_check_class_name( )
    return "Index";
 }
 
+const char* Meta_Index::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Index::static_has_derivations( )
 {
    return !g_derivations.empty( );

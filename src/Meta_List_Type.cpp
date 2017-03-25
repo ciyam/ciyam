@@ -1821,6 +1821,11 @@ const char* Meta_List_Type::static_check_class_name( )
    return "List_Type";
 }
 
+const char* Meta_List_Type::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_List_Type::static_has_derivations( )
 {
    return !g_derivations.empty( );

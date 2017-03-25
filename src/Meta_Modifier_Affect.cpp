@@ -2360,6 +2360,11 @@ const char* Meta_Modifier_Affect::static_check_class_name( )
    return "Modifier_Affect";
 }
 
+const char* Meta_Modifier_Affect::static_persistence_extra( )
+{
+   return "";
+}
+
 bool Meta_Modifier_Affect::static_has_derivations( )
 {
    return !g_derivations.empty( );

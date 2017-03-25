@@ -3366,6 +3366,75 @@
    </fields>
   </view>
   <view/>
+   <id>603850
+   <cid>139100
+   <name>603850_name
+   <type>admin
+   <extra>no_edit,auto_back
+   <modifiers>
+   <class>Global_Archive
+   <bclass>
+   <module>Meta
+   <fields/>
+    <field/>
+     <name>field_key
+     <field>@key
+     <ftype>
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_archive_name
+     <field>139101
+     <ftype>string
+     <extra>non_new+max_size=100
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_archive_path
+     <field>139102
+     <ftype>string
+     <extra>max_size=200
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_archive_size_avail
+     <field>139103
+     <ftype>numeric
+     <extra>non_new+no_edit+numeric_type=bytes
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_archive_size_limit
+     <field>139104
+     <ftype>numeric
+     <extra>numeric_type=bytes
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_archive_status_info
+     <field>139105
+     <ftype>string
+     <extra>non_new+no_edit+max_size=10
+     <mandatory>false
+     <modifiers>100:highlight
+    </field>
+    <field/>
+     <name>field_global_archive_actions
+     <field>139106
+     <ftype>string
+     <extra>actions
+     <mandatory>false
+     <modifiers>
+    </field>
+   </fields>
+  </view>
+  <view/>
    <id>601810
    <cid>108100
    <name>601810_name
@@ -8507,6 +8576,71 @@
    </restricts>
   </list>
   <list/>
+   <id>603800
+   <cid>139100
+   <name>603800_name
+   <type>admin
+   <extra>
+   <actions>
+   <modifiers>100:lowlight
+   <view>603850
+   <class>Global_Archive
+   <bclass>
+   <order>forward
+   <module>Meta
+   <columns/>
+    <column/>
+     <name>field_global_archive_name
+     <field>139101
+     <ftype>string
+     <extra>max_size=100
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_archive_path
+     <field>139102
+     <ftype>string
+     <extra>max_size=200
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_archive_size_avail
+     <field>139103
+     <ftype>numeric
+     <extra>numeric_type=bytes
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_archive_size_limit
+     <field>139104
+     <ftype>numeric
+     <extra>numeric_type=bytes
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_archive_status_info
+     <field>139105
+     <ftype>string
+     <extra>max_size=10
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+   </columns>
+   <parents/>
+   </parents>
+   <restricts/>
+   </restricts>
+  </list>
+  <list/>
    <id>601820
    <cid>108100
    <name>601820_name
@@ -9062,7 +9196,7 @@
    <cid>135100
    <name>603500_name
    <type>admin
-   <extra>
+   <extra>no_limit
    <actions>
    <modifiers>
    <view>603550

@@ -44,7 +44,8 @@ struct registration_base
    virtual const char* class_id( ) const = 0;
    virtual const char* class_name( ) const = 0;
 
-   virtual size_t class_type( ) const = 0;
+   virtual int class_type( ) const = 0;
+   virtual int persistence_type( ) const = 0;
 
    virtual const char* module_id( ) const = 0;
    virtual const char* module_name( ) const = 0;
@@ -92,7 +93,8 @@ template< typename T > struct registration : registration_base
    const char* class_id( ) const { return T::static_class_id( ); }
    const char* class_name( ) const { return T::static_class_name( ); }
 
-   size_t class_type( ) const { return T::static_class_type( ); }
+   int class_type( ) const { return T::static_class_type( ); }
+   int persistence_type( ) const { return T::static_persistence_type( ); }
 
    const char* module_id( ) const { return T::static_module_id( ); }
    const char* module_name( ) const { return T::static_module_name( ); }
