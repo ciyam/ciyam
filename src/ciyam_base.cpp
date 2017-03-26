@@ -10792,7 +10792,7 @@ bool perform_instance_iterate_next( class_base& instance )
    bool found = false, cache_depleted = false;
    if( !instance_accessor.row_cache( ).empty( ) )
    {
-      if( instance_accessor.row_cache( ).size( ) == 1 )
+      if( !instance_accessor.p_sql_dataset( ) && instance_accessor.row_cache( ).size( ) == 1 )
       {
          cache_depleted = true;
          instance.iterate_stop( );

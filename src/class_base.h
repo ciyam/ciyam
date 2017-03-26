@@ -706,7 +706,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    void set_new_original_values( );
 
-   inline void set_key( const std::string& new_key, bool skip_fk_handling = false );
+   void set_key( const std::string& new_key, bool skip_fk_handling = false );
    inline void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }
 
    inline void set_version( uint16_t new_version ) { version = new_version; }
