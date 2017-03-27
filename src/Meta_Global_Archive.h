@@ -58,6 +58,8 @@ class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
    const std::string& Status_Info( ) const;
    void Status_Info( const std::string& Status_Info );
 
+   virtual void Repair_Archive( );
+
    virtual void Status_Update( );
 
    std::string get_field_value( int field ) const;

@@ -20,6 +20,11 @@
   <arguments>remove_archive.cin @storage @name
  </script>
  <script/>
+  <name>repair_archive
+  <filename>*script*
+  <arguments>repair_archive.cin @storage @name
+ </script>
+ <script/>
   <name>status_archive
   <filename>*script*
   <arguments>status_archive.cin @storage @name

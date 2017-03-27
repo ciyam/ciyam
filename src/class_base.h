@@ -253,8 +253,8 @@ class CIYAM_BASE_DECL_SPEC class_base
    void begin_review( const std::string& key, begin_review_rc* p_rc = 0 );
    void finish_review( );
 
-   void perform_fetch( perform_fetch_rc* p_rc = 0 ) { perform_fetch( get_key( ), p_rc ); }
-   void perform_fetch( const std::string& key_info, perform_fetch_rc* p_rc = 0 );
+   void perform_fetch( perform_fetch_rc* p_rc = 0, bool force = false ) { perform_fetch( get_key( ), p_rc ); }
+   void perform_fetch( const std::string& key_info, perform_fetch_rc* p_rc = 0, bool force = false );
 
    void perform_lazy_fetch( );
    void ensure_original_fetch( );
@@ -700,7 +700,7 @@ class CIYAM_BASE_DECL_SPEC class_base
       search_replace_has_opt_prefixing.insert( field );
    }
 
-   void fetch_updated_instance( );
+   void fetch_updated_instance( bool force = false );
 
    void add_required_transients( std::set< std::string >& required_transients );
 

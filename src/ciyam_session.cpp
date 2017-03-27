@@ -1618,6 +1618,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string path( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_path ) );
          string size_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archive_size_limit ) );
 
+         possibly_expected_error = true;
+
          if( add )
             add_file_archive( name, path, unformat_bytes( size_limit ) );
          else if( remove || destroy )
@@ -1645,7 +1647,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_archives_name ) );
 
          if( status_update )
+         {
+            possibly_expected_error = true;
             archives_status_update( name );
+         }
 
          response = list_file_archives( minimal );
       }

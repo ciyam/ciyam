@@ -140,6 +140,7 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
+const char* const c_procedure_id_Repair_Archive = "139420";
 const char* const c_procedure_id_Status_Update = "139410";
 
 const uint64_t c_modifier_Is_Not_Okay = UINT64_C( 0x100 );
@@ -398,6 +399,12 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
+   else if( command == c_cmd_Meta_Global_Archive_Repair_Archive )
+   {
+      cmd_handler.p_Meta_Global_Archive->Repair_Archive( );
+
+      cmd_handler.retval.erase( );
+   }
    else if( command == c_cmd_Meta_Global_Archive_Status_Update )
    {
       cmd_handler.p_Meta_Global_Archive->Status_Update( );
@@ -442,6 +449,8 @@ struct Meta_Global_Archive::impl : public Meta_Global_Archive_command_handler
 
    const string& impl_Status_Info( ) const { return lazy_fetch( p_obj ), v_Status_Info; }
    void impl_Status_Info( const string& Status_Info ) { sanity_check( Status_Info ); v_Status_Info = Status_Info; }
+
+   void impl_Repair_Archive( );
 
    void impl_Status_Update( );
 
@@ -513,6 +522,21 @@ struct Meta_Global_Archive::impl : public Meta_Global_Archive_command_handler
    string v_Status_Info;
 };
 
+void Meta_Global_Archive::impl::impl_Repair_Archive( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Repair_Archive_impl>]
+//nyi
+   temporary_session_variable tmp_session_name(
+    get_special_var_name( e_special_var_name ), get_obj( ).get_key( ) );
+
+   set_system_variable( "@" + get_obj( ).get_key( ) + "_repair", "1" );
+   run_script( "repair_archive", true, true, true );
+   // [<finish Repair_Archive_impl>]
+}
+
 void Meta_Global_Archive::impl::impl_Status_Update( )
 {
    uint64_t state = p_obj->get_state( );
@@ -523,10 +547,22 @@ void Meta_Global_Archive::impl::impl_Status_Update( )
    temporary_session_variable tmp_session_name(
     get_special_var_name( e_special_var_name ), get_obj( ).get_key( ) );
 
-   run_script( "status_archive", false );
+   string old_status_info( get_obj( ).Status_Info( ) );
 
-   get_obj( ).set_variable( get_special_var_name( e_special_var_return ),
-    "Status Update has been performed." ); // FUTURE: Should be a module string...
+   run_script( "status_archive", false, false, true );
+
+   get_obj( ).fetch_updated_instance( true );
+
+   if( get_obj( ).Status_Info( ) == old_status_info )
+   {
+      get_obj( ).set_variable(
+       get_special_var_name( e_special_var_return ), "Status Info unchanged." ); // FUTURE: Should be a module string...
+   }
+   else
+   {
+      get_obj( ).set_variable(
+       get_special_var_name( e_special_var_return ), "Status Info has changed." ); // FUTURE: Should be a module string...
+   }
    // [<finish Status_Update_impl>]
 }
 
@@ -678,6 +714,9 @@ uint64_t Meta_Global_Archive::impl::get_state( ) const
 //nyi
    if( get_obj( ).Status_Info( ) != string( c_okay ) )
       state |= c_modifier_Is_Not_Okay;
+
+   if( !get_system_variable( "@" + get_obj( ).get_key( ) + "_repair" ).empty( ) )
+      state |= c_state_is_changing;
    // [<finish get_state>]
 
    return state;
@@ -850,9 +889,19 @@ void Meta_Global_Archive::impl::after_fetch( )
    // [<start after_fetch>]
 //nyi
    get_obj( ).Name( get_obj( ).get_key( ) );
-   get_obj( ).Status_Info( trim_whitespace( get_obj( ).Status_Info( ) ) );
 
-   get_obj( ).Actions( c_procedure_id_Status_Update );
+   if( !( state & c_state_is_changing ) )
+   {
+      string actions( c_procedure_id_Status_Update );
+
+      if( !( state & c_modifier_Is_Not_Okay ) )
+      {
+         actions += ",?";
+         actions += c_procedure_id_Repair_Archive;
+      }
+
+      get_obj( ).Actions( actions );
+   }
    // [<finish after_fetch>]
 }
 
@@ -880,6 +929,8 @@ void Meta_Global_Archive::impl::post_init( )
    ( void )state;
 
    // [<start post_init>]
+//nyi
+   get_obj( ).Status_Info( trim_whitespace( get_obj( ).Status_Info( ) ) );
    // [<finish post_init>]
 }
 
@@ -917,7 +968,7 @@ void Meta_Global_Archive::impl::for_store( bool is_create, bool is_internal )
    temporary_session_variable tmp_session_size(
     get_special_var_name( e_special_var_size ), to_string( get_obj( ).Size_Limit( ) ) );
 
-   run_script( "add_archive", false );
+   run_script( "add_archive", false, true, true );
    // [<finish for_store>]
 }
 
@@ -956,7 +1007,7 @@ void Meta_Global_Archive::impl::for_destroy( bool is_internal )
    temporary_session_variable tmp_session_name(
     get_special_var_name( e_special_var_name ), get_obj( ).get_key( ) );
 
-   run_script( "remove_archive", false );
+   run_script( "remove_archive", false, true, true );
    // [<finish for_destroy>]
 }
 
@@ -1091,6 +1142,11 @@ const string& Meta_Global_Archive::Status_Info( ) const
 void Meta_Global_Archive::Status_Info( const string& Status_Info )
 {
    p_impl->impl_Status_Info( Status_Info );
+}
+
+void Meta_Global_Archive::Repair_Archive( )
+{
+   p_impl->impl_Repair_Archive( );
 }
 
 void Meta_Global_Archive::Status_Update( )
@@ -1639,6 +1695,8 @@ string Meta_Global_Archive::get_execute_procedure_info( const string& procedure_
 
    if( procedure_id.empty( ) )
       throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "139420" ) // i.e. Repair_Archive
+      retval = "";
    else if( procedure_id == "139410" ) // i.e. Status_Update
       retval = "";
 
@@ -1901,6 +1959,7 @@ procedure_info_container& Meta_Global_Archive::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
+      procedures.insert( make_pair( "139420", procedure_info( "Repair_Archive" ) ) );
       procedures.insert( make_pair( "139410", procedure_info( "Status_Update" ) ) );
    }
 

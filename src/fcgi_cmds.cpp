@@ -650,7 +650,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
             break;
          }
 
-         if( response[ 0 ] != '(' )
+         if( !response.empty( ) && response[ 0 ] != '(' )
          {
             size_t pos = response.find( "]" ); //i.e. skip over key and version information
 

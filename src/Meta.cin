@@ -885,6 +885,7 @@ field_add -id=139105 Global_Archive Status_Info str10 opt
 field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
 modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
 procedure_add -id=139410 Global_Archive Status_Update
+procedure_add -id=139420 Global_Archive Repair_Archive
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict

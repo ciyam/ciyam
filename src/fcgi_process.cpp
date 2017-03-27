@@ -552,6 +552,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                if( view.field_ids[ i ] == c_key_field )
                   continue;
 
+               string item_value;
+               if( field_num < item_values.size( ) )
+                  item_value = item_values[ field_num ];
+
                map< string, string > extra_data;
                if( !view.vici->second->fields[ i ].extra.empty( ) )
                   parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
@@ -559,61 +563,62 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                // NOTE: If an "ignore_encrypted" field is present then it will need to appear *before*
                // any actual fields that have the "encrypted" extra.
                if( view.field_ids[ i ] == view.ignore_encrypted_field )
-                  ignore_encrypted = ( item_values[ field_num ] == string( c_true_value ) );
+                  ignore_encrypted = ( item_value == string( c_true_value ) );
 
                if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
                   has_always_editable = true;
 
                // NOTE: Encrypted fields that are < 20 characters are assumed to not have been encrypted.
                if( !ignore_encrypted
-                && item_values[ field_num ].length( ) >= 20
+                && item_value.length( ) >= 20
                 && !view.file_fields.count( view.field_ids[ i ] )
                 && !view.image_fields.count( view.field_ids[ i ] )
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && view.encrypted_fields.count( view.field_ids[ i ] ) )
                {
                   if( !is_blockchain_application( ) )
-                     item_values[ field_num ] = data_decrypt( item_values[ field_num ], get_server_id( ) );
+                     item_value = data_decrypt( item_value, get_server_id( ) );
                   else
-                     item_values[ field_num ] = data_decrypt( item_values[ field_num ], p_session_info->user_pwd_hash );
+                     item_value = data_decrypt( item_value, p_session_info->user_pwd_hash );
                }
 
                if( view.field_ids[ i ] == view.filename_field )
-                  filename_value = item_values[ field_num ];
+                  filename_value = item_value;
 
                if( view.field_ids[ i ] == view.permission_field )
-                  view_permission_value = item_values[ field_num ];
+                  view_permission_value = item_value;
 
                if( view.field_ids[ i ] == view.security_level_field )
-                  view_security_level_value = item_values[ field_num ];
+                  view_security_level_value = item_value;
 
                if( view.key_ids.id0 == view.value_ids[ i ] )
-                  view.key_values.value0 = item_values[ field_num ];
+                  view.key_values.value0 = item_value;
                else if( view.key_ids.id1 == view.value_ids[ i ] )
-                  view.key_values.value1 = item_values[ field_num ];
+                  view.key_values.value1 = item_value;
                else if( view.key_ids.id2 == view.value_ids[ i ] )
-                  view.key_values.value2 = item_values[ field_num ];
+                  view.key_values.value2 = item_value;
                else if( view.key_ids.id3 == view.value_ids[ i ] )
-                  view.key_values.value3 = item_values[ field_num ];
+                  view.key_values.value3 = item_value;
                else if( view.key_ids.id4 == view.value_ids[ i ] )
-                  view.key_values.value4 = item_values[ field_num ];
+                  view.key_values.value4 = item_value;
                else if( view.key_ids.id5 == view.value_ids[ i ] )
-                  view.key_values.value5 = item_values[ field_num ];
+                  view.key_values.value5 = item_value;
                else if( view.key_ids.id6 == view.value_ids[ i ] )
-                  view.key_values.value6 = item_values[ field_num ];
+                  view.key_values.value6 = item_value;
                else if( view.key_ids.id7 == view.value_ids[ i ] )
-                  view.key_values.value7 = item_values[ field_num ];
+                  view.key_values.value7 = item_value;
                else if( view.key_ids.id8 == view.value_ids[ i ] )
-                  view.key_values.value8 = item_values[ field_num ];
+                  view.key_values.value8 = item_value;
                else if( view.key_ids.id9 == view.value_ids[ i ] )
-                  view.key_values.value9 = item_values[ field_num ];
+                  view.key_values.value9 = item_value;
 
                if( view.vextra1_id == view.value_ids[ i ] )
-                  view.vextra1_value = item_values[ field_num ];
+                  view.vextra1_value = item_value;
                else if( view.vextra2_id == view.value_ids[ i ] )
-                  view.vextra2_value = item_values[ field_num ];
+                  view.vextra2_value = item_value;
 
-               view.field_values[ view.value_ids[ i ] ] = item_values[ field_num++ ];
+               if( field_num < item_values.size( ) )
+                  view.field_values[ view.value_ids[ i ] ] = item_values[ field_num++ ];
             }
 
             // NOTE: If a "force" field triggered the POST then user values for any
@@ -628,7 +633,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
 
             // NOTE: The value for the action field that was previously appended to the fetch is extracted here.
-            if( !view.actions_field.empty( ) )
+            if( !view.actions_field.empty( ) && field_num < item_values.size( ) )
                view.actions_value = item_values[ field_num++ ];
 
             // NOTE: Values for foreign key fields that were previously appended to the fetch are extracted here.
@@ -644,37 +649,42 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   }
                }
 
+               string item_value;
+               if( field_num < item_values.size( ) )
+                  item_value = item_values[ field_num ];
+
                // NOTE: If a "forced" field was actually a foreign key then replace its value with the key.
                if( is_forced && user_field_info.count( view.fk_field_ids[ i ] ) )
-                  user_field_info[ view.fk_field_ids[ i ] ] = item_values[ field_num ];
+                  user_field_info[ view.fk_field_ids[ i ] ] = item_value;
 
                // NOTE: If field is not "forced" and has a user value then replace the item value with
                // the user value.
                if( !is_forced && user_field_info.count( view.fk_field_ids[ i ] ) )
-                  item_values[ field_num ] = user_field_info[ view.fk_field_ids[ i ] ];
+                  item_value = user_field_info[ view.fk_field_ids[ i ] ];
 
                if( view.fkey_ids.id0 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value0 = item_values[ field_num ];
+                  view.fkey_values.value0 = item_value;
                else if( view.fkey_ids.id1 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value1 = item_values[ field_num ];
+                  view.fkey_values.value1 = item_value;
                else if( view.fkey_ids.id2 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value2 = item_values[ field_num ];
+                  view.fkey_values.value2 = item_value;
                else if( view.fkey_ids.id3 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value3 = item_values[ field_num ];
+                  view.fkey_values.value3 = item_value;
                else if( view.fkey_ids.id4 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value4 = item_values[ field_num ];
+                  view.fkey_values.value4 = item_value;
                else if( view.fkey_ids.id5 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value5 = item_values[ field_num ];
+                  view.fkey_values.value5 = item_value;
                else if( view.fkey_ids.id6 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value6 = item_values[ field_num ];
+                  view.fkey_values.value6 = item_value;
                else if( view.fkey_ids.id7 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value7 = item_values[ field_num ];
+                  view.fkey_values.value7 = item_value;
                else if( view.fkey_ids.id8 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value8 = item_values[ field_num ];
+                  view.fkey_values.value8 = item_value;
                else if( view.fkey_ids.id9 == view.fk_field_ids[ i ] )
-                  view.fkey_values.value9 = item_values[ field_num ];
+                  view.fkey_values.value9 = item_value;
 
-               view.fk_field_values[ view.fk_field_ids[ i ] ] = item_values[ field_num++ ];
+               if( field_num < item_values.size( ) )
+                  view.fk_field_values[ view.fk_field_ids[ i ] ] = item_values[ field_num++ ];
             }
 
             // NOTE: If a "key" source is editable then use its current value.

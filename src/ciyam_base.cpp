@@ -10193,7 +10193,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 }
 
 void perform_instance_fetch( class_base& instance,
- const string& key_info, instance_fetch_rc* p_rc, bool only_sys_fields )
+ const string& key_info, instance_fetch_rc* p_rc, bool only_sys_fields, bool do_not_use_cache )
 {
    if( !gtp_session->p_storage_handler->get_ods( ) )
       throw runtime_error( "no storage is currently linked" );
@@ -10223,7 +10223,7 @@ void perform_instance_fetch( class_base& instance,
    if( has_simple_keyinfo )
       has_tx_key_info = gtp_session->tx_key_info.count( instance.get_class_id( ) + ":" + key_info );
 
-   if( !has_tx_key_info )
+   if( !has_tx_key_info && !do_not_use_cache )
       found_in_cache = fetch_instance_from_cache( instance, key_info, only_sys_fields );
 
    bool found = found_in_cache;

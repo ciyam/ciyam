@@ -1026,11 +1026,12 @@ void class_base::finish_review( )
    cleanup_dynamic_instance( );
 }
 
-void class_base::perform_fetch( const string& key_info, perform_fetch_rc* p_rc )
+void class_base::perform_fetch( const string& key_info, perform_fetch_rc* p_rc, bool force )
 {
    instance_fetch_rc rc;
 
-   perform_instance_fetch( *this, key_info, p_rc ? &rc : 0 );
+   // NOTE: If "force" is true then will not fetch from the record cache.
+   perform_instance_fetch( *this, key_info, p_rc ? &rc : 0, false, force );
 
    if( p_rc )
       *p_rc = ( perform_fetch_rc )( int )rc;
@@ -2261,9 +2262,9 @@ void class_base::trace( const string& s ) const
    TRACE_LOG( TRACE_MODS_GEN, s );
 }
 
-void class_base::fetch_updated_instance( )
+void class_base::fetch_updated_instance( bool force )
 {
-   perform_fetch( );
+   perform_fetch( 0, force );
 
    set_ver_exp( get_version_info( ) );
 }

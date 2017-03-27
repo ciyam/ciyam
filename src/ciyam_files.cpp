@@ -1634,15 +1634,26 @@ void remove_file_archive( const string& name, bool destroy_files )
          string path;
          ods_fs.fetch_from_text_file( c_file_archive_path, path );
 
-         ods_fs.set_folder( c_folder_archive_files_folder );
+         string status_info;
+         ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
 
-         vector< string > file_names;
-         ods_fs.list_files( file_names );
+         string new_status_info( get_archive_status( path ) );
 
-         for( size_t i = 0; i < file_names.size( ); i++ )
-            file_remove( path + '/' + file_names[ i ] );
+         if( trim( status_info ) != new_status_info )
+            ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
 
-         ods_fs.set_root_folder( c_file_archives_folder );
+         if( new_status_info == string( c_okay ) )
+         {
+            ods_fs.set_folder( c_folder_archive_files_folder );
+
+            vector< string > file_names;
+            ods_fs.list_files( file_names );
+
+            for( size_t i = 0; i < file_names.size( ); i++ )
+               file_remove( path + '/' + file_names[ i ] );
+
+            ods_fs.set_root_folder( c_file_archives_folder );
+         }
       }
 
       ods_fs.remove_folder( name, 0, true );
@@ -1674,37 +1685,48 @@ void repair_file_archive( const string& name )
       int64_t size_limit = 0;
       ods_fs.fetch_from_text_file( c_file_archive_size_limit, size_limit );
 
-      ods_fs.remove_folder( c_folder_archive_files_folder, 0, true );
+      string status_info;
+      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
 
-      ods_fs.add_folder( c_folder_archive_files_folder );
-      ods_fs.set_folder( c_folder_archive_files_folder );
+      string new_status_info( get_archive_status( path ) );
 
-      // NOTE: Iterate through the files in the path adding all
-      // that have names that appear to be valid SHA256 hashes.
-      file_filter ff;
-      fs_iterator fs( path, &ff );
+      if( trim( status_info ) != new_status_info )
+         ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
 
-      while( fs.has_next( ) )
+      if( new_status_info == string( c_okay ) )
       {
-         string name( fs.get_name( ) );
-         regex expr( c_regex_hash_256 );
+         ods_fs.remove_folder( c_folder_archive_files_folder, 0, true );
 
-         if( expr.search( name ) == 0 )
+         ods_fs.add_folder( c_folder_archive_files_folder );
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         // NOTE: Iterate through the files in the path adding all
+         // that have names that appear to be valid SHA256 hashes.
+         file_filter ff;
+         fs_iterator fs( path, &ff );
+
+         while( fs.has_next( ) )
          {
-            ods_fs.add_file( name, c_file_zero_length );
-            size_used += file_size( fs.get_full_name( ) );
+            string name( fs.get_name( ) );
+            regex expr( c_regex_hash_256 );
+
+            if( expr.search( name ) == 0 )
+            {
+               ods_fs.add_file( name, c_file_zero_length );
+               size_used += file_size( fs.get_full_name( ) );
+            }
          }
+
+         ods_fs.set_folder( ".." );
+
+         if( size_used > size_limit )
+            size_limit = size_used;
+         else
+            size_avail = size_limit - size_used;
+
+         ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
+         ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
       }
-
-      ods_fs.set_folder( ".." );
-
-      if( size_used > size_limit )
-         size_limit = size_used;
-      else
-         size_avail = size_limit - size_used;
-
-      ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
-      ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
    }
 }
 
@@ -1745,7 +1767,7 @@ void archives_status_update( const string& name )
       else
          new_status_info = get_archive_status( path );
 
-      if( status_info != new_status_info )
+      if( trim( status_info ) != new_status_info )
          ods_fs.store_as_text_file( c_file_archive_status_info, new_status_info, c_status_info_pad_len );
 
       ods_fs.set_folder( ".." );
