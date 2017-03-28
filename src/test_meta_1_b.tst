@@ -1,5 +1,5 @@
 
-> storage_init Meta
+> storage_init ciyam
 
 > pf 100 139100 "" 139101,139102,139103,139104,139105
 

@@ -23,7 +23,7 @@ Basic Changes to the Application Server and FCGI User Interface
 After updating the repository files (via "git") the first thing to do is to change to the "src" directory then
 run the script "config" (use "./config" for Linux). Although it is most likely that this script will have zero
 effect it is possible that it might need to be run (to know whether this step needs to be performed just check
-whether either of the files "config.info.default" or "config.h.xrep" have changed).
+whether any of the files "makefile.sio.xrep", "config.info.default" and "config.h.xrep" had been changed).
 
 The next step is to execute "make all" which will compile any source code changes that affects the application
 server as well as the FCGI user interface software and various tools that are a part of the software platform.

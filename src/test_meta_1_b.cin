@@ -1,4 +1,4 @@
-storage_init Meta
+storage_init ciyam
 pf 100 139100 "" 139101,139102,139103,139104,139105
 pc admin 20011002 100 139100 001 "139102=test1,139104=1024"
 #~mkdir test1

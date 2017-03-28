@@ -10,7 +10,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Test installation of the Standard and User packages.
+     <description>Test installation of the Standard and User packages as well as Global Archive maintenance.
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet
@@ -19,6 +19,12 @@
      </test_step>
      <test_step/>
       <name>a
+      <exec>!ciyam_client -echo -quiet -no_stderr
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
       <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate

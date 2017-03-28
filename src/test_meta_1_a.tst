@@ -21,11 +21,11 @@ guest_user
 > pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
 Installing User Package...
 
-> pf Meta Class "Id " Name,Plural,Id -min
+> pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Information,System_Information,M001C100
 User,User,M001C101
 
-> pf Meta Field "Id " Name,Id -min
+> pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Vendor,M001C100F101
 Reference,M001C100F102
@@ -59,7 +59,7 @@ No_Email,M001C101F124
 No_Email_Padding,M001C101F125
 Dummy_Self,M001C101F126
 
-> pf Meta Enum "Id " Name,Id -min
+> pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
 Currency,E100
@@ -75,7 +75,7 @@ Minutes,E109
 Occurrence,E110
 Orientation,E111
 
-> pf Meta Type "Id " Name,Id -min
+> pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
 datetime,T001

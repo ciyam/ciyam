@@ -580,7 +580,13 @@ void file_transfer( const string& name,
             throw runtime_error( "timeout occurred reading send response for file transfer" );
 
          if( next != string( p_ack_message ) )
-            throw runtime_error( "was expecting '" + string( p_ack_message ) + "' but found '" + next + "'" );
+         {
+            // NOTE: If "error" is found in the message then just throw it as is.
+            if( next.find( "error" ) != string::npos )
+               throw runtime_error( next );
+            else
+               throw runtime_error( "was expecting '" + string( p_ack_message ) + "' but found '" + next + "'" );
+         }
 
          if( inpf.eof( ) )
             break;

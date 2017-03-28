@@ -6,8 +6,8 @@ pc guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302
 pe guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
 pc guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=User,302800=guest_model"
 pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
-pf Meta Class "Id " Name,Plural,Id -min
-pf Meta Field "Id " Name,Id -min
-pf Meta Enum "Id " Name,Id -min
-pf Meta Type "Id " Name,Id -min
+pf 100 106100 "106104 " 106101,106102,106104 -min
+pf 100 107100 "107110 " 107101,107110 -min
+pf 100 103100 "103104 " 103101,103104 -min
+pf 100 102100 "102111 " 102101,102111 -min
 .quit

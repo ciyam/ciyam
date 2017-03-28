@@ -1112,7 +1112,7 @@
     </test>
     <test/>
      <name>2
-     <description>Test loading Meta, viewing various artifacts, basic object and Global Archive operations.
+     <description>Test loading the Meta model, viewing various artifacts and basic object object operations.
      <test_step/>
       <name>a
       <exec>!ciyam_client -echo -quiet -no_stderr
@@ -1121,12 +1121,6 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>!ciyam_client -echo -quiet -no_stderr
-      <input>true
-      <output>generate
-     </test_step>
-     <test_step/>
-      <name>c
       <exec>!ciyam_client -echo -quiet -no_stderr
       <input>true
       <output>generate
