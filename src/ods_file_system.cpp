@@ -434,11 +434,20 @@ void ods_file_system::list_files( const string& expr, vector< string >& list, bo
    }
 }
 
-void ods_file_system::list_folders( const string& expr, vector< string >& list )
+void ods_file_system::list_folders( const string& expr,
+ vector< string >& list, const string& start_from, bool inclusive, size_t limit, bool in_reverse_order )
 {
    ostringstream osstr;
 
-   list_folders( expr, osstr );
+   pair< string, string > range;
+
+   if( !start_from.empty( ) )
+   {
+      range.first = replaced( current_folder,
+       c_folder_separator, c_colon_separator ) + c_folder_separator + start_from;
+   }
+
+   list_folders( expr, osstr, false, start_from.empty( ) ? 0 : &range, true, limit, in_reverse_order );
 
    string folder_list( osstr.str( ) );
 
@@ -449,7 +458,8 @@ void ods_file_system::list_folders( const string& expr, vector< string >& list )
       split( folder_list, list, '\n' );
 }
 
-void ods_file_system::list_folders( const string& expr, ostream& os, bool full_path )
+void ods_file_system::list_folders( const string& expr, ostream& os,
+ bool full_path, pair< string, string >* p_range, bool inclusive, size_t limit, bool in_reverse_order )
 {
    string entity_expr( current_folder );
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
@@ -461,7 +471,7 @@ void ods_file_system::list_folders( const string& expr, ostream& os, bool full_p
 
    if( !entity_expr.empty( ) )
    {
-      entity_expr = replace( entity_expr, c_folder_separator, c_colon_separator );
+      replace( entity_expr, c_folder_separator, c_colon_separator );
 
       string::size_type pos = entity_expr.rfind( c_colon );
 
@@ -479,7 +489,9 @@ void ods_file_system::list_folders( const string& expr, ostream& os, bool full_p
       if( full_path )
          search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
-      perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0, full_path ? '\0' : c_folder );
+      perform_match( os, entity_expr, "", 0, &search_replaces, 0, 0,
+       full_path ? '\0' : c_folder, e_file_size_output_type_none,
+       0, 0, p_range, inclusive, limit, in_reverse_order );
    }
 }
 
@@ -561,7 +573,8 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       else
       {
          string value( current_folder );
-         value = replace( value, c_folder_separator, c_pipe_separator );
+
+         replace( value, c_folder_separator, c_pipe_separator );
 
          value += string( c_folder_separator ) + name;
 
@@ -667,7 +680,8 @@ void ods_file_system::get_file( const string& name,
       btree_type& bt( p_impl->bt );
 
       string value( current_folder );
-      value = replace( value, c_folder_separator, c_pipe_separator );
+
+      replace( value, c_folder_separator, c_pipe_separator );
 
       value += string( c_folder_separator ) + name;
 
@@ -713,7 +727,8 @@ bool ods_file_system::has_file( const string& name )
       btree_type& bt( p_impl->bt );
 
       string value( current_folder );
-      value = replace( value, c_folder_separator, c_pipe_separator );
+
+      replace( value, c_folder_separator, c_pipe_separator );
 
       value += string( c_folder_separator ) + name;
 
@@ -752,7 +767,8 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
       else
       {
          string value( current_folder );
-         value = replace( value, c_folder_separator, c_pipe_separator );
+
+         replace( value, c_folder_separator, c_pipe_separator );
 
          value += string( c_folder_separator ) + name;
 
@@ -806,7 +822,8 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
                   source_folder = string( c_root_folder );
 
                string source_value( source_folder + c_folder_separator + source_name );
-               source_value = replace( source_value, c_folder_separator, c_pipe_separator );
+
+               replace( source_value, c_folder_separator, c_pipe_separator );
 
                string::size_type rpos = source_value.rfind( c_pipe_separator );
 
@@ -887,7 +904,8 @@ void ods_file_system::move_file( const string& name, const string& destination, 
          auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
 
          string value( current_folder );
-         value = replace( value, c_folder_separator, c_pipe_separator );
+
+         replace( value, c_folder_separator, c_pipe_separator );
 
          value += string( c_folder_separator ) + name;
 
@@ -936,7 +954,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
 
             if( !dest_folder.empty( ) )
             {
-               dest_folder = replace( dest_folder, c_folder_separator, c_pipe_separator );
+               replace( dest_folder, c_folder_separator, c_pipe_separator );
 
                dest_folder += string( c_folder_separator );
 
@@ -1077,7 +1095,8 @@ void ods_file_system::replace_file( const string& name, const string& source, os
       auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
 
       string value( current_folder );
-      value = replace( value, c_folder_separator, c_pipe_separator );
+
+      replace( value, c_folder_separator, c_pipe_separator );
 
       value += string( c_folder_separator ) + name;
 
@@ -1617,10 +1636,11 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
 
 void ods_file_system::perform_match(
  ostream& os, const string& expr, const string& regexpr, size_t* p_count,
- vector< pair< string, string > >* p_search_replaces,
- const char* p_prefix_1, const char* p_prefix_2,
- const char erase_all_before_and_including, file_size_output_type file_size_output,
- const char* p_ignore_with_prefix, deque< string >* p_extra_items, pair< string, string >* p_range )
+ vector< pair< string, string > >* p_search_replaces, const char* p_prefix_1,
+ const char* p_prefix_2, const char erase_all_before_and_including,
+ file_size_output_type file_size_output, const char* p_ignore_with_prefix,
+ deque< string >* p_extra_items, pair< string, string >* p_range,
+ bool inclusive, size_t limit, bool in_reverse_order )
 {
    try
    {
@@ -1666,7 +1686,43 @@ void ods_file_system::perform_match(
          match_iter = bt.lower_bound( tmp_item );
       }
       else
-         match_iter = bt.lower_bound( match_item );
+      {
+         if( in_reverse_order && match_item.val.empty( ) )
+         {
+            match_iter = bt.end( );
+
+            if( !bt.empty( ) )
+               --match_iter;
+         }
+         else
+         {
+            btree_type::item_type tmp_match_item( match_item );
+
+            // NOTE: In order to find the last item add a dummy
+            // character (as ODS file system names are expected
+            // to only contain valid OS file name characters).
+            if( in_reverse_order )
+               tmp_match_item.val += ( char )0xff;
+
+            match_iter = bt.lower_bound( tmp_match_item );
+         }
+      }
+
+      if( !inclusive )
+      {
+         if( !in_reverse_order )
+         {
+            if( match_iter != bt.end( ) )
+               ++match_iter;
+         }
+         else
+         {
+            if( match_iter == bt.begin( ) )
+               match_iter = bt.end( );
+            else
+               --match_iter;
+         }
+      }
 
       wildcard_compare_less_functor< btree_type::item_type > compare_less;
       wildcard_compare_equal_functor< btree_type::item_type > compare_equal;
@@ -1677,10 +1733,14 @@ void ods_file_system::perform_match(
          compare_less.use_truncated_comparison( false );
 
       size_t count = 0;
+      size_t iterations = 0;
+
       if( match_iter != bt.end( ) )
       {
          btree_type::item_type tmp_item;
          tmp_item.val = expr;
+
+         bool okay = true;
 
          do
          {
@@ -1688,7 +1748,7 @@ void ods_file_system::perform_match(
                break;
 
 #ifdef USE_BULK_PAUSE
-            if( ++count % 5000 == 0 )
+            if( ++iterations % 5000 == 0 )
             {
                btree_type::item_type tmp_item;
                tmp_item.val = match_iter->val;
@@ -1728,7 +1788,7 @@ void ods_file_system::perform_match(
                      if( !val.empty( ) && p_search_replaces )
                      {
                         for( size_t i = 0; i < p_search_replaces->size( ); i++ )
-                           val = replace( val, ( *p_search_replaces )[ i ].first, ( *p_search_replaces )[ i ].second );
+                           replace( val, ( *p_search_replaces )[ i ].first, ( *p_search_replaces )[ i ].second );
                      }
 
                      if( p_prefix_1 && val.find( p_prefix_1 ) == 0 )
@@ -1778,11 +1838,27 @@ void ods_file_system::perform_match(
                         }
 
                         os << val << '\n';
+
+                        ++count;
+
+                        if( limit && count >= limit )
+                           break;
                      }
                   }
                }
             }
-         } while( ++match_iter != bt.end( ) && compare_less( *match_iter, match_item ) );
+
+            if( !in_reverse_order )
+            {
+               if( ++match_iter == bt.end( ) || !compare_less( *match_iter, match_item ) )
+                  okay = false;
+            }
+            else
+            {
+               if( match_iter == bt.begin( ) || !compare_less( match_item, *--match_iter ) )
+                  okay = false;
+            }
+         } while( okay );
       }
 
       if( p_count )
@@ -1879,7 +1955,7 @@ void ods_file_system::get_child_folders(
    if( expr.empty( ) && current_folder != string( c_root_folder ) )
       folder_expr += string( c_folder_separator );
 
-   folder_expr = replace( folder_expr, c_folder_separator, c_colon_separator );
+   replace( folder_expr, c_folder_separator, c_colon_separator );
 
    string::size_type pos = folder_expr.rfind( c_colon );
 
@@ -1937,7 +2013,7 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
       if( objects )
          get_child_folders( expr, full, extras );
 
-      entity_expr = replace( entity_expr, c_folder_separator, c_pipe_separator );
+      replace( entity_expr, c_folder_separator, c_pipe_separator );
 
       if( is_folder && !had_wildcard )
          entity_expr += "/*";
@@ -1988,7 +2064,7 @@ void ods_file_system::branch_files_or_objects( ostream& os, const string& folder
 
    string entity_expr( folder );
 
-   entity_expr = replace( entity_expr, c_folder_separator, c_pipe_separator );
+   replace( entity_expr, c_folder_separator, c_pipe_separator );
 
    entity_expr += c_folder_separator + expr;
 

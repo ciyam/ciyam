@@ -1801,7 +1801,7 @@ bool has_instance_in_global_storage( class_base& instance, const string& key )
 }
 
 void fetch_keys_from_global_storage( class_base& instance,
- const string& key_info, int row_limit, vector< string >& global_keys )
+ const string& start_from, bool inclusive, size_t limit, vector< string >& global_keys, bool in_reverse_order )
 {
    string persistence_extra( instance.get_persistence_extra( ) );
 
@@ -1812,14 +1812,13 @@ void fetch_keys_from_global_storage( class_base& instance,
 
    gap_ofs->set_root_folder( root_child_folder );
 
-   if( row_limit == 1 )
+   if( limit == 1 )
    {
-      if( gap_ofs->has_folder( key_info ) )
-         global_keys.push_back( key_info );
+      if( gap_ofs->has_folder( start_from ) )
+         global_keys.push_back( start_from );
    }
    else
-      // FUTURE: Need to use both "key_info" and "row_limit" here.
-      gap_ofs->list_folders( global_keys );
+      gap_ofs->list_folders( global_keys, start_from, inclusive, limit, in_reverse_order );
 }
 
 bool fetch_instance_from_global_storage( class_base& instance, const string& key_info,
@@ -10599,6 +10598,20 @@ bool perform_instance_iterate( class_base& instance,
       if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
          skip_after_fetch = true;
 
+      size_t row_cache_limit = c_iteration_row_cache_limit;
+
+      string row_cache_limit_value(
+       get_session_variable( get_special_var_name( e_special_var_row_cache_limit ) ) );
+
+      if( !row_cache_limit_value.empty( ) )
+         row_cache_limit = from_string< size_t >( row_cache_limit_value );
+
+      if( row_cache_limit < 2 )
+         throw runtime_error( "unexpected invalid < 2 row_cache_limit" );
+
+      if( row_limit < 0 && instance.get_persistence_type( ) != 0 )  // i.e. SQL persistence
+         row_limit = 0;
+
       if( row_limit < 0 )
          found = true;
       else
@@ -10606,11 +10619,16 @@ bool perform_instance_iterate( class_base& instance,
          // NOTE: Unless a single row limit was specified (which is an alternate way of performing an
          // instance fetch) then iteration is flagged so that "after_fetch" triggers can detect this.
          if( row_limit != 1 )
-            instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
+         {
+            if( !instance.get_is_iterating( ) )
+            {
+               instance.set_variable(
+                get_special_var_name( e_special_var_loop ),
+                to_comparable_string( 0, false, c_loop_variable_digits ) );
 
-         instance.set_variable(
-          get_special_var_name( e_special_var_loop ),
-          to_comparable_string( 0, false, c_loop_variable_digits ) );
+               instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
+            }
+         }
 
          if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
@@ -10619,7 +10637,18 @@ bool perform_instance_iterate( class_base& instance,
          }
          else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
          {
-            fetch_keys_from_global_storage( instance, key_info, row_limit, global_keys );
+            size_t limit = row_limit > 0 ? row_limit : row_cache_limit;
+
+            if( limit > row_cache_limit )
+               limit = row_cache_limit;
+
+            string start_from( key_info );
+            if( key_info == c_nul_key )
+               start_from = instance.get_key( );
+
+            fetch_keys_from_global_storage( instance,
+             start_from, inclusive, limit, global_keys, ( direction == e_iter_direction_backwards ) );
+
             found = ( global_keys.size( ) > 0 );
          }
 
@@ -10680,7 +10709,7 @@ bool perform_instance_iterate( class_base& instance,
 
                rows.push_back( columns );
 
-               if( rows.size( ) == c_iteration_row_cache_limit )
+               if( rows.size( ) == row_cache_limit )
                {
                   query_finished = false;
                   break;
@@ -10724,7 +10753,7 @@ bool perform_instance_iterate( class_base& instance,
                      rows.push_back( columns );
                   }
 
-                  if( rows.size( ) == c_iteration_row_cache_limit )
+                  if( rows.size( ) == row_cache_limit - 1 )
                   {
                      query_finished = false;
                      break;
@@ -10792,7 +10821,7 @@ bool perform_instance_iterate_next( class_base& instance )
    bool found = false, cache_depleted = false;
    if( !instance_accessor.row_cache( ).empty( ) )
    {
-      if( !instance_accessor.p_sql_dataset( ) && instance_accessor.row_cache( ).size( ) == 1 )
+      if( instance_accessor.row_cache( ).size( ) == 1 && instance_accessor.row_cache( )[ 0 ].empty( ) )
       {
          cache_depleted = true;
          instance.iterate_stop( );

@@ -69,11 +69,23 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       list_files( "", list, include_links );
    }
 
-   void list_folders( const std::string& expr, std::vector< std::string >& list );
+   void list_folders( const std::string& expr,
+    std::vector< std::string >& list, const std::string& start_from,
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
 
-   inline void list_folders( std::vector< std::string >& list ) { list_folders( "", list ); }
+   inline void list_folders( std::vector< std::string >& list ) { list_folders( "", list, "" ); }
 
-   void list_folders( const std::string& expr, std::ostream& os, bool full_path = false );
+   inline void list_folders( std::vector< std::string >& list,
+    const std::string& start_from, bool inclusive = true, size_t limit = 0, bool in_reverse_order = false )
+   {
+      list_folders( "", list, start_from, inclusive, limit, in_reverse_order );
+   }
+
+   void list_folders(
+    const std::string& expr,
+    std::ostream& os, bool full_path = false,
+    std::pair< std::string, std::string >* p_range = 0,
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
 
    inline void list_folders( std::ostream& os, bool full_path = false ) { list_folders( "", os, full_path ); }
 
@@ -222,7 +234,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
     const char erase_all_before_and_including = '\0',
     file_size_output_type file_size_output = e_file_size_output_type_none,
     const char* p_ignore_with_prefix = 0, std::deque< std::string >* p_extra_items = 0,
-    std::pair< std::string, std::string >* p_range = 0 );
+    std::pair< std::string, std::string >* p_range = 0, bool inclusive = true,
+    size_t limit = 0, bool in_reverse_order = false );
 
    void expand_entity_expression( const std::string& expr,
     bool had_wildcard, std::string& entity_expr, const char* p_suffix = 0 );
