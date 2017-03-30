@@ -212,6 +212,9 @@ void setup_view_fields( view_source& view,
       }
    }
 
+   int key_field_index = -1;
+   string key_field_display_name;
+
    for( size_t i = 0; i < vinfo.fields.size( ); i++ )
    {
       fld_info fld( vinfo.fields[ i ] );
@@ -262,6 +265,7 @@ void setup_view_fields( view_source& view,
             view.upper_fields.insert( value_id );
 
          if( extra_data.count( c_view_field_extra_actions )
+          || extra_data.count( c_view_field_extra_key_name )
           || has_perm_extra( c_field_extra_hidden, extra_data, sess_info )
           || is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info ) )
             view.hidden_fields.insert( value_id );
@@ -551,6 +555,12 @@ void setup_view_fields( view_source& view,
       }
       view.display_names.push_back( display_name );
 
+      if( field_id == c_key_field )
+         key_field_index = view.display_names.size( ) - 1;
+
+      if( extra_data.count( c_view_field_extra_key_name ) )
+         key_field_display_name = display_name;
+
       string display_name_for_edit( display_name );
       if( !fld.pdname.empty( ) )
       {
@@ -564,6 +574,12 @@ void setup_view_fields( view_source& view,
       if( fld.pclass == view.cid )
          view.self_relationships.insert( field_id );
    }
+
+   if( key_field_index >= 0 && !key_field_display_name.empty( ) )
+   {
+      view.display_names[ key_field_index ] = key_field_display_name;
+      view.edit_display_names[ key_field_index ] = key_field_display_name;
+   }   
 
    view.root_folder = vinfo.static_instance_key;
 }

@@ -471,6 +471,7 @@ const char* const c_view_field_extra_no_edit = "no_edit";
 const char* const c_view_field_extra_non_new = "non_new";
 const char* const c_view_field_extra_vextra1 = "vextra1";
 const char* const c_view_field_extra_vextra2 = "vextra2";
+const char* const c_view_field_extra_key_name = "key_name";
 const char* const c_view_field_extra_new_edit = "new_edit";
 const char* const c_view_field_extra_new_only = "new_only";
 const char* const c_view_field_extra_non_view = "non_view";

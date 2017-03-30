@@ -54,6 +54,7 @@ enum special_var
    e_special_var_uid,
    e_special_var_arg1,
    e_special_var_arg2,
+   e_special_var_hash,
    e_special_var_val1,
    e_special_var_val2,
    e_special_var_file,

@@ -12,22 +12,27 @@
  <script/>
   <name>add_archive
   <filename>*script*
-  <arguments>add_archive.cin @storage @path @size @name
+  <arguments>add_archive.cin @path @size @name
+ </script>
+ <script/>
+  <name>add_blacklist
+  <filename>*script*
+  <arguments>add_blacklist.cin @hash
  </script>
  <script/>
   <name>remove_archive
   <filename>*script*
-  <arguments>remove_archive.cin @storage @name
+  <arguments>remove_archive.cin @name
  </script>
  <script/>
   <name>repair_archive
   <filename>*script*
-  <arguments>repair_archive.cin @storage @name
+  <arguments>repair_archive.cin @name
  </script>
  <script/>
   <name>status_archive
   <filename>*script*
-  <arguments>status_archive.cin @storage @name
+  <arguments>status_archive.cin @name
  </script>
  <script/>
   <name>install_package

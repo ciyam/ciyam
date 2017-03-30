@@ -87,7 +87,7 @@
 `{`$enum_view_pdf_view_type`=`'0=none 2=Standard_2_Column 99=Customised`'`}
 `{`$enum_zero_padding`=`'0=none 1=decimals 2=all_digits 3=one_decimal`'`}
 `{`}
-`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
+`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Global_Blacklist_Entry Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
 `{`}
 `{`$specification_Application_group_list_id`=`'602900`'`}
 `{`$specification_Application_group_list_cid`=`'127100`'`}
@@ -1072,7 +1072,7 @@
 `{`$specification_Global_Archive_view_fmand000`=`'true`'`}
 `{`$specification_Global_Archive_view_field001`=`'139101`'`}
 `{`$specification_Global_Archive_view_ftype001`=`'string`'`}
-`{`$specification_Global_Archive_view_extra001`=`'non_new+max_size=100`'`}
+`{`$specification_Global_Archive_view_extra001`=`'key_name+max_size=100`'`}
 `{`$specification_Global_Archive_view_fmods001`=`'`'`}
 `{`$specification_Global_Archive_view_fname001`=`'field_global_archive_name`'`}
 `{`$specification_Global_Archive_view_fmand001`=`'false`'`}
@@ -1106,6 +1106,44 @@
 `{`$specification_Global_Archive_view_fmods006`=`'`'`}
 `{`$specification_Global_Archive_view_fname006`=`'field_global_archive_actions`'`}
 `{`$specification_Global_Archive_view_fmand006`=`'false`'`}
+`{`}
+`{`$specification_Global_Blacklist_Entry_list_id`=`'603900`'`}
+`{`$specification_Global_Blacklist_Entry_list_cid`=`'140100`'`}
+`{`$specification_Global_Blacklist_Entry_list_name`=`'Global_Blacklist_Entries`'`}
+`{`$specification_Global_Blacklist_Entry_list_type`=`'admin`'`}
+`{`$specification_Global_Blacklist_Entry_list_acts`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_list_mods`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_list_extra`=`'no_erase`'`}
+`{`$specification_Global_Blacklist_Entry_list_order`=`'forward`'`}
+`{`$specification_Global_Blacklist_Entry_list_binfo`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_list_column00`=`'140101`'`}
+`{`$specification_Global_Blacklist_Entry_list_clname00`=`'Global_Blacklist_Entry_Content_Hash`'`}
+`{`$specification_Global_Blacklist_Entry_list_cltype00`=`'string`'`}
+`{`$specification_Global_Blacklist_Entry_list_clxtra00`=`'max_size=100`'`}
+`{`$specification_Global_Blacklist_Entry_list_clmods00`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_list_cluniq00`=`'false`'`}
+`{`$specification_Global_Blacklist_Entry_list_cindex00`=`'false`'`}
+`{`}
+`{`$specification_Global_Blacklist_Entry_view_id`=`'603950`'`}
+`{`$specification_Global_Blacklist_Entry_view_cid`=`'140100`'`}
+`{`$specification_Global_Blacklist_Entry_view_name`=`'Global_Blacklist_Entry`'`}
+`{`$specification_Global_Blacklist_Entry_view_type`=`'admin`'`}
+`{`$specification_Global_Blacklist_Entry_view_extra`=`'no_edit,auto_back`'`}
+`{`$specification_Global_Blacklist_Entry_view_mods`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_binfo`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_fnums`=`'000 001`'`}
+`{`$specification_Global_Blacklist_Entry_view_field000`=`'@key`'`}
+`{`$specification_Global_Blacklist_Entry_view_ftype000`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_extra000`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_fmods000`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_fname000`=`'field_key`'`}
+`{`$specification_Global_Blacklist_Entry_view_fmand000`=`'true`'`}
+`{`$specification_Global_Blacklist_Entry_view_field001`=`'140101`'`}
+`{`$specification_Global_Blacklist_Entry_view_ftype001`=`'string`'`}
+`{`$specification_Global_Blacklist_Entry_view_extra001`=`'key_name+max_size=100`'`}
+`{`$specification_Global_Blacklist_Entry_view_fmods001`=`'`'`}
+`{`$specification_Global_Blacklist_Entry_view_fname001`=`'field_global_blacklist_entry_content_hash`'`}
+`{`$specification_Global_Blacklist_Entry_view_fmand001`=`'false`'`}
 `{`}
 `{`$specification_Index_view_id`=`'601810`'`}
 `{`$specification_Index_view_cid`=`'108100`'`}

@@ -886,6 +886,8 @@ field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
 modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
 procedure_add -id=139410 Global_Archive Status_Update
 procedure_add -id=139420 Global_Archive Repair_Archive
+class_add -id=140100 Global_Blacklist_Entry Global_Blacklist_Entries -x=global:blst!
+field_add -id=140101 Global_Blacklist_Entry Content_Hash str100 opt -transient
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -2245,5 +2247,7 @@ specification_add -id=603310 {Initial_Record_Value}_child_list0 list "@603310_* 
 specification_add -id=603500 {Package_Type}_list list "* admin:no_limit Package_Type Name,Version"
 specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Single;no_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
 specification_add -id=603800 {Global_Archive}_list list "* admin Global_Archive Name,Path,Size_Avail,Size_Limit,Status_Info"
-specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_back Global_Archive @key,Name;non_new,Path,Size_Avail;non_new+no_edit,Size_Limit,Status_Info;non_new+no_edit,Actions"
+specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_back Global_Archive @key,Name;key_name,Path,Size_Avail;non_new+no_edit,Size_Limit,Status_Info;non_new+no_edit,Actions"
+specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin:no_erase Global_Blacklist_Entry Content_Hash"
+specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
 model_save

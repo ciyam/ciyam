@@ -2063,6 +2063,12 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 {
    guard g( g_mutex );
 
+   regex expr( c_regex_hash_256 );
+
+   if( expr.search( hash ) == string::npos )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "invalid file hash '" + hash + "'" );
+
    vector< string > paths;
    vector< string > archives;
 

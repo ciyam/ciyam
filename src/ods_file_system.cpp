@@ -405,11 +405,12 @@ string ods_file_system::determine_strip_and_change_folder( string& name, ostream
    return original_folder;
 }
 
-void ods_file_system::list_files( const string& expr, vector< string >& list, bool include_links )
+void ods_file_system::list_files( const string& expr, vector< string >& list,
+ bool include_links, const string& start_from, bool inclusive, size_t limit, bool in_reverse_order )
 {
    ostringstream osstr;
 
-   list_files( expr, osstr, e_list_style_brief );
+   list_files( expr, osstr, start_from, e_list_style_brief, inclusive, limit, in_reverse_order );
 
    string file_list( osstr.str( ) );
 
@@ -1989,7 +1990,9 @@ void ods_file_system::get_child_folders(
    }
 }
 
-void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bool objects, list_style style )
+void ods_file_system::list_files_or_objects(
+ const string& expr, ostream& os, const string& start_from,
+ bool objects, list_style style, bool inclusive, size_t limit, bool in_reverse_order )
 {
    bool brief = ( style == e_list_style_brief );
    bool full = ( style == e_list_style_extended );
@@ -2005,6 +2008,14 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
        || entity_expr == string( c_root_folder );
 
       bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
+
+      pair< string, string > range;
+
+      if( !start_from.empty( ) )
+      {
+         range.first = replaced( current_folder,
+          c_folder_separator, c_pipe_separator ) + c_folder_separator + start_from;
+      }
 
       deque< string > extras;
 
@@ -2031,9 +2042,10 @@ void ods_file_system::list_files_or_objects( const string& expr, ostream& os, bo
       if( full )
          search_replaces.push_back( make_pair( "//", c_root_folder ) );
 
-      perform_match( os, entity_expr, "",
-       0, &search_replaces, 0, 0, full ? '\0' : c_folder, brief ? e_file_size_output_type_none
-       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), 0, &extras );
+      perform_match( os, entity_expr, "", 0, &search_replaces,
+       0, 0, full ? '\0' : c_folder, brief ? e_file_size_output_type_none
+       : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ),
+       0, &extras, &range, inclusive, limit, in_reverse_order );
    }
 }
 

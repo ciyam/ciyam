@@ -47,6 +47,7 @@ const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
+const char* const c_special_variable_hash = "@hash";
 const char* const c_special_variable_val1 = "@val1";
 const char* const c_special_variable_val2 = "@val2";
 const char* const c_special_variable_file = "@file";
@@ -178,6 +179,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_arg2:
       s = string( c_special_variable_arg2 );
+      break;
+
+      case e_special_var_hash:
+      s = string( c_special_variable_hash );
       break;
 
       case e_special_var_val1:

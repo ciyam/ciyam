@@ -8,6 +8,7 @@
  Meta_Enum_Item.cpp\
  Meta_Field.cpp\
  Meta_Global_Archive.cpp\
+ Meta_Global_Blacklist_Entry.cpp\
  Meta_Index.cpp\
  Meta_Initial_Record.cpp\
  Meta_Initial_Record_Value.cpp\
@@ -45,6 +46,7 @@
  Meta_Enum_Item.cms\
  Meta_Field.cms\
  Meta_Global_Archive.cms\
+ Meta_Global_Blacklist_Entry.cms\
  Meta_Index.cms\
  Meta_Initial_Record.cms\
  Meta_Initial_Record_Value.cms\

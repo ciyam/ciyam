@@ -53,20 +53,40 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    inline void list_files( std::ostream& os, list_style style = e_list_style_default )
    {
-      list_files_or_objects( "", os, false, style );
+      list_files_or_objects( "", os, "", false, style );
    }
 
    inline void list_files(
     const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
    {
-      list_files_or_objects( expr, os, false, style );
+      list_files_or_objects( expr, os, "", false, style );
    }
 
-   void list_files( const std::string& expr, std::vector< std::string >& list, bool include_links = true );
+   inline void list_files( const std::string& expr, std::ostream& os,
+    const std::string& start_from, list_style style = e_list_style_default,
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false )
+   {
+      list_files_or_objects( expr, os, start_from, false, style, inclusive, limit, in_reverse_order );
+   }
+
+   void list_files( const std::string& expr, std::vector< std::string >& list, bool include_links,
+    const std::string& start_from, bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
+
+   inline void list_files( const std::string& expr,
+    std::vector< std::string >& list, bool include_links = true )
+   {
+      list_files( expr, list, include_links, "" );
+   }
 
    inline void list_files( std::vector< std::string >& list, bool include_links = true )
    {
-      list_files( "", list, include_links );
+      list_files( "", list, include_links, "" );
+   }
+
+   inline void list_files( std::vector< std::string >& list, const std::string& start_from,
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false, bool include_links = true )
+   {
+      list_files( "", list, include_links, start_from, inclusive, limit, in_reverse_order );
    }
 
    void list_folders( const std::string& expr,
@@ -91,13 +111,13 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 
    inline void list_objects( std::ostream& os, list_style style = e_list_style_default )
    {
-      list_files_or_objects( "", os, true, style );
+      list_files_or_objects( "", os, "", true, style );
    }
 
    inline void list_objects(
     const std::string& expr, std::ostream& os, list_style style = e_list_style_default )
    {
-      list_files_or_objects( expr, os, true, style );
+      list_files_or_objects( expr, os, "", true, style );
    }
 
    enum branch_style
@@ -244,7 +264,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
     bool full, std::deque< std::string >& folders, bool append_separator = true );
 
    void list_files_or_objects( const std::string& expr,
-    std::ostream& os, bool objects = true, list_style style = e_list_style_default );
+    std::ostream& os, const std::string& start_from,
+    bool objects = true, list_style style = e_list_style_default,
+    bool inclusive = true, size_t limit = 0, bool in_reverse_order = false );
 
    void branch_files_or_objects(
     std::ostream& os, const std::string& folder, const std::string& expr,

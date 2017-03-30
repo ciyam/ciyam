@@ -73,6 +73,8 @@ const string c_nul_key( 1, '\0' );
 const char c_module_prefix_separator = '_';
 const char c_module_order_prefix_separator = '.';
 
+const char c_global_storage_file_not_folder_suffix = '!';
+
 const int c_identity_burn = 100;
 
 const unsigned int c_default_max_peers = 100;
@@ -1786,18 +1788,36 @@ bool fetch_instance_from_db( class_base& instance,
    return found;
 }
 
+bool global_storage_persistence_is_file( string& root_child_folder )
+{
+   bool is_file_not_folder = false;
+
+   if( !root_child_folder.empty( )
+    && root_child_folder[ root_child_folder.length( ) - 1 ] == c_global_storage_file_not_folder_suffix )
+   {
+      is_file_not_folder = true;
+      root_child_folder.erase( root_child_folder.length( ) - 1 );
+   }
+
+   return is_file_not_folder;
+}
+
 bool has_instance_in_global_storage( class_base& instance, const string& key )
 {
    string persistence_extra( instance.get_persistence_extra( ) );
 
    string root_child_folder( persistence_extra );
+   bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( root_child_folder );
 
-   return gap_ofs->has_folder( key );
+   if( is_file_not_folder )
+      return gap_ofs->has_file( key );
+   else
+      return gap_ofs->has_folder( key );
 }
 
 void fetch_keys_from_global_storage( class_base& instance,
@@ -1806,6 +1826,7 @@ void fetch_keys_from_global_storage( class_base& instance,
    string persistence_extra( instance.get_persistence_extra( ) );
 
    string root_child_folder( persistence_extra );
+   bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -1814,14 +1835,20 @@ void fetch_keys_from_global_storage( class_base& instance,
 
    if( limit == 1 )
    {
-      if( gap_ofs->has_folder( start_from ) )
+      if( ( is_file_not_folder && gap_ofs->has_file( start_from ) )
+       || ( !is_file_not_folder && gap_ofs->has_folder( start_from ) ) )
          global_keys.push_back( start_from );
    }
    else
-      gap_ofs->list_folders( global_keys, start_from, inclusive, limit, in_reverse_order );
+   {
+      if( is_file_not_folder )
+         gap_ofs->list_files( global_keys, start_from, inclusive, limit, in_reverse_order );
+      else
+         gap_ofs->list_folders( global_keys, start_from, inclusive, limit, in_reverse_order );
+   }
 }
 
-bool fetch_instance_from_global_storage( class_base& instance, const string& key_info,
+bool fetch_instance_from_global_storage( class_base& instance, const string& key,
  const vector< string >& field_names, vector< string >* p_columns = 0, bool skip_after_fetch = false )
 {
    bool found = false;
@@ -1833,28 +1860,33 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
    string persistence_extra( instance.get_persistence_extra( ) );
 
    string root_child_folder( persistence_extra );
+   bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( root_child_folder );
 
-   found = gap_ofs->has_folder( key_info );
+   if( is_file_not_folder )
+      found = gap_ofs->has_file( key );
+   else
+      found = gap_ofs->has_folder( key );
 
    if( found )
    {
-      gap_ofs->set_folder( key_info );
+      if( !is_file_not_folder )
+         gap_ofs->set_folder( key );
 
       if( p_columns )
       {
-         p_columns->push_back( key_info );
+         p_columns->push_back( key );
          p_columns->push_back( "1" );
          p_columns->push_back( "0" );
          p_columns->push_back( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
       }
       else
       {
-         instance_accessor.set_key( key_info, true );
+         instance_accessor.set_key( key, true );
 
          instance_accessor.set_version( 1 );
          instance_accessor.set_revision( 0 );

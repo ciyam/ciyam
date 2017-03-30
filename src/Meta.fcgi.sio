@@ -3388,7 +3388,7 @@
      <name>field_global_archive_name
      <field>139101
      <ftype>string
-     <extra>non_new+max_size=100
+     <extra>key_name+max_size=100
      <mandatory>false
      <modifiers>
     </field>
@@ -3429,6 +3429,35 @@
      <field>139106
      <ftype>string
      <extra>actions
+     <mandatory>false
+     <modifiers>
+    </field>
+   </fields>
+  </view>
+  <view/>
+   <id>603950
+   <cid>140100
+   <name>603950_name
+   <type>admin
+   <extra>no_edit,auto_back
+   <modifiers>
+   <class>Global_Blacklist_Entry
+   <bclass>
+   <module>Meta
+   <fields/>
+    <field/>
+     <name>field_key
+     <field>@key
+     <ftype>
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_blacklist_entry_content_hash
+     <field>140101
+     <ftype>string
+     <extra>key_name+max_size=100
      <mandatory>false
      <modifiers>
     </field>
@@ -8630,6 +8659,35 @@
      <field>139105
      <ftype>string
      <extra>max_size=10
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+   </columns>
+   <parents/>
+   </parents>
+   <restricts/>
+   </restricts>
+  </list>
+  <list/>
+   <id>603900
+   <cid>140100
+   <name>603900_name
+   <type>admin
+   <extra>no_erase
+   <actions>
+   <modifiers>
+   <view>603950
+   <class>Global_Blacklist_Entry
+   <bclass>
+   <order>forward
+   <module>Meta
+   <columns/>
+    <column/>
+     <name>field_global_blacklist_entry_content_hash
+     <field>140101
+     <ftype>string
+     <extra>max_size=100
      <modifiers>
      <unique>false
      <indexed>false

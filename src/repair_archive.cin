@@ -3,7 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-.storage_init %1
-.file_archive -repair %2
-.system_variable @%2_repair ""
+.file_archive -repair %1
+.system_variable @%1_repair ""
 .quit

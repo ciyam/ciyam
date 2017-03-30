@@ -4808,6 +4808,52 @@
     </procedures>
    </class>
    <class/>
+    <id>140100
+    <name>Global_Blacklist_Entry
+    <plural>Global_Blacklist_Entries
+    <version>
+    <extra>global:blst!
+    <specifications/>
+     <specification/>
+      <id>603900
+      <item>class
+     </specification>
+     <specification/>
+      <id>603950
+      <item>class
+     </specification>
+    </specifications>
+    <fields/>
+     <field/>
+      <id>140101
+      <name>Content_Hash
+      <type>1020
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603900
+        <item>field
+       </specification>
+       <specification/>
+        <id>603950
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+    </fields>
+    <indexes/>
+    </indexes>
+    <modifiers/>
+    </modifiers>
+    <procedures/>
+    </procedures>
+   </class>
+   <class/>
     <id>108100
     <name>Index
     <plural>Indexes
@@ -31372,12 +31418,38 @@
      <extra>no_edit,auto_back
      <class_id>139100
      <field_info>@key
-     <field_info>139101;non_new
+     <field_info>139101;key_name
      <field_info>139102
      <field_info>139103;non_new+no_edit
      <field_info>139104
      <field_info>139105;non_new+no_edit
      <field_info>139106
+    </data>
+   </specification>
+   <specification/>
+    <id>603900
+    <name>{Global_Blacklist_Entry}_list
+    <type>list
+    <data/>
+     <name>*
+     <type>admin
+     <extra>no_erase
+     <class_id>140100
+     <ordering>forward
+     <field_info>140101
+    </data>
+   </specification>
+   <specification/>
+    <id>603950
+    <name>{Global_Blacklist_Entry}_view
+    <type>view
+    <data/>
+     <name>?
+     <type>admin
+     <extra>no_edit,auto_back
+     <class_id>140100
+     <field_info>@key
+     <field_info>140101;key_name
     </data>
    </specification>
    <specification/>

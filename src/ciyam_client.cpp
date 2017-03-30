@@ -253,8 +253,17 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                put_source_file = data;
 
+               if( !file_exists( put_source_file ) )
+               {
+                  cerr << "Error: File '" << put_source_file << "' not found." << endl;
+                  return string( );
+               }
+
                if( file_size( put_source_file ) > c_max_size_to_buffer )
-                  throw runtime_error( "file exceeds max. length restriction of " + to_string( c_max_size_to_buffer ) + " bytes" );
+               {
+                  cerr << "Error: File exceeds max. length restriction of " << to_string( c_max_size_to_buffer ) << " bytes." << endl;
+                  return string( );
+               }
 
                data = buffer_file( put_source_file );
 
