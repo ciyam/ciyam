@@ -346,6 +346,32 @@
    </values>
   </enum>
   <enum/>
+   <id>950
+   <name>enum_archive_standard_size
+   <values/>
+    <value/>
+     <data>10000000
+     <name>enum_archive_standard_size_10_mb
+    </value>
+    <value/>
+     <data>100000000
+     <name>enum_archive_standard_size_100_mb
+    </value>
+    <value/>
+     <data>1000000000
+     <name>enum_archive_standard_size_1_gb
+    </value>
+    <value/>
+     <data>10000000000
+     <name>enum_archive_standard_size_10_gb
+    </value>
+    <value/>
+     <data>100000000000
+     <name>enum_archive_standard_size_100_gb
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>570
    <name>enum_arg_type
    <values/>
@@ -3409,12 +3435,28 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_global_archive_use_custom_size
+     <field>139108
+     <ftype>bool
+     <extra>force+new_only
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_global_archive_size_limit
      <field>139104
      <ftype>numeric
      <extra>numeric_type=bytes
      <mandatory>true
-     <modifiers>
+     <modifiers>400:relegate
+    </field>
+    <field/>
+     <name>field_global_archive_standard_size_limit
+     <field>139107
+     <ftype>numeric
+     <extra>new_only+enum=950
+     <mandatory>true
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>field_global_archive_status_info
@@ -8650,7 +8692,7 @@
      <field>139104
      <ftype>numeric
      <extra>numeric_type=bytes
-     <modifiers>
+     <modifiers>400:relegate
      <unique>false
      <indexed>false
     </column>

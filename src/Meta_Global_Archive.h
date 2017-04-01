@@ -34,7 +34,9 @@ class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
       e_field_id_Path = 3,
       e_field_id_Size_Avail = 4,
       e_field_id_Size_Limit = 5,
-      e_field_id_Status_Info = 6
+      e_field_id_Standard_Size_Limit = 6,
+      e_field_id_Status_Info = 7,
+      e_field_id_Use_Custom_Size = 8
    };
 
    Meta_Global_Archive( );
@@ -55,8 +57,14 @@ class META_GLOBAL_ARCHIVE_DECL_SPEC Meta_Global_Archive : public class_base
    const numeric& Size_Limit( ) const;
    void Size_Limit( const numeric& Size_Limit );
 
+   const numeric& Standard_Size_Limit( ) const;
+   void Standard_Size_Limit( const numeric& Standard_Size_Limit );
+
    const std::string& Status_Info( ) const;
    void Status_Info( const std::string& Status_Info );
+
+   bool Use_Custom_Size( ) const;
+   void Use_Custom_Size( bool Use_Custom_Size );
 
    virtual void Repair_Archive( );
 

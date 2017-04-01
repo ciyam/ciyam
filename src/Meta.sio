@@ -4742,12 +4742,39 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>139330
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>603800
         <item>field
        </specification>
+       <specification/>
+        <id>603850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>139107
+      <name>Standard_Size_Limit
+      <type>numeric
+      <mandatory>true
+      <transient>true
+      <enum_id>950
+      <default_value>10000000
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>139320
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>603850
         <item>field
@@ -4778,6 +4805,24 @@
        </specification>
       </specifications>
      </field>
+     <field/>
+      <id>139108
+      <name>Use_Custom_Size
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
     </fields>
     <indexes/>
     </indexes>
@@ -4786,6 +4831,14 @@
       <id>139310
       <name>Is_Not_Okay
       <affect>lowlight;list
+     </modifier>
+     <modifier/>
+      <id>139320
+      <name>Is_Using_Custom_Size
+     </modifier>
+     <modifier/>
+      <id>139330
+      <name>Is_Using_Standard_Size
      </modifier>
     </modifiers>
     <procedures/>
@@ -31421,7 +31474,9 @@
      <field_info>139101;key_name
      <field_info>139102
      <field_info>139103;non_new+no_edit
+     <field_info>139108;force+new_only
      <field_info>139104
+     <field_info>139107;new_only+enum=950
      <field_info>139105;non_new+no_edit
      <field_info>139106
     </data>
@@ -38385,6 +38440,12 @@
     <name>app_type
     <type>bool
     <key_values>0=Blockchain,1=Traditional
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>950
+    <name>archive_standard_size
+    <type>numeric
+    <key_values>10000000=10\_MB,100000000=100\_MB,1000000000=1\_GB,10000000000=10\_GB,100000000000=100\_GB
    </user_defined_enum>
    <user_defined_enum/>
     <id>570

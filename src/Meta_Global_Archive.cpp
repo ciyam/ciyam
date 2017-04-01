@@ -68,23 +68,29 @@ const char* const c_field_id_Name = "139101";
 const char* const c_field_id_Path = "139102";
 const char* const c_field_id_Size_Avail = "139103";
 const char* const c_field_id_Size_Limit = "139104";
+const char* const c_field_id_Standard_Size_Limit = "139107";
 const char* const c_field_id_Status_Info = "139105";
+const char* const c_field_id_Use_Custom_Size = "139108";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Path = "Path";
 const char* const c_field_name_Size_Avail = "Size_Avail";
 const char* const c_field_name_Size_Limit = "Size_Limit";
+const char* const c_field_name_Standard_Size_Limit = "Standard_Size_Limit";
 const char* const c_field_name_Status_Info = "Status_Info";
+const char* const c_field_name_Use_Custom_Size = "Use_Custom_Size";
 
 const char* const c_field_display_name_Actions = "field_global_archive_actions";
 const char* const c_field_display_name_Name = "field_global_archive_name";
 const char* const c_field_display_name_Path = "field_global_archive_path";
 const char* const c_field_display_name_Size_Avail = "field_global_archive_size_avail";
 const char* const c_field_display_name_Size_Limit = "field_global_archive_size_limit";
+const char* const c_field_display_name_Standard_Size_Limit = "field_global_archive_standard_size_limit";
 const char* const c_field_display_name_Status_Info = "field_global_archive_status_info";
+const char* const c_field_display_name_Use_Custom_Size = "field_global_archive_use_custom_size";
 
-const int c_num_fields = 6;
+const int c_num_fields = 8;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -93,7 +99,9 @@ const char* const c_all_sorted_field_ids[ ] =
    "139103",
    "139104",
    "139105",
-   "139106"
+   "139106",
+   "139107",
+   "139108"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -103,7 +111,9 @@ const char* const c_all_sorted_field_names[ ] =
    "Path",
    "Size_Avail",
    "Size_Limit",
-   "Status_Info"
+   "Standard_Size_Limit",
+   "Status_Info",
+   "Use_Custom_Size"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -118,18 +128,22 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 2;
+const int c_num_transient_fields = 4;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "139101",
-   "139106"
+   "139106",
+   "139107",
+   "139108"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
    "Actions",
-   "Name"
+   "Name",
+   "Standard_Size_Limit",
+   "Use_Custom_Size"
 };
 
 inline bool is_transient_field( const string& field )
@@ -144,6 +158,8 @@ const char* const c_procedure_id_Repair_Archive = "139420";
 const char* const c_procedure_id_Status_Update = "139410";
 
 const uint64_t c_modifier_Is_Not_Okay = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Using_Custom_Size = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Using_Standard_Size = UINT64_C( 0x400 );
 
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 200 > g_Path_domain;
@@ -197,7 +213,39 @@ string g_default_Name = string( );
 string g_default_Path = string( );
 numeric g_default_Size_Avail = numeric( 0 );
 numeric g_default_Size_Limit = numeric( 0 );
+numeric g_default_Standard_Size_Limit = numeric( 10000000 );
 string g_default_Status_Info = string( );
+bool g_default_Use_Custom_Size = bool( 0 );
+
+set< numeric > g_archive_standard_size_enum;
+
+const numeric c_enum_archive_standard_size_10_MB( 10000000 );
+const numeric c_enum_archive_standard_size_100_MB( 100000000 );
+const numeric c_enum_archive_standard_size_1_GB( 1000000000 );
+const numeric c_enum_archive_standard_size_10_GB( 10000000000 );
+const numeric c_enum_archive_standard_size_100_GB( 100000000000 );
+
+string get_enum_string_archive_standard_size( numeric val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for archive_standard_size" );
+   else if( to_string( val ) == to_string( "10000000" ) )
+      string_name = "enum_archive_standard_size_10_MB";
+   else if( to_string( val ) == to_string( "100000000" ) )
+      string_name = "enum_archive_standard_size_100_MB";
+   else if( to_string( val ) == to_string( "1000000000" ) )
+      string_name = "enum_archive_standard_size_1_GB";
+   else if( to_string( val ) == to_string( "10000000000" ) )
+      string_name = "enum_archive_standard_size_10_GB";
+   else if( to_string( val ) == to_string( "100000000000" ) )
+      string_name = "enum_archive_standard_size_100_GB";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for archive_standard_size" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -310,10 +358,22 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
          string_getter< numeric >( cmd_handler.p_Meta_Global_Archive->Size_Limit( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      {
+         handled = true;
+         string_getter< numeric >( cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Status_Info || field_name == c_field_name_Status_Info )
       {
          handled = true;
          string_getter< string >( cmd_handler.p_Meta_Global_Archive->Status_Info( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Use_Custom_Size || field_name == c_field_name_Use_Custom_Size )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Global_Archive->Use_Custom_Size( ), cmd_handler.retval );
       }
 
       if( !handled )
@@ -363,11 +423,25 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Size_Limit, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Archive, numeric >(
+          *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Standard_Size_Limit, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Status_Info || field_name == c_field_name_Status_Info )
       {
          handled = true;
          func_string_setter< Meta_Global_Archive, string >(
           *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Status_Info, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Use_Custom_Size || field_name == c_field_name_Use_Custom_Size )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Archive, bool >(
+          *cmd_handler.p_Meta_Global_Archive, &Meta_Global_Archive::Use_Custom_Size, field_value );
       }
 
       if( !handled )
@@ -395,6 +469,12 @@ void Meta_Global_Archive_command_functor::operator ( )( const string& command, c
          numeric Size_Limit( cmd_handler.p_Meta_Global_Archive->Size_Limit( ) );
          execute_command( Size_Limit, cmd_and_args, cmd_handler.retval );
          cmd_handler.p_Meta_Global_Archive->Size_Limit( Size_Limit );
+      }
+      else if( field_name == c_field_id_Standard_Size_Limit || field_name == c_field_name_Standard_Size_Limit )
+      {
+         numeric Standard_Size_Limit( cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( ) );
+         execute_command( Standard_Size_Limit, cmd_and_args, cmd_handler.retval );
+         cmd_handler.p_Meta_Global_Archive->Standard_Size_Limit( Standard_Size_Limit );
       }
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
@@ -447,8 +527,14 @@ struct Meta_Global_Archive::impl : public Meta_Global_Archive_command_handler
    const numeric& impl_Size_Limit( ) const { return lazy_fetch( p_obj ), v_Size_Limit; }
    void impl_Size_Limit( const numeric& Size_Limit ) { sanity_check( Size_Limit ); v_Size_Limit = Size_Limit; }
 
+   const numeric& impl_Standard_Size_Limit( ) const { return lazy_fetch( p_obj ), v_Standard_Size_Limit; }
+   void impl_Standard_Size_Limit( const numeric& Standard_Size_Limit ) { sanity_check( Standard_Size_Limit ); v_Standard_Size_Limit = Standard_Size_Limit; }
+
    const string& impl_Status_Info( ) const { return lazy_fetch( p_obj ), v_Status_Info; }
    void impl_Status_Info( const string& Status_Info ) { sanity_check( Status_Info ); v_Status_Info = Status_Info; }
+
+   bool impl_Use_Custom_Size( ) const { return lazy_fetch( p_obj ), v_Use_Custom_Size; }
+   void impl_Use_Custom_Size( bool Use_Custom_Size ) { v_Use_Custom_Size = Use_Custom_Size; }
 
    void impl_Repair_Archive( );
 
@@ -519,7 +605,9 @@ struct Meta_Global_Archive::impl : public Meta_Global_Archive_command_handler
    string v_Path;
    numeric v_Size_Avail;
    numeric v_Size_Limit;
+   numeric v_Standard_Size_Limit;
    string v_Status_Info;
+   bool v_Use_Custom_Size;
 };
 
 void Meta_Global_Archive::impl::impl_Repair_Archive( )
@@ -593,7 +681,15 @@ string Meta_Global_Archive::impl::get_field_value( int field ) const
       break;
 
       case 5:
+      retval = to_string( impl_Standard_Size_Limit( ) );
+      break;
+
+      case 6:
       retval = to_string( impl_Status_Info( ) );
+      break;
+
+      case 7:
+      retval = to_string( impl_Use_Custom_Size( ) );
       break;
 
       default:
@@ -628,7 +724,15 @@ void Meta_Global_Archive::impl::set_field_value( int field, const string& value 
       break;
 
       case 5:
+      func_string_setter< Meta_Global_Archive::impl, numeric >( *this, &Meta_Global_Archive::impl::impl_Standard_Size_Limit, value );
+      break;
+
+      case 6:
       func_string_setter< Meta_Global_Archive::impl, string >( *this, &Meta_Global_Archive::impl::impl_Status_Info, value );
+      break;
+
+      case 7:
+      func_string_setter< Meta_Global_Archive::impl, bool >( *this, &Meta_Global_Archive::impl::impl_Use_Custom_Size, value );
       break;
 
       default:
@@ -661,7 +765,15 @@ void Meta_Global_Archive::impl::set_field_default( int field )
       break;
 
       case 5:
+      impl_Standard_Size_Limit( g_default_Standard_Size_Limit );
+      break;
+
+      case 6:
       impl_Status_Info( g_default_Status_Info );
+      break;
+
+      case 7:
+      impl_Use_Custom_Size( g_default_Use_Custom_Size );
       break;
 
       default:
@@ -696,7 +808,15 @@ bool Meta_Global_Archive::impl::is_field_default( int field ) const
       break;
 
       case 5:
+      retval = ( v_Standard_Size_Limit == g_default_Standard_Size_Limit );
+      break;
+
+      case 6:
       retval = ( v_Status_Info == g_default_Status_Info );
+      break;
+
+      case 7:
+      retval = ( v_Use_Custom_Size == g_default_Use_Custom_Size );
       break;
 
       default:
@@ -715,6 +835,14 @@ uint64_t Meta_Global_Archive::impl::get_state( ) const
    if( get_obj( ).Status_Info( ) != string( c_okay ) )
       state |= c_modifier_Is_Not_Okay;
 
+   if( get_obj( ).get_key( ).empty( ) )
+   {
+      if( get_obj( ).Use_Custom_Size( ) )
+         state |= c_modifier_Is_Using_Custom_Size;
+      else
+         state |= c_modifier_Is_Using_Standard_Size;
+   }
+   
    if( !get_system_variable( "@" + get_obj( ).get_key( ) + "_repair" ).empty( ) )
       state |= c_state_is_changing;
    // [<finish get_state>]
@@ -729,6 +857,10 @@ string Meta_Global_Archive::impl::get_state_names( ) const
 
    if( state & c_modifier_Is_Not_Okay )
       state_names += "|" + string( "Is_Not_Okay" );
+   if( state & c_modifier_Is_Using_Custom_Size )
+      state_names += "|" + string( "Is_Using_Custom_Size" );
+   if( state & c_modifier_Is_Using_Standard_Size )
+      state_names += "|" + string( "Is_Using_Standard_Size" );
 
    return state_names.empty( ) ? state_names : state_names.substr( 1 );
 }
@@ -791,7 +923,9 @@ void Meta_Global_Archive::impl::clear( )
    v_Path = g_default_Path;
    v_Size_Avail = g_default_Size_Avail;
    v_Size_Limit = g_default_Size_Limit;
+   v_Standard_Size_Limit = g_default_Standard_Size_Limit;
    v_Status_Info = g_default_Status_Info;
+   v_Use_Custom_Size = g_default_Use_Custom_Size;
 }
 
 bool Meta_Global_Archive::impl::value_will_be_provided( const string& field_name )
@@ -841,6 +975,11 @@ void Meta_Global_Archive::impl::validate(
     && !g_Status_Info_domain.is_valid( v_Status_Info, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Status_Info,
        get_module_string( c_field_display_name_Status_Info ) + " " + error_message ) );
+
+   if( !g_archive_standard_size_enum.count( v_Standard_Size_Limit ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Standard_Size_Limit,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Standard_Size_Limit ) ) ) ) );
 
    // [<start validate>]
    // [<finish validate>]
@@ -946,6 +1085,9 @@ void Meta_Global_Archive::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [<start to_store>]
+//nyi
+   if( is_create && !get_obj( ).Use_Custom_Size( ) )
+      get_obj( ).Size_Limit( get_obj( ).Standard_Size_Limit( ) );
    // [<finish to_store>]
 }
 
@@ -1134,6 +1276,16 @@ void Meta_Global_Archive::Size_Limit( const numeric& Size_Limit )
    p_impl->impl_Size_Limit( Size_Limit );
 }
 
+const numeric& Meta_Global_Archive::Standard_Size_Limit( ) const
+{
+   return p_impl->impl_Standard_Size_Limit( );
+}
+
+void Meta_Global_Archive::Standard_Size_Limit( const numeric& Standard_Size_Limit )
+{
+   p_impl->impl_Standard_Size_Limit( Standard_Size_Limit );
+}
+
 const string& Meta_Global_Archive::Status_Info( ) const
 {
    return p_impl->impl_Status_Info( );
@@ -1142,6 +1294,16 @@ const string& Meta_Global_Archive::Status_Info( ) const
 void Meta_Global_Archive::Status_Info( const string& Status_Info )
 {
    p_impl->impl_Status_Info( Status_Info );
+}
+
+bool Meta_Global_Archive::Use_Custom_Size( ) const
+{
+   return p_impl->impl_Use_Custom_Size( );
+}
+
+void Meta_Global_Archive::Use_Custom_Size( bool Use_Custom_Size )
+{
+   p_impl->impl_Use_Custom_Size( Use_Custom_Size );
 }
 
 void Meta_Global_Archive::Repair_Archive( )
@@ -1375,12 +1537,32 @@ const char* Meta_Global_Archive::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Standard_Size_Limit )
+   {
+      p_id = c_field_id_Standard_Size_Limit;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Status_Info )
    {
       p_id = c_field_id_Status_Info;
 
       if( p_type_name )
          *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Use_Custom_Size )
+   {
+      p_id = c_field_id_Use_Custom_Size;
+
+      if( p_type_name )
+         *p_type_name = "bool";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -1446,12 +1628,32 @@ const char* Meta_Global_Archive::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Standard_Size_Limit )
+   {
+      p_name = c_field_name_Standard_Size_Limit;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Status_Info )
    {
       p_name = c_field_name_Status_Info;
 
       if( p_type_name )
          *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Use_Custom_Size )
+   {
+      p_name = c_field_name_Use_Custom_Size;
+
+      if( p_type_name )
+         *p_type_name = "bool";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -1515,10 +1717,20 @@ string Meta_Global_Archive::get_field_uom_symbol( const string& id_or_name ) con
       name = string( c_field_display_name_Size_Limit );
       get_module_string( c_field_display_name_Size_Limit, &next );
    }
+   else if( id_or_name == c_field_id_Standard_Size_Limit || id_or_name == c_field_name_Standard_Size_Limit )
+   {
+      name = string( c_field_display_name_Standard_Size_Limit );
+      get_module_string( c_field_display_name_Standard_Size_Limit, &next );
+   }
    else if( id_or_name == c_field_id_Status_Info || id_or_name == c_field_name_Status_Info )
    {
       name = string( c_field_display_name_Status_Info );
       get_module_string( c_field_display_name_Status_Info, &next );
+   }
+   else if( id_or_name == c_field_id_Use_Custom_Size || id_or_name == c_field_name_Use_Custom_Size )
+   {
+      name = string( c_field_display_name_Use_Custom_Size );
+      get_module_string( c_field_display_name_Use_Custom_Size, &next );
    }
 
    // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
@@ -1545,8 +1757,12 @@ string Meta_Global_Archive::get_field_display_name( const string& id_or_name ) c
       display_name = get_module_string( c_field_display_name_Size_Avail );
    else if( id_or_name == c_field_id_Size_Limit || id_or_name == c_field_name_Size_Limit )
       display_name = get_module_string( c_field_display_name_Size_Limit );
+   else if( id_or_name == c_field_id_Standard_Size_Limit || id_or_name == c_field_name_Standard_Size_Limit )
+      display_name = get_module_string( c_field_display_name_Standard_Size_Limit );
    else if( id_or_name == c_field_id_Status_Info || id_or_name == c_field_name_Status_Info )
       display_name = get_module_string( c_field_display_name_Status_Info );
+   else if( id_or_name == c_field_id_Use_Custom_Size || id_or_name == c_field_name_Use_Custom_Size )
+      display_name = get_module_string( c_field_display_name_Use_Custom_Size );
 
    return display_name;
 }
@@ -1829,7 +2045,9 @@ void Meta_Global_Archive::static_get_field_info( field_info_container& all_field
    all_field_info.push_back( field_info( "139102", "Path", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "139103", "Size_Avail", "numeric", false, "", "" ) );
    all_field_info.push_back( field_info( "139104", "Size_Limit", "numeric", false, "", "" ) );
+   all_field_info.push_back( field_info( "139107", "Standard_Size_Limit", "numeric", false, "", "" ) );
    all_field_info.push_back( field_info( "139105", "Status_Info", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "139108", "Use_Custom_Size", "bool", false, "", "" ) );
 }
 
 void Meta_Global_Archive::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -1882,7 +2100,15 @@ const char* Meta_Global_Archive::static_get_field_id( field_id id )
       break;
 
       case 6:
+      p_id = "139107";
+      break;
+
+      case 7:
       p_id = "139105";
+      break;
+
+      case 8:
+      p_id = "139108";
       break;
    }
 
@@ -1919,7 +2145,15 @@ const char* Meta_Global_Archive::static_get_field_name( field_id id )
       break;
 
       case 6:
+      p_id = "Standard_Size_Limit";
+      break;
+
+      case 7:
       p_id = "Status_Info";
+      break;
+
+      case 8:
+      p_id = "Use_Custom_Size";
       break;
    }
 
@@ -1945,8 +2179,12 @@ int Meta_Global_Archive::static_get_field_num( const string& field )
       rc += 4;
    else if( field == c_field_id_Size_Limit || field == c_field_name_Size_Limit )
       rc += 5;
-   else if( field == c_field_id_Status_Info || field == c_field_name_Status_Info )
+   else if( field == c_field_id_Standard_Size_Limit || field == c_field_name_Standard_Size_Limit )
       rc += 6;
+   else if( field == c_field_id_Status_Info || field == c_field_name_Status_Info )
+      rc += 7;
+   else if( field == c_field_id_Use_Custom_Size || field == c_field_name_Use_Custom_Size )
+      rc += 8;
 
    return rc - 1;
 }
@@ -1978,7 +2216,11 @@ void Meta_Global_Archive::static_get_text_search_fields( vector< string >& field
 
 void Meta_Global_Archive::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
-   ( void )pairs;
+   pairs.push_back( make_pair( "enum_archive_standard_size_10000000", get_enum_string_archive_standard_size( 10000000 ) ) );
+   pairs.push_back( make_pair( "enum_archive_standard_size_100000000", get_enum_string_archive_standard_size( 100000000 ) ) );
+   pairs.push_back( make_pair( "enum_archive_standard_size_1000000000", get_enum_string_archive_standard_size( 1000000000 ) ) );
+   pairs.push_back( make_pair( "enum_archive_standard_size_10000000000", get_enum_string_archive_standard_size( 10000000000 ) ) );
+   pairs.push_back( make_pair( "enum_archive_standard_size_100000000000", get_enum_string_archive_standard_size( 100000000000 ) ) );
 }
 
 void Meta_Global_Archive::static_get_sql_indexes( vector< string >& indexes )
@@ -2022,6 +2264,12 @@ void Meta_Global_Archive::static_class_init( const char* p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
+
+   g_archive_standard_size_enum.insert( 10000000 );
+   g_archive_standard_size_enum.insert( 100000000 );
+   g_archive_standard_size_enum.insert( 1000000000 );
+   g_archive_standard_size_enum.insert( 10000000000 );
+   g_archive_standard_size_enum.insert( 100000000000 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

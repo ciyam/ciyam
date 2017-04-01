@@ -1590,6 +1590,12 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "an archive with the path '" + path + "' already exists" );
 
+   int64_t min_limit = get_files_area_item_max_size( ) * 10;
+
+   if( size_limit < min_limit )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "archive minimum size must be at least " + to_string( min_limit ) + " bytes" );
+
    string status_info( get_archive_status( path ) );
 
    ods::bulk_write bulk_write( ciyam_ods_instance( ) );

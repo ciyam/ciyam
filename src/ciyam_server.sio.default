@@ -24,7 +24,7 @@
  <session_timeout>0
 # <max_storage_handlers>10
 # <files_area_item_max_num>1000
-# <files_area_item_max_size>100K
+# <files_area_item_max_size>100kB
  <email/>
 #  <pop3/>
 #   <server>mail.server.com:995
@@ -41,7 +41,7 @@
 #   <password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 #   <security>SSL LOGIN
 #   <max_send_attempts>3
-#   <max_attached_data>100K
+#   <max_attached_data>100kB
 #  </smtp>
  </email>
  <extern/>

@@ -1198,7 +1198,7 @@ const size_t c_max_sessions_limit = 1000;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 const size_t c_files_area_item_max_num_default = 1000;
-const size_t c_files_area_item_max_size_default = 1024 * 100; // i.e. 100K
+const size_t c_files_area_item_max_size_default = 100000; // i.e. 100kB
 
 string g_empty_string;
 
@@ -3223,7 +3223,7 @@ string g_smtp_username;
 string g_smtp_password;
 string g_smtp_security;
 int g_smtp_max_send_attempts = 1;
-int64_t g_smtp_max_attached_data = INT64_C( 0 );
+int64_t g_smtp_max_attached_data = INT64_C( 100000 );
 
 typedef map< string, external_client > external_client_container;
 typedef external_client_container::iterator external_client_iterator;

@@ -98,6 +98,7 @@ user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,3
 user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
+user_defined_enum_add -id=950 archive_standard_size numeric 10000000=10\\_MB,100000000=100\\_MB,1000000000=1\\_GB,10000000000=10\\_GB,100000000000=100\\_GB
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -883,7 +884,11 @@ field_add -id=139103 Global_Archive Size_Avail numeric mand -def=0 -x=numeric_ty
 field_add -id=139104 Global_Archive Size_Limit numeric mand -def=0 -x=numeric_type=bytes
 field_add -id=139105 Global_Archive Status_Info str10 opt
 field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
+field_add -id=139107 Global_Archive Standard_Size_Limit numeric mand -def=10000000 -e=archive_standard_size -transient
+field_add -id=139108 Global_Archive Use_Custom_Size bool mand -def=0 -transient
 modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
+modifier_add -id=139320 Global_Archive Is_Using_Custom_Size Standard_Size_Limit:relegate
+modifier_add -id=139330 Global_Archive Is_Using_Standard_Size Size_Limit:relegate
 procedure_add -id=139410 Global_Archive Status_Update
 procedure_add -id=139420 Global_Archive Repair_Archive
 class_add -id=140100 Global_Blacklist_Entry Global_Blacklist_Entries -x=global:blst!
@@ -2247,7 +2252,8 @@ specification_add -id=603310 {Initial_Record_Value}_child_list0 list "@603310_* 
 specification_add -id=603500 {Package_Type}_list list "* admin:no_limit Package_Type Name,Version"
 specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Single;no_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
 specification_add -id=603800 {Global_Archive}_list list "* admin Global_Archive Name,Path,Size_Avail,Size_Limit,Status_Info"
-specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_back Global_Archive @key,Name;key_name,Path,Size_Avail;non_new+no_edit,Size_Limit,Status_Info;non_new+no_edit,Actions"
+specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_back Global_Archive @key,Name;key_name,Path\
+,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin:no_erase Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
 model_save
