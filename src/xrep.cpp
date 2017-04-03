@@ -3600,7 +3600,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
                   if( !g_exec_system )
                      os << result;
                   else
-                     system( result.c_str( ) );
+                     ( void )system( result.c_str( ) );
                }
 
                // NOTE: If there is a partial expression outstanding or if the result consists

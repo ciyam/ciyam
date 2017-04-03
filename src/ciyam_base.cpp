@@ -1239,6 +1239,9 @@ void init_ciyam_ods( )
    if( !gap_ofs->has_folder( c_file_blacklist_folder ) )
       gap_ofs->add_folder( c_file_blacklist_folder );
 
+   if( !gap_ofs->has_folder( c_file_repository_folder ) )
+      gap_ofs->add_folder( c_file_repository_folder );
+
    if( !gap_ofs->has_folder( c_system_variables_folder ) )
       gap_ofs->add_folder( c_system_variables_folder );
 
@@ -1895,14 +1898,28 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
          instance_accessor.set_original_identity( instance.get_module_id( ) + ':' + instance.get_class_id( ) );
       }
 
-      for( size_t i = 0; i < field_names.size( ); i++ )
+      // NOTE: If is stored as a file then attributes are expected to be
+      // in the format of a structured I/O file otherwise each attribute
+      // is expected to be a file within the record's folder.
+      if( !field_names.empty( ) )
       {
-         string file_name( lower( field_names[ i ] ) );
+         stringstream sio_data;
+         auto_ptr< sio_reader > ap_sio_reader;
 
-         if( gap_ofs->has_file( file_name ) )
+         if( is_file_not_folder )
          {
-            string data;
-            gap_ofs->fetch_from_text_file( file_name, data );
+            gap_ofs->get_file( key, &sio_data, true );
+            ap_sio_reader.reset( new sio_reader( sio_data ) );
+         }
+
+         for( size_t i = 0; i < field_names.size( ); i++ )
+         {
+            string data, attribute_name( lower( field_names[ i ] ) );
+
+            if( is_file_not_folder )
+               data = ap_sio_reader->read_opt_attribute( attribute_name );
+            else if( gap_ofs->has_file( attribute_name ) )
+               gap_ofs->fetch_from_text_file( attribute_name, data );
 
             if( p_columns )
                p_columns->push_back( data );
@@ -10105,6 +10122,26 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             if( is_using_blockchain )
                gtp_session->sql_undo_statements.insert(
                 gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
+         }
+         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         {
+            if( op == class_base::e_op_type_destroy )
+            {
+               string persistence_extra( instance.get_persistence_extra( ) );
+
+               string root_child_folder( persistence_extra );
+               bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
+
+               ods::bulk_write bulk_write( *gap_ods );
+               scoped_ods_instance ods_instance( *gap_ods );
+
+               gap_ofs->set_root_folder( root_child_folder );
+
+               if( is_file_not_folder && gap_ofs->has_file( instance.get_key( ) ) )
+                  gap_ofs->remove_file( instance.get_key( ) );
+               else if( !is_file_not_folder && gap_ofs->has_folder( instance.get_key( ) ) )
+                  gap_ofs->remove_folder( instance.get_key( ), 0, true );
+            }
          }
 
          // NOTE: In order to be able to create child records (or to review the just created instance)

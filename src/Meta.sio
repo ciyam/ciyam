@@ -4907,6 +4907,100 @@
     </procedures>
    </class>
    <class/>
+    <id>150100
+    <name>Global_Repository_Entry
+    <plural>Global_Repository_Entries
+    <version>
+    <extra>global:repo!
+    <specifications/>
+     <specification/>
+      <id>603980
+      <item>class
+     </specification>
+     <specification/>
+      <id>603990
+      <item>class
+     </specification>
+    </specifications>
+    <fields/>
+     <field/>
+      <id>150101
+      <name>File_Hash
+      <type>1020
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603980
+        <item>field
+       </specification>
+       <specification/>
+        <id>603990
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>150102
+      <name>Local_Hash
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603990
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>150103
+      <name>Local_Public_Key
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603990
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>150104
+      <name>Master_Public_Key
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603990
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+    </fields>
+    <indexes/>
+    </indexes>
+    <modifiers/>
+    </modifiers>
+    <procedures/>
+    </procedures>
+   </class>
+   <class/>
     <id>108100
     <name>Index
     <plural>Indexes
@@ -31488,7 +31582,6 @@
     <data/>
      <name>*
      <type>admin
-     <extra>no_erase
      <class_id>140100
      <ordering>forward
      <field_info>140101
@@ -31505,6 +31598,35 @@
      <class_id>140100
      <field_info>@key
      <field_info>140101;key_name
+    </data>
+   </specification>
+   <specification/>
+    <id>603980
+    <name>{Global_Repository_Entry}_list
+    <type>list
+    <data/>
+     <name>*
+     <type>admin
+     <extra>no_new,no_erase
+     <class_id>150100
+     <ordering>forward
+     <field_info>150101
+    </data>
+   </specification>
+   <specification/>
+    <id>603990
+    <name>{Global_Repository_Entry}_view
+    <type>view
+    <data/>
+     <name>?
+     <type>admin
+     <extra>no_edit
+     <class_id>150100
+     <field_info>@key
+     <field_info>150101;key_name
+     <field_info>150102
+     <field_info>150103
+     <field_info>150104
     </data>
    </specification>
    <specification/>

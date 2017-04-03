@@ -3506,6 +3506,59 @@
    </fields>
   </view>
   <view/>
+   <id>603990
+   <cid>150100
+   <name>603990_name
+   <type>admin
+   <extra>no_edit
+   <modifiers>
+   <class>Global_Repository_Entry
+   <bclass>
+   <module>Meta
+   <fields/>
+    <field/>
+     <name>field_key
+     <field>@key
+     <ftype>
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_repository_entry_file_hash
+     <field>150101
+     <ftype>string
+     <extra>key_name+max_size=100
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_repository_entry_local_hash
+     <field>150102
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_repository_entry_local_public_key
+     <field>150103
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_repository_entry_master_public_key
+     <field>150104
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>true
+     <modifiers>
+    </field>
+   </fields>
+  </view>
+  <view/>
    <id>601810
    <cid>108100
    <name>601810_name
@@ -8716,7 +8769,7 @@
    <cid>140100
    <name>603900_name
    <type>admin
-   <extra>no_erase
+   <extra>
    <actions>
    <modifiers>
    <view>603950
@@ -8728,6 +8781,35 @@
     <column/>
      <name>field_global_blacklist_entry_content_hash
      <field>140101
+     <ftype>string
+     <extra>max_size=100
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+   </columns>
+   <parents/>
+   </parents>
+   <restricts/>
+   </restricts>
+  </list>
+  <list/>
+   <id>603980
+   <cid>150100
+   <name>603980_name
+   <type>admin
+   <extra>no_new,no_erase
+   <actions>
+   <modifiers>
+   <view>603990
+   <class>Global_Repository_Entry
+   <bclass>
+   <order>forward
+   <module>Meta
+   <columns/>
+    <column/>
+     <name>field_global_repository_entry_file_hash
+     <field>150101
      <ftype>string
      <extra>max_size=100
      <modifiers>

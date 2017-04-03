@@ -276,8 +276,8 @@ void put_line( const char* p_chars, size_t len )
 
    char ch = '\n';
 
-   write( outfd, p_chars, len );
-   write( outfd, &ch, 1 );
+   ( void )write( outfd, p_chars, len );
+   ( void )write( outfd, &ch, 1 );
 
    if( outfd != STDOUT_FILENO )
       close( outfd );

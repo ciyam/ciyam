@@ -25,6 +25,7 @@
 #include "ciyam_files.h"
 
 #include "ods.h"
+#include "sio.h"
 #include "regex.h"
 #include "base64.h"
 #include "config.h"
@@ -2138,6 +2139,26 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    {
       ods_fs.set_root_folder( c_file_blacklist_folder );
       ods_fs.add_file( hash, c_file_zero_length );
+
+      // NOTE: If a matching repository entry is found then will
+      // delete it along with removing the equivalent local file
+      // from all archives and the files area.
+      ods_fs.set_root_folder( c_file_repository_folder );
+
+      if( ods_fs.has_file( hash ) )
+      {
+         stringstream sio_data;
+         ods_fs.get_file( hash, &sio_data, true );
+         
+         sio_reader reader( sio_data );
+
+         string local_hash( reader.read_opt_attribute( c_file_repository_local_hash_attribute ) );
+
+         ods_fs.remove_file( hash );
+
+         if( !local_hash.empty( ) )
+            delete_file_from_archive( local_hash, "" );
+      }
    }
 }
 

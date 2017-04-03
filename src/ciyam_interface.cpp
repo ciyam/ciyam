@@ -962,6 +962,7 @@ void request_handler::process_request( )
       }
 
       bool is_sign_in = false;
+      bool needs_identity = false;
 
       if( !is_kept
        && cmd != c_cmd_password && cmd != c_cmd_credentials
@@ -982,9 +983,14 @@ void request_handler::process_request( )
 
             ofstream outf( c_id_file );
             outf << g_id;
+
+            if( !mod_info.allows_anonymous_access )
+               is_sign_in = true;
          }
          else
-            using_anonymous = true;
+            needs_identity = true;
+
+         cmd = c_cmd_home;
       }
 
       if( cmd == c_cmd_password || cmd == c_cmd_credentials )
@@ -1037,7 +1043,8 @@ void request_handler::process_request( )
                userhash.erase( );
          }
 
-         if( username.empty( ) && userhash.empty( ) && password.empty( )
+         if( username.empty( )
+          && userhash.empty( ) && password.empty( ) && !needs_identity
           && ( !using_anonymous || ( is_activation && file_exists( activation_file ) ) ) )
          {
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
