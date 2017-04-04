@@ -8798,7 +8798,7 @@
    <cid>150100
    <name>603980_name
    <type>admin
-   <extra>no_new,no_erase
+   <extra>no_new
    <actions>
    <modifiers>
    <view>603990

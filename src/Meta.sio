@@ -31607,7 +31607,7 @@
     <data/>
      <name>*
      <type>admin
-     <extra>no_new,no_erase
+     <extra>no_new
      <class_id>150100
      <ordering>forward
      <field_info>150101

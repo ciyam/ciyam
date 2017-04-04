@@ -1111,6 +1111,8 @@ void Meta_Global_Archive::impl::for_store( bool is_create, bool is_internal )
     get_special_var_name( e_special_var_size ), to_string( get_obj( ).Size_Limit( ) ) );
 
    run_script( "add_archive", false, false, true );
+
+   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistance ), "1" );
    // [<finish for_store>]
 }
 
@@ -1150,6 +1152,8 @@ void Meta_Global_Archive::impl::for_destroy( bool is_internal )
     get_special_var_name( e_special_var_name ), get_obj( ).get_key( ) );
 
    run_script( "remove_archive", false, false, true );
+
+   get_obj( ).set_variable( get_special_var_name( e_special_var_skip_persistance ), "1" );
    // [<finish for_destroy>]
 }
 

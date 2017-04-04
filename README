@@ -48,7 +48,7 @@ e.g. set INCLUDE=C:\Program Files\MySQL\MySQL Server 5.1\include;%INCLUDE%
 
 FastCGI
 -------
-https://github.com/LuaDist/fcgi
+https://github.com/ciyam/fcgi
 
 [Linux]
 

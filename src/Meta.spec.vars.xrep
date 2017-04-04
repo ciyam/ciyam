@@ -1164,7 +1164,7 @@
 `{`$specification_Global_Repository_Entry_list_type`=`'admin`'`}
 `{`$specification_Global_Repository_Entry_list_acts`=`'`'`}
 `{`$specification_Global_Repository_Entry_list_mods`=`'`'`}
-`{`$specification_Global_Repository_Entry_list_extra`=`'no_new,no_erase`'`}
+`{`$specification_Global_Repository_Entry_list_extra`=`'no_new`'`}
 `{`$specification_Global_Repository_Entry_list_order`=`'forward`'`}
 `{`$specification_Global_Repository_Entry_list_binfo`=`'`'`}
 `{`$specification_Global_Repository_Entry_list_column00`=`'150101`'`}

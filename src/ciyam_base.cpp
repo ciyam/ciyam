@@ -10123,9 +10123,11 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                gtp_session->sql_undo_statements.insert(
                 gtp_session->sql_undo_statements.end( ), sql_undo_stmts.begin( ), sql_undo_stmts.end( ) );
          }
-         else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
+         else if( instance.get_persistence_type( ) == 1 // i.e. ODS global persistence
+          && instance.get_variable( get_special_var_name( e_special_var_skip_persistance ) ).empty( ) )
          {
-            if( op == class_base::e_op_type_destroy )
+            if( op == class_base::e_op_type_create
+             || op == class_base::e_op_type_update || op == class_base::e_op_type_destroy )
             {
                string persistence_extra( instance.get_persistence_extra( ) );
 
@@ -10137,10 +10139,62 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
                gap_ofs->set_root_folder( root_child_folder );
 
-               if( is_file_not_folder && gap_ofs->has_file( instance.get_key( ) ) )
-                  gap_ofs->remove_file( instance.get_key( ) );
-               else if( !is_file_not_folder && gap_ofs->has_folder( instance.get_key( ) ) )
-                  gap_ofs->remove_folder( instance.get_key( ), 0, true );
+               if( op == class_base::e_op_type_destroy )
+               {
+                  if( is_file_not_folder && gap_ofs->has_file( instance.get_key( ) ) )
+                     gap_ofs->remove_file( instance.get_key( ) );
+                  else if( !is_file_not_folder && gap_ofs->has_folder( instance.get_key( ) ) )
+                     gap_ofs->remove_folder( instance.get_key( ), 0, true );
+               }
+               else
+               {
+                  stringstream sio_data;
+                  auto_ptr< sio_writer > ap_sio_writer;
+
+                  if( is_file_not_folder )
+                     ap_sio_writer.reset( new sio_writer( sio_data ) );
+
+                  bool had_any_non_transients = false;
+                  int num_fields = instance.get_num_fields( );
+
+                  if( !is_file_not_folder )
+                  {
+                     if( !gap_ofs->has_folder( instance.get_key( ) ) )
+                        gap_ofs->add_folder( instance.get_key( ) );
+
+                     gap_ofs->set_folder( instance.get_key( ) );
+                  }
+
+                  // NOTE: If is stored as a file then attributes are expected to be
+                  // in the format of a structured I/O file otherwise each attribute
+                  // is expected to be a file within the record's folder.
+                  for( int i = 0; i < num_fields; i++ )
+                  {
+                     if( instance.is_field_transient( i ) )
+                        continue;
+
+                     had_any_non_transients = true;
+
+                     string data( instance.get_field_value( i ) );
+                     string attribute_name( lower( instance.get_field_name( i ) ) );
+
+                     if( !is_file_not_folder )
+                        gap_ofs->store_as_text_file( attribute_name, data );
+                     else
+                        ap_sio_writer->write_attribute( attribute_name, data );
+                  }
+
+                  if( is_file_not_folder )
+                  {
+                     if( had_any_non_transients )
+                     {
+                        ap_sio_writer->finish_sections( );
+                        gap_ofs->store_file( instance.get_key( ), 0, &sio_data );
+                     }
+                     else
+                        gap_ofs->store_file( instance.get_key( ), c_file_zero_length );
+                  }
+               }
             }
          }
 

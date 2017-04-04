@@ -117,6 +117,7 @@ const char* const c_special_variable_dummy_timestamp = "@dummy_timestamp";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
+const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
@@ -455,6 +456,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_after_fetch:
       s = string( c_special_variable_skip_after_fetch );
+      break;
+
+      case e_special_var_skip_persistance:
+      s = string( c_special_variable_skip_persistance );
       break;
 
       case e_special_var_fields_and_values:
