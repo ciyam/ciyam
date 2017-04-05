@@ -1,5 +1,5 @@
 Getting Started
----------------
+===============
 
 After cloning the repository run "config" in order to configure the system for 3rd party dependencies (and to
 set the default server port) then "make all" to build all of the targets and then run "do_tests" batch/script

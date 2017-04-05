@@ -1,0 +1,28 @@
+Linux Debian Specific Instructions
+==================================
+
+LibHaru & its Dependency
+------------------------
+apt-get install libpng-dev
+
+Download from https://sourceforge.net/projects/libharu/files/libharu2/
+
+tar -zxvf libharu_X.X.tgz
+./configure --prefix=/usr/local
+make && make install
+
+Debian Dependencies
+-------------------
+apt-get update && apt-get upgrade
+apt-get install apache2 libapache2-mod-fastcgi libapache2-mod-fcgid
+apt-get install mysql-server libmysql++-dev libmysql-cil-dev libmysqld-dev libmysqlclient-dev libmysqlcppconn-dev
+apt-get install libreadline-dev
+apt-get install libfcgi0ldbl libfcgi-dev
+apt-get cleanNote: libapache2-mod-fastcgi might not be required in newer LTS distros.
+
+Clearing the MySQL Password
+---------------------------
+mysqladmin -u root -p 'oldpassword' password ''
+
+(or alternatively follow the "Extra steps MySQL" instructions in "getting_started.txt")
+

@@ -17,47 +17,51 @@ CIYAM_GRP=guests
 CIYAM_UID=guest
 @endif
 ;
+#Installing Application $CIYAM_MODEL
+;
 .storage_init Meta
 @ifdef $ERROR
 @label END
 @endif
 @skip
 ;
+OUTPUT=
 .pf 100 135100 -q=135101=Transaction "" @key -min
 TRANSACTION_TYPE_KEY=$OUTPUT
 @ifndef $TRANSACTION_TYPE_KEY
-#Error: Package Type 'Transaction' was not found.
-@label END
+SCRIPT_ERROR=Package Type 'Transaction' was not found.
+@label ERROR
 @endif
 @skip
 ;
+OUTPUT=
 .pf 100 135100 -q=135101=Wallet "" @key -min
 WALLET_TYPE_KEY=$OUTPUT
 @ifndef $WALLET_TYPE_KEY
-#Error: Package Type 'Wallet' was not found.
-@label END
+SCRIPT_ERROR=Package Type 'Wallet' was not found.
+@label ERROR
 @endif
 @skip
 ;
 .pf 100 135100 -q=135101=Trade "" @key -min
 TRADE_TYPE_KEY=$OUTPUT
 @ifndef $TRADE_TYPE_KEY
-#Error: Package Type 'Trade' was not found.
-@label END
+SCRIPT_ERROR=Package Type 'Trade' was not found.
+@label ERROR
 @endif
 @skip
 ;
 #Creating Model $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 105100 " " "105101=$CIYAM_MODEL,300500=$CIYAM_GRP,105103=2017,105112=0"
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
 MODEL_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Standard,136107=Standard,302810=Standard,302800=$MODEL_KEY"
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -71,7 +75,7 @@ TRANSACTION_PACKAGE_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$TRANSACTION_PACKAGE_KEY,137101=opt_transaction_package_user_package "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -84,7 +88,7 @@ WALLET_PACKAGE_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$WALLET_PACKAGE_KEY,137101=opt_wallet_string_key_name "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -92,7 +96,7 @@ WALLET_KEY_NAME_OPTION_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$WALLET_PACKAGE_KEY,137101=opt_wallet_string_key_plural "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -100,7 +104,7 @@ WALLET_KEY_PLURAL_OPTION_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$WALLET_PACKAGE_KEY,137101=opt_wallet_package_user_package "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -115,7 +119,7 @@ TRADE_PACKAGE_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$TRADE_PACKAGE_KEY,137101=opt_trade_package_wallet_package "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -129,6 +133,18 @@ TRADE_WALLET_OPTION_KEY=$OUTPUT
 @else
 #Creating Application $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,302220=$CIYAM_GRP,127137=0"
+@endif
+;
+@label END
+@skip
+;
+@:ERROR
+@ifndef $CIYAM_APP_KEY
+@ifdef SCRIPT_ERROR
+#$SCRIPT_ERROR
+@endif
+@else
+.pu $CIYAM_UID @now 100 127100 $CIYAM_APP_KEY "127105=Error: $ERROR$SCRIPT_ERROR,127138=0"
 @endif
 ;
 @:END

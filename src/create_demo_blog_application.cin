@@ -17,31 +17,34 @@ CIYAM_GRP=guests
 CIYAM_UID=guest
 @endif
 ;
+#Installing Application $CIYAM_MODEL
+;
 .storage_init Meta
 @ifdef $ERROR
 @label END
 @endif
 @skip
 ;
+OUTPUT=
 .pf 100 135100 -q=135101=Blog "" @key -min
 BLOG_TYPE_KEY=$OUTPUT
 @ifndef $BLOG_TYPE_KEY
-#Error: Package Type 'Blog' was not found.
-@label END
+SCRIPT_ERROR=Package Type 'Blog' was not found.
+@label ERROR
 @endif
 @skip
 ;
 #Creating Model $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 105100 " " "105101=$CIYAM_MODEL,300500=$CIYAM_GRP,105103=2017,105112=0"
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
 MODEL_KEY=$OUTPUT
 .pc $CIYAM_UID @now 100 136100 " " "136101=Standard,136107=Standard,302810=Standard,302800=$MODEL_KEY"
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -55,7 +58,7 @@ BLOG_PACKAGE_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_bool_@use_home_list "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -63,7 +66,7 @@ BLOG_HOME_LIST_OPTION_KEY=$OUTPUT
 ;
 .pf 100 137100 -q=302820=$BLOG_PACKAGE_KEY,137101=opt_blog_string_group_for_home "" @key -min
 @ifdef $ERROR
-@label END
+@label ERROR
 @endif
 @skip
 ;
@@ -78,6 +81,18 @@ BLOG_HOME_GROUP_OPTION_KEY=$OUTPUT
 @else
 #Creating Application $CIYAM_MODEL...
 .pc $CIYAM_UID @now 100 127100 " " "127101=$CIYAM_MODEL,302220=$CIYAM_GRP,127137=0"
+@endif
+;
+@label END
+@skip
+;
+@:ERROR
+@ifndef $CIYAM_APP_KEY
+@ifdef SCRIPT_ERROR
+#$SCRIPT_ERROR
+@endif
+@else
+.pu $CIYAM_UID @now 100 127100 $CIYAM_APP_KEY "127105=Error: $ERROR$SCRIPT_ERROR,127138=0"
 @endif
 ;
 @:END

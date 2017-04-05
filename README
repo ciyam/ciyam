@@ -1,5 +1,5 @@
 CIYAM Software Manufacturing Environment
-----------------------------------------
+========================================
 
 The following environment variables are required by various scripts:
 
@@ -24,6 +24,7 @@ NOTE: Windows developers need to be using VS2003 or higher.
 For Linux environments the development packages for libpng (and optionally readline) will need to have been
 installed.
 
+NOTE: More specific OS dependency installation instructions can be found in additional "<os_name>.txt" files.
 
 MySQL
 -----
@@ -45,7 +46,6 @@ For VC++ the INCLUDE environment variable will need this added (replace <ver> wi
 C:\Program Files\MySQL\MySQL Server <ver>\include
 e.g. set INCLUDE=C:\Program Files\MySQL\MySQL Server 5.1\include;%INCLUDE%
 
-
 FastCGI
 -------
 https://github.com/ciyam/fcgi
@@ -66,7 +66,6 @@ nmake -f Makefile.nt
 
 copy libfcgi\Release\libfcgi.dll <dest directory>
 copy libfcgi\Release\libfcgi.lib <dest directory>
-
 
 Haru PDF Library
 ----------------
@@ -91,7 +90,6 @@ unzip -j \tmp\libharu-2.1.0-vc8.zip lib_dll/libhpdf.lib lib_dll/libhpdf.dll
 mkdir haru
 cd haru
 unzip -j \tmp\libharu-2.1.0-vc8.zip include/*
-
 
 OpenSSL
 -------
