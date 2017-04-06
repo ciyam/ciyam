@@ -19,10 +19,12 @@
 #     define META_PACKAGE_TYPE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class Meta_Application_Script;
 class Meta_Package;
 
 class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 {
+   friend class Meta_Application_Script;
    friend class Meta_Package;
 
    public:
@@ -71,6 +73,9 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 
    int Version( ) const;
    void Version( int Version );
+
+   Meta_Application_Script& child_Application_Script( );
+   const Meta_Application_Script& child_Application_Script( ) const;
 
    Meta_Package& child_Package( );
    const Meta_Package& child_Package( ) const;
@@ -277,6 +282,7 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_graph_parent( Meta_Application_Script& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Package& o, const std::string& foreign_key_field );
 
    size_t get_total_child_relationships( ) const;

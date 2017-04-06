@@ -33,6 +33,8 @@ const char* const c_files_directory = "files";
 const char* const c_file_copy_command = "file_copy";
 const char* const c_file_kill_command = "file_kill";
 
+const char* const c_application_script_prefix = "app_script:";
+
 const size_t c_max_file_transfer_size = 102400;
 
 const size_t c_file_transfer_line_timeout = 10000;

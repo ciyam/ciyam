@@ -743,6 +743,10 @@
         <id>500921
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500926
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -865,6 +869,10 @@
      <modifier/>
       <id>500922
       <name>Has_No_Application_Log
+     </modifier>
+     <modifier/>
+      <id>500926
+      <name>Has_No_Installation_Scripts
      </modifier>
      <modifier/>
       <id>500925
@@ -999,6 +1007,20 @@
       <name>Script_Name
       <type>1020
       <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>302840
+      <name>{Package_Type}
+      <type>@class
+      <mandatory>true
+      <class_id>135100
+      <relationship_id>202840
       <indexes/>
       </indexes>
       <modifiers/>
@@ -29984,6 +30006,15 @@
     <parent_id>109100
     <child_id>115100
     <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>202840
+    <name>{Package_Type}_{Application_Script}
+    <parent_id>135100
+    <child_id>138100
+    <cascade_op>destroy
     <specifications/>
     </specifications>
    </relationship>

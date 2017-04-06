@@ -791,6 +791,9 @@ void Meta_Workgroup::impl::impl_Get_Acyclic_Package_Type_List( )
             {
                string next_dependency( next_info[ j ] );
 
+               if( next_dependency.find( c_application_script_prefix ) == 0 )
+                  continue;
+
                string::size_type pos = next_dependency.find( ' ' );
 
                if( pos != string::npos )

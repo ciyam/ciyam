@@ -349,13 +349,14 @@ const char* const c_procedure_id_Test_Proc_1 = "127495";
 const char* const c_procedure_id_Test_Proc_2 = "127497";
 
 const uint64_t c_modifier_Has_No_Application_Log = UINT64_C( 0x100 );
-const uint64_t c_modifier_Is_Installing_Script = UINT64_C( 0x200 );
-const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x400 );
-const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x800 );
-const uint64_t c_modifier_Is_Not_Using_Script = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Traditional = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Using_Script = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Has_No_Installation_Scripts = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Installing_Script = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Non_Traditional = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Not_Using_Script = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Traditional = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Using_Script = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x10000 );
 
 domain_string_max_size< 30 > g_Blockchain_Id_domain;
 aggregate_domain< string,
@@ -753,6 +754,8 @@ string get_enum_string_app_type( bool val )
 }
 
 // [<start anonymous>]
+//nyi
+const char* const c_Meta_Application_Has_No_Scripts = "Meta_Application_Has_No_Scripts";
 // [<finish anonymous>]
 
 }
@@ -3232,6 +3235,9 @@ uint64_t Meta_Application::impl::get_state( ) const
    if( !exists_file( get_obj( ).Name( ) + ".log" ) )
       state |= c_modifier_Has_No_Application_Log;
 
+   if( !get_session_variable( c_Meta_Application_Has_No_Scripts ).empty( ) )
+      state |= c_modifier_Has_No_Installation_Scripts;
+
    if( get_obj( ).Installing_Script( ) )
       state |= ( c_state_is_changing | c_state_unactionable );
    else if( !is_null( get_obj( ).get_key( ) ) )
@@ -3248,6 +3254,8 @@ string Meta_Application::impl::get_state_names( ) const
 
    if( state & c_modifier_Has_No_Application_Log )
       state_names += "|" + string( "Has_No_Application_Log" );
+   if( state & c_modifier_Has_No_Installation_Scripts )
+      state_names += "|" + string( "Has_No_Installation_Scripts" );
    if( state & c_modifier_Is_Installing_Script )
       state_names += "|" + string( "Is_Installing_Script" );
    if( state & c_modifier_Is_Non_Traditional )
@@ -3615,6 +3623,8 @@ void Meta_Application::impl::at_create( )
       get_obj( ).Use_Script( false );
       get_obj( ).Creation_Script( "" );
    }
+   else
+      set_session_variable( c_Meta_Application_Has_No_Scripts, "" );
    // [<finish at_create>]
 }
 
@@ -3642,6 +3652,16 @@ void Meta_Application::impl::to_store( bool is_create, bool is_internal )
 //nyi
    if( is_create && get_obj( ).get_key( ).empty( ) && !get_obj( ).get_clone_key( ).empty( ) )
       get_obj( ).Name( get_obj( ).Name( ) + "_Copy" ); // FUTURE: This should be a module string.
+
+   if( is_create && get_obj( ).get_key( ).empty( ) )
+   {
+      class_pointer< Meta_Application_Script > cp_scripts( e_create_instance );
+
+      if( cp_scripts->iterate_forwards( ) )
+         cp_scripts->iterate_stop( );
+      else
+         set_session_variable( c_Meta_Application_Has_No_Scripts, "1" );
+   }
    // [<finish to_store>]
 }
 

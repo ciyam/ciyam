@@ -25,6 +25,7 @@
 
 #include "Meta_Package_Type.h"
 
+#include "Meta_Application_Script.h"
 #include "Meta_Package.h"
 
 #include "ciyam_base.h"
@@ -485,6 +486,28 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    int impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
    void impl_Version( int Version ) { v_Version = Version; }
 
+   Meta_Application_Script& impl_child_Application_Script( )
+   {
+      if( !cp_child_Application_Script )
+      {
+         cp_child_Application_Script.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Application_Script, "302840" );
+      }
+      return *cp_child_Application_Script;
+   }
+
+   const Meta_Application_Script& impl_child_Application_Script( ) const
+   {
+      if( !cp_child_Application_Script )
+      {
+         cp_child_Application_Script.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Application_Script, "302840" );
+      }
+      return *cp_child_Application_Script;
+   }
+
    Meta_Package& impl_child_Package( )
    {
       if( !cp_child_Package )
@@ -579,6 +602,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    string v_Single;
    int v_Version;
 
+   mutable class_pointer< Meta_Application_Script > cp_child_Application_Script;
    mutable class_pointer< Meta_Package > cp_child_Package;
 };
 
@@ -679,9 +703,17 @@ void Meta_Package_Type::impl::impl_Install( )
    get_obj( ).Version( version );
 
    string dependencies;
+   vector< string > application_scripts;
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next( lines[ i ] );
+
+      if( next.find( c_application_script_prefix ) == 0 )
+      {
+         application_scripts.push_back( next.substr( strlen( c_application_script_prefix ) ) );
+         continue;
+      }
 
       if( !dependencies.empty( ) )
          dependencies += '\n';
@@ -712,6 +744,38 @@ void Meta_Package_Type::impl::impl_Install( )
 
    if( !storage_locked_for_admin( ) )
    {
+      for( size_t i = 0; i < application_scripts.size( ); i++ )
+      {
+         string next( application_scripts[ i ] );
+
+         string::size_type pos = next.find( '=' );
+
+         if( pos == string::npos )
+            throw runtime_error( "invalid application script info: " + next );
+
+         string key( next.substr( 0, pos ) );
+
+         string::size_type spos = next.find( ',', pos + 1 );
+
+         if( spos == string::npos )
+            throw runtime_error( "invalid application script info: " + next );
+
+         string name( next.substr( spos + 1 ) );
+         string script_name( next.substr( pos + 1, spos - pos - 1 ) );
+
+         get_obj( ).child_Application_Script( ).Name( name );
+         get_obj( ).child_Application_Script( ).Script_Name( script_name );
+         get_obj( ).child_Application_Script( ).Package_Type( get_obj( ).get_key( ) );
+
+         string fields_and_values( get_obj( ).child_Application_Script( ).get_fields_and_values( ) );
+
+         set_session_variable( get_special_var_name( e_special_var_key ), key );
+         set_session_variable( get_special_var_name( e_special_var_name ), name );
+         set_session_variable( get_special_var_name( e_special_var_fields_and_values ), fields_and_values );
+
+         run_script( "install_application_script", false, true, true );
+      }
+
 #ifndef _WIN32
       exec_system( "./install_package " + name, false );
 #else
@@ -1415,6 +1479,16 @@ void Meta_Package_Type::Version( int Version )
    p_impl->impl_Version( Version );
 }
 
+Meta_Application_Script& Meta_Package_Type::child_Application_Script( )
+{
+   return p_impl->impl_child_Application_Script( );
+}
+
+const Meta_Application_Script& Meta_Package_Type::child_Application_Script( ) const
+{
+   return p_impl->impl_child_Application_Script( );
+}
+
 Meta_Package& Meta_Package_Type::child_Package( )
 {
    return p_impl->impl_child_Package( );
@@ -1928,6 +2002,11 @@ void Meta_Package_Type::get_foreign_key_values( foreign_key_data_container& fore
    p_impl->get_foreign_key_values( foreign_key_values );
 }
 
+void Meta_Package_Type::setup_graph_parent( Meta_Application_Script& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Application_Script& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Package_Type::setup_graph_parent( Meta_Package& o, const string& foreign_key_field )
 {
    static_cast< Meta_Package& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1945,7 +2024,7 @@ void Meta_Package_Type::set_total_child_relationships( size_t new_total_child_re
 
 size_t Meta_Package_Type::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 1;
+   size_t rc = 2;
 
    if( !is_internal )
    {
@@ -1978,7 +2057,7 @@ class_base* Meta_Package_Type::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 1 )
+   if( child_num >= 2 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1991,6 +2070,14 @@ class_base* Meta_Package_Type::get_next_foreign_key_child(
       switch( child_num )
       {
          case 0:
+         if( op == e_cascade_op_destroy )
+         {
+            next_child_field = "302840";
+            p_class_base = &child_Application_Script( );
+         }
+         break;
+
+         case 1:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "302810";
@@ -2105,6 +2192,8 @@ class_base& Meta_Package_Type::get_or_create_graph_child( const string& context 
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_302840" || sub_context == "child_Application_Script" )
+      p_class_base = &child_Application_Script( );
    else if( sub_context == "_302810" || sub_context == "child_Package" )
       p_class_base = &child_Package( );
 

@@ -20,10 +20,12 @@
 #  endif
 
 class Meta_Application;
+class Meta_Package_Type;
 
 class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_base
 {
    friend class Meta_Application;
+   friend class Meta_Package_Type;
 
    public:
    typedef Meta_Application_Script class_type;
@@ -32,7 +34,8 @@ class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_b
    {
       e_field_id_none = 0,
       e_field_id_Name = 1,
-      e_field_id_Script_Name = 2
+      e_field_id_Package_Type = 2,
+      e_field_id_Script_Name = 3
    };
 
    Meta_Application_Script( );
@@ -43,6 +46,10 @@ class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_b
 
    const std::string& Script_Name( ) const;
    void Script_Name( const std::string& Script_Name );
+
+   Meta_Package_Type& Package_Type( );
+   const Meta_Package_Type& Package_Type( ) const;
+   void Package_Type( const std::string& key );
 
    Meta_Application& child_Application_Creation_Script( );
    const Meta_Application& child_Application_Creation_Script( ) const;
@@ -247,7 +254,12 @@ class META_APPLICATION_SCRIPT_DECL_SPEC Meta_Application_Script : public class_b
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Package_Type& o, const std::string& value );
+
    virtual void setup_graph_parent( Meta_Application& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Package_Type& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    size_t get_total_child_relationships( ) const;
    void set_total_child_relationships( size_t new_total_child_relationships ) const;

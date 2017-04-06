@@ -1,0 +1,9 @@
+; Copyright (c) 2017 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.storage_init %1
+#Installing Application Script %3
+.pc admin @now 100 138100 %2 "%4"
+.quit

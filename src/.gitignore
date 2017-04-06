@@ -90,6 +90,7 @@ makefile.vars.xrep
 for_*.spec.xrep
 *_enum_icons.lst
 *ciyam_class.cpp.xrep
+create_demo_*_application.cin
 
 # Except specs with matching file names.
 !for_each.spec.xrep

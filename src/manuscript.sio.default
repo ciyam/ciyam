@@ -44,6 +44,11 @@
   <filename>*script*
   <arguments>install_application.cin @grp @uid @name @key @script
  </script>
+ <script/>
+  <name>install_application_script
+  <filename>*script*
+  <arguments>install_application_script.cin @storage @key @name @fields_and_values
+ </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>

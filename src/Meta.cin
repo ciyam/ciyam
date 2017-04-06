@@ -1074,6 +1074,7 @@ relationship_add -id=202831 -fid=302831 Package_Option {List} List opt unlink
 relationship_add -id=202832 -fid=302832 Package_Option {Modifier} Modifier opt unlink
 relationship_add -id=202833 -fid=302833 Package_Option {Procedure} Procedure opt unlink
 relationship_add -id=202835 -fid=302835 Workgroup Standard_Package Package opt unlink
+relationship_add -id=202840 -fid=302840 Application_Script {Package_Type} Package_Type mand destroy
 index_add -id=400100 User {Workgroup},User_Id unique
 index_add -id=400101 User {Workgroup},Active,User_Id unique
 index_add -id=400102 User {Workgroup},Description
@@ -1327,6 +1328,7 @@ modifier_add -id=500922 Application Has_No_Application_Log Keep_Existing_Data:re
 modifier_add -id=500923 Application Is_Using_Script Create_Database:relegate,Add_Modules_Automatically:relegate
 modifier_add -id=500924 Application Is_Not_Using_Script Creation_Script:relegate
 modifier_add -id=500925 Application Is_Installing_Script Generate_Type:relegate,Generate_Details:relegate
+modifier_add -id=500926 Application Has_No_Installation_Scripts Use_Script:relegate
 modifier_add -id=500950 Package_Type Is_Installed File:relegate
 modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
 modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\
