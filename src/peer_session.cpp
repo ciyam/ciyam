@@ -59,10 +59,18 @@ const char c_reprocess_prefix = '*';
 
 const char* const c_hello = "hello";
 
+const char* const c_meta_data_line_prefix = "md:";
+const char* const c_public_key_line_prefix = "pk:";
+const char* const c_secure_hash_line_prefix = "sh:";
+
+const char* const c_meta_data_info_type_raw = "raw";
+
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
 const int c_min_block_wait_passes = 8;
+
+const size_t c_max_put_size = 100;
 
 const size_t c_request_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
@@ -114,6 +122,16 @@ inline void issue_error( const string& message )
 inline void issue_warning( const string& message )
 {
    TRACE_LOG( TRACE_SESSIONS, string( "peer session warning: " ) + message );
+}
+
+string get_hello_data( string& hello_hash )
+{
+   string data( c_file_type_str_blob );
+   data += string( c_hello );
+
+   hello_hash = sha256( data ).get_digest_as_string( );
+
+   return data;
 }
 
 void add_good_peer( const string& ip_addr, const string& blockchain )
@@ -600,30 +618,30 @@ void socket_command_handler::get_hello( )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   string data( c_file_type_str_blob );
-   data += string( c_hello );
+   string data, hello_hash;
+   data = get_hello_data( hello_hash );
 
-   string temp_hash( sha256( data ).get_digest_as_string( ) );
+   string dummy_tag( get_special_var_name( e_special_var_none ) );
 
-   if( !has_file( temp_hash ) )
-      create_raw_file( data );
+   if( !has_file( hello_hash ) )
+      create_raw_file( data, false, dummy_tag.c_str( ) );
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + temp_hash, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hello_hash, c_request_timeout, p_progress );
 
    try
    {
       store_temp_file( temp_file_name, socket, p_progress );
 
-      if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+      if( !temp_file_is_identical( temp_file_name, hello_hash ) )
       {
          file_remove( temp_file_name );
          throw runtime_error( "invalid get_hello" );
       }
 
-      increment_peer_files_downloaded( file_bytes( temp_hash ) );
+      increment_peer_files_downloaded( file_bytes( hello_hash ) );
 
       file_remove( temp_file_name );
    }
@@ -644,20 +662,20 @@ void socket_command_handler::put_hello( )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   string data( c_file_type_str_blob );
-   data += string( c_hello );
+   string data, hello_hash;
+   data = get_hello_data( hello_hash );
 
-   string temp_hash( sha256( data ).get_digest_as_string( ) );
+   string dummy_tag( get_special_var_name( e_special_var_none ) );
 
-   if( !has_file( temp_hash ) )
-      create_raw_file( data );
+   if( !has_file( hello_hash ) )
+      create_raw_file( data, false, dummy_tag.c_str( ) );
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + temp_hash, c_request_timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_progress );
 
-   fetch_file( temp_hash, socket, p_progress );
+   fetch_file( hello_hash, socket, p_progress );
 
-   increment_peer_files_uploaded( file_bytes( temp_hash ) );
+   increment_peer_files_uploaded( file_bytes( hello_hash ) );
 }
 
 void socket_command_handler::get_file( const string& hash )
@@ -807,7 +825,7 @@ void socket_command_handler::issue_cmd_for_peer( )
    else if( !prior_put( ).empty( ) && rand( ) % 10 == 0 )
       chk_file( prior_put( ) );
    else if( rand( ) % 10 == 0 )
-      pip_peer( "127.0.0.1" );
+      pip_peer( get_random_same_port_peer_ip_addr( c_none ) );
    else if( get_last_issued_was_put( ) )
    {
       string next_hash( top_next_peer_file_hash_to_get( ) );
@@ -954,6 +972,7 @@ command_functor* peer_session_command_functor_factory( const string& /*name*/, c
 void peer_session_command_functor::operator ( )( const string& command, const parameter_info& parameters )
 {
    string response;
+
    bool send_okay_response = true;
    bool possibly_expected_error = false;
 
@@ -995,6 +1014,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( has_tag( tag_or_hash ) )
             response = hash = tag_file_hash( tag_or_hash );
 
+         // NOTE: Unless doing interactive testing any peer "chk tag" request must start
+         // with the blockchain tag prefix (otherwise a peer might be able to find files
+         // that are not intended for their discovery).
+         if( !blockchain.empty( )
+          && tag_or_hash.length( ) != 64 && tag_or_hash.find( "c" + blockchain ) != 0 )
+            throw runtime_error( "invalid non-blockchain prefixed tag" );
+
          bool has = has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
@@ -1011,18 +1037,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   handler.issue_command_reponse( response, true );
 
                   // NOTE: For the initial file transfer just a dummy "hello" blob.
-                  string data( c_file_type_str_blob );
-                  data += string( c_hello );
+                  string data, hello_hash;
+                  data = get_hello_data( hello_hash );
 
-                  string temp_hash( sha256( data ).get_digest_as_string( ) );
+                  string dummy_tag( get_special_var_name( e_special_var_none ) );
 
-                  if( !has_file( temp_hash ) )
-                     create_raw_file( data );
+                  if( !has_file( hello_hash ) )
+                     create_raw_file( data, false, dummy_tag.c_str( ) );
 
-                  handler.issue_command_reponse( "put " + temp_hash, true );
+                  handler.issue_command_reponse( "put " + hello_hash, true );
 
                   socket.set_delay( );
-                  fetch_file( temp_hash, socket, p_progress );
+                  fetch_file( hello_hash, socket, p_progress );
 
                   string temp_file_name( "~" + uuid( ).as_string( ) );
 
@@ -1032,7 +1058,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      response.erase( );
 
-                     if( !temp_file_is_identical( temp_file_name, temp_hash ) )
+                     if( !temp_file_is_identical( temp_file_name, hello_hash ) )
                         socket_handler.state( ) = e_peer_state_invalid;
                      else
                      {
@@ -1147,7 +1173,52 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          socket.set_delay( );
 
          if( !has_file( hash ) )
-            store_file( hash, socket, 0, p_progress, false );
+         {
+            store_file( hash, socket, 0, p_progress, false, c_max_put_size );
+
+            string hello_hash;
+            get_hello_data( hello_hash );
+
+            if( hash != hello_hash )
+            {
+               string file_data( extract_file( hash, "" ) );
+
+               vector< string > lines;
+               split( file_data, lines, '\n' );
+
+               bool okay = false;
+
+               if( lines.size( ) == 3 )
+               {
+                  string::size_type pos = lines[ 0 ].find( c_meta_data_line_prefix );
+
+                  if( pos == 0 )
+                  {
+                     string meta_data_info( lines[ 0 ].substr( strlen( c_meta_data_line_prefix ) ) );
+
+                     if( meta_data_info == c_meta_data_info_type_raw )
+                     {
+                        if( lines[ 1 ].find( c_public_key_line_prefix ) == 0 )
+                        {
+                           string public_key( lines[ 1 ].substr( strlen( c_public_key_line_prefix ) ) );
+
+                           if( lines[ 2 ].find( c_secure_hash_line_prefix ) == 0 )
+                           {
+                              string secure_hash( lines[ 2 ].substr( strlen( c_secure_hash_line_prefix ) ) );
+
+                              okay = true;
+                           }
+                        }
+                     }
+                  }
+               }
+
+               delete_file( hash, true );
+
+               if( !okay )
+                  throw runtime_error( "invalid file content for put" );
+            }
+         }
          else
          {
             string temp_file_name( "~" + uuid( ).as_string( ) );
@@ -1182,7 +1253,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string addr( get_parm_val( parameters, c_cmd_parm_peer_session_pip_addr ) );
 
-         response = "127.0.0.1"; // KLUDGE: This should return an actual peer IP address.
+         response = get_random_same_port_peer_ip_addr( c_none );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put )
@@ -1538,6 +1609,9 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
    if( this->ip_addr == "127.0.0.1" )
       is_local = true;
 
+   if( port.empty( ) )
+      port = to_string( get_blockchain_port( blockchain ) );
+
    // FUTURE: For now a dummy PID is being written/read so that the standard
    // general purpose client can be used to connect as a peer (for testing).
    // Perhaps this could be some specific peer identity in the future to act
@@ -1604,7 +1678,7 @@ void peer_session::on_start( )
          }
       }
 
-      init_session( cmd_handler, true, &ip_addr, &blockchain );
+      init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ) );
 
       okay = true;
 
@@ -1622,12 +1696,7 @@ void peer_session::on_start( )
             hash_or_tag = string( "c" + blockchain + ".head" );
 
          if( hash_or_tag.empty( ) )
-         {
-            string data( c_file_type_str_blob );
-            data += string( c_hello );
-
-            hash_or_tag = sha256( data ).get_digest_as_string( );
-         }
+            get_hello_data( hash_or_tag );
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
 

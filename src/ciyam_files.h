@@ -78,8 +78,8 @@ std::string CIYAM_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC store_file( const std::string& hash,
- tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0, bool allow_core_file = true );
+void CIYAM_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socket,
+ const char* p_tag = 0, progress* p_progress = 0, bool allow_core_file = true, size_t max_bytes = 0 );
 
 void CIYAM_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true );
 

@@ -210,13 +210,15 @@ void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
 void CIYAM_BASE_DECL_SPEC init_session(
  command_handler& cmd_handler, bool is_peer_session = false,
- const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0 );
+ const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0, int port = 0 );
 
 void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
 
 bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr );
+
+std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );
 
 void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true );
 
@@ -307,7 +309,7 @@ void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_put( );
 bool CIYAM_BASE_DECL_SPEC any_peer_still_has_file_hash_to_put(
  const std::string& hash, const std::string* p_blockchain = 0 );
 
-void CIYAM_BASE_DECL_SPEC set_default_session_variables( );
+void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );

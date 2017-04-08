@@ -966,63 +966,66 @@ void tag_file( const string& name, const string& hash )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash ) );
-
-   if( !file_exists( filename ) )
-      throw runtime_error( hash + " was not found" );
-
-   string tag_name;
-
-   // NOTE: If an asterisk is included in the name then existing tags matching
-   // the wildcard expression will be removed first then if the asterisk is at
-   // the very end no new tag will be added unless two asterisks were used for
-   // the name suffix in which case the new tag name will become the truncated
-   // version.
-   string::size_type pos = name.rfind( '*' );
-
-   if( pos == string::npos )
+   if( name != get_special_var_name( e_special_var_none ) )
    {
-      tag_del( name );
-      tag_name = name;
-   }
-   else
-   {
-      // NOTE: If a question mark preceeds the asterisk then only the exact tag
-      // will be removed.
-      if( pos > 1 && name[ pos - 1 ] == '?' )
-         remove_file_tags( hash, name.substr( 0, pos - 1 ) );
+      string filename( construct_file_name_from_hash( hash ) );
+
+      if( !file_exists( filename ) )
+         throw runtime_error( hash + " was not found" );
+
+      string tag_name;
+
+      // NOTE: If an asterisk is included in the name then existing tags matching
+      // the wildcard expression will be removed first then if the asterisk is at
+      // the very end no new tag will be added unless two asterisks were used for
+      // the name suffix in which case the new tag name will become the truncated
+      // version.
+      string::size_type pos = name.rfind( '*' );
+
+      if( pos == string::npos )
+      {
+         tag_del( name );
+         tag_name = name;
+      }
       else
-         remove_file_tags( hash, name.substr( 0, pos + 1 ) );
+      {
+         // NOTE: If a question mark preceeds the asterisk then only the exact tag
+         // will be removed.
+         if( pos > 1 && name[ pos - 1 ] == '?' )
+            remove_file_tags( hash, name.substr( 0, pos - 1 ) );
+         else
+            remove_file_tags( hash, name.substr( 0, pos + 1 ) );
 
-      if( pos != name.length( ) - 1 )
-         tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
-      else if( pos > 1 && name[ pos - 1 ] == '*' )
-         tag_name = name.substr( 0, pos - 1 );
+         if( pos != name.length( ) - 1 )
+            tag_name = name.substr( 0, pos ) + name.substr( pos + 1 );
+         else if( pos > 1 && name[ pos - 1 ] == '*' )
+            tag_name = name.substr( 0, pos - 1 );
 
-      // NOTE: If a question mark as found at the end then the tag will become
-      // instead a "current time stamp" tag.
-      if( tag_name.length( ) && tag_name[ tag_name.length( ) - 1 ] == '?' )
-         tag_name = current_timestamp_tag( );
-   }
+         // NOTE: If a question mark as found at the end then the tag will become
+         // instead a "current time stamp" tag.
+         if( tag_name.length( ) && tag_name[ tag_name.length( ) - 1 ] == '?' )
+            tag_name = current_timestamp_tag( );
+      }
 
-   if( !tag_name.empty( ) )
-   {
-      string tag_filename( c_files_directory );
+      if( !tag_name.empty( ) )
+      {
+         string tag_filename( c_files_directory );
 
-      tag_filename += "/" + tag_name;
+         tag_filename += "/" + tag_name;
 
-      ofstream outf( tag_filename.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
+         ofstream outf( tag_filename.c_str( ) );
+         if( !outf )
+            throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
 
-      outf << hash;
+         outf << hash;
 
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "unexpected bad output stream" );
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "unexpected bad output stream" );
 
-      g_hash_tags.insert( make_pair( hash, tag_name ) );
-      g_tag_hashes.insert( make_pair( tag_name, hash ) );
+         g_hash_tags.insert( make_pair( hash, tag_name ) );
+         g_tag_hashes.insert( make_pair( tag_name, hash ) );
+      }
    }
 }
 
@@ -1258,7 +1261,7 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 }
 
 void store_file( const string& hash, tcp_socket& socket,
- const char* p_tag, progress* p_progress, bool allow_core_file )
+ const char* p_tag, progress* p_progress, bool allow_core_file, size_t max_bytes )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash, true ) );
@@ -1269,6 +1272,9 @@ void store_file( const string& hash, tcp_socket& socket,
    bool is_in_blacklist = false;
 
    bool file_extra_is_core = false;
+
+   if( !max_bytes || max_bytes > get_files_area_item_max_size( ) )
+      max_bytes = get_files_area_item_max_size( );
 
    if( !filename.empty( ) )
    {
@@ -1287,8 +1293,7 @@ void store_file( const string& hash, tcp_socket& socket,
    {
       session_file_buffer_access file_buffer;
 
-      file_transfer( tmp_filename,
-       socket, e_ft_direction_recv, get_files_area_item_max_size( ),
+      file_transfer( tmp_filename, socket, e_ft_direction_recv, max_bytes,
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress );
 

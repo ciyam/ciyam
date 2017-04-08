@@ -229,7 +229,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             string prefix( c_file_type_str_blob );
 
             regex expr( c_regex_hash_256 );
-            if( !was_chk_token && expr.search( data ) == string::npos && str.substr( 0, pos ) == "chk" )
+            if( was_chk && !was_chk_token && expr.search( data ) == string::npos )
                was_chk_tag = true;
 
             // NOTE: For testing purposes if a local file exists with the name given then
@@ -386,7 +386,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      throw runtime_error( "server has terminated this connection" );
                }
 
-               if( was_pip || was_chk_tag || was_chk_token || was_get_or_put )
+               if( was_chk || was_pip || was_get_or_put )
                {
                   // FUTURE: Verify the hash if "was_chk_token".
                   if( was_pip || was_chk_tag || was_chk_token )
@@ -444,6 +444,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         handle_command_response( hash_val );
 
                         socket.write_line( hash_val );
+
                         response.erase( );
                         socket.read_line( response );
                      }
@@ -451,7 +452,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      {
                         handle_command_response( response.substr( pos + 1 ) );
 
-                        socket.write_line( "127.0.0.1" );
+                        socket.write_line( c_none );
+
                         response.erase( );
                         socket.read_line( response );
                      }

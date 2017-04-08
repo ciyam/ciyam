@@ -63,6 +63,7 @@ enum special_var
    e_special_var_none,
    e_special_var_path,
    e_special_var_peer,
+   e_special_var_port,
    e_special_var_size,
    e_special_var_uuid,
    e_special_var_async,

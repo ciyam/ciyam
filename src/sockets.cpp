@@ -584,6 +584,8 @@ void file_transfer( const string& name,
             // NOTE: If "error" is found in the message then just throw it as is.
             if( next.find( "error" ) != string::npos )
                throw runtime_error( next );
+            else if( next.empty( ) )
+               throw runtime_error( "unexpected empty data" );
             else
                throw runtime_error( "was expecting '" + string( p_ack_message ) + "' but found '" + next + "'" );
          }
@@ -642,6 +644,7 @@ void file_transfer( const string& name,
             throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
          written += decoded.length( );
+
          if( written > max_size )
          {
             max_size_exceeded = true;

@@ -2636,17 +2636,22 @@ void verify_transaction( const string& content, bool check_sigs,
 
          string cmd( next_line.substr( 0, pos ) );
 
-         if( cmd != "fe" && cmd != "pc" && cmd != "pu" && cmd != "pd" && cmd != "pe" )
+         if( cmd != c_file_type_core_transaction_special_file_extract_command
+          && cmd != c_file_type_core_transaction_special_perform_create_command
+          && cmd != c_file_type_core_transaction_special_perform_update_command
+          && cmd != c_file_type_core_transaction_special_perform_destroy_command
+          && cmd != c_file_type_core_transaction_special_perform_execute_command )
             throw runtime_error( "invalid cmd '" + cmd + "' in log line '" + next_line + "'" );
 
-         if( cmd == "fe" )
+         if( cmd == c_file_type_core_transaction_special_file_extract_command )
          {
             if( !file_extract_lines.empty( ) )
                file_extract_lines += '\n';
             file_extract_lines += next_line;
          }
 
-         if( cmd == "pc" || cmd == "pu" )
+         if( cmd == c_file_type_core_transaction_special_perform_create_command
+          || cmd == c_file_type_core_transaction_special_perform_update_command )
          {
             pos = next_line.find( '"' );
             if( pos == string::npos )

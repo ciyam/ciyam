@@ -10,6 +10,7 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
+const char* const c_none = "none";
 const char* const c_okay = "okay";
 
 const char* const c_meta_model = "Meta";
@@ -131,6 +132,11 @@ const char* const c_file_type_core_transaction_detail_log_prefix = "l:";
 const char* const c_file_type_core_transaction_detail_signature_prefix = "s:";
 
 const char* const c_file_type_core_transaction_special_file_extract_prefix = "fe ";
+const char* const c_file_type_core_transaction_special_file_extract_command = "fe";
+const char* const c_file_type_core_transaction_special_perform_create_command = "pc";
+const char* const c_file_type_core_transaction_special_perform_update_command = "pu";
+const char* const c_file_type_core_transaction_special_perform_destroy_command = "pd";
+const char* const c_file_type_core_transaction_special_perform_execute_command = "pe";
 
 const char* const c_file_type_core_blockchain_info_header_chain_prefix = "c=";
 const char* const c_file_type_core_blockchain_info_header_height_prefix = "h=";

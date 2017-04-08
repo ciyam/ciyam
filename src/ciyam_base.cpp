@@ -3345,6 +3345,7 @@ void read_server_configuration( )
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
       g_web_root = reader.read_attribute( c_attribute_web_root );
+
       if( !g_web_root.empty( ) )
       {
          if( g_web_root[ 0 ] == '$' )
@@ -3352,7 +3353,8 @@ void read_server_configuration( )
             const char* p_env = getenv( g_web_root.substr( 1 ).c_str( ) );
             g_web_root = string( p_env ? p_env : "" );
          }
-         else if( g_web_root[ 0 ] == '%' && g_web_root.size( ) > 2 && g_web_root[ g_web_root.size( ) - 1 ] == '%' )
+         else if( g_web_root[ 0 ] == '%'
+          && g_web_root.size( ) > 2 && g_web_root[ g_web_root.size( ) - 1 ] == '%' )
          {
             const char* p_env = getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) );
             g_web_root = string( p_env ? p_env : "" );
@@ -3362,9 +3364,11 @@ void read_server_configuration( )
 #endif
       }
 
-      g_max_peers = atoi( reader.read_opt_attribute( c_attribute_mas_peers, to_string( c_default_max_peers ) ).c_str( ) );
+      g_max_peers = atoi( reader.read_opt_attribute(
+       c_attribute_mas_peers, to_string( c_default_max_peers ) ).c_str( ) );
 
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
+
       if( !g_set_trace.empty( ) )
       {
          int trace_flags;
@@ -3377,6 +3381,7 @@ void read_server_configuration( )
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
       string all_blockchains( reader.read_opt_attribute( c_attribute_blockchains ) );
+
       if( !all_blockchains.empty( ) )
       {
          vector< string > blockchains;
@@ -3408,6 +3413,7 @@ void read_server_configuration( )
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
 
       string peer_ips_direct( reader.read_opt_attribute( c_attribute_peer_ips_direct ) );
+
       if( !peer_ips_direct.empty( ) )
       {
          vector< string > ips_direct;
@@ -4715,7 +4721,7 @@ void generate_new_script_sio_files( )
 }
 
 void init_session( command_handler& cmd_handler,
- bool is_peer_session, const string* p_ip_addr, const string* p_blockchain )
+ bool is_peer_session, const string* p_ip_addr, const string* p_blockchain, int port )
 {
    guard g( g_mutex );
 
@@ -4737,7 +4743,7 @@ void init_session( command_handler& cmd_handler,
    if( !gtp_session )
       throw runtime_error( "max. permitted concurrent sessions already active" );
 
-   set_default_session_variables( );
+   set_default_session_variables( port );
 }
 
 void term_session( )
@@ -4790,6 +4796,38 @@ bool has_session_with_ip_addr( const string& ip_addr )
    }
 
    return false;
+}
+
+string get_random_same_port_peer_ip_addr( const string& empty_value )
+{
+   guard g( g_mutex );
+
+   string retval( empty_value );
+   vector< string > peer_ip_addresses;
+
+   string peer_var_name( get_special_var_name( e_special_var_peer ) );
+   string port_var_name( get_special_var_name( e_special_var_port ) );
+
+   string port( get_session_variable( port_var_name ) );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && gtp_session != g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( peer_var_name )
+       && g_sessions[ i ]->variables.count( port_var_name )
+       && port == g_sessions[ i ]->variables[ port_var_name ] )
+         peer_ip_addresses.push_back( g_sessions[ i ]->ip_addr );
+   }
+
+   if( !peer_ip_addresses.empty( ) )
+   {
+      if( peer_ip_addresses.size( ) == 1 )
+         retval = peer_ip_addresses[ 0 ];
+      else
+         retval = peer_ip_addresses[ rand( ) % peer_ip_addresses.size( ) ];
+   }
+
+   return retval;
 }
 
 void list_sessions( ostream& os, bool inc_dtms )
@@ -5348,8 +5386,11 @@ bool any_peer_still_has_file_hash_to_put(
    return false;
 }
 
-void set_default_session_variables( )
+void set_default_session_variables( int port )
 {
+   if( port )
+      set_session_variable( get_special_var_name( e_special_var_port ), to_string( port ) );
+
    set_session_variable( get_special_var_name( e_special_var_storage ), get_default_storage( ) );
 }
 
