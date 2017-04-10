@@ -861,7 +861,7 @@ void hex_decode( const std::string& data, unsigned char* p_data, size_t len );
 
 inline std::string hex_decode( const std::string& data )
 {
-   std::string str( data.size( ) / 2, '0' );
+   std::string str( data.length( ) / 2, '0' );
    hex_decode( data, ( unsigned char* )str.c_str( ), str.length( ) );
    return str;
 }

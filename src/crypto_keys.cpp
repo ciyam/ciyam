@@ -605,6 +605,8 @@ private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_c
 
    unsigned char buf[ c_num_secret_bytes ];
 
+   memset( buf, 0, sizeof( buf ) );
+
    if( secret.length( ) < 30 )
    {
       if( is_wif_format )

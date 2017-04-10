@@ -22,6 +22,7 @@
 
 #include "peer_session.h"
 
+#include "base64.h"
 #include "config.h"
 #include "sha256.h"
 #include "threads.h"
@@ -29,6 +30,10 @@
 #include "date_time.h"
 #include "ciyam_base.h"
 #include "ciyam_files.h"
+#ifdef SSL_SUPPORT
+#  include "crypto_keys.h"
+#endif
+#include "crypt_stream.h"
 #include "ciyam_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
@@ -56,21 +61,16 @@ namespace
 mutex g_mutex;
 
 const char c_reprocess_prefix = '*';
+const char c_repository_suffix = '!';
 
 const char* const c_hello = "hello";
-
-const char* const c_meta_data_line_prefix = "md:";
-const char* const c_public_key_line_prefix = "pk:";
-const char* const c_secure_hash_line_prefix = "sh:";
-
-const char* const c_meta_data_info_type_raw = "raw";
 
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
 const int c_min_block_wait_passes = 8;
 
-const size_t c_max_put_size = 100;
+const size_t c_max_put_size = 128;
 
 const size_t c_request_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
@@ -297,7 +297,7 @@ string store_new_block( const string& blockchain, const string& password_hash )
    return process_txs( blockchain, "" );
 }
 
-void process_file( const string& hash, const string& blockchain )
+void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex );
 
@@ -482,10 +482,62 @@ void process_file( const string& hash, const string& blockchain )
       else
       {
          delete_file( hash.substr( 0, pos ), false );
-         throw runtime_error( "unexpected core file type '" + core_type + "' found in process_file" );
+         throw runtime_error( "unexpected core file type '" + core_type + "' found in process_core_file" );
       }
    }
 }
+
+#ifdef SSL_SUPPORT
+void process_repository_file( const string& hash )
+{
+   guard g( g_mutex );
+
+   string::size_type pos = hash.find( ':' );
+
+   if( pos == string::npos )
+      throw runtime_error( "unexpected missing public key for process_repository_file" );
+
+   string file_data( extract_file( hash.substr( 0, pos ), "" ) );
+
+   public_key pub_key( hash.substr( pos + 1 ), true );
+   private_key priv_key;
+
+   stringstream ss( file_data );
+   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+
+   file_data = string( c_file_type_str_blob ) + ss.str( );
+
+   if( get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
+      delete_file( hash.substr( 0, pos ) );
+
+   string local_hash( create_raw_file( file_data, false ) );
+
+   store_repository_entry_record( hash.substr( 0, pos ),
+    local_hash, priv_key.get_public( ), pub_key.get_public( ) );
+}
+
+string get_file_hash_from_put_data( const string& encoded_pubkey, const string& encoded_source_hash )
+{
+   string retval;
+
+   try
+   {
+      base64::validate( encoded_pubkey );
+      base64::validate( encoded_source_hash );
+
+      // NOTE: Construct a public key object for the purpose of validation.
+      public_key pubkey( encoded_pubkey, true );
+
+      retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + encoded_pubkey + c_repository_suffix;
+   }
+   catch( ... )
+   {
+      // FUTURE: Perhaps add a trace here so specific errors aren't being completely ignored.
+   }
+
+   return retval;
+}
+#endif
 
 class socket_command_handler : public command_handler
 {
@@ -832,7 +884,7 @@ void socket_command_handler::issue_cmd_for_peer( )
 
       if( !next_hash.empty( ) && next_hash[ 0 ] == c_reprocess_prefix )
       {
-         process_file( next_hash.substr( 1 ), blockchain );
+         process_core_file( next_hash.substr( 1 ), blockchain );
          next_hash.erase( );
       }
 
@@ -847,8 +899,12 @@ void socket_command_handler::issue_cmd_for_peer( )
          get_file( next_hash );
          pop_next_peer_file_hash_to_get( );
 
-         process_file( next_hash, blockchain );
-
+         if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
+            process_core_file( next_hash, blockchain );
+#ifdef SSL_SUPPORT
+         else
+            process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ) );
+#endif
          if( !blockchain.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
             set_needs_blockchain_info( true );
       }
@@ -1172,9 +1228,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
+         int64_t bytes = 0;
+
          if( !has_file( hash ) )
          {
             store_file( hash, socket, 0, p_progress, false, c_max_put_size );
+
+            bytes = file_bytes( hash );
 
             string hello_hash;
             get_hello_data( hello_hash );
@@ -1190,23 +1250,40 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( lines.size( ) == 3 )
                {
-                  string::size_type pos = lines[ 0 ].find( c_meta_data_line_prefix );
+                  string::size_type pos = lines[ 0 ].find( c_file_repository_meta_data_line_prefix );
 
                   if( pos == 0 )
                   {
-                     string meta_data_info( lines[ 0 ].substr( strlen( c_meta_data_line_prefix ) ) );
+                     string meta_data_info(
+                      lines[ 0 ].substr( strlen( c_file_repository_meta_data_line_prefix ) ) );
 
-                     if( meta_data_info == c_meta_data_info_type_raw )
+                     if( meta_data_info == c_file_repository_meta_data_info_type_raw )
                      {
-                        if( lines[ 1 ].find( c_public_key_line_prefix ) == 0 )
+                        if( lines[ 1 ].find( c_file_repository_public_key_line_prefix ) == 0 )
                         {
-                           string public_key( lines[ 1 ].substr( strlen( c_public_key_line_prefix ) ) );
+                           string public_key(
+                            lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
 
-                           if( lines[ 2 ].find( c_secure_hash_line_prefix ) == 0 )
+                           if( lines[ 2 ].find( c_file_repository_source_hash_line_prefix ) == 0 )
                            {
-                              string secure_hash( lines[ 2 ].substr( strlen( c_secure_hash_line_prefix ) ) );
+                              string source_hash(
+                               lines[ 2 ].substr( strlen( c_file_repository_source_hash_line_prefix ) ) );
 
+#ifndef SSL_SUPPORT
                               okay = true;
+#else
+                              string hash_info( get_file_hash_from_put_data( public_key, source_hash ) );
+
+                              if( !hash_info.empty( ) )
+                              {
+                                 okay = true;
+                                 pos = hash_info.find( ':' );
+
+                                 // NOTE: Ignore the source content if is "hello".
+                                 if( hash_info.substr( 0, pos ) != hello_hash )
+                                    add_peer_file_hash_for_get( hash_info );
+                              }
+#endif
                            }
                         }
                      }
@@ -1221,6 +1298,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
          else
          {
+            bytes = file_bytes( hash );
+
             string temp_file_name( "~" + uuid( ).as_string( ) );
             try
             {
@@ -1234,10 +1313,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
 
-         increment_peer_files_downloaded( file_bytes( hash ) );
+         increment_peer_files_downloaded( bytes );
 
-         if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
-            socket_handler.prior_put( ) = hash;
+         if( has_file( hash ) )
+         {
+            if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
+               socket_handler.prior_put( ) = hash;
+         }
 
          socket_handler.state( ) = e_peer_state_waiting_for_get;
 

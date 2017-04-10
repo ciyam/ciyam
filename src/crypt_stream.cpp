@@ -55,7 +55,9 @@ const size_t c_password_rounds_multiplier = 3;
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick, however, it is not considered "strong encryption" and
-// therefore should not be used for encrypting highly sensitive information.
+// therefore is not recommended for encrypting highly sensitive information
+// (but is of zero concern assuming that the data has already been securely
+// encrypted).
 void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
@@ -119,6 +121,9 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 #ifdef SSL_SUPPORT
 string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
 {
+   if( s.length( ) > AES_BLOCK_SIZE )
+      throw runtime_error( "aes_crypt call for content > AES_BLOCK_SIZE is not permitted" );
+
    string output( s.length( ) + AES_BLOCK_SIZE, '\0' );
    unsigned char* p_output = ( unsigned char* )output.data( );
 

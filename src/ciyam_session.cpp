@@ -1764,6 +1764,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !password.empty( ) )
             set_session_mint_account( stop ? string( ) : response );
       }
+      else if( command == c_cmd_ciyam_session_peer_persist_file )
+      {
+         string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_pubkey ) );
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_filename ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_password ) );
+
+         if( !pubkey.empty( ) )
+            password = session_shared_decrypt( pubkey, password );
+
+         response = create_peer_repository_entry_info( filename, password );
+      }
       else if( command == c_cmd_ciyam_session_peer_transactions )
       {
          string blockchain( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_transactions_blockchain ) );

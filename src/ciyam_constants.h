@@ -24,6 +24,12 @@ const char* const c_file_blacklist_folder = "blst";
 const char* const c_file_repository_folder = "repo";
 const char* const c_system_variables_folder = "vars";
 
+const char* const c_file_repository_meta_data_line_prefix = "md:";
+const char* const c_file_repository_public_key_line_prefix = "pk:";
+const char* const c_file_repository_source_hash_line_prefix = "sh:";
+
+const char* const c_file_repository_meta_data_info_type_raw = "raw";
+
 const char* const c_file_repository_local_hash_attribute = "local_hash";
 
 const char* const c_storage_identity_tx_id = "[0]";

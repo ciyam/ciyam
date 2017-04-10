@@ -4039,6 +4039,42 @@ string get_account_msg_secret( const string& blockchain, const string& password,
    return key_info.msg_secret;
 }
 
+string create_peer_repository_entry_info( const string& filename, const string& password )
+{
+   string retval;
+
+#ifndef SSL_SUPPORT
+   throw runtime_error( "create_peer_repository_entry_info requires SSL support" );
+#else
+   if( !file_exists( filename ) )
+      throw runtime_error( "file '" + filename + "' not found" );
+
+   string file_data( c_file_type_str_blob );
+   file_data += buffer_file( filename );
+
+   string file_hash( create_raw_file( file_data, 0, filename.c_str( ) ) );
+
+   file_data = string( c_file_type_str_blob );
+
+   file_data += c_file_repository_meta_data_line_prefix;
+   file_data += c_file_repository_meta_data_info_type_raw;
+   file_data += '\n';
+
+   private_key priv_key( sha256( file_hash + password ).get_digest_as_string( ) );
+
+   file_data += c_file_repository_public_key_line_prefix;
+   file_data += priv_key.get_public( true, true );
+   file_data += '\n';
+
+   file_data += c_file_repository_source_hash_line_prefix;
+   file_data += base64::encode( hex_decode( file_hash ) );
+
+   retval = create_raw_file( file_data );
+#endif
+
+   return retval;
+}
+
 void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 {
    guard g( g_mutex, "perform_storage_rewind" );

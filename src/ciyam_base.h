@@ -294,6 +294,9 @@ void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash );
 
+void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
+ const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
+
 std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( );
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
 

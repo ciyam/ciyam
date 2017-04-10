@@ -135,6 +135,7 @@ const char* const c_attribute_arguments = "arguments";
 const char* const c_attribute_mas_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_local_hash = "local_hash";
 const char* const c_attribute_blockchains = "blockchains";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
@@ -146,6 +147,8 @@ const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
 const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
 const char* const c_attribute_session_timeout = "session_timeout";
+const char* const c_attribute_local_public_key = "local_public_key";
+const char* const c_attribute_master_public_key = "master_public_key";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
@@ -5298,6 +5301,26 @@ void add_peer_file_hash_for_get( const string& hash )
    guard g( g_mutex );
 
    gtp_session->file_hashs_to_get.push_back( hash );
+}
+
+void store_repository_entry_record( const string& key,
+ const string& local_hash, const string& local_public_key, const string& master_public_key )
+{
+   ods::bulk_write bulk_write( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   stringstream sio_data;
+   sio_writer writer( sio_data );
+
+   writer.write_attribute( c_attribute_local_hash, local_hash );
+   writer.write_attribute( c_attribute_local_public_key, local_public_key );
+   writer.write_attribute( c_attribute_master_public_key, master_public_key );
+
+   writer.finish_sections( );
+
+   gap_ofs->store_file( key, 0, &sio_data );
 }
 
 string top_next_peer_file_hash_to_get( )

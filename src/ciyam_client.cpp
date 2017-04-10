@@ -306,8 +306,15 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
 
+                  bool delete_after_transfer = false;
+
                   if( file_exists( filename ) )
-                     throw runtime_error( "local file '" + filename + "' already exists" );
+                  {
+                     handle_command_response( "local file '" + filename + "' already exists", true );
+
+                     delete_after_transfer = true;
+                     filename = "~" + uuid( ).as_string( );
+                  }
 
                   file_transfer( filename, socket,
                    e_ft_direction_recv, c_max_file_transfer_size,
@@ -330,6 +337,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      write_file( filename, expanded_data );
                   }
 #endif
+
+                  if( delete_after_transfer )
+                     file_remove( filename );
                }
                else if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
                {
