@@ -507,8 +507,7 @@ void process_repository_file( const string& hash )
 
    file_data = string( c_file_type_str_blob ) + ss.str( );
 
-   if( get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
-      delete_file( hash.substr( 0, pos ) );
+   delete_file( hash.substr( 0, pos ) );
 
    string local_hash( create_raw_file( file_data, false ) );
 
@@ -1279,8 +1278,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                                  okay = true;
                                  pos = hash_info.find( ':' );
 
-                                 // NOTE: Ignore the source content if is "hello".
-                                 if( hash_info.substr( 0, pos ) != hello_hash )
+                                 if( !has_file( hash_info.substr( 0, pos ) ) )
                                     add_peer_file_hash_for_get( hash_info );
                               }
 #endif

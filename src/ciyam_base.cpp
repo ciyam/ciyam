@@ -5323,6 +5323,24 @@ void store_repository_entry_record( const string& key,
    gap_ofs->store_file( key, 0, &sio_data );
 }
 
+void fetch_repository_entry_record( const string& key,
+ string& local_hash, string& local_public_key, string& master_public_key )
+{
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   stringstream sio_data;
+   gap_ofs->get_file( key, &sio_data, true );
+
+   sio_reader reader( sio_data );
+
+   local_hash = reader.read_attribute( c_attribute_local_hash );
+   local_public_key = reader.read_attribute( c_attribute_local_public_key );
+   master_public_key = reader.read_attribute( c_attribute_master_public_key );
+}
+
 string top_next_peer_file_hash_to_get( )
 {
    guard g( g_mutex );

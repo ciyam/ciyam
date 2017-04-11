@@ -620,7 +620,7 @@ void Meta_Global_Blacklist_Entry::impl::for_store( bool is_create, bool is_inter
    ( void )state;
 
    // [<start for_store>]
-//idk
+//nyi
    temporary_session_variable tmp_session_name(
     get_special_var_name( e_special_var_hash ), get_obj( ).get_key( ) );
 

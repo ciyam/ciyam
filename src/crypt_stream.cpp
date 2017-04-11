@@ -121,9 +121,6 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 #ifdef SSL_SUPPORT
 string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
 {
-   if( s.length( ) > 128 )
-      throw runtime_error( "aes_crypt call for content > 128 is not permitted" );
-
    string output( s.length( ) + AES_BLOCK_SIZE, '\0' );
    unsigned char* p_output = ( unsigned char* )output.data( );
 
@@ -163,20 +160,39 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
       EVP_DecryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
 
    int num = 0;
-   if( op == e_crypt_op_encrypt )
-      EVP_EncryptUpdate( &ctx, p_output, &num, ( const unsigned char* )s.data( ), s.size( ) );
-   else
-      EVP_DecryptUpdate( &ctx, p_output, &num, ( const unsigned char* )s.data( ), s.size( ) );
+   size_t input_offset = 0;
+   size_t output_offset = 0;
+   size_t remaining = s.size( );
+
+   while( remaining )
+   {
+      int next = min( 128, remaining );
+
+      if( op == e_crypt_op_encrypt )
+         EVP_EncryptUpdate( &ctx, p_output + output_offset,
+          &num, ( const unsigned char* )s.data( ) + input_offset, next );
+      else
+         EVP_DecryptUpdate( &ctx, p_output + output_offset,
+          &num, ( const unsigned char* )s.data( ) + input_offset, next );
+
+      input_offset += next;
+      output_offset += num;
+
+      if( remaining <= 128 )
+         break;
+
+      remaining -= 128;
+   }
 
    int tlen = 0;
    if( op == e_crypt_op_encrypt )
-      EVP_EncryptFinal_ex( &ctx, p_output + num, &tlen );
+      EVP_EncryptFinal_ex( &ctx, p_output + output_offset, &tlen );
    else
-      EVP_DecryptFinal_ex( &ctx, p_output + num, &tlen );
+      EVP_DecryptFinal_ex( &ctx, p_output + output_offset, &tlen );
 
    EVP_CIPHER_CTX_cleanup( &ctx );
 
-   output.resize( num + tlen );
+   output.resize( output_offset + tlen );
 
    return output;
 }

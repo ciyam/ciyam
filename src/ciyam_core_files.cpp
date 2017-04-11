@@ -4075,6 +4075,29 @@ string create_peer_repository_entry_info( const string& filename, const string& 
    return retval;
 }
 
+void extract_repository_entry_file( const string& hash, const string& filename, const string& password )
+{
+#ifndef SSL_SUPPORT
+   throw runtime_error( "extract_repository_entry_file requires SSL support" );
+#else
+   string local_hash, local_public_key, master_public_key;
+   fetch_repository_entry_record( hash, local_hash, local_public_key, master_public_key );
+
+   private_key priv_key( sha256( hash + password ).get_digest_as_string( ) );
+
+   if( master_public_key != hex_encode( base64::decode( priv_key.get_public( true, true ) ) ) )
+      throw runtime_error( "password is incorrect" );
+
+   public_key pub_key( local_public_key );
+   string file_data( extract_file( local_hash, "" ) );
+
+   stringstream ss( file_data );
+   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+
+   write_file( filename, ss.str( ) );
+#endif
+}
+
 void perform_storage_rewind( const string& blockchain, uint64_t block_height )
 {
    guard g( g_mutex, "perform_storage_rewind" );

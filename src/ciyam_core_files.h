@@ -161,6 +161,9 @@ std::string CIYAM_BASE_DECL_SPEC get_account_msg_secret(
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_info(
  const std::string& filename, const std::string& password );
 
+void CIYAM_BASE_DECL_SPEC extract_repository_entry_file(
+ const std::string& hash, const std::string& filename, const std::string& password );
+
 void CIYAM_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain, uint64_t block_height );
 
 std::string CIYAM_BASE_DECL_SPEC construct_blockchain_info_file( const std::string& blockchain );
