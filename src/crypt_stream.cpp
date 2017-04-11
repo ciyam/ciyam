@@ -160,13 +160,14 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
       EVP_DecryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
 
    int num = 0;
+
    size_t input_offset = 0;
    size_t output_offset = 0;
    size_t remaining = s.size( );
 
    while( remaining )
    {
-      int next = min( 128, remaining );
+      int next = min( ( size_t )128, remaining );
 
       if( op == e_crypt_op_encrypt )
          EVP_EncryptUpdate( &ctx, p_output + output_offset,
