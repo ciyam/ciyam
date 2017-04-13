@@ -32,6 +32,7 @@
 #include "md5.h"
 #include "ods.h"
 #include "sio.h"
+#include "cube.h"
 #include "salt.h"
 #include "sha1.h"
 #include "base64.h"
@@ -188,6 +189,8 @@ const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
 const char* const c_storable_folder_name_modules = "modules";
+
+const char* const c_temporary_special_variable_suffix = "_temporary";
 
 void clear_key( string& key )
 {
@@ -5482,6 +5485,17 @@ string get_raw_session_variable( const string& name )
       }
    }
 
+   if( !name.empty( ) && name[ 0 ] == '@' )
+   {
+      string temporary_special_name( name + c_temporary_special_variable_suffix );
+
+      if( gtp_session->variables.count( temporary_special_name ) )
+      {
+         gtp_session->variables[ name ] = gtp_session->variables[ temporary_special_name ];
+         gtp_session->variables.erase( temporary_special_name );
+      }
+   }
+
    return retval;
 }
 
@@ -5498,13 +5512,17 @@ string get_session_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
-void set_session_variable( const string& name, const string& value )
+void set_session_variable( const string& name, const string& value, bool* p_set_special_temporary )
 {
    guard g( g_mutex );
 
    if( gtp_session )
    {
       string val( value );
+
+      string old_val;
+      if( gtp_session->variables.count( name ) )
+         old_val = gtp_session->variables[ name ];
 
       if( val == get_special_var_name( e_special_var_increment )
        || val == get_special_var_name( e_special_var_decrement ) )
@@ -5521,6 +5539,99 @@ void set_session_variable( const string& name, const string& value )
             val.clear( );
          else
             val = to_string( num_value );
+      }
+
+      if( name == get_special_var_name( e_special_var_cube ) )
+      {
+         bool new_cube = false;
+
+         bool has_space_or_comma = ( val.find_first_of( " ," ) != string::npos );
+
+         if( !has_space_or_comma && ( val.length( ) >= 24 ||
+          ( val.length( ) == 5 && val[ 0 ] >= '2' && val[ 0 ] <= '7' ) ) )
+         {
+            new_cube = true;
+            cube tmp_cube( val );
+            val = tmp_cube.get_state( );
+         }
+
+         if( !new_cube && !old_val.empty( ) )
+         {
+            string::size_type pos = val.find( ' ' );
+
+            cube tmp_cube( old_val );
+
+
+            if( val == "flip" )
+            {
+               tmp_cube.flip( );
+               val = tmp_cube.get_state( );
+            }
+            else if( val == "show" )
+            {
+               ostringstream osstr;
+               tmp_cube.output_sides( osstr );
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val.substr( 0, pos ) == "show" )
+            {
+               ostringstream osstr;
+               tmp_cube.output_side( osstr, val.substr( pos + 1 ) );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val == "reset" )
+            {
+               tmp_cube.reset( );
+               val = tmp_cube.get_state( );
+            }
+            else if( val.substr( 0, pos ) == "cubie" )
+            {
+               ostringstream osstr;
+               tmp_cube.output_matching_cubie( osstr, val.substr( pos + 1 ) );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val.substr( 0, pos ) == "cubies" )
+            {
+               ostringstream osstr;
+               tmp_cube.output_matching_cubies( osstr, val.substr( pos + 1 ) );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val == "scramble" )
+            {
+               ostringstream osstr;
+               tmp_cube.scramble( &osstr );
+
+               old_val = tmp_cube.get_state( );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( !val.empty( ) )
+            {
+               tmp_cube.perform_rotations( val );
+               val = tmp_cube.get_state( );
+            }
+
+            if( p_set_special_temporary && *p_set_special_temporary )
+                gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+         }
       }
 
       if( val.empty( ) )

@@ -21,6 +21,7 @@
      <filename>crypto_keys.cpp\
 `}
      <filename>crypt_stream.cpp
+     <filename>cube.cpp
      <filename>date_time.cpp
      <filename>dynamic_library.cpp
      <filename>file_buffer.cpp
@@ -85,6 +86,7 @@
     <cpp_files/>
      <filename>ciyam_base.cpp
      <filename>ciyam_base_command_handler.cpp
+     <filename>ciyam_base_cube.cpp
      <filename>ciyam_base_date_time.cpp
      <filename>ciyam_base_file_buffer.cpp
      <filename>ciyam_base_numeric.cpp

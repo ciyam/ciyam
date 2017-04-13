@@ -320,8 +320,11 @@ void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
 
-void CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value );
-bool CIYAM_BASE_DECL_SPEC set_session_variable( const std::string& name, const std::string& value, const std::string& current );
+void CIYAM_BASE_DECL_SPEC set_session_variable(
+ const std::string& name, const std::string& value, bool* p_set_special_temporary = 0 );
+
+bool CIYAM_BASE_DECL_SPEC set_session_variable(
+ const std::string& name, const std::string& value, const std::string& current );
 
 bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name );
 bool CIYAM_BASE_DECL_SPEC has_any_session_variable( const std::string& name, const std::string& value );

@@ -4168,9 +4168,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool has_new_val( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_variable_new_value ) );
          string new_value( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_variable_new_value ) );
 
-         if( has_new_val )
-            set_session_variable( name_or_expr, new_value );
+         bool needs_response = false;
+
+         if( !has_new_val )
+            needs_response = true;
          else
+            set_session_variable( name_or_expr, new_value, &needs_response );
+
+         if( needs_response )
             response = get_session_variable( name_or_expr );
       }
       else if( command == c_cmd_ciyam_session_storage_info )
