@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017 CIYAM Developers
+// Copyright (c) 2017 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -30,8 +30,6 @@ const char* const c_type_2_2_2 = "2x2x2";
 const char* const c_type_3_3_3 = "3x3x3";
 const char* const c_type_4_4_4 = "4x4x4";
 const char* const c_type_5_5_5 = "5x5x5";
-const char* const c_type_6_6_6 = "6x6x6";
-const char* const c_type_7_7_7 = "7x7x7";
 
 string get_init_state_for_type( const string& type )
 {
@@ -45,19 +43,17 @@ string get_init_state_for_type( const string& type )
       num_per_side = 16;
    else if( type == c_type_5_5_5 )
       num_per_side = 25;
-   else if( type == c_type_6_6_6 )
-      num_per_side = 36;
-   else if( type == c_type_7_7_7 )
-      num_per_side = 49;
+   else
+      throw runtime_error( "unsupported cube type: " + type );
 
    string y( num_per_side, 'Y' );
-   string w( num_per_side, 'W' );
-   string b( num_per_side, 'B' );
    string g( num_per_side, 'G' );
-   string r( num_per_side, 'R' );
    string o( num_per_side, 'O' );
+   string b( num_per_side, 'B' );
+   string r( num_per_side, 'R' );
+   string w( num_per_side, 'W' );
 
-   return y + w + b + g + r + o;
+   return y + g + o + b + r + w;
 }
 
 }
@@ -84,8 +80,7 @@ cube::cube( const string& type_and_or_state )
    else if( type_or_state.size( ) == 5 )
    {
       if( type_or_state != c_type_2_2_2 && type_or_state != c_type_3_3_3
-       && type_or_state != c_type_4_4_4 && type_or_state != c_type_5_5_5
-       && type_or_state != c_type_6_6_6 && type_or_state != c_type_7_7_7 )
+       && type_or_state != c_type_4_4_4 && type_or_state != c_type_5_5_5 )
          throw runtime_error( "unknown cube type: " + type_or_state );
 
       type = type_or_state;
@@ -117,10 +112,6 @@ void cube::init( const string& state )
          type = c_type_4_4_4;
       else if( num_per_side == 25 )
          type = c_type_5_5_5;
-      else if( num_per_side == 36 )
-         type = c_type_6_6_6;
-      else if( num_per_side == 49 )
-         type = c_type_7_7_7;
       else
          throw runtime_error( "unsupported num_per_side = " + to_string( num_per_side ) );
 
@@ -130,25 +121,25 @@ void cube::init( const string& state )
       top.clear( );
       top = state.substr( offset, num_per_side );
 
-      bot.clear( );
-      offset += num_per_side;
-      bot = state.substr( offset, num_per_side );
-
       lft.clear( );
       offset += num_per_side;
       lft = state.substr( offset, num_per_side );
-
-      rgt.clear( );
-      offset += num_per_side;
-      rgt = state.substr( offset, num_per_side );
 
       fnt.clear( );
       offset += num_per_side;
       fnt = state.substr( offset, num_per_side );
 
+      rgt.clear( );
+      offset += num_per_side;
+      rgt = state.substr( offset, num_per_side );
+
       bck.clear( );
       offset += num_per_side;
       bck = state.substr( offset, num_per_side );
+
+      bot.clear( );
+      offset += num_per_side;
+      bot = state.substr( offset, num_per_side );
    }
 }
 
@@ -183,7 +174,9 @@ void cube::scramble( ostream* p_os )
       available_moves.push_back( "Ll" );
       available_moves.push_back( "Rr" );
       available_moves.push_back( "Uu" );
+      available_moves.push_back( "Bw" );
       available_moves.push_back( "Dw" );
+      available_moves.push_back( "Fw" );
       available_moves.push_back( "Lw" );
       available_moves.push_back( "Uw" );
       available_moves.push_back( "Rw" );
@@ -198,13 +191,9 @@ void cube::scramble( ostream* p_os )
    if( type == c_type_3_3_3 )
       scramble_moves = 20;
    else if( type == c_type_4_4_4 )
-      scramble_moves = 40;
+      scramble_moves = 50;
    else if( type == c_type_5_5_5 )
-      scramble_moves = 80;
-   else if( type == c_type_6_6_6 )
-      scramble_moves = 160;
-   else if( type == c_type_7_7_7 )
-      scramble_moves = 320;
+      scramble_moves = 100;
 
    for( size_t i = 0; i < scramble_moves; i++ )
    {
@@ -227,7 +216,7 @@ void cube::scramble( ostream* p_os )
          *p_os << moves[ i ];
       }
 
-      rotate( moves[ i ] );
+      move( moves[ i ] );
    }
 
    if( p_os )
@@ -236,17 +225,17 @@ void cube::scramble( ostream* p_os )
 
 void cube::output_sides( ostream& os ) const
 {
-   output_side_info( os, "top", top );
-   output_side_info( os, "bot", bot );
    output_side_info( os, "lft", lft );
-   output_side_info( os, "rgt", rgt );
+   output_side_info( os, "top", top );
    output_side_info( os, "fnt", fnt );
+   output_side_info( os, "rgt", rgt );
    output_side_info( os, "bck", bck );
+   output_side_info( os, "bot", bot );
 }
 
 string cube::get_state( ) const
 {
-   return top + bot + lft + rgt + fnt + bck + ':' + initial;
+   return top + lft + fnt + rgt + bck + bot + ':' + initial;
 }
 
 void cube::output_top_side( ostream& os ) const
@@ -448,28 +437,28 @@ void cube::flip( )
    rotate_face( rgt, true );
 }
 
-void cube::rotate( const string& op )
+void cube::move( const string& op )
 {
    if( !op.empty( ) )
    {
       if( op[ 0 ] == 'U' || op[ 0 ] == 'u' )
-         rotate_top( op );
+         move_top( op );
       else if( op[ 0 ] == 'B' || op[ 0 ] == 'b' )
-         rotate_back( op );
+         move_back( op );
       else if( op[ 0 ] == 'L' || op[ 0 ] == 'l' )
-         rotate_left( op );
+         move_left( op );
       else if( op[ 0 ] == 'F' || op[ 0 ] == 'f' )
-         rotate_front( op );
+         move_front( op );
       else if( op[ 0 ] == 'R' || op[ 0 ] == 'r' )
-         rotate_right( op );
+         move_right( op );
       else if( op[ 0 ] == 'D' || op[ 0 ] == 'd' )
-         rotate_bottom( op );
+         move_bottom( op );
       else
-         throw runtime_error( "unknown rotate op: " + op );
+         throw runtime_error( "unknown move op: " + op );
    }
 }
 
-void cube::rotate_top( const string& op )
+void cube::move_top( const string& op )
 {
    string op_val( op );
 
@@ -480,7 +469,7 @@ void cube::rotate_top( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_top" );
+         throw runtime_error( "unexpected empty op for move_top" );
       else
       {
          bool clockwise = true;
@@ -504,16 +493,19 @@ void cube::rotate_top( const string& op )
          {
             string old_fnt( fnt );
 
-            if( op_val == "U" || op_val == "Uu" || op_val == "Uw" )
+            if( op_val == "u" || op_val == "U" || op_val == "Uu" || op_val == "Uw" )
             {
                if( clockwise )
                {
-                  swap_row( fnt, rgt, 0 );
-                  swap_row( rgt, bck, 0 );
-                  swap_row( bck, lft, 0 );
-                  swap_row( lft, old_fnt, 0 );
+                  if( op_val != "u" )
+                  {
+                     swap_row( fnt, rgt, 0 );
+                     swap_row( rgt, bck, 0 );
+                     swap_row( bck, lft, 0 );
+                     swap_row( lft, old_fnt, 0 );
+                  }
 
-                  if( op_val == "Uu" )
+                  if( op_val == "u" || op_val == "Uu" )
                   {
                      swap_row( fnt, rgt, 1 );
                      swap_row( rgt, bck, 1 );
@@ -533,12 +525,15 @@ void cube::rotate_top( const string& op )
                }
                else
                {
-                  swap_row( fnt, lft, 0 );
-                  swap_row( lft, bck, 0 );
-                  swap_row( bck, rgt, 0 );
-                  swap_row( rgt, old_fnt, 0 );
+                  if( op_val != "u" )
+                  {
+                     swap_row( fnt, lft, 0 );
+                     swap_row( lft, bck, 0 );
+                     swap_row( bck, rgt, 0 );
+                     swap_row( rgt, old_fnt, 0 );
+                  }
 
-                  if( op_val == "Uu" )
+                  if( op_val == "u" || op_val == "Uu" )
                   {
                      swap_row( fnt, lft, 1 );
                      swap_row( lft, bck, 1 );
@@ -557,31 +552,17 @@ void cube::rotate_top( const string& op )
                   }
                }
 
-               rotate_face( top, clockwise );
+               if( op_val != "u" )
+                  rotate_face( top, clockwise );
             }
-            else if( op_val == "u" )
-            {
-               if( clockwise )
-               {
-                  swap_row( fnt, rgt, 1 );
-                  swap_row( rgt, bck, 1 );
-                  swap_row( bck, lft, 1 );
-                  swap_row( lft, old_fnt, 1 );
-               }
-               else
-               {
-                  swap_row( fnt, lft, 1 );
-                  swap_row( lft, bck, 1 );
-                  swap_row( bck, rgt, 1 );
-                  swap_row( rgt, old_fnt, 1 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::rotate_left( const string& op )
+void cube::move_left( const string& op )
 {
    string op_val( op );
 
@@ -592,7 +573,7 @@ void cube::rotate_left( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_left" );
+         throw runtime_error( "unexpected empty op for move_left" );
       else
       {
          bool clockwise = true;
@@ -616,19 +597,22 @@ void cube::rotate_left( const string& op )
          {
             string old_fnt( fnt );
 
-            if( op_val == "L" || op_val == "Ll" || op_val == "Lw" )
+            if( op_val == "l" || op_val == "L" || op_val == "Ll" || op_val == "Lw" )
             {
                if( clockwise )
                {
-                  swap_column( fnt, top, 0 );
-                  swap_column( top, bck, 0, num_cubies_per_edge - 1 );
-                  swap_column( bck, bot, num_cubies_per_edge - 1, 0 );
-                  swap_column( bot, old_fnt, 0 );
+                  if( op_val != "l" )
+                  {
+                     swap_column( fnt, top, 0 );
+                     swap_column( top, bck, 0, num_cubies_per_edge - 1 );
+                     swap_column( bck, bot, num_cubies_per_edge - 1, 0 );
+                     swap_column( bot, old_fnt, 0 );
 
-                  reverse_column( top, 0 );
-                  reverse_column( bck, num_cubies_per_edge - 1 );
+                     reverse_column( top, 0 );
+                     reverse_column( bck, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Ll" )
+                  if( op_val == "l" || op_val == "Ll" )
                   {
                      swap_column( fnt, top, 1 );
                      swap_column( top, bck, 1, num_cubies_per_edge - 2 );
@@ -654,15 +638,18 @@ void cube::rotate_left( const string& op )
                }
                else
                {
-                  swap_column( fnt, bot, 0 );
-                  swap_column( bot, bck, 0, num_cubies_per_edge - 1 );
-                  swap_column( bck, top, num_cubies_per_edge - 1, 0 );
-                  swap_column( top, old_fnt, 0 );
+                  if( op_val != "l" )
+                  {
+                     swap_column( fnt, bot, 0 );
+                     swap_column( bot, bck, 0, num_cubies_per_edge - 1 );
+                     swap_column( bck, top, num_cubies_per_edge - 1, 0 );
+                     swap_column( top, old_fnt, 0 );
 
-                  reverse_column( bot, 0 );
-                  reverse_column( bck, num_cubies_per_edge - 1 );
+                     reverse_column( bot, 0 );
+                     reverse_column( bck, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Ll" )
+                  if( op_val == "l" || op_val == "Ll" )
                   {
                      swap_column( fnt, bot, 1 );
                      swap_column( bot, bck, 1, num_cubies_per_edge - 2 );
@@ -687,31 +674,17 @@ void cube::rotate_left( const string& op )
                   }
                }
 
-               rotate_face( lft, clockwise );
+               if( op_val != "l" )
+                  rotate_face( lft, clockwise );
             }
-            else if( op_val == "l" )
-            {
-               if( clockwise )
-               {
-                  swap_column( fnt, top, 1 );
-                  swap_column( top, bck, 1, num_cubies_per_edge - 1 );
-                  swap_column( bck, bot, num_cubies_per_edge - 1, 1 );
-                  swap_column( bot, old_fnt, 1 );
-               }
-               else
-               {
-                  swap_column( fnt, bot, 1 );
-                  swap_column( bot, bck, 1, num_cubies_per_edge - 1 );
-                  swap_column( bck, top, num_cubies_per_edge - 1, 1 );
-                  swap_column( top, old_fnt, 1 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::rotate_back( const string& op )
+void cube::move_back( const string& op )
 {
    string op_val( op );
 
@@ -722,7 +695,7 @@ void cube::rotate_back( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_back" );
+         throw runtime_error( "unexpected empty op for move_back" );
       else
       {
          bool clockwise = true;
@@ -747,19 +720,22 @@ void cube::rotate_back( const string& op )
             string old_lft( lft );
             string old_rgt( rgt );
 
-            if( op_val == "B" || op_val == "Bb" )
+            if( op_val == "b" || op_val == "B" || op_val == "Bb" || op_val == "Bw" )
             {
                if( !clockwise )
                {
-                  swap_row_with_column( bot, lft, num_cubies_per_edge - 1, 0 );
-                  swap_row_with_column( bot, rgt, num_cubies_per_edge - 1 );
-                  swap_row_with_column( top, rgt, 0, num_cubies_per_edge - 1 );
-                  swap_row_with_column( top, old_lft, 0 );
+                  if( op_val != "b" )
+                  {
+                     swap_row_with_column( bot, lft, num_cubies_per_edge - 1, 0 );
+                     swap_row_with_column( bot, rgt, num_cubies_per_edge - 1 );
+                     swap_row_with_column( top, rgt, 0, num_cubies_per_edge - 1 );
+                     swap_row_with_column( top, old_lft, 0 );
 
-                  reverse_row( top, 0 );
-                  reverse_row( bot, num_cubies_per_edge - 1 );
+                     reverse_row( top, 0 );
+                     reverse_row( bot, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Bb" )
+                  if( op_val == "b" || op_val == "Bb" )
                   {
                      swap_row_with_column( bot, lft, num_cubies_per_edge - 2, 1 );
                      swap_row_with_column( bot, rgt, num_cubies_per_edge - 2 );
@@ -769,18 +745,34 @@ void cube::rotate_back( const string& op )
                      reverse_row( top, 1 );
                      reverse_row( bot, num_cubies_per_edge - 2 );
                   }
+                  else if( op_val == "Bw" )
+                  {
+                     for( int x = 1, k = num_cubies_per_edge - 2; k > 0; k--, x++ )
+                     {
+                        swap_row_with_column( bot, lft, k, x );
+                        swap_row_with_column( bot, rgt, k );
+                        swap_row_with_column( top, rgt, x, k );
+                        swap_row_with_column( top, old_lft, x );
+
+                        reverse_row( top, x );
+                        reverse_row( bot, k );
+                     }
+                  }
                }
                else
                {
-                  swap_row_with_column( bot, rgt, num_cubies_per_edge - 1 );
-                  swap_row_with_column( bot, lft, num_cubies_per_edge - 1, 0 );
-                  swap_row_with_column( top, lft, 0 );
-                  swap_row_with_column( top, old_rgt, 0, num_cubies_per_edge - 1 );
+                  if( op_val != "b" )
+                  {
+                     swap_row_with_column( bot, rgt, num_cubies_per_edge - 1 );
+                     swap_row_with_column( bot, lft, num_cubies_per_edge - 1, 0 );
+                     swap_row_with_column( top, lft, 0 );
+                     swap_row_with_column( top, old_rgt, 0, num_cubies_per_edge - 1 );
 
-                  reverse_column( lft, 0 );
-                  reverse_column( rgt, num_cubies_per_edge - 1 );
+                     reverse_column( lft, 0 );
+                     reverse_column( rgt, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Bb" )
+                  if( op_val == "b" || op_val == "Bb" )
                   {
                      swap_row_with_column( bot, rgt, num_cubies_per_edge - 2 );
                      swap_row_with_column( bot, lft, num_cubies_per_edge - 2, 1 );
@@ -790,39 +782,32 @@ void cube::rotate_back( const string& op )
                      reverse_column( lft, 1 );
                      reverse_column( rgt, num_cubies_per_edge - 2 );
                   }
+                  else if( op_val == "Bw" )
+                  {
+                     for( int x = 1, k = num_cubies_per_edge - 2; k > 0; k--, x++ )
+                     {
+                        swap_row_with_column( bot, rgt, k );
+                        swap_row_with_column( bot, lft, k, x );
+                        swap_row_with_column( top, lft, x );
+                        swap_row_with_column( top, old_rgt, x, k );
+
+                        reverse_column( lft, x );
+                        reverse_column( rgt, k );
+                     }
+                  }
                }
 
-               rotate_face( bck, clockwise );
+               if( op_val != "b" )
+                  rotate_face( bck, clockwise );
             }
-            else if( op_val == "b" )
-            {
-               if( !clockwise )
-               {
-                  swap_row_with_column( bot, lft, num_cubies_per_edge - 2, 1 );
-                  swap_row_with_column( bot, rgt, num_cubies_per_edge - 2 );
-                  swap_row_with_column( top, rgt, 1, num_cubies_per_edge - 2 );
-                  swap_row_with_column( top, old_lft, 1 );
-
-                  reverse_row( top, 1 );
-                  reverse_row( bot, num_cubies_per_edge - 2 );
-               }
-               else
-               {
-                  swap_row_with_column( bot, rgt, num_cubies_per_edge - 2 );
-                  swap_row_with_column( bot, lft, num_cubies_per_edge - 2, 1 );
-                  swap_row_with_column( top, lft, 1 );
-                  swap_row_with_column( top, old_rgt, 1, num_cubies_per_edge - 2 );
-
-                  reverse_column( lft, 1 );
-                  reverse_column( rgt, num_cubies_per_edge - 2 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::rotate_front( const string& op )
+void cube::move_front( const string& op )
 {
    string op_val( op );
 
@@ -833,7 +818,7 @@ void cube::rotate_front( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_front" );
+         throw runtime_error( "unexpected empty op for move_front" );
       else
       {
          bool clockwise = true;
@@ -858,19 +843,22 @@ void cube::rotate_front( const string& op )
             string old_lft( lft );
             string old_rgt( rgt );
 
-            if( op_val == "F" || op_val == "Ff" )
+            if( op_val == "f" || op_val == "F" || op_val == "Ff" || op_val == "Fw" )
             {
                if( clockwise )
                {
-                  swap_row_with_column( bot, lft, 0, num_cubies_per_edge - 1 );
-                  swap_row_with_column( bot, rgt, 0 );
-                  swap_row_with_column( top, rgt, num_cubies_per_edge - 1, 0 );
-                  swap_row_with_column( top, old_lft, num_cubies_per_edge - 1 );
+                  if( op_val != "f" )
+                  {
+                     swap_row_with_column( bot, lft, 0, num_cubies_per_edge - 1 );
+                     swap_row_with_column( bot, rgt, 0 );
+                     swap_row_with_column( top, rgt, num_cubies_per_edge - 1, 0 );
+                     swap_row_with_column( top, old_lft, num_cubies_per_edge - 1 );
 
-                  reverse_row( bot, 0 );
-                  reverse_row( top, num_cubies_per_edge - 1 );
+                     reverse_row( bot, 0 );
+                     reverse_row( top, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Ff" )
+                  if( op_val == "f" || op_val == "Ff" )
                   {
                      swap_row_with_column( bot, lft, 1, num_cubies_per_edge - 2 );
                      swap_row_with_column( bot, rgt, 1 );
@@ -880,18 +868,34 @@ void cube::rotate_front( const string& op )
                      reverse_row( bot, 1 );
                      reverse_row( top, num_cubies_per_edge - 2 );
                   }
+                  else if( op_val == "Fw" )
+                  {
+                     for( int x = 1, k = num_cubies_per_edge - 2; k > 0; k--, x++ )
+                     {
+                        swap_row_with_column( bot, lft, x, k );
+                        swap_row_with_column( bot, rgt, x );
+                        swap_row_with_column( top, rgt, k, x );
+                        swap_row_with_column( top, old_lft, k );
+
+                        reverse_row( bot, x );
+                        reverse_row( top, k );
+                     }
+                  }
                }
                else
                {
-                  swap_row_with_column( bot, rgt, 0 );
-                  swap_row_with_column( bot, lft, 0, num_cubies_per_edge - 1 );
-                  swap_row_with_column( top, lft, num_cubies_per_edge - 1 );
-                  swap_row_with_column( top, old_rgt, num_cubies_per_edge - 1, 0 );
+                  if( op_val != "f" )
+                  {
+                     swap_row_with_column( bot, rgt, 0 );
+                     swap_row_with_column( bot, lft, 0, num_cubies_per_edge - 1 );
+                     swap_row_with_column( top, lft, num_cubies_per_edge - 1 );
+                     swap_row_with_column( top, old_rgt, num_cubies_per_edge - 1, 0 );
 
-                  reverse_column( rgt, 0 );
-                  reverse_column( lft, num_cubies_per_edge - 1 );
+                     reverse_column( rgt, 0 );
+                     reverse_column( lft, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Ff" )
+                  if( op_val == "f" || op_val == "Ff" )
                   {
                      swap_row_with_column( bot, rgt, 1 );
                      swap_row_with_column( bot, lft, 1, num_cubies_per_edge - 2 );
@@ -901,39 +905,32 @@ void cube::rotate_front( const string& op )
                      reverse_column( rgt, 1 );
                      reverse_column( lft, num_cubies_per_edge - 2 );
                   }
+                  else if( op_val == "Fw" )
+                  {
+                     for( int x = 1, k = num_cubies_per_edge - 2; k > 0; k--, x++ )
+                     {
+                        swap_row_with_column( bot, rgt, x, k );
+                        swap_row_with_column( bot, lft, x );
+                        swap_row_with_column( top, lft, k, x );
+                        swap_row_with_column( top, old_rgt, k );
+
+                        reverse_column( rgt, x );
+                        reverse_column( lft, k );
+                     }
+                  }
                }
 
-               rotate_face( fnt, clockwise );
+               if( op_val != "f" )
+                  rotate_face( fnt, clockwise );
             }
-            else if( op_val == "f" )
-            {
-               if( clockwise )
-               {
-                  swap_row_with_column( bot, lft, 1, num_cubies_per_edge - 2 );
-                  swap_row_with_column( bot, rgt, 1 );
-                  swap_row_with_column( top, rgt, num_cubies_per_edge - 2, 1 );
-                  swap_row_with_column( top, old_lft, num_cubies_per_edge - 2 );
-
-                  reverse_row( bot, 1 );
-                  reverse_row( top, num_cubies_per_edge - 2 );
-               }
-               else
-               {
-                  swap_row_with_column( bot, rgt, 1 );
-                  swap_row_with_column( bot, lft, 1, num_cubies_per_edge - 2 );
-                  swap_row_with_column( top, lft, num_cubies_per_edge - 2 );
-                  swap_row_with_column( top, old_rgt, num_cubies_per_edge - 2, 1 );
-
-                  reverse_column( rgt, 1 );
-                  reverse_column( lft, num_cubies_per_edge - 2 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::rotate_right( const string& op )
+void cube::move_right( const string& op )
 {
    string op_val( op );
 
@@ -944,7 +941,7 @@ void cube::rotate_right( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_right" );
+         throw runtime_error( "unexpected empty op for move_right" );
       else
       {
          bool clockwise = true;
@@ -968,19 +965,22 @@ void cube::rotate_right( const string& op )
          {
             string old_fnt( fnt );
 
-            if( op_val == "R" || op_val == "Rr" || op_val == "Rw" )
+            if( op_val == "r" || op_val == "R" || op_val == "Rr" || op_val == "Rw" )
             {
                if( !clockwise )
                {
-                  swap_column( fnt, top, num_cubies_per_edge - 1 );
-                  swap_column( top, bck, num_cubies_per_edge - 1, 0 );
-                  swap_column( bck, bot, 0, num_cubies_per_edge - 1 );
-                  swap_column( bot, old_fnt, num_cubies_per_edge - 1 );
+                  if( op_val != "r" )
+                  {
+                     swap_column( fnt, top, num_cubies_per_edge - 1 );
+                     swap_column( top, bck, num_cubies_per_edge - 1, 0 );
+                     swap_column( bck, bot, 0, num_cubies_per_edge - 1 );
+                     swap_column( bot, old_fnt, num_cubies_per_edge - 1 );
 
-                  reverse_column( bck, 0 );
-                  reverse_column( top, num_cubies_per_edge - 1 );
+                     reverse_column( bck, 0 );
+                     reverse_column( top, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Rr" )
+                  if( op_val == "r" || op_val == "Rr" )
                   {
                      swap_column( fnt, top, num_cubies_per_edge - 2 );
                      swap_column( top, bck, num_cubies_per_edge - 2, 1 );
@@ -1006,15 +1006,18 @@ void cube::rotate_right( const string& op )
                }
                else
                {
-                  swap_column( fnt, bot, num_cubies_per_edge - 1 );
-                  swap_column( bot, bck, num_cubies_per_edge - 1, 0 );
-                  swap_column( bck, top, 0, num_cubies_per_edge - 1 );
-                  swap_column( top, old_fnt, num_cubies_per_edge - 1 );
+                  if( op_val != "r" )
+                  {
+                     swap_column( fnt, bot, num_cubies_per_edge - 1 );
+                     swap_column( bot, bck, num_cubies_per_edge - 1, 0 );
+                     swap_column( bck, top, 0, num_cubies_per_edge - 1 );
+                     swap_column( top, old_fnt, num_cubies_per_edge - 1 );
 
-                  reverse_column( bck, 0 );
-                  reverse_column( bot, num_cubies_per_edge - 1 );
+                     reverse_column( bck, 0 );
+                     reverse_column( bot, num_cubies_per_edge - 1 );
+                  }
 
-                  if( op_val == "Rr" )
+                  if( op_val == "r" || op_val == "Rr" )
                   {
                      swap_column( fnt, bot, num_cubies_per_edge - 2 );
                      swap_column( bot, bck, num_cubies_per_edge - 2, 1 );
@@ -1039,31 +1042,17 @@ void cube::rotate_right( const string& op )
                   }
                }
 
-               rotate_face( rgt, clockwise );
+               if( op_val != "r" )
+                  rotate_face( rgt, clockwise );
             }
-            else if( op_val == "r" )
-            {
-               if( !clockwise )
-               {
-                  swap_column( fnt, top, num_cubies_per_edge - 2 );
-                  swap_column( top, bck, num_cubies_per_edge - 2, 1 );
-                  swap_column( bck, bot, 1, num_cubies_per_edge - 2 );
-                  swap_column( bot, old_fnt, num_cubies_per_edge - 2 );
-               }
-               else
-               {
-                  swap_column( fnt, bot, num_cubies_per_edge - 2 );
-                  swap_column( bot, bck, num_cubies_per_edge - 2, 1 );
-                  swap_column( bck, top, 1, num_cubies_per_edge - 2 );
-                  swap_column( top, old_fnt, num_cubies_per_edge - 2 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::rotate_bottom( const string& op )
+void cube::move_bottom( const string& op )
 {
    string op_val( op );
    int num_cubies_per_side = ( int )sqrt( ( float )lft.size( ) );
@@ -1073,7 +1062,7 @@ void cube::rotate_bottom( const string& op )
    else
    {
       if( op.empty( ) )
-         throw runtime_error( "unexpected empty op for rotate_bottom" );
+         throw runtime_error( "unexpected empty op for move_bottom" );
       else
       {
          bool clockwise = true;
@@ -1097,16 +1086,19 @@ void cube::rotate_bottom( const string& op )
          {
             string old_fnt( fnt );
 
-            if( op_val == "D" || op_val == "Dd" || op_val == "Dw" )
+            if( op_val == "d" || op_val == "D" || op_val == "Dd" || op_val == "Dw" )
             {
                if( !clockwise )
                {
-                  swap_row( fnt, rgt, num_cubies_per_side - 1 );
-                  swap_row( rgt, bck, num_cubies_per_side - 1 );
-                  swap_row( bck, lft, num_cubies_per_side - 1 );
-                  swap_row( lft, old_fnt, num_cubies_per_side - 1 );
+                  if( op_val != "d" )
+                  {
+                     swap_row( fnt, rgt, num_cubies_per_side - 1 );
+                     swap_row( rgt, bck, num_cubies_per_side - 1 );
+                     swap_row( bck, lft, num_cubies_per_side - 1 );
+                     swap_row( lft, old_fnt, num_cubies_per_side - 1 );
+                  }
 
-                  if( op_val == "Dd" )
+                  if( op_val == "d" || op_val == "Dd" )
                   {
                      swap_row( fnt, rgt, num_cubies_per_side - 2 );
                      swap_row( rgt, bck, num_cubies_per_side - 2 );
@@ -1126,12 +1118,15 @@ void cube::rotate_bottom( const string& op )
                }
                else
                {
-                  swap_row( fnt, lft, num_cubies_per_side - 1 );
-                  swap_row( lft, bck, num_cubies_per_side - 1 );
-                  swap_row( bck, rgt, num_cubies_per_side - 1 );
-                  swap_row( rgt, old_fnt, num_cubies_per_side - 1 );
+                  if( op_val != "d" )
+                  {
+                     swap_row( fnt, lft, num_cubies_per_side - 1 );
+                     swap_row( lft, bck, num_cubies_per_side - 1 );
+                     swap_row( bck, rgt, num_cubies_per_side - 1 );
+                     swap_row( rgt, old_fnt, num_cubies_per_side - 1 );
+                  }
 
-                  if( op_val == "Dd" )
+                  if( op_val == "d" || op_val == "Dd" )
                   {
                      swap_row( fnt, lft, num_cubies_per_side - 2 );
                      swap_row( lft, bck, num_cubies_per_side - 2 );
@@ -1150,44 +1145,61 @@ void cube::rotate_bottom( const string& op )
                   }
                }
 
-               rotate_face( bot, clockwise );
+               if( op_val != "d" )
+                  rotate_face( bot, clockwise );
             }
-            else if( op_val == "d" )
-            {
-               if( !clockwise )
-               {
-                  swap_row( fnt, rgt, num_cubies_per_side - 2 );
-                  swap_row( rgt, bck, num_cubies_per_side - 2 );
-                  swap_row( bck, lft, num_cubies_per_side - 2 );
-                  swap_row( lft, old_fnt, num_cubies_per_side - 2 );
-               }
-               else
-               {
-                  swap_row( fnt, lft, num_cubies_per_side - 2 );
-                  swap_row( lft, bck, num_cubies_per_side - 2 );
-                  swap_row( bck, rgt, num_cubies_per_side - 2 );
-                  swap_row( rgt, old_fnt, num_cubies_per_side - 2 );
-               }
-            }
+            else
+               throw runtime_error( "unsupported cube op " + op_val );
          }
       }
    }
 }
 
-void cube::perform_rotations( const string& ops )
+void cube::perform_moves( const string& ops )
 {
-   vector< string > rotate_ops;
+   string all_ops( ops );
+   vector< string > move_ops;
 
-   if( !ops.empty( ) )
+   if( type != c_type_2_2_2 )
    {
-      if( ops.find( ' ' ) == string::npos )
-         split( ops, rotate_ops );
-      else
-         split( ops, rotate_ops, ' ' );
+      replace( all_ops, "X2", "X X" );
+      replace( all_ops, "Y2", "Y Y" );
+      replace( all_ops, "Z2", "Z Z" );
+
+      replace( all_ops, "X'", "Rw' L", "X", "Rw L'" );
+      replace( all_ops, "Y'", "Uw' D", "Y", "Uw D'" );
+      replace( all_ops, "Z'", "Bw F'", "Z", "Bw' F" );
    }
 
-   for( size_t i = 0; i < rotate_ops.size( ); i++ )
-      rotate( rotate_ops[ i ] );
+   if( type == c_type_3_3_3 )
+   {
+      replace( all_ops, "M'", "Rr R'", "M", "Rr' R" );
+      replace( all_ops, "E'", "Dd' D", "E", "Dd D'" );
+      replace( all_ops, "S'", "Ff' F", "S", "Ff F'" );
+   }
+   else if( type == c_type_4_4_4 )
+   {
+      replace( all_ops, "M'", "Lw' L", "M", "Lw L'" );
+      replace( all_ops, "E'", "Dw' D", "E", "Dw D'" );
+      replace( all_ops, "S'", "Bw B'", "S", "Bw' B" );
+   }
+   else if( type == c_type_5_5_5 )
+   {
+      replace( all_ops, "M'", "Rw' Rr l'", "M", "Rw Rr' l" );
+      replace( all_ops, "E'", "Dw' u' Dd", "E", "Dw u Dd'" );
+      replace( all_ops, "S'", "Fw' Ff b'", "S", "Fw Ff' b" );
+   }
+
+   if( !all_ops.empty( ) )
+   {
+      if( all_ops.find( ' ' ) == string::npos )
+         split( all_ops, move_ops );
+      else
+         split( all_ops, move_ops, ' ' );
+   }
+
+   for( size_t i = 0; i < move_ops.size( ); i++ )
+      move( move_ops[ i ] );
 }
 
 void cube::swap_row( string& lhs, string& rhs, int num )

@@ -81,6 +81,29 @@ use_user_ignore_users - Use this option to filter blog and blog entries from use
 package before it was installed.
 
 -------------------------------------------------------------------------------------------------------------
+Cube
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a Rubik's Cube simulator in which each record is a virtual cube of either 2x2x2, 3x3x3,
+4x4x4 or 5x5x5 cubies per side (a cube having always six sides). After a Cube record has been created one can
+use the Scramble action in order to perform a random scramble of the cube. The Reset action restores the cube
+to its solved state and the Execute Algorithm executes the "steps" provided through the Enter Algorithm field
+field (with multiple steps being space or comma separated).
+
+The notation used for algorithms includes the following face rotations: U L F R B D U' L' F' B' D' along with
+the following slice turns: M M' E E' S S' and double layer turns: u l f r b d u' l' f' r' b' d'. It will also
+accept the following whole cube rotations: X X' Y Y' Z Z' and for non-inverted operations the number 2 can be
+appended to perform the operation twice (such as U2, M2, u2 or X2). Extended double layer turns are supported
+via: Uu Ll Ff Rr Bb Dd Uu' Ll' Ff' Rr' Bb' Dd' and turns which include all but one of the cubie layers are as
+follows: Uw Lw Fw Rw Bw Dw.
+
+Package Options:
+
+@use_demo_data - Use this option to create demo 2x2x2, 3x3x3, 4x4x4 and 5x5x5 cubes.
+
+-------------------------------------------------------------------------------------------------------------
 Event
 -------------------------------------------------------------------------------------------------------------
 

@@ -51,16 +51,16 @@ class CUBE_DECL_SPEC cube
 
    void flip( );
 
-   void rotate( const std::string& op );
+   void move( const std::string& op );
 
-   void rotate_top( const std::string& op );
-   void rotate_back( const std::string& op );
-   void rotate_left( const std::string& op );
-   void rotate_front( const std::string& op );
-   void rotate_right( const std::string& op );
-   void rotate_bottom( const std::string& op );
+   void move_top( const std::string& op );
+   void move_back( const std::string& op );
+   void move_left( const std::string& op );
+   void move_front( const std::string& op );
+   void move_right( const std::string& op );
+   void move_bottom( const std::string& op );
 
-   void perform_rotations( const std::string& ops );
+   void perform_moves( const std::string& ops );
 
    private:
    std::string top;

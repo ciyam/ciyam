@@ -173,8 +173,8 @@ void export_data( ostream& outs,
           && !exported_records[ all_field_data[ i ].class_id ].count( next_value ) )
          {
             if( !all_class_ids.count( all_field_data[ i ].class_id ) )
-               throw runtime_error( "unable to find '"
-                + all_field_data[ i ].class_id + "' in all_class_ids for export" );
+               throw runtime_error( "unable to find '" + all_field_data[ i ].class_id
+                + "' in all_class_ids for export (for field " + all_field_data[ i ].id + ")" );
 
             bool output_fk_children = false;
 

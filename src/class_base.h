@@ -1130,6 +1130,8 @@ inline bool operator !=( const class_base& cb, const std::string& s ) { return s
 
 void CIYAM_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
 
+std::string CIYAM_BASE_DECL_SPEC incremented_key_val( const std::string& s, const numeric& amt_to_add );
+
 std::string CIYAM_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num, int num_digits = 5 );
 
 template< typename T > inline int to_integer( const T& t ) { return t; }

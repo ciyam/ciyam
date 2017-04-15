@@ -2667,6 +2667,30 @@ void from_string( class_base& cb, const string& s )
    class_base_accessor( cb ).set_key( s );
 }
 
+string incremented_key_val( const string& s, const numeric& amt_to_add )
+{
+   string str( s );
+   string suffix;
+
+   string::size_type pos = str.find( '_' );
+
+   if( pos != string::npos )
+   {
+      suffix = str.substr( pos );
+      str.erase( pos );
+   }
+
+   pos = 0;
+
+   if( str.length( ) > 18 )
+      pos = str.length( ) - 18;
+
+   numeric n( str.substr( pos ).c_str( ) );
+   n += amt_to_add;
+
+   return ( pos == 0 ? "" : str.substr( 0, pos ).c_str( ) ) + to_string( n ) + suffix;
+}
+
 string construct_key_from_int( const string& prefix, int num, int num_digits )
 {
    string retval( prefix );

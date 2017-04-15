@@ -4913,20 +4913,26 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
 //nyi
    if( get_obj( ).Create_View( ) )
    {
-      get_obj( ).Created_View( ).op_create( get_obj( ).get_key( ) + "_V" );
+      string view_key( incremented_key_val( get_obj( ).get_key( ), 1 ) );
+
+      get_obj( ).Created_View( ).op_create( view_key );
       get_obj( ).Created_View( ).Class( get_obj( ).get_key( ) );
       get_obj( ).Created_View( ).Model( get_obj( ).Model( ) );
       get_obj( ).Created_View( ).op_apply( );
-      get_obj( ).Created_View( get_obj( ).get_key( ) + "_V" );
+
+      get_obj( ).Created_View( view_key );
    }
 
    if( get_obj( ).Create_List( ) )
    {
-      get_obj( ).Created_List( ).op_create( get_obj( ).get_key( ) + "_L" );
+      string list_key( incremented_key_val( get_obj( ).get_key( ), 2 ) );
+
+      get_obj( ).Created_List( ).op_create( list_key );
       get_obj( ).Created_List( ).Class( get_obj( ).get_key( ) );
       get_obj( ).Created_List( ).Model( get_obj( ).Model( ) );
       get_obj( ).Created_List( ).op_apply( );
-      get_obj( ).Created_List( get_obj( ).get_key( ) + "_L" );
+
+      get_obj( ).Created_List( list_key );
    }
    // [<finish for_store>]
 }

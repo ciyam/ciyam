@@ -2284,3 +2284,26 @@ body:last-child .box-shadow
    width:2%;
 }
 
+.cube_table
+{
+	display: table;
+	width: 20%;
+}
+
+.cube_table_row
+{
+	display: table-row;
+}
+
+.cube_table_cell
+{
+	border: 0px solid #999999;
+	display: table-cell;
+	padding: 1px;
+}
+
+.cube_table_body
+{
+	display: table-row-group;
+}
+

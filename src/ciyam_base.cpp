@@ -5548,7 +5548,7 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
          bool has_space_or_comma = ( val.find_first_of( " ," ) != string::npos );
 
          if( !has_space_or_comma && ( val.length( ) >= 24 ||
-          ( val.length( ) == 5 && val[ 0 ] >= '2' && val[ 0 ] <= '7' ) ) )
+          ( val.length( ) == 5 && val[ 0 ] >= '2' && val[ 0 ] <= '5' ) ) )
          {
             new_cube = true;
             cube tmp_cube( val );
@@ -5560,7 +5560,6 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
             string::size_type pos = val.find( ' ' );
 
             cube tmp_cube( old_val );
-
 
             if( val == "flip" )
             {
@@ -5625,7 +5624,7 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
             }
             else if( !val.empty( ) )
             {
-               tmp_cube.perform_rotations( val );
+               tmp_cube.perform_moves( val );
                val = tmp_cube.get_state( );
             }
 

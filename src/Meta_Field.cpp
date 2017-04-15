@@ -4249,11 +4249,14 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
+   string view_field_key( incremented_key_val( get_obj( ).get_key( ), 1 ) );
+   string list_field_key( incremented_key_val( get_obj( ).get_key( ), 2 ) );
+
    if( is_create
     && !is_internal && get_obj( ).Create_View_Field( )
     && !is_null( get_obj( ).Class( ).Created_View( ) ) )
    {
-      get_obj( ).child_View_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+      get_obj( ).child_View_Field_Source( ).op_create( view_field_key );
       get_obj( ).child_View_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
       get_obj( ).child_View_Field_Source( ).Class( get_obj( ).Class( ) );
       get_obj( ).child_View_Field_Source( ).View( get_obj( ).Class( ).Created_View( ) );
@@ -4264,7 +4267,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
     && !is_internal && get_obj( ).Create_List_Field( )
     && !is_null( get_obj( ).Class( ).Created_List( ) ) )
    {
-      get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_L" );
+      get_obj( ).child_List_Field_Source( ).op_create( list_field_key );
       get_obj( ).child_List_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
       get_obj( ).child_List_Field_Source( ).Class( get_obj( ).Class( ) );
       get_obj( ).child_List_Field_Source( ).List( get_obj( ).Class( ).Created_List( ) );
@@ -4277,7 +4280,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
       if( !parent_field_for_view.empty( ) )
       {
-         get_obj( ).child_View_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+         get_obj( ).child_View_Field_Source( ).op_create( view_field_key );
          get_obj( ).child_View_Field_Source( ).Use_Source_Parent( true );
          get_obj( ).child_View_Field_Source( ).Source_Parent( get_obj( ).get_key( ) );
          get_obj( ).child_View_Field_Source( ).Source_Child( parent_field_for_view );
@@ -4290,7 +4293,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
       if( !parent_field_for_list.empty( ) )
       {
-         get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_L" );
+         get_obj( ).child_List_Field_Source( ).op_create( list_field_key );
          get_obj( ).child_List_Field_Source( ).Use_Source_Parent( true );
          get_obj( ).child_List_Field_Source( ).Source_Parent( get_obj( ).get_key( ) );
          get_obj( ).child_List_Field_Source( ).Source_Child( parent_field_for_list );
