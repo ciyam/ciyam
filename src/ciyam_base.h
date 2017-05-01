@@ -321,7 +321,8 @@ std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& na
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
 
 void CIYAM_BASE_DECL_SPEC set_session_variable(
- const std::string& name, const std::string& value, bool* p_set_special_temporary = 0 );
+ const std::string& name, const std::string& value,
+ bool* p_set_special_temporary = 0, command_handler* p_command_handler = 0 );
 
 bool CIYAM_BASE_DECL_SPEC set_session_variable(
  const std::string& name, const std::string& value, const std::string& current );

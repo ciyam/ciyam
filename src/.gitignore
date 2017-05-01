@@ -84,7 +84,9 @@ makefile.vars.xrep
 # Ignore all installed package files.
 *.info
 *.keys.lst
+*.algos.txt
 *.specs.sio
+*.steps.txt
 *_extkeys.txt
 *.package.sio
 for_*.spec.xrep

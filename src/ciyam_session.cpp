@@ -3910,17 +3910,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( i == 0 && log_transaction && log_as_update )
                   {
-                     next_command = "pu " + uid + " " + dtm + " "
-                      + module + " " + mclass + " " + next_key + " =" + next_ver
-                      + " \"" + instance_get_fields_and_values( handle, "", next_key ) + "\"";
+                     string fields_and_values( instance_get_fields_and_values( handle, "", next_key ) );
 
-                     remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+                     if( !fields_and_values.empty( ) )
+                     {
+                        next_command = "pu " + uid + " " + dtm + " "
+                         + module + " " + mclass + " " + next_key + " =" + next_ver
+                         + " \"" + instance_get_fields_and_values( handle, "", next_key ) + "\"";
 
-                     if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-                        ap_commit_helper.reset(
-                         new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
+                        remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
 
-                     transaction_log_command( next_command, ap_commit_helper.get( ) );
+                        if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
+                           ap_commit_helper.reset(
+                            new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
+
+                        transaction_log_command( next_command, ap_commit_helper.get( ) );
+                     }
                   }
 
                   // NOTE: A special object instance variable can be supplied as the return value (so a
@@ -4173,7 +4178,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !has_new_val )
             needs_response = true;
          else
-            set_session_variable( name_or_expr, new_value, &needs_response );
+            set_session_variable( name_or_expr, new_value, &needs_response, &handler );
 
          if( needs_response )
             response = get_session_variable( name_or_expr );

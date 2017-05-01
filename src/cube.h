@@ -23,6 +23,9 @@
 #     define CUBE_DECL_SPEC
 #  endif
 
+const int c_cube_default_max_tries = 3;
+const int c_cube_default_train_rounds = 300;
+
 class CUBE_DECL_SPEC cube
 {
    public:
@@ -31,9 +34,12 @@ class CUBE_DECL_SPEC cube
    void init( const std::string& state );
 
    void reset( );
-   void scramble( std::ostream* p_os = 0 );
 
-   std::string get_state( ) const;
+   void scramble( std::ostream* p_os = 0, size_t num_moves = 0, bool actually_scramble = true );
+
+   std::string get_state( bool include_initial = true ) const;
+
+   bool solved( ) const;
 
    void output_sides( std::ostream& os ) const;
 
@@ -61,6 +67,22 @@ class CUBE_DECL_SPEC cube
    void move_bottom( const std::string& op );
 
    void perform_moves( const std::string& ops );
+
+   void suggest( std::ostream& os, const std::string& info );
+
+   bool suggest_algo( std::ostream& os, const std::string& info,
+    size_t rounds = 1, bool check_only_after_last_round = false, bool* p_found = 0 );
+
+   void train( const std::string& info );
+
+   void train_algo( const std::string& pat, const std::string& goal,
+    const std::string& algo, size_t rounds = c_cube_default_train_rounds,
+    size_t max_tries_allowed = c_cube_default_max_tries, bool* p_can_keep = 0, bool* p_found_match = 0 );
+
+   void attempt( std::ostream& os, const std::string& info );
+
+   void attempt_own_algo( std::ostream& os,
+    const std::string& pat, const std::string& goal, size_t max_moves = 5 );
 
    private:
    std::string top;

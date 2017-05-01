@@ -5512,7 +5512,8 @@ string get_session_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
-void set_session_variable( const string& name, const string& value, bool* p_set_special_temporary )
+void set_session_variable( const string& name,
+ const string& value, bool* p_set_special_temporary, command_handler* p_command_handler )
 {
    guard g( g_mutex );
 
@@ -5570,6 +5571,7 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
             {
                ostringstream osstr;
                tmp_cube.output_sides( osstr );
+
                val = osstr.str( );
 
                if( p_set_special_temporary )
@@ -5600,6 +5602,16 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
+            else if( val.substr( 0, pos ) == "train" )
+            {
+               p_command_handler->output_progress( "training..." );
+               tmp_cube.train( val.substr( pos + 1 ) );
+
+               val.erase( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
             else if( val.substr( 0, pos ) == "cubies" )
             {
                ostringstream osstr;
@@ -5610,10 +5622,34 @@ void set_session_variable( const string& name, const string& value, bool* p_set_
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
+            else if( val.substr( 0, pos ) == "attempt" )
+            {
+               p_command_handler->output_progress( "attempting..." );
+
+               ostringstream osstr;
+               tmp_cube.attempt( osstr, val.substr( pos + 1 ) );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
             else if( val == "scramble" )
             {
                ostringstream osstr;
                tmp_cube.scramble( &osstr );
+
+               old_val = tmp_cube.get_state( );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val.substr( 0, pos ) == "suggest" )
+            {
+               ostringstream osstr;
+               tmp_cube.suggest( osstr, val.substr( pos + 1 ) );
 
                old_val = tmp_cube.get_state( );
 
