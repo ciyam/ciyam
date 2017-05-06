@@ -1,0 +1,11 @@
+#!/bin/sh
+# Copyright (c) 2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo Usage: restore [name]
+else
+ ./ciyam_client -quiet -no_prompt < train_$1_algos.cin
+fi
