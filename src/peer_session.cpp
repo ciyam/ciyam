@@ -876,7 +876,7 @@ void socket_command_handler::issue_cmd_for_peer( )
    else if( !prior_put( ).empty( ) && rand( ) % 10 == 0 )
       chk_file( prior_put( ) );
    else if( rand( ) % 10 == 0 )
-      pip_peer( get_random_same_port_peer_ip_addr( c_none ) );
+      pip_peer( get_random_same_port_peer_ip_addr( "127.0.0.1" ) );
    else if( get_last_issued_was_put( ) )
    {
       string next_hash( top_next_peer_file_hash_to_get( ) );
@@ -1333,7 +1333,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string addr( get_parm_val( parameters, c_cmd_parm_peer_session_pip_addr ) );
 
-         response = get_random_same_port_peer_ip_addr( c_none );
+         response = get_random_same_port_peer_ip_addr( "127.0.0.1" );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
           && socket_handler.state( ) != e_peer_state_waiting_for_put )

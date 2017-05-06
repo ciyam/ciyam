@@ -44,7 +44,7 @@ const char* const c_type_5_5_5 = "5x5x5";
 const char* const c_goal_found = "found";
 const char* const c_train_prefix = "train";
 
-const char* const c_type_algo_separator = ":";
+const char* const c_type_separator = ":";
 
 string get_init_state_for_type( const string& type )
 {
@@ -406,9 +406,6 @@ void cube::scramble( ostream* p_os, size_t num_moves, bool actually_scramble )
       if( actually_scramble )
          perform_moves( moves[ i ] );
    }
-
-   if( p_os && actually_scramble )
-      *p_os << '\n';
 }
 
 void cube::output_sides( ostream& os ) const
@@ -1825,17 +1822,18 @@ bool cube::suggest_algo( ostream& os,
       cube best_cube( *this );
 
       string best_match, best_partial;
+      string goal_algo_key( type + c_type_separator + goal );
 
-      mi = g_goal_algos.lower_bound( goal );
+      mi = g_goal_algos.lower_bound( goal_algo_key );
 
       while( mi != g_goal_algos.end( ) )
       {
-         if( mi->first != goal )
+         if( mi->first != goal_algo_key )
             break;
 
          string algo( mi->second );
 
-         string algo_check_key( type + c_type_algo_separator + algo );
+         string algo_check_key( type + c_type_separator + algo );
 
          multimap< string, string >::iterator mmi;
          mmi = g_algo_checks.lower_bound( algo_check_key );
@@ -2039,6 +2037,33 @@ void cube::train( const std::string& info )
       else
          buffer_file_lines( info.substr( 1 ), lines, false );
 
+      // NOTE: If multiple lines then first erase any previous training.
+      if( lines.size( ) > 1 )
+      {
+         multimap< string, string >::iterator mi;
+         string type_key_prefix( type + c_type_separator );
+
+         while( true )
+         {
+            mi = g_goal_algos.lower_bound( type_key_prefix );
+
+            if( mi == g_goal_algos.end( ) || mi->first.find( type_key_prefix ) != 0 )
+               break;
+
+            g_goal_algos.erase( mi );
+         }
+
+         while( true )
+         {
+            mi = g_algo_checks.lower_bound( type_key_prefix );
+
+            if( mi == g_algo_checks.end( ) || mi->first.find( type_key_prefix ) != 0 )
+               break;
+
+            g_algo_checks.erase( mi );
+         }
+      }
+
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          string next_line( lines[ i ] );
@@ -2170,15 +2195,6 @@ void cube::train_algo( const string& pat,
             replace( mask, "?", "*" );
          else if( !found_partial )
             replace( mask, "?", "-" );
-
-         if( is_full_state )
-         {
-            for( size_t j = 0; j < goal.size( ); j++ )
-            {
-               if( goal[ j ] != '.' )
-                  mask[ j ] = '*';
-            }
-         }
 
          all_masks.push_back( mask );
 
@@ -2318,10 +2334,10 @@ void cube::train_algo( const string& pat,
          *p_can_keep = true;
       else
       {
-         g_goal_algos.insert( make_pair( goal, algx ) );
+         g_goal_algos.insert( make_pair( type + c_type_separator + goal, algx ) );
 
          g_algo_checks.insert(
-          make_pair( type + c_type_algo_separator + algx,
+          make_pair( type + c_type_separator + algx,
           mask + "=" + to_string( min( max_tries, max_tries_allowed ) ) ) );
       }
    }
@@ -2399,6 +2415,40 @@ void cube::attempt_own_algo( ostream& os, const string& pat, const string& goal,
 
    if( !last_retained.empty( ) )
       os << last_retained;
+}
+
+void cube::output_algos( ostream& os, size_t algo_padding_size )
+{
+   string type_key_prefix( type + c_type_separator );
+
+   multimap< string, string >::iterator mi;
+
+   mi = g_goal_algos.lower_bound( type_key_prefix );
+
+   while( mi != g_goal_algos.end( ) )
+   {
+      if( mi->first.find( type_key_prefix ) != 0 )
+         break;
+
+      os << mi->first.substr( type_key_prefix.length( ) ) << " " << mi->second << '\n';
+      ++mi;
+   }
+
+   mi = g_algo_checks.lower_bound( type_key_prefix );
+
+   while( mi != g_algo_checks.end( ) )
+   {
+      if( mi->first.find( type_key_prefix ) != 0 )
+         break;
+
+      string separator( " " );
+
+      if( algo_padding_size && mi->first.length( ) < algo_padding_size )
+         separator += string( algo_padding_size - mi->first.length( ), ' ' );
+
+      os << mi->first.substr( type_key_prefix.length( ) ) << separator << mi->second << '\n';
+      ++mi;
+   }
 }
 
 void cube::swap_row( string& lhs, string& rhs, int num )

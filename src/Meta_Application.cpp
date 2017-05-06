@@ -2017,6 +2017,8 @@ void Meta_Application::impl::impl_Generate( )
          } while( get_obj( ).child_Module( ).iterate_next( ) );
       }
 
+      vector< string > package_training;
+
       if( !module_packages.empty( ) )
       {
 #ifdef _WIN32
@@ -2037,6 +2039,10 @@ void Meta_Application::impl::impl_Generate( )
              << " cat " << i->second << "_extkeys.txt >>" << web_dir_var << "/" << app_dir << "/extkeys.txt"
              << "\nfi\n\n";
 #endif
+            string algo_training_script( "train_" + lower( i->second ) + "_algos.cin" );
+
+            if( exists_file( algo_training_script ) )
+               package_training.push_back( algo_training_script );
          }
 #ifdef _WIN32
          outs << "\n";
@@ -2224,6 +2230,17 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
       outupg << "#Finished DB Rebuild...\n";
+
+      if( !package_training.empty( ) )
+      {
+         outupg << "#Starting algo training...\n";
+
+         for( size_t i = 0; i < package_training.size( ); i++ )
+            outupg << "<" << package_training[ i ] << "\n";
+
+         outupg << "#Finished algo training...\n";
+      }
+
       outupg << ".quit\n";
 
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Skip_DB_Upgrade )

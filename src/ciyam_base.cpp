@@ -5587,10 +5587,15 @@ void set_session_variable( const string& name,
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
-            else if( val == "reset" )
+            else if( val == "algos" )
             {
-               tmp_cube.reset( );
-               val = tmp_cube.get_state( );
+               ostringstream osstr;
+               tmp_cube.output_algos( osstr );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
             }
             else if( val.substr( 0, pos ) == "cubie" )
             {
@@ -5601,6 +5606,11 @@ void set_session_variable( const string& name,
 
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
+            }
+            else if( val == "reset" )
+            {
+               tmp_cube.reset( );
+               val = tmp_cube.get_state( );
             }
             else if( val.substr( 0, pos ) == "train" )
             {

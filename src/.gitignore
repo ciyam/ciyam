@@ -91,6 +91,7 @@ makefile.vars.xrep
 *.package.sio
 for_*.spec.xrep
 *_enum_icons.lst
+train_*_algos.cin
 *ciyam_class.cpp.xrep
 create_demo_*_application.cin
 
