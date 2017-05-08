@@ -330,9 +330,13 @@ void cube::scramble( ostream* p_os, size_t num_moves, bool actually_scramble )
    available_moves.push_back( "L" );
    available_moves.push_back( "R" );
    available_moves.push_back( "U" );
-   available_moves.push_back( "X" );
-   available_moves.push_back( "Y" );
-   available_moves.push_back( "Z" );
+
+   if( !actually_scramble )
+   {
+      available_moves.push_back( "X" );
+      available_moves.push_back( "Y" );
+      available_moves.push_back( "Z" );
+   }
 
    if( type != c_type_2_2_2 )
    {
@@ -372,7 +376,7 @@ void cube::scramble( ostream* p_os, size_t num_moves, bool actually_scramble )
 
    if( scramble_moves <= 0 )
    {
-      scramble_moves = 10;
+      scramble_moves = 12;
 
       if( type == c_type_3_3_3 )
          scramble_moves = 20;
@@ -394,18 +398,22 @@ void cube::scramble( ostream* p_os, size_t num_moves, bool actually_scramble )
       moves.push_back( move );
    }
 
+   string all_moves;
+
    for( size_t i = 0; i < moves.size( ); i++ )
    {
-      if( p_os )
-      {
-         if( i > 0 )
-            *p_os << ' ';
-         *p_os << moves[ i ];
-      }
-
-      if( actually_scramble )
-         perform_moves( moves[ i ] );
+      if( i > 0 )
+         all_moves += ' ';
+      all_moves += moves[ i ];
    }
+
+   all_moves = cleanup_output( all_moves );
+
+   if( p_os )
+      *p_os << all_moves;
+
+   if( actually_scramble )
+      perform_moves( all_moves );
 }
 
 void cube::output_sides( ostream& os ) const
@@ -1653,117 +1661,16 @@ void cube::suggest( ostream& os, const string& info )
          break;
       }
 
-      // NOTE: It's possible that unwanted repeats can occur
-      // due to one algorithm starting with a move which had
-      // been the last move in the previous algorithm (or in
-      // fact the exact opposite move).
       if( output.empty( ) || ++num_suggests >= c_max_suggests )
          break;
       else
       {
-#ifdef DEBUG
-         cout << "original: " << output << endl;
-#endif
-         output = " " + output + " ";
+         // NOTE: It's possible that unwanted repeats can occur
+         // due to one algorithm starting with a move which had
+         // been the last move in the previous algorithm (or in
+         // fact the exact opposite move).
+         output = cleanup_output( output );
 
-         for( size_t i = 0; i < 3; i++ )
-         {
-            replace( output, " L L' ", " " );
-            replace( output, " R R' ", " " );
-            replace( output, " U U' ", " " );
-            replace( output, " D D' ", " " );
-            replace( output, " F F' ", " " );
-            replace( output, " B B' ", " " );
-            replace( output, " X X' ", " " );
-            replace( output, " Y Y' ", " " );
-            replace( output, " Z Z' ", " " );
-
-            replace( output, " L' L ", " " );
-            replace( output, " R' R ", " " );
-            replace( output, " U' U ", " " );
-            replace( output, " D' D ", " " );
-            replace( output, " F' F ", " " );
-            replace( output, " B' B ", " " );
-            replace( output, " X' X ", " " );
-            replace( output, " Y' Y ", " " );
-            replace( output, " Z' Z ", " " );
-
-            replace( output, " L L ", " L2 " );
-            replace( output, " R R ", " R2 " );
-            replace( output, " U U ", " U2 " );
-            replace( output, " D D ", " D2 " );
-            replace( output, " F F ", " F2 " );
-            replace( output, " B B ", " B2 " );
-            replace( output, " X X ", " X2 " );
-            replace( output, " Y Y ", " Y2 " );
-            replace( output, " Z Z ", " Z2 " );
-
-            replace( output, " L L2 ", " L' " );
-            replace( output, " R R2 ", " R' " );
-            replace( output, " U U2 ", " U' " );
-            replace( output, " D D2 ", " D' " );
-            replace( output, " F F2 ", " F' " );
-            replace( output, " B B2 ", " B' " );
-            replace( output, " X X2 ", " X' " );
-            replace( output, " Y Y2 ", " Y' " );
-            replace( output, " Z Z2 ", " Z' " );
-
-            replace( output, " L2 L ", " L' " );
-            replace( output, " R2 R ", " R' " );
-            replace( output, " U2 U ", " U' " );
-            replace( output, " D2 D ", " D' " );
-            replace( output, " F2 F ", " F' " );
-            replace( output, " B2 B ", " B' " );
-            replace( output, " X2 X ", " X' " );
-            replace( output, " Y2 Y ", " Y' " );
-            replace( output, " Z2 Z ", " Z' " );
-
-            replace( output, " L' L2 ", " L " );
-            replace( output, " R' R2 ", " R " );
-            replace( output, " U' U2 ", " U " );
-            replace( output, " D' D2 ", " D " );
-            replace( output, " F' F2 ", " F " );
-            replace( output, " B' B2 ", " B " );
-            replace( output, " X' X2 ", " X " );
-            replace( output, " Y' Y2 ", " Y " );
-            replace( output, " Z' Z2 ", " Z " );
-
-            replace( output, " L2 L' ", " L " );
-            replace( output, " R2 R' ", " R " );
-            replace( output, " U2 U' ", " U " );
-            replace( output, " D2 D' ", " D " );
-            replace( output, " F2 F' ", " F " );
-            replace( output, " B2 B' ", " B " );
-            replace( output, " X2 X' ", " X " );
-            replace( output, " Y2 Y' ", " Y " );
-            replace( output, " Z2 Z' ", " Z " );
-
-            replace( output, " L' L' ", " L2 " );
-            replace( output, " R' R' ", " R2 " );
-            replace( output, " U' U' ", " U2 " );
-            replace( output, " D' D' ", " D2 " );
-            replace( output, " F' F' ", " F2 " );
-            replace( output, " B' B' ", " B2 " );
-            replace( output, " X' X' ", " X2 " );
-            replace( output, " Y' Y' ", " Y2 " );
-            replace( output, " Z' Z' ", " Z2 " );
-
-            replace( output, " L2 L2 ", " " );
-            replace( output, " R2 R2 ", " " );
-            replace( output, " U2 U2 ", " " );
-            replace( output, " D2 D2 ", " " );
-            replace( output, " F2 F2 ", " " );
-            replace( output, " B2 B2 ", " " );
-            replace( output, " X2 X2 ", " " );
-            replace( output, " Y2 Y2 ", " " );
-            replace( output, " Z2 Z2 ", " " );
-         }
-
-         output = output.substr( 1, output.length( ) - 2 );
-
-#ifdef DEBUG
-         cout << "replaced: " << output << endl;
-#endif
          if( output.empty( ) )
             break;
 
@@ -2026,7 +1933,7 @@ bool cube::suggest_algo( ostream& os,
    return rc;
 }
 
-void cube::train( const std::string& info )
+void cube::train( const string& info )
 {
    if( !info.empty( ) )
    {
@@ -2142,9 +2049,11 @@ void cube::train_algo( const string& pat,
          scramble = goal;
       }
 
+      string state( tmp_cube.get_state( false ) );
+
       for( size_t i = 0; i < goal.size( ); i++ )
       {
-         if( goal[ i ] == '.' )
+         if( goal[ i ] == '.' || goal[ i ] == state[ i ] )
             mask += '-';
          else
             mask += '*';
@@ -2255,21 +2164,31 @@ void cube::train_algo( const string& pat,
 
             if( mask.length( ) < scramble.length( ) )
             {
-               if( next[ j ] == goal[ j ] )
-                  mask += '*';
-               else if( potential )
-                  mask += '?';
-               else
+               if( goal[ j ] == '.' )
                   mask += '-';
+               else
+               {
+                  if( next[ j ] == goal[ j ] )
+                     mask += '*';
+                  else if( potential )
+                     mask += '?';
+                  else
+                     mask += '-';
+               }
             }
             else
             {
-               if( next[ j ] == goal[ j ] )
-                  mask[ j ] = '*';
-               else if( potential )
-                  mask[ j ] = '?';
-               else
+               if( goal[ j ] == '.' )
                   mask[ j ] = '-';
+               else
+               {
+                  if( next[ j ] == goal[ j ] )
+                     mask[ j ] = '*';
+                  else if( potential )
+                     mask[ j ] = '?';
+                  else
+                     mask[ j ] = '-';
+               }
             }
          }
 
@@ -2336,9 +2255,41 @@ void cube::train_algo( const string& pat,
       {
          g_goal_algos.insert( make_pair( type + c_type_separator + goal, algx ) );
 
-         g_algo_checks.insert(
-          make_pair( type + c_type_separator + algx,
-          mask + "=" + to_string( min( max_tries, max_tries_allowed ) ) ) );
+         string algo_check_key( type + c_type_separator + algx );
+
+         size_t tries = min( max_tries, max_tries_allowed );
+
+         if( g_algo_checks.count( algo_check_key ) )
+         {
+            string mask_and_tries( g_algo_checks.find( algo_check_key )->second );
+            string::size_type pos = mask_and_tries.find( '=' );
+
+            if( pos == string::npos )
+               throw runtime_error( "unexpected mask_and_tries '" + mask_and_tries + "'" );
+
+            size_t old_tries = from_string< size_t >( mask_and_tries.substr( pos + 1 ) );
+
+            tries = max( tries, old_tries );
+
+            string old_mask( mask_and_tries.substr( 0, pos ) );
+
+            if( mask.size( ) != old_mask.size( ) )
+               throw runtime_error( "unexpected mask.size( ) != old_mask.size( )" );
+
+            // NOTE: If an algo check entry already exists then effectively merge it
+            // with the new one (so a multimap is not really applicable for the algo
+            // checks but the data structure has been kept that way to help simplify
+            // the use of iterators between both the goal algos and algo checks).
+            for( size_t i = 0; i < mask.size( ); i++ )
+            {
+               if( old_mask[ i ] == '*' )
+                  mask[ i ] = '*';
+            }
+
+            g_algo_checks.erase( algo_check_key );
+         }
+
+         g_algo_checks.insert( make_pair( algo_check_key, mask + "=" + to_string( tries ) ) );
       }
    }
 }
@@ -2417,7 +2368,7 @@ void cube::attempt_own_algo( ostream& os, const string& pat, const string& goal,
       os << last_retained;
 }
 
-void cube::output_algos( ostream& os, size_t algo_padding_size )
+void cube::output_algos( ostream& os )
 {
    string type_key_prefix( type + c_type_separator );
 
@@ -2441,14 +2392,114 @@ void cube::output_algos( ostream& os, size_t algo_padding_size )
       if( mi->first.find( type_key_prefix ) != 0 )
          break;
 
-      string separator( " " );
-
-      if( algo_padding_size && mi->first.length( ) < algo_padding_size )
-         separator += string( algo_padding_size - mi->first.length( ), ' ' );
-
-      os << mi->first.substr( type_key_prefix.length( ) ) << separator << mi->second << '\n';
+      os << mi->second << ' ' << mi->first.substr( type_key_prefix.length( ) ) << '\n';
       ++mi;
    }
+}
+
+string cube::cleanup_output( const string& original )
+{
+#ifdef DEBUG
+   cout << "original: " << original << endl;
+#endif
+   string output( " " + original + " " );
+
+   for( size_t i = 0; i < 3; i++ )
+   {
+      replace( output, " L L' ", " " );
+      replace( output, " R R' ", " " );
+      replace( output, " U U' ", " " );
+      replace( output, " D D' ", " " );
+      replace( output, " F F' ", " " );
+      replace( output, " B B' ", " " );
+      replace( output, " X X' ", " " );
+      replace( output, " Y Y' ", " " );
+      replace( output, " Z Z' ", " " );
+
+      replace( output, " L' L ", " " );
+      replace( output, " R' R ", " " );
+      replace( output, " U' U ", " " );
+      replace( output, " D' D ", " " );
+      replace( output, " F' F ", " " );
+      replace( output, " B' B ", " " );
+      replace( output, " X' X ", " " );
+      replace( output, " Y' Y ", " " );
+      replace( output, " Z' Z ", " " );
+
+      replace( output, " L L ", " L2 " );
+      replace( output, " R R ", " R2 " );
+      replace( output, " U U ", " U2 " );
+      replace( output, " D D ", " D2 " );
+      replace( output, " F F ", " F2 " );
+      replace( output, " B B ", " B2 " );
+      replace( output, " X X ", " X2 " );
+      replace( output, " Y Y ", " Y2 " );
+      replace( output, " Z Z ", " Z2 " );
+
+      replace( output, " L L2 ", " L' " );
+      replace( output, " R R2 ", " R' " );
+      replace( output, " U U2 ", " U' " );
+      replace( output, " D D2 ", " D' " );
+      replace( output, " F F2 ", " F' " );
+      replace( output, " B B2 ", " B' " );
+      replace( output, " X X2 ", " X' " );
+      replace( output, " Y Y2 ", " Y' " );
+      replace( output, " Z Z2 ", " Z' " );
+
+      replace( output, " L2 L ", " L' " );
+      replace( output, " R2 R ", " R' " );
+      replace( output, " U2 U ", " U' " );
+      replace( output, " D2 D ", " D' " );
+      replace( output, " F2 F ", " F' " );
+      replace( output, " B2 B ", " B' " );
+      replace( output, " X2 X ", " X' " );
+      replace( output, " Y2 Y ", " Y' " );
+      replace( output, " Z2 Z ", " Z' " );
+
+      replace( output, " L' L2 ", " L " );
+      replace( output, " R' R2 ", " R " );
+      replace( output, " U' U2 ", " U " );
+      replace( output, " D' D2 ", " D " );
+      replace( output, " F' F2 ", " F " );
+      replace( output, " B' B2 ", " B " );
+      replace( output, " X' X2 ", " X " );
+      replace( output, " Y' Y2 ", " Y " );
+      replace( output, " Z' Z2 ", " Z " );
+
+      replace( output, " L2 L' ", " L " );
+      replace( output, " R2 R' ", " R " );
+      replace( output, " U2 U' ", " U " );
+      replace( output, " D2 D' ", " D " );
+      replace( output, " F2 F' ", " F " );
+      replace( output, " B2 B' ", " B " );
+      replace( output, " X2 X' ", " X " );
+      replace( output, " Y2 Y' ", " Y " );
+      replace( output, " Z2 Z' ", " Z " );
+
+      replace( output, " L' L' ", " L2 " );
+      replace( output, " R' R' ", " R2 " );
+      replace( output, " U' U' ", " U2 " );
+      replace( output, " D' D' ", " D2 " );
+      replace( output, " F' F' ", " F2 " );
+      replace( output, " B' B' ", " B2 " );
+      replace( output, " X' X' ", " X2 " );
+      replace( output, " Y' Y' ", " Y2 " );
+      replace( output, " Z' Z' ", " Z2 " );
+
+      replace( output, " L2 L2 ", " " );
+      replace( output, " R2 R2 ", " " );
+      replace( output, " U2 U2 ", " " );
+      replace( output, " D2 D2 ", " " );
+      replace( output, " F2 F2 ", " " );
+      replace( output, " B2 B2 ", " " );
+      replace( output, " X2 X2 ", " " );
+      replace( output, " Y2 Y2 ", " " );
+      replace( output, " Z2 Z2 ", " " );
+   }
+
+   output = output.substr( 1, output.length( ) - 2 );
+
+   return output;
 }
 
 void cube::swap_row( string& lhs, string& rhs, int num )

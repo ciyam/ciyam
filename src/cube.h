@@ -84,7 +84,9 @@ class CUBE_DECL_SPEC cube
    void attempt_own_algo( std::ostream& os,
     const std::string& pat, const std::string& goal, size_t max_moves = 5 );
 
-   void output_algos( std::ostream& os, size_t algo_padding_size = 64 );
+   void output_algos( std::ostream& os );
+
+   std::string cleanup_output( const std::string& original );
 
    private:
    std::string top;
