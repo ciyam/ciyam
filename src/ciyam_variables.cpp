@@ -60,6 +60,7 @@ const char* const c_special_variable_peer = "@peer";
 const char* const c_special_variable_size = "@size";
 const char* const c_special_variable_port = "@port";
 const char* const c_special_variable_uuid = "@uuid";
+const char* const c_special_variable_array = "@array";
 const char* const c_special_variable_async = "@async";
 const char* const c_special_variable_bytes = "@bytes";
 const char* const c_special_variable_class = "@class";
@@ -234,6 +235,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_uuid:
       s = string( c_special_variable_uuid );
+      break;
+
+      case e_special_var_array:
+      s = string( c_special_variable_array );
       break;
 
       case e_special_var_async:

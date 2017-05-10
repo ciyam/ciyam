@@ -35,6 +35,7 @@
 #include "cube.h"
 #include "salt.h"
 #include "sha1.h"
+#include "array.h"
 #include "base64.h"
 #include "sha256.h"
 #include "sql_db.h"
@@ -5672,6 +5673,50 @@ void set_session_variable( const string& name,
             {
                tmp_cube.perform_moves( val );
                val = tmp_cube.get_state( );
+            }
+
+            if( p_set_special_temporary && *p_set_special_temporary )
+                gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+         }
+      }
+      else if( name == get_special_var_name( e_special_var_array ) )
+      {
+         bool new_array = false;
+         string::size_type pos = val.find( 'x' );
+
+         if( pos != string::npos )
+         {
+            new_array = true;
+
+            array tmp_array( val );
+            val = tmp_array.get_state( );
+         }
+
+         if( !new_array && !old_val.empty( ) )
+         {
+            string::size_type pos = val.find( ' ' );
+
+            array tmp_array( old_val );
+
+            if( val == "show" )
+            {
+               ostringstream osstr;
+               tmp_array.output_data( osstr );
+
+               val = osstr.str( );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val.substr( 0, pos ) == "place" )
+            {
+               tmp_array.place_chars( val.substr( pos + 1 ) );
+               val = tmp_array.get_state( );
+            }
+            else if( !val.empty( ) )
+            {
+               tmp_array.perform_moves( val );
+               val = tmp_array.get_state( );
             }
 
             if( p_set_special_temporary && *p_set_special_temporary )

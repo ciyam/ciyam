@@ -67,6 +67,7 @@ enum special_var
    e_special_var_port,
    e_special_var_size,
    e_special_var_uuid,
+   e_special_var_array,
    e_special_var_async,
    e_special_var_bytes,
    e_special_var_class,
