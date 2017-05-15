@@ -15,6 +15,11 @@
   <arguments>add_archive.cin @path @size @name
  </script>
  <script/>
+  <name>remove_file
+  <filename>*script*
+  <arguments>remove_file.cin @hash
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash

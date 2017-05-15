@@ -1,0 +1,188 @@
+Peer Protocol Introduction
+--------------------------
+
+The peer protocol has been designed primarily for use with CIYAM blockchain applications (limited interactive
+testing via the "ciyam_client" is also supported to assist with development) and its small number of commands
+is just one of its features to reduce potential issues that might arise from "bad actors".
+
+Because of the many potential attack vectors that any P2P protocol presents it's not recommended for features
+(especially any new command) to be added without considerable testing and review from other developers.
+
+Protocol Commands
+-----------------
+
+The protocol commands can be divided into those for connection/disconnection ("tls" and "bye") and those that
+are used for the general peer to peer communication ("chk", "get", "pip" and "put").
+
+The "tls" command is optional and can only be issued immediately after the peer has connected. If issued then
+a TLS session will be commenced (i.e. all further communications will be performed over a secure socket). The
+"bye" command is also optional and is a formal way of informing a peer that a session has finished.
+
+The "chk" command allows a peer to inquire as to whether another peer has a particular file or the content of
+a file (the latter being via an optional "nonce" argument). After commencing a session the "chk" command must
+be the first command to be issued. It should be noted that unless doing interactive testing any "chk" command
+that has provided a "tag" rather than a file "hash" in its request must provide a tag value which is prefixed
+with the common blockchain prefix (e.g. "c27243366536"). This command can be issued at any time by peers.
+
+The "pip" command allows peers to exchange IP addresses of other peers that they are connected to (one single
+address per call) and after the initial "chk" has been issued can also be used at any time by peers. Normally
+the IP address is randomly chosen amongst those that are currently connected via the same listener.
+
+The "get" and "put" commands are the two file transfer commands. After the initial "chk" request a responding
+peer will issue a "put" command which requires the initiator to issue either a "chk", "pip" or "put" command.
+After it has issued a "put" command then it must next issue either a "chk", "pip" or "get" command. With this
+approach files are continually being transferred between the two peers with neither one of them being able to
+gain any significant upload/download advantage (assuming that files being uploaded and downloaded are roughly
+the same size).
+
+One could imagine a peer accepting files from other peers but then not keeping them stored for any reasonable
+amount of time so normally a peer will check that another peer has retained the content of a previously "put"
+file using the "chk" command and its "nonce" argument.
+
+Interactive Testing
+-------------------
+
+In order to interactively test the CIYAM peer protocol a special dummy blockchain entry will need to be added
+to the "ciyam_server.sio" configuration file such as this:
+
+ <blockchains>12346=
+
+Normally the attribute would look more like "12346=27243366536" where "27243366536" identifies the blockchain
+but for interactive console testing the blockchain identity needs to be purposely left empty.
+
+After changing the configuration file and restarting the server the "ciyam_server.log" should look similar to
+the following:
+
+[2017-04-07 17:52:25] [000000] [general] server started on port 12345 (pid = 2572)
+[2017-04-07 17:52:25] [000000] [general] peer listener started on port 12346
+
+To connect use "ciyam_client" specifying the port number (i.e. 12346 per above) as follows:
+
+./ciyam_client 12346
+
+To see a list of all the available peer commands after starting the client type "?" and hit enter:
+
+> ?
+commands:
+=========
+chk <tag_or_hash> [<nonce>] (check if peer has a file or hash the content of a file with a nonce)
+get <tag_or_hash> [<name>] (fetch a file from the files area)
+put <hash> (stores a file to the files area)
+pip <addr> (exchange a random peer's ip address)
+tls (start TLS session)
+bye (terminate session)
+
+It should be noted that unlike the standard app server protocol the peer protocol uses a finite state machine
+to determine what commands are permitted to be executed at any particular point in time (the "?" help command
+can be executed at any time but is only permitted to be executed once per session).
+
+The following illustrates a simple interactive peer session:
+
+./ciyam_client 12346
+
+> chk hello
+(not found)
+put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> chk cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+127.0.0.1
+
+> get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> bye
+
+Testing General Peer File Storage
+---------------------------------
+
+Blockchain specific files (including blocks, transactions and checkpoints) are always requested via "get" and
+are never pushed leaving the "put" half of the general peer conversation available for storing arbitrary file
+content (although the actual arbitrary content will still be fetched via a "get").
+
+When a peer receives a "put" request to store an arbitrary file then this file will be encrypted with the use
+of a temporary key pair (the initial file that is actually "put" contains the master public key which belongs
+to the sender of the arbitrary file along with the hash of the file content). So the "put" itself is not used
+for pushing the arbitrary file but instead to inform a peer of the master public key and file content hash (a
+peer that decides it wishes to accept the file storage request will next issue a "get" in order to do so).
+
+After the file content has been retrieved it is immediately encrypted by the peer that issued the "get" (thus
+the original file content itself is not persisted in order to ensure that there is no risk of storing content
+that might be regarded as illegal). The private key that was used to generate the "shared secret" is not kept
+by the peer but the public key is. This means that the peer cannot unencrypt the content but the owner of the
+content can decrypt this encrypted content provided they are given the public key that was used by the peer.
+
+The following three sample sessions (two standard protocol and one peer protocol) illustrate how an arbitrary
+file can be stored by a peer and then later retrieved by its owner. In this first session the owner of a file
+creates a repository storage request file (which will be later used via the peer "put" command):
+
+./ciyam_client
+
+> peer_persist_file test.jpg test
+0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288
+
+> file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+
+> file_get 0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288
+
+> file_kill a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+
+> file_kill 0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288
+
+> quit
+
+The hash "a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753" is the content hash of "test.jpg"
+whilst "0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288" is the file repository request hash
+with its content being as follows:
+
+\1md:raw
+pk:AkIn7kKamPh8togJw1joM0LCE86ZVbTWOFWYAvy5phXD
+sh:pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M=
+
+Next a peer session is started in order to send this file repository storage request via a "put" (a "get" for
+the hash "a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753" will occur after the "get" that's
+issued for "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef"):
+
+./ciyam_client 12346
+
+> chk hello
+(not found)
+put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> put 0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288
+put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+
+> ~rm 0551d0832ba9d019490612d9813c038a140b8a92768cda564d91f93c52faf288
+
+> ~rm a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+
+> ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+
+> bye
+
+After this the encrypted file content exists in the file system and the file repository contains an entry for
+tying the original content hash to the locally encrypted content. The final standard protocol session can now
+decrypt and extract the original file content to "xxx.jpg" as follows:
+
+./ciyam_client
+
+> peer_persist_file -h=a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 xxx.jpg test
+
+> #check that xxx.jpg is the same as test.jpg
+check that xxx.jpg is the same as test.jpg
+
+> ~rm xxx.jpg
+
+> quit
+

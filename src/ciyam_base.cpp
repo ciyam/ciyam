@@ -1947,6 +1947,22 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
    return found;
 }
 
+bool fetch_instance_from_global_storage( class_base& instance, const string& key )
+{
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   vector< string > field_names;
+
+   for( size_t i = 0; i < field_info.size( ); i++ )
+   {
+      if( !field_info[ i ].is_transient )
+         field_names.push_back( field_info[ i ].name );
+   }
+
+   return fetch_instance_from_global_storage( instance, key, field_names );
+}
+
 void remove_tx_info_from_cache( )
 {
    storage_handler& handler( *gtp_session->p_storage_handler );
@@ -10085,7 +10101,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          }
          else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
          {
-            found = has_instance_in_global_storage( instance, key_for_op );
+            found = fetch_instance_from_global_storage( instance, key_for_op );
             instance_accessor.set_original_identity( instance.get_current_identity( ) );
          }
 
@@ -10136,7 +10152,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          }
          else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
          {
-            found = has_instance_in_global_storage( instance, key_for_op );
+            found = fetch_instance_from_global_storage( instance, key_for_op );
             instance_accessor.set_original_identity( instance.get_current_identity( ) );
          }
 
@@ -10653,20 +10669,7 @@ void perform_instance_fetch( class_base& instance,
           only_sys_fields, false, has_simple_keyinfo && !has_tx_key_info );
       }
       else if( instance.get_persistence_type( ) == 1 ) // i.e. ODS global persistence
-      {
-         field_info_container field_info;
-         instance.get_field_info( field_info );
-
-         vector< string > field_names;
-
-         for( size_t i = 0; i < field_info.size( ); i++ )
-         {
-            if( !field_info[ i ].is_transient )
-               field_names.push_back( field_info[ i ].name );
-         }
-
-         found = fetch_instance_from_global_storage( instance, key_info, field_names );
-      }
+         found = fetch_instance_from_global_storage( instance, key_info );
    }
 
    if( !found )

@@ -1580,17 +1580,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_pat ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_hash ) );
+         bool quiet( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_quiet ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_recurse ) );
 
-         if( !hash.empty( ) )
+         try
          {
-            if( !recurse )
-               delete_file( hash );
+            if( !hash.empty( ) )
+            {
+               if( !recurse )
+                  delete_file( hash );
+               else
+                  delete_file_tree( hash );
+            }
             else
-               delete_file_tree( hash );
+               delete_files_for_tags( pat );
          }
-         else
-            delete_files_for_tags( pat );
+         catch( exception& )
+         {
+            if( !quiet )
+               throw;
+         }
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
