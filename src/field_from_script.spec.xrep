@@ -2,7 +2,7 @@
    // [(start field_from_script)] `{`$arg_id`}
    if( !storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`)`&`!`@eq`(`$arg_tvalue`,`'use_tfield`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
-      string tmp( get_uuid( ) );
+      string tmp( "~" + get_uuid( ) );
 
 `{`!`@eq`(`$arg_arg1`,`'`'`)\
       set_session_variable( get_special_var_name( e_special_var_arg1 ), get_obj( ).`{`$arg_arg1`}( ) );

@@ -1714,9 +1714,12 @@ string buffer_file( const char* p_file_name )
 
    string str( size, '\0' );
 
-   fseek( fp, 0, SEEK_SET );
-   if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
-      throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
+   if( size )
+   {
+      fseek( fp, 0, SEEK_SET );
+      if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
+         throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
+   }
 
    fclose( fp );
 
@@ -1732,7 +1735,7 @@ void write_file( const char* p_file_name, unsigned char* p_data, size_t length )
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
 
-   if( fwrite( p_data, 1, length, fp ) != length )
+   if( length && fwrite( p_data, 1, length, fp ) != length )
       throw runtime_error( "writing to output file '" + string( p_file_name ) + "'" );
 
    fclose( fp );
