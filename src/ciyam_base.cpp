@@ -5502,7 +5502,7 @@ string get_raw_session_variable( const string& name )
       }
    }
 
-   if( !name.empty( ) && name[ 0 ] == '@' )
+   if( gtp_session && !name.empty( ) && name[ 0 ] == '@' )
    {
       string temporary_special_name( name + c_temporary_special_variable_suffix );
 
