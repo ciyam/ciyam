@@ -3345,6 +3345,30 @@ void read_script_info( )
    }
 }
 
+void output_script_info( const string& pat, ostream& os )
+{
+   for( map< string, script_info >::iterator i = g_scripts.begin( ); i!= g_scripts.end( ); ++i )
+   {
+      if( !pat.empty( ) && !wildcard_match( pat, i->first ) )
+         continue;
+
+      os << i->first;
+
+      string args( i->second.arguments );
+
+      if( i->second.filename == c_script_dummy_filename )
+      {
+         string::size_type pos = args.find( ' ' );
+         args.erase( 0, pos );
+      }
+
+      if( !args.empty( ) )
+         os << ' ' << args;
+
+      os << '\n';
+   }
+}
+
 void read_server_configuration( )
 {
    ifstream inpf( c_server_config_file );
@@ -4616,6 +4640,11 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    }
 
    return rc;
+}
+
+void list_scripts( const string& pattern, ostream& os )
+{
+   output_script_info( pattern, os );
 }
 
 string process_script_args( const string& raw_args )

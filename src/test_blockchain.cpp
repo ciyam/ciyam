@@ -217,64 +217,6 @@ string generate_blockchain_script( const string& chain_meta,
 
       for( size_t j = 0; j < num_accounts; j++ )
       {
-         string next_tx_hash( base64::encode( get_hash( accounts[ j ].rseed, i, rounds ) ) );
-
-         string tx_data( string( c_file_type_core_transaction_object ) + ":"
-          + string( c_file_type_core_transaction_header_account_prefix ) + to_string( root_id ) + "." + to_string( accounts[ j ].id ) );
-
-         tx_data += "," + string( c_file_type_core_transaction_header_sequence_prefix ) + to_string( accounts[ j ].num_transactions + 1 );
-
-         string tx_validate( tx_data );
-
-         tx_data += "\\\n";
-
-         private_key tx_priv_key( accounts[ j ].secrets[ rounds + i ] );
-         private_key tx_sign_key( accounts[ j ].secrets[ rounds + i - 1 ] );
-
-         string tx_next( "," + string( c_file_type_core_transaction_header_application_prefix ) + string( "Sample" )
-          + "," + string( c_file_type_core_transaction_header_public_key_prefix ) + tx_sign_key.get_public( true, true ) );
-
-         if( i == 1 )
-            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + string( "0" );
-         else
-            tx_next += "," + string( c_file_type_core_transaction_header_previous_tchain_prefix ) + last_tx_hashes[ j ];
-
-         tx_data += tx_next;
-         tx_validate += tx_next;
-
-         tx_data += "\\\n";
-
-         tx_next = "," + string( c_file_type_core_transaction_header_transaction_hash_prefix ) + next_tx_hash
-          + "," + string( c_file_type_core_transaction_header_transaction_lock_prefix ) + tx_priv_key.get_address( true, true );
-
-         tx_data += tx_next;
-         tx_validate += tx_next;
-
-         tx_data += "\\n\\";
-
-         string unique( to_string( i - 1 ) + "X" + to_string( j ) );
-
-         tx_next = "\n" + string( c_file_type_core_transaction_detail_log_prefix )
-          + "pc " + date_time::standard( ).as_string( ) + " M100 C101 \\\"F102=Sample " + unique + ",F108=test\\\"";
-
-         tx_data += tx_next;
-         tx_validate += replaced( tx_next, "\\", "" );
-
-         tx_data += "\\n\\";
-
-         sha256 new_tx_hash( string( c_file_type_str_core_blob ) + tx_validate );
-
-         string tx_hash( new_tx_hash.get_digest_as_string( ) );
-
-         if( i > 1 )
-            last_tx_hashes[ j ] = tx_hash;
-         else
-            last_tx_hashes.push_back( tx_hash );
-
-         script += ".file_raw -core blob \"" + tx_data
-          + "\n" + string( c_file_type_core_transaction_detail_signature_prefix )
-          + tx_sign_key.construct_signature( tx_validate, true ) + "\"\n";
-
          string previous_block( block_hash );
 
          // NOTE: If not wanting determinstic data then randomly decide whether to skip.
@@ -372,11 +314,6 @@ string generate_blockchain_script( const string& chain_meta,
 
          data += "\\\n" + next;
          validate += next;
-
-         next = "\n" + string( c_file_type_core_block_detail_transaction_prefix ) + tx_hash;
-
-         validate += next;
-         data += "\\n\\" + next;
 
          sha256 new_hash( string( c_file_type_str_core_blob ) + validate );
 

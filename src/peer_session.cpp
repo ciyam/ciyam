@@ -250,8 +250,8 @@ string mint_new_block( const string& blockchain,
 
          next_data = construct_new_block( blockchain, next_password, &next_block, is_for_store );
 
-         // NOTE: If no txs have been included (or no valid "nonce" was found) then don't proceed.
-         if( !next_block.num_txs )
+         // NOTE: If no valid "nonce" was found then don't proceed.
+         if( next_block.num_txs < 0 )
             break;
 
          if( i == passwords.begin( ) || is_reminting || next_block.weight < new_block.weight )
@@ -283,12 +283,12 @@ string store_new_block( const string& blockchain, const string& password_hash )
    new_block_info new_block;
    string data( mint_new_block( blockchain, new_block, hash, true ) );
 
-   if( data.empty( ) || !new_block.num_txs )
+   if( data.empty( ) )
       return string( );
 
    vector< pair< string, string > > extras;
 
-   temporary_session_variable tmp_session_is_peer_minted_block(
+   temporary_session_variable tmp_session_locally_minted_block(
     get_special_var_name( e_special_var_locally_minted_block ), "1" );
 
    verify_core_file( data, true, &extras );
@@ -1529,7 +1529,7 @@ string socket_command_processor::get_cmd_and_args( )
 
          if( !new_block_pwd_hash.empty( ) )
          {
-            if( !new_block.can_mint )
+            if( new_block.num_txs < 0 )
                new_block_pwd_hash.erase( );
             else
             {

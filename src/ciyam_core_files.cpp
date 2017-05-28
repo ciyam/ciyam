@@ -57,7 +57,7 @@ namespace
 const size_t c_id_length = 10;
 const size_t c_hash_buf_size = 32;
 
-const size_t c_tx_soft_limit = 100;
+const int c_tx_soft_limit = 100;
 
 const unsigned int c_default_exp = 5;
 const unsigned int c_max_core_line_size = 200000;
@@ -1380,6 +1380,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       vector< vector< string > > all_transaction_hashes;
       vector< vector< string > > retagged_transaction_hashes;
 
+      bool has_any_tx_hashes = !transaction_hashes.empty( );
+
       uint64_t parallel_block_height = 0;
       all_transaction_hashes.push_back( transaction_hashes );
 
@@ -1543,6 +1545,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   string new_minter_hash, new_minter_tag;
                   uint64_t new_account_balance = get_balance_from_minter_id(
                    new_binfo.minter_id, &new_minter_hash, &new_minter_tag );
+
+                  if( !new_binfo.transaction_hashes.empty( ) )
+                     has_any_tx_hashes = true;
 
                   all_transaction_hashes.push_back( new_binfo.transaction_hashes );
 
@@ -1712,61 +1717,11 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          p_extras->push_back( make_pair( "", minter_account_hash ) );
       }
 
-      if( cinfo.is_test && is_new_chain_head )
-      {
-         uint64_t start = cinfo.checkpoint_start_height + 1;
-
-         string full_chain_tag( "c" + chain + ".chain*" );
-         for( uint64_t i = start; i < block_height; i++ )
-         {
-            string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
-
-            if( next_tag.empty( ) )
-               continue;
-
-            string next_hash( tag_file_hash( next_tag ) );
-
-            if( new_chain_height_blocks.count( i ) )
-               next_hash = new_chain_height_blocks[ i ];
-
-            string all_tags( get_hash_tags( next_hash ) );
-
-            vector< string > tags;
-            split( all_tags, tags, '\n' );
-
-            for( size_t j = 0; j < tags.size( ); j++ )
-            {
-               if( tags[ j ].find( ".c" ) != string::npos )
-                  continue;
-
-               if( tags[ j ].length( ) > next_tag.length( ) )
-               {
-                  string::size_type pos = tags[ j ].find( ".b" );
-                  if( pos != string::npos )
-                  {
-                     string::size_type npos = tags[ j ].find( ".a" );
-
-                     if( npos == string::npos )
-                        full_chain_tag += tags[ j ].substr( pos );
-                     else
-                        full_chain_tag += tags[ j ].substr( pos, npos - pos );
-
-                     break;
-                  }
-               }
-            }
-         }
-
-         full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
-
-         ( *p_extras )[ block_extra_offset ].second += "\n" + full_chain_tag;
-      }
-
       // NOTE: The parallel block height (if the chain has not just been extended)
       // as well as all relevant transaction hashes (which include all those found
       // in the current block as well as those from all previous blocks going back
       // to the parallel block height) are appended to a <blockchain>.txs file.
-      if( is_new_chain_head && !all_transaction_hashes.empty( ) )
+      if( has_any_tx_hashes && is_new_chain_head )
       {
          string filename( chain + ".txs" );
 
@@ -1840,6 +1795,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          {
             string temp_previous_block( previous_block );
             string temp_past_previous_block( past_previous_block );
+
             for( size_t i = 0; ; i++ )
             {
                if( temp_previous_block.empty( ) || !has_file( temp_previous_block ) )
@@ -2132,6 +2088,27 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             p_extras->push_back( make_pair( checkpoint_info_data,
              "c" + chain + ".checkpoint.h" + to_string( checkpoint_height ) + ".info" ) );
 
+            // NOTE: Remove the "chain" tags that had been created prior to the checkpoint.
+            if( cinfo.is_test )
+            {
+               string all_chain_tags( list_file_tags( "c" + chain
+                + ".chain.b" + to_string( cinfo.checkpoint_start_height + 1 ) + "-*" ) );
+
+               if( !all_chain_tags.empty( ) )
+               {
+                  vector< string > chain_tags;
+                  split( all_chain_tags, chain_tags, '\n' );
+
+                  for( size_t i = 0; i < chain_tags.size( ); i++ )
+                  {
+                     string next_tag( chain_tags[ i ] );
+                     string next_hash( tag_file_hash( next_tag ) );
+
+                     p_extras->push_back( make_pair( next_hash, next_tag + "*" ) );
+                  }
+               }
+            }
+
             // NOTE: Rework the transaction info blob to remove all txs that were included in
             // the checkpoint's "best chain".
             string txinfo_tag( "c" + chain + ".txinfo" );
@@ -2177,6 +2154,59 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          }
          else
             checkpoint_height = 0;
+      }
+
+      // NOTE: If is a new chain head on a test chain that hasn't just
+      // checkpointed then add a "chain" tag to the block (in order to
+      // make it easy to visualise the links to each previous block).
+      if( cinfo.is_test && is_new_chain_head && !checkpoint_height )
+      {
+         uint64_t start = cinfo.checkpoint_start_height + 1;
+
+         string full_chain_tag( "c" + chain + ".chain*" );
+         for( uint64_t i = start; i < block_height; i++ )
+         {
+            string next_tag( list_file_tags( "c" + chain + ".b" + to_string( i ) ) );
+
+            if( next_tag.empty( ) )
+               continue;
+
+            string next_hash( tag_file_hash( next_tag ) );
+
+            if( new_chain_height_blocks.count( i ) )
+               next_hash = new_chain_height_blocks[ i ];
+
+            string all_tags( get_hash_tags( next_hash ) );
+
+            vector< string > tags;
+            split( all_tags, tags, '\n' );
+
+            for( size_t j = 0; j < tags.size( ); j++ )
+            {
+               if( tags[ j ].find( ".c" ) != string::npos )
+                  continue;
+
+               if( tags[ j ].length( ) > next_tag.length( ) )
+               {
+                  string::size_type pos = tags[ j ].find( ".b" );
+                  if( pos != string::npos )
+                  {
+                     string::size_type npos = tags[ j ].find( ".a" );
+
+                     if( npos == string::npos )
+                        full_chain_tag += tags[ j ].substr( pos );
+                     else
+                        full_chain_tag += tags[ j ].substr( pos, npos - pos );
+
+                     break;
+                  }
+               }
+            }
+         }
+
+         full_chain_tag += ".b" + to_string( block_height ) + "-" + to_string( block_weight );
+
+         ( *p_extras )[ block_extra_offset ].second += "\n" + full_chain_tag;
       }
 
       // NOTE: Update blockchain meta information with the number of active accounts and checkpoint height.
@@ -3611,10 +3641,12 @@ string construct_new_block(
    string account_id( construct_account_info( chain, password, c_default_exp, acct, &key_info, &balance ) );
 
    string head_hash;
-   uint64_t height = 0;
+   string previous_block_hash;
 
+   uint64_t height = 0;
    uint64_t weight = 0;
    uint64_t total_weight = 0;
+   uint64_t previous_block_weight = 0;
 
    chain_info cinfo;
 
@@ -3628,10 +3660,34 @@ string construct_new_block(
       block_info binfo;
       get_block_info( binfo, head_hash );
 
-      height = binfo.block_height + 1;
-      weight = get_expected_weight( binfo.minter_hash, from_string< uint64_t >( account_id ), height );
+      // NOTE: First attempt to create a new block at the same height as the chain head.
+      if( !binfo.previous_block.empty( ) )
+      {
+         height = binfo.block_height;
 
-      total_weight = binfo.total_weight + weight;
+         block_info prev_binfo;
+         get_block_info( prev_binfo, binfo.previous_block );
+
+         weight = get_expected_weight( prev_binfo.minter_hash, from_string< uint64_t >( account_id ), height );
+
+         previous_block_hash = binfo.previous_block;
+         previous_block_weight = prev_binfo.block_weight;
+
+         total_weight = prev_binfo.total_weight + weight;
+      }
+
+      // NOTE: If the chain head is the genesis block or the new weight isn't better then
+      // create a new block that is one block after the current height of the chain head.
+      if( weight == 0 || weight >= binfo.block_weight )
+      {
+         height = binfo.block_height + 1;
+         weight = get_expected_weight( binfo.minter_hash, from_string< uint64_t >( account_id ), height );
+
+         previous_block_hash = head_hash;
+         previous_block_weight = binfo.block_weight;
+
+         total_weight = binfo.total_weight + weight;
+      }
 
       if( p_new_block_info )
       {
@@ -3644,7 +3700,8 @@ string construct_new_block(
          p_new_block_info->weight = weight;
 
          p_new_block_info->total_weight = total_weight;
-         p_new_block_info->previous_block_weight = binfo.block_weight;
+
+         p_new_block_info->previous_block_weight = previous_block_weight;
 
          if( !cinfo.checkpoint_tolerance || weight < cinfo.checkpoint_tolerance )
             p_new_block_info->range = new_block_info::e_target_range_optimal;
@@ -3671,9 +3728,9 @@ string construct_new_block(
       + "," + string( c_file_type_core_block_header_account_hash_prefix ) + key_info.block_hash
       + "," + string( c_file_type_core_block_header_account_lock_prefix ) + key_info.block_lock;
 
-   if( !head_hash.empty( ) )
+   if( !previous_block_hash.empty( ) )
       data += "," + string( c_file_type_core_block_header_previous_block_prefix )
-       + ( cinfo.is_test ? head_hash : hex_to_base64( head_hash ) );
+       + ( cinfo.is_test ? previous_block_hash : hex_to_base64( previous_block_hash ) );
 
 #ifdef SSL_SUPPORT
    private_key priv_key( key_info.block_secret.empty( ) ? uuid( ).as_string( ) : key_info.block_secret );
@@ -3704,7 +3761,7 @@ string construct_new_block(
    transactions_info txs_info;
    get_transactions_from_transactions_info( chain, txs_info );
 
-   size_t num_txs = 0;
+   int num_txs = 0;
 
    vector< string > unconfirmed_txs;
    get_unconfirmed_transactions( txs_info, unconfirmed_txs, cinfo.is_test, true );
@@ -3725,13 +3782,12 @@ string construct_new_block(
 #endif
    string nonce;
 
-   // NOTE: If there were no txs found then there is no need to expend the effort
-   // to try and find a valid nonce (also skip this for "test only" blockchains).
-   if( num_txs && !cinfo.is_test && search_for_proof_of_work_nonce )
+   // NOTE: Don't search for a valid nonce unless it is required.
+   if( !cinfo.is_test && search_for_proof_of_work_nonce )
       nonce = check_for_proof_of_work( data, start, p_new_block_info ? 32 : 64 );
 
    if( p_new_block_info )
-      p_new_block_info->num_txs = ( nonce.empty( ) && search_for_proof_of_work_nonce ) ? 0 : num_txs;
+      p_new_block_info->num_txs = ( nonce.empty( ) && search_for_proof_of_work_nonce ) ? -1 : num_txs;
 
    if( !nonce.empty( ) )
       data += "\n" + string( c_file_type_core_block_detail_proof_of_work_prefix ) + nonce;

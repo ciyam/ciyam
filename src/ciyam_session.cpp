@@ -5295,7 +5295,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string script_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_runscript_script_name ) );
 
-         run_script( script_name );
+         if( script_name.find_first_of( "?*" ) == string::npos )
+            run_script( script_name );
+         else
+         {
+            ostringstream osstr;
+
+            list_scripts( script_name, osstr );
+            response = osstr.str( );
+         }
       }
       else if( command == c_cmd_ciyam_session_timezones )
       {

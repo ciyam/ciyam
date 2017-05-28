@@ -204,6 +204,8 @@ int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false
 int CIYAM_BASE_DECL_SPEC run_script(
  const std::string& script_name, bool async = true, bool delay = false, bool no_logging = false );
 
+void CIYAM_BASE_DECL_SPEC list_scripts( const std::string& pattern, std::ostream& os );
+
 std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_args );
 
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
