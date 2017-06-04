@@ -454,6 +454,25 @@ uint64_t get_balance_from_minter_id( const string& minter_id, string* p_minter_h
    return from_string< uint64_t >( minter_tag.substr( pos + 2 ) );
 }
 
+uint64_t get_prior_balance_for_minter( const chain_info& cinfo, const block_info& binfo, uint64_t current_balance )
+{
+   uint64_t prior_balance = current_balance;
+
+   uint64_t total_reward = ( cinfo.transaction_reward * binfo.transaction_hashes.size( ) );
+
+   if( !binfo.had_secondary_account )
+      total_reward += cinfo.mint_reward;
+   else
+      prior_balance += cinfo.account_charge;
+
+   if( prior_balance > total_reward )
+      prior_balance -= total_reward;
+   else
+      prior_balance = 0;
+
+   return prior_balance;
+}
+
 void get_ordered_checkpoint_hashes( const string& chain_id, map< uint64_t, string >& ordered_checkpoint_hashes )
 {
    string all_checkpoint_tags( list_file_tags( "c" + chain_id + ".checkpoint.h*" ) );
@@ -728,9 +747,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    chain_info cinfo;
 
-   string block_signature, past_previous_block, parallel_block_minted_minter_id, parallel_block_minted_previous_block;
-
-   string chain_info_hash;
+   string block_signature, chain_info_hash, past_previous_block;
 
    bool had_zero_explicit_account_charge = false;
 
@@ -1001,13 +1018,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
    bool is_new_chain_head = false;
    bool is_better_chain_head = false;
+   bool is_better_parallel_block = false;
 
    uint32_t previous_nonce_value = 0;
-
-   unsigned int parallel_block_minted_num_transactions = 0;
-   vector< string > parallel_block_minted_transaction_hashes;
-
-   bool parallel_block_minted_had_secondary_account = false;
 
    if( p_extras && block_height )
    {
@@ -1033,13 +1046,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             {
                is_new_chain_head = true;
                is_better_chain_head = true;
-
-               parallel_block_minted_minter_id = binfo.minter_id;
-               parallel_block_minted_previous_block = binfo.previous_block;
-               parallel_block_minted_num_transactions = binfo.transaction_hashes.size( );
-               parallel_block_minted_had_secondary_account = binfo.had_secondary_account;
-
-               parallel_block_minted_transaction_hashes = binfo.transaction_hashes;
+               is_better_parallel_block = true;
             }
             else if( previous_weight == total_weight )
                previous_nonce_value = binfo.nonce_value;
@@ -1235,7 +1242,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                // NOTE: If the account charge is explicitly provided with a zero value
                // then this determines that the blockchain will not allow the creation
                // of any secondary accounts.
-               if( cinfo.account_charge == 0 )
+               if( had_zero_explicit_account_charge )
                   throw runtime_error( "secondary account creation not permitted" );
 
                string extra( c_file_type_str_core_blob );
@@ -1412,43 +1419,40 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
          map< string, string > old_transaction_hashes;
          set< string > new_transaction_hashes( transaction_hashes.begin( ), transaction_hashes.end( ) );
 
-         if( !parallel_block_minted_minter_id.empty( )
+         if( is_better_parallel_block
           || ( is_new_chain_head && previous_head != previous_block ) )
          {
             bool need_to_rewind_storage = false;
 
             string new_previous_block, old_previous_block;
 
-            if( !parallel_block_minted_minter_id.empty( ) )
+            if( is_better_parallel_block )
             {
                parallel_block_height = block_height;
 
+               block_info old_binfo;
+               get_block_info( old_binfo, previous_head );
+
                string prior_block_minter_hash;
                uint64_t previous_balance = get_balance_from_minter_id(
-                parallel_block_minted_minter_id, &prior_block_minter_hash );
+                old_binfo.minter_id, &prior_block_minter_hash );
 
-               uint64_t total_reward = cinfo.mint_reward
-                + ( cinfo.transaction_reward * parallel_block_minted_num_transactions );
+               previous_balance = get_prior_balance_for_minter( cinfo, old_binfo, previous_balance );
 
-               if( previous_balance < total_reward )
-                  previous_balance = 0;
-               else if( !parallel_block_minted_had_secondary_account )
-                  previous_balance -= total_reward;
-
-               account_balances.insert( make_pair( parallel_block_minted_minter_id, previous_balance ) );
+               account_balances.insert( make_pair( old_binfo.minter_id, previous_balance ) );
 
                p_extras->push_back(
-                make_pair( prior_block_minter_hash, parallel_block_minted_minter_id
+                make_pair( prior_block_minter_hash, old_binfo.minter_id
                 + ".h" + to_string( block_height ) + ".b*" + to_string( previous_balance ) ) );
 
-               need_to_rewind_storage = ( parallel_block_minted_transaction_hashes.size( ) > 0 );
+               need_to_rewind_storage = ( old_binfo.transaction_hashes.size( ) > 0 );
 
                vector< string > retagged_transactions;
 
                // NOTE: Retag any txs from the previous best block that aren't included in the new block.
                for( vector< string >::iterator i =
-                parallel_block_minted_transaction_hashes.begin( );
-                i != parallel_block_minted_transaction_hashes.end( ); ++i )
+                old_binfo.transaction_hashes.begin( );
+                i != old_binfo.transaction_hashes.end( ); ++i )
                {
                   if( new_transaction_hashes.count( *i ) )
                      reused_transactions.insert( *i );
@@ -1459,7 +1463,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                      transaction_info tinfo;
                      get_transaction_info( tinfo, *i );
 
-                     string tx_tag( parallel_block_minted_minter_id + ".t" + to_string( tinfo.sequence ) );
+                     string tx_tag( old_binfo.minter_id + ".t" + to_string( tinfo.sequence ) );
 
                      p_extras->push_back( make_pair( *i, tx_tag ) );
                   }
@@ -1469,7 +1473,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   retagged_transaction_hashes.push_back( retagged_transactions );
 
                new_previous_block = previous_block;
-               old_previous_block = parallel_block_minted_previous_block;
+               old_previous_block = old_binfo.previous_block;
             }
             else
             {
@@ -1481,9 +1485,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             // balance of the parallel minters back to the last block they both had in common.
             if( new_previous_block != old_previous_block )
             {
-               parallel_block_height = block_height - 1;
+               parallel_block_height = block_height;
 
-               while( parallel_block_height
+               while( --parallel_block_height
                 && new_previous_block != old_previous_block )
                {
                   TRACE_LOG( TRACE_CORE_FLS, "chain " + chain
@@ -1497,6 +1501,8 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   block_info old_binfo;
                   get_block_info( old_binfo, old_previous_block );
+
+                  old_previous_block = old_binfo.previous_block;
 
                   uint64_t total_reward = cinfo.mint_reward
                    + ( cinfo.transaction_reward * old_binfo.transaction_hashes.size( ) );
@@ -1521,12 +1527,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                   if( account_balances.count( old_binfo.minter_id ) )
                      previous_balance = account_balances[ old_binfo.minter_id ];
 
-                  if( previous_balance < total_reward )
-                     previous_balance = 0;
-                  else if( !old_binfo.had_secondary_account )
-                     previous_balance -= total_reward;
-
-                  old_previous_block = old_binfo.previous_block;
+                  previous_balance = get_prior_balance_for_minter( cinfo, old_binfo, previous_balance );
 
                   account_balances[ old_binfo.minter_id ] = previous_balance;
 
@@ -1578,9 +1579,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 
                   p_extras->push_back( make_pair( new_minter_hash,
                    new_minter_tag + ".b*" + to_string( new_account_balance ) ) );
-
-                  if( new_previous_block != old_previous_block )
-                     --parallel_block_height;
                }
 
                vector< string > retagged_transactions;
@@ -1640,12 +1638,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
             throw runtime_error( "insufficient balance to create an account" );
 
          if( has_secondary_account )
-         {
-            if( !cinfo.account_charge )
-               ainfo.balance = 0;
-            else
-               ainfo.balance -= cinfo.account_charge;
-         }
+            ainfo.balance -= cinfo.account_charge;
 
          pos = minter_account_tag.find( ".h" );
          if( pos != string::npos )
@@ -1657,7 +1650,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
              + chain + " head block " + block_id + " at height " + to_string( block_height ) );
 
             if( !has_secondary_account )
-               ainfo.balance += cinfo.mint_reward + ( transaction_hashes.size( ) * cinfo.transaction_reward );
+               ainfo.balance += cinfo.mint_reward;
+
+            ainfo.balance += ( transaction_hashes.size( ) * cinfo.transaction_reward );
          }
 
          // NOTE: If is the new chain head then remove the transaction file tag for all transactions included
@@ -2272,7 +2267,7 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
       map< string, uint64_t > account_balances;
       map< string, uint64_t > account_block_heights;
 
-      TRACE_LOG( TRACE_CORE_FLS, "rewinding chain " + chain_id + " to " + to_string( new_block_height ) );
+      TRACE_LOG( TRACE_CORE_FLS, "rewinding chain " + chain_id + " to block height " + to_string( new_block_height ) );
 
       set< string > chain_blocks;
 
@@ -2346,28 +2341,12 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
             while( next_account_binfo.block_height >= new_block_height )
             {
                if( chain_blocks.count( next_account_block_hash ) )
-               {
-                  uint64_t total_reward = cinfo.mint_reward
-                   + ( cinfo.transaction_reward * next_account_binfo.transaction_hashes.size( ) );
-
-                  if( next_account_binfo.had_secondary_account )
-                  {
-                     if( !cinfo.account_charge )
-                        balance = cinfo.mint_reward;
-                     else if( balance > cinfo.account_charge )
-                        balance -= cinfo.account_charge;
-                     else
-                        balance = 0;
-                  }
-                  else if( balance > total_reward )
-                     balance -= total_reward;
-                  else
-                     balance = 0;
-               }
+                  balance = get_prior_balance_for_minter( cinfo, next_account_binfo, balance );
 
                height = next_account_binfo.block_height;
 
                account_balances[ next_account ] = balance;
+
                account_block_locks[ next_account ] = next_account_binfo.minter_lock;
                account_block_hashes[ next_account ] = next_account_binfo.minter_hash;
                account_block_heights[ next_account ] = new_block_height;
@@ -2444,20 +2423,6 @@ void verify_rewind( const string& content, vector< pair< string, string > >* p_e
          {
             account_tag += ".h*" + to_string( account_block_heights[ i->first ] ) + ".b" + to_string( i->second );
             p_extras->push_back( make_pair( account_hash, account_tag ) );
-         }
-      }
-
-      // NOTE: If a "debug" chain tag exists then truncate it.
-      string debug_chain_tag( list_file_tags( "c" + chain_id + ".chain.*" ) );
-      if( !debug_chain_tag.empty( ) )
-      {
-         string debug_chain_hash( tag_file_hash( debug_chain_tag ) );
-
-         string::size_type pos = debug_chain_tag.find( ".b" + to_string( new_block_height + 1 ) + "-" );
-         if( pos != string::npos )
-         {
-            debug_chain_tag.erase( pos );
-            p_extras->push_back( make_pair( debug_chain_hash, debug_chain_tag + "**" ) );
          }
       }
 

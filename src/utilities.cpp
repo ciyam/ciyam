@@ -130,7 +130,7 @@ void uuidgen( unsigned char buf[ ] )
    }
 
    if( read( fd, buf, c_uuid_size ) != c_uuid_size )
-      throw runtime_error( "unexpected failure to created uuid" );
+      throw runtime_error( "unexpected failure to create uuid" );
 }
 #endif
 
