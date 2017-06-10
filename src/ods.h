@@ -552,17 +552,17 @@ struct transaction_level_info
 
 class ods_index_cache_buffer;
 
-const int_t c_trans_ops_per_node = 64;
-const int_t c_trans_bytes_per_node = 4096;
+const int_t c_trans_ops_per_item = 64;
+const int_t c_trans_bytes_per_item = 4096;
 
 struct trans_op_buffer
 {
-   transaction_op::data_t item[ c_trans_ops_per_node ];
+   transaction_op::data_t item[ c_trans_ops_per_item ];
 };
 
 struct trans_data_buffer
 {
-   char data[ c_trans_bytes_per_node ];
+   char data[ c_trans_bytes_per_item ];
 };
 
 class ods_index_entry;
@@ -755,7 +755,7 @@ class ODS_DECL_SPEC ods
    friend class ods_index_cache_buffer;
 
    void read_index_entry( ods_index_entry& index_entry, int_t num );
-   void write_index_entry( const ods_index_entry& index_entry, int_t num, bool force_cache_write_back );
+   void write_index_entry( const ods_index_entry& index_entry, int_t num );
 
    int_t index_item_buffer_num;
    bool has_written_index_item;
@@ -792,7 +792,6 @@ class ODS_DECL_SPEC ods
    trans_data_buffer trans_write_buffer;
 
    mutable bool permit_copy;
-   mutable bool permit_destroy;
 
    mutex read_lock;
    mutex write_lock;

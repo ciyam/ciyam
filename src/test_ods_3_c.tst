@@ -5,7 +5,7 @@ Total Entries = 20001
 Transaction Id = 30010
 Index Free List = 2
 Total Size of Data = 28
-Data Transformation Id = 10012
+Data Transformation Id = 10011
 Index Transformation Id = 50014
 
 ** Entry Info for: 0
