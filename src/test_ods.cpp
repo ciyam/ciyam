@@ -51,8 +51,10 @@ const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
+const char* const c_cmd_using_log = "log";
 
 bool g_shared_access = true;
+bool g_using_transaction_log = false;
 
 bool g_application_title_called = false;
 
@@ -88,7 +90,6 @@ typedef storable< outline_base > outline;
 class outline_base : public storable_base
 {
    friend struct temp_read_outline_description;
-   friend struct temp_write_outline_description;
 
    public:
    outline_base( )
@@ -281,25 +282,6 @@ struct temp_read_outline_description
    outline& node;
 };
 
-struct temp_write_outline_description
-{
-   temp_write_outline_description( outline& node )
-    : node( node )
-   {
-      val = node.do_not_write_children;
-      node.do_not_write_children = true;
-   }
-
-   ~temp_write_outline_description( )
-   {
-      node.do_not_write_children = val;
-   }
-
-   private:
-   bool val;
-   outline& node;
-};
-
 struct pathchar_buffer : public char_buffer
 {
    pathchar_buffer( ) : char_buffer( c_max_path_size ) { }
@@ -332,6 +314,8 @@ class test_ods_startup_functor : public command_functor
    {
       if( command == c_cmd_exclusive )
          g_shared_access = false;
+      else if( command == c_cmd_using_log )
+         g_using_transaction_log = true;
    }
 };
 
@@ -379,7 +363,7 @@ class test_ods_command_handler : public console_command_handler
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_share_mode_shared : ods::e_share_mode_exclusive ) ) );
+    ( g_shared_access ? ods::e_share_mode_shared : ods::e_share_mode_exclusive ), g_using_transaction_log ) );
 }
 
 class test_ods_command_functor : public command_functor
@@ -432,6 +416,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       set< string > file_info;
 
       temp_read_outline_description tmp_description( temp_node );
+
       for( node.iter( ); node.more( ); node.next( ) )
       {
          temp_node.set_id( node.child( ) );
@@ -572,17 +557,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          ods::bulk_write bulk( o );
          o >> node;
 
-         // NOTE: If not in a transaction then will need to ensure that no read locks
-         // are currently active for this node (before creating any new child nodes).
-         // Therefore attempt to re-write the node's description - if it is currently
-         // being read then this attempt will fail. The "bulk write" lock itself will
-         // prevent any further attempts from commencing until it goes out of scope.
-         if( !trans_level )
-         {
-            temp_write_outline_description tmp_description( temp_node );
-            o << node;
-         }
-
          int num = 1;
          bool is_multi = false;
          pos = name.find( '*' );
@@ -619,13 +593,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       bool found = false;
       ods::bulk_write bulk( o );
       o >> node;
-
-      // NOTE: (refer to the NOTE in "add" command above)
-      if( !trans_level )
-      {
-         temp_write_outline_description tmp_description( temp_node );
-         o << node;
-      }
 
       int num = 1;
       size_t index = 0;
@@ -729,13 +696,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
       ods::bulk_write bulk( o );
       o >> node;
-
-      // NOTE: (refer to the NOTE in "add" command above)
-      if( !trans_level )
-      {
-         temp_write_outline_description tmp_description( temp_node );
-         o << node;
-      }
 
 #ifndef _WIN32
       string::size_type pos = file_name.find_last_of( "/" );
@@ -896,11 +856,15 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
          cmd_handler.add_command( c_cmd_exclusive, 1,
-          "", "use ods exclusive file access", new test_ods_startup_functor( cmd_handler ) );
+          "", "use exclusive file access", new test_ods_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_using_log, 1,
+          "", "using transaction log file", new test_ods_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_exclusive );
+         cmd_handler.remove_command( c_cmd_using_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

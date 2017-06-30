@@ -586,20 +586,24 @@ class ODS_DECL_SPEC ods
    static ods* instance( ods* p_ods = 0, bool force_assign = false );
 
    ods( const ods& o );
-   ods( const char* name, open_mode o_mode, share_mode s_mode = e_share_mode_shared );
+
+   ods( const char* name, open_mode o_mode,
+    share_mode s_mode = e_share_mode_shared, bool using_tranlog = false );
 
    virtual ~ods( );
 
    bool is_okay( ) const { return okay; }
 
-   bool is_new( );
-   bool is_corrupt( );
+   bool is_new( ) const;
+   bool is_corrupt( ) const;
 
    bool is_bulk_locked( ) const;
 
    bool is_bulk_dump_locked( ) const;
    bool is_bulk_read_locked( ) const;
    bool is_bulk_write_locked( ) const;
+
+   bool is_using_transaction_log( ) const;
 
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
@@ -616,6 +620,8 @@ class ODS_DECL_SPEC ods
    void dump_free_list( std::ostream& os );
    void dump_index_entry( std::ostream& os, int_t num );
    void dump_instance_data( std::ostream& os, int_t num, bool only_pos_and_size );
+
+   void dump_transaction_log( std::ostream& os, bool header_only );
 
    int_t get_total_entries( );
 
@@ -729,13 +735,22 @@ class ODS_DECL_SPEC ods
    void lock_header_file( );
    void unlock_header_file( );
 
+   int_t log_append_offset( );
+
+   int_t append_log_entry( int_t tx_id );
+
+   void log_entry_commit( int_t entry_offset, int_t commit_offs );
+
+   void append_log_entry_item( int_t num,
+    const ods_index_entry& index_entry, unsigned char flags, int_t log_entry_offs = 0 );
+
    ods& operator =( const ods& o );
    bool operator ==( const ods& o );
 
    void read( unsigned char* p_buf, int_t len );
    void write( const unsigned char* p_buf, int_t len );
 
-   void set_read_data_pos( int_t pos );
+   void set_read_data_pos( int_t pos, bool force_get = false );
    void set_write_data_pos( int_t pos );
 
    void adjust_read_data_pos( int_t adjust );

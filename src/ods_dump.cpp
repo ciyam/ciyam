@@ -56,7 +56,20 @@ int main( int argc, char* argv[ ] )
             entries = string( argv[ 1 ] );
       }
 
-      if( !file_exists( string( argv[ name_arg ] ) + ".hdr" ) )
+      bool has_data = file_exists( string( argv[ name_arg ] ) + ".dat" );
+      bool has_index = file_exists( string( argv[ name_arg ] ) + ".idx" );
+      bool has_header = file_exists( string( argv[ name_arg ] ) + ".hdr" );
+
+      if( !has_data && !has_index && !has_header )
+         throw runtime_error( "database '" + string( argv[ name_arg ] ) + "' was not found" );
+
+      if( !has_data )
+         throw runtime_error( "database data file not found" );
+
+      if( !has_index )
+         throw runtime_error( "database index file not found" );
+
+      if( !has_header )
          throw runtime_error( "database header file not found" );
 
       ods o( argv[ name_arg ], ods::e_open_mode_exist );
@@ -142,6 +155,12 @@ int main( int argc, char* argv[ ] )
 
       cout << "** Freelist Info" << endl;
       o.dump_free_list( cout );
+
+      if( o.is_using_transaction_log( ) )
+      {
+         cout << "\n*** Transaction Log" << endl;
+         o.dump_transaction_log( cout, !show_data );
+      }
 
       return 0;
    }

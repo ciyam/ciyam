@@ -1,6 +1,7 @@
 ** File Info
 Version Id = 65536
 Num Writers = 0
+Init Tranlog = 0
 Total Entries = 2
 Transaction Id = 18
 Index Free List = 0
