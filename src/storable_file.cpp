@@ -53,7 +53,7 @@ void storable_file::set_extra( storable_extra* p_extra )
    }
 }
 
-int_t storable_file::get_size_of( ) const
+int64_t storable_file::get_size_of( ) const
 {
    return size_of( *this );
 }
@@ -68,7 +68,7 @@ void storable_file::put_instance( write_stream& ws ) const
    ws << *this;
 }
 
-int_t size_of( const storable_file& sf )
+int64_t size_of( const storable_file& sf )
 {
    if( sf.p_istream )
       return sf.file_size;

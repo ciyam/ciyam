@@ -29,26 +29,7 @@
 #     define ODS_DECL_SPEC
 #  endif
 
-#  define ODS_MAX_ERROR_MSG_LENGTH 1024
-
-typedef int64_t int_t;
-typedef uint64_t uint_t;
-
-const int_t c_max_int_val = std::numeric_limits< int_t >::max( );
-
-class ODS_DECL_SPEC ods_error
-{
-   public:
-   ods_error( const char* s );
-   ods_error( const std::string& msg );
-
-   const char* what( ) const { return buf; }
-
-   private:
-   void init( const char* s );
-
-   char buf[ ODS_MAX_ERROR_MSG_LENGTH ];
-};
+const int64_t c_max_int_val = std::numeric_limits< int64_t >::max( );
 
 class read_stream;
 class write_stream;
@@ -62,7 +43,7 @@ class ODS_DECL_SPEC char_buffer
    friend std::ostream& operator <<( std::ostream& outf, const char_buffer& c );
 
    public:
-   char_buffer( int_t max, int_t len = 0, int_t pos = 0 ) :
+   char_buffer( int64_t max, int64_t len = 0, int64_t pos = 0 ) :
     max( max ),
     buf( max ),
     len( len > max ? max : len ),
@@ -95,7 +76,7 @@ class ODS_DECL_SPEC char_buffer
    {
       guard lock_buffer( buffer_lock );
 
-      int_t n = std::min( max - pos, ( int_t )s.length( ) );
+      int64_t n = std::min( max - pos, ( int64_t )s.length( ) );
       memcpy( p_data, s.data( ), n );
       len = n;
    }
@@ -111,7 +92,7 @@ class ODS_DECL_SPEC char_buffer
    {
       guard lock_buffer( buffer_lock );
 
-      int_t n = std::min( dest.max - dest.pos, len );
+      int64_t n = std::min( dest.max - dest.pos, len );
       memcpy( dest.p_data, p_data, n );
       dest.len = n;
    }
@@ -122,7 +103,7 @@ class ODS_DECL_SPEC char_buffer
    {
       guard lock_buffer( buffer_lock );
 
-      int_t n = std::min( max - pos, len + ( int_t )s.length( ) );
+      int64_t n = std::min( max - pos, len + ( int64_t )s.length( ) );
       memcpy( p_data + len, s.data( ), n );
       len = n;
    }
@@ -138,7 +119,7 @@ class ODS_DECL_SPEC char_buffer
    {
       guard lock_buffer( buffer_lock );
 
-      int_t n = std::min( dest.max - dest.pos, dest.len + len );
+      int64_t n = std::min( dest.max - dest.pos, dest.len + len );
       memcpy( dest.p_data + dest.len, p_data, n );
       dest.len = n;
    }
@@ -161,7 +142,7 @@ class ODS_DECL_SPEC char_buffer
 
    bool is_less_than( const char_buffer& src ) const;
 
-   char operator [ ]( int_t val ) const
+   char operator [ ]( int64_t val ) const
    {
       guard lock_buffer( buffer_lock );
 
@@ -170,13 +151,13 @@ class ODS_DECL_SPEC char_buffer
       return '\0';
    }
 
-   int_t first_of( const char* matches ) const;
+   int64_t first_of( const char* matches ) const;
 
    bool has_one_of( const char* matches ) const;
 
-   bool begins_with( const char_buffer& src, int_t max = 0 ) const;
+   bool begins_with( const char_buffer& src, int64_t max = 0 ) const;
 
-   void fill( char ch = '\0', int_t from = 0, int_t maxnum = c_max_int_val )
+   void fill( char ch = '\0', int64_t from = 0, int64_t maxnum = c_max_int_val )
    {
       guard lock_buffer( buffer_lock );
 
@@ -185,20 +166,20 @@ class ODS_DECL_SPEC char_buffer
          memset( p_data + from, ch, fill_len );
    }
 
-   void copy_to( char* dest, int_t from = 0, int_t maxnum = c_max_int_val )
+   void copy_to( char* dest, int64_t from = 0, int64_t maxnum = c_max_int_val )
    {
       guard lock_buffer( buffer_lock );
 
-      int_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
+      int64_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
       if( copy_len )
          memcpy( dest, p_data + from, copy_len );
    }
 
-   void copy_from( const char* src, int_t from = 0, int_t maxnum = c_max_int_val )
+   void copy_from( const char* src, int64_t from = 0, int64_t maxnum = c_max_int_val )
    {
       guard lock_buffer( buffer_lock );
 
-      int_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
+      int64_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
       if( copy_len )
          memcpy( p_data + from, src, copy_len );
    }
@@ -206,9 +187,9 @@ class ODS_DECL_SPEC char_buffer
    // IMPORTANT: This final set of public functions should only be called within the scope of a
    // "char_buffer::lock" object if the "char_buffer" object is accessible to other threads. This
    // will ensure that no other thread can make changes whilst these accessors are being used.
-   int_t length( ) const { return len; }
-   int_t offset( ) const { return pos; }
-   int_t reserved( ) const { return max; }
+   int64_t length( ) const { return len; }
+   int64_t offset( ) const { return pos; }
+   int64_t reserved( ) const { return max; }
 
    const char* data( ) const { return p_data; }
 
@@ -216,7 +197,7 @@ class ODS_DECL_SPEC char_buffer
    friend write_stream& operator <<( write_stream& ws, const char_buffer& cb );
 
    private:
-   void set_pos( int_t newpos )
+   void set_pos( int64_t newpos )
    {
       guard lock_buffer( buffer_lock );
 
@@ -224,16 +205,16 @@ class ODS_DECL_SPEC char_buffer
       p_data = buf.get( ) + pos;
    }
 
-   void set_len( int_t newlen )
+   void set_len( int64_t newlen )
    {
       guard lock_buffer( buffer_lock );
 
       len = newlen >= max ? len : newlen;
    }
 
-   int_t max;
-   int_t len;
-   int_t pos;
+   int64_t max;
+   int64_t len;
+   int64_t pos;
 
    char* p_data;
    auto_buffer< char > buf;
@@ -244,9 +225,9 @@ class ODS_DECL_SPEC char_buffer
 class oid
 {
    public:
-   oid( int_t num = -1 ) : num( num ) { }
+   oid( int64_t num = -1 ) : num( num ) { }
 
-   int_t get_num( ) const { return num; }
+   int64_t get_num( ) const { return num; }
 
    void set_new( ) { num = -1; }
 
@@ -256,7 +237,7 @@ class oid
    friend bool operator !=( const oid& lhs, const oid& rhs );
 
    private:
-   int_t num;
+   int64_t num;
 
    friend class ods;
    friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
@@ -279,15 +260,15 @@ inline bool operator !=( const oid& lhs, const oid& rhs )
 
 struct byte_skip
 {
-   byte_skip( int_t num ) : num( num ) { }
+   byte_skip( int64_t num ) : num( num ) { }
 
-   int_t num;
+   int64_t num;
 };
 
 read_stream ODS_DECL_SPEC& operator >>( read_stream& rs, byte_skip& bs );
 write_stream ODS_DECL_SPEC& operator <<( write_stream& ws, const byte_skip& bs );
 
-template< class T, int_t R, class B > class storable;
+template< class T, int64_t R, class B > class storable;
 
 struct storable_extra
 {
@@ -296,7 +277,7 @@ struct storable_extra
 
 class ODS_DECL_SPEC storable_base
 {
-   template< class T, int_t R, class B > friend class storable;
+   template< class T, int64_t R, class B > friend class storable;
 
    public:
    enum flag
@@ -346,14 +327,14 @@ class ODS_DECL_SPEC storable_base
 
    short get_flags( ) const { return flags; }
 
-   int_t get_last_size( ) const { return last_size; }
-   int_t get_last_tran_id( ) const { return last_tran_id; }
+   int64_t get_last_size( ) const { return last_size; }
+   int64_t get_last_tran_id( ) const { return last_tran_id; }
 
    bool had_interim_update( ) const { return ( flags & e_flag_interim_update ) ? true : false; }
 
    virtual void set_extra( storable_extra* /*p_extra*/ ) { }
 
-   virtual int_t get_size_of( ) const = 0;
+   virtual int64_t get_size_of( ) const = 0;
 
    // NOTE: See the NOTE in "oid_pointer.h" about the purpose of this static function.
    static bool can_copy_direct( ) { return true; }
@@ -410,8 +391,8 @@ class ODS_DECL_SPEC storable_base
    ods* p_ods;
    short flags;
 
-   int_t last_size;
-   int_t last_tran_id;
+   int64_t last_size;
+   int64_t last_tran_id;
 
    mutex storable_lock;
 
@@ -446,9 +427,9 @@ class final
 #  endif
 
 #  ifdef ODS_NON_FINAL_STORABLE
-template< class T, int_t R = 0, class B = none > class storable : public T, public B
+template< class T, int64_t R = 0, class B = none > class storable : public T, public B
 #  else
-template< class T, int_t R = 0, class B = none > class storable : public T, public B, virtual private final
+template< class T, int64_t R = 0, class B = none > class storable : public T, public B, virtual private final
 #  endif
 {
    public:
@@ -457,20 +438,20 @@ template< class T, int_t R = 0, class B = none > class storable : public T, publ
    template< typename U, typename V > storable( U& u, V& v ) : T( u, v ) { }
    template< typename U, typename V, typename W > storable( U& u, V& v, W& w ) : T( u, v, w ) { }
 
-   int_t get_size_of( ) const
+   int64_t get_size_of( ) const
    {
 #  ifndef ODS_DO_NOT_USE_FUNCTION_POINTERS
-      int_t ( *p_func )( const T& );
+      int64_t ( *p_func )( const T& );
       p_func = &size_of;
-      int_t size = ( *p_func )( *this );
+      int64_t size = ( *p_func )( *this );
 #  else
-      int_t size = size_of( *this );
+      int64_t size = size_of( *this );
 #  endif
 
       // IMPORTANT: The R value is used to round up the storable size allowing storable objects to grow by
       // this amount before needing to be moved to the end of the data file (reducing the amount of wasted
       // space that might otherwise be created each time the storable size is increased).
-      int_t round( R );
+      int64_t round( R );
 
       if( round && size % round )
          size += round - ( size % round );
@@ -514,10 +495,10 @@ struct transaction_op
    struct data_t
    {
       oid id;
-      int_t pos;
-      int_t size;
-      int_t old_tran_id;
-      int_t old_tran_op;
+      int64_t pos;
+      int64_t size;
+      int64_t old_tran_id;
+      int64_t old_tran_op;
    } data;
 
    op_type type;
@@ -544,16 +525,16 @@ struct transaction_level_info
    {
    }
 
-   int_t size;
-   int_t offset;
-   int_t op_count;
-   int_t op_offset;
+   int64_t size;
+   int64_t offset;
+   int64_t op_count;
+   int64_t op_offset;
 };
 
 class ods_index_cache_buffer;
 
-const int_t c_trans_ops_per_item = 64;
-const int_t c_trans_bytes_per_item = 4096;
+const int64_t c_trans_ops_per_item = 64;
+const int64_t c_trans_bytes_per_item = 4096;
 
 struct trans_op_buffer
 {
@@ -605,36 +586,36 @@ class ODS_DECL_SPEC ods
 
    bool is_using_transaction_log( ) const;
 
+   void repair_if_corrupt( );
+
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
    void destroy( const oid& id );
 
-   int_t get_size( const oid& id );
+   int64_t get_size( const oid& id );
 
    void move_free_data_to_end( );
 
-   void rollback_dead_transactions( );
-
    void dump_file_info( std::ostream& os );
    void dump_free_list( std::ostream& os );
-   void dump_index_entry( std::ostream& os, int_t num );
-   void dump_instance_data( std::ostream& os, int_t num, bool only_pos_and_size );
+   void dump_index_entry( std::ostream& os, int64_t num );
+   void dump_instance_data( std::ostream& os, int64_t num, bool only_pos_and_size );
 
    void dump_transaction_log( std::ostream& os, bool header_only );
 
-   int_t get_total_entries( );
+   int64_t get_total_entries( );
 
-   int_t get_session_review_total( );
-   int_t get_session_create_total( );
-   int_t get_session_revive_total( );
-   int_t get_session_update_total( );
-   int_t get_session_delete_total( );
+   int64_t get_session_review_total( );
+   int64_t get_session_create_total( );
+   int64_t get_session_revive_total( );
+   int64_t get_session_update_total( );
+   int64_t get_session_delete_total( );
 
-   int_t get_transaction_id( ) const;
-   int_t get_transaction_level( ) const;
+   int64_t get_transaction_id( ) const;
+   int64_t get_transaction_level( ) const;
 
-   int_t get_next_transaction_id( ) const;
+   int64_t get_next_transaction_id( ) const;
 
    struct bulk_dump;
    struct bulk_read;
@@ -698,8 +679,6 @@ class ODS_DECL_SPEC ods
 
    friend struct transaction;
 
-   static size_t header_info_size( );
-
    private:
    bool okay;
    std::string meta;
@@ -735,70 +714,75 @@ class ODS_DECL_SPEC ods
    void lock_header_file( );
    void unlock_header_file( );
 
-   int_t log_append_offset( );
+   void data_and_index_write( bool flush = true );
 
-   int_t append_log_entry( int_t tx_id );
+   int64_t log_append_offset( );
 
-   void log_entry_commit( int_t entry_offset, int_t commit_offs );
+   int64_t append_log_entry( int64_t tx_id );
 
-   void append_log_entry_item( int_t num,
-    const ods_index_entry& index_entry, unsigned char flags, int_t log_entry_offs = 0 );
+   void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
+
+   void append_log_entry_item( int64_t num,
+    const ods_index_entry& index_entry, unsigned char flags, int64_t log_entry_offs = 0 );
+
+   void rollback_dead_transactions( );
+   void restore_from_transaction_log( );
 
    ods& operator =( const ods& o );
    bool operator ==( const ods& o );
 
-   void read( unsigned char* p_buf, int_t len );
-   void write( const unsigned char* p_buf, int_t len );
+   void read( unsigned char* p_buf, int64_t len );
+   void write( const unsigned char* p_buf, int64_t len );
 
-   void set_read_data_pos( int_t pos, bool force_get = false );
-   void set_write_data_pos( int_t pos );
+   void set_read_data_pos( int64_t pos, bool force_get = false );
+   void set_write_data_pos( int64_t pos );
 
-   void adjust_read_data_pos( int_t adjust );
-   void adjust_write_data_pos( int_t adjust );
+   void adjust_read_data_pos( int64_t adjust );
+   void adjust_write_data_pos( int64_t adjust );
 
-   void read_data_bytes( char* p_dest, int_t len );
-   void write_data_bytes( const char* p_src, int_t len );
+   void read_data_bytes( char* p_dest, int64_t len );
+   void write_data_bytes( const char* p_src, int64_t len );
 
-   int_t data_read_buffer_num;
-   int_t data_read_buffer_offs;
-   int_t data_write_buffer_num;
-   int_t data_write_buffer_offs;
+   int64_t data_read_buffer_num;
+   int64_t data_read_buffer_offs;
+   int64_t data_write_buffer_num;
+   int64_t data_write_buffer_offs;
 
    bool is_in_read;
    bool is_in_write;
 
    friend class ods_index_cache_buffer;
 
-   void read_index_entry( ods_index_entry& index_entry, int_t num );
-   void write_index_entry( const ods_index_entry& index_entry, int_t num );
+   void read_index_entry( ods_index_entry& index_entry, int64_t num );
+   void write_index_entry( const ods_index_entry& index_entry, int64_t num );
 
-   int_t index_item_buffer_num;
+   int64_t index_item_buffer_num;
    bool has_written_index_item;
 
-   void read_transaction_op( transaction_op& op, int_t num );
+   void read_transaction_op( transaction_op& op, int64_t num );
    void write_transaction_op( transaction_op& op );
 
-   void set_read_trans_data_pos( int_t pos );
-   void set_write_trans_data_pos( int_t pos, int_t old_trans_total_size );
+   void set_read_trans_data_pos( int64_t pos );
+   void set_write_trans_data_pos( int64_t pos, int64_t old_trans_total_size );
 
-   void adjust_read_trans_data_pos( int_t adjust );
-   void adjust_write_trans_data_pos( int_t adjust );
+   void adjust_read_trans_data_pos( int64_t adjust );
+   void adjust_write_trans_data_pos( int64_t adjust );
 
-   void read_trans_data_bytes( char* p_dest, int_t len );
-   void write_trans_data_bytes( const char* p_src, int_t len );
+   void read_trans_data_bytes( char* p_dest, int64_t len );
+   void write_trans_data_bytes( const char* p_src, int64_t len );
 
    bool had_interim_trans_op_write;
    bool had_interim_trans_data_write;
 
-   int_t trans_read_ops_buffer_num;
-   int_t trans_read_data_buffer_num;
-   int_t trans_read_data_buffer_offs;
+   int64_t trans_read_ops_buffer_num;
+   int64_t trans_read_data_buffer_num;
+   int64_t trans_read_data_buffer_offs;
 
    bool has_written_trans_op;
 
-   int_t trans_write_ops_buffer_num;
-   int_t trans_write_data_buffer_num;
-   int_t trans_write_data_buffer_offs;
+   int64_t trans_write_ops_buffer_num;
+   int64_t trans_write_data_buffer_num;
+   int64_t trans_write_data_buffer_offs;
 
    trans_op_buffer trans_read_ops_buffer;
    trans_op_buffer trans_write_ops_buffer;
@@ -812,14 +796,14 @@ class ODS_DECL_SPEC ods
    mutex write_lock;
    mutex index_lock;
 
-   int_t bytes_used;
-   int_t bytes_reserved;
+   int64_t bytes_used;
+   int64_t bytes_reserved;
 
-   int_t bytes_stored;
-   int_t bytes_retrieved;
+   int64_t bytes_stored;
+   int64_t bytes_retrieved;
 
-   int_t current_read_object_num;
-   int_t current_write_object_num;
+   int64_t current_read_object_num;
+   int64_t current_write_object_num;
 
    friend ods ODS_DECL_SPEC& operator >>( ods& o, storable_base& s );
    friend ods ODS_DECL_SPEC& operator <<( ods& o, storable_base& s );

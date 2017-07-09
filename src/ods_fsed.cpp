@@ -228,7 +228,7 @@ void ods_fsed_command_handler::init( )
    ods::bulk_write bulk_write( *ap_ods );
 
    if( !g_shared_access && !ap_ods->is_new( ) )
-      ap_ods->rollback_dead_transactions( );
+      ap_ods->repair_if_corrupt( );
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
 }
@@ -513,11 +513,6 @@ int main( int argc, char* argv[ ] )
    catch( exception& x )
    {
       cerr << "error: " << x.what( ) << endl;
-      return 1;
-   }
-   catch( ods_error& err )
-   {
-      cerr << "error: " << err.what( ) << endl;
       return 1;
    }
    catch( ... )

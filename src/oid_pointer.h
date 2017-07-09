@@ -10,7 +10,7 @@
 #  include "ods.h"
 
 template< typename T > class oid_pointer;
-template< typename T > int_t size_of( const oid_pointer< T >& );
+template< typename T > int64_t size_of( const oid_pointer< T >& );
 template< typename T > read_stream& operator >>( read_stream& rs, oid_pointer< T >& op );
 template< typename T > write_stream& operator <<( write_stream& ws, const oid_pointer< T >& op );
 
@@ -23,7 +23,7 @@ enum oid_pointer_opt
 
 template< typename T > class oid_pointer
 {
-   friend int_t size_of< T >( const oid_pointer< T >& );
+   friend int64_t size_of< T >( const oid_pointer< T >& );
 
    friend read_stream& operator >> < T >( read_stream& rs, oid_pointer< T >& op );
    friend write_stream& operator << < T >( write_stream& ws, const oid_pointer< T >& op );
@@ -54,7 +54,7 @@ template< typename T > class oid_pointer
    void store( oid_pointer_opt opt = e_oid_pointer_opt_if_changed );
    void destroy( );
 
-   int_t get_size_of( ) const { return sizeof( oid ); }
+   int64_t get_size_of( ) const { return sizeof( oid ); }
 
    void reset( T* p );
 
@@ -242,7 +242,7 @@ template< typename T > inline void oid_pointer< T >::get_instance( bool do_not_r
    }
 }
 
-template< typename T > inline int_t size_of( const oid_pointer< T >& p )
+template< typename T > inline int64_t size_of( const oid_pointer< T >& p )
 {
    return p.get_size_of( );
 }

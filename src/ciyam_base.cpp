@@ -432,8 +432,8 @@ struct op_lock
    {
    }
 
-   op_lock( size_t handle, lock_type type, int_t transaction_id,
-    int_t transaction_level, session* p_session, class_base* p_class_base, class_base* p_root_class )
+   op_lock( size_t handle, lock_type type, int64_t transaction_id,
+    int64_t transaction_level, session* p_session, class_base* p_class_base, class_base* p_root_class )
     :
     handle( handle ),
     type( type ),
@@ -456,8 +456,8 @@ struct op_lock
    lock_type type;
    lock_type tx_type;
 
-   int_t transaction_id;
-   int_t transaction_level;
+   int64_t transaction_id;
+   int64_t transaction_level;
 
    session* p_session;
    class_base* p_class_base;
@@ -874,8 +874,8 @@ bool storage_handler::obtain_lock( size_t& handle,
 
          if( !lock_conflict )
          {
-            int_t tran_id( p_ods->get_transaction_id( ) );
-            int_t tran_level( p_ods->get_transaction_level( ) );
+            int64_t tran_id( p_ods->get_transaction_id( ) );
+            int64_t tran_level( p_ods->get_transaction_level( ) );
 
             li = locks.insert( lock_value_type( key,
              op_lock( ++next_lock_handle, type, tran_id, tran_level, p_session, p_class_base, p_root_class ) ) );
@@ -1226,7 +1226,7 @@ auto_ptr< ods_file_system > gap_ofs;
 void init_ciyam_ods( )
 {
    gap_ods.reset( new ods( c_ciyam_server,
-    ods::e_open_mode_create_if_not_exist, ods::e_share_mode_exclusive ) );
+    ods::e_open_mode_create_if_not_exist, ods::e_share_mode_exclusive, true ) );
 
    ods::bulk_write bulk_write( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -1236,7 +1236,7 @@ void init_ciyam_ods( )
    if( gap_ods->is_new( ) )
       was_just_created = true;
    else
-      gap_ods->rollback_dead_transactions( );
+      gap_ods->repair_if_corrupt( );
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
@@ -1390,7 +1390,7 @@ void perform_storage_op( storage_op op,
 
          // NOTE: In case a server shutdown had occurred whilst an ODS transaction was still active.
          if( !ap_ods->is_new( ) )
-            ap_ods->rollback_dead_transactions( );
+            ap_ods->repair_if_corrupt( );
 
          ods::instance( ap_ods.get( ) );
 
@@ -1476,11 +1476,6 @@ void perform_storage_op( storage_op op,
          // NOTE: The ODS instance now belongs to the storage handler (and not to this session).
          ap_ods.release( );
          ods::instance( 0, true );
-      }
-      catch( ods_error& err )
-      {
-         ods::instance( 0, true );
-         throw runtime_error( err.what( ) );
       }
       catch( ... )
       {
@@ -7636,11 +7631,6 @@ void module_load( const string& module_name,
 
             if( !temp_sql_file_name.empty( ) )
                remove( temp_sql_file_name.c_str( ) );
-         }
-         catch( ods_error& err )
-         {
-            unload_module( module_name );
-            throw runtime_error( err.what( ) );
          }
          catch( ... )
          {

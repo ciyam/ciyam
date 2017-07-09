@@ -1,8 +1,10 @@
 ** File Info
 Version Id = 65536
+Num Trans = 0
 Num Writers = 0
 Init Tranlog = 0
 Total Entries = 14
+Tranlog Offset = 0
 Transaction Id = 17
 Index Free List = 13
 Total Size of Data = 428

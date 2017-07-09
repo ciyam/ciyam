@@ -141,7 +141,6 @@ const int c_trans_data_items_per_region = 10000;
 mutex g_ods_lock;
 
 #ifdef ODS_DEBUG
-#  include <fstream>
 mutex g_debug_lock;
 
 void debug_log( const string& msg )
@@ -164,8 +163,20 @@ void debug_log( const string& msg )
 #  define DEBUG_LOG( msg )
 #endif
 
-const int_t c_bit_1 = UINT64_C( 1 );
-const int_t c_bit_2 = UINT64_C( 2 );
+void throw_ods_error( const string& s )
+{
+#ifdef ODS_DEBUG
+   DEBUG_LOG( "================ ods exception was thrown ================" );
+   DEBUG_LOG( s );
+   DEBUG_LOG( "==========================================================" );
+#endif
+   throw runtime_error( s );
+}
+
+#define THROW_ODS_ERROR( s ) throw_ods_error( s )
+
+const int64_t c_bit_1 = UINT64_C( 1 );
+const int64_t c_bit_2 = UINT64_C( 2 );
 
 // NOTE: It would be expected that if a "major" version change has occurred then any previous file
 // format would no longer be compatible, however, if a "minor" version change has occurred then it
@@ -175,10 +186,10 @@ const int32_t c_minor_ver = 0;
 
 const int32_t c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
 
-const uint_t c_int_type_hi_bit = UINT64_C( 1 ) << ( numeric_limits< uint_t >::digits - 1 );
+const uint64_t c_int_type_hi_bit = UINT64_C( 1 ) << ( numeric_limits< uint64_t >::digits - 1 );
 
-const uint_t c_int_type_low_bits = UINT64_C( -1 ) >> ( numeric_limits< uint_t >::digits / 2 );
-const uint_t c_int_type_high_bits = c_int_type_low_bits << ( numeric_limits< uint_t >::digits / 2 );
+const uint64_t c_int_type_low_bits = UINT64_C( -1 ) >> ( numeric_limits< uint64_t >::digits / 2 );
+const uint64_t c_int_type_high_bits = c_int_type_low_bits << ( numeric_limits< uint64_t >::digits / 2 );
 
 const int c_buffer_chunk_size = 1024;
 
@@ -206,7 +217,7 @@ struct log_info
       os << "append_offs = " << append_offs << endl;
    }
 
-   int_t size_of( ) const
+   int64_t size_of( ) const
    {
       return sizeof( version ) + sizeof( reserved )
        + sizeof( init_time ) + sizeof( entry_offs ) + sizeof( entry_time ) + sizeof( append_offs );
@@ -217,7 +228,7 @@ struct log_info
       is.read( ( char* )&version, sizeof( version ) );
 
       if( version != c_version_id )
-         throw ods_error( "incompatible log_info version found" );
+         THROW_ODS_ERROR( "incompatible log_info version found" );
 
       is.read( ( char* )&reserved, sizeof( reserved ) );
 
@@ -227,7 +238,7 @@ struct log_info
       is.read( ( char* )&append_offs, sizeof( append_offs ) );
 
       if( !is.good( ) )
-         throw ods_error( "unexpected bad log_info read" );
+         THROW_ODS_ERROR( "unexpected bad log_info read" );
    }
 
    void write( ostream& os ) const
@@ -243,7 +254,7 @@ struct log_info
       os.flush( );
 
       if( !os.good( ) )
-         throw ods_error( "unexpected bad log_info write" );
+         THROW_ODS_ERROR( "unexpected bad log_info write" );
    }
 
    int32_t version;
@@ -251,10 +262,10 @@ struct log_info
 
    int64_t init_time;
 
-   int_t entry_offs;
+   int64_t entry_offs;
    int64_t entry_time;
 
-   int_t append_offs;
+   int64_t append_offs;
 };
 
 struct log_entry
@@ -264,6 +275,7 @@ struct log_entry
     tx_id( 0 ),
     tx_time( 0 ),
     commit_offs( 0 ),
+    commit_items( 0 ),
     next_entry_offs( 0 ),
     prior_entry_offs( 0 ),
     data_transform_id( 0 ),
@@ -272,7 +284,7 @@ struct log_entry
       memset( label, '\0', sizeof( label ) );
    }
 
-   void dump( ostream& os, int_t offs = 0 ) const
+   void dump( ostream& os, int64_t offs = 0 ) const
    {
       if( label[ 0 ] )
          os << "label = " << label << endl;
@@ -284,16 +296,18 @@ struct log_entry
 
       os << "tx_time = " << tx_time << endl;
       os << "commit_offs = " << commit_offs << endl;
+      os << "commit_items = " << commit_items << endl;
       os << "next_entry_offs = " << next_entry_offs << endl;
       os << "prior_entry_offs = " << prior_entry_offs << endl;
       os << "data_transform_id = " << data_transform_id << endl;
       os << "index_transform_id = " << index_transform_id << endl;
    }
 
-   int_t size_of( ) const
+   int64_t size_of( ) const
    {
-      return sizeof( label ) + sizeof( tx_id )
-       + sizeof( tx_time ) + sizeof( commit_offs )
+      return sizeof( label )
+       + sizeof( tx_id ) + sizeof( tx_time )
+       + sizeof( commit_offs ) + sizeof( commit_items )
        + sizeof( next_entry_offs ) + sizeof( prior_entry_offs )
        + sizeof( data_transform_id ) + sizeof( index_transform_id );
    }
@@ -304,13 +318,14 @@ struct log_entry
       is.read( ( char* )&tx_id, sizeof( tx_id ) );
       is.read( ( char* )&tx_time, sizeof( tx_time ) );
       is.read( ( char* )&commit_offs, sizeof( commit_offs ) );
+      is.read( ( char* )&commit_items, sizeof( commit_items ) );
       is.read( ( char* )&next_entry_offs, sizeof( next_entry_offs ) );
       is.read( ( char* )&prior_entry_offs, sizeof( prior_entry_offs ) );
       is.read( ( char* )&data_transform_id, sizeof( data_transform_id ) );
       is.read( ( char* )&index_transform_id, sizeof( index_transform_id ) );
 
       if( !is.good( ) )
-         throw ods_error( "unexpected bad log_entry read" );
+         THROW_ODS_ERROR( "unexpected bad log_entry read" );
    }
 
    void write( ostream& os ) const
@@ -319,6 +334,7 @@ struct log_entry
       os.write( ( const char* )&tx_id, sizeof( tx_id ) );
       os.write( ( const char* )&tx_time, sizeof( tx_time ) );
       os.write( ( const char* )&commit_offs, sizeof( commit_offs ) );
+      os.write( ( const char* )&commit_items, sizeof( commit_items ) );
       os.write( ( const char* )&next_entry_offs, sizeof( next_entry_offs ) );
       os.write( ( const char* )&prior_entry_offs, sizeof( prior_entry_offs ) );
       os.write( ( const char* )&data_transform_id, sizeof( data_transform_id ) );
@@ -327,21 +343,22 @@ struct log_entry
       os.flush( );
 
       if( !os.good( ) )
-         throw ods_error( "unexpected bad log_entry write" );
+         THROW_ODS_ERROR( "unexpected bad log_entry write" );
    }
 
-   char label[ 32 ];
+   char label[ 16 ];
 
-   int_t tx_id;
+   int64_t tx_id;
    int64_t tx_time;
 
-   int_t commit_offs;
+   int64_t commit_offs;
+   int64_t commit_items;
 
-   int_t next_entry_offs;
-   int_t prior_entry_offs;
+   int64_t next_entry_offs;
+   int64_t prior_entry_offs;
 
-   int_t data_transform_id;
-   int_t index_transform_id;
+   int64_t data_transform_id;
+   int64_t index_transform_id;
 };
 
 const unsigned char c_log_entry_item_op_store = 0;
@@ -362,15 +379,6 @@ const unsigned char c_log_entry_item_flag_reserved_1 = 0x20;
 const unsigned char c_log_entry_item_flag_reserved_2 = 0x40;
 const unsigned char c_log_entry_item_flag_reserved_3 = 0x80;
 
-const unsigned char c_log_entry_pre_create = c_log_entry_item_op_create;
-const unsigned char c_log_entry_post_create = c_log_entry_item_op_create | c_log_entry_item_flag_is_post_op;
-
-const unsigned char c_log_entry_pre_update = c_log_entry_item_op_update;
-const unsigned char c_log_entry_post_update = c_log_entry_item_op_update | c_log_entry_item_flag_is_post_op;
-
-const unsigned char c_log_entry_pre_destroy = c_log_entry_item_op_destroy;
-const unsigned char c_log_entry_post_destroy = c_log_entry_item_op_destroy | c_log_entry_item_flag_is_post_op;
-
 struct log_entry_item
 {
    log_entry_item( )
@@ -382,6 +390,13 @@ struct log_entry_item
     index_entry_id( 0 )
    {
    }
+
+   bool is_create( ) const { return ( flags & c_log_entry_item_mask_op ) == c_log_entry_item_op_create; }
+   bool is_destroy( ) const { return ( flags & c_log_entry_item_mask_op ) == c_log_entry_item_op_destroy; }
+
+   bool is_post_op( ) const { return ( flags & c_log_entry_item_flag_is_post_op ); }
+
+   bool has_tran_id( ) const  { return has_tran_id( flags ); }
 
    bool has_tran_id( unsigned char flags ) const
    {
@@ -405,7 +420,7 @@ struct log_entry_item
       return has_data_pos_and_size;
    }
 
-   void dump( ostream& os, int_t offs = 0 ) const
+   void dump( ostream& os, int64_t offs = 0 ) const
    {
       os << "flags = " << ( int )flags;
 
@@ -453,7 +468,7 @@ struct log_entry_item
       is.read( ( char* )&index_entry_id, sizeof( index_entry_id ) );
 
       if( !is.good( ) )
-         throw ods_error( "unexpected bad log_entry_item read" );
+         THROW_ODS_ERROR( "unexpected bad log_entry_item read" );
    }
 
    void write( ostream& os ) const
@@ -474,16 +489,16 @@ struct log_entry_item
       os.flush( );
 
       if( !os.good( ) )
-         throw ods_error( "unexpected bad log_entry_item write" );
+         THROW_ODS_ERROR( "unexpected bad log_entry_item write" );
    }
 
    unsigned char flags;
 
-   int_t tx_id;
-   int_t data_pos;
-   int_t data_size;
-   int_t index_entry_id;
-   int_t index_free_list;
+   int64_t tx_id;
+   int64_t data_pos;
+   int64_t data_size;
+   int64_t index_entry_id;
+   int64_t index_free_list;
 };
 
 }
@@ -492,7 +507,7 @@ void char_buffer::operator =( const char* s )
 {
    guard lock_buffer( buffer_lock );
 
-   int_t n;
+   int64_t n;
    for( n = 0; n < max - pos; n++ )
       if( ( p_data[ n ] = s[ n ] ) == '\0' )
          break;
@@ -504,7 +519,7 @@ void char_buffer::operator +=( const char* s )
 {
    guard lock_buffer( buffer_lock );
 
-   int_t n, o;
+   int64_t n, o;
    for( n = 0, o = len; o < max - pos; n++, o++ )
       if( ( p_data[ o ] = s[ n ] ) == '\0' )
          break;
@@ -519,7 +534,7 @@ bool char_buffer::is_equal_to( const char_buffer& src ) const
    if( len != src.len )
       return false;
 
-   for( int_t i = 0; i < len; i++ )
+   for( int64_t i = 0; i < len; i++ )
       if( src.p_data[ i ] != p_data[ i ] )
          return false;
 
@@ -531,9 +546,9 @@ bool char_buffer::is_less_than( const char_buffer& src ) const
    guard lock_buffer( buffer_lock );
 
    int diff;
-   int_t length = src.len;
+   int64_t length = src.len;
 
-   for( int_t i = 0; i < min( len, length ); i++ )
+   for( int64_t i = 0; i < min( len, length ); i++ )
    {
       diff = src.p_data[ i ] - p_data[ i ];
       if( !diff )
@@ -544,11 +559,11 @@ bool char_buffer::is_less_than( const char_buffer& src ) const
    return length < len;
 }
 
-int_t char_buffer::first_of( const char* matches ) const
+int64_t char_buffer::first_of( const char* matches ) const
 {
    guard lock_buffer( buffer_lock );
 
-   for( int_t i = 0; i < len; i++ )
+   for( int64_t i = 0; i < len; i++ )
    {
       for( const char* p = matches; *p != '\0'; ++p )
       {
@@ -564,7 +579,7 @@ bool char_buffer::has_one_of( const char* matches ) const
 {
    guard lock_buffer( buffer_lock );
 
-   for( int_t i = 0; i < len; i++ )
+   for( int64_t i = 0; i < len; i++ )
    {
       for( const char* p = matches; *p != '\0'; ++p )
       {
@@ -576,7 +591,7 @@ bool char_buffer::has_one_of( const char* matches ) const
    return false;
 }
 
-bool char_buffer::begins_with( const char_buffer& src, int_t max ) const
+bool char_buffer::begins_with( const char_buffer& src, int64_t max ) const
 {
    guard lock_buffer( buffer_lock );
 
@@ -585,7 +600,7 @@ bool char_buffer::begins_with( const char_buffer& src, int_t max ) const
    if( max > len )
       max = len;
 
-   for( int_t i = 0; i < max; ++i )
+   for( int64_t i = 0; i < max; ++i )
    {
       if( p_data[ i ] != src.p_data[ i ] )
          return false;
@@ -616,7 +631,7 @@ ostream& operator <<( ostream& outf, const char_buffer& c )
 {
    guard lock_buffer( c.buffer_lock );
 
-   for( int_t s = 0; s < c.len; s++ )
+   for( int64_t s = 0; s < c.len; s++ )
       outf << c.p_data[ s ];
 
    return outf;
@@ -700,48 +715,32 @@ template< typename T > class finalise_value
    T& instance;
 };
 
-ods_error::ods_error( const char* s )
-{
-   init( s );
-}
-
-ods_error::ods_error( const string& msg )
-{
-   init( msg.c_str( ) );
-}
-
-void ods_error::init( const char* s )
-{
-#ifdef ODS_DEBUG
-   DEBUG_LOG( "================ ods exception was thrown ================" );
-   DEBUG_LOG( s );
-   DEBUG_LOG( "==========================================================" );
-#endif
-   buf[ ODS_MAX_ERROR_MSG_LENGTH - 1 ] = '\0';
-   strncpy( buf, s, ODS_MAX_ERROR_MSG_LENGTH - 1 );
-}
-
 struct header_info
 {
    int32_t version_id;
-   int32_t num_writers;
 
-   int64_t tranlog_time;
+   int16_t num_trans;
+   int16_t num_writers;
 
-   int_t total_entries;
-   int_t index_free_list;
-   int_t total_size_of_data;
+   int64_t init_tranlog;
+   int64_t total_entries;
+   int64_t tranlog_offset;
 
-   int_t transaction_id;
-   int_t data_transform_id;
-   int_t index_transform_id;
+   int64_t index_free_list;
+   int64_t total_size_of_data;
+
+   int64_t transaction_id;
+   int64_t data_transform_id;
+   int64_t index_transform_id;
 
    header_info( )
     :
     version_id( 0 ),
+    num_trans( 0 ),
     num_writers( 0 ),
-    tranlog_time( 0 ),
+    init_tranlog( 0 ),
     total_entries( 0 ),
+    tranlog_offset( 0 ),
     index_free_list( 0 ),
     total_size_of_data( 0 ),
     transaction_id( 0 ),
@@ -758,16 +757,16 @@ class ods_index_entry
    {
       data_t( ) : pos( 0 ), size( 0 ), tran_id( 0 ), tran_op( 0 ) { }
 
-      int_t pos;
-      int_t size;
-      int_t tran_id;
-      int_t tran_op;
+      int64_t pos;
+      int64_t size;
+      int64_t tran_id;
+      int64_t tran_op;
    } data;
 
    private:
    ods_index_entry( );
 
-   void dump_entry( ostream& os, int_t num );
+   void dump_entry( ostream& os, int64_t num );
 
    enum lock
    {
@@ -783,10 +782,10 @@ class ods_index_entry
       e_trans_free_list
    };
 
-   int_t get_pos( ) const { return data.pos; }
-   int_t get_size( ) const { return data.size; }
-   int_t get_tran_id( ) const { return data.tran_id; }
-   int_t get_tran_op( ) const { return data.tran_op; }
+   int64_t get_pos( ) const { return data.pos; }
+   int64_t get_size( ) const { return data.size; }
+   int64_t get_tran_id( ) const { return data.tran_id; }
+   int64_t get_tran_op( ) const { return data.tran_op; }
 
    lock get_lock_flag( ) const { return lock_flag; }
    trans get_trans_flag( ) const { return trans_flag; }
@@ -924,7 +923,7 @@ bool header_file::lock( )
 
 #ifdef _WIN32
       if( _lseek( handle, 0, SEEK_SET ) != 0 )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       if( _locking( handle, LK_NBLCK, 1 ) == 0 )
          retval = true;
@@ -942,15 +941,15 @@ void header_file::unlock( )
       header_lock.l_type = F_UNLCK;
 
       if( fcntl( handle, F_SETLK, &header_lock ) != 0 )
-         throw ods_error( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
 #endif
 
 #ifdef _WIN32
       if( _lseek( handle, 0, SEEK_SET ) != 0 )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       if( _locking( handle, LK_UNLCK, 1 ) != 0 )
-         throw ods_error( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
 }
@@ -964,7 +963,7 @@ void header_file::acquire_lock_offset( )
        i < sizeof( header_info ) + sizeof( ods_index_entry::data_t ); i++ )
       {
          if( _lseek( handle, ( int64_t )i, SEEK_SET ) != ( int64_t )i )
-            throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
          if( _locking( handle, LK_NBLCK, 1 ) == 0 )
          {
@@ -985,9 +984,9 @@ void header_file::release_lock_offset( )
 
       int64_t pos = lock_offset + sizeof( header_info );
       if( _lseek( handle, pos, SEEK_SET ) != pos )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
       if( _locking( handle, LK_UNLCK, 1 ) != 0 )
-         throw ods_error( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 
       lock_offset = -1;
    }
@@ -1019,7 +1018,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
 
       if( rc != 0 || !p_data )
-         throw ods_error( "unexpected failure for posix_memalign" );
+         THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
 
@@ -1061,7 +1060,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 #endif
    }
 
-   bool lock_region( int_t start, int_t len )
+   bool lock_region( int64_t start, int64_t len )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -1081,7 +1080,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          write_lock_handle = _sopen( lock_file_name.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( write_lock_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
 #ifdef __GNUG__
@@ -1096,7 +1095,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
 #ifdef _WIN32
       if( _lseek( write_lock_handle, start, SEEK_SET ) != start )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       if( _locking( write_lock_handle, LK_NBLCK, len ) == 0 )
          retval = true;
@@ -1105,7 +1104,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       return retval;
    }
 
-   void unlock_region( int_t start, int_t len )
+   void unlock_region( int64_t start, int64_t len )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -1121,15 +1120,15 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       lock.l_type = F_UNLCK;
 
       if( fcntl( write_lock_handle, F_SETLK, &lock ) != 0 )
-         throw ods_error( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected fcntl at " STRINGIZE( __LINE__ ) " failed" );
 #endif
 
 #ifdef _WIN32
       if( _lseek( write_lock_handle, start, SEEK_SET ) != start )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       if( _locking( write_lock_handle, LK_UNLCK, len ) != 0 )
-         throw ods_error( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
 
@@ -1165,12 +1164,12 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          read_data_handle = _sopen( fname.c_str( ), O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( read_data_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
-      int_t pos;
+      int64_t pos;
       if( ( pos = _lseek( read_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) ) < 0 )
-         throw ods_error( "unexpected _lseek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected _lseek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data.data );
@@ -1186,7 +1185,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 #endif
             memset( p_data + len, 0, sizeof( ods_data_entry_buffer ) - len );
          else
-            throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
       }
 
 #ifdef __GNUG__
@@ -1211,11 +1210,11 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          write_data_handle = _sopen( fname.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( write_data_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
       if( _lseek( write_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1225,7 +1224,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
       if( _write( write_data_handle, ( void* )p_data,
        sizeof( ods_data_entry_buffer ) ) != sizeof( ods_data_entry_buffer ) )
-         throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
    }
 };
 
@@ -1253,7 +1252,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
 
       if( rc != 0 || !p_data )
-         throw ods_error( "unexpected failure for posix_memalign" );
+         THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
 
@@ -1295,7 +1294,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #endif
    }
 
-   int_t get_file_size( )
+   int64_t get_file_size( )
    {
       guard lock_index( index_lock );
 
@@ -1307,18 +1306,18 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY, SH_DENYNO );
 #endif
          if( read_index_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
-      int_t pos = _lseek( read_index_handle, 0, SEEK_END );
+      int64_t pos = _lseek( read_index_handle, 0, SEEK_END );
 
       if( pos < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
       return pos;
    }
 
-   bool lock_entry( int_t entry_num, bool is_write )
+   bool lock_entry( int64_t entry_num, bool is_write )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -1337,7 +1336,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          lock_index_handle = _sopen( lock_file_name.c_str( ), O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( lock_index_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
 #ifdef __GNUG__
@@ -1358,13 +1357,13 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          len = sizeof( ods_index_entry::data_t );
 
       if( _lseek( lock_index_handle, pos, SEEK_SET ) != pos )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       return _locking( lock_index_handle, LK_NBLCK, len ) == 0;
 #endif
    }
 
-   void unlock_entry( int_t entry_num, bool is_write )
+   void unlock_entry( int64_t entry_num, bool is_write )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -1392,10 +1391,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          len = sizeof( ods_index_entry::data_t );
 
       if( _lseek( lock_index_handle, pos, SEEK_SET ) != pos )
-         throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
       if( _locking( lock_index_handle, LK_UNLCK, len ) != 0 )
-         throw ods_error( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 #endif
    }
 
@@ -1431,11 +1430,11 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( read_index_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
       if( _lseek( read_index_handle, ( num * sizeof( ods_index_entry_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1451,7 +1450,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #endif
             memset( p_data + len, 0, sizeof( ods_index_entry_buffer ) - len );
          else
-            throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
       }
 
 #ifdef __GNUG__
@@ -1476,11 +1475,11 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          write_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
          if( write_index_handle <= 0 )
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
       if( _lseek( write_index_handle, ( num * sizeof( ods_index_entry_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1490,7 +1489,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
       if( _write( write_index_handle, ( void* )p_data,
        sizeof( ods_index_entry_buffer ) ) != sizeof( ods_index_entry_buffer ) )
-         throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
    }
 };
 
@@ -1508,7 +1507,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
       if( rc != 0 || !p_data )
-         throw ods_error( "unexpected failure for posix_memalign" );
+         THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
 
@@ -1519,7 +1518,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 #endif
    }
 
-   void new_transaction( int_t tran_id )
+   void new_transaction( int64_t tran_id )
    {
 #ifdef ODS_DEBUG
       DEBUG_LOG( "in ods_trans_op_cache_buffer::new_transaction( )" );
@@ -1527,7 +1526,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       guard lock_trans( trans_op_lock );
 
       ostringstream osstr;
-      osstr << hex << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << tran_id;
+      osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
       file_name = osstr.str( ) + c_ops_file_name_ext;
 
@@ -1544,9 +1543,9 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       if( tran_ops_handle )
       {
          if( _close( tran_ops_handle ) != 0 )
-            throw ods_error( "unexpected _close at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected _close at " STRINGIZE( __LINE__ ) " failed" );
          if( remove( file_name.c_str( ) ) != 0 )
-            throw ods_error( "unexpected remove at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected remove at " STRINGIZE( __LINE__ ) " failed" );
 
          tran_ops_handle = 0;
          has_begun_trans = false;
@@ -1577,10 +1576,10 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       guard lock_trans( trans_op_lock );
 
       if( !tran_ops_handle )
-         throw ods_error( "unexpected null file handle at "  STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected null file handle at "  STRINGIZE( __LINE__ ) );
 
       if( _lseek( tran_ops_handle, ( num * sizeof( trans_op_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1588,7 +1587,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 
       if( _read( tran_ops_handle,
        ( void* )p_data, sizeof( trans_op_buffer ) ) != sizeof( trans_op_buffer ) )
-         throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifdef __GNUG__
       memcpy( &data, p_data, sizeof( trans_op_buffer ) );
@@ -1607,7 +1606,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       if( !tran_ops_handle )
       {
          if( !has_begun_trans )
-            throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
          tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
@@ -1627,12 +1626,12 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
                DEBUG_LOG( osstr.str( ) );
             }
 #endif
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
          }
       }
 
       if( _lseek( tran_ops_handle, ( num * sizeof( trans_op_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1642,7 +1641,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 
       if( _write( tran_ops_handle, ( void* )p_data,
        sizeof( trans_op_buffer ) ) != sizeof( trans_op_buffer ) )
-         throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
    }
 };
 
@@ -1661,7 +1660,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
 
       if( rc != 0 || !p_data )
-         throw ods_error( "unexpected failure for posix_memalign" );
+         THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
    }
 
@@ -1672,7 +1671,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 #endif
    }
 
-   void new_transaction( int_t tran_id )
+   void new_transaction( int64_t tran_id )
    {
 #ifdef ODS_DEBUG
       DEBUG_LOG( "in ods_trans_data_cache_buffer::new_transaction( )" );
@@ -1680,7 +1679,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       guard lock_trans( trans_data_lock );
 
       ostringstream osstr;
-      osstr << hex << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << tran_id;
+      osstr << hex << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << tran_id;
 
       file_name = osstr.str( ) + c_data_file_name_ext;
 
@@ -1697,9 +1696,9 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       if( tran_data_handle )
       {
          if( _close( tran_data_handle ) != 0 )
-            throw ods_error( "unexpected _close at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected _close at " STRINGIZE( __LINE__ ) " failed" );
          if( remove( file_name.c_str( ) ) != 0 )
-            throw ods_error( "unexpected remove at " STRINGIZE( __LINE__ ) " failed" );
+            THROW_ODS_ERROR( "unexpected remove at " STRINGIZE( __LINE__ ) " failed" );
 
          tran_data_handle = 0;
          has_begun_trans = false;
@@ -1730,10 +1729,10 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       guard lock_trans( trans_data_lock );
 
       if( !tran_data_handle )
-         throw ods_error( "unexpected null file handle at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected null file handle at " STRINGIZE( __LINE__ ) );
 
       if( _lseek( tran_data_handle, ( num * sizeof( trans_data_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1741,7 +1740,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 
       if( _read( tran_data_handle,
        ( void* )p_data, sizeof( trans_data_buffer ) ) != sizeof( trans_data_buffer ) )
-         throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifdef __GNUG__
       memcpy( &data, p_data, sizeof( trans_data_buffer ) );
@@ -1760,7 +1759,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       if( !tran_data_handle )
       {
          if( !has_begun_trans )
-            throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
          tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
@@ -1780,12 +1779,12 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
                DEBUG_LOG( osstr.str( ) );
             }
 #endif
-            throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
          }
       }
 
       if( _lseek( tran_data_handle, ( num * sizeof( trans_data_buffer ) ), SEEK_SET ) < 0 )
-         throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
@@ -1795,7 +1794,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 
       if( _write( tran_data_handle, ( void* )p_data,
        sizeof( trans_data_buffer ) ) != sizeof( trans_data_buffer ) )
-         throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+         THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
    }
 };
 
@@ -1803,7 +1802,7 @@ struct transaction_buffer
 {
    transaction_buffer( ) : tran_id( 0 ) { }
 
-   int_t tran_id;
+   int64_t tran_id;
    stack< transaction_level_info > levels;
 };
 
@@ -1822,10 +1821,11 @@ struct ods::impl
     is_new( false ),
     is_corrupt( false ),
     is_exclusive( false ),
+    is_restoring( false ),
     force_padding( false ),
     using_tranlog( false ),
     trans_level( 0 ),
-    trans_offset( 0 ),
+    tranlog_offset( 0 ),
     read_from_trans( false ),
     total_trans_size( 0 ),
     total_trans_op_count( 0 )
@@ -1844,6 +1844,7 @@ struct ods::impl
    bool is_new;
    bool is_corrupt;
    bool is_exclusive;
+   bool is_restoring;
 
    bool force_padding;
    bool using_tranlog;
@@ -1868,13 +1869,13 @@ struct ods::impl
    ods_index_entry_buffer index_item_buffer;
    ref_count_ptr< ods_index_cache_buffer > rp_ods_index_cache_buffer;
 
-   int_t trans_level;
-   int_t trans_offset;
+   int64_t trans_level;
+   int64_t tranlog_offset;
 
    bool read_from_trans;
 
-   int_t total_trans_size;
-   int_t total_trans_op_count;
+   int64_t total_trans_size;
+   int64_t total_trans_op_count;
 
    transaction_buffer* p_trans_buffer;
    ods_trans_op_cache_buffer* p_ods_trans_op_cache_buffer;
@@ -1882,11 +1883,11 @@ struct ods::impl
 
    ref_count_ptr< int > rp_open_store_ref_count;
 
-   ref_count_ptr< int_t > rp_session_create_total;
-   ref_count_ptr< int_t > rp_session_revive_total;
-   ref_count_ptr< int_t > rp_session_review_total;
-   ref_count_ptr< int_t > rp_session_update_total;
-   ref_count_ptr< int_t > rp_session_delete_total;
+   ref_count_ptr< int64_t > rp_session_create_total;
+   ref_count_ptr< int64_t > rp_session_revive_total;
+   ref_count_ptr< int64_t > rp_session_review_total;
+   ref_count_ptr< int64_t > rp_session_update_total;
+   ref_count_ptr< int64_t > rp_session_delete_total;
 
    ref_count_ptr< mutex > rp_impl_lock;
    ref_count_ptr< mutex > rp_file_section;
@@ -1894,8 +1895,8 @@ struct ods::impl
    void read_header_file_info( );
    void write_header_file_info( bool for_close = false );
 
-   bool found_instance_currently_reading( int_t num );
-   bool found_instance_currently_writing( int_t num );
+   bool found_instance_currently_reading( int64_t num );
+   bool found_instance_currently_writing( int64_t num );
 
    ref_count_ptr< vector< ods* > > rp_instances;
 };
@@ -1903,11 +1904,11 @@ struct ods::impl
 void ods::impl::read_header_file_info( )
 {
    if( _lseek( *rp_header_file, 0, SEEK_SET ) != 0 )
-      throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+      THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
    if( _read( *rp_header_file,
     ( void* )rp_header_info.get( ), sizeof( header_info ) ) != sizeof( header_info ) )
-      throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+      THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
 }
 
 void ods::impl::write_header_file_info( bool for_close )
@@ -1924,14 +1925,14 @@ void ods::impl::write_header_file_info( bool for_close )
       --rp_header_info->num_writers;
 
    if( _lseek( *rp_header_file, 0, SEEK_SET ) != 0 )
-      throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+      THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
 
    if( _write( *rp_header_file,
     ( void* )rp_header_info.get( ), sizeof( header_info ) ) != sizeof( header_info ) )
-      throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+      THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
 }
 
-bool ods::impl::found_instance_currently_reading( int_t num )
+bool ods::impl::found_instance_currently_reading( int64_t num )
 {
    for( vector< ods* >::iterator iter = rp_instances->begin( ); iter != rp_instances->end( ); ++iter )
       if( *iter && ( *iter )->current_read_object_num == num )
@@ -1940,7 +1941,7 @@ bool ods::impl::found_instance_currently_reading( int_t num )
    return false;
 }
 
-bool ods::impl::found_instance_currently_writing( int_t num )
+bool ods::impl::found_instance_currently_writing( int64_t num )
 {
    for( vector< ods* >::iterator iter = rp_instances->begin( ); iter != rp_instances->end( ); ++iter )
       if( *iter && ( *iter )->current_write_object_num == num )
@@ -1951,9 +1952,9 @@ bool ods::impl::found_instance_currently_writing( int_t num )
 
 struct ods_index_entry_pos
 {
-   int_t id;
-   int_t pos;
-   int_t size;
+   int64_t id;
+   int64_t pos;
+   int64_t size;
 
    bool operator <( const ods_index_entry_pos& lval ) const
    {
@@ -1968,21 +1969,16 @@ ods_index_entry::ods_index_entry( )
 {
 }
 
-void ods_index_entry::dump_entry( ostream& os, int_t num )
+void ods_index_entry::dump_entry( ostream& os, int64_t num )
 {
    os << "num: " << hex
-    << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << num
-    << "          pos: " << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << data.pos
-    << "          len: " << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << data.size
-    << "\ntxi: " << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << data.tran_id
-    << "          txo: " << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << data.tran_op
+    << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << num
+    << "          pos: " << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << data.pos
+    << "          len: " << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << data.size
+    << "\ntxn: " << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << data.tran_id
+    << "          txo: " << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << data.tran_op
     << "               flags: lk=" << setw( 1 ) << setfill( '0' ) << lock_flag
     << " tx=" << setw( 1 ) << setfill( '0' ) << trans_flag << dec << '\n';
-}
-
-size_t ods::header_info_size( )
-{
-   return sizeof( header_info );
 }
 
 struct ods::file_scope
@@ -2058,7 +2054,7 @@ ods::ods( const ods& o )
    DEBUG_LOG( "ods::ods( const ods& )" );
 
    if( !o.permit_copy )
-      throw ods_error( "copy construction was disallowed" );
+      THROW_ODS_ERROR( "copy construction was disallowed" );
 
    auto_ptr< impl > ap_impl( new impl( *o.p_impl ) );
    p_impl = ap_impl.get( );
@@ -2066,12 +2062,12 @@ ods::ods( const ods& o )
    guard tmp_lock( *p_impl->rp_impl_lock );
 
    if( _access( p_impl->data_file_name.c_str( ), 0 ) != 0 )
-      throw ods_error( "could not find data file..." );
+      THROW_ODS_ERROR( "could not find data file..." );
    if( _access( p_impl->index_file_name.c_str( ), 0 ) != 0 )
-      throw ods_error( "could not find index file..." );
+      THROW_ODS_ERROR( "could not find index file..." );
 
    if( *p_impl->rp_header_file <= 0 )
-      throw ods_error( "unexpected header file handle is invalid" );
+      THROW_ODS_ERROR( "unexpected header file handle is invalid" );
 
    auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );
 
@@ -2166,10 +2162,10 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
     = new header_file( p_impl->header_file_name.c_str( ), s_mode == e_share_mode_exclusive );
 
    if( *p_impl->rp_header_file <= 0 )
-      throw ods_error( "unable to open database header file (locked?)" );
+      THROW_ODS_ERROR( "unable to open database header file (locked?)" );
 
    if( p_impl->rp_header_file->get_lock_offset( ) < 0 )
-      throw ods_error( "unable to acquire valid lock offset (max. concurrent processes active?)" );
+      THROW_ODS_ERROR( "unable to acquire valid lock offset (max. concurrent processes active?)" );
 
    p_impl->is_exclusive = ( s_mode == e_share_mode_exclusive );
 
@@ -2186,20 +2182,20 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
          ap_header_file_lock.reset( );
          p_impl->rp_header_file = 0;
          remove( p_impl->header_file_name.c_str( ) );
-         throw ods_error( "database index file does not exist" );
+         THROW_ODS_ERROR( "database index file does not exist" );
       }
       break;
 
       case e_open_mode_not_exist:
       if( !p_impl->is_new )
-         throw ods_error( "database index file already exists" );
+         THROW_ODS_ERROR( "database index file already exists" );
       break;
 
       case e_open_mode_create_if_not_exist:
       break;
 
       default:
-      throw ods_error( "unexpected default case at " STRINGIZE( __LINE__ ) );
+      THROW_ODS_ERROR( "unexpected default case at " STRINGIZE( __LINE__ ) );
    }
 
    p_impl->rp_impl_lock = new mutex;
@@ -2221,7 +2217,7 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
       ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
 
       if( !outf )
-         throw ods_error( "unable to open tranlog file for output" );
+         THROW_ODS_ERROR( "unable to open tranlog file for output" );
 
       tranlog_info.init_time = now;
 
@@ -2229,36 +2225,40 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
 
       outf.flush( );
       if( !outf.good( ) )
-         throw ods_error( "unexpected bad tranlog flush at create" );
+         THROW_ODS_ERROR( "unexpected bad tranlog flush at create" );
    }
 
    if( !p_impl->is_new )
    {
       p_impl->read_header_file_info( );
 
-      // NOTE: File corruption can be determined if we have an exclusive file
-      // lock but find that one or more writers appear to be currently active.
-      if( s_mode == e_share_mode_exclusive && p_impl->rp_header_info->num_writers )
+      // NOTE: File corruption can be determined if we have an exclusive file lock but
+      // then find that one or more writers/transactions appear to be currently active.
+      if( s_mode == e_share_mode_exclusive
+       && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
          p_impl->is_corrupt = true;
 
-      if( p_impl->rp_header_info->tranlog_time )
+      if( p_impl->rp_header_info->init_tranlog )
       {
          log_info tranlog_info;
 
          if( _access( p_impl->tranlog_file_name.c_str( ), 0 ) != 0 )
-            throw ods_error( "tranlog file does not exist" );
+            THROW_ODS_ERROR( "tranlog file does not exist" );
 
          ifstream inpf( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
          if( !inpf )
-            throw ods_error( "unable to open tranlog file for input" );
+            THROW_ODS_ERROR( "unable to open tranlog file for input" );
 
          tranlog_info.read( inpf );
+
+         if( tranlog_info.init_time != p_impl->rp_header_info->init_tranlog )
+            THROW_ODS_ERROR( "database transaction log init time mismatch" );
 
          p_impl->using_tranlog = true;
       }
       else if( using_tranlog )
-         throw ods_error( "database was not created with a transaction log" );
+         THROW_ODS_ERROR( "database was not created with a transaction log" );
    }
    else
    {
@@ -2267,7 +2267,7 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
       if( using_tranlog )
       {
          p_impl->using_tranlog = true;
-         p_impl->rp_header_info->tranlog_time = now;
+         p_impl->rp_header_info->init_tranlog = now;
       }
 
       // NOTE: The newly created file will be marked as corrupt unless "has_changed" is set true.
@@ -2285,16 +2285,16 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
       DEBUG_LOG( "[opened existing file]" );
 
       if( _access( p_impl->data_file_name.c_str( ), 0 ) != 0 )
-         throw ods_error( "could not find database data file" );
+         THROW_ODS_ERROR( "could not find database data file" );
    }
 
    p_impl->rp_open_store_ref_count = new int( 0 );
 
-   p_impl->rp_session_create_total = new int_t( 0 );
-   p_impl->rp_session_revive_total = new int_t( 0 );
-   p_impl->rp_session_review_total = new int_t( 0 );
-   p_impl->rp_session_update_total = new int_t( 0 );
-   p_impl->rp_session_delete_total = new int_t( 0 );
+   p_impl->rp_session_create_total = new int64_t( 0 );
+   p_impl->rp_session_revive_total = new int64_t( 0 );
+   p_impl->rp_session_review_total = new int64_t( 0 );
+   p_impl->rp_session_update_total = new int64_t( 0 );
+   p_impl->rp_session_delete_total = new int64_t( 0 );
 
    p_impl->rp_ods_data_cache_buffer =
     new ods_data_cache_buffer( *this, p_impl->data_file_name,
@@ -2391,47 +2391,58 @@ bool ods::is_using_transaction_log( ) const
    return p_impl->using_tranlog;
 }
 
-int_t ods::get_total_entries( )
+void ods::repair_if_corrupt( )
+{
+   if( p_impl->is_corrupt )
+   {
+      if( !p_impl->using_tranlog )
+         rollback_dead_transactions( );
+      else
+         restore_from_transaction_log( );
+   }
+}
+
+int64_t ods::get_total_entries( )
 {
    return p_impl->rp_header_info->total_entries;
 }
 
-int_t ods::get_session_review_total( )
+int64_t ods::get_session_review_total( )
 {
    return *p_impl->rp_session_review_total;
 }
 
-int_t ods::get_session_create_total( )
+int64_t ods::get_session_create_total( )
 {
    return *p_impl->rp_session_create_total;
 }
 
-int_t ods::get_session_revive_total( )
+int64_t ods::get_session_revive_total( )
 {
    return *p_impl->rp_session_revive_total;
 }
 
-int_t ods::get_session_update_total( )
+int64_t ods::get_session_update_total( )
 {
    return *p_impl->rp_session_update_total;
 }
 
-int_t ods::get_session_delete_total( )
+int64_t ods::get_session_delete_total( )
 {
    return *p_impl->rp_session_delete_total;
 }
 
-int_t ods::get_transaction_id( ) const
+int64_t ods::get_transaction_id( ) const
 {
    return p_impl->p_trans_buffer->tran_id;
 }
 
-int_t ods::get_transaction_level( ) const
+int64_t ods::get_transaction_level( ) const
 {
    return p_impl->trans_level;
 }
 
-int_t ods::get_next_transaction_id( ) const
+int64_t ods::get_next_transaction_id( ) const
 {
    return p_impl->rp_header_info->transaction_id;
 }
@@ -2477,7 +2488,7 @@ ods::bulk_dump::bulk_dump( ods& o )
    }
 
    if( i == c_bulk_dump_max_attempts )
-      throw ods_error( "thread cannot obtain bulk dump lock (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "thread cannot obtain bulk dump lock (max. attempts exceeded)" );
 }
 
 ods::bulk_dump::~bulk_dump( )
@@ -2514,7 +2525,7 @@ ods::bulk_read::bulk_read( ods& o )
          if( *o.p_impl->rp_bulk_write_thread_id != current_thread_id( ) )
             continue;
          else
-            throw ods_error( "invalid attempt to obtain bulk read lock whilst already bulk write locked" );
+            THROW_ODS_ERROR( "invalid attempt to obtain bulk read lock whilst already bulk write locked" );
       }
 
       if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_read
@@ -2538,7 +2549,7 @@ ods::bulk_read::bulk_read( ods& o )
    }
 
    if( i == c_bulk_read_max_attempts )
-      throw ods_error( "thread cannot obtain bulk read lock (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "thread cannot obtain bulk read lock (max. attempts exceeded)" );
 }
 
 ods::bulk_read::~bulk_read( )
@@ -2578,7 +2589,7 @@ ods::bulk_write::bulk_write( ods& o )
          if( *o.p_impl->rp_bulk_read_thread_id != current_thread_id( ) )
             continue;
          else
-            throw ods_error( "invalid attempt to obtain bulk write lock whilst already bulk read locked" );
+            THROW_ODS_ERROR( "invalid attempt to obtain bulk write lock whilst already bulk read locked" );
       }
 
       if( *o.p_impl->rp_bulk_mode == impl::e_bulk_mode_write
@@ -2602,7 +2613,7 @@ ods::bulk_write::bulk_write( ods& o )
    }
 
    if( i == c_bulk_write_max_attempts )
-      throw ods_error( "thread cannot obtain bulk write lock (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "thread cannot obtain bulk write lock (max. attempts exceeded)" );
 }
 
 ods::bulk_write::~bulk_write( )
@@ -2648,7 +2659,7 @@ void ods::transaction::commit( )
    if( !is_dummy )
    {
       if( !can_commit )
-         throw ods_error( "attempt to commit an already processed transaction" );
+         THROW_ODS_ERROR( "attempt to commit an already processed transaction" );
 
       o.transaction_commit( );
       can_commit = false;
@@ -2661,7 +2672,7 @@ void ods::transaction::rollback( )
    if( !is_dummy )
    {
       if( !can_commit || has_committed )
-         throw ods_error( "attempt to rollback an already processed transaction" );
+         THROW_ODS_ERROR( "attempt to rollback an already processed transaction" );
 
       o.transaction_rollback( );
       can_commit = false;
@@ -2674,7 +2685,7 @@ void ods::destroy( const oid& id )
    guard lock_read( read_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state..." );
+      THROW_ODS_ERROR( "database instance in bad state..." );
 
    DEBUG_LOG( "ods::destroy( )" );
 
@@ -2682,7 +2693,7 @@ void ods::destroy( const oid& id )
       return;
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      throw ods_error( "cannot destroy when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot destroy when bulk locked for dumping or reading" );
 
    ods_index_entry index_entry;
 
@@ -2733,8 +2744,6 @@ void ods::destroy( const oid& id )
                   }
                   else
                   {
-                     int_t log_entry_offset = 0;
-
                      flags |= c_log_entry_item_type_non_transactional;
 
                      index_entry.data.tran_op = 0;
@@ -2742,8 +2751,11 @@ void ods::destroy( const oid& id )
 
                      if( p_impl->using_tranlog )
                      {
-                        log_entry_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
-                        append_log_entry_item( id.get_num( ), index_entry, flags, log_entry_offset );
+                        p_impl->tranlog_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
+                        append_log_entry_item( id.get_num( ), index_entry, flags, p_impl->tranlog_offset );
+
+                        if( !p_impl->rp_header_info->tranlog_offset )
+                           p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
                      }
 
                      if( index_entry.data.pos + index_entry.data.size
@@ -2785,7 +2797,7 @@ void ods::destroy( const oid& id )
    }
 
    if( !deleted )
-      throw ods_error( "cannot delete (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "cannot delete (max. attempts exceeded)" );
 
    if( p_impl->trans_level && trans_write_ops_buffer_num != -1 && has_written_trans_op )
    {
@@ -2796,12 +2808,12 @@ void ods::destroy( const oid& id )
    }
 }
 
-int_t ods::get_size( const oid& id )
+int64_t ods::get_size( const oid& id )
 {
    guard lock_read( read_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::get_size( )" );
    ods_index_entry index_entry;
@@ -2833,7 +2845,7 @@ int_t ods::get_size( const oid& id )
    }
 
    if( !found )
-      throw ods_error( "cannot get_size (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "cannot get_size (max. attempts exceeded)" );
 
    return index_entry.data.size;
 }
@@ -2845,16 +2857,16 @@ void ods::move_free_data_to_end( )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( p_impl->trans_level )
-      throw ods_error( "cannot move free data to end whilst in a transaction" );
+      THROW_ODS_ERROR( "cannot move free data to end whilst in a transaction" );
 
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      throw ods_error( "cannot move free data to end unless locked for exclusive use" );
+      THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive use" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      throw ods_error( "cannot move free data to end when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
@@ -2865,15 +2877,15 @@ void ods::move_free_data_to_end( )
 
    ods_index_entry index_entry;
 
-   for( int_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
    {
       read_index_entry( index_entry, i );
       if( index_entry.lock_flag != ods_index_entry::e_lock_none )
-         throw ods_error( "cannot move free data to end when one or more entries have been locked" );
+         THROW_ODS_ERROR( "cannot move free data to end when one or more entries have been locked" );
 
       if( index_entry.trans_flag != ods_index_entry::e_trans_none
        && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-         throw ods_error( "cannot move free data to end whilst one or more dead transactions exist" );
+         THROW_ODS_ERROR( "cannot move free data to end whilst one or more dead transactions exist" );
 
       if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
       {
@@ -2886,29 +2898,29 @@ void ods::move_free_data_to_end( )
 
    set_read_data_pos( 0 );
 
-   int_t new_pos = 0;
-   int_t read_pos = 0;
-   int_t actual_size = 0;
+   int64_t new_pos = 0;
+   int64_t read_pos = 0;
+   int64_t actual_size = 0;
    set< ods_index_entry_pos >::const_iterator ci, end;
 
    for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
    {
-      int_t next_id = ci->id;
-      int_t next_pos = ci->pos;
-      int_t next_size = ci->size;
+      int64_t next_id = ci->id;
+      int64_t next_pos = ci->pos;
+      int64_t next_size = ci->size;
 
       if( next_pos < read_pos )
-         throw ods_error( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
+         THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
 
       adjust_read_data_pos( next_pos - read_pos );
 
       if( next_pos != new_pos )
       {
-         int_t chunk = c_buffer_chunk_size;
+         int64_t chunk = c_buffer_chunk_size;
          char buffer[ c_buffer_chunk_size ];
 
          set_write_data_pos( new_pos );
-         for( int_t j = 0; j < next_size; j += chunk )
+         for( int64_t j = 0; j < next_size; j += chunk )
          {
             if( j + chunk > next_size )
                chunk = next_size - j;
@@ -2936,84 +2948,7 @@ void ods::move_free_data_to_end( )
 
    p_impl->rp_header_info->total_size_of_data = actual_size;
 
-   if( has_written_index_item )
-   {
-      has_written_index_item = false;
-      p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
-   }
-
-   if( !p_impl->trans_level && data_write_buffer_num != -1 && data_write_buffer_offs )
-   {
-      p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
-
-      p_impl->rp_ods_data_cache_buffer->unlock_region(
-       data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
-
-      data_write_buffer_num = -1;
-      data_write_buffer_offs = 0;
-   }
-}
-
-void ods::rollback_dead_transactions( )
-{
-   guard lock_write( write_lock );
-   guard lock_read( read_lock );
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      throw ods_error( "ods instance in bad state" );
-
-   if( p_impl->trans_level )
-      throw ods_error( "cannot rollback dead transactions whilst in a transaction" );
-
-   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      throw ods_error( "cannot rollback dead transactions unless locked for exclusive use" );
-
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      throw ods_error( "cannot rollback dead transactions when bulk locked for dumping or reading" );
-
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
-
-   ods_index_entry index_entry;
-
-   for( int_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
-   {
-      read_index_entry( index_entry, i );
-
-      if( index_entry.lock_flag == ods_index_entry::e_lock_none
-       && index_entry.trans_flag != ods_index_entry::e_trans_none
-       && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-      {
-         if( index_entry.data.size == 0 )
-         {
-            index_entry.data.pos = p_impl->rp_header_info->index_free_list;
-            index_entry.data.size = 0;
-
-            index_entry.data.tran_op = 0;
-            index_entry.trans_flag = ods_index_entry::e_trans_free_list;
-
-            p_impl->rp_header_info->index_free_list = i + 1;
-            ++( *p_impl->rp_session_delete_total );
-         }
-         else
-         {
-            ++( *p_impl->rp_session_update_total );
-
-            index_entry.data.tran_op = 0;
-            index_entry.trans_flag = ods_index_entry::e_trans_none;
-         }
-
-         write_index_entry( index_entry, i );
-      }
-   }
-
-   if( has_written_index_item )
-   {
-      has_written_index_item = false;
-      p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
-   }
+   data_and_index_write( );
 
    // NOTE: The file will be marked as corrupt unless "has_changed" is set true.
    temp_set_value< bool > temp_has_changed( *p_impl->rp_has_changed, true );
@@ -3025,24 +2960,27 @@ void ods::dump_file_info( ostream& os )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    string corrupt;
-   if( *p_impl->rp_bulk_level && p_impl->rp_header_info->num_writers )
-      corrupt = " *** corrupted file detected ***";
+   if( *p_impl->rp_bulk_level
+    && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
+      corrupt = " *** possibly corrupted file detected ***";
 
-   os << "Version Id = " << p_impl->rp_header_info->version_id
-    << "\nNum Writers = " << p_impl->rp_header_info->num_writers << corrupt
-    << "\nInit Tranlog = " << p_impl->rp_header_info->tranlog_time
+   os << "Version Id = " << p_impl->rp_header_info->version_id << corrupt
+    << "\nNum Trans = " << p_impl->rp_header_info->num_trans
+    << "\nNum Writers = " << p_impl->rp_header_info->num_writers
+    << "\nInit Tranlog = " << p_impl->rp_header_info->init_tranlog
     << "\nTotal Entries = " << p_impl->rp_header_info->total_entries
+    << "\nTranlog Offset = " << p_impl->rp_header_info->tranlog_offset
     << "\nTransaction Id = " << p_impl->rp_header_info->transaction_id
     << "\nIndex Free List = " << p_impl->rp_header_info->index_free_list
     << "\nTotal Size of Data = " << p_impl->rp_header_info->total_size_of_data
     << "\nData Transformation Id = " << p_impl->rp_header_info->data_transform_id
     << "\nIndex Transformation Id = " << p_impl->rp_header_info->index_transform_id << endl;
 
-   int_t found = p_impl->rp_ods_index_cache_buffer->get_file_size( );
-   int_t expected = ods_index_entry::get_size_of( ) * p_impl->rp_header_info->total_entries;
+   int64_t found = p_impl->rp_ods_index_cache_buffer->get_file_size( );
+   int64_t expected = ods_index_entry::get_size_of( ) * p_impl->rp_header_info->total_entries;
 
    if( p_impl->rp_header_info->total_entries % c_index_items_per_item )
       expected += ods_index_entry::get_size_of( ) *
@@ -3062,10 +3000,10 @@ void ods::dump_free_list( ostream& os )
       os << "No freelist entries." << endl;
    else
    {
-      int_t count = 0;
+      int64_t count = 0;
 
-      int_t last = 0;
-      int_t next = p_impl->rp_header_info->index_free_list;
+      int64_t last = 0;
+      int64_t next = p_impl->rp_header_info->index_free_list;
       os << "First freelist entry = " << ( p_impl->rp_header_info->index_free_list - 1 ) << '\n';
 
       os << "Iterating over freelist...";
@@ -3083,12 +3021,12 @@ void ods::dump_free_list( ostream& os )
    }
 }
 
-void ods::dump_index_entry( ostream& os, int_t num )
+void ods::dump_index_entry( ostream& os, int64_t num )
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    ods_index_entry index_entry;
 
@@ -3101,12 +3039,12 @@ void ods::dump_index_entry( ostream& os, int_t num )
    }
 }
 
-void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
+void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    ods_index_entry index_entry;
 
@@ -3121,7 +3059,7 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
          os << "(freelist entry)";
          if( index_entry.data.pos )
             os << " link: " << hex
-             << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
+             << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
          else
             os << " link: <at end>";
          os << "\n";
@@ -3130,19 +3068,19 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
       {
          if( !only_pos_and_size )
          {
-            int_t chunk = 16;
+            int64_t chunk = 16;
             unsigned char buffer[ 16 ];
 
             os << hex;
 
             set_read_data_pos( index_entry.data.pos );
-            for( int_t i = 0; i < index_entry.data.size; i += chunk )
+            for( int64_t i = 0; i < index_entry.data.size; i += chunk )
             {
                if( i + chunk > index_entry.data.size )
                   chunk = index_entry.data.size - i;
                read_data_bytes( ( char* )buffer, chunk );
 
-               os << hex << setw( sizeof( int_t ) * 2 )
+               os << hex << setw( sizeof( int64_t ) * 2 )
                 << setfill( '0' ) << ( index_entry.data.pos + i ) << "  ";
 
                for( int j = 0; j < chunk; j++ )
@@ -3173,13 +3111,13 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
    if( !fs )
-      throw ods_error( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in dump_transaction_log" );
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in dump_transaction_log" );
 
    log_info tranlog_info;
    tranlog_info.read( fs );
@@ -3192,14 +3130,14 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
       {
          os << '\n';
 
-         int_t offs = fs.tellg( );
+         int64_t offs = fs.tellg( );
 
          log_entry tranlog_entry;
          tranlog_entry.read( fs );
 
          tranlog_entry.dump( os, offs );
 
-         int_t next_offs = tranlog_entry.next_entry_offs;
+         int64_t next_offs = tranlog_entry.next_entry_offs;
 
          if( !next_offs )
             next_offs = tranlog_info.append_offs;
@@ -3208,7 +3146,7 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
          {
             os << '\n';
 
-            int_t offs = fs.tellg( );
+            int64_t offs = fs.tellg( );
 
             log_entry_item tranlog_item;
             tranlog_item.read( fs );
@@ -3217,19 +3155,19 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
 
             if( tranlog_item.has_pos_and_size( ) )
             {
-               int_t chunk = 16;
+               int64_t chunk = 16;
                unsigned char buffer[ 16 ];
 
                os << hex;
 
-               for( int_t i = 0; i < tranlog_item.data_size; i += chunk )
+               for( int64_t i = 0; i < tranlog_item.data_size; i += chunk )
                {
                   if( i + chunk > tranlog_item.data_size )
                      chunk = tranlog_item.data_size - i;
 
                   fs.read( ( char* )buffer, chunk );
 
-                  os << setw( sizeof( int_t ) * 2 ) << setfill( '0' ) << i << "  ";
+                  os << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << i << "  ";
 
                   for( int j = 0; j < chunk; j++ )
                      os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
@@ -3261,16 +3199,18 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
 
 void ods::open_store( )
 {
-   DEBUG_LOG( "ods::open_store( )" );
+   DEBUG_LOG( "(opening)" );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( ++( *p_impl->rp_open_store_ref_count ) > 1 )
       return;
 
-   int_t last_data_transformation = p_impl->rp_header_info->data_transform_id;
-   int_t last_index_transformation = p_impl->rp_header_info->index_transform_id;
+   DEBUG_LOG( "ods::open_store( )" );
+
+   int64_t last_data_transformation = p_impl->rp_header_info->data_transform_id;
+   int64_t last_index_transformation = p_impl->rp_header_info->index_transform_id;
 
    p_impl->read_header_file_info( );
 
@@ -3278,9 +3218,11 @@ void ods::open_store( )
    ostringstream osstr;
    osstr << "(header info read from store)"
     << "\nversion_id = " << p_impl->rp_header_info->version_id
+    << ", num_trans = " << p_impl->rp_header_info->num_trans
     << ", num_writers = " << p_impl->rp_header_info->num_writers
-    << ", tranlog time = " << p_impl->rp_header_info->tranlog_time
-    << "\ntotal_entries = " << p_impl->rp_header_info->total_entries
+    << "\ninit tranlog = " << p_impl->rp_header_info->init_tranlog
+    << ", total_entries = " << p_impl->rp_header_info->total_entries
+    << ", tranlog_offset = " << p_impl->rp_header_info->tranlog_offset
     << ", index_free_list = " << p_impl->rp_header_info->index_free_list
     << "\ntransaction_id = " << p_impl->rp_header_info->transaction_id
     << ", total_size_of_data = " << p_impl->rp_header_info->total_size_of_data
@@ -3290,7 +3232,7 @@ void ods::open_store( )
 #endif
 
    if( p_impl->rp_header_info->version_id != c_version_id )
-      throw ods_error( "incompatible database header version found" );
+      THROW_ODS_ERROR( "incompatible database header version found" );
 
    if( p_impl->rp_header_info->data_transform_id != last_data_transformation )
       p_impl->rp_ods_data_cache_buffer->clear( );
@@ -3304,40 +3246,30 @@ void ods::open_store( )
 
 void ods::close_store( )
 {
-   DEBUG_LOG( "ods::close_store( )" );
+   DEBUG_LOG( "(closing)" );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( --( *p_impl->rp_open_store_ref_count ) != 0 )
       return;
 
-   if( data_write_buffer_num != -1 && data_write_buffer_offs )
-   {
-      p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
-
-      p_impl->rp_ods_data_cache_buffer->unlock_region(
-       data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
-   }
-
-   data_write_buffer_num = -1;
-   data_write_buffer_offs = 0;
-
-   p_impl->rp_ods_data_cache_buffer->flush( );
-
-   if( has_written_index_item )
-   {
-      has_written_index_item = false;
-      p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
-   }
-
-   p_impl->rp_ods_index_cache_buffer->flush( );
+   data_and_index_write( );
 
    if( *p_impl->rp_has_changed )
    {
+      // NOTE: If there are no transactions in progress and there are no other active writers
+      // then if the "tranlog_offset" is greater than the value that is already stored in the
+      // header it will now be updated.
+      if( p_impl->tranlog_offset > p_impl->rp_header_info->tranlog_offset
+       && p_impl->rp_header_info->num_trans == 0 && p_impl->rp_header_info->num_writers == 1 )
+         p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
+
       p_impl->write_header_file_info( true );
       *p_impl->rp_has_changed = false;
    }
+
+   DEBUG_LOG( "ods::close_store( )" );
 }
 
 void ods::bulk_operation_open( )
@@ -3345,7 +3277,7 @@ void ods::bulk_operation_open( )
    guard header_file_lock( *p_impl->rp_file_section );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_open( )" );
 
@@ -3354,8 +3286,9 @@ void ods::bulk_operation_open( )
    {
       open_store( );
 
-      if( p_impl->rp_header_info->num_writers && *p_impl->rp_bulk_mode != impl::e_bulk_mode_dump )
-         throw ods_error( "ods file corruption detected" );
+      if( !p_impl->is_restoring
+       && p_impl->rp_header_info->num_writers && *p_impl->rp_bulk_mode != impl::e_bulk_mode_dump )
+         THROW_ODS_ERROR( "database file corruption detected" );
    }
    catch( ... )
    {
@@ -3369,7 +3302,7 @@ void ods::bulk_operation_close( )
    guard header_file_lock( *p_impl->rp_file_section );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_close( )" );
 
@@ -3380,7 +3313,7 @@ void ods::bulk_operation_close( )
 void ods::bulk_operation_start( )
 {
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_start( )" );
    if( !*p_impl->rp_bulk_level )
@@ -3393,7 +3326,7 @@ void ods::bulk_operation_start( )
 void ods::bulk_operation_pause( )
 {
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_pause( )" );
    *p_impl->rp_is_in_bulk_pause = true;
@@ -3408,7 +3341,7 @@ void ods::bulk_operation_pause( )
 void ods::bulk_operation_finish( )
 {
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    DEBUG_LOG( "ods::bulk_operation_finish( )" );
    if( !--( *p_impl->rp_bulk_level ) )
@@ -3422,7 +3355,7 @@ void ods::transaction_start( )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( !p_impl->trans_level )
    {
@@ -3436,7 +3369,12 @@ void ods::transaction_start( )
          p_impl->p_trans_buffer->tran_id = p_impl->rp_header_info->transaction_id++;
 
          if( p_impl->using_tranlog )
-            p_impl->trans_offset = append_log_entry( p_impl->p_trans_buffer->tran_id );
+         {
+            p_impl->tranlog_offset = append_log_entry( p_impl->p_trans_buffer->tran_id );
+
+            if( !p_impl->rp_header_info->tranlog_offset )
+               p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
+         }   
 
          p_impl->p_ods_trans_op_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
          p_impl->p_ods_trans_data_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
@@ -3444,7 +3382,17 @@ void ods::transaction_start( )
          p_impl->total_trans_size = 0;
          p_impl->total_trans_op_count = 0;
 
-         p_impl->write_header_file_info( );
+         if( !*p_impl->rp_has_changed )
+         {
+            *p_impl->rp_has_changed  = true;
+            ++p_impl->rp_header_info->num_writers;
+         }
+
+         ++p_impl->rp_header_info->num_trans;
+
+         if( !p_impl->rp_header_file->is_locked_for_exclusive( )
+          && ( !*p_impl->rp_bulk_level || *p_impl->rp_is_in_bulk_pause ) )
+            p_impl->write_header_file_info( );
       } // end of file lock section...
    }
 
@@ -3475,13 +3423,13 @@ void ods::transaction_commit( )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      throw ods_error( "cannot commit transaction when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot commit transaction when bulk locked for dumping or reading" );
 
-   int_t size = p_impl->p_trans_buffer->levels.top( ).size;
-   int_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
+   int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
+   int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
 
    p_impl->p_trans_buffer->levels.pop( );
 
@@ -3522,7 +3470,8 @@ void ods::transaction_commit( )
       if( !*p_impl->rp_bulk_level )
          ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
-      int_t append_offset = 0;
+      int64_t commit_items = 0;
+      int64_t append_offset = 0;
 
       if( p_impl->using_tranlog )
          append_offset = log_append_offset( );
@@ -3532,7 +3481,7 @@ void ods::transaction_commit( )
       // If they were instead processed in ascending order then any repeated writes (or
       // writes that are later followed by a delete) would all have to take place which
       // could end up being much less efficient.
-      for( int_t i = op_count - 1; i >= 0; i-- )
+      for( int64_t i = op_count - 1; i >= 0; i-- )
       {
 #ifdef ODS_DEBUG
          ostringstream osstr;
@@ -3586,10 +3535,10 @@ void ods::transaction_commit( )
 
                      set_read_trans_data_pos( op.data.pos );
 
-                     int_t chunk = c_buffer_chunk_size;
+                     int64_t chunk = c_buffer_chunk_size;
                      char buffer[ c_buffer_chunk_size ];
 
-                     for( int_t j = 0; j < op.data.size; j += chunk )
+                     for( int64_t j = 0; j < op.data.size; j += chunk )
                      {
                         if( j + chunk > op.data.size )
                            chunk = op.data.size - j;
@@ -3603,7 +3552,10 @@ void ods::transaction_commit( )
                   }
 
                   if( p_impl->using_tranlog )
+                  {
+                     ++commit_items;
                      append_log_entry_item( op.data.id.get_num( ), index_entry, flags );
+                  }
 
                   index_entry.data.tran_op = 0;
 
@@ -3615,45 +3567,31 @@ void ods::transaction_commit( )
                   had_any_ops = true;
                }
                else
-                  throw ods_error( "unexpected lock flag at " STRINGIZE( __LINE__ ) );
+                  THROW_ODS_ERROR( "unexpected lock flag at " STRINGIZE( __LINE__ ) );
             }
          }
          else
-            throw ods_error( "unexpected id > total_entries at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected id > total_entries at " STRINGIZE( __LINE__ ) );
       }
 
       if( op_count )
       {
          if( p_impl->using_tranlog )
-            log_entry_commit( p_impl->trans_offset, append_offset );
+            log_entry_commit( p_impl->tranlog_offset, append_offset, commit_items );
 
          ++p_impl->rp_header_info->data_transform_id;
          ++p_impl->rp_header_info->index_transform_id;
       }
 
-      if( has_written_index_item )
-      {
-         has_written_index_item = false;
-         p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
-      }
-
-      if( data_write_buffer_num != -1 && data_write_buffer_offs )
-      {
-         if( !p_impl->using_tranlog )
-            p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
-
-         p_impl->rp_ods_data_cache_buffer->unlock_region(
-          data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
-
-         data_write_buffer_num = -1;
-         data_write_buffer_offs = 0;
-      }
+      data_and_index_write( false );
 
       trans_read_ops_buffer_num = -1;
       trans_read_data_buffer_num = -1;
-   }
 
-   transaction_completed( );
+      transaction_completed( );
+   }
+   else
+      transaction_completed( );
 }
 
 void ods::transaction_rollback( )
@@ -3663,14 +3601,14 @@ void ods::transaction_rollback( )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      throw ods_error( "cannot rollback transaction when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot rollback transaction when bulk locked for dumping or reading" );
 
-   int_t size = p_impl->p_trans_buffer->levels.top( ).size;
-   int_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
-   int_t op_offset = p_impl->p_trans_buffer->levels.top( ).op_offset;
+   int64_t size = p_impl->p_trans_buffer->levels.top( ).size;
+   int64_t op_count = p_impl->p_trans_buffer->levels.top( ).op_count;
+   int64_t op_offset = p_impl->p_trans_buffer->levels.top( ).op_offset;
 
    p_impl->p_trans_buffer->levels.pop( );
 
@@ -3700,7 +3638,7 @@ void ods::transaction_rollback( )
       // that had been appended can be correctly subtracted from the total data size
       // as well as ensuring that index entries which had been either created or had
       // been revived will now be placed into the freelist.
-      for( int_t i = op_count - 1; i >= 0; i-- )
+      for( int64_t i = op_count - 1; i >= 0; i-- )
       {
          read_transaction_op( op, op_offset + i );
 
@@ -3739,16 +3677,12 @@ void ods::transaction_rollback( )
             }
          }
          else
-            throw ods_error( "unexpected id > total_entries at " STRINGIZE( __LINE__ ) );
+            THROW_ODS_ERROR( "unexpected id > total_entries at " STRINGIZE( __LINE__ ) );
       }
+
+      data_and_index_write( false );
 
       ++p_impl->rp_header_info->index_transform_id;
-
-      if( has_written_index_item )
-      {
-         has_written_index_item = false;
-         p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
-      }
 
       set_write_trans_data_pos( p_impl->total_trans_size - size, p_impl->total_trans_size );
    }
@@ -3758,8 +3692,8 @@ void ods::transaction_rollback( )
 
 #ifdef ODS_DEBUG
    osstr.clear( );
-   osstr << "\ntotal_trans_size = " << ( int_t )p_impl->total_trans_size
-    << "\ntotal_trans_op_count = " << ( int_t )p_impl->total_trans_op_count;
+   osstr << "\ntotal_trans_size = " << ( int64_t )p_impl->total_trans_size
+    << "\ntotal_trans_op_count = " << ( int64_t )p_impl->total_trans_op_count;
    DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -3788,7 +3722,7 @@ void ods::transaction_completed( )
    guard lock_impl( *p_impl->rp_impl_lock );
 
    if( !okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -3804,15 +3738,24 @@ void ods::transaction_completed( )
       trans_read_data_buffer_offs = 0;
       p_impl->p_ods_trans_data_cache_buffer->end_transaction( );
 
-      if( *p_impl->rp_has_changed )
-      {
-         { // start of file lock section...
-            ods::header_file_lock header_file_lock( *this );
+      { // start of file lock section...
+         ods::header_file_lock header_file_lock( *this );
 
-            p_impl->write_header_file_info( true );
-            *p_impl->rp_has_changed = false;
-         } // end of file lock section...
-      }
+         // NOTE: If an empty transaction was either committed or rolled back
+         // then will need to act as though a change has occurred in order to
+         // correclty set both "num_trans" and "num_writers".
+         if( !*p_impl->rp_has_changed )
+         {
+            *p_impl->rp_has_changed  = true;
+            ++p_impl->rp_header_info->num_writers;
+         }
+
+         --p_impl->rp_header_info->num_trans;
+
+         if( !p_impl->rp_header_file->is_locked_for_exclusive( )
+          && ( !*p_impl->rp_bulk_level || *p_impl->rp_is_in_bulk_pause ) )
+            p_impl->write_header_file_info( );
+      } // end of file lock section...
    }
 }
 
@@ -3833,7 +3776,7 @@ void ods::lock_header_file( )
    }
 
    if( !attempts )
-      throw ods_error( "unable to lock header file" );
+      THROW_ODS_ERROR( "unable to lock header file" );
 
    DEBUG_LOG( ">>>>>>>>>> captured header file lock <<<<<<<<<<" );
 }
@@ -3849,13 +3792,39 @@ void ods::unlock_header_file( )
    DEBUG_LOG( ">>>>>>>>>> released header file lock <<<<<<<<<<" );
 }
 
-int_t ods::log_append_offset( )
+void ods::data_and_index_write( bool flush )
+{
+   if( data_write_buffer_num != -1 && data_write_buffer_offs )
+   {
+      p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
+
+      p_impl->rp_ods_data_cache_buffer->unlock_region(
+       data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
+
+      data_write_buffer_num = -1;
+      data_write_buffer_offs = 0;
+   }
+
+   if( flush )
+      p_impl->rp_ods_data_cache_buffer->flush( );
+
+   if( has_written_index_item )
+   {
+      has_written_index_item = false;
+      p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
+   }
+
+   if( flush )
+      p_impl->rp_ods_index_cache_buffer->flush( );
+}
+
+int64_t ods::log_append_offset( )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
 
    if( !fs )
-      throw ods_error( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_append_offset" );
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_append_offset" );
 
    log_info tranlog_info;
    tranlog_info.read( fs );
@@ -3865,13 +3834,13 @@ int_t ods::log_append_offset( )
    return tranlog_info.append_offs;
 }
 
-int_t ods::append_log_entry( int_t tx_id )
+int64_t ods::append_log_entry( int64_t tx_id )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
 
    if( !fs )
-      throw ods_error( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry" );
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry" );
 
    log_info tranlog_info;
    tranlog_info.read( fs );
@@ -3890,10 +3859,12 @@ int_t ods::append_log_entry( int_t tx_id )
       tranlog_entry.read( fs );
 
       if( tx_id < tranlog_entry.tx_id )
-         throw ods_error( "unexpected tx_id is less than that of the last transaction log entry" );
+         THROW_ODS_ERROR( "unexpected tx_id is less than that of the last transaction log entry" );
 
       if( tx_time < tranlog_entry.tx_time )
-         throw ods_error( "unexpected tx_time is less than that of the last transaction log entry" );
+         THROW_ODS_ERROR( "unexpected tx_time is less than that of the last transaction log entry" );
+
+      tranlog_entry.commit_offs = tranlog_entry.commit_items = 0;
    }
 
    tranlog_entry.tx_id = tx_id;
@@ -3932,35 +3903,36 @@ int_t ods::append_log_entry( int_t tx_id )
    return tranlog_info.entry_offs;
 }
 
-void ods::log_entry_commit( int_t entry_offset, int_t commit_offs )
+void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
 
    if( !fs )
-      throw ods_error( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_entry_commit" );
-
-   fs.seekg( entry_offset, ios::beg );
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_entry_commit" );
 
    log_entry tranlog_entry;
+
+   fs.seekg( entry_offset, ios::beg );
    tranlog_entry.read( fs );
 
    tranlog_entry.commit_offs = commit_offs;
-   fs.seekg( entry_offset, ios::beg );
+   tranlog_entry.commit_items = commit_items;
 
+   fs.seekg( entry_offset, ios::beg );
    tranlog_entry.write( fs );
 
    fs.close( );
 }
 
-void ods::append_log_entry_item( int_t num,
- const ods_index_entry& index_entry, unsigned char flags, int_t log_entry_offs )
+void ods::append_log_entry_item( int64_t num,
+ const ods_index_entry& index_entry, unsigned char flags, int64_t log_entry_offs )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
 
    if( !fs )
-      throw ods_error( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry_item" );
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry_item" );
 
    log_info tranlog_info;
    tranlog_info.read( fs );
@@ -3987,10 +3959,10 @@ void ods::append_log_entry_item( int_t num,
    {
       set_read_data_pos( index_entry.data.pos, true );
 
-      int_t chunk = c_buffer_chunk_size;
+      int64_t chunk = c_buffer_chunk_size;
       char buffer[ c_buffer_chunk_size ];
 
-      for( int_t j = 0; j < index_entry.data.size; j += chunk )
+      for( int64_t j = 0; j < index_entry.data.size; j += chunk )
       {
          if( j + chunk > index_entry.data.size )
             chunk = index_entry.data.size - j;
@@ -3999,24 +3971,26 @@ void ods::append_log_entry_item( int_t num,
          fs.write( buffer, chunk );
 
          if( !fs.good( ) )
-            throw ods_error( "unexpected bad tranlog data append" );
+            THROW_ODS_ERROR( "unexpected bad tranlog data append" );
       }
 
       fs.flush( );
       if( !fs.good( ) )
-         throw ods_error( "unexpected bad tranlog data append" );
+         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
    }
 
-   int_t old_append_offs = tranlog_info.append_offs;
+   int64_t old_append_offs = tranlog_info.append_offs;
    tranlog_info.append_offs = fs.tellg( );
 
    if( log_entry_offs )
    {
       log_entry tranlog_entry;
-      fs.seekg( log_entry_offs, ios::beg );
 
+      fs.seekg( log_entry_offs, ios::beg );
       tranlog_entry.read( fs );
+
       tranlog_entry.commit_offs = old_append_offs;
+      tranlog_entry.commit_items = 1;
 
       fs.seekg( log_entry_offs, ios::beg );
       tranlog_entry.write( fs );
@@ -4028,6 +4002,288 @@ void ods::append_log_entry_item( int_t num,
    fs.close( );
 }
 
+void ods::rollback_dead_transactions( )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot rollback dead transactions whilst in a transaction" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot rollback dead transactions unless locked for exclusive use" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
+
+   temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   ods_index_entry index_entry;
+
+   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+   {
+      read_index_entry( index_entry, i );
+
+      if( index_entry.lock_flag == ods_index_entry::e_lock_none
+       && index_entry.trans_flag != ods_index_entry::e_trans_none
+       && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+      {
+         if( index_entry.data.size == 0 )
+         {
+            index_entry.data.pos = p_impl->rp_header_info->index_free_list;
+            index_entry.data.size = 0;
+
+            index_entry.data.tran_op = 0;
+            index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+
+            p_impl->rp_header_info->index_free_list = i + 1;
+         }
+         else
+         {
+            index_entry.data.tran_op = 0;
+            index_entry.trans_flag = ods_index_entry::e_trans_none;
+         }
+
+         write_index_entry( index_entry, i );
+      }
+   }
+
+   data_and_index_write( );
+
+   p_impl->rp_header_info->num_trans = 0;
+   p_impl->rp_header_info->num_writers = 0;
+
+   *p_impl->rp_has_changed = true;
+   p_impl->write_header_file_info( );
+
+   *p_impl->rp_has_changed = false;
+}
+
+void ods::restore_from_transaction_log( )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot restore from transaction log whilst in a transaction" );
+
+   if( !p_impl->using_tranlog )
+      THROW_ODS_ERROR( "cannot restore non-transaction log database from transaction log" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot restore from transaction log unless locked for exclusive use" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot restore from transaction log when bulk locked for dumping or reading" );
+
+   temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   fstream fs;
+   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
+
+   if( !fs )
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in restore_from_transaction_log" );
+
+   log_info tranlog_info;
+   tranlog_info.read( fs );
+
+   int64_t tranlog_offset = p_impl->rp_header_info->tranlog_offset;
+
+   if( tranlog_offset )
+   {
+      bool had_any_data = false;
+      bool changed_free_list = false;
+
+      map< int64_t, int64_t > transaction_commit_offsets;
+
+      // NOTE: As transaction entry items are not necessarily processed "in order" each entry
+      // in the log is processed to determine whether commit or rollback operations should be
+      // performed.
+      while( true )
+      {
+         int64_t entry_offset = fs.tellg( );
+
+         log_entry tranlog_entry;
+         tranlog_entry.read( fs );
+
+         int64_t tx_id = p_impl->rp_header_info->transaction_id = tranlog_entry.tx_id;
+
+         if( tranlog_entry.commit_offs )
+            transaction_commit_offsets.insert( make_pair( tx_id, tranlog_entry.commit_offs ) );
+
+         int64_t next_offs = tranlog_entry.next_entry_offs;
+
+         if( entry_offset <= tranlog_offset )
+         {
+            p_impl->rp_header_info->data_transform_id = tranlog_entry.data_transform_id;
+            p_impl->rp_header_info->index_transform_id = tranlog_entry.index_transform_id;
+         }
+
+         // NOTE: After we have passed the last "good point" that was recorded in the database
+         // header process every item according to whether the transaction should be committed
+         // or rolled back.
+         if( entry_offset > tranlog_offset )
+         {
+            tranlog_offset = entry_offset;
+
+            if( !next_offs )
+               next_offs = tranlog_info.append_offs;
+
+            ++p_impl->rp_header_info->data_transform_id;
+            ++p_impl->rp_header_info->index_transform_id;
+
+            while( fs.tellg( ) < next_offs )
+            {
+               log_entry_item tranlog_item;
+               tranlog_item.read( fs );
+
+               if( tranlog_item.has_tran_id( ) )
+                  tx_id = tranlog_item.tx_id;
+
+               bool commit = ( transaction_commit_offsets.count( tx_id ) > 0 );
+
+               bool add_to_free_list = false;
+
+               if( tranlog_item.index_entry_id >= p_impl->rp_header_info->total_entries )
+                  p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
+
+               if( tranlog_item.has_pos_and_size( ) )
+               {
+                  if( ( commit && tranlog_item.is_post_op( ) )
+                   || !( commit && tranlog_item.is_post_op( ) ) )
+                  {
+                     had_any_data = true;
+
+                     int64_t chunk = c_buffer_chunk_size;
+                     char buffer[ c_buffer_chunk_size ];
+
+                     set_write_data_pos( tranlog_item.data_pos );
+                     for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
+                     {
+                        if( j + chunk > tranlog_item.data_size )
+                           chunk = tranlog_item.data_size - j;
+
+                        fs.read( buffer, chunk );
+                        write_data_bytes( buffer, chunk );
+                     }
+
+                     ods_index_entry index_entry;
+                     read_index_entry( index_entry, tranlog_item.index_entry_id );
+
+                     index_entry.data.pos = tranlog_item.data_pos;
+                     index_entry.data.size = tranlog_item.data_size;
+
+                     if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
+                        changed_free_list = true;
+
+                     index_entry.data.tran_id = tx_id;
+                     index_entry.data.tran_op = 0;
+
+                     index_entry.trans_flag = ods_index_entry::e_trans_none;
+
+                     write_index_entry( index_entry, tranlog_item.index_entry_id );
+                  }
+                  else if( commit && tranlog_item.is_destroy( ) && !tranlog_item.is_post_op( ) )
+                     add_to_free_list = true;
+                  else
+                     fs.seekg( tranlog_item.data_size, ios::cur );
+               }
+               else if( ( commit && tranlog_item.is_destroy( ) ) || ( !commit && tranlog_item.is_create( ) ) )
+                  add_to_free_list = true;
+
+               if( add_to_free_list )
+               {
+                  changed_free_list = true;
+
+                  ods_index_entry index_entry;
+                  read_index_entry( index_entry, tranlog_item.index_entry_id );
+
+                  index_entry.data.size = 0;
+
+                  index_entry.data.tran_id = tx_id;
+                  index_entry.data.tran_op = 0;
+
+                  index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+
+                  write_index_entry( index_entry, tranlog_item.index_entry_id );
+               }
+            }
+         }
+         else
+         {
+            if( !next_offs )
+               break;
+
+            fs.seekg( next_offs, ios::beg );
+         }
+
+         if( fs.tellg( ) > tranlog_info.entry_offs )
+            break;
+      }
+
+      // NOTE: The index free list could have been messed up during the restore
+      // so if any change had been made to it then will now reconstruct it all.
+      if( changed_free_list )
+      {
+         ods_index_entry index_entry;
+         p_impl->rp_header_info->index_free_list = 0;
+
+         for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+         {
+            read_index_entry( index_entry, i );
+
+            if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
+            {
+               if( !p_impl->rp_header_info->index_free_list )
+               {
+                  index_entry.data.pos = 0;
+                  p_impl->rp_header_info->index_free_list = i + 1;
+               }
+               else
+               {
+                  index_entry.data.pos = p_impl->rp_header_info->index_free_list;
+                  p_impl->rp_header_info->index_free_list = i + 1;
+               }
+
+               write_index_entry( index_entry, i );
+            }
+         }
+      }
+
+      data_and_index_write( );
+
+      p_impl->rp_header_info->num_trans = 0;
+      p_impl->rp_header_info->num_writers = 0;
+      p_impl->rp_header_info->tranlog_offset = tranlog_offset;
+
+      if( had_any_data )
+         ++p_impl->rp_header_info->data_transform_id;
+
+      ++p_impl->rp_header_info->index_transform_id;
+
+      *p_impl->rp_has_changed = true;
+      p_impl->write_header_file_info( );
+
+      *p_impl->rp_has_changed = false;
+   }
+}
+
 ods& operator >>( ods& o, storable_base& s )
 {
    guard lock_storable( s.storable_lock );
@@ -4036,21 +4292,21 @@ ods& operator >>( ods& o, storable_base& s )
    DEBUG_LOG( "[read object]" );
 
    if( !o.okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( o.is_in_read )
-      throw ods_error( "invalid attempt to re-enter ods instance read" );
+      THROW_ODS_ERROR( "invalid attempt to re-enter database instance read" );
 
    if( s.id.get_num( ) < 0 )
-      throw ods_error( "unexpected null object id at " STRINGIZE( __LINE__ ) );
+      THROW_ODS_ERROR( "unexpected null object id at " STRINGIZE( __LINE__ ) );
 
    if( *o.p_impl->rp_bulk_level && *o.p_impl->rp_bulk_mode < ods::impl::e_bulk_mode_read )
-      throw ods_error( "cannot read when bulk locked for dumping" );
+      THROW_ODS_ERROR( "cannot read when bulk locked for dumping" );
 
    temp_set_value< bool > tmp_in_read( o.is_in_read, true );
-   finalise_value< int_t > finalise_reading_object( o.current_read_object_num, -1 );
+   finalise_value< int64_t > finalise_reading_object( o.current_read_object_num, -1 );
 
-   int_t trans_read_pos = -1;
+   int64_t trans_read_pos = -1;
 
    ods_index_entry index_entry;
 
@@ -4082,7 +4338,7 @@ ods& operator >>( ods& o, storable_base& s )
          if( can_read )
          {
             if( o.p_impl->found_instance_currently_writing( s.id.get_num( ) ) )
-               throw ods_error( "cannot read object currently being written" );
+               THROW_ODS_ERROR( "cannot read object currently being written" );
 
             o.read_index_entry( index_entry, s.id.get_num( ) );
             o.bytes_stored = index_entry.data.size;
@@ -4149,7 +4405,7 @@ ods& operator >>( ods& o, storable_base& s )
    }
 
    if( !can_read )
-      throw ods_error( "cannot read (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "cannot read (max. attempts exceeded)" );
 
    // NOTE: If within a transaction then reading data that has been committed by another transaction
    // that commenced after this one is prevented (this is needed to make transactions serializable).
@@ -4157,7 +4413,7 @@ ods& operator >>( ods& o, storable_base& s )
    {
       if( has_locked )
          o.p_impl->rp_ods_index_cache_buffer->unlock_entry( s.id.get_num( ), false );
-      throw ods_error( "unable to read due to interim transaction write" );
+      THROW_ODS_ERROR( "unable to read due to interim transaction write" );
    }
 
    if( o.p_impl->read_from_trans )
@@ -4178,7 +4434,7 @@ ods& operator >>( ods& o, storable_base& s )
       ostringstream osstr;
       osstr << "max. data length exceeded (retrieved = "
        << o.bytes_retrieved << ", stored = " << o.bytes_stored << ")";
-      throw ods_error( osstr.str( ) );
+      THROW_ODS_ERROR( osstr.str( ) );
    }
 
    return o;
@@ -4192,21 +4448,19 @@ ods& operator <<( ods& o, storable_base& s )
    DEBUG_LOG( "[write object]" );
 
    if( !o.okay )
-      throw ods_error( "ods instance in bad state" );
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    if( o.is_in_write )
-      throw ods_error( "invalid attempt to re-enter ods instance write" );
+      THROW_ODS_ERROR( "invalid attempt to re-enter database instance write" );
 
    if( *o.p_impl->rp_bulk_level && *o.p_impl->rp_bulk_mode != ods::impl::e_bulk_mode_write )
-      throw ods_error( "cannot write when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot write when bulk locked for dumping or reading" );
 
    temp_set_value< bool > tmp_in_write( o.is_in_write, true );
-   finalise_value< int_t > finalise_writing_object( o.current_write_object_num, -1 );
+   finalise_value< int64_t > finalise_writing_object( o.current_write_object_num, -1 );
 
-   int_t old_tran_id = -1;
-   int_t trans_write_pos = -1;
-
-   int_t log_entry_offset = 0;
+   int64_t old_tran_id = -1;
+   int64_t trans_write_pos = -1;
 
    ods_index_entry index_entry, old_index_entry;
 
@@ -4242,13 +4496,13 @@ ods& operator <<( ods& o, storable_base& s )
          if( s.id.get_num( ) >= 0 )
          {
             if( s.id.get_num( ) >= o.p_impl->rp_header_info->total_entries )
-               throw ods_error( "cannot store out of range oid" );
+               THROW_ODS_ERROR( "cannot store out of range oid" );
 
             if( o.p_impl->found_instance_currently_reading( s.id.get_num( ) ) )
-               throw ods_error( "cannot write object currently being read" );
+               THROW_ODS_ERROR( "cannot write object currently being read" );
 
             if( o.p_impl->found_instance_currently_writing( s.id.get_num( ) ) )
-               throw ods_error( "cannot write object currently being written" );
+               THROW_ODS_ERROR( "cannot write object currently being written" );
 
             o.read_index_entry( index_entry, s.id.get_num( ) );
             old_tran_id = index_entry.data.tran_id;
@@ -4258,10 +4512,10 @@ ods& operator <<( ods& o, storable_base& s )
             is_new_object = false;
          }
 
-         int_t old_data_pos = -1;
-         int_t old_total_size = o.p_impl->rp_header_info->total_size_of_data;
+         int64_t old_data_pos = -1;
+         int64_t old_total_size = o.p_impl->rp_header_info->total_size_of_data;
 
-         int_t* p_total_to_increment = 0;
+         int64_t* p_total_to_increment = 0;
 
          if( is_new_object )
          {
@@ -4275,10 +4529,10 @@ ods& operator <<( ods& o, storable_base& s )
                o.read_index_entry( index_entry, o.p_impl->rp_header_info->index_free_list - 1 );
 
                if( index_entry.lock_flag != ods_index_entry::e_lock_none )
-                  throw ods_error( "unexpected lock flag value found in freelist entry" );
+                  THROW_ODS_ERROR( "unexpected lock flag value found in freelist entry" );
 
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-                  throw ods_error( "unexpected trans flag value found in freelist entry" );
+                  THROW_ODS_ERROR( "unexpected trans flag value found in freelist entry" );
 
                index_entry.trans_flag = ods_index_entry::e_trans_none;
                s.id.num = o.p_impl->rp_header_info->index_free_list - 1;
@@ -4386,7 +4640,12 @@ ods& operator <<( ods& o, storable_base& s )
                flags |= c_log_entry_item_type_non_transactional;
 
                if( o.p_impl->using_tranlog )
-                  log_entry_offset = o.append_log_entry( o.p_impl->rp_header_info->transaction_id );
+               {
+                  o.p_impl->tranlog_offset = o.append_log_entry( o.p_impl->rp_header_info->transaction_id );
+
+                  if( !o.p_impl->rp_header_info->tranlog_offset )
+                     o.p_impl->rp_header_info->tranlog_offset = o.p_impl->tranlog_offset;
+               }
 
                ++o.p_impl->rp_header_info->transaction_id;
 
@@ -4422,7 +4681,7 @@ ods& operator <<( ods& o, storable_base& s )
    }
 
    if( !can_write )
-      throw ods_error( "cannot write (max. attempts exceeded)" );
+      THROW_ODS_ERROR( "cannot write (max. attempts exceeded)" );
 
    if( !o.p_impl->trans_level )
       o.set_write_data_pos( index_entry.data.pos );
@@ -4475,7 +4734,7 @@ ods& operator <<( ods& o, storable_base& s )
             o.data_write_buffer_offs = 0;
 
             if( o.p_impl->using_tranlog )
-               o.append_log_entry_item( s.id.num, index_entry, flags, log_entry_offset );
+               o.append_log_entry_item( s.id.num, index_entry, flags, o.p_impl->tranlog_offset );
 
             ++o.p_impl->rp_header_info->data_transform_id;
          }
@@ -4512,13 +4771,13 @@ ods& operator <<( ods& o, storable_base& s )
       ostringstream osstr;
       osstr << "max. data length exceeded (reserved = "
        << o.bytes_reserved << ", used = " << o.bytes_used << ")";
-      throw ods_error( osstr.str( ) );
+      THROW_ODS_ERROR( osstr.str( ) );
    }
 
    return o;
 }
 
-void ods::read( unsigned char* p_buf, int_t len )
+void ods::read( unsigned char* p_buf, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4536,7 +4795,7 @@ void ods::read( unsigned char* p_buf, int_t len )
    }
 }
 
-void ods::write( const unsigned char* p_buf, int_t len )
+void ods::write( const unsigned char* p_buf, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4554,7 +4813,7 @@ void ods::write( const unsigned char* p_buf, int_t len )
    }
 }
 
-void ods::set_read_data_pos( int_t pos, bool force_get )
+void ods::set_read_data_pos( int64_t pos, bool force_get )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4562,7 +4821,7 @@ void ods::set_read_data_pos( int_t pos, bool force_get )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t current_data_buffer_num( data_read_buffer_num );
+   int64_t current_data_buffer_num( data_read_buffer_num );
 
    data_read_buffer_num = pos / c_data_bytes_per_item;
    data_read_buffer_offs = pos % c_data_bytes_per_item;
@@ -4571,7 +4830,7 @@ void ods::set_read_data_pos( int_t pos, bool force_get )
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
 }
 
-void ods::set_write_data_pos( int_t pos )
+void ods::set_write_data_pos( int64_t pos )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4579,7 +4838,7 @@ void ods::set_write_data_pos( int_t pos )
     << ", data_write_buffer_num = " << data_write_buffer_num;
    DEBUG_LOG( osstr.str( ) );
 #endif
-   int_t current_data_buffer_num( data_write_buffer_num );
+   int64_t current_data_buffer_num( data_write_buffer_num );
 
    data_write_buffer_num = pos / c_data_bytes_per_item;
    data_write_buffer_offs = pos % c_data_bytes_per_item;
@@ -4606,13 +4865,13 @@ void ods::set_write_data_pos( int_t pos )
       }
 
       if( !attempts )
-         throw ods_error( "unable to lock data region for set_write_data_pos" );
+         THROW_ODS_ERROR( "unable to lock data region for set_write_data_pos" );
 
       p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
    }
 }
 
-void ods::adjust_read_data_pos( int_t adjust )
+void ods::adjust_read_data_pos( int64_t adjust )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4620,8 +4879,8 @@ void ods::adjust_read_data_pos( int_t adjust )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t current_data_buffer_num( data_read_buffer_num );
-   int_t pos = ( data_read_buffer_num * c_data_bytes_per_item ) + data_read_buffer_offs + adjust;
+   int64_t current_data_buffer_num( data_read_buffer_num );
+   int64_t pos = ( data_read_buffer_num * c_data_bytes_per_item ) + data_read_buffer_offs + adjust;
 
    data_read_buffer_num = pos / c_data_bytes_per_item;
    data_read_buffer_offs = pos % c_data_bytes_per_item;
@@ -4630,7 +4889,7 @@ void ods::adjust_read_data_pos( int_t adjust )
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
 }
 
-void ods::adjust_write_data_pos( int_t adjust )
+void ods::adjust_write_data_pos( int64_t adjust )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4638,8 +4897,8 @@ void ods::adjust_write_data_pos( int_t adjust )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t current_data_buffer_num( data_write_buffer_num );
-   int_t pos = ( data_write_buffer_num * c_data_bytes_per_item ) + data_write_buffer_offs + adjust;
+   int64_t current_data_buffer_num( data_write_buffer_num );
+   int64_t pos = ( data_write_buffer_num * c_data_bytes_per_item ) + data_write_buffer_offs + adjust;
 
    data_write_buffer_num = pos / c_data_bytes_per_item;
    data_write_buffer_offs = pos % c_data_bytes_per_item;
@@ -4666,15 +4925,15 @@ void ods::adjust_write_data_pos( int_t adjust )
       }
 
       if( !attempts )
-         throw ods_error( "unable to lock data region for adjust_write_data_pos" );
+         THROW_ODS_ERROR( "unable to lock data region for adjust_write_data_pos" );
 
       p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
    }
 }
 
-void ods::read_data_bytes( char* p_dest, int_t len )
+void ods::read_data_bytes( char* p_dest, int64_t len )
 {
-   int_t chunk = min( len, c_data_bytes_per_item - data_read_buffer_offs );
+   int64_t chunk = min( len, c_data_bytes_per_item - data_read_buffer_offs );
 
    while( len > 0 )
    {
@@ -4691,16 +4950,16 @@ void ods::read_data_bytes( char* p_dest, int_t len )
          if( p_dest )
             p_dest += chunk;
 
-         chunk = min( len, ( int_t )c_data_bytes_per_item );
+         chunk = min( len, ( int64_t )c_data_bytes_per_item );
       }
       else
          data_read_buffer_offs += chunk;
    }
 }
 
-void ods::write_data_bytes( const char* p_src, int_t len )
+void ods::write_data_bytes( const char* p_src, int64_t len )
 {
-   int_t chunk = min( len, c_data_bytes_per_item - data_write_buffer_offs );
+   int64_t chunk = min( len, c_data_bytes_per_item - data_write_buffer_offs );
 
    while( len > 0 )
    {
@@ -4733,23 +4992,23 @@ void ods::write_data_bytes( const char* p_src, int_t len )
          }
 
          if( !attempts )
-            throw ods_error( "unable to lock data region for write_data_bytes" );
+            THROW_ODS_ERROR( "unable to lock data region for write_data_bytes" );
 
          p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
 
          if( p_src )
             p_src += chunk;
 
-         chunk = min( len, ( int_t )c_data_bytes_per_item );
+         chunk = min( len, ( int64_t )c_data_bytes_per_item );
       }
       else
          data_write_buffer_offs += chunk;
    }
 }
 
-void ods::read_index_entry( ods_index_entry& index_entry, int_t num )
+void ods::read_index_entry( ods_index_entry& index_entry, int64_t num )
 {
-   int_t current_index_buffer_num( index_item_buffer_num );
+   int64_t current_index_buffer_num( index_item_buffer_num );
 
    index_item_buffer_num = num / c_index_items_per_item;
 
@@ -4796,12 +5055,15 @@ void ods::read_index_entry( ods_index_entry& index_entry, int_t num )
    }
 }
 
-void ods::write_index_entry( const ods_index_entry& index_entry, int_t num )
+void ods::write_index_entry( const ods_index_entry& index_entry, int64_t num )
 {
    if( !*p_impl->rp_has_changed )
-      p_impl->write_header_file_info( );
+   {
+      *p_impl->rp_has_changed = true;
+      ++p_impl->rp_header_info->num_writers;
+   }
 
-   int_t current_index_buffer_num( index_item_buffer_num );
+   int64_t current_index_buffer_num( index_item_buffer_num );
 
    index_item_buffer_num = num / c_index_items_per_item;
 
@@ -4835,9 +5097,9 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int_t num )
    has_written_index_item = true;
 }
 
-void ods::read_transaction_op( transaction_op& op, int_t num )
+void ods::read_transaction_op( transaction_op& op, int64_t num )
 {
-   int_t current_trans_ops_buffer_num( trans_read_ops_buffer_num );
+   int64_t current_trans_ops_buffer_num( trans_read_ops_buffer_num );
 
    trans_read_ops_buffer_num = num / c_trans_ops_per_item;
 
@@ -4864,7 +5126,7 @@ void ods::read_transaction_op( transaction_op& op, int_t num )
 
 void ods::write_transaction_op( transaction_op& op )
 {
-   int_t current_trans_ops_buffer_num( trans_write_ops_buffer_num );
+   int64_t current_trans_ops_buffer_num( trans_write_ops_buffer_num );
 
    trans_write_ops_buffer_num = p_impl->total_trans_op_count / c_trans_ops_per_item;
 
@@ -4892,9 +5154,9 @@ void ods::write_transaction_op( transaction_op& op )
    has_written_trans_op = true;
 }
 
-void ods::set_read_trans_data_pos( int_t pos )
+void ods::set_read_trans_data_pos( int64_t pos )
 {
-   int_t current_trans_buffer_num( trans_read_data_buffer_num );
+   int64_t current_trans_buffer_num( trans_read_data_buffer_num );
    trans_read_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_read_data_buffer_offs = pos % c_trans_bytes_per_item;
 
@@ -4910,9 +5172,9 @@ void ods::set_read_trans_data_pos( int_t pos )
       trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_read_data_buffer_num );
 }
 
-void ods::set_write_trans_data_pos( int_t pos, int_t old_trans_total_size )
+void ods::set_write_trans_data_pos( int64_t pos, int64_t old_trans_total_size )
 {
-   int_t current_trans_buffer_num( trans_write_data_buffer_num );
+   int64_t current_trans_buffer_num( trans_write_data_buffer_num );
    trans_write_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_write_data_buffer_offs = pos % c_trans_bytes_per_item;
 
@@ -4937,7 +5199,7 @@ void ods::set_write_trans_data_pos( int_t pos, int_t old_trans_total_size )
    }
 }
 
-void ods::adjust_read_trans_data_pos( int_t adjust )
+void ods::adjust_read_trans_data_pos( int64_t adjust )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4947,8 +5209,8 @@ void ods::adjust_read_trans_data_pos( int_t adjust )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t current_trans_buffer_num( trans_read_data_buffer_num );
-   int_t pos = ( trans_read_data_buffer_num * c_trans_bytes_per_item ) + trans_read_data_buffer_offs + adjust;
+   int64_t current_trans_buffer_num( trans_read_data_buffer_num );
+   int64_t pos = ( trans_read_data_buffer_num * c_trans_bytes_per_item ) + trans_read_data_buffer_offs + adjust;
 
    trans_read_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_read_data_buffer_offs = pos % c_trans_bytes_per_item;
@@ -4957,7 +5219,7 @@ void ods::adjust_read_trans_data_pos( int_t adjust )
       trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_read_data_buffer_num );
 }
 
-void ods::adjust_write_trans_data_pos( int_t adjust )
+void ods::adjust_write_trans_data_pos( int64_t adjust )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4967,8 +5229,8 @@ void ods::adjust_write_trans_data_pos( int_t adjust )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t current_trans_buffer_num( trans_write_data_buffer_num );
-   int_t pos = ( trans_write_data_buffer_num * c_trans_bytes_per_item ) + trans_write_data_buffer_offs + adjust;
+   int64_t current_trans_buffer_num( trans_write_data_buffer_num );
+   int64_t pos = ( trans_write_data_buffer_num * c_trans_bytes_per_item ) + trans_write_data_buffer_offs + adjust;
 
    trans_write_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_write_data_buffer_offs = pos % c_trans_bytes_per_item;
@@ -4981,7 +5243,7 @@ void ods::adjust_write_trans_data_pos( int_t adjust )
    }
 }
 
-void ods::read_trans_data_bytes( char* p_dest, int_t len )
+void ods::read_trans_data_bytes( char* p_dest, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -4991,7 +5253,7 @@ void ods::read_trans_data_bytes( char* p_dest, int_t len )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t chunk = min( len, c_trans_bytes_per_item - trans_read_data_buffer_offs );
+   int64_t chunk = min( len, c_trans_bytes_per_item - trans_read_data_buffer_offs );
 
    while( len > 0 )
    {
@@ -5014,7 +5276,7 @@ void ods::read_trans_data_bytes( char* p_dest, int_t len )
    }
 }
 
-void ods::write_trans_data_bytes( const char* p_src, int_t len )
+void ods::write_trans_data_bytes( const char* p_src, int64_t len )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -5024,7 +5286,7 @@ void ods::write_trans_data_bytes( const char* p_src, int_t len )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int_t chunk = min( len, c_trans_bytes_per_item - trans_write_data_buffer_offs );
+   int64_t chunk = min( len, c_trans_bytes_per_item - trans_write_data_buffer_offs );
 
    while( len > 0 )
    {

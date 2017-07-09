@@ -51,7 +51,7 @@ const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
-const char* const c_cmd_using_log = "log";
+const char* const c_cmd_using_transaction_log = "tlg";
 
 bool g_shared_access = true;
 bool g_using_transaction_log = false;
@@ -194,7 +194,7 @@ class outline_base : public storable_base
       return !children.empty( );
    }
 
-   friend int_t size_of( const outline_base& o );
+   friend int64_t size_of( const outline_base& o );
 
    friend read_stream& operator >>( read_stream& rs, outline_base& o );
    friend write_stream& operator <<( write_stream& ws, const outline_base& o );
@@ -214,7 +214,7 @@ class outline_base : public storable_base
    vector< oid > children;
 };
 
-int_t size_of( const outline_base& o )
+int64_t size_of( const outline_base& o )
 {
    int size_holder = sizeof( size_t );
 #ifdef USE_SIZE_PADDING
@@ -223,7 +223,7 @@ int_t size_of( const outline_base& o )
    size_holder += sizeof( size_t );
 #endif
 #ifdef USE_CHAR_BUF
-   return sizeof( int_t ) + o.description.length( )
+   return sizeof( int64_t ) + o.description.length( )
     + sizeof( oid ) + size_holder + ( o.children.size( ) * sizeof( oid ) );
 #else
    return sizeof( string::size_type ) + o.description.length( )
@@ -314,7 +314,7 @@ class test_ods_startup_functor : public command_functor
    {
       if( command == c_cmd_exclusive )
          g_shared_access = false;
-      else if( command == c_cmd_using_log )
+      else if( command == c_cmd_using_transaction_log )
          g_using_transaction_log = true;
    }
 };
@@ -858,13 +858,13 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_exclusive, 1,
           "", "use exclusive file access", new test_ods_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_using_log, 1,
+         cmd_handler.add_command( c_cmd_using_transaction_log, 1,
           "", "using transaction log file", new test_ods_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_exclusive );
-         cmd_handler.remove_command( c_cmd_using_log );
+         cmd_handler.remove_command( c_cmd_using_transaction_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )
@@ -876,18 +876,10 @@ int main( int argc, char* argv[ ] )
       {
          outline root( c_root_node_description );
 
-         try
-         {
-            cmd_handler.get_ods( ) << root;
-         }
-         catch( ods_error& err )
-         {
-            cout << "error: " << err.what( ) << endl;
-            exit( 1 );
-         }
+         cmd_handler.get_ods( ) << root;
       }
       else if( !g_shared_access )
-         cmd_handler.get_ods( ).rollback_dead_transactions( );
+         cmd_handler.get_ods( ).repair_if_corrupt( );
 
       cmd_handler.get_node( ).set_id( 0 );
       cmd_handler.get_ods( ) >> cmd_handler.get_node( );
@@ -903,13 +895,6 @@ int main( int argc, char* argv[ ] )
       processor.process_commands( );
 
       return 0;
-   }
-   catch( ods_error& err )
-   {
-      if( !g_application_title_called && !cmd_handler.has_option_quiet( ) )
-         cout << application_title( e_app_info_request_title_and_version ) << endl;
-      cerr << "ods error: " << err.what( ) << endl;
-      return 1;
    }
    catch( exception& x )
    {

@@ -130,6 +130,7 @@ ciyam_server.hdr
 ciyam_server.idx
 ciyam_server.sid
 ciyam_server.sio
+ciyam_server.tlg
 
 # Ignore Meta storage and related
 Meta.dat

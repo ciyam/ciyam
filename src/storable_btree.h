@@ -28,14 +28,14 @@ using namespace btree;
 
 // NOTE: This approach is necessary to force template instanciation to occur (at least with BCB).
 template< typename T > class storable_node_base;
-template< typename T > int_t size_of( const storable_node_base< T >& s );
+template< typename T > int64_t size_of( const storable_node_base< T >& s );
 template< typename T > read_stream& operator >>( read_stream& rs, storable_node_base< T >& s );
 template< typename T > write_stream& operator <<( write_stream& ws, const storable_node_base< T >& s );
 
 template< typename T > class storable_node_base : public bt_node< T >, public storable_base
 {
    public:
-   friend int_t size_of< T >( const storable_node_base< T >& s );
+   friend int64_t size_of< T >( const storable_node_base< T >& s );
 
    // NOTE: (see NOTE above)
    friend read_stream& operator >> < T >( read_stream& rs, storable_node_base< T >& s );
@@ -45,7 +45,7 @@ template< typename T > class storable_node_base : public bt_node< T >, public st
    static const size_t c_round_to_value = STORABLE_BTREE_NODE_SIZE;
 };
 
-template< typename T > int_t size_of( const storable_node_base< T >& s )
+template< typename T > int64_t size_of( const storable_node_base< T >& s )
 {
    uint8_t num = s.size( );
 
@@ -235,7 +235,7 @@ template< typename T > void storable_node_manager< T >::rollback( )
 
 // NOTE: This approach is necessary to force template instanciation to occur (at least with BCB).
 template< typename T, typename L > class storable_btree_base;
-template< typename T, typename L > int_t size_of( const storable_btree_base< T, L >& bt );
+template< typename T, typename L > int64_t size_of( const storable_btree_base< T, L >& bt );
 template< typename T, typename L > read_stream& operator >>( read_stream& rs, storable_btree_base< T, L >& s );
 template< typename T, typename L > write_stream& operator <<( write_stream& ws, const storable_btree_base< T, L >& s );
 
@@ -263,7 +263,7 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
       bt_base_class::get_node_manager( ).set_ods( o );
    }
 
-   friend int_t size_of< T, L >( const storable_btree_base< T, L >& bt );
+   friend int64_t size_of< T, L >( const storable_btree_base< T, L >& bt );
 
    // NOTE: (see NOTE above)
    friend read_stream& operator >> < T, L >( read_stream& rs, storable_btree_base< T, L >& s );
@@ -282,7 +282,7 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    }
 };
 
-template< typename T, typename L > int_t size_of( const storable_btree_base< T, L >& bt )
+template< typename T, typename L > int64_t size_of( const storable_btree_base< T, L >& bt )
 {
    size_t total = ( sizeof( uint8_t ) * 2 ) + sizeof( typename storable_btree_base< T, L >::state_t );
 

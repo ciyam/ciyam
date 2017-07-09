@@ -49,7 +49,7 @@ struct storable_file_extra : public storable_extra
 
 class FILE_DECL_SPEC storable_file : public storable_base
 {
-   friend int_t size_of( const storable_file& sf );
+   friend int64_t size_of( const storable_file& sf );
    friend read_stream& operator >>( read_stream& rs, storable_file& sf );
    friend write_stream& operator <<( write_stream& ws, const storable_file& sf );
 
@@ -59,7 +59,7 @@ class FILE_DECL_SPEC storable_file : public storable_base
 
    void set_extra( storable_extra* p_extra );
 
-   int_t get_size_of( ) const;
+   int64_t get_size_of( ) const;
 
    void get_instance( read_stream& rs );
    void put_instance( write_stream& ws ) const;

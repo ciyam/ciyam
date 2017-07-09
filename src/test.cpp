@@ -375,8 +375,19 @@ void init_group_test( const test& t, string& test_name )
 
    for( vector< string >::size_type i = 0; i < t.kills.size( ); i++ )
    {
-      g_all_kills.push_back( t.kills[ i ] );
-      remove_file( t.kills[ i ].c_str( ) );
+      string next( t.kills[ i ] );
+
+      if( !next.empty( ) )
+      {
+         // NOTE: If a name is prefixed with an exclamation then it will only
+         // be removed here (and not also later when the tests are completed).
+         if( next[ 0 ] == '!' )
+            next.erase( 0, 1 );
+         else
+            g_all_kills.push_back( next );
+
+         remove_file( next.c_str( ) );
+      }
    }
 }
 
@@ -886,7 +897,8 @@ int main( int argc, char* argv[ ] )
 
          cout << ')' << endl;
 
-         // NOTE: If tests completed successfully then repeat any kills that were performed during testing (i.e. clean up).
+         // NOTE: If tests completed successfully then repeat kills that were performed during testing
+         // that had not been specifically prefixed not to (i.e. clean up).
          for( vector< string >::size_type i = 0; i < g_all_kills.size( ); i++ )
             remove_file( g_all_kills[ i ].c_str( ) );
       }

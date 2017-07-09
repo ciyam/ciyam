@@ -1,8 +1,10 @@
 ** File Info
 Version Id = 65536
+Num Trans = 0
 Num Writers = 0
 Init Tranlog = 0
 Total Entries = 2
+Tranlog Offset = 0
 Transaction Id = 18
 Index Free List = 0
 Total Size of Data = 1280
@@ -11,7 +13,7 @@ Index Transformation Id = 18
 
 ** Entry Info for: 1
 num: 0000000000000001          pos: 0000000000000100          len: 0000000000000400
-txi: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
+txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
 0000000000000100  01 08 03 00 ff ff ff ff ff ff ff ff ff ff ff ff  ................
 0000000000000110  ff ff ff ff ff ff ff ff ff ff ff ff 04 00 2f 61  ............../a
 0000000000000120  62 63 ff ff ff ff ff ff ff ff 04 00 2f 64 65 66  bc........../def

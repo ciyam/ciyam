@@ -35,8 +35,8 @@ int main( int argc, char* argv[ ] )
       int name_arg = 1;
 
       size_t next_pos;
-      int_t first_entry;
-      int_t final_entry;
+      int64_t first_entry;
+      int64_t final_entry;
       bool show_data = false;
       string entry, entries;
 
@@ -103,12 +103,12 @@ int main( int argc, char* argv[ ] )
 
       if( entries.length( ) )
       {
-         int_t total_entries_dumped = 0;
+         int64_t total_entries_dumped = 0;
          cout << endl << "** Entry Info for: " << entries << endl;
 
          while( true )
          {
-            for( int_t i = first_entry; i < final_entry; i++ )
+            for( int64_t i = first_entry; i < final_entry; i++ )
             {
                o.dump_index_entry( cout, i );
 
@@ -163,11 +163,6 @@ int main( int argc, char* argv[ ] )
       }
 
       return 0;
-   }
-   catch( ods_error& x )
-   {
-      cout << "error: " << x.what( ) << endl;
-      return 1;
    }
    catch( exception& x )
    {
