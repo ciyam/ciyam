@@ -363,7 +363,7 @@ class test_ods_command_handler : public console_command_handler
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_share_mode_shared : ods::e_share_mode_exclusive ), g_using_transaction_log ) );
+    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_using_transaction_log ) );
 }
 
 class test_ods_command_functor : public command_functor

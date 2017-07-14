@@ -72,7 +72,7 @@ int main( int argc, char* argv[ ] )
       if( !has_header )
          throw runtime_error( "database header file not found" );
 
-      ods o( argv[ name_arg ], ods::e_open_mode_exist );
+      ods o( argv[ name_arg ], ods::e_open_mode_exist, ods::e_write_mode_none );
 
       ods::bulk_dump bulk_dump( o );
 
@@ -158,7 +158,7 @@ int main( int argc, char* argv[ ] )
 
       if( o.is_using_transaction_log( ) )
       {
-         cout << "\n*** Transaction Log" << endl;
+         cout << "\n** Transaction Log" << endl;
          o.dump_transaction_log( cout, !show_data );
       }
 

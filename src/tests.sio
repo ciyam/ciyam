@@ -802,6 +802,7 @@
      <kill>test_ods.hdr
      <kill>test_ods.dat.lck
      <kill>test_ods.idx.lck
+     <kill>test_ods.hdr.lck
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_stderr -x
@@ -835,6 +836,7 @@
      <kill>test_ods.hdr
      <kill>test_ods.dat.lck
      <kill>test_ods.idx.lck
+     <kill>test_ods.hdr.lck
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_stderr -x
@@ -889,6 +891,7 @@
      <kill>ods_fsed.hdr
      <kill>ods_fsed.dat.lck
      <kill>ods_fsed.idx.lck
+     <kill>ods_fsed.hdr.lck
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_stderr -x
@@ -982,6 +985,7 @@
      <kill>ods_fsed.hdr
      <kill>ods_fsed.dat.lck
      <kill>ods_fsed.idx.lck
+     <kill>ods_fsed.hdr.lck
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_stderr -x
@@ -1091,6 +1095,7 @@
      <kill>!ciyam_server.hdr
      <kill>!ciyam_server.dat.lck
      <kill>!ciyam_server.idx.lck
+     <kill>!ciyam_server.hdr.lck
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet

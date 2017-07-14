@@ -223,7 +223,7 @@ class ods_fsed_command_handler : public console_command_handler
 void ods_fsed_command_handler::init( )
 {
    ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_share_mode_shared : ods::e_share_mode_exclusive ) ) );
+    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ) ) );
 
    ods::bulk_write bulk_write( *ap_ods );
 

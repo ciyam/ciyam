@@ -15,6 +15,7 @@ if exist %1.undo.sql del %1.undo.sql
 if exist %1.dat del %1.dat
 if exist %1.dat.lck del %1.dat.lck
 if exist %1.hdr del %1.hdr
+if exist %1.hdr.lck del %1.hdr.lck
 if exist %1.idx del %1.idx
 if exist %1.idx.lck del %1.idx.lck
 

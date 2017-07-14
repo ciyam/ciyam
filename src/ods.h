@@ -558,10 +558,11 @@ class ODS_DECL_SPEC ods
       e_open_mode_create_if_not_exist
    };
 
-   enum share_mode
+   enum write_mode
    {
-      e_share_mode_shared,
-      e_share_mode_exclusive
+      e_write_mode_none,
+      e_write_mode_shared,
+      e_write_mode_exclusive
    };
 
    static ods* instance( ods* p_ods = 0, bool force_assign = false );
@@ -569,7 +570,7 @@ class ODS_DECL_SPEC ods
    ods( const ods& o );
 
    ods( const char* name, open_mode o_mode,
-    share_mode s_mode = e_share_mode_shared, bool using_tranlog = false );
+    write_mode w_mode = e_write_mode_shared, bool using_tranlog = false );
 
    virtual ~ods( );
 

@@ -31,6 +31,9 @@ else
  if [ -f $1.hdr ]; then
   rm $1.hdr
  fi
+ if [ -f $1.hdr.lck ]; then
+  rm $1.hdr.lck
+ fi
  if [ -f $1.idx ]; then
   rm $1.idx
  fi

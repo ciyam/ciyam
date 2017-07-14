@@ -803,7 +803,7 @@ class ods_index_entry
 class header_file
 {
    public:
-   header_file( const char* p_file_name, bool is_exclusive );
+   header_file( const char* p_file_name, ods::write_mode w_mode );
 
    ~header_file( );
 
@@ -812,16 +812,21 @@ class header_file
    bool lock( );
    void unlock( );
 
-   void acquire_lock_offset( );
-   void release_lock_offset( );
-
-   int get_lock_offset( ) const { return lock_offset; }
+   int get_offset( ) const { return offset; }
 
    bool is_locked_for_exclusive( ) const { return is_exclusive; }
 
    private:
+#ifdef _WIN32
+   void acquire_offset( );
+   void release_offset( );
+#endif
+
    int handle;
-   short lock_offset;
+   int offset;
+
+   int lock_handle;
+
    bool is_exclusive;
 
 #ifdef __GNUG__
@@ -830,66 +835,115 @@ class header_file
 #endif
 };
 
-header_file::header_file( const char* p_file_name, bool is_exclusive )
+header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
  :
  handle( 0 ),
- lock_offset( -1 ),
- is_exclusive( is_exclusive )
+ offset( -1 ),
+ lock_handle( 0 ),
+ is_exclusive( w_mode == ods::e_write_mode_exclusive )
 {
+   string lock_file_name( p_file_name );
+   lock_file_name += c_lock_file_name_ext;
+
+   bool okay = false;
+
 #ifdef __GNUG__
-   handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
-
-   if( handle > 0 )
+   if( w_mode == ods::e_write_mode_none )
+      okay = true;
+   else
    {
-      if( !is_exclusive )
-         file_lock.l_type = F_RDLCK;
-      else
-         file_lock.l_type = F_WRLCK;
+      lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 
-      file_lock.l_len = 1;
-      file_lock.l_start = 0;
-      file_lock.l_whence = SEEK_SET;
-
-      if( fcntl( handle, F_SETLK, &file_lock ) != 0 )
+      if( lock_handle > 0 )
       {
-         _close( handle );
-         handle = 0;
-      }
+         if( !is_exclusive )
+            file_lock.l_type = F_RDLCK;
+         else
+            file_lock.l_type = F_WRLCK;
 
-      if( handle )
-         lock_offset = 0;
+         file_lock.l_len = 1;
+         file_lock.l_start = 0;
+         file_lock.l_whence = SEEK_SET;
+
+         if( fcntl( lock_handle, F_SETLK, &file_lock ) == 0 )
+         {
+            offset = 0;
+            okay = true;
+         }
+         else
+         {
+            _close( lock_handle );
+            lock_handle = 0;
+         }
+      }
    }
+
+   if( okay )
+      handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 #endif
 
 #ifdef _WIN32
-   int sflags = SH_DENYNO;
-   if( is_exclusive )
-      sflags = SH_DENYRW;
+   if( w_mode == ods::e_write_mode_none )
+      okay = true;
+   else
+   {
+      int sflags = SH_DENYNO;
+      if( is_exclusive )
+         sflags = SH_DENYRW;
 
-   handle = _sopen( p_file_name, O_BINARY | _O_RDWR | _O_CREAT, sflags, S_IREAD | S_IWRITE );
+      lock_handle = _sopen( lock_file_name.c_str( ), O_BINARY | _O_RDWR | _O_CREAT, sflags, S_IREAD | S_IWRITE );
+
+      if( lock_handle > 0 )
+         okay = true;
+   }
+
+   if( okay )
+   {
+      handle = _sopen( p_file_name, O_BINARY | _O_RDWR | _O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
+
+      if( handle > 0 )
+         acquire_offset( );
+   }
 #endif
 
-   if( handle > 0 )
-      acquire_lock_offset( );
 #ifdef ODS_DEBUG
    ostringstream osstr;
-   osstr << "handle = " << handle << ", lock_offset = " << lock_offset;
+   osstr << "handle = " << handle << ", offset = " << offset << ", lock_handle = " << lock_handle;
    DEBUG_LOG( osstr.str( ) );
 #endif
 }
 
 header_file::~header_file( )
 {
-   if( handle > 0 )
+   if( lock_handle > 0 )
    {
 #ifdef __GNUG__
       file_lock.l_type = F_UNLCK;
 
-      if( fcntl( handle, F_SETLK, &file_lock ) != 0 )
+      if( fcntl( lock_handle, F_SETLK, &file_lock ) != 0 )
          DEBUG_LOG( "unexpected fcntl failure occurred at " STRINGIZE( __LINE__ ) );
 #endif
-      release_lock_offset( );
 
+#ifdef _WIN32
+      release_offset( );
+#endif
+
+#ifndef ODS_DEBUG
+      _close( lock_handle );
+#else
+      if( _close( lock_handle ) != 0 )
+      {
+         ostringstream osstr;
+         osstr << "_close lock failed in ~header_file (errno = " << errno << ')';
+         DEBUG_LOG( osstr.str( ) );
+      }
+      else
+         DEBUG_LOG( "closed header lock file" );
+#endif
+   }
+
+   if( handle > 0 )
+   {
 #ifndef ODS_DEBUG
       _close( handle );
 #else
@@ -900,7 +954,7 @@ header_file::~header_file( )
          DEBUG_LOG( osstr.str( ) );
       }
       else
-         DEBUG_LOG( "closed file" );
+         DEBUG_LOG( "closed header file" );
 #endif
    }
 }
@@ -914,7 +968,7 @@ bool header_file::lock( )
 #ifdef __GNUG__
       header_lock.l_len = 1;
       header_lock.l_type = F_WRLCK;
-      header_lock.l_start = 1;
+      header_lock.l_start = 0;
       header_lock.l_whence = SEEK_SET;
 
       if( fcntl( handle, F_SETLK, &header_lock ) == 0 )
@@ -954,43 +1008,38 @@ void header_file::unlock( )
    }
 }
 
-void header_file::acquire_lock_offset( )
+void header_file::acquire_offset( )
 {
-#ifdef _WIN32
-   if( handle > 0 )
+   for( size_t i = sizeof( header_info );
+    i < sizeof( header_info ) + sizeof( ods_index_entry::data_t ); i++ )
    {
-      for( size_t i = sizeof( header_info );
-       i < sizeof( header_info ) + sizeof( ods_index_entry::data_t ); i++ )
-      {
-         if( _lseek( handle, ( int64_t )i, SEEK_SET ) != ( int64_t )i )
-            THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+      if( _lseek( handle, ( int64_t )i, SEEK_SET ) != ( int64_t )i )
+         THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
 
-         if( _locking( handle, LK_NBLCK, 1 ) == 0 )
-         {
-            lock_offset = ( short )( i - sizeof( header_info ) );
-            break;
-         }
+      if( _locking( handle, LK_NBLCK, 1 ) == 0 )
+      {
+         DEBUG_LOG( "acquired lock offset" );
+
+         offset = ( int )( i - sizeof( header_info ) );
+         break;
       }
    }
-#endif
 }
 
-void header_file::release_lock_offset( )
+void header_file::release_offset( )
 {
-#ifdef _WIN32
-   if( handle > 0 && lock_offset >= 0 )
+   if( handle > 0 && offset >= 0 )
    {
       DEBUG_LOG( "releasing lock offset" );
 
-      int64_t pos = lock_offset + sizeof( header_info );
+      int64_t pos = offset + sizeof( header_info );
       if( _lseek( handle, pos, SEEK_SET ) != pos )
          THROW_ODS_ERROR( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
       if( _locking( handle, LK_UNLCK, 1 ) != 0 )
          THROW_ODS_ERROR( "unexpected _locking at " STRINGIZE( __LINE__ ) " failed" );
 
-      lock_offset = -1;
+      offset = -1;
    }
-#endif
 }
 
 struct ods_data_entry_buffer
@@ -1237,7 +1286,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 {
    public:
    ods_index_cache_buffer( const string& file_name,
-    short lock_offset, unsigned max_cache_items, unsigned items_per_region,
+    int lock_offset, unsigned max_cache_items, unsigned items_per_region,
     unsigned regions_in_cache = 1, bool use_placement_new = true, bool allow_lazy_writes = true )
     :
     cache_base< ods_index_entry_buffer >( max_cache_items,
@@ -1351,6 +1400,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #ifdef _WIN32
       size_t len = 1;
       int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
+
       if( !is_write )
          pos += lock_offset;
       else
@@ -1385,6 +1435,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #ifdef _WIN32
       size_t len = 1;
       int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
+
       if( !is_write )
          pos += lock_offset;
       else
@@ -1402,8 +1453,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    mutex index_lock;
 
    string file_name;
-   short lock_offset;
+
+   int lock_offset;
    int lock_index_handle;
+
    int read_index_handle;
    int write_index_handle;
 
@@ -1821,6 +1874,7 @@ struct ods::impl
     is_new( false ),
     is_corrupt( false ),
     is_exclusive( false ),
+    is_read_only( false ),
     is_restoring( false ),
     force_padding( false ),
     using_tranlog( false ),
@@ -1844,6 +1898,7 @@ struct ods::impl
    bool is_new;
    bool is_corrupt;
    bool is_exclusive;
+   bool is_read_only;
    bool is_restoring;
 
    bool force_padding;
@@ -2106,7 +2161,7 @@ ods::ods( const ods& o )
    permit_copy = true;
 }
 
-ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tranlog )
+ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tranlog )
  :
  okay( false ),
  is_in_read( false ),
@@ -2154,20 +2209,26 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
    p_impl->rp_bulk_write_thread_id = new thread_id;
 
 #ifdef ODS_DEBUG
-   if( s_mode == e_share_mode_exclusive )
-      DEBUG_LOG( "********** capturing exclusive file use **********" );
+   if( w_mode == e_write_mode_exclusive )
+      DEBUG_LOG( "********** capturing exclusive write use **********" );
 #endif
 
    p_impl->rp_header_file
-    = new header_file( p_impl->header_file_name.c_str( ), s_mode == e_share_mode_exclusive );
+    = new header_file( p_impl->header_file_name.c_str( ), w_mode );
 
    if( *p_impl->rp_header_file <= 0 )
       THROW_ODS_ERROR( "unable to open database header file (locked?)" );
 
-   if( p_impl->rp_header_file->get_lock_offset( ) < 0 )
-      THROW_ODS_ERROR( "unable to acquire valid lock offset (max. concurrent processes active?)" );
+   if( p_impl->rp_header_file->get_offset( ) < 0 )
+      THROW_ODS_ERROR( "unable to acquire valid offset (max. concurrent processes active?)" );
 
-   p_impl->is_exclusive = ( s_mode == e_share_mode_exclusive );
+   if( w_mode == e_write_mode_none )
+      p_impl->is_read_only = true;
+   else if( w_mode == e_write_mode_exclusive )
+      p_impl->is_exclusive = true;
+
+   if( p_impl->is_read_only && o_mode == e_open_mode_create_if_not_exist )
+      THROW_ODS_ERROR( "cannot create if not exists when opening database for read only access" );
 
    auto_ptr< ods::header_file_lock > ap_header_file_lock( new ods::header_file_lock( *this ) );
 
@@ -2232,9 +2293,9 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
    {
       p_impl->read_header_file_info( );
 
-      // NOTE: File corruption can be determined if we have an exclusive file lock but
+      // NOTE: File corruption can be determined if we have an exclusive write lock but
       // then find that one or more writers/transactions appear to be currently active.
-      if( s_mode == e_share_mode_exclusive
+      if( w_mode == e_write_mode_exclusive
        && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
          p_impl->is_corrupt = true;
 
@@ -2301,7 +2362,7 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode, bool using_tran
      c_data_max_cache_items, c_data_items_per_region, c_data_num_cache_regions );
 
    p_impl->rp_ods_index_cache_buffer = new ods_index_cache_buffer( p_impl->index_file_name,
-    p_impl->rp_header_file->get_lock_offset( ), c_index_max_cache_items, c_index_items_per_region, c_index_num_cache_regions );
+    p_impl->rp_header_file->get_offset( ), c_index_max_cache_items, c_index_items_per_region, c_index_num_cache_regions );
 
    auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );
 
@@ -2349,7 +2410,7 @@ ods::~ods( )
       }
 #ifdef ODS_DEBUG
       if( *p_impl->rp_instances.get_ref( ) == 1 && p_impl->rp_header_file->is_locked_for_exclusive( ) )
-         DEBUG_LOG( "********** releasing exclusive file use **********" );
+         DEBUG_LOG( "********** releasing exclusive write use **********" );
 #endif
    }
 
@@ -2573,6 +2634,9 @@ ods::bulk_read::~bulk_read( )
 ods::bulk_write::bulk_write( ods& o )
  : bulk_base( o )
 {
+   if( o.p_impl->is_read_only )
+      THROW_ODS_ERROR( "attempt to obtain bulk write lock when database was opened for read only access" );
+
    int i;
    for( i = 0; i < c_bulk_write_max_attempts; i++ )
    {
@@ -2681,19 +2745,22 @@ void ods::transaction::rollback( )
 
 void ods::destroy( const oid& id )
 {
+   if( id.get_num( ) < 0 )
+      return;
+
    guard lock_write( write_lock );
    guard lock_read( read_lock );
 
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state..." );
 
+   if( p_impl->is_read_only )
+      THROW_ODS_ERROR( "attempt to perform destroy when database was opened for read only access" );
+
    DEBUG_LOG( "ods::destroy( )" );
 
-   if( id.get_num( ) < 0 )
-      return;
-
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      THROW_ODS_ERROR( "cannot destroy when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot destroy when database is bulk locked for dumping or reading" );
 
    ods_index_entry index_entry;
 
@@ -2863,7 +2930,7 @@ void ods::move_free_data_to_end( )
       THROW_ODS_ERROR( "cannot move free data to end whilst in a transaction" );
 
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive use" );
+      THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive write" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
@@ -3357,6 +3424,9 @@ void ods::transaction_start( )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
+   if( p_impl->is_read_only )
+      THROW_ODS_ERROR( "attempt to start transaction when database was opened for read only access" );
+
    if( !p_impl->trans_level )
    {
       { // start of file lock section...
@@ -3761,8 +3831,7 @@ void ods::transaction_completed( )
 
 void ods::lock_header_file( )
 {
-   if( p_impl->rp_header_file->is_locked_for_exclusive( )
-    || ( *p_impl->rp_bulk_level && !*p_impl->rp_is_in_bulk_pause ) )
+   if( *p_impl->rp_bulk_level && !*p_impl->rp_is_in_bulk_pause )
       return;
 
    int attempts = c_header_lock_max_attempts;
@@ -3783,8 +3852,7 @@ void ods::lock_header_file( )
 
 void ods::unlock_header_file( )
 {
-   if( p_impl->rp_header_file->is_locked_for_exclusive( )
-    || ( *p_impl->rp_bulk_level && !*p_impl->rp_is_in_bulk_pause ) )
+   if( *p_impl->rp_bulk_level && !*p_impl->rp_is_in_bulk_pause )
       return;
 
    p_impl->rp_header_file->unlock( );
@@ -4015,7 +4083,7 @@ void ods::rollback_dead_transactions( )
       THROW_ODS_ERROR( "cannot rollback dead transactions whilst in a transaction" );
 
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      THROW_ODS_ERROR( "cannot rollback dead transactions unless locked for exclusive use" );
+      THROW_ODS_ERROR( "cannot rollback dead transactions unless locked for exclusive write" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
@@ -4083,7 +4151,7 @@ void ods::restore_from_transaction_log( )
       THROW_ODS_ERROR( "cannot restore non-transaction log database from transaction log" );
 
    if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      THROW_ODS_ERROR( "cannot restore from transaction log unless locked for exclusive use" );
+      THROW_ODS_ERROR( "cannot restore from transaction log unless locked for exclusive write" );
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot restore from transaction log when bulk locked for dumping or reading" );
@@ -4454,7 +4522,10 @@ ods& operator <<( ods& o, storable_base& s )
       THROW_ODS_ERROR( "invalid attempt to re-enter database instance write" );
 
    if( *o.p_impl->rp_bulk_level && *o.p_impl->rp_bulk_mode != ods::impl::e_bulk_mode_write )
-      THROW_ODS_ERROR( "cannot write when bulk locked for dumping or reading" );
+      THROW_ODS_ERROR( "cannot write when database bulk locked for dumping or reading" );
+
+   if( o.p_impl->is_read_only )
+      THROW_ODS_ERROR( "attempt to perform write when database was opened for read only access" );
 
    temp_set_value< bool > tmp_in_write( o.is_in_write, true );
    finalise_value< int64_t > finalise_writing_object( o.current_write_object_num, -1 );

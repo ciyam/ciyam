@@ -1226,7 +1226,7 @@ auto_ptr< ods_file_system > gap_ofs;
 void init_ciyam_ods( )
 {
    gap_ods.reset( new ods( c_ciyam_server,
-    ods::e_open_mode_create_if_not_exist, ods::e_share_mode_exclusive, true ) );
+    ods::e_open_mode_create_if_not_exist, ods::e_write_mode_exclusive, true ) );
 
    ods::bulk_write bulk_write( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -1383,7 +1383,7 @@ void perform_storage_op( storage_op op,
 
       try
       {
-         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_share_mode_exclusive ) );
+         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive ) );
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
          ap_handler->obtain_bulk_write( );
