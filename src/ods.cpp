@@ -1008,6 +1008,7 @@ void header_file::unlock( )
    }
 }
 
+#ifdef _WIN32
 void header_file::acquire_offset( )
 {
    for( size_t i = sizeof( header_info );
@@ -1041,6 +1042,7 @@ void header_file::release_offset( )
       offset = -1;
    }
 }
+#endif
 
 struct ods_data_entry_buffer
 {
