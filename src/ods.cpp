@@ -866,10 +866,7 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
          file_lock.l_whence = SEEK_SET;
 
          if( fcntl( lock_handle, F_SETLK, &file_lock ) == 0 )
-         {
-            offset = 0;
             okay = true;
-         }
          else
          {
             _close( lock_handle );
@@ -879,7 +876,10 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
    }
 
    if( okay )
+   {
+      offset = 0;
       handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+   }
 #endif
 
 #ifdef _WIN32
