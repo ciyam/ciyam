@@ -37,6 +37,11 @@ class write_stream;
 class ods;
 class storable_base;
 
+std::string ods_file_names( const std::string& name, char sep = ',', bool include_tranlog = true );
+
+std::string ods_backup_file_names( const std::string& name,
+ const char* p_ext = 0, char sep = ',', bool include_tranlog = true );
+
 class ODS_DECL_SPEC char_buffer
 {
    friend class ods;
@@ -185,8 +190,8 @@ class ODS_DECL_SPEC char_buffer
    }
 
    // IMPORTANT: This final set of public functions should only be called within the scope of a
-   // "char_buffer::lock" object if the "char_buffer" object is accessible to other threads. This
-   // will ensure that no other thread can make changes whilst these accessors are being used.
+   // "char_buffer::lock" object if the "char_buffer" object is accessible to any other threads
+   // to ensure that no other thread can make changes whilst these accessors are being used.
    int64_t length( ) const { return len; }
    int64_t offset( ) const { return pos; }
    int64_t reserved( ) const { return max; }
@@ -587,14 +592,31 @@ class ODS_DECL_SPEC ods
 
    bool is_using_transaction_log( ) const;
 
-   void repair_if_corrupt( );
+   int64_t get_total_entries( ) const;
+
+   int64_t get_session_review_total( ) const;
+   int64_t get_session_create_total( ) const;
+   int64_t get_session_revive_total( ) const;
+   int64_t get_session_update_total( ) const;
+   int64_t get_session_delete_total( ) const;
+
+   int64_t get_transaction_id( ) const;
+   int64_t get_transaction_level( ) const;
+
+   int64_t get_next_transaction_id( ) const;
+
+   std::string get_file_names( const char* p_ext = 0, char sep = ',', bool add_tranlog_always = false ) const;
 
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
-   void destroy( const oid& id );
+   void repair_if_corrupt( );
 
    int64_t get_size( const oid& id );
+
+   void destroy( const oid& id );
+
+   std::string backup_database( const char* p_ext = 0, char sep = ',' );
 
    void move_free_data_to_end( );
 
@@ -604,19 +626,6 @@ class ODS_DECL_SPEC ods
    void dump_instance_data( std::ostream& os, int64_t num, bool only_pos_and_size );
 
    void dump_transaction_log( std::ostream& os, bool header_only );
-
-   int64_t get_total_entries( );
-
-   int64_t get_session_review_total( );
-   int64_t get_session_create_total( );
-   int64_t get_session_revive_total( );
-   int64_t get_session_update_total( );
-   int64_t get_session_delete_total( );
-
-   int64_t get_transaction_id( ) const;
-   int64_t get_transaction_level( ) const;
-
-   int64_t get_next_transaction_id( ) const;
 
    struct bulk_dump;
    struct bulk_read;

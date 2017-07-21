@@ -181,11 +181,11 @@ const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
 
-const char* const c_storable_file_name_clim = "clim";
+const char* const c_storable_file_name_cache = "cache";
 const char* const c_storable_file_name_ident = "ident";
 const char* const c_storable_file_name_log_id = "log_id";
 const char* const c_storable_file_name_mod_dir = "mod_dir";
-const char* const c_storable_file_name_t_count = "t_count";
+const char* const c_storable_file_name_num_lts = "num_lts";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
@@ -551,20 +551,18 @@ struct storage_root
    storage_root( )
     :
     version( c_storage_format_version ),
-    identity( uuid( ).as_string( ) ),
     cache_limit( c_default_cache_limit ),
+    ident( uuid( ).as_string( ) ),
     web_root( c_default_web_root ),
     truncation_count( 0 )
    {
    }
 
    int32_t version;
-   string identity;
-
    int32_t cache_limit;
 
+   string ident;
    string web_root;
-
    string module_directory;
 
    int32_t truncation_count;
@@ -579,22 +577,22 @@ struct storage_root
 
 void storage_root::store_as_text_files( ods_file_system& ofs )
 {
-   ofs.store_as_text_file( c_storable_file_name_clim, cache_limit );
-   ofs.store_as_text_file( c_storable_file_name_ident, identity );
+   ofs.store_as_text_file( c_storable_file_name_cache, cache_limit );
+   ofs.store_as_text_file( c_storable_file_name_ident, ident );
    ofs.store_as_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.store_as_text_file( c_storable_file_name_mod_dir, module_directory, c_storable_file_pad_len );
-   ofs.store_as_text_file( c_storable_file_name_t_count, truncation_count );
+   ofs.store_as_text_file( c_storable_file_name_num_lts, truncation_count );
    ofs.store_as_text_file( c_storable_file_name_version, version );
    ofs.store_as_text_file( c_storable_file_name_web_root, web_root, c_storable_file_pad_len );
 }
 
 void storage_root::fetch_from_text_files( ods_file_system& ofs )
 {
-   ofs.fetch_from_text_file( c_storable_file_name_clim, cache_limit );
-   ofs.fetch_from_text_file( c_storable_file_name_ident, identity );
+   ofs.fetch_from_text_file( c_storable_file_name_cache, cache_limit );
+   ofs.fetch_from_text_file( c_storable_file_name_ident, ident );
    ofs.fetch_from_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.fetch_from_text_file( c_storable_file_name_mod_dir, module_directory, true );
-   ofs.fetch_from_text_file( c_storable_file_name_t_count, truncation_count );
+   ofs.fetch_from_text_file( c_storable_file_name_num_lts, truncation_count );
    ofs.fetch_from_text_file( c_storable_file_name_version, version );
    ofs.fetch_from_text_file( c_storable_file_name_web_root, web_root, true );
 
@@ -648,7 +646,7 @@ class storage_handler
    storage_root& get_root( ) { return root; }
    const storage_root& get_root( ) const { return root; }
 
-   bool is_using_blockchain( ) const { return root.identity.find( ':' ) != string::npos; }
+   bool is_using_blockchain( ) const { return root.ident.find( ':' ) != string::npos; }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -1383,7 +1381,7 @@ void perform_storage_op( storage_op op,
 
       try
       {
-         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive ) );
+         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive, true ) );
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
          ap_handler->obtain_bulk_write( );
@@ -1403,7 +1401,7 @@ void perform_storage_op( storage_op op,
             string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
             if( !blockchain.empty( ) )
-               ap_handler->get_root( ).identity += ":" + blockchain;
+               ap_handler->get_root( ).ident += ":" + blockchain;
 
             ods_file_system ofs( *ap_ods );
 
@@ -3150,7 +3148,7 @@ void append_transaction_log_command( storage_handler& handler,
          log_file.open( log_filename.c_str( ), ios::out | ios::app );
 
       if( is_new )
-         log_file << "[0]" << handler.get_root( ).identity << '\n';
+         log_file << "[0]" << handler.get_root( ).ident << '\n';
 
       int32_t tx_id;
 
@@ -3919,7 +3917,7 @@ void init_globals( )
       g_storage_handlers.push_back( 0 );
 
    g_storage_handlers[ 0 ] = new storage_handler( 0, c_default_storage_name );
-   g_storage_handlers[ 0 ]->get_root( ).identity = c_default_storage_identity;
+   g_storage_handlers[ 0 ]->get_root( ).ident = c_default_storage_identity;
 
    g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
 
@@ -5915,7 +5913,7 @@ void attach_storage( const string& name, command_handler& cmd_handler, bool lock
    perform_storage_op( e_storage_op_attach, name, "", cmd_handler, lock_for_admin );
 }
 
-void backup_storage( command_handler& cmd_handler, int* p_truncation_count )
+void backup_storage( command_handler& cmd_handler, int* p_truncation_count, string* p_sav_db_file_names )
 {
    if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
    {
@@ -5927,6 +5925,9 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count )
 
       if( !handler.get_is_locked_for_admin( ) )
          throw runtime_error( "cannot backup a storage unless it has been locked for admin" );
+
+      if( p_sav_db_file_names )
+         *p_sav_db_file_names = p_ods->backup_database( ".sav", ' ' );
 
       // NOTE: Create a SQL file (which is the storage name with a ".backup.sql" extension).
       string sql_file_name( handler.get_name( ) );
@@ -6094,7 +6095,7 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count )
 
          ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
 
-         ofs.store_as_text_file( c_storable_file_name_t_count,
+         ofs.store_as_text_file( c_storable_file_name_num_lts,
           gtp_session->p_storage_handler->get_root( ).truncation_count );
 
          ostringstream osstr;
@@ -6214,6 +6215,7 @@ void storage_admin_name_lock( const string& name )
       if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
          throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
 
+      // NOTE: If this session has an existing lock name then that will need to be removed first.
       if( gtp_session->ap_storage_name_lock.get( ) )
          gtp_session->ap_storage_name_lock.reset( );
 
@@ -6325,7 +6327,7 @@ size_t storage_cache_limit( size_t new_limit )
    {
       ods_file_system ofs( *p_ods );
 
-      ofs.store_as_text_file( c_storable_file_name_clim,
+      ofs.store_as_text_file( c_storable_file_name_cache,
        gtp_session->p_storage_handler->get_root( ).cache_limit );
 
       log_identity& identity( handler.get_root( ).log_id );
@@ -6737,7 +6739,7 @@ string storage_name( )
 
 string storage_identity( )
 {
-   return gtp_session->p_storage_handler->get_root( ).identity;
+   return gtp_session->p_storage_handler->get_root( ).ident;
 }
 
 string storage_blockchain( )

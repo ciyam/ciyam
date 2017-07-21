@@ -368,7 +368,9 @@ void CIYAM_BASE_DECL_SPEC create_storage( const std::string& name,
  const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
 void CIYAM_BASE_DECL_SPEC attach_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
 
-void CIYAM_BASE_DECL_SPEC backup_storage( command_handler& cmd_handler, int* p_truncation_count = 0 );
+void CIYAM_BASE_DECL_SPEC backup_storage(
+ command_handler& cmd_handler, int* p_truncation_count = 0, std::string* p_sav_db_file_names = 0 );
+
 void CIYAM_BASE_DECL_SPEC restore_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC upgrade_storage( command_handler& cmd_handler );

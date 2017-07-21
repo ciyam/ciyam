@@ -95,6 +95,7 @@ const char* const c_index_file_name_ext = ".idx";
 const char* const c_header_file_name_ext = ".hdr";
 const char* const c_tranlog_file_name_ext = ".tlg";
 
+const char* const c_sav_file_name_ext = ".sav";
 const char* const c_lock_file_name_ext = ".lck";
 
 const int c_review_max_attempts = 50;
@@ -501,6 +502,36 @@ struct log_entry_item
    int64_t index_free_list;
 };
 
+}
+
+string ods_file_names( const string& name, char sep, bool include_tranlog )
+{
+   string retval( name + c_data_file_name_ext );
+
+   retval += sep + name + c_index_file_name_ext;
+   retval += sep + name + c_header_file_name_ext;
+
+   if( include_tranlog )
+      retval += sep + name + c_tranlog_file_name_ext;
+
+   return retval;
+}
+
+string ods_backup_file_names( const string& name, const char* p_ext, char sep, bool include_tranlog )
+{
+   string retval;
+
+   string ext( p_ext ? p_ext : c_sav_file_name_ext );
+
+   retval = name + c_data_file_name_ext + ext;
+
+   retval += sep + name + c_index_file_name_ext + ext;
+   retval += sep + name + c_header_file_name_ext + ext;
+
+   if( include_tranlog )
+      retval += sep + name + c_tranlog_file_name_ext + ext;
+
+   return retval;
 }
 
 void char_buffer::operator =( const char* s )
@@ -1888,6 +1919,8 @@ struct ods::impl
    {
    }
 
+   string name;
+
    string data_file_name;
    string index_file_name;
    string header_file_name;
@@ -2194,6 +2227,8 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    auto_ptr< impl > ap_impl( new impl );
    p_impl = ap_impl.get( );
 
+   p_impl->name = string( name );
+
    p_impl->data_file_name = string( name ) + c_data_file_name_ext;
    p_impl->index_file_name = string( name ) + c_index_file_name_ext;
    p_impl->header_file_name = string( name ) + c_header_file_name_ext;
@@ -2454,43 +2489,32 @@ bool ods::is_using_transaction_log( ) const
    return p_impl->using_tranlog;
 }
 
-void ods::repair_if_corrupt( )
-{
-   if( p_impl->is_corrupt )
-   {
-      if( !p_impl->using_tranlog )
-         rollback_dead_transactions( );
-      else
-         restore_from_transaction_log( );
-   }
-}
-
-int64_t ods::get_total_entries( )
+int64_t ods::get_total_entries( ) const
 {
    return p_impl->rp_header_info->total_entries;
 }
 
-int64_t ods::get_session_review_total( )
+int64_t ods::get_session_review_total( ) const
 {
    return *p_impl->rp_session_review_total;
 }
 
-int64_t ods::get_session_create_total( )
+int64_t ods::get_session_create_total( ) const
 {
    return *p_impl->rp_session_create_total;
 }
 
-int64_t ods::get_session_revive_total( )
+int64_t ods::get_session_revive_total( ) const
 {
    return *p_impl->rp_session_revive_total;
 }
 
-int64_t ods::get_session_update_total( )
+int64_t ods::get_session_update_total( ) const
 {
    return *p_impl->rp_session_update_total;
 }
 
-int64_t ods::get_session_delete_total( )
+int64_t ods::get_session_delete_total( ) const
 {
    return *p_impl->rp_session_delete_total;
 }
@@ -2508,6 +2532,287 @@ int64_t ods::get_transaction_level( ) const
 int64_t ods::get_next_transaction_id( ) const
 {
    return p_impl->rp_header_info->transaction_id;
+}
+
+string ods::get_file_names( const char* p_ext, char sep, bool add_tranlog_always ) const
+{
+   return ods_file_names( p_impl->name, sep, add_tranlog_always || p_impl->using_tranlog );
+}
+
+void ods::repair_if_corrupt( )
+{
+   if( p_impl->is_corrupt )
+   {
+      if( !p_impl->using_tranlog )
+         rollback_dead_transactions( );
+      else
+         restore_from_transaction_log( );
+   }
+}
+
+int64_t ods::get_size( const oid& id )
+{
+   guard lock_read( read_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   DEBUG_LOG( "ods::get_size( )" );
+   ods_index_entry index_entry;
+   if( id.get_num( ) < 0 )
+      return 0;
+
+   bool found = false;
+   int attempts = c_review_max_attempts;
+
+   while( attempts-- )
+   {
+      { // start of file lock section...
+         guard tmp_lock( *p_impl->rp_impl_lock );
+         ods::header_file_lock header_file_lock( *this );
+
+         auto_ptr< ods::file_scope > ap_file_scope;
+         if( !*p_impl->rp_bulk_level )
+            ap_file_scope.reset( new ods::file_scope( *this ) );
+
+         if( id.get_num( ) < p_impl->rp_header_info->total_entries )
+         {
+            read_index_entry( index_entry, id.get_num( ) );
+            found = true;
+            break;
+         }
+      } // end of file lock section...
+
+      msleep( c_review_attempt_sleep_time );
+   }
+
+   if( !found )
+      THROW_ODS_ERROR( "cannot get_size (max. attempts exceeded)" );
+
+   return index_entry.data.size;
+}
+
+void ods::destroy( const oid& id )
+{
+   if( id.get_num( ) < 0 )
+      return;
+
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state..." );
+
+   if( p_impl->is_read_only )
+      THROW_ODS_ERROR( "attempt to perform destroy when database was opened for read only access" );
+
+   DEBUG_LOG( "ods::destroy( )" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot destroy when database is bulk locked for dumping or reading" );
+
+   ods_index_entry index_entry;
+
+   bool deleted = false;
+   int attempts = c_delete_max_attempts;
+
+   while( attempts-- )
+   {
+      { // start of file lock section...
+         guard tmp_lock( *p_impl->rp_impl_lock );
+         ods::header_file_lock header_file_lock( *this );
+
+         auto_ptr< ods::file_scope > ap_file_scope;
+         if( !*p_impl->rp_bulk_level )
+            ap_file_scope.reset( new ods::file_scope( *this ) );
+
+         if( id.get_num( ) < p_impl->rp_header_info->total_entries )
+         {
+            unsigned char flags = c_log_entry_item_op_destroy;
+
+            read_index_entry( index_entry, id.get_num( ) );
+
+            if( index_entry.lock_flag == ods_index_entry::e_lock_none )
+            {
+               if( index_entry.trans_flag == ods_index_entry::e_trans_none
+                || ( p_impl->trans_level
+                && index_entry.data.tran_id == p_impl->p_trans_buffer->tran_id
+                && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
+               {
+                  if( p_impl->trans_level )
+                  {
+                     transaction_op op;
+
+                     op.type = transaction_op::e_op_type_destroy;
+
+                     op.data.id = id;
+                     op.data.old_tran_op = index_entry.data.tran_op;
+
+                     write_transaction_op( op );
+
+                     index_entry.data.tran_op = 0;
+                     index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
+
+                     if( p_impl->using_tranlog )
+                        append_log_entry_item( id.get_num( ), index_entry, flags );
+
+                     index_entry.trans_flag = ods_index_entry::e_trans_delete;
+                  }
+                  else
+                  {
+                     flags |= c_log_entry_item_type_non_transactional;
+
+                     index_entry.data.tran_op = 0;
+                     index_entry.data.tran_id = p_impl->rp_header_info->transaction_id;
+
+                     if( p_impl->using_tranlog )
+                     {
+                        p_impl->tranlog_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
+                        append_log_entry_item( id.get_num( ), index_entry, flags, p_impl->tranlog_offset );
+
+                        if( !p_impl->rp_header_info->tranlog_offset )
+                           p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
+                     }
+
+                     if( index_entry.data.pos + index_entry.data.size
+                      == p_impl->rp_header_info->total_size_of_data )
+                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
+
+                     index_entry.data.pos = p_impl->rp_header_info->index_free_list;
+                     index_entry.data.size = 0;
+
+                     index_entry.trans_flag = ods_index_entry::e_trans_free_list;
+
+                     p_impl->rp_header_info->index_free_list = id.get_num( ) + 1;
+                  }
+
+                  write_index_entry( index_entry, id.get_num( ) );
+
+                  ++p_impl->rp_header_info->index_transform_id;
+
+                  if( !p_impl->trans_level )
+                     ++p_impl->rp_header_info->transaction_id;
+                  else
+                  {
+                     ++p_impl->p_trans_buffer->levels.top( ).op_count;
+                     ++p_impl->total_trans_op_count;
+                  }
+
+                  deleted = true;
+
+                  ++( *p_impl->rp_session_delete_total );
+               }
+            }
+         }
+
+         if( deleted )
+            break;
+      } // end of file lock section...
+
+      msleep( c_delete_attempt_sleep_time );
+   }
+
+   if( !deleted )
+      THROW_ODS_ERROR( "cannot delete (max. attempts exceeded)" );
+
+   if( p_impl->trans_level && trans_write_ops_buffer_num != -1 && has_written_trans_op )
+   {
+      p_impl->p_ods_trans_op_cache_buffer->put( trans_write_ops_buffer, trans_write_ops_buffer_num );
+
+      has_written_trans_op = false;
+      had_interim_trans_op_write = true;
+   }
+}
+
+string ods::backup_database( const char* p_ext, char sep )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   string retval;
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot backup a database whilst in a transaction" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot backup a database unless locked for exclusive write" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot backup a database when bulk locked for dumping or reading" );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   string ext( p_ext ? p_ext : c_sav_file_name_ext );
+
+   string backup_data_file_name( p_impl->data_file_name + ext );
+   string backup_index_file_name( p_impl->index_file_name + ext );
+   string backup_header_file_name( p_impl->header_file_name + ext );
+   string backup_tranlog_file_name( p_impl->tranlog_file_name + ext );
+
+   ifstream data_ifs( p_impl->data_file_name.c_str( ), ios::in | ios::binary );
+   ifstream index_ifs( p_impl->index_file_name.c_str( ), ios::in | ios::binary );
+
+   if( !data_ifs || !index_ifs )
+      THROW_ODS_ERROR( "unable to open data and/or index input files for database backup" );
+
+   ofstream data_ofs( backup_data_file_name.c_str( ), ios::out | ios::binary );
+   ofstream index_ofs( backup_index_file_name.c_str( ), ios::out | ios::binary );
+   ofstream header_ofs( backup_header_file_name.c_str( ), ios::out | ios::binary );
+
+   if( !data_ofs || !index_ofs || !header_ofs )
+      THROW_ODS_ERROR( "unable to open data, index and/or header output files for database backup" );
+
+   copy_stream( data_ifs, data_ofs );
+   copy_stream( index_ifs, index_ofs );
+
+   data_ofs.flush( );
+   if( !data_ofs.good( ) )
+      THROW_ODS_ERROR( "unexpected bad data output stream in database backup" );
+
+   retval = backup_data_file_name;
+
+   index_ofs.flush( );
+   if( !index_ofs.good( ) )
+      THROW_ODS_ERROR( "unexpected bad index output stream in database backup" );
+
+   retval += sep + backup_index_file_name;
+
+   header_ofs.write( ( const char* )p_impl->rp_header_info.get( ), sizeof( header_info ) );
+
+   header_ofs.flush( );
+   if( !header_ofs.good( ) )
+      THROW_ODS_ERROR( "unexpected bad header output stream in database backup" );
+
+   retval += sep + backup_header_file_name;
+
+   if( p_impl->using_tranlog )
+   {
+      ifstream tranlog_ifs( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
+
+      if( !tranlog_ifs )
+         THROW_ODS_ERROR( "unable to open tranlog input file for database backup" );
+
+      ofstream tranlog_ofs( backup_tranlog_file_name.c_str( ), ios::out | ios::binary );
+
+      if( !tranlog_ofs )
+         THROW_ODS_ERROR( "unable to open tranlog output file for database backup" );
+
+      copy_stream( tranlog_ifs, tranlog_ofs );
+
+      tranlog_ofs.flush( );
+      if( !tranlog_ofs.good( ) )
+         THROW_ODS_ERROR( "unexpected bad tranlog output stream in database backup" );
+
+      retval += sep + backup_tranlog_file_name;
+   }
+
+   return retval;
 }
 
 void ods::bulk_base::pause( )
@@ -2743,180 +3048,6 @@ void ods::transaction::rollback( )
       o.transaction_rollback( );
       can_commit = false;
    }
-}
-
-void ods::destroy( const oid& id )
-{
-   if( id.get_num( ) < 0 )
-      return;
-
-   guard lock_write( write_lock );
-   guard lock_read( read_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state..." );
-
-   if( p_impl->is_read_only )
-      THROW_ODS_ERROR( "attempt to perform destroy when database was opened for read only access" );
-
-   DEBUG_LOG( "ods::destroy( )" );
-
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      THROW_ODS_ERROR( "cannot destroy when database is bulk locked for dumping or reading" );
-
-   ods_index_entry index_entry;
-
-   bool deleted = false;
-   int attempts = c_delete_max_attempts;
-
-   while( attempts-- )
-   {
-      { // start of file lock section...
-         guard tmp_lock( *p_impl->rp_impl_lock );
-         ods::header_file_lock header_file_lock( *this );
-
-         auto_ptr< ods::file_scope > ap_file_scope;
-         if( !*p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( *this ) );
-
-         if( id.get_num( ) < p_impl->rp_header_info->total_entries )
-         {
-            unsigned char flags = c_log_entry_item_op_destroy;
-
-            read_index_entry( index_entry, id.get_num( ) );
-
-            if( index_entry.lock_flag == ods_index_entry::e_lock_none )
-            {
-               if( index_entry.trans_flag == ods_index_entry::e_trans_none
-                || ( p_impl->trans_level
-                && index_entry.data.tran_id == p_impl->p_trans_buffer->tran_id
-                && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
-               {
-                  if( p_impl->trans_level )
-                  {
-                     transaction_op op;
-
-                     op.type = transaction_op::e_op_type_destroy;
-
-                     op.data.id = id;
-                     op.data.old_tran_op = index_entry.data.tran_op;
-
-                     write_transaction_op( op );
-
-                     index_entry.data.tran_op = 0;
-                     index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
-
-                     if( p_impl->using_tranlog )
-                        append_log_entry_item( id.get_num( ), index_entry, flags );
-
-                     index_entry.trans_flag = ods_index_entry::e_trans_delete;
-                  }
-                  else
-                  {
-                     flags |= c_log_entry_item_type_non_transactional;
-
-                     index_entry.data.tran_op = 0;
-                     index_entry.data.tran_id = p_impl->rp_header_info->transaction_id;
-
-                     if( p_impl->using_tranlog )
-                     {
-                        p_impl->tranlog_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
-                        append_log_entry_item( id.get_num( ), index_entry, flags, p_impl->tranlog_offset );
-
-                        if( !p_impl->rp_header_info->tranlog_offset )
-                           p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
-                     }
-
-                     if( index_entry.data.pos + index_entry.data.size
-                      == p_impl->rp_header_info->total_size_of_data )
-                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
-
-                     index_entry.data.pos = p_impl->rp_header_info->index_free_list;
-                     index_entry.data.size = 0;
-
-                     index_entry.trans_flag = ods_index_entry::e_trans_free_list;
-
-                     p_impl->rp_header_info->index_free_list = id.get_num( ) + 1;
-                  }
-
-                  write_index_entry( index_entry, id.get_num( ) );
-
-                  ++p_impl->rp_header_info->index_transform_id;
-
-                  if( !p_impl->trans_level )
-                     ++p_impl->rp_header_info->transaction_id;
-                  else
-                  {
-                     ++p_impl->p_trans_buffer->levels.top( ).op_count;
-                     ++p_impl->total_trans_op_count;
-                  }
-
-                  deleted = true;
-
-                  ++( *p_impl->rp_session_delete_total );
-               }
-            }
-         }
-
-         if( deleted )
-            break;
-      } // end of file lock section...
-
-      msleep( c_delete_attempt_sleep_time );
-   }
-
-   if( !deleted )
-      THROW_ODS_ERROR( "cannot delete (max. attempts exceeded)" );
-
-   if( p_impl->trans_level && trans_write_ops_buffer_num != -1 && has_written_trans_op )
-   {
-      p_impl->p_ods_trans_op_cache_buffer->put( trans_write_ops_buffer, trans_write_ops_buffer_num );
-
-      has_written_trans_op = false;
-      had_interim_trans_op_write = true;
-   }
-}
-
-int64_t ods::get_size( const oid& id )
-{
-   guard lock_read( read_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   DEBUG_LOG( "ods::get_size( )" );
-   ods_index_entry index_entry;
-   if( id.get_num( ) < 0 )
-      return 0;
-
-   bool found = false;
-   int attempts = c_review_max_attempts;
-
-   while( attempts-- )
-   {
-      { // start of file lock section...
-         guard tmp_lock( *p_impl->rp_impl_lock );
-         ods::header_file_lock header_file_lock( *this );
-
-         auto_ptr< ods::file_scope > ap_file_scope;
-         if( !*p_impl->rp_bulk_level )
-            ap_file_scope.reset( new ods::file_scope( *this ) );
-
-         if( id.get_num( ) < p_impl->rp_header_info->total_entries )
-         {
-            read_index_entry( index_entry, id.get_num( ) );
-            found = true;
-            break;
-         }
-      } // end of file lock section...
-
-      msleep( c_review_attempt_sleep_time );
-   }
-
-   if( !found )
-      THROW_ODS_ERROR( "cannot get_size (max. attempts exceeded)" );
-
-   return index_entry.data.size;
 }
 
 void ods::move_free_data_to_end( )

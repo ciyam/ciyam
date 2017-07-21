@@ -123,6 +123,7 @@ ciyam.dat
 ciyam.hdr
 ciyam.idx
 ciyam.sql
+ciyam.tlg
 modules.lst
 packages.lst
 ciyam_server.dat
@@ -137,6 +138,7 @@ Meta.dat
 Meta.hdr
 Meta.idx
 Meta.sql
+Meta.tlg
 Meta.modules.lst
 
 # Ignore storage backups.

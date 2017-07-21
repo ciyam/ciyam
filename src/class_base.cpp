@@ -2785,12 +2785,35 @@ bool exists_file( const string& filename, bool check_link_target )
    return file_exists( filename, check_link_target );
 }
 
+bool exists_files( const string& filenames, char sep, bool check_link_target )
+{
+   vector< string > files;
+   split( filenames, files, sep );
+
+   for( size_t i = 0; i < files.size( ); i++ )
+   {
+      if( !exists_file( files[ i ], check_link_target ) )
+         return false;
+   }
+
+   return true;
+}
+
 void remove_file( const string& filename )
 {
    file_remove( filename );
 
    if( file_exists( filename ) )
       throw runtime_error( "unable to remove file '" + filename + "'" );
+}
+
+void remove_files( const string& filenames, char sep )
+{
+   vector< string > files;
+   split( filenames, files, sep );
+
+   for( size_t i = 0; i < files.size( ); i++ )
+      remove_file( files[ i ] );
 }
 
 void rename_file( const string& oldname, const string& newname )
@@ -2825,6 +2848,21 @@ void copy_file( const string& source, const string& destination )
       throw runtime_error( "unable to open file '" + destination + "' for output" );
 
    copy_stream( inpf, outf );
+}
+
+void copy_files( const string& source_files, const string& destination_files, char sep )
+{
+   vector< string > src_files;
+   vector< string > dest_files;
+
+   split( source_files, src_files, sep );
+   split( destination_files, dest_files, sep );
+
+   if( src_files.size( ) != dest_files.size( ) )
+      throw runtime_error( "unexpected number of file names mismatched in copy_files" );
+
+   for( size_t i = 0; i < src_files.size( ); i++ )
+      copy_file( src_files[ i ], dest_files[ i ] );
 }
 
 string load_file( const string& filename, bool is_optional )

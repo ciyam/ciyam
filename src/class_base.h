@@ -1158,13 +1158,21 @@ std::string CIYAM_BASE_DECL_SPEC get_ext( const std::string& filename );
 std::string CIYAM_BASE_DECL_SPEC get_path( const std::string& filename );
 
 bool CIYAM_BASE_DECL_SPEC exists_file( const std::string& filename, bool check_link_target = true );
+bool CIYAM_BASE_DECL_SPEC exists_files( const std::string& filenames, char sep = ',', bool check_link_target = true );
+
 void CIYAM_BASE_DECL_SPEC remove_file( const std::string& filename );
+void CIYAM_BASE_DECL_SPEC remove_files( const std::string& filenames, char sep = ',' );
+
 void CIYAM_BASE_DECL_SPEC rename_file( const std::string& oldname, const std::string& newname );
 
 int64_t CIYAM_BASE_DECL_SPEC size_file( const std::string& filename );
 int64_t CIYAM_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 
 void CIYAM_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
+
+void CIYAM_BASE_DECL_SPEC copy_files(
+ const std::string& source_files, const std::string& destination_files, char sep = ',' );
+
 std::string CIYAM_BASE_DECL_SPEC load_file( const std::string& filename, bool is_optional = false );
 
 void CIYAM_BASE_DECL_SPEC save_file( const std::string& filename, const std::string& data );

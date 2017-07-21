@@ -648,7 +648,7 @@ int main( int argc, char* argv[ ] )
 #endif
 
    if( !is_quiet )
-      cout << "bundle v0.1e\n";
+      cout << "bundle v0.1f\n";
 
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -705,7 +705,12 @@ int main( int argc, char* argv[ ] )
       bool get_exclude_filespecs = false;
       string directory = g_cwd.substr( pos + 1 );
 
-      if( !is_delete )
+      if( is_delete )
+      {
+         for( int i = first_arg + 2; i < argc; i++ )
+            all_filespecs[ c_delete_dummy_path ].push_back( string( argv[ i ] ) );
+      }
+      else
       {
          for( int i = first_arg + 2; i < argc; i++ )
          {
@@ -1116,7 +1121,9 @@ int main( int argc, char* argv[ ] )
                         string next_path( current_sub_path + '/' + next );
                         for( size_t i = 0; i < exprs.size( ); i++ )
                         {
-                           if( wildcard_match( exprs[ i ], next_path ) )
+                           string next_expr( current_sub_path + '/' + exprs[ i ] );
+
+                           if( wildcard_match( next_expr, next_path ) )
                            {
                               if( !is_quieter )
                                  cout << "*kill* \"" << next << "\"" << endl;
@@ -1147,7 +1154,13 @@ int main( int argc, char* argv[ ] )
                         skip_existing_file = false;
 
                         if( !is_quieter )
+                        {
                            cout << "append \"" << next << "\"";
+
+                           if( ( !raw_file_size && encoding == e_encoding_type_raw )
+                            || ( !file_data_lines && encoding != e_encoding_type_raw ) )
+                              cout << endl;
+                        }
 
                         file_names.insert( next );
                         g_md5.update( ( unsigned char* )check.c_str( ), check.length( ) );
@@ -1180,12 +1193,6 @@ int main( int argc, char* argv[ ] )
 
                      string rwx_perms( next.substr( 0, pos ) );
                      next.erase( 0, pos + 1 );
-
-                     if( is_delete && all_filespecs.empty( ) )
-                     {
-                        for( int i = first_arg + 2; i < argc; i++ )
-                           all_filespecs[ c_delete_dummy_path ].push_back( next + '/' + string( argv[ i ] ) );
-                     }
 
                      current_sub_path = next;
 
