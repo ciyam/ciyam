@@ -4643,7 +4643,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( rebuild )
          {
-            remove_files( db_file_names );
+            remove_files( db_file_names, ' ' );
 
             remove_file( sql_name );
 
