@@ -20,7 +20,7 @@ else
   echo Error: Missing environment variable 'WEBDIR'.
  fi
  if [ ! "$had_error" = "true" ]; then
-  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
+  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.tlg $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
   ./ciyam_server -quiet &
   sleep 0.3
   ./ciyam_client -quiet -no_prompt < init.cin

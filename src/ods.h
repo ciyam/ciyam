@@ -728,7 +728,7 @@ class ODS_DECL_SPEC ods
 
    int64_t log_append_offset( );
 
-   int64_t append_log_entry( int64_t tx_id );
+   int64_t append_log_entry( int64_t tx_id, int64_t* p_append_offset = 0 );
 
    void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
 

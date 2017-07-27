@@ -12,6 +12,7 @@ if exist %1.sql del %1.sql
 if exist %1.txs.log del %1.txs.log
 if exist %1.undo.sql del %1.undo.sql
 
+if exist %1.tlg del %1.tlg
 if exist %1.dat del %1.dat
 if exist %1.dat.lck del %1.dat.lck
 if exist %1.hdr del %1.hdr

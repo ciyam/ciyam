@@ -376,7 +376,7 @@ const unsigned char c_log_entry_item_type_non_transactional = 8;
 const unsigned char c_log_entry_item_mask_type = 0x0c;
 
 const unsigned char c_log_entry_item_flag_is_post_op = 0x10;
-const unsigned char c_log_entry_item_flag_reserved_1 = 0x20;
+const unsigned char c_log_entry_item_flag_has_old_pos = 0x20;
 const unsigned char c_log_entry_item_flag_reserved_2 = 0x40;
 const unsigned char c_log_entry_item_flag_reserved_3 = 0x80;
 
@@ -387,6 +387,7 @@ struct log_entry_item
     flags( 0 ),
     tx_id( 0 ),
     data_pos( 0 ),
+    data_opos( 0 ),
     data_size( 0 ),
     index_entry_id( 0 )
    {
@@ -404,17 +405,23 @@ struct log_entry_item
       return ( flags & c_log_entry_item_mask_type ) == c_log_entry_item_type_normal;
    }
 
+   bool has_old_pos( ) const { return has_old_pos( flags ); }
+
+   bool has_old_pos( unsigned char flags ) const { return ( flags & c_log_entry_item_flag_has_old_pos ); }
+
    bool has_pos_and_size( ) const { return has_pos_and_size( flags ); }
 
    bool has_pos_and_size( unsigned char flags ) const
    {
       unsigned char op = ( flags & c_log_entry_item_mask_op );
+
       bool is_post_op = ( flags & c_log_entry_item_flag_is_post_op );
+      bool has_old_pos = ( flags & c_log_entry_item_flag_has_old_pos );
 
       bool has_data_pos_and_size = ( op == c_log_entry_item_op_update || op == c_log_entry_item_op_destroy );
 
       if( op == c_log_entry_item_op_store )
-         has_data_pos_and_size = is_post_op;
+         has_data_pos_and_size = ( is_post_op || has_old_pos );
       else if( is_post_op && op == c_log_entry_item_op_destroy )
          has_data_pos_and_size = false;
 
@@ -447,6 +454,8 @@ struct log_entry_item
       if( has_pos_and_size( flags ) )
       {
          os << "data_pos = " << data_pos << endl;
+         if( has_old_pos( flags ) )
+            os << "data_opos = " << data_opos << endl;
          os << "data_size = " << data_size << endl;
       }
 
@@ -463,6 +472,10 @@ struct log_entry_item
       if( has_pos_and_size( flags ) )
       {
          is.read( ( char* )&data_pos, sizeof( data_pos ) );
+
+         if( has_old_pos( flags ) )
+            is.read( ( char* )&data_opos, sizeof( data_opos ) );
+
          is.read( ( char* )&data_size, sizeof( data_size ) );
       }
 
@@ -482,6 +495,10 @@ struct log_entry_item
       if( has_pos_and_size( flags ) )
       {
          os.write( ( const char* )&data_pos, sizeof( data_pos ) );
+
+         if( has_old_pos( flags ) )
+            os.write( ( const char* )&data_opos, sizeof( data_opos ) );
+
          os.write( ( const char* )&data_size, sizeof( data_size ) );
       }
 
@@ -497,9 +514,9 @@ struct log_entry_item
 
    int64_t tx_id;
    int64_t data_pos;
+   int64_t data_opos;
    int64_t data_size;
    int64_t index_entry_id;
-   int64_t index_free_list;
 };
 
 }
@@ -3077,6 +3094,11 @@ void ods::move_free_data_to_end( )
 
    ods_index_entry index_entry;
 
+   // FUTURE: This approach requires keeping in memory an "ods_index_entry_pos" item for every active
+   // "index_entry" in the entire database. If a "deque" (rather than a "set") was used then it could
+   // be limited to a maximum size with potentially multiple passes being performed across all of the
+   // index entries that would then only insert items for those index entries whose "pos" is actually
+   // greater than the last item from the previous pass.
    for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
    {
       read_index_entry( index_entry, i );
@@ -3096,12 +3118,104 @@ void ods::move_free_data_to_end( )
       }
    }
 
+   int64_t num_moved = 0;
+   int64_t log_entry_offs = 0;
+   int64_t old_append_offs = 0;
+
+   set< ods_index_entry_pos >::const_iterator ci, end;
+
+   if( p_impl->using_tranlog )
+   {
+      log_entry_offs = append_log_entry( p_impl->rp_header_info->transaction_id++, &old_append_offs );
+
+      fstream fs;
+      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+
+      if( !fs )
+         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
+
+      fs.seekg( old_append_offs, ios::beg );
+
+      set_read_data_pos( 0 );
+
+      int64_t new_pos = 0;
+      int64_t read_pos = 0;
+
+      for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
+      {
+         int64_t next_id = ci->id;
+         int64_t next_pos = ci->pos;
+         int64_t next_size = ci->size;
+
+         if( next_pos < read_pos )
+            THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
+
+         adjust_read_data_pos( next_pos - read_pos );
+
+         if( next_pos != new_pos )
+         {
+            ++num_moved;
+
+            int64_t chunk = c_buffer_chunk_size;
+            char buffer[ c_buffer_chunk_size ];
+
+            log_entry_item tranlog_item;
+
+            tranlog_item.flags = c_log_entry_item_op_store;
+            tranlog_item.flags |= ( c_log_entry_item_type_non_transactional | c_log_entry_item_flag_has_old_pos );
+
+            tranlog_item.index_entry_id = next_id;
+
+            tranlog_item.data_pos = new_pos;
+            tranlog_item.data_opos = next_pos;
+            tranlog_item.data_size = next_size;
+
+            tranlog_item.write( fs );
+
+            for( int64_t j = 0; j < next_size; j += chunk )
+            {
+               if( j + chunk > next_size )
+                  chunk = next_size - j;
+
+               read_data_bytes( buffer, chunk );
+               fs.write( buffer, chunk );
+
+               if( !fs.good( ) )
+                  THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+            }
+
+            read_pos = next_pos + next_size;
+         }
+         else
+            read_pos = next_pos;
+
+         new_pos += next_size;
+      }
+
+      fs.flush( );
+      if( !fs.good( ) )
+         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+
+      int64_t offs = fs.tellg( );
+
+      fs.seekg( 0, ios::beg );
+
+      log_info tranlog_info;
+      tranlog_info.read( fs );
+
+      tranlog_info.append_offs = offs;
+
+      fs.seekg( 0, ios::beg );
+      tranlog_info.write( fs );
+
+      fs.close( );
+   }
+
    set_read_data_pos( 0 );
 
    int64_t new_pos = 0;
    int64_t read_pos = 0;
    int64_t actual_size = 0;
-   set< ods_index_entry_pos >::const_iterator ci, end;
 
    for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
    {
@@ -3120,6 +3234,7 @@ void ods::move_free_data_to_end( )
          char buffer[ c_buffer_chunk_size ];
 
          set_write_data_pos( new_pos );
+
          for( int64_t j = 0; j < next_size; j += chunk )
          {
             if( j + chunk > next_size )
@@ -3141,6 +3256,30 @@ void ods::move_free_data_to_end( )
 
       new_pos += next_size;
       actual_size += next_size;
+   }
+
+   if( log_entry_offs )
+   {
+      fstream fs;
+      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+
+      if( !fs )
+         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
+
+      log_entry tranlog_entry;
+
+      fs.seekg( log_entry_offs, ios::beg );
+      tranlog_entry.read( fs );
+
+      tranlog_entry.commit_offs = old_append_offs;
+      tranlog_entry.commit_items = num_moved;
+
+      fs.seekg( log_entry_offs, ios::beg );
+      tranlog_entry.write( fs );
+
+      fs.close( );
+
+      p_impl->rp_header_info->tranlog_offset = log_entry_offs;
    }
 
    ++p_impl->rp_header_info->data_transform_id;
@@ -4035,7 +4174,7 @@ int64_t ods::log_append_offset( )
    return tranlog_info.append_offs;
 }
 
-int64_t ods::append_log_entry( int64_t tx_id )
+int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
@@ -4095,6 +4234,9 @@ int64_t ods::append_log_entry( int64_t tx_id )
    }
 
    tranlog_info.append_offs += tranlog_entry.size_of( );
+
+   if( p_append_offset )
+      *p_append_offset = tranlog_info.append_offs;
 
    fs.seekg( 0, ios::beg );
    tranlog_info.write( fs );
@@ -4366,7 +4508,8 @@ void ods::restore_from_transaction_log( )
 
                if( tranlog_item.has_pos_and_size( ) )
                {
-                  if( ( commit && tranlog_item.is_post_op( ) )
+                  if( tranlog_item.has_old_pos( )
+                   || ( commit && tranlog_item.is_post_op( ) )
                    || !( commit && tranlog_item.is_post_op( ) ) )
                   {
                      had_any_data = true;
@@ -4374,7 +4517,11 @@ void ods::restore_from_transaction_log( )
                      int64_t chunk = c_buffer_chunk_size;
                      char buffer[ c_buffer_chunk_size ];
 
-                     set_write_data_pos( tranlog_item.data_pos );
+                     if( commit || !tranlog_item.has_old_pos( ) )
+                        set_write_data_pos( tranlog_item.data_pos );
+                     else
+                        set_write_data_pos( tranlog_item.data_opos );
+
                      for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
                      {
                         if( j + chunk > tranlog_item.data_size )
@@ -4387,7 +4534,11 @@ void ods::restore_from_transaction_log( )
                      ods_index_entry index_entry;
                      read_index_entry( index_entry, tranlog_item.index_entry_id );
 
-                     index_entry.data.pos = tranlog_item.data_pos;
+                     if( commit || !tranlog_item.has_old_pos( ) )
+                        index_entry.data.pos = tranlog_item.data_pos;
+                     else
+                        index_entry.data.pos = tranlog_item.data_opos;
+
                      index_entry.data.size = tranlog_item.data_size;
 
                      if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )

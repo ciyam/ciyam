@@ -22,6 +22,9 @@ else
   rm $1.undo.sql
  fi
 
+ if [ -f $1.tlg ]; then
+  rm $1.tlg
+ fi
  if [ -f $1.dat ]; then
   rm $1.dat
  fi
