@@ -819,6 +819,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "completed" );
       }
    }
+   else if( command == c_cmd_test_ods_truncate )
+   {
+      if( g_shared_access )
+         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      else
+         o.truncate_log( );
+   }
    else if( command == c_cmd_test_ods_exit )
    {
       while( trans_level )

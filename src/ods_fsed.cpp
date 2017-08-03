@@ -472,6 +472,13 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "completed" );
       }
    }
+   else if( command == c_cmd_ods_fsed_truncate )
+   {
+      if( g_shared_access )
+         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      else
+         ap_ods->truncate_log( );
+   }
    else if( command == c_cmd_ods_fsed_exit )
       handler.set_finished( );
 }

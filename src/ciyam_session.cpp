@@ -4460,7 +4460,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          exec_system( bundle + " -q " + name + ".backup.bun.gz " + file_names );
 
          if( truncate_log )
-            exec_system( bundle + " -q " + name + "." + osstr.str( ) + ".bun.gz " + name + ".log." + osstr.str( ) );
+            exec_system( bundle + " -q " + name + "." + osstr.str( ) + ".bun.gz "
+             + name + ".log." + osstr.str( ) + " " + name + ".tlg." + osstr.str( ) );
 
          remove_files( sav_db_file_names, ' ' );
 
@@ -4494,7 +4495,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file( sav_manuscript_name );
 
          if( truncate_log )
+         {
             remove_file( name + ".log." + osstr.str( ) );
+            remove_file( name + ".tlg." + osstr.str( ) );
+         }   
       }
       else if( command == c_cmd_ciyam_session_storage_rewind )
       {

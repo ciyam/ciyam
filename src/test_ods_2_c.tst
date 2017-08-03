@@ -1,5 +1,6 @@
 ** File Info
-Version Id = 65536
+Version: 1.0
+Num Logs = 0
 Num Trans = 0
 Num Writers = 0
 Init Tranlog = 0

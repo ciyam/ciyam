@@ -176,16 +176,19 @@ void throw_ods_error( const string& s )
 
 #define THROW_ODS_ERROR( s ) throw_ods_error( s )
 
-const int64_t c_bit_1 = UINT64_C( 1 );
-const int64_t c_bit_2 = UINT64_C( 2 );
-
 // NOTE: It would be expected that if a "major" version change has occurred then any previous file
 // format would no longer be compatible, however, if a "minor" version change has occurred then it
 // should still be possible to operate on previous file formats (with the same "major" version).
-const int32_t c_major_ver = 1;
-const int32_t c_minor_ver = 0;
+const int16_t c_major_ver = 1;
+const int16_t c_minor_ver = 0;
 
-const int32_t c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
+const int16_t c_version = ( c_major_ver << 8 ) | c_minor_ver;
+
+const int16_t c_version_major_mask = 0xff00;
+const int16_t c_version_minor_mask = 0x00ff;
+
+const int64_t c_bit_1 = UINT64_C( 1 );
+const int64_t c_bit_2 = UINT64_C( 2 );
 
 const uint64_t c_int_type_hi_bit = UINT64_C( 1 ) << ( numeric_limits< uint64_t >::digits - 1 );
 
@@ -196,47 +199,64 @@ const int c_buffer_chunk_size = 1024;
 
 inline bool is_print( char ch ) { return ch >= ' ' && ch <= '~'; }
 
+string format_version( int16_t version )
+{
+   ostringstream osstr;
+   osstr << ( ( version & c_version_major_mask ) >> 8 ) << '.' << ( version & c_version_minor_mask );
+
+   return osstr.str( );
+}
+
 struct log_info
 {
    log_info( )
     :
-    version( c_version_id ),
-    reserved( 0 ),
+    version( c_version ),
+    sequence( 1 ),
+    reserved_( 0 ),
     init_time( 0 ),
     entry_offs( 0 ),
     entry_time( 0 ),
-    append_offs( size_of( ) )
+    append_offs( size_of( ) ),
+    sequence_new_tm( 0 ),
+    sequence_old_tm( 0 )
    {
    }
 
    void dump( ostream& os ) const
    {
-      os << "version = " << version << endl;
-      os << "init_time = " << init_time << endl;
-      os << "entry_offs = " << entry_offs << endl;
-      os << "entry_time = " << entry_time << endl;
-      os << "append_offs = " << append_offs << endl;
+      os << "version = " << version << '\n';
+      os << "sequence = " << sequence << '\n';
+      os << "init_time = " << init_time << '\n';
+      os << "entry_offs = " << entry_offs << '\n';
+      os << "entry_time = " << entry_time << '\n';
+      os << "append_offs = " << append_offs << '\n';
+      os << "sequence_new_tm = " << sequence_new_tm << '\n';
+      os << "sequence_old_tm = " << sequence_old_tm << endl;
    }
 
    int64_t size_of( ) const
    {
-      return sizeof( version ) + sizeof( reserved )
-       + sizeof( init_time ) + sizeof( entry_offs ) + sizeof( entry_time ) + sizeof( append_offs );
+      return sizeof( version ) + sizeof( sequence ) + sizeof( reserved_ )
+       + sizeof( init_time ) + sizeof( entry_offs ) + sizeof( entry_time )
+       + sizeof( append_offs ) + sizeof( sequence_new_tm ) + sizeof( sequence_old_tm );
    }
 
    void read( istream& is )
    {
       is.read( ( char* )&version, sizeof( version ) );
 
-      if( version != c_version_id )
+      if( version != c_version )
          THROW_ODS_ERROR( "incompatible log_info version found" );
 
-      is.read( ( char* )&reserved, sizeof( reserved ) );
-
+      is.read( ( char* )&sequence, sizeof( sequence ) );
+      is.read( ( char* )&reserved_, sizeof( reserved_ ) );
       is.read( ( char* )&init_time, sizeof( init_time ) );
       is.read( ( char* )&entry_offs, sizeof( entry_offs ) );
       is.read( ( char* )&entry_time, sizeof( entry_time ) );
       is.read( ( char* )&append_offs, sizeof( append_offs ) );
+      is.read( ( char* )&sequence_new_tm, sizeof( sequence_new_tm ) );
+      is.read( ( char* )&sequence_old_tm, sizeof( sequence_old_tm ) );
 
       if( !is.good( ) )
          THROW_ODS_ERROR( "unexpected bad log_info read" );
@@ -245,12 +265,14 @@ struct log_info
    void write( ostream& os ) const
    {
       os.write( ( const char* )&version, sizeof( version ) );
-      os.write( ( const char* )&reserved, sizeof( reserved ) );
-
+      os.write( ( const char* )&sequence, sizeof( sequence ) );
+      os.write( ( const char* )&reserved_, sizeof( reserved_ ) );
       os.write( ( const char* )&init_time, sizeof( init_time ) );
       os.write( ( const char* )&entry_offs, sizeof( entry_offs ) );
       os.write( ( const char* )&entry_time, sizeof( entry_time ) );
       os.write( ( const char* )&append_offs, sizeof( append_offs ) );
+      os.write( ( const char* )&sequence_new_tm, sizeof( sequence_new_tm ) );
+      os.write( ( const char* )&sequence_old_tm, sizeof( sequence_old_tm ) );
 
       os.flush( );
 
@@ -258,8 +280,10 @@ struct log_info
          THROW_ODS_ERROR( "unexpected bad log_info write" );
    }
 
-   int32_t version;
-   int32_t reserved;
+   int16_t version;
+   int16_t sequence;
+
+   int32_t reserved_;
 
    int64_t init_time;
 
@@ -267,6 +291,9 @@ struct log_info
    int64_t entry_time;
 
    int64_t append_offs;
+
+   int64_t sequence_new_tm;
+   int64_t sequence_old_tm;
 };
 
 struct log_entry
@@ -377,8 +404,8 @@ const unsigned char c_log_entry_item_mask_type = 0x0c;
 
 const unsigned char c_log_entry_item_flag_is_post_op = 0x10;
 const unsigned char c_log_entry_item_flag_has_old_pos = 0x20;
-const unsigned char c_log_entry_item_flag_reserved_2 = 0x40;
-const unsigned char c_log_entry_item_flag_reserved_3 = 0x80;
+const unsigned char c_log_entry_item_flag_reserved_40 = 0x40;
+const unsigned char c_log_entry_item_flag_reserved_80 = 0x80;
 
 struct log_entry_item
 {
@@ -765,7 +792,8 @@ template< typename T > class finalise_value
 
 struct header_info
 {
-   int32_t version_id;
+   int16_t version;
+   int16_t num_logs;
 
    int16_t num_trans;
    int16_t num_writers;
@@ -783,7 +811,8 @@ struct header_info
 
    header_info( )
     :
-    version_id( 0 ),
+    version( 0 ),
+    num_logs( 0 ),
     num_trans( 0 ),
     num_writers( 0 ),
     init_tranlog( 0 ),
@@ -2002,6 +2031,8 @@ struct ods::impl
    void read_header_file_info( );
    void write_header_file_info( bool for_close = false );
 
+   void force_write_header_file_info( );
+
    bool found_instance_currently_reading( int64_t num );
    bool found_instance_currently_writing( int64_t num );
 
@@ -2037,6 +2068,13 @@ void ods::impl::write_header_file_info( bool for_close )
    if( _write( *rp_header_file,
     ( void* )rp_header_info.get( ), sizeof( header_info ) ) != sizeof( header_info ) )
       THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+}
+
+void ods::impl::force_write_header_file_info( )
+{
+   // NOTE: The file will be marked as corrupt unless "has_changed" is set true.
+   temp_set_value< bool > temp_has_changed( *rp_has_changed, true );
+   write_header_file_info( );
 }
 
 bool ods::impl::found_instance_currently_reading( int64_t num )
@@ -2334,7 +2372,7 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
       if( !outf )
          THROW_ODS_ERROR( "unable to open tranlog file for output" );
 
-      tranlog_info.init_time = now;
+      tranlog_info.init_time = tranlog_info.sequence_new_tm = now;
 
       tranlog_info.write( outf );
 
@@ -2367,6 +2405,9 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
 
          tranlog_info.read( inpf );
 
+         if( tranlog_info.sequence != p_impl->rp_header_info->num_logs )
+            THROW_ODS_ERROR( "database transaction log sequence mismatch" );
+
          if( tranlog_info.init_time != p_impl->rp_header_info->init_tranlog )
             THROW_ODS_ERROR( "database transaction log init time mismatch" );
 
@@ -2377,17 +2418,16 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    }
    else
    {
-      p_impl->rp_header_info->version_id = c_version_id;
+      p_impl->rp_header_info->version = c_version;
 
       if( using_tranlog )
       {
          p_impl->using_tranlog = true;
+         p_impl->rp_header_info->num_logs = 1;
          p_impl->rp_header_info->init_tranlog = now;
       }
 
-      // NOTE: The newly created file will be marked as corrupt unless "has_changed" is set true.
-      temp_set_value< bool > temp_has_changed( *p_impl->rp_has_changed, true );
-      p_impl->write_header_file_info( );
+      p_impl->force_write_header_file_info( );
    }
 
    p_impl->rp_instances = new vector< ods* >( );
@@ -2832,6 +2872,562 @@ string ods::backup_database( const char* p_ext, char sep )
    return retval;
 }
 
+void ods::move_free_data_to_end( )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot move free data to end whilst in a transaction" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive write" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   ods_index_entry_pos entry;
+   set< ods_index_entry_pos > entries;
+
+   ods_index_entry index_entry;
+
+   // FUTURE: This approach requires keeping in memory an "ods_index_entry_pos" item for every active
+   // "index_entry" in the entire database. If a "deque" (rather than a "set") was used then it could
+   // be limited to a maximum size with potentially multiple passes being performed across all of the
+   // index entries that would then only insert items for those index entries whose "pos" is actually
+   // greater than the last item from the previous pass.
+   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+   {
+      read_index_entry( index_entry, i );
+      if( index_entry.lock_flag != ods_index_entry::e_lock_none )
+         THROW_ODS_ERROR( "cannot move free data to end when one or more entries have been locked" );
+
+      if( index_entry.trans_flag != ods_index_entry::e_trans_none
+       && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+         THROW_ODS_ERROR( "cannot move free data to end whilst one or more dead transactions exist" );
+
+      if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
+      {
+         entry.id = i;
+         entry.pos = index_entry.data.pos;
+         entry.size = index_entry.data.size;
+         entries.insert( entry );
+      }
+   }
+
+   int64_t num_moved = 0;
+   int64_t log_entry_offs = 0;
+   int64_t old_append_offs = 0;
+
+   set< ods_index_entry_pos >::const_iterator ci, end;
+
+   if( p_impl->using_tranlog )
+   {
+      log_entry_offs = append_log_entry( p_impl->rp_header_info->transaction_id++, &old_append_offs );
+
+      fstream fs;
+      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+
+      if( !fs )
+         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
+
+      fs.seekg( old_append_offs, ios::beg );
+
+      set_read_data_pos( 0 );
+
+      int64_t new_pos = 0;
+      int64_t read_pos = 0;
+
+      for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
+      {
+         int64_t next_id = ci->id;
+         int64_t next_pos = ci->pos;
+         int64_t next_size = ci->size;
+
+         if( next_pos < read_pos )
+            THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
+
+         adjust_read_data_pos( next_pos - read_pos );
+
+         if( next_pos != new_pos )
+         {
+            ++num_moved;
+
+            int64_t chunk = c_buffer_chunk_size;
+            char buffer[ c_buffer_chunk_size ];
+
+            log_entry_item tranlog_item;
+
+            tranlog_item.flags = c_log_entry_item_op_store;
+            tranlog_item.flags |= ( c_log_entry_item_type_non_transactional | c_log_entry_item_flag_has_old_pos );
+
+            tranlog_item.index_entry_id = next_id;
+
+            tranlog_item.data_pos = new_pos;
+            tranlog_item.data_opos = next_pos;
+            tranlog_item.data_size = next_size;
+
+            tranlog_item.write( fs );
+
+            for( int64_t j = 0; j < next_size; j += chunk )
+            {
+               if( j + chunk > next_size )
+                  chunk = next_size - j;
+
+               read_data_bytes( buffer, chunk );
+               fs.write( buffer, chunk );
+
+               if( !fs.good( ) )
+                  THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+            }
+
+            read_pos = next_pos + next_size;
+         }
+         else
+            read_pos = next_pos;
+
+         new_pos += next_size;
+      }
+
+      fs.flush( );
+      if( !fs.good( ) )
+         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+
+      int64_t offs = fs.tellg( );
+
+      fs.seekg( 0, ios::beg );
+
+      log_info tranlog_info;
+      tranlog_info.read( fs );
+
+      tranlog_info.append_offs = offs;
+
+      fs.seekg( 0, ios::beg );
+      tranlog_info.write( fs );
+
+      fs.close( );
+   }
+
+   set_read_data_pos( 0 );
+
+   int64_t new_pos = 0;
+   int64_t read_pos = 0;
+   int64_t actual_size = 0;
+
+   for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
+   {
+      int64_t next_id = ci->id;
+      int64_t next_pos = ci->pos;
+      int64_t next_size = ci->size;
+
+      if( next_pos < read_pos )
+         THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
+
+      adjust_read_data_pos( next_pos - read_pos );
+
+      if( next_pos != new_pos )
+      {
+         int64_t chunk = c_buffer_chunk_size;
+         char buffer[ c_buffer_chunk_size ];
+
+         set_write_data_pos( new_pos );
+
+         for( int64_t j = 0; j < next_size; j += chunk )
+         {
+            if( j + chunk > next_size )
+               chunk = next_size - j;
+
+            read_data_bytes( buffer, chunk );
+            write_data_bytes( buffer, chunk );
+         }
+
+         read_index_entry( index_entry, next_id );
+
+         index_entry.data.pos = new_pos;
+         write_index_entry( index_entry, next_id );
+
+         read_pos = next_pos + next_size;
+      }
+      else
+         read_pos = next_pos;
+
+      new_pos += next_size;
+      actual_size += next_size;
+   }
+
+   if( log_entry_offs )
+   {
+      fstream fs;
+      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+
+      if( !fs )
+         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
+
+      log_entry tranlog_entry;
+
+      fs.seekg( log_entry_offs, ios::beg );
+      tranlog_entry.read( fs );
+
+      tranlog_entry.commit_offs = old_append_offs;
+      tranlog_entry.commit_items = num_moved;
+
+      fs.seekg( log_entry_offs, ios::beg );
+      tranlog_entry.write( fs );
+
+      fs.close( );
+
+      p_impl->rp_header_info->tranlog_offset = log_entry_offs;
+   }
+
+   ++p_impl->rp_header_info->data_transform_id;
+   ++p_impl->rp_header_info->index_transform_id;
+
+   p_impl->rp_header_info->total_size_of_data = actual_size;
+
+   data_and_index_write( );
+
+   p_impl->force_write_header_file_info( );
+}
+
+void ods::truncate_log( const char* p_ext )
+{
+   guard lock_write( write_lock );
+   guard lock_read( read_lock );
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   if( p_impl->trans_level )
+      THROW_ODS_ERROR( "cannot truncate log whilst in a transaction" );
+
+   if( !p_impl->using_tranlog )
+      THROW_ODS_ERROR( "cannot truncate log unless using a transaction log" );
+
+   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
+      THROW_ODS_ERROR( "cannot truncate log unless locked for exclusive write" );
+
+   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
+      THROW_ODS_ERROR( "cannot truncate log when bulk locked for dumping or reading" );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+
+   log_info tranlog_info;
+
+   if( p_impl->using_tranlog )
+   {
+      ifstream tranlog_ifs( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
+
+      if( !tranlog_ifs )
+         THROW_ODS_ERROR( "unable to open tranlog file for input" );
+
+      tranlog_info.read( tranlog_ifs );
+
+      string ext( p_ext ? p_ext : "" );
+
+      if( ext.empty( ) )
+         ext = "." + to_string( tranlog_info.sequence );
+
+      string backup_tranlog_file_name( p_impl->tranlog_file_name + ext );
+
+      ofstream tranlog_ofs( backup_tranlog_file_name.c_str( ), ios::out | ios::binary );
+
+      if( !tranlog_ofs )
+         THROW_ODS_ERROR( "unable to open tranlog output file for truncate log" );
+
+      tranlog_ifs.seekg( 0, ios::beg );
+
+      copy_stream( tranlog_ifs, tranlog_ofs );
+
+      tranlog_ofs.flush( );
+      if( !tranlog_ofs.good( ) )
+         THROW_ODS_ERROR( "unexpected bad tranlog output stream in truncate log" );
+   }
+
+#ifndef _WIN32
+   int64_t now = time( 0 );
+#else
+   int64_t now = _time64( 0 );
+#endif
+
+   ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
+
+   if( !outf )
+      THROW_ODS_ERROR( "unable to open tranlog file for output" );
+
+   ++tranlog_info.sequence;
+
+   tranlog_info.entry_offs = 0;
+   tranlog_info.entry_time = 0;
+   tranlog_info.append_offs = tranlog_info.size_of( );
+
+   tranlog_info.sequence_old_tm = tranlog_info.sequence_new_tm;
+   tranlog_info.sequence_new_tm = now;
+
+   tranlog_info.write( outf );
+
+   outf.flush( );
+   if( !outf.good( ) )
+      THROW_ODS_ERROR( "unexpected bad tranlog flush in truncate log" );
+
+   p_impl->rp_header_info->num_logs = tranlog_info.sequence;
+
+   p_impl->force_write_header_file_info( );
+}
+
+void ods::dump_file_info( ostream& os )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   string corrupt;
+   if( *p_impl->rp_bulk_level
+    && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
+      corrupt = " *** possibly corrupted file detected ***";
+
+   os << "Version: " << format_version( p_impl->rp_header_info->version ) << corrupt
+    << "\nNum Logs = " << p_impl->rp_header_info->num_logs
+    << "\nNum Trans = " << p_impl->rp_header_info->num_trans
+    << "\nNum Writers = " << p_impl->rp_header_info->num_writers
+    << "\nInit Tranlog = " << p_impl->rp_header_info->init_tranlog
+    << "\nTotal Entries = " << p_impl->rp_header_info->total_entries
+    << "\nTranlog Offset = " << p_impl->rp_header_info->tranlog_offset
+    << "\nTransaction Id = " << p_impl->rp_header_info->transaction_id
+    << "\nIndex Free List = " << p_impl->rp_header_info->index_free_list
+    << "\nTotal Size of Data = " << p_impl->rp_header_info->total_size_of_data
+    << "\nData Transformation Id = " << p_impl->rp_header_info->data_transform_id
+    << "\nIndex Transformation Id = " << p_impl->rp_header_info->index_transform_id << endl;
+
+   int64_t found = p_impl->rp_ods_index_cache_buffer->get_file_size( );
+   int64_t expected = ods_index_entry::get_size_of( ) * p_impl->rp_header_info->total_entries;
+
+   if( p_impl->rp_header_info->total_entries % c_index_items_per_item )
+      expected += ods_index_entry::get_size_of( ) *
+       ( c_index_items_per_item - ( p_impl->rp_header_info->total_entries % c_index_items_per_item ) );
+
+   if( found != expected )
+      os << "Unexpected index file size: (expected = " << expected << ", found = " << found << ")" << endl;
+}
+
+void ods::dump_free_list( ostream& os )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   ods_index_entry index_entry;
+
+   if( !p_impl->rp_header_info->index_free_list )
+      os << "No freelist entries." << endl;
+   else
+   {
+      int64_t count = 0;
+
+      int64_t last = 0;
+      int64_t next = p_impl->rp_header_info->index_free_list;
+      os << "First freelist entry = " << ( p_impl->rp_header_info->index_free_list - 1 ) << '\n';
+
+      os << "Iterating over freelist...";
+      while( next )
+      {
+         ++count;
+         read_index_entry( index_entry, next - 1 );
+
+         last = next;
+         next = index_entry.data.pos;
+      }
+      os << "(OK)";
+      os << "\nLast freelist entry = " << ( last - 1 );
+      os << "\nTotal freelist entries = " << count << endl;
+   }
+}
+
+void ods::dump_index_entry( ostream& os, int64_t num )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   ods_index_entry index_entry;
+
+   if( num >= p_impl->rp_header_info->total_entries )
+      os << "error: max. entry num = " << ( p_impl->rp_header_info->total_entries - 1 ) << endl;
+   else
+   {
+      read_index_entry( index_entry, num );
+      index_entry.dump_entry( os, num );
+   }
+}
+
+void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   ods_index_entry index_entry;
+
+   if( num >= p_impl->rp_header_info->total_entries )
+      os << "error: max. entry num = " << ( p_impl->rp_header_info->total_entries - 1 ) << endl;
+   else
+   {
+      read_index_entry( index_entry, num );
+
+      if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
+      {
+         os << "(freelist entry)";
+         if( index_entry.data.pos )
+            os << " link: " << hex
+             << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
+         else
+            os << " link: <at end>";
+         os << "\n";
+      }
+      else
+      {
+         if( !only_pos_and_size )
+         {
+            int64_t chunk = 16;
+            unsigned char buffer[ 16 ];
+
+            os << hex;
+
+            set_read_data_pos( index_entry.data.pos );
+            for( int64_t i = 0; i < index_entry.data.size; i += chunk )
+            {
+               if( i + chunk > index_entry.data.size )
+                  chunk = index_entry.data.size - i;
+               read_data_bytes( ( char* )buffer, chunk );
+
+               os << hex << setw( sizeof( int64_t ) * 2 )
+                << setfill( '0' ) << ( index_entry.data.pos + i ) << "  ";
+
+               for( int j = 0; j < chunk; j++ )
+                  os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
+
+               if( chunk < 16 )
+                  os << string( ( 16 - chunk ) * 3, ' ' );
+
+               os << ' ';
+               for( int j = 0; j < chunk; j++ )
+               {
+                  if( !is_print( buffer[ j ] ) )
+                     os << ".";
+                  else
+                     os << buffer[ j ];
+               }
+               os << "\n";
+            }
+
+            os << dec;
+         }
+      }
+   }
+}
+
+void ods::dump_transaction_log( ostream& os, bool header_only )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   fstream fs;
+   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
+
+   if( !fs )
+      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in dump_transaction_log" );
+
+   log_info tranlog_info;
+   tranlog_info.read( fs );
+
+   tranlog_info.dump( os );
+
+   if( !header_only && tranlog_info.entry_offs )
+   {
+      while( true )
+      {
+         os << '\n';
+
+         int64_t offs = fs.tellg( );
+
+         log_entry tranlog_entry;
+         tranlog_entry.read( fs );
+
+         tranlog_entry.dump( os, offs );
+
+         int64_t next_offs = tranlog_entry.next_entry_offs;
+
+         if( !next_offs )
+            next_offs = tranlog_info.append_offs;
+
+         while( fs.tellg( ) < next_offs )
+         {
+            os << '\n';
+
+            int64_t offs = fs.tellg( );
+
+            log_entry_item tranlog_item;
+            tranlog_item.read( fs );
+
+            tranlog_item.dump( os, offs );
+
+            if( tranlog_item.has_pos_and_size( ) )
+            {
+               int64_t chunk = 16;
+               unsigned char buffer[ 16 ];
+
+               os << hex;
+
+               for( int64_t i = 0; i < tranlog_item.data_size; i += chunk )
+               {
+                  if( i + chunk > tranlog_item.data_size )
+                     chunk = tranlog_item.data_size - i;
+
+                  fs.read( ( char* )buffer, chunk );
+
+                  os << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << i << "  ";
+
+                  for( int j = 0; j < chunk; j++ )
+                     os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
+
+                  if( chunk < 16 )
+                     os << string( ( 16 - chunk ) * 3, ' ' );
+
+                  os << ' ';
+                  for( int j = 0; j < chunk; j++ )
+                  {
+                     if( !is_print( buffer[ j ] ) )
+                        os << ".";
+                     else
+                        os << buffer[ j ];
+                  }
+
+                  os << "\n";
+               }
+
+               os << dec;
+            }
+         }
+
+         if( fs.tellg( ) > tranlog_info.entry_offs )
+            break;
+      }
+   }
+}
+
 void ods::bulk_base::pause( )
 {
    guard lock_write( o.write_lock );
@@ -3067,475 +3663,6 @@ void ods::transaction::rollback( )
    }
 }
 
-void ods::move_free_data_to_end( )
-{
-   guard lock_write( write_lock );
-   guard lock_read( read_lock );
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   if( p_impl->trans_level )
-      THROW_ODS_ERROR( "cannot move free data to end whilst in a transaction" );
-
-   if( !p_impl->rp_header_file->is_locked_for_exclusive( ) )
-      THROW_ODS_ERROR( "cannot move free data to end unless locked for exclusive write" );
-
-   if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
-      THROW_ODS_ERROR( "cannot move free data to end when bulk locked for dumping or reading" );
-
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
-
-   ods_index_entry_pos entry;
-   set< ods_index_entry_pos > entries;
-
-   ods_index_entry index_entry;
-
-   // FUTURE: This approach requires keeping in memory an "ods_index_entry_pos" item for every active
-   // "index_entry" in the entire database. If a "deque" (rather than a "set") was used then it could
-   // be limited to a maximum size with potentially multiple passes being performed across all of the
-   // index entries that would then only insert items for those index entries whose "pos" is actually
-   // greater than the last item from the previous pass.
-   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
-   {
-      read_index_entry( index_entry, i );
-      if( index_entry.lock_flag != ods_index_entry::e_lock_none )
-         THROW_ODS_ERROR( "cannot move free data to end when one or more entries have been locked" );
-
-      if( index_entry.trans_flag != ods_index_entry::e_trans_none
-       && index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-         THROW_ODS_ERROR( "cannot move free data to end whilst one or more dead transactions exist" );
-
-      if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
-      {
-         entry.id = i;
-         entry.pos = index_entry.data.pos;
-         entry.size = index_entry.data.size;
-         entries.insert( entry );
-      }
-   }
-
-   int64_t num_moved = 0;
-   int64_t log_entry_offs = 0;
-   int64_t old_append_offs = 0;
-
-   set< ods_index_entry_pos >::const_iterator ci, end;
-
-   if( p_impl->using_tranlog )
-   {
-      log_entry_offs = append_log_entry( p_impl->rp_header_info->transaction_id++, &old_append_offs );
-
-      fstream fs;
-      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-      if( !fs )
-         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
-
-      fs.seekg( old_append_offs, ios::beg );
-
-      set_read_data_pos( 0 );
-
-      int64_t new_pos = 0;
-      int64_t read_pos = 0;
-
-      for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
-      {
-         int64_t next_id = ci->id;
-         int64_t next_pos = ci->pos;
-         int64_t next_size = ci->size;
-
-         if( next_pos < read_pos )
-            THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
-
-         adjust_read_data_pos( next_pos - read_pos );
-
-         if( next_pos != new_pos )
-         {
-            ++num_moved;
-
-            int64_t chunk = c_buffer_chunk_size;
-            char buffer[ c_buffer_chunk_size ];
-
-            log_entry_item tranlog_item;
-
-            tranlog_item.flags = c_log_entry_item_op_store;
-            tranlog_item.flags |= ( c_log_entry_item_type_non_transactional | c_log_entry_item_flag_has_old_pos );
-
-            tranlog_item.index_entry_id = next_id;
-
-            tranlog_item.data_pos = new_pos;
-            tranlog_item.data_opos = next_pos;
-            tranlog_item.data_size = next_size;
-
-            tranlog_item.write( fs );
-
-            for( int64_t j = 0; j < next_size; j += chunk )
-            {
-               if( j + chunk > next_size )
-                  chunk = next_size - j;
-
-               read_data_bytes( buffer, chunk );
-               fs.write( buffer, chunk );
-
-               if( !fs.good( ) )
-                  THROW_ODS_ERROR( "unexpected bad tranlog data append" );
-            }
-
-            read_pos = next_pos + next_size;
-         }
-         else
-            read_pos = next_pos;
-
-         new_pos += next_size;
-      }
-
-      fs.flush( );
-      if( !fs.good( ) )
-         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
-
-      int64_t offs = fs.tellg( );
-
-      fs.seekg( 0, ios::beg );
-
-      log_info tranlog_info;
-      tranlog_info.read( fs );
-
-      tranlog_info.append_offs = offs;
-
-      fs.seekg( 0, ios::beg );
-      tranlog_info.write( fs );
-
-      fs.close( );
-   }
-
-   set_read_data_pos( 0 );
-
-   int64_t new_pos = 0;
-   int64_t read_pos = 0;
-   int64_t actual_size = 0;
-
-   for( ci = entries.begin( ), end = entries.end( ); ci != end; ++ci )
-   {
-      int64_t next_id = ci->id;
-      int64_t next_pos = ci->pos;
-      int64_t next_size = ci->size;
-
-      if( next_pos < read_pos )
-         THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
-
-      adjust_read_data_pos( next_pos - read_pos );
-
-      if( next_pos != new_pos )
-      {
-         int64_t chunk = c_buffer_chunk_size;
-         char buffer[ c_buffer_chunk_size ];
-
-         set_write_data_pos( new_pos );
-
-         for( int64_t j = 0; j < next_size; j += chunk )
-         {
-            if( j + chunk > next_size )
-               chunk = next_size - j;
-
-            read_data_bytes( buffer, chunk );
-            write_data_bytes( buffer, chunk );
-         }
-
-         read_index_entry( index_entry, next_id );
-
-         index_entry.data.pos = new_pos;
-         write_index_entry( index_entry, next_id );
-
-         read_pos = next_pos + next_size;
-      }
-      else
-         read_pos = next_pos;
-
-      new_pos += next_size;
-      actual_size += next_size;
-   }
-
-   if( log_entry_offs )
-   {
-      fstream fs;
-      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-      if( !fs )
-         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
-
-      log_entry tranlog_entry;
-
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.read( fs );
-
-      tranlog_entry.commit_offs = old_append_offs;
-      tranlog_entry.commit_items = num_moved;
-
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.write( fs );
-
-      fs.close( );
-
-      p_impl->rp_header_info->tranlog_offset = log_entry_offs;
-   }
-
-   ++p_impl->rp_header_info->data_transform_id;
-   ++p_impl->rp_header_info->index_transform_id;
-
-   p_impl->rp_header_info->total_size_of_data = actual_size;
-
-   data_and_index_write( );
-
-   // NOTE: The file will be marked as corrupt unless "has_changed" is set true.
-   temp_set_value< bool > temp_has_changed( *p_impl->rp_has_changed, true );
-   p_impl->write_header_file_info( );
-}
-
-void ods::dump_file_info( ostream& os )
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   string corrupt;
-   if( *p_impl->rp_bulk_level
-    && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
-      corrupt = " *** possibly corrupted file detected ***";
-
-   os << "Version Id = " << p_impl->rp_header_info->version_id << corrupt
-    << "\nNum Trans = " << p_impl->rp_header_info->num_trans
-    << "\nNum Writers = " << p_impl->rp_header_info->num_writers
-    << "\nInit Tranlog = " << p_impl->rp_header_info->init_tranlog
-    << "\nTotal Entries = " << p_impl->rp_header_info->total_entries
-    << "\nTranlog Offset = " << p_impl->rp_header_info->tranlog_offset
-    << "\nTransaction Id = " << p_impl->rp_header_info->transaction_id
-    << "\nIndex Free List = " << p_impl->rp_header_info->index_free_list
-    << "\nTotal Size of Data = " << p_impl->rp_header_info->total_size_of_data
-    << "\nData Transformation Id = " << p_impl->rp_header_info->data_transform_id
-    << "\nIndex Transformation Id = " << p_impl->rp_header_info->index_transform_id << endl;
-
-   int64_t found = p_impl->rp_ods_index_cache_buffer->get_file_size( );
-   int64_t expected = ods_index_entry::get_size_of( ) * p_impl->rp_header_info->total_entries;
-
-   if( p_impl->rp_header_info->total_entries % c_index_items_per_item )
-      expected += ods_index_entry::get_size_of( ) *
-       ( c_index_items_per_item - ( p_impl->rp_header_info->total_entries % c_index_items_per_item ) );
-
-   if( found != expected )
-      os << "Unexpected index file size: (expected = " << expected << ", found = " << found << ")" << endl;
-}
-
-void ods::dump_free_list( ostream& os )
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   ods_index_entry index_entry;
-
-   if( !p_impl->rp_header_info->index_free_list )
-      os << "No freelist entries." << endl;
-   else
-   {
-      int64_t count = 0;
-
-      int64_t last = 0;
-      int64_t next = p_impl->rp_header_info->index_free_list;
-      os << "First freelist entry = " << ( p_impl->rp_header_info->index_free_list - 1 ) << '\n';
-
-      os << "Iterating over freelist...";
-      while( next )
-      {
-         ++count;
-         read_index_entry( index_entry, next - 1 );
-
-         last = next;
-         next = index_entry.data.pos;
-      }
-      os << "(OK)";
-      os << "\nLast freelist entry = " << ( last - 1 );
-      os << "\nTotal freelist entries = " << count << endl;
-   }
-}
-
-void ods::dump_index_entry( ostream& os, int64_t num )
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   ods_index_entry index_entry;
-
-   if( num >= p_impl->rp_header_info->total_entries )
-      os << "error: max. entry num = " << ( p_impl->rp_header_info->total_entries - 1 ) << endl;
-   else
-   {
-      read_index_entry( index_entry, num );
-      index_entry.dump_entry( os, num );
-   }
-}
-
-void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   ods_index_entry index_entry;
-
-   if( num >= p_impl->rp_header_info->total_entries )
-      os << "error: max. entry num = " << ( p_impl->rp_header_info->total_entries - 1 ) << endl;
-   else
-   {
-      read_index_entry( index_entry, num );
-
-      if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
-      {
-         os << "(freelist entry)";
-         if( index_entry.data.pos )
-            os << " link: " << hex
-             << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
-         else
-            os << " link: <at end>";
-         os << "\n";
-      }
-      else
-      {
-         if( !only_pos_and_size )
-         {
-            int64_t chunk = 16;
-            unsigned char buffer[ 16 ];
-
-            os << hex;
-
-            set_read_data_pos( index_entry.data.pos );
-            for( int64_t i = 0; i < index_entry.data.size; i += chunk )
-            {
-               if( i + chunk > index_entry.data.size )
-                  chunk = index_entry.data.size - i;
-               read_data_bytes( ( char* )buffer, chunk );
-
-               os << hex << setw( sizeof( int64_t ) * 2 )
-                << setfill( '0' ) << ( index_entry.data.pos + i ) << "  ";
-
-               for( int j = 0; j < chunk; j++ )
-                  os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
-
-               if( chunk < 16 )
-                  os << string( ( 16 - chunk ) * 3, ' ' );
-
-               os << ' ';
-               for( int j = 0; j < chunk; j++ )
-               {
-                  if( !is_print( buffer[ j ] ) )
-                     os << ".";
-                  else
-                     os << buffer[ j ];
-               }
-               os << "\n";
-            }
-
-            os << dec;
-         }
-      }
-   }
-}
-
-void ods::dump_transaction_log( ostream& os, bool header_only )
-{
-   guard lock_impl( *p_impl->rp_impl_lock );
-
-   if( !okay )
-      THROW_ODS_ERROR( "database instance in bad state" );
-
-   fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
-
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in dump_transaction_log" );
-
-   log_info tranlog_info;
-   tranlog_info.read( fs );
-
-   tranlog_info.dump( os );
-
-   if( !header_only && tranlog_info.entry_offs )
-   {
-      while( true )
-      {
-         os << '\n';
-
-         int64_t offs = fs.tellg( );
-
-         log_entry tranlog_entry;
-         tranlog_entry.read( fs );
-
-         tranlog_entry.dump( os, offs );
-
-         int64_t next_offs = tranlog_entry.next_entry_offs;
-
-         if( !next_offs )
-            next_offs = tranlog_info.append_offs;
-
-         while( fs.tellg( ) < next_offs )
-         {
-            os << '\n';
-
-            int64_t offs = fs.tellg( );
-
-            log_entry_item tranlog_item;
-            tranlog_item.read( fs );
-
-            tranlog_item.dump( os, offs );
-
-            if( tranlog_item.has_pos_and_size( ) )
-            {
-               int64_t chunk = 16;
-               unsigned char buffer[ 16 ];
-
-               os << hex;
-
-               for( int64_t i = 0; i < tranlog_item.data_size; i += chunk )
-               {
-                  if( i + chunk > tranlog_item.data_size )
-                     chunk = tranlog_item.data_size - i;
-
-                  fs.read( ( char* )buffer, chunk );
-
-                  os << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << i << "  ";
-
-                  for( int j = 0; j < chunk; j++ )
-                     os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
-
-                  if( chunk < 16 )
-                     os << string( ( 16 - chunk ) * 3, ' ' );
-
-                  os << ' ';
-                  for( int j = 0; j < chunk; j++ )
-                  {
-                     if( !is_print( buffer[ j ] ) )
-                        os << ".";
-                     else
-                        os << buffer[ j ];
-                  }
-
-                  os << "\n";
-               }
-
-               os << dec;
-            }
-         }
-
-         if( fs.tellg( ) > tranlog_info.entry_offs )
-            break;
-      }
-   }
-}
-
 void ods::open_store( )
 {
    DEBUG_LOG( "(opening)" );
@@ -3556,7 +3683,8 @@ void ods::open_store( )
 #ifdef ODS_DEBUG
    ostringstream osstr;
    osstr << "(header info read from store)"
-    << "\nversion_id = " << p_impl->rp_header_info->version_id
+    << "\nversion = " << p_impl->rp_header_info->version
+    << ", num_logs = " << p_impl->rp_header_info->num_logs
     << ", num_trans = " << p_impl->rp_header_info->num_trans
     << ", num_writers = " << p_impl->rp_header_info->num_writers
     << "\ninit tranlog = " << p_impl->rp_header_info->init_tranlog
@@ -3570,7 +3698,7 @@ void ods::open_store( )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   if( p_impl->rp_header_info->version_id != c_version_id )
+   if( p_impl->rp_header_info->version != c_version )
       THROW_ODS_ERROR( "incompatible database header version found" );
 
    if( p_impl->rp_header_info->data_transform_id != last_data_transformation )

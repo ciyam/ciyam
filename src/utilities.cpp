@@ -351,6 +351,11 @@ bool file_remove( const wchar_t* p_name )
 }
 #endif
 
+bool file_rename( const char* p_old_name, const char* p_new_name )
+{
+   return ::rename( p_old_name, p_new_name ) == 0;
+}
+
 int64_t file_size( const char* p_name )
 {
    int64_t retval;

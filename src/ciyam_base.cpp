@@ -124,7 +124,6 @@ const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_reg_key = "license";
 const char* const c_attribute_filename = "filename";
-const char* const c_attribute_identity = "identity";
 const char* const c_attribute_ip_addrs = "ip_addrs";
 const char* const c_attribute_na_addrs = "na_addrs";
 const char* const c_attribute_password = "password";
@@ -132,9 +131,8 @@ const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
 const char* const c_attribute_username = "username";
 const char* const c_attribute_web_root = "web_root";
-const char* const c_attribute_web_type = "web_type";
 const char* const c_attribute_arguments = "arguments";
-const char* const c_attribute_mas_peers = "max_peers";
+const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_local_hash = "local_hash";
@@ -181,11 +179,11 @@ const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
 
-const char* const c_storable_file_name_cache = "cache";
-const char* const c_storable_file_name_ident = "ident";
+const char* const c_storable_file_name_id = "id";
+const char* const c_storable_file_name_limit = "limit";
 const char* const c_storable_file_name_log_id = "log_id";
 const char* const c_storable_file_name_mod_dir = "mod_dir";
-const char* const c_storable_file_name_num_lts = "num_lts";
+const char* const c_storable_file_name_trunc_n = "trunc_n";
 const char* const c_storable_file_name_version = "version";
 const char* const c_storable_file_name_web_root = "web_root";
 
@@ -552,7 +550,7 @@ struct storage_root
     :
     version( c_storage_format_version ),
     cache_limit( c_default_cache_limit ),
-    ident( uuid( ).as_string( ) ),
+    identity( uuid( ).as_string( ) ),
     web_root( c_default_web_root ),
     truncation_count( 0 )
    {
@@ -561,8 +559,9 @@ struct storage_root
    int32_t version;
    int32_t cache_limit;
 
-   string ident;
+   string identity;
    string web_root;
+
    string module_directory;
 
    int32_t truncation_count;
@@ -577,22 +576,22 @@ struct storage_root
 
 void storage_root::store_as_text_files( ods_file_system& ofs )
 {
-   ofs.store_as_text_file( c_storable_file_name_cache, cache_limit );
-   ofs.store_as_text_file( c_storable_file_name_ident, ident );
+   ofs.store_as_text_file( c_storable_file_name_id, identity );
+   ofs.store_as_text_file( c_storable_file_name_limit, cache_limit );
    ofs.store_as_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.store_as_text_file( c_storable_file_name_mod_dir, module_directory, c_storable_file_pad_len );
-   ofs.store_as_text_file( c_storable_file_name_num_lts, truncation_count );
+   ofs.store_as_text_file( c_storable_file_name_trunc_n, truncation_count );
    ofs.store_as_text_file( c_storable_file_name_version, version );
    ofs.store_as_text_file( c_storable_file_name_web_root, web_root, c_storable_file_pad_len );
 }
 
 void storage_root::fetch_from_text_files( ods_file_system& ofs )
 {
-   ofs.fetch_from_text_file( c_storable_file_name_cache, cache_limit );
-   ofs.fetch_from_text_file( c_storable_file_name_ident, ident );
+   ofs.fetch_from_text_file( c_storable_file_name_id, identity );
+   ofs.fetch_from_text_file( c_storable_file_name_limit, cache_limit );
    ofs.fetch_from_text_file( c_storable_file_name_log_id, log_id.next_id );
    ofs.fetch_from_text_file( c_storable_file_name_mod_dir, module_directory, true );
-   ofs.fetch_from_text_file( c_storable_file_name_num_lts, truncation_count );
+   ofs.fetch_from_text_file( c_storable_file_name_trunc_n, truncation_count );
    ofs.fetch_from_text_file( c_storable_file_name_version, version );
    ofs.fetch_from_text_file( c_storable_file_name_web_root, web_root, true );
 
@@ -646,7 +645,7 @@ class storage_handler
    storage_root& get_root( ) { return root; }
    const storage_root& get_root( ) const { return root; }
 
-   bool is_using_blockchain( ) const { return root.ident.find( ':' ) != string::npos; }
+   bool is_using_blockchain( ) const { return root.identity.find( ':' ) != string::npos; }
 
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
@@ -1401,7 +1400,7 @@ void perform_storage_op( storage_op op,
             string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
 
             if( !blockchain.empty( ) )
-               ap_handler->get_root( ).ident += ":" + blockchain;
+               ap_handler->get_root( ).identity += ":" + blockchain;
 
             ods_file_system ofs( *ap_ods );
 
@@ -3148,7 +3147,7 @@ void append_transaction_log_command( storage_handler& handler,
          log_file.open( log_filename.c_str( ), ios::out | ios::app );
 
       if( is_new )
-         log_file << "[0]" << handler.get_root( ).ident << '\n';
+         log_file << "[0]" << handler.get_root( ).identity << '\n';
 
       int32_t tx_id;
 
@@ -3405,7 +3404,7 @@ void read_server_configuration( )
       }
 
       g_max_peers = atoi( reader.read_opt_attribute(
-       c_attribute_mas_peers, to_string( c_default_max_peers ) ).c_str( ) );
+       c_attribute_max_peers, to_string( c_default_max_peers ) ).c_str( ) );
 
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
 
@@ -3917,7 +3916,7 @@ void init_globals( )
       g_storage_handlers.push_back( 0 );
 
    g_storage_handlers[ 0 ] = new storage_handler( 0, c_default_storage_name );
-   g_storage_handlers[ 0 ]->get_root( ).ident = c_default_storage_identity;
+   g_storage_handlers[ 0 ]->get_root( ).identity = c_default_storage_identity;
 
    g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
 
@@ -6093,18 +6092,20 @@ void backup_storage( command_handler& cmd_handler, int* p_truncation_count, stri
       {
          *p_truncation_count = ++gtp_session->p_storage_handler->get_root( ).truncation_count;
 
+         ostringstream osstr;
+         osstr << "." << setw( 3 ) << setfill( '0' ) << *p_truncation_count;
+
+         gtp_session->p_storage_handler->get_ods( )->truncate_log( osstr.str( ).c_str( ) );
+
          ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
 
-         ofs.store_as_text_file( c_storable_file_name_num_lts,
+         ofs.store_as_text_file( c_storable_file_name_trunc_n,
           gtp_session->p_storage_handler->get_root( ).truncation_count );
 
-         ostringstream osstr;
-         osstr << handler.get_name( ) << ".log." << setw( 3 ) << setfill( '0' ) << *p_truncation_count;
+         string truncated_log_name( handler.get_name( ) + ".log" + osstr.str( ) );
 
-         if( file_exists( osstr.str( ) ) )
-            remove( osstr.str( ).c_str( ) );
-
-         rename( ( handler.get_name( ) + ".log" ).c_str( ), osstr.str( ).c_str( ) );
+         file_remove( truncated_log_name );
+         file_rename( handler.get_name( ) + ".log", truncated_log_name );
 
          transaction_log_command( ";truncated at "
           + date_time::local( ).as_string( e_time_format_hhmmss, true ) );
@@ -6327,7 +6328,7 @@ size_t storage_cache_limit( size_t new_limit )
    {
       ods_file_system ofs( *p_ods );
 
-      ofs.store_as_text_file( c_storable_file_name_cache,
+      ofs.store_as_text_file( c_storable_file_name_limit,
        gtp_session->p_storage_handler->get_root( ).cache_limit );
 
       log_identity& identity( handler.get_root( ).log_id );
@@ -6739,7 +6740,7 @@ string storage_name( )
 
 string storage_identity( )
 {
-   return gtp_session->p_storage_handler->get_root( ).ident;
+   return gtp_session->p_storage_handler->get_root( ).identity;
 }
 
 string storage_blockchain( )

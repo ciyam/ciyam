@@ -17,4 +17,5 @@ import "import all objects from a directory" <val//directory>
 rebuild "rebuild index nodes"
 dump "dump container details" [<val//filename>]
 compress "move free data to end of store"
+truncate "truncate transaction log"
 exit "exit program"

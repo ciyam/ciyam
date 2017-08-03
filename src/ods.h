@@ -620,6 +620,8 @@ class ODS_DECL_SPEC ods
 
    void move_free_data_to_end( );
 
+   void truncate_log( const char* p_ext = 0 );
+
    void dump_file_info( std::ostream& os );
    void dump_free_list( std::ostream& os );
    void dump_index_entry( std::ostream& os, int64_t num );

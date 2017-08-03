@@ -46,7 +46,7 @@ template< int B > struct power< 0, B >
    static const int result = 1;
 };
 
-// This "typeof" implementation was written by Bill Gibbons.
+// NOTE: This "typeof" implementation was written by Bill Gibbons.
 template< int N > struct typeof_class;
 template< class T > struct wrap_type { typedef T U; };
 
@@ -268,6 +268,11 @@ inline bool file_remove( const std::string& name ) { return file_remove( name.c_
 bool file_remove( const wchar_t* p_name );
 inline bool file_remove( const std::wstring& name ) { return file_remove( name.c_str( ) ); }
 #  endif
+
+bool file_rename( const char* p_old_name, const char* p_new_name );
+inline bool file_rename( const std::string& old_name, const char* p_new_name ) { return file_rename( old_name.c_str( ), p_new_name ); }
+inline bool file_rename( const char* p_old_name, const std::string& new_name ) { return file_rename( p_old_name, new_name.c_str( ) ); }
+inline bool file_rename( const std::string& old_name, const std::string& new_name ) { return file_rename( old_name.c_str( ), new_name.c_str( ) ); }
 
 int64_t file_size( const char* p_name );
 inline int64_t file_size( const std::string& name ) { return file_size( name.c_str( ) ); }

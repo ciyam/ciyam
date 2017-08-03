@@ -1,2 +1,0 @@
-`{`(`?`$all_zip_files`)`[`$all_zip_files`,unzip -q \$`+\n`]`}
-`{`(`?`$all_log_files`)`[`$all_log_files`,copy /b `{`$app_name`}.log + \$ `{`$app_name`}.log & del \$`+\n`]`}
