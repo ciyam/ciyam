@@ -55,7 +55,6 @@
 #  define _write ::write
 #  define _close close
 #  define _lseek lseek
-#  define _access access
 #endif
 
 #ifdef _WIN32
@@ -71,6 +70,7 @@
 #include "macros.h"
 #include "pointers.h"
 #include "utilities.h"
+#include "fs_iterator.h"
 #include "read_write_stream.h"
 
 //#define ODS_DEBUG
@@ -2206,10 +2206,10 @@ ods::ods( const ods& o )
 
    guard tmp_lock( *p_impl->rp_impl_lock );
 
-   if( _access( p_impl->data_file_name.c_str( ), 0 ) != 0 )
-      THROW_ODS_ERROR( "could not find data file..." );
-   if( _access( p_impl->index_file_name.c_str( ), 0 ) != 0 )
-      THROW_ODS_ERROR( "could not find index file..." );
+   if( !file_exists( p_impl->data_file_name ) )
+      THROW_ODS_ERROR( "could not find database data file..." );
+   if( !file_exists( p_impl->index_file_name ) )
+      THROW_ODS_ERROR( "could not find database index file..." );
 
    if( *p_impl->rp_header_file <= 0 )
       THROW_ODS_ERROR( "unexpected header file handle is invalid" );
@@ -2324,7 +2324,7 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
 
    auto_ptr< ods::header_file_lock > ap_header_file_lock( new ods::header_file_lock( *this ) );
 
-   if( _access( p_impl->index_file_name.c_str( ), 0 ) != 0 )
+   if( !file_exists( p_impl->index_file_name ) )
       p_impl->is_new = true;
 
    switch( o_mode )
@@ -2362,23 +2362,38 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    int64_t now = _time64( 0 );
 #endif
 
-   if( using_tranlog && p_impl->is_new )
+   log_info tranlog_info;
+
+   if( p_impl->is_new )
    {
-      log_info tranlog_info;
+      if( file_exists( p_impl->tranlog_file_name ) )
+      {
+         ifstream inpf( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
-      // NOTE: If using a transaction log then create a default tranlog header.
-      ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
+         if( !inpf )
+            THROW_ODS_ERROR( "unable to open database tranlog file for input" );
 
-      if( !outf )
-         THROW_ODS_ERROR( "unable to open tranlog file for output" );
+         tranlog_info.read( inpf );
 
-      tranlog_info.init_time = tranlog_info.sequence_new_tm = now;
+         using_tranlog = true;
+         p_impl->is_corrupt = true;
+      }
+      else if( using_tranlog )
+      {
+         // NOTE: If using a transaction log then create a default tranlog header.
+         ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
 
-      tranlog_info.write( outf );
+         if( !outf )
+            THROW_ODS_ERROR( "unable to open database tranlog file for output" );
 
-      outf.flush( );
-      if( !outf.good( ) )
-         THROW_ODS_ERROR( "unexpected bad tranlog flush at create" );
+         tranlog_info.init_time = tranlog_info.sequence_new_tm = now;
+
+         tranlog_info.write( outf );
+
+         outf.flush( );
+         if( !outf.good( ) )
+            THROW_ODS_ERROR( "unexpected bad tranlog flush at create" );
+      }
    }
 
    if( !p_impl->is_new )
@@ -2393,15 +2408,13 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
 
       if( p_impl->rp_header_info->init_tranlog )
       {
-         log_info tranlog_info;
-
-         if( _access( p_impl->tranlog_file_name.c_str( ), 0 ) != 0 )
-            THROW_ODS_ERROR( "tranlog file does not exist" );
+         if( !file_exists( p_impl->tranlog_file_name ) )
+            THROW_ODS_ERROR( "database tranlog file does not exist" );
 
          ifstream inpf( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
          if( !inpf )
-            THROW_ODS_ERROR( "unable to open tranlog file for input" );
+            THROW_ODS_ERROR( "unable to open database tranlog file for input" );
 
          tranlog_info.read( inpf );
 
@@ -2423,8 +2436,8 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
       if( using_tranlog )
       {
          p_impl->using_tranlog = true;
-         p_impl->rp_header_info->num_logs = 1;
-         p_impl->rp_header_info->init_tranlog = now;
+         p_impl->rp_header_info->num_logs = tranlog_info.sequence;
+         p_impl->rp_header_info->init_tranlog = tranlog_info.init_time;
       }
 
       p_impl->force_write_header_file_info( );
@@ -2439,7 +2452,7 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    {
       DEBUG_LOG( "[opened existing file]" );
 
-      if( _access( p_impl->data_file_name.c_str( ), 0 ) != 0 )
+      if( !file_exists( p_impl->data_file_name ) )
          THROW_ODS_ERROR( "could not find database data file" );
    }
 
@@ -2605,6 +2618,14 @@ void ods::repair_if_corrupt( )
       else
          restore_from_transaction_log( );
    }
+}
+
+void ods::reconstruct_database( )
+{
+   if( !p_impl->using_tranlog )
+      THROW_ODS_ERROR( "cannot reconstruct database unless using a tranlog" );
+   else
+      restore_from_transaction_log( true );
 }
 
 int64_t ods::get_size( const oid& id )
@@ -4538,7 +4559,7 @@ void ods::rollback_dead_transactions( )
    *p_impl->rp_has_changed = false;
 }
 
-void ods::restore_from_transaction_log( )
+void ods::restore_from_transaction_log( bool force_reconstruct )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -4566,157 +4587,271 @@ void ods::restore_from_transaction_log( )
       ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
    fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
-
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in restore_from_transaction_log" );
-
    log_info tranlog_info;
-   tranlog_info.read( fs );
+
+   map< int16_t, pair< string, log_info > > sequenced_logs;
+   map< int16_t, pair< string, log_info > >::iterator sli;
+
+   if( force_reconstruct )
+   {
+      p_impl->rp_header_info->total_entries = 0;
+      p_impl->rp_header_info->tranlog_offset = 0;
+      p_impl->rp_header_info->transaction_id = 0;
+      p_impl->rp_header_info->index_free_list = 0;
+      p_impl->rp_header_info->data_transform_id = 0;
+      p_impl->rp_header_info->index_transform_id = 0;
+      p_impl->rp_header_info->total_size_of_data = 0;
+   }
 
    int64_t tranlog_offset = p_impl->rp_header_info->tranlog_offset;
 
-   if( tranlog_offset )
+   bool is_reconstruct = ( tranlog_offset == 0 );
+
+   if( !is_reconstruct )
    {
-      bool had_any_data = false;
-      bool changed_free_list = false;
+      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
-      map< int64_t, int64_t > transaction_commit_offsets;
+      if( !fs )
+         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in restore_from_transaction_log" );
 
-      // NOTE: As transaction entry items are not necessarily processed "in order" each entry
-      // in the log is processed to determine whether commit or rollback operations should be
-      // performed.
-      while( true )
+      tranlog_info.read( fs );
+
+      fs.close( );
+
+      sequenced_logs.insert( make_pair( tranlog_info.sequence, make_pair( p_impl->tranlog_file_name, tranlog_info ) ) );
+   }
+   else
+   {
+      file_filter ff;
+      fs_iterator fsi( ".", &ff );
+
+      while( fsi.has_next( ) )
       {
-         int64_t entry_offset = fs.tellg( );
+         string::size_type pos = fsi.get_name( ).find( p_impl->tranlog_file_name );
 
-         log_entry tranlog_entry;
-         tranlog_entry.read( fs );
+         if( pos != 0 )
+            continue;
 
-         int64_t tx_id = p_impl->rp_header_info->transaction_id = tranlog_entry.tx_id;
+         fs.open( fsi.get_name( ).c_str( ), ios::in | ios::binary );
 
-         if( tranlog_entry.commit_offs )
-            transaction_commit_offsets.insert( make_pair( tx_id, tranlog_entry.commit_offs ) );
+         if( !fs )
+            THROW_ODS_ERROR( "unable to open transaction log '" + fsi.get_name( ) + "' in restore_from_transaction_log" );
 
-         int64_t next_offs = tranlog_entry.next_entry_offs;
+         tranlog_info.read( fs );
 
-         if( entry_offset <= tranlog_offset )
+         fs.close( );
+
+         sequenced_logs.insert( make_pair( tranlog_info.sequence, make_pair( fsi.get_name( ), tranlog_info ) ) );
+      }
+
+      int64_t init_time = 0;
+      int64_t last_time = 0;
+      int16_t last_sequence = 0;
+
+      for( sli = sequenced_logs.begin( ); sli != sequenced_logs.end( ); ++sli )
+      {
+         if( sli->first != last_sequence + 1 )
+            THROW_ODS_ERROR( "cannot reconstruct database due to missing transaction log #" + to_string( last_sequence + 1 ) );
+
+         last_sequence = sli->first;
+
+         if( !init_time )
+            init_time = sli->second.second.init_time;
+         else if( sli->second.second.init_time != init_time )
+            THROW_ODS_ERROR( "cannot reconstruct database due to invalid init_time in transaction log #" + to_string( sli->first ) );
+
+         if( last_time && sli->second.second.sequence_old_tm != last_time )
+            THROW_ODS_ERROR( "cannot reconstruct database due to invalid sequence_old_tm in transaction log #" + to_string( sli->first ) );
+
+         last_time = sli->second.second.sequence_new_tm;
+      }
+   }
+
+   bool had_any_entries = false;
+   bool changed_free_list = false;
+
+   for( sli = sequenced_logs.begin( ); sli != sequenced_logs.end( ); ++sli )
+   {
+      tranlog_info = sli->second.second;
+
+      if( tranlog_info.append_offs > tranlog_info.size_of( ) )
+      {
+         set< int64_t > committed_transactions;
+
+         fs.open( sli->second.first.c_str( ), ios::in | ios::binary );
+
+         if( !fs )
+            THROW_ODS_ERROR( "unable to open transaction log '" + sli->second.first + "' in restore_from_transaction_log" );
+
+         fs.seekg( tranlog_info.size_of( ), ios::beg );
+
+         if( is_reconstruct )
+            tranlog_offset = 0;
+
+         // NOTE: As transaction entry items are not necessarily processed "in order" each entry
+         // in the log is processed to determine whether commit or rollback operations should be
+         // performed.
+         while( true )
          {
-            p_impl->rp_header_info->data_transform_id = tranlog_entry.data_transform_id;
-            p_impl->rp_header_info->index_transform_id = tranlog_entry.index_transform_id;
-         }
+            int64_t entry_offset = fs.tellg( );
 
-         // NOTE: After we have passed the last "good point" that was recorded in the database
-         // header process every item according to whether the transaction should be committed
-         // or rolled back.
-         if( entry_offset > tranlog_offset )
-         {
-            tranlog_offset = entry_offset;
+            log_entry tranlog_entry;
+            tranlog_entry.read( fs );
 
-            if( !next_offs )
-               next_offs = tranlog_info.append_offs;
+            int64_t tx_id = tranlog_entry.tx_id;
 
-            ++p_impl->rp_header_info->data_transform_id;
-            ++p_impl->rp_header_info->index_transform_id;
+            if( tx_id >= p_impl->rp_header_info->transaction_id )
+               p_impl->rp_header_info->transaction_id = tx_id + 1;
 
-            while( fs.tellg( ) < next_offs )
+            if( tranlog_entry.commit_offs )
+               committed_transactions.insert( tx_id );
+
+            int64_t next_offs = tranlog_entry.next_entry_offs;
+
+            if( entry_offset <= tranlog_offset )
             {
-               log_entry_item tranlog_item;
-               tranlog_item.read( fs );
+               p_impl->rp_header_info->data_transform_id = tranlog_entry.data_transform_id;
+               p_impl->rp_header_info->index_transform_id = tranlog_entry.index_transform_id;
+            }
 
-               if( tranlog_item.has_tran_id( ) )
-                  tx_id = tranlog_item.tx_id;
+            // NOTE: After we have passed the last "good point" that was recorded in the database
+            // header process every item according to whether the transaction should be committed
+            // or rolled back.
+            if( entry_offset > tranlog_offset )
+            {
+               had_any_entries = true;
+               tranlog_offset = entry_offset;
 
-               bool commit = ( transaction_commit_offsets.count( tx_id ) > 0 );
+               if( !next_offs )
+                  next_offs = tranlog_info.append_offs;
 
-               bool add_to_free_list = false;
+               bool had_any_data = false;
 
-               if( tranlog_item.index_entry_id >= p_impl->rp_header_info->total_entries )
-                  p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
-
-               if( tranlog_item.has_pos_and_size( ) )
+               while( fs.tellg( ) < next_offs )
                {
-                  if( tranlog_item.has_old_pos( )
-                   || ( commit && tranlog_item.is_post_op( ) )
-                   || !( commit && tranlog_item.is_post_op( ) ) )
+                  log_entry_item tranlog_item;
+                  tranlog_item.read( fs );
+
+                  if( tranlog_item.has_tran_id( ) )
+                     tx_id = tranlog_item.tx_id;
+
+                  bool add_to_free_list = false;
+
+                  bool commit = ( committed_transactions.find( tx_id ) != committed_transactions.end( ) );
+
+                  if( !tranlog_item.is_post_op( )
+                   || ( tranlog_item.is_post_op( ) && tranlog_item.has_tran_id( ) ) )
+                     ++p_impl->rp_header_info->index_transform_id;
+
+                  if( tranlog_item.index_entry_id >= p_impl->rp_header_info->total_entries )
+                     p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
+
+                  if( tranlog_item.has_pos_and_size( ) )
                   {
-                     had_any_data = true;
-
-                     int64_t chunk = c_buffer_chunk_size;
-                     char buffer[ c_buffer_chunk_size ];
-
-                     if( commit || !tranlog_item.has_old_pos( ) )
-                        set_write_data_pos( tranlog_item.data_pos );
-                     else
-                        set_write_data_pos( tranlog_item.data_opos );
-
-                     for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
+                     if( tranlog_item.has_old_pos( )
+                      || ( commit && tranlog_item.is_post_op( ) )
+                      || !( commit && tranlog_item.is_post_op( ) ) )
                      {
-                        if( j + chunk > tranlog_item.data_size )
-                           chunk = tranlog_item.data_size - j;
+                        int64_t dpos = 0;
 
-                        fs.read( buffer, chunk );
-                        write_data_bytes( buffer, chunk );
+                        if( commit || !tranlog_item.has_old_pos( ) )
+                           dpos = tranlog_item.data_pos;
+                        else
+                           dpos = tranlog_item.data_opos;
+
+                        // NOTE: If reconstructing then there is no need to write
+                        // old data for transactions that had been rolled back.
+                        if( !commit && is_reconstruct )
+                           fs.seekg( tranlog_item.data_size, ios::cur );
+                        else
+                        {
+                           had_any_data = true;
+
+                           int64_t chunk = c_buffer_chunk_size;
+                           char buffer[ c_buffer_chunk_size ];
+
+                           set_write_data_pos( dpos );
+
+                           for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
+                           {
+                              if( j + chunk > tranlog_item.data_size )
+                                 chunk = tranlog_item.data_size - j;
+
+                              fs.read( buffer, chunk );
+                              write_data_bytes( buffer, chunk );
+                           }
+
+                           if( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size )
+                              p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
+                        }
+
+                        ods_index_entry index_entry;
+                        read_index_entry( index_entry, tranlog_item.index_entry_id );
+
+                        index_entry.data.pos = dpos;
+                        index_entry.data.size = tranlog_item.data_size;
+
+                        if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
+                           changed_free_list = true;
+
+                        index_entry.data.tran_id = tx_id;
+                        index_entry.data.tran_op = 0;
+
+                        index_entry.trans_flag = ods_index_entry::e_trans_none;
+
+                        write_index_entry( index_entry, tranlog_item.index_entry_id );
                      }
+                     else if( commit && tranlog_item.is_destroy( ) && !tranlog_item.is_post_op( ) )
+                        add_to_free_list = true;
+                     else
+                        fs.seekg( tranlog_item.data_size, ios::cur );
+                  }
+                  else if( ( commit && tranlog_item.is_destroy( ) ) || ( !commit && tranlog_item.is_create( ) ) )
+                     add_to_free_list = true;
+
+                  if( add_to_free_list )
+                  {
+                     changed_free_list = true;
 
                      ods_index_entry index_entry;
                      read_index_entry( index_entry, tranlog_item.index_entry_id );
 
-                     if( commit || !tranlog_item.has_old_pos( ) )
-                        index_entry.data.pos = tranlog_item.data_pos;
-                     else
-                        index_entry.data.pos = tranlog_item.data_opos;
+                     if( index_entry.data.pos + index_entry.data.size
+                      == p_impl->rp_header_info->total_size_of_data )
+                        p_impl->rp_header_info->total_size_of_data -= index_entry.data.size;
 
-                     index_entry.data.size = tranlog_item.data_size;
-
-                     if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
-                        changed_free_list = true;
+                     index_entry.data.size = 0;
 
                      index_entry.data.tran_id = tx_id;
                      index_entry.data.tran_op = 0;
 
-                     index_entry.trans_flag = ods_index_entry::e_trans_none;
+                     index_entry.trans_flag = ods_index_entry::e_trans_free_list;
 
                      write_index_entry( index_entry, tranlog_item.index_entry_id );
                   }
-                  else if( commit && tranlog_item.is_destroy( ) && !tranlog_item.is_post_op( ) )
-                     add_to_free_list = true;
-                  else
-                     fs.seekg( tranlog_item.data_size, ios::cur );
                }
-               else if( ( commit && tranlog_item.is_destroy( ) ) || ( !commit && tranlog_item.is_create( ) ) )
-                  add_to_free_list = true;
 
-               if( add_to_free_list )
-               {
-                  changed_free_list = true;
-
-                  ods_index_entry index_entry;
-                  read_index_entry( index_entry, tranlog_item.index_entry_id );
-
-                  index_entry.data.size = 0;
-
-                  index_entry.data.tran_id = tx_id;
-                  index_entry.data.tran_op = 0;
-
-                  index_entry.trans_flag = ods_index_entry::e_trans_free_list;
-
-                  write_index_entry( index_entry, tranlog_item.index_entry_id );
-               }
+               if( had_any_data )
+                  ++p_impl->rp_header_info->data_transform_id;
             }
-         }
-         else
-         {
-            if( !next_offs )
+            else
+            {
+               if( !next_offs )
+                  break;
+
+               fs.seekg( next_offs, ios::beg );
+            }
+
+            if( fs.tellg( ) > tranlog_info.entry_offs )
                break;
-
-            fs.seekg( next_offs, ios::beg );
          }
 
-         if( fs.tellg( ) > tranlog_info.entry_offs )
-            break;
+         fs.close( );
       }
+   }
 
+   if( had_any_entries )
+   {
       // NOTE: The index free list could have been messed up during the restore
       // so if any change had been made to it then will now reconstruct it all.
       if( changed_free_list )
@@ -4751,11 +4886,6 @@ void ods::restore_from_transaction_log( )
       p_impl->rp_header_info->num_trans = 0;
       p_impl->rp_header_info->num_writers = 0;
       p_impl->rp_header_info->tranlog_offset = tranlog_offset;
-
-      if( had_any_data )
-         ++p_impl->rp_header_info->data_transform_id;
-
-      ++p_impl->rp_header_info->index_transform_id;
 
       *p_impl->rp_has_changed = true;
       p_impl->write_header_file_info( );

@@ -879,7 +879,7 @@ int main( int argc, char* argv[ ] )
 
       cmd_handler.init_ods( "test_ods" );
 
-      if( cmd_handler.get_ods( ).is_new( ) )
+      if( cmd_handler.get_ods( ).is_new( ) && !cmd_handler.get_ods( ).is_corrupt( ) )
       {
          outline root( c_root_node_description );
 

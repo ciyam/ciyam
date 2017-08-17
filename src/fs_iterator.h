@@ -53,8 +53,10 @@ class fs_iterator
    ~fs_iterator( );
 
    void set_root( const std::string& new_root );
+
    const std::string& get_root( ) const { return root.empty( ) ? true_root : root; }
    const std::string& get_name( ) const { return name.empty( ) ? true_root : name; }
+
    const std::string& get_full_name( ) const { return full_name.empty( ) ? true_root : full_name; }
    const std::string& get_path_name( ) const { return path_name.empty( ) ? true_root : path_name; }
 

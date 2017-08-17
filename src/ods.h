@@ -611,6 +611,7 @@ class ODS_DECL_SPEC ods
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
    void repair_if_corrupt( );
+   void reconstruct_database( );
 
    int64_t get_size( const oid& id );
 
@@ -738,7 +739,7 @@ class ODS_DECL_SPEC ods
     const ods_index_entry& index_entry, unsigned char flags, int64_t log_entry_offs = 0 );
 
    void rollback_dead_transactions( );
-   void restore_from_transaction_log( );
+   void restore_from_transaction_log( bool force_reconstruct = false );
 
    ods& operator =( const ods& o );
    bool operator ==( const ods& o );

@@ -797,6 +797,7 @@
     <test/>
      <name>1
      <description>Populate DB using nested transactions.
+     <kill>test_ods.tlg
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
