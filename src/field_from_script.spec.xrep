@@ -14,16 +14,26 @@
 
       run_script( "`{`$arg_value`}", false );
 
+      bool okay = true;
+
       string s( load_file( tmp ) );
       remove_file( tmp );
 `{`!`@eq`(`$arg_tvalue`,`'`'`)
 `{`!`@eq`(`$arg_tvalue`,`'use_tfield`'`)\
-      s = check_with_regex( "`{`$arg_tvalue`}", s );
+      s = check_with_regex( "`{`$arg_tvalue`}", s, &okay );
 `,\
-      s = check_with_regex( get_obj( ).`{`$arg_tfield`}( ), s );
+      s = check_with_regex( get_obj( ).`{`$arg_tfield`}( ), s, &okay );
 `}`}\
 
-      if( get_obj( ).get_variable( get_special_var_name( e_special_var_check_if_changed ) ).empty( )
+      if( !okay )
+      {
+         // NOTE: If what the script returned was not empty but failed to match an
+         // expected regular expression then throw it as an error (if empty values
+         // are to be only conditionally ignored will need to add an option).
+         if( !s.empty( ) )
+            throw runtime_error( s );
+      }
+      else if( get_obj( ).get_variable( get_special_var_name( e_special_var_check_if_changed ) ).empty( )
        || from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) != get_obj( ).`{`$arg_field`}( ) )
       {
          set_session_variable( get_special_var_name( e_special_var_storage ), storage_name( ) );

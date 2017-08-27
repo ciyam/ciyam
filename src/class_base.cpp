@@ -3395,7 +3395,12 @@ string check_with_regex( const string& r, const string& s, bool* p_rc )
             throw runtime_error( s );
       }
       else
-         throw runtime_error( "unexpected check for empty string" );
+      {
+         if( p_rc )
+            *p_rc = false;
+         else
+            throw runtime_error( "unexpected check for empty string" );
+      }
    }
 
    string retval( s );
