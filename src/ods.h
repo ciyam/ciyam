@@ -678,6 +678,8 @@ class ODS_DECL_SPEC ods
    struct transaction
    {
       transaction( ods& o, bool is_not_dummy = true );
+      transaction( ods& o, const std::string& label );
+
       ~transaction( );
 
       void commit( );
@@ -719,7 +721,7 @@ class ODS_DECL_SPEC ods
    void bulk_operation_pause( );
    void bulk_operation_finish( );
 
-   void transaction_start( );
+   void transaction_start( const char* p_label = 0 );
    void transaction_commit( );
    void transaction_rollback( );
    void transaction_completed( );
@@ -731,7 +733,7 @@ class ODS_DECL_SPEC ods
 
    int64_t log_append_offset( );
 
-   int64_t append_log_entry( int64_t tx_id, int64_t* p_append_offset = 0 );
+   int64_t append_log_entry( int64_t tx_id, int64_t* p_append_offset = 0, const char* p_label = 0 );
 
    void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
 

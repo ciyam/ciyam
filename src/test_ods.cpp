@@ -51,10 +51,10 @@ const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
-const char* const c_cmd_using_transaction_log = "tlg";
+const char* const c_cmd_use_transaction_log = "tlg";
 
 bool g_shared_access = true;
-bool g_using_transaction_log = false;
+bool g_use_transaction_log = false;
 
 bool g_application_title_called = false;
 
@@ -314,8 +314,8 @@ class test_ods_startup_functor : public command_functor
    {
       if( command == c_cmd_exclusive )
          g_shared_access = false;
-      else if( command == c_cmd_using_transaction_log )
-         g_using_transaction_log = true;
+      else if( command == c_cmd_use_transaction_log )
+         g_use_transaction_log = true;
    }
 };
 
@@ -363,7 +363,7 @@ class test_ods_command_handler : public console_command_handler
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_using_transaction_log ) );
+    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
 }
 
 class test_ods_command_functor : public command_functor
@@ -764,10 +764,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_trans )
    {
+      string label( get_parm_val( parameters, c_cmd_parm_test_ods_trans_label ) );
+
       if( trans_level < c_max_trans_depth - 1 )
       {
          trans_stack_levels[ trans_level ] = oid_stack.size( );
-         trans_buffer[ trans_level++ ] = new ods::transaction( o );
+         trans_buffer[ trans_level++ ] = new ods::transaction( o, label );
+
          handler.issue_command_reponse( "begin transaction (level = " + to_string( trans_level ) + ")" );
       }
       else
@@ -865,13 +868,13 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_exclusive, 1,
           "", "use exclusive file access", new test_ods_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_using_transaction_log, 1,
-          "", "using transaction log file", new test_ods_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_use_transaction_log, 1,
+          "", "use transaction log file", new test_ods_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_exclusive );
-         cmd_handler.remove_command( c_cmd_using_transaction_log );
+         cmd_handler.remove_command( c_cmd_use_transaction_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

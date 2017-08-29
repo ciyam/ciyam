@@ -10,7 +10,7 @@ Transaction Id = 30007
 Index Free List = 2
 Total Size of Data = 488974
 Data Transformation Id = 10007
-Index Transformation Id = 50010
+Index Transformation Id = 50009
 
 ** Freelist Info
 First freelist entry = 1

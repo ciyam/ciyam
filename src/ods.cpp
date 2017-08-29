@@ -296,6 +296,8 @@ struct log_info
    int64_t sequence_old_tm;
 };
 
+const size_t c_max_tx_label_size = 15;
+
 struct log_entry
 {
    log_entry( )
@@ -315,7 +317,7 @@ struct log_entry
    void dump( ostream& os, int64_t offs = 0 ) const
    {
       if( label[ 0 ] )
-         os << "label = " << label << endl;
+         os << '[' << label << ']' << endl;
 
       os << "tx_id = " << tx_id;
       if( offs )
@@ -374,7 +376,7 @@ struct log_entry
          THROW_ODS_ERROR( "unexpected bad log_entry write" );
    }
 
-   char label[ 16 ];
+   char label[ c_max_tx_label_size + 1 ];
 
    int64_t tx_id;
    int64_t tx_time;
@@ -2717,6 +2719,8 @@ void ods::destroy( const oid& id )
                 && index_entry.data.tran_id == p_impl->p_trans_buffer->tran_id
                 && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
                {
+                  bool skip_log_entry = false;
+
                   if( p_impl->trans_level )
                   {
                      transaction_op op;
@@ -2728,10 +2732,13 @@ void ods::destroy( const oid& id )
 
                      write_transaction_op( op );
 
+                     if( index_entry.data.tran_id == p_impl->p_trans_buffer->tran_id )
+                        skip_log_entry = true;
+
                      index_entry.data.tran_op = 0;
                      index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
 
-                     if( p_impl->using_tranlog )
+                     if( !skip_log_entry && p_impl->using_tranlog )
                         append_log_entry_item( id.get_num( ), index_entry, flags );
 
                      index_entry.trans_flag = ods_index_entry::e_trans_delete;
@@ -2766,7 +2773,8 @@ void ods::destroy( const oid& id )
 
                   write_index_entry( index_entry, id.get_num( ) );
 
-                  ++p_impl->rp_header_info->index_transform_id;
+                  if( !skip_log_entry )
+                     ++p_impl->rp_header_info->index_transform_id;
 
                   if( !p_impl->trans_level )
                      ++p_impl->rp_header_info->transaction_id;
@@ -3650,6 +3658,16 @@ ods::transaction::transaction( ods& o, bool is_not_dummy )
       o.transaction_start( );
 }
 
+ods::transaction::transaction( ods& o, const string& label )
+ :
+ o( o ),
+ is_dummy( false ),
+ can_commit( true ),
+ has_committed( false )
+{
+   o.transaction_start( label.empty( ) ? 0 : label.c_str( ) );
+}
+
 ods::transaction::~transaction( )
 {
    if( !is_dummy && o.is_okay( ) )
@@ -3836,7 +3854,7 @@ void ods::bulk_operation_finish( )
       bulk_operation_close( );
 }
 
-void ods::transaction_start( )
+void ods::transaction_start( const char* p_label )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -3861,7 +3879,7 @@ void ods::transaction_start( )
 
          if( p_impl->using_tranlog )
          {
-            p_impl->tranlog_offset = append_log_entry( p_impl->p_trans_buffer->tran_id );
+            p_impl->tranlog_offset = append_log_entry( p_impl->p_trans_buffer->tran_id, 0, p_label );
 
             if( !p_impl->rp_header_info->tranlog_offset )
                p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
@@ -3900,9 +3918,14 @@ void ods::transaction_start( )
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
-   osstr << "ods::transaction_start( ) level = " << p_impl->trans_level
-    << "\ntrans_level_info.offset = " << trans_level_info.offset
+
+   osstr << "ods::transaction_start( ) level = " << p_impl->trans_level;
+   if( p_label )
+      osstr << ", label = " << p_label;
+
+   osstr << "\ntrans_level_info.offset = " << trans_level_info.offset
     << "\ntrans_level_info.op_offset = " << trans_level_info.op_offset;
+
    DEBUG_LOG( osstr.str( ) );
 #endif
 }
@@ -4323,7 +4346,7 @@ int64_t ods::log_append_offset( )
    return tranlog_info.append_offs;
 }
 
-int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset )
+int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const char* p_label )
 {
    fstream fs;
    fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
@@ -4355,6 +4378,9 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset )
 
       tranlog_entry.commit_offs = tranlog_entry.commit_items = 0;
    }
+
+   if( p_label )
+      memcpy( tranlog_entry.label, p_label, min( strlen( p_label ), c_max_tx_label_size ) );
 
    tranlog_entry.tx_id = tx_id;
    tranlog_entry.tx_time = tx_time;
@@ -5208,6 +5234,8 @@ ods& operator <<( ods& o, storable_base& s )
 
             ++*p_total_to_increment;
 
+            bool skip_log_entry = false;
+
             transaction_op op;
             if( o.p_impl->trans_level )
             {
@@ -5230,6 +5258,9 @@ ods& operator <<( ods& o, storable_base& s )
                index_entry.data.tran_op =
                 o.p_impl->p_trans_buffer->levels.top( ).op_offset
                 + o.p_impl->p_trans_buffer->levels.top( ).op_count + 1;
+
+               if( !is_new_object && old_index_entry.data.tran_id == o.p_impl->p_trans_buffer->tran_id )
+                  skip_log_entry = true;
 
                index_entry.trans_flag = ods_index_entry::e_trans_change;
                old_index_entry.data.tran_id = index_entry.data.tran_id = o.p_impl->p_trans_buffer->tran_id;
@@ -5266,12 +5297,13 @@ ods& operator <<( ods& o, storable_base& s )
                   o.p_impl->rp_header_info->total_size_of_data += o.bytes_reserved;
             }
 
-            if( o.p_impl->using_tranlog )
+            if( !skip_log_entry && o.p_impl->using_tranlog )
                o.append_log_entry_item( s.id.num, !is_new_object ? old_index_entry : index_entry, flags );
 
             o.write_index_entry( index_entry, s.id.num );
 
-            ++o.p_impl->rp_header_info->index_transform_id;
+            if( !skip_log_entry )
+               ++o.p_impl->rp_header_info->index_transform_id;
 
             if( o.p_impl->trans_level )
             {

@@ -5,7 +5,7 @@ add "add a new child folder [use name*n to add 'n' folders]" <val//name>
 del "delete a file or child folder [use name*n to delete 'n' folders]" <val//name>
 export "exports a file" <val//file_name>[<val//output_name>]
 import "imports an external file" <val//file_name>
-trans "begin transaction"
+trans "begin transaction" [<val//label>]
 commit "commit transaction"
 rollback "rollback transaction"
 trans_id "get the current transaction id"

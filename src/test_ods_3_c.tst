@@ -10,7 +10,7 @@ Transaction Id = 30007
 Index Free List = 2
 Total Size of Data = 28
 Data Transformation Id = 10008
-Index Transformation Id = 50011
+Index Transformation Id = 50010
 
 ** Entry Info for: 0
 num: 0000000000000000          pos: 0000000000000000          len: 000000000000001c
