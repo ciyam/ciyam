@@ -45,7 +45,6 @@ std::string ods_backup_file_names( const std::string& name,
 class ODS_DECL_SPEC char_buffer
 {
    friend class ods;
-   friend std::ostream& operator <<( std::ostream& outf, const char_buffer& c );
 
    public:
    char_buffer( int64_t max, int64_t len = 0, int64_t pos = 0 ) :
@@ -189,6 +188,19 @@ class ODS_DECL_SPEC char_buffer
          memcpy( p_data + from, src, copy_len );
    }
 
+   friend struct lock;
+
+   struct lock
+   {
+      lock( char_buffer& cb )
+       :
+       g( cb.buffer_lock )
+      {
+      }
+
+      guard g;
+   };
+
    // IMPORTANT: This final set of public functions should only be called within the scope of a
    // "char_buffer::lock" object if the "char_buffer" object is accessible to any other threads
    // to ensure that no other thread can make changes whilst these accessors are being used.
@@ -200,6 +212,8 @@ class ODS_DECL_SPEC char_buffer
 
    friend read_stream& operator >>( read_stream& rs, char_buffer& cb );
    friend write_stream& operator <<( write_stream& ws, const char_buffer& cb );
+
+   friend std::ostream& operator <<( std::ostream& outf, const char_buffer& c );
 
    private:
    void set_pos( int64_t newpos )
@@ -613,6 +627,8 @@ class ODS_DECL_SPEC ods
    void repair_if_corrupt( );
    void reconstruct_database( );
 
+   void rewind_transactions( const std::string& label_or_txid );
+
    int64_t get_size( const oid& id );
 
    void destroy( const oid& id );
@@ -737,8 +753,8 @@ class ODS_DECL_SPEC ods
 
    void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
 
-   void append_log_entry_item( int64_t num,
-    const ods_index_entry& index_entry, unsigned char flags, int64_t log_entry_offs = 0 );
+   void append_log_entry_item( int64_t num, const ods_index_entry& index_entry,
+    unsigned char flags, int64_t old_tx_id = 0, int64_t log_entry_offs = 0 );
 
    void rollback_dead_transactions( );
    void restore_from_transaction_log( bool force_reconstruct = false );

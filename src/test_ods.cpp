@@ -811,6 +811,12 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }      
    else if( command == c_cmd_test_ods_trans_level )
       handler.issue_command_reponse( to_string( o.get_transaction_level( ) ) );
+   else if( command == c_cmd_test_ods_rewind )
+   {
+      string label_or_txid( get_parm_val( parameters, c_cmd_parm_test_ods_rewind_label_or_txid ) );
+
+      o.rewind_transactions( label_or_txid );
+   }
    else if( command == c_cmd_test_ods_compress )
    {
       if( g_shared_access )

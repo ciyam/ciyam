@@ -6,15 +6,15 @@ Num Writers = 0
 Init Tranlog = 0
 Total Entries = 2
 Tranlog Offset = 0
-Transaction Id = 18
-Index Free List = 0
+Transaction Id = 19
+Index Free List = n/a
 Total Size of Data = 1280
 Data Transformation Id = 18
 Index Transformation Id = 18
 
 ** Entry Info for: 0
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000100
-txn: 0000000000000010          txo: 0000000000000000               flags: lk=0 tx=0
+txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
 0000000000000000  01 ff 00 55 01 00 01 00 00 00 00 00 00 00 08 00  ...U............
 0000000000000010  00 00 00 00 00 00 01 00 00 00 00 00 00 00 01 00  ................
 0000000000000020  00 00 00 00 00 00 01 00 00 00 00 00 00 00 ff ff  ................

@@ -10,6 +10,7 @@ commit "commit transaction"
 rollback "rollback transaction"
 trans_id "get the current transaction id"
 trans_level "get the current transaction level"
+rewind "rewind transactions" <val//label_or_txid>
 compress "move free data to end of store"
 truncate "truncate transaction log"
 abort "force an immediate exit"
