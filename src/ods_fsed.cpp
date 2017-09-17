@@ -35,12 +35,14 @@ const char* const c_app_title = "ods_fsed";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_exclusive = "x";
+const char* const c_cmd_use_transaction_log = "tlg";
 
 int64_t g_oid = 0;
 
 string g_name( c_app_title );
 
-bool g_shared_access = true;
+bool g_shared_write = true;
+bool g_use_transaction_log = false;
 
 bool g_application_title_called = false;
 
@@ -195,7 +197,9 @@ class ods_fsed_startup_functor : public command_functor
    void operator ( )( const string& command, const parameter_info& /*parameters*/ )
    {
       if( command == c_cmd_exclusive )
-         g_shared_access = false;
+         g_shared_write = false;
+      else if( command == c_cmd_use_transaction_log )
+         g_use_transaction_log = true;
    }
 };
 
@@ -223,11 +227,11 @@ class ods_fsed_command_handler : public console_command_handler
 void ods_fsed_command_handler::init( )
 {
    ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ) ) );
+    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
 
    ods::bulk_write bulk_write( *ap_ods );
 
-   if( !g_shared_access && !ap_ods->is_new( ) )
+   if( !g_shared_write && !ap_ods->is_new( ) )
       ap_ods->repair_if_corrupt( );
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
@@ -448,7 +452,26 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    {
       string directory( get_parm_val( parameters, c_cmd_parm_ods_fsed_import_directory ) );
 
+      ods::transaction tx( *ap_ods );
+
       import_objects( *ap_ofs, directory );
+
+      tx.commit( );
+   }
+   else if( command == c_cmd_ods_fsed_label )
+   {
+      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_label_name ) );
+
+      ods::transaction label_tx( *ap_ods, name );
+   }
+   else if( command == c_cmd_ods_fsed_rewind )
+   {
+      string label_or_txid( get_parm_val( parameters, c_cmd_parm_ods_fsed_rewind_label_or_txid ) );
+
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+      else
+         ap_ods->rewind_transactions( label_or_txid );
    }
    else if( command == c_cmd_ods_fsed_rebuild )
    {
@@ -462,8 +485,8 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_compress )
    {
-      if( g_shared_access )
-         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
          handler.issue_command_reponse( "moving free data to end..." );
@@ -474,8 +497,8 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_truncate )
    {
-      if( g_shared_access )
-         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
          ap_ods->truncate_log( );
    }
@@ -499,11 +522,15 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
          cmd_handler.add_command( c_cmd_exclusive, 1,
-          "", "use ODS exclusive file access", new ods_fsed_startup_functor( cmd_handler ) );
+          "", "use exclusive write access", new ods_fsed_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_use_transaction_log, 1,
+          "", "use transaction log file", new ods_fsed_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_exclusive );
+         cmd_handler.remove_command( c_cmd_use_transaction_log );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

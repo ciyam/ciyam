@@ -53,7 +53,7 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 
-bool g_shared_access = true;
+bool g_shared_write = true;
 bool g_use_transaction_log = false;
 
 bool g_application_title_called = false;
@@ -313,7 +313,7 @@ class test_ods_startup_functor : public command_functor
    void operator ( )( const string& command, const parameter_info& /*parameters*/ )
    {
       if( command == c_cmd_exclusive )
-         g_shared_access = false;
+         g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
    }
@@ -363,7 +363,7 @@ class test_ods_command_handler : public console_command_handler
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_access ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
+    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
 }
 
 class test_ods_command_functor : public command_functor
@@ -815,12 +815,15 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    {
       string label_or_txid( get_parm_val( parameters, c_cmd_parm_test_ods_rewind_label_or_txid ) );
 
-      o.rewind_transactions( label_or_txid );
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+      else
+         o.rewind_transactions( label_or_txid );
    }
    else if( command == c_cmd_test_ods_compress )
    {
-      if( g_shared_access )
-         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
          handler.issue_command_reponse( "moving free data to end..." );
@@ -830,8 +833,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_truncate )
    {
-      if( g_shared_access )
-         handler.issue_command_reponse( "*** must be locked for exclusive use to perform this operation ***" );
+      if( g_shared_write )
+         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
          o.truncate_log( );
    }
@@ -872,7 +875,7 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
          cmd_handler.add_command( c_cmd_exclusive, 1,
-          "", "use exclusive file access", new test_ods_startup_functor( cmd_handler ) );
+          "", "use exclusive write access", new test_ods_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new test_ods_startup_functor( cmd_handler ) );
@@ -894,7 +897,7 @@ int main( int argc, char* argv[ ] )
 
          cmd_handler.get_ods( ) << root;
       }
-      else if( !g_shared_access )
+      else if( !g_shared_write )
          cmd_handler.get_ods( ).repair_if_corrupt( );
 
       cmd_handler.get_node( ).set_id( 0 );

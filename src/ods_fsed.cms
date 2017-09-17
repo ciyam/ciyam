@@ -14,6 +14,8 @@ folder_move "move a child folder below another folder or rename it" [<opt/-o/ove
 folder_remove "remove a folder from below the current folder" [<opt/-r/recurse>]<val//name>
 export "export all objects to a directory" <val//directory>
 import "import all objects from a directory" <val//directory>
+label "append a transaction log label" <val//name>
+rewind "rewind transactions" <val//label_or_txid>
 rebuild "rebuild index nodes"
 dump "dump container details" [<val//filename>]
 compress "move free data to end of store"

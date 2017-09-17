@@ -2060,7 +2060,7 @@ struct ods::impl
    void read_header_file_info( );
    void write_header_file_info( bool for_close = false );
 
-   void force_write_header_file_info( );
+   void force_write_header_file_info( bool for_close = false );
 
    bool found_instance_currently_reading( int64_t num );
    bool found_instance_currently_writing( int64_t num );
@@ -2099,11 +2099,11 @@ void ods::impl::write_header_file_info( bool for_close )
       THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
 }
 
-void ods::impl::force_write_header_file_info( )
+void ods::impl::force_write_header_file_info( bool for_close )
 {
    // NOTE: The file will be marked as corrupt unless "has_changed" is set true.
    temp_set_value< bool > temp_has_changed( *rp_has_changed, true );
-   write_header_file_info( );
+   write_header_file_info( for_close );
 }
 
 bool ods::impl::found_instance_currently_reading( int64_t num )
@@ -2771,10 +2771,22 @@ void ods::rewind_transactions( const string& label_or_txid )
             log_entry tranlog_entry;
             tranlog_entry.read( fs );
 
+            int64_t current_pos = fs.tellg( );
+
+            if( current_pos == append_offset )
+               break;
+
             // NOTE: If no log entry items exist for the current log entry then
-            // the current file position will instead be the next entry offset.
-            if( entry_offsets.count( ( int64_t )fs.tellg( ) ) )
-               continue;
+            // the current file position will be the entry offset that followed
+            // it so either continue with the previous entry or break if at the
+            // first entry already.
+            if( entry_offsets.count( current_pos ) )
+            {
+               if( si == entry_offsets.begin( ) )
+                  break;
+               else
+                  continue;
+            }
 
             int64_t tx_id = tranlog_entry.tx_id;
 
@@ -2928,7 +2940,15 @@ void ods::rewind_transactions( const string& label_or_txid )
 
          data_and_index_write( );
 
-         *p_impl->rp_has_changed = true;
+         // NOTE: If no write has occurred then act as though
+         // one has in order to ensure that the "num_writers"
+         // will be correctly zeroed.
+         if( !*p_impl->rp_has_changed )
+         {
+            *p_impl->rp_has_changed  = true;
+            ++p_impl->rp_header_info->num_writers;
+         }
+
          p_impl->write_header_file_info( true );
 
          *p_impl->rp_has_changed = false;
@@ -4202,6 +4222,9 @@ void ods::transaction_start( const char* p_label )
          p_impl->total_trans_size = 0;
          p_impl->total_trans_op_count = 0;
 
+         // NOTE: Need to act as though a write has occurred (in case none
+         // does before the next file close) to ensure that the values for
+         // "num_trans" and "num_writers" will be both correctly set.
          if( !*p_impl->rp_has_changed )
          {
             *p_impl->rp_has_changed  = true;
@@ -4566,9 +4589,8 @@ void ods::transaction_completed( )
       { // start of file lock section...
          ods::header_file_lock header_file_lock( *this );
 
-         // NOTE: If an empty transaction was either committed or rolled back
-         // then will need to act as though a change has occurred in order to
-         // correclty set both "num_trans" and "num_writers".
+         // NOTE: If no write has occurred since the last close then need to act as
+         // though one has in order to correctly set "num_trans" and "num_writers".
          if( !*p_impl->rp_has_changed )
          {
             *p_impl->rp_has_changed  = true;
@@ -4690,8 +4712,10 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
       tranlog_entry.commit_offs = tranlog_entry.commit_items = 0;
    }
 
-   if( p_label )
-      memcpy( tranlog_entry.label, p_label, min( strlen( p_label ), c_max_tx_label_size ) );
+   if( !p_label )
+      memset( tranlog_entry.label, '\0', sizeof( tranlog_entry.label ) );
+   else
+      memcpy( tranlog_entry.label, p_label, min( strlen( p_label ), sizeof( tranlog_entry.label ) ) );
 
    tranlog_entry.tx_id = tx_id;
    tranlog_entry.tx_time = tx_time;

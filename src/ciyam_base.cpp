@@ -1237,6 +1237,15 @@ void init_ciyam_ods( )
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
+   auto_ptr< ods::transaction > ap_tx;
+
+   if( was_just_created
+    || !gap_ofs->has_folder( c_file_archives_folder )
+    || !gap_ofs->has_folder( c_file_blacklist_folder )
+    || !gap_ofs->has_folder( c_file_repository_folder )
+    || !gap_ofs->has_folder( c_system_variables_folder ) )
+      ap_tx.reset( new ods::transaction( *gap_ods ) );
+
    if( !gap_ofs->has_folder( c_file_archives_folder ) )
       gap_ofs->add_folder( c_file_archives_folder );
 
@@ -1248,6 +1257,9 @@ void init_ciyam_ods( )
 
    if( !gap_ofs->has_folder( c_system_variables_folder ) )
       gap_ofs->add_folder( c_system_variables_folder );
+
+   if( ap_tx.get( ) )
+      ap_tx->commit( );
 
    if( !was_just_created )
    {

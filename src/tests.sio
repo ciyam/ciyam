@@ -887,6 +887,7 @@
     <test/>
      <name>1
      <description>Test an initially empty DB then add, move and remove some folders.
+     <kill>ods_fsed.tlg
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
@@ -981,6 +982,7 @@
     <test/>
      <name>2
      <description>Test an initially empty DB then add, link, move, replace and remove some files.
+     <kill>ods_fsed.tlg
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr

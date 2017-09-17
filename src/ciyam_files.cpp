@@ -1607,6 +1607,8 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods::bulk_write bulk_write( ciyam_ods_instance( ) );
    ods_file_system& ods_fs( ciyam_ods_file_system( ) );
 
+   ods::transaction ods_tx( ciyam_ods_instance( ) );
+
    ods_fs.set_root_folder( c_file_archives_folder );
 
    if( ods_fs.has_folder( name ) )
@@ -1623,6 +1625,8 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods_fs.store_as_text_file( c_file_archive_status_info, status_info, c_status_info_pad_len );
 
    ods_fs.add_folder( c_folder_archive_files_folder );
+
+   ods_tx.commit( );
 }
 
 void remove_file_archive( const string& name, bool destroy_files )
@@ -1639,6 +1643,8 @@ void remove_file_archive( const string& name, bool destroy_files )
       throw runtime_error( "archive '" + name + "' not found" );
    else
    {
+      ods::transaction ods_tx( ciyam_ods_instance( ) );
+
       if( destroy_files )
       {
          ods_fs.set_folder( name );
@@ -1669,6 +1675,8 @@ void remove_file_archive( const string& name, bool destroy_files )
       }
 
       ods_fs.remove_folder( name, 0, true );
+
+      ods_tx.commit( );
    }
 }
 
@@ -1686,6 +1694,8 @@ void repair_file_archive( const string& name )
       throw runtime_error( "archive '" + name + "' not found" );
    else
    {
+      ods::transaction ods_tx( ciyam_ods_instance( ) );
+
       ods_fs.set_folder( name );
 
       string path;
@@ -1739,6 +1749,8 @@ void repair_file_archive( const string& name )
          ods_fs.store_as_text_file( c_file_archive_size_avail, size_avail );
          ods_fs.store_as_text_file( c_file_archive_size_limit, size_limit );
       }
+
+      ods_tx.commit( );
    }
 }
 
@@ -1753,6 +1765,8 @@ void archives_status_update( const string& name )
 
    vector< string > names;
    ods_fs.list_folders( names );
+
+   ods::transaction ods_tx( ciyam_ods_instance( ) );
 
    for( size_t i = 0; i < names.size( ); i++ )
    {
@@ -1784,6 +1798,8 @@ void archives_status_update( const string& name )
 
       ods_fs.set_folder( ".." );
    }
+
+   ods_tx.commit( );
 }
 
 bool file_has_been_blacklisted( const string& hash )
@@ -1912,6 +1928,8 @@ string relegate_timestamped_files( const string& hash,
       ods::bulk_write bulk_write( ciyam_ods_instance( ) );
       ods_file_system& ods_fs( ciyam_ods_file_system( ) );
 
+      ods::transaction ods_tx( ciyam_ods_instance( ) );
+
       for( size_t i = 0; i < archives.size( ); i++ )
       {
          if( !archive.empty( ) && archives[ i ] != archive )
@@ -1990,6 +2008,8 @@ string relegate_timestamped_files( const string& hash,
             }
          }
       }
+
+      ods_tx.commit( );
    }
 
    // NOTE: If "delete_files_always" is set true then delete the entire
@@ -2086,8 +2106,15 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    string all_archives( list_file_archives( true, &paths ) );
 
-   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !ciyam_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( ciyam_ods_instance( ) ) );
+
    ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !ciyam_ods_instance( ).is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( ciyam_ods_instance( ) ) );
 
    if( !all_archives.empty( ) )
    {
@@ -2165,5 +2192,8 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
             delete_file_from_archive( local_hash, "" );
       }
    }
+
+   if( ap_ods_tx.get( ) )
+      ap_ods_tx->commit( );
 }
 

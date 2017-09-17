@@ -604,6 +604,8 @@ class ODS_DECL_SPEC ods
    bool is_bulk_read_locked( ) const;
    bool is_bulk_write_locked( ) const;
 
+   bool is_in_transaction( ) const { return get_transaction_level( ) > 0; }
+
    bool is_using_transaction_log( ) const;
 
    int64_t get_total_entries( ) const;

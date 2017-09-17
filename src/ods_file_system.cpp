@@ -573,7 +573,11 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
       o >> bt;
 
-      auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
+
+      btree_trans_type bt_tx( bt );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
       tmp_item.val = current_folder + string( c_folder_separator ) + name;
@@ -641,7 +645,11 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
             }
 
             bt.insert( tmp_item );
-            ap_tx->commit( );
+
+            bt_tx.commit( );
+
+            if( ap_ods_tx.get( ) )
+               ap_ods_tx->commit( );
          }
       }
    }
@@ -743,10 +751,14 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
 
       o >> bt;
 
-      auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
-
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
+
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
+
+      btree_trans_type bt_tx( bt );
 
 #ifndef ALLOW_SAME_FILE_AND_FOLDER_NAMES
       tmp_item.val = current_folder + string( c_folder_separator ) + name;
@@ -825,7 +837,10 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
 
                bt.insert( tmp_item );
 
-               ap_tx->commit( );
+               bt_tx.commit( );
+
+               if( ap_ods_tx.get( ) )
+                  ap_ods_tx->commit( );
             }
          }
       }
@@ -858,19 +873,21 @@ void ods_file_system::move_file( const string& name, const string& destination, 
 
       o >> bt;
 
-      auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+      btree_type::iterator tmp_iter;
+      btree_type::item_type tmp_item;
+
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
+
+      btree_trans_type bt_tx( bt );
 
       string value( current_folder );
-
       replace( value, c_folder_separator, c_pipe_separator );
 
       value += string( c_folder_separator ) + name;
 
-      btree_type::iterator tmp_iter;
-      btree_type::item_type tmp_item;
-
       tmp_item.val = value;
-
       tmp_iter = bt.find( tmp_item );
 
       if( tmp_iter == bt.end( ) )
@@ -968,7 +985,10 @@ void ods_file_system::move_file( const string& name, const string& destination, 
                      }
                   }
 
-                  ap_tx->commit( );
+                  bt_tx.commit( );
+
+                  if( ap_ods_tx.get( ) )
+                     ap_ods_tx->commit( );
                }
             }
          }
@@ -1003,10 +1023,19 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
 
    o >> bt;
 
-   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !o.is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( o ) );
+
+   btree_trans_type bt_tx( bt );
 
    if( remove_items_for_file( name, p_os ) )
-      ap_tx->commit( );
+   {
+      bt_tx.commit( );
+
+      if( ap_ods_tx.get( ) )
+         ap_ods_tx->commit( );
+   }
 }
 
 void ods_file_system::replace_file( const string& name, const string& source, ostream* p_os, istream* p_is )
@@ -1023,15 +1052,18 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
+   o >> bt;
+
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
 
-   o >> bt;
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !o.is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( o ) );
 
-   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+   btree_trans_type bt_tx( bt );
 
    string value( current_folder );
-
    replace( value, c_folder_separator, c_pipe_separator );
 
    value += string( c_folder_separator ) + name;
@@ -1120,7 +1152,10 @@ void ods_file_system::replace_file( const string& name, const string& source, os
           file_name, isstr, content.size( ) ) ).store( e_oid_pointer_opt_force_write_skip_read );
       }
 
-      ap_tx->commit( );
+      bt_tx.commit( );
+
+      if( ap_ods_tx.get( ) )
+         ap_ods_tx->commit( );
    }
 }
 
@@ -1199,10 +1234,18 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
+      o >> bt;
+
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      o >> bt;
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
+
+      btree_trans_type bt_tx( bt );
+
+      bool okay = false;
 
       if( current_folder == string( c_root_folder ) )
       {
@@ -1236,6 +1279,8 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
                tmp_item.val = c_colon + tmp_item.val;
                bt.insert( tmp_item );
+
+               okay = true;
             }
          }
       }
@@ -1275,8 +1320,18 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
                tmp_item.val = name_2;
                bt.insert( tmp_item );
+
+               okay = true;
             }
          }
+      }
+
+      if( okay )
+      {
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
       }
    }
 }
@@ -1327,10 +1382,14 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
    o >> bt;
 
-   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
-
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !o.is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( o ) );
+
+   btree_trans_type bt_tx( bt );
 
    string full_name( current_folder );
 
@@ -1409,7 +1468,12 @@ void ods_file_system::move_folder( const string& name, const string& destination
       }
 
       if( okay )
-         ap_tx->commit( );
+      {
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+      }
    }
 }
 
@@ -1426,7 +1490,11 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
    o >> bt;
 
-   auto_ptr< btree_trans_type > ap_tx( new btree_trans_type( bt ) );
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !o.is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( o ) );
+
+   btree_trans_type bt_tx( bt );
 
    string tmp_folder( determine_folder( name, p_os, true ) );
 
@@ -1478,7 +1546,12 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
    if( okay )
    {
       if( remove_items_for_folder( name, p_os ) )
-         ap_tx->commit( );
+      {
+         bt_tx.commit( );
+
+         if( ap_ods_tx.get( ) )
+            ap_ods_tx->commit( );
+      }
    }
 }
 
@@ -1491,8 +1564,12 @@ void ods_file_system::rebuild_index( )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
+   ods::transaction tx( o );
+
    o >> bt;
    bt.build_index_nodes( );
+
+   tx.commit( );
 }
 
 void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
