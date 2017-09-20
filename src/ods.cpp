@@ -2097,6 +2097,10 @@ void ods::impl::write_header_file_info( bool for_close )
    if( _write( *rp_header_file,
     ( void* )rp_header_info.get( ), sizeof( header_info ) ) != sizeof( header_info ) )
       THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+
+#ifdef ODS_DEBUG
+   DEBUG_LOG( "*** header file info written ***" );
+#endif
 }
 
 void ods::impl::force_write_header_file_info( bool for_close )
@@ -2210,13 +2214,11 @@ ods::ods( const ods& o )
  data_write_buffer_num( -1 ),
  data_write_buffer_offs( 0 ),
  index_item_buffer_num( -1 ),
- has_written_index_item( false ),
  trans_read_ops_buffer_num( -1 ),
  trans_read_data_buffer_num( -1 ),
  trans_read_data_buffer_offs( 0 ),
  had_interim_trans_op_write( false ),
  had_interim_trans_data_write( false ),
- has_written_trans_op( false ),
  trans_write_ops_buffer_num( -1 ),
  trans_write_data_buffer_num( -1 ),
  trans_write_data_buffer_offs( 0 ),
@@ -2291,13 +2293,11 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
  data_write_buffer_num( -1 ),
  data_write_buffer_offs( 0 ),
  index_item_buffer_num( -1 ),
- has_written_index_item( false ),
  trans_read_ops_buffer_num( -1 ),
  trans_read_data_buffer_num( -1 ),
  trans_read_data_buffer_offs( 0 ),
  had_interim_trans_op_write( false ),
  had_interim_trans_data_write( false ),
- has_written_trans_op( false ),
  trans_write_ops_buffer_num( -1 ),
  trans_write_data_buffer_num( -1 ),
  trans_write_data_buffer_offs( 0 ),
@@ -3131,11 +3131,11 @@ void ods::destroy( const oid& id )
    if( !deleted )
       THROW_ODS_ERROR( "cannot delete (max. attempts exceeded)" );
 
-   if( p_impl->trans_level && trans_write_ops_buffer_num != -1 && has_written_trans_op )
+   if( p_impl->trans_level && trans_write_ops_buffer_num != -1 )
    {
       p_impl->p_ods_trans_op_cache_buffer->put( trans_write_ops_buffer, trans_write_ops_buffer_num );
 
-      has_written_trans_op = false;
+      trans_write_ops_buffer_num = -1;
       had_interim_trans_op_write = true;
    }
 }
@@ -4433,13 +4433,11 @@ void ods::transaction_commit( )
 
       data_and_index_write( false );
 
-      trans_read_ops_buffer_num = -1;
-      trans_read_data_buffer_num = -1;
-
+      // NOTE: This call needs to occur within the scope of the bulk write lock.
       transaction_completed( );
    }
    else
-      transaction_completed( );
+      transaction_completed( true );
 }
 
 void ods::transaction_rollback( )
@@ -4467,6 +4465,13 @@ void ods::transaction_rollback( )
    {
       trans_read_ops_buffer_num = -1;
       had_interim_trans_op_write = false;
+   }
+
+   if( had_interim_trans_data_write )
+   {
+      trans_read_data_buffer_num = -1;
+      trans_read_data_buffer_offs = 0;
+      had_interim_trans_data_write = false;
    }
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -4532,7 +4537,7 @@ void ods::transaction_rollback( )
 
       ++p_impl->rp_header_info->index_transform_id;
 
-      set_write_trans_data_pos( p_impl->total_trans_size - size, p_impl->total_trans_size );
+      set_write_trans_data_pos( p_impl->total_trans_size - size );
    }
 
    p_impl->total_trans_op_count -= op_count;
@@ -4554,16 +4559,12 @@ void ods::transaction_rollback( )
    DEBUG_LOG( "<< destroy transaction cache entries after current >>" );
 #endif
    p_impl->p_ods_trans_op_cache_buffer->clear_from( num_from );
-
-   trans_read_ops_buffer_num = -1;
-   trans_read_data_buffer_num = -1;
-
    p_impl->p_ods_trans_data_cache_buffer->clear_from( trans_write_data_buffer_num + 1 );
 
    transaction_completed( );
 }
 
-void ods::transaction_completed( )
+void ods::transaction_completed( bool keep_buffered )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -4580,10 +4581,9 @@ void ods::transaction_completed( )
 
    if( !--p_impl->trans_level )
    {
-      p_impl->p_ods_trans_op_cache_buffer->end_transaction( );
+      keep_buffered = false;
 
-      trans_read_data_buffer_num = -1;
-      trans_read_data_buffer_offs = 0;
+      p_impl->p_ods_trans_op_cache_buffer->end_transaction( );
       p_impl->p_ods_trans_data_cache_buffer->end_transaction( );
 
       { // start of file lock section...
@@ -4603,6 +4603,13 @@ void ods::transaction_completed( )
           && ( !*p_impl->rp_bulk_level || *p_impl->rp_is_in_bulk_pause ) )
             p_impl->write_header_file_info( );
       } // end of file lock section...
+   }
+
+   if( !keep_buffered )
+   {
+      trans_read_ops_buffer_num = -1;
+      trans_read_data_buffer_num = -1;
+      trans_read_data_buffer_offs = 0;
    }
 }
 
@@ -4639,7 +4646,7 @@ void ods::unlock_header_file( )
 
 void ods::data_and_index_write( bool flush )
 {
-   if( data_write_buffer_num != -1 && data_write_buffer_offs )
+   if( data_write_buffer_num != -1 )
    {
       p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
 
@@ -4653,10 +4660,11 @@ void ods::data_and_index_write( bool flush )
    if( flush )
       p_impl->rp_ods_data_cache_buffer->flush( );
 
-   if( has_written_index_item )
+   if( index_item_buffer_num != -1 )
    {
-      has_written_index_item = false;
       p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, index_item_buffer_num );
+
+      index_item_buffer_num = -1;
    }
 
    if( flush )
@@ -5680,7 +5688,7 @@ ods& operator <<( ods& o, storable_base& s )
    if( !o.p_impl->trans_level )
       o.set_write_data_pos( index_entry.data.pos );
    else
-      o.set_write_trans_data_pos( trans_write_pos, trans_write_pos );
+      o.set_write_trans_data_pos( trans_write_pos );
 
    if( old_tran_id != s.last_tran_id )
       s.flags |= storable_base::e_flag_interim_update;
@@ -5717,7 +5725,7 @@ ods& operator <<( ods& o, storable_base& s )
 
       if( !o.p_impl->trans_level )
       {
-         if( o.data_write_buffer_num != -1 && o.data_write_buffer_offs )
+         if( o.data_write_buffer_num != -1 )
          {
             o.p_impl->rp_ods_data_cache_buffer->put( o.p_impl->data_write_buffer, o.data_write_buffer_num );
 
@@ -5743,18 +5751,19 @@ ods& operator <<( ods& o, storable_base& s )
       if( has_locked )
          o.p_impl->rp_ods_index_cache_buffer->unlock_entry( s.id.get_num( ), true );
 
-      if( o.p_impl->trans_level && o.trans_write_ops_buffer_num != -1 && o.has_written_trans_op )
+      if( o.p_impl->trans_level && o.trans_write_ops_buffer_num != -1 )
       {
          o.p_impl->p_ods_trans_op_cache_buffer->put( o.trans_write_ops_buffer, o.trans_write_ops_buffer_num );
 
-         o.has_written_trans_op = false;
+         o.trans_write_ops_buffer_num = -1;
          o.had_interim_trans_op_write = true;
       }
 
-      if( o.p_impl->trans_level && o.trans_write_data_buffer_num != -1 && o.trans_write_data_buffer_offs )
+      if( o.p_impl->trans_level && o.trans_write_data_buffer_num != -1 )
       {
          o.p_impl->p_ods_trans_data_cache_buffer->put( o.trans_write_buffer, o.trans_write_data_buffer_num );
 
+         o.trans_write_data_buffer_num = -1;
          o.trans_write_data_buffer_offs = 0;
          o.had_interim_trans_data_write = true;
       }
@@ -5883,48 +5892,6 @@ void ods::adjust_read_data_pos( int64_t adjust )
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
 }
 
-void ods::adjust_write_data_pos( int64_t adjust )
-{
-#ifdef ODS_DEBUG
-   ostringstream osstr;
-   osstr << "ods::adjust_write_data_pos( ) adjust = " << adjust;
-   DEBUG_LOG( osstr.str( ) );
-#endif
-
-   int64_t current_data_buffer_num( data_write_buffer_num );
-   int64_t pos = ( data_write_buffer_num * c_data_bytes_per_item ) + data_write_buffer_offs + adjust;
-
-   data_write_buffer_num = pos / c_data_bytes_per_item;
-   data_write_buffer_offs = pos % c_data_bytes_per_item;
-
-   if( data_write_buffer_num != current_data_buffer_num )
-   {
-      if( current_data_buffer_num != -1 )
-      {
-         p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, current_data_buffer_num );
-
-         p_impl->rp_ods_data_cache_buffer->unlock_region(
-          current_data_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
-      }
-
-      int attempts = c_data_lock_max_attempts;
-      while( attempts )
-      {
-         if( p_impl->rp_ods_data_cache_buffer->lock_region(
-          data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item ) )
-            break;
-
-         --attempts;
-         msleep( c_data_lock_attempt_sleep_time );
-      }
-
-      if( !attempts )
-         THROW_ODS_ERROR( "unable to lock data region for adjust_write_data_pos" );
-
-      p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
-   }
-}
-
 void ods::read_data_bytes( char* p_dest, int64_t len )
 {
    int64_t chunk = min( len, c_data_bytes_per_item - data_read_buffer_offs );
@@ -6008,11 +5975,8 @@ void ods::read_index_entry( ods_index_entry& index_entry, int64_t num )
 
    if( index_item_buffer_num != current_index_buffer_num )
    {
-      if( has_written_index_item )
-      {
-         has_written_index_item = false;
+      if( current_index_buffer_num != -1 )
          p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, current_index_buffer_num );
-      }
 
       p_impl->index_item_buffer = p_impl->rp_ods_index_cache_buffer->get( index_item_buffer_num );
    }
@@ -6063,11 +6027,8 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int64_t num )
 
    if( index_item_buffer_num != current_index_buffer_num )
    {
-      if( has_written_index_item )
-      {
-         has_written_index_item = false;
+      if( current_index_buffer_num != -1 )
          p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, current_index_buffer_num );
-      }
 
       p_impl->index_item_buffer = p_impl->rp_ods_index_cache_buffer->get( index_item_buffer_num );
    }
@@ -6087,8 +6048,6 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int64_t num )
 
    if( index_entry.trans_flag & c_bit_2 )
       data.tran_op |= c_int_type_hi_bit;
-
-   has_written_index_item = true;
 }
 
 void ods::read_transaction_op( transaction_op& op, int64_t num )
@@ -6118,7 +6077,7 @@ void ods::read_transaction_op( transaction_op& op, int64_t num )
    }
 }
 
-void ods::write_transaction_op( transaction_op& op )
+void ods::write_transaction_op( const transaction_op& op )
 {
    int64_t current_trans_ops_buffer_num( trans_write_ops_buffer_num );
 
@@ -6144,13 +6103,12 @@ void ods::write_transaction_op( transaction_op& op )
       data.pos |= c_int_type_hi_bit;
    if( op.type & c_bit_2 )
       data.size |= c_int_type_hi_bit;
-
-   has_written_trans_op = true;
 }
 
 void ods::set_read_trans_data_pos( int64_t pos )
 {
    int64_t current_trans_buffer_num( trans_read_data_buffer_num );
+
    trans_read_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_read_data_buffer_offs = pos % c_trans_bytes_per_item;
 
@@ -6166,16 +6124,16 @@ void ods::set_read_trans_data_pos( int64_t pos )
       trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_read_data_buffer_num );
 }
 
-void ods::set_write_trans_data_pos( int64_t pos, int64_t old_trans_total_size )
+void ods::set_write_trans_data_pos( int64_t pos )
 {
    int64_t current_trans_buffer_num( trans_write_data_buffer_num );
+
    trans_write_data_buffer_num = pos / c_trans_bytes_per_item;
    trans_write_data_buffer_offs = pos % c_trans_bytes_per_item;
 
 #ifdef ODS_DEBUG
    ostringstream osstr;
    osstr << "ods::set_write_trans_data_pos( ) pos = " << pos
-    << ", old_trans_total_size = " << old_trans_total_size
     << "\ntrans_write_data_buffer_num = " << trans_write_data_buffer_num
     << ", trans_write_data_buffer_offs = " << trans_write_data_buffer_offs;
    DEBUG_LOG( osstr.str( ) );
@@ -6186,54 +6144,10 @@ void ods::set_write_trans_data_pos( int64_t pos, int64_t old_trans_total_size )
       if( current_trans_buffer_num != -1 )
          p_impl->p_ods_trans_data_cache_buffer->put( trans_write_buffer, current_trans_buffer_num );
 
-      if( pos == old_trans_total_size )
+      if( pos % c_trans_bytes_per_item == 0 )
          memset( ( char* )&trans_write_buffer, '\0', sizeof( trans_data_buffer ) );
       else
          trans_write_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_write_data_buffer_num );
-   }
-}
-
-void ods::adjust_read_trans_data_pos( int64_t adjust )
-{
-#ifdef ODS_DEBUG
-   ostringstream osstr;
-   osstr << "ods::adjust_read_trans_data_pos( ) adjust = " << adjust
-   << "\ntrans_read_data_buffer_num = " << trans_read_data_buffer_num
-   << "\ntrans_read_data_buffer_offs = " << trans_read_data_buffer_offs;
-   DEBUG_LOG( osstr.str( ) );
-#endif
-
-   int64_t current_trans_buffer_num( trans_read_data_buffer_num );
-   int64_t pos = ( trans_read_data_buffer_num * c_trans_bytes_per_item ) + trans_read_data_buffer_offs + adjust;
-
-   trans_read_data_buffer_num = pos / c_trans_bytes_per_item;
-   trans_read_data_buffer_offs = pos % c_trans_bytes_per_item;
-
-   if( trans_read_data_buffer_num != current_trans_buffer_num )
-      trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_read_data_buffer_num );
-}
-
-void ods::adjust_write_trans_data_pos( int64_t adjust )
-{
-#ifdef ODS_DEBUG
-   ostringstream osstr;
-   osstr << "ods::adjust_write_trans_data_pos( ) adjust = " << adjust
-    << "\ntrans_write_data_buffer_num = " << trans_write_data_buffer_num
-    << "\ntrans_write_data_buffer_offs = " << trans_write_data_buffer_offs;
-   DEBUG_LOG( osstr.str( ) );
-#endif
-
-   int64_t current_trans_buffer_num( trans_write_data_buffer_num );
-   int64_t pos = ( trans_write_data_buffer_num * c_trans_bytes_per_item ) + trans_write_data_buffer_offs + adjust;
-
-   trans_write_data_buffer_num = pos / c_trans_bytes_per_item;
-   trans_write_data_buffer_offs = pos % c_trans_bytes_per_item;
-
-   if( trans_write_data_buffer_num != current_trans_buffer_num )
-   {
-      if( current_trans_buffer_num != -1 )
-         p_impl->p_ods_trans_data_cache_buffer->put( trans_write_buffer, current_trans_buffer_num );
-      trans_write_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_write_data_buffer_num );
    }
 }
 

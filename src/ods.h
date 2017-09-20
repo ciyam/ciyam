@@ -742,7 +742,7 @@ class ODS_DECL_SPEC ods
    void transaction_start( const char* p_label = 0 );
    void transaction_commit( );
    void transaction_rollback( );
-   void transaction_completed( );
+   void transaction_completed( bool keep_buffered = false );
 
    void lock_header_file( );
    void unlock_header_file( );
@@ -771,7 +771,6 @@ class ODS_DECL_SPEC ods
    void set_write_data_pos( int64_t pos );
 
    void adjust_read_data_pos( int64_t adjust );
-   void adjust_write_data_pos( int64_t adjust );
 
    void read_data_bytes( char* p_dest, int64_t len );
    void write_data_bytes( const char* p_src, int64_t len );
@@ -790,16 +789,12 @@ class ODS_DECL_SPEC ods
    void write_index_entry( const ods_index_entry& index_entry, int64_t num );
 
    int64_t index_item_buffer_num;
-   bool has_written_index_item;
 
    void read_transaction_op( transaction_op& op, int64_t num );
-   void write_transaction_op( transaction_op& op );
+   void write_transaction_op( const transaction_op& op );
 
    void set_read_trans_data_pos( int64_t pos );
-   void set_write_trans_data_pos( int64_t pos, int64_t old_trans_total_size );
-
-   void adjust_read_trans_data_pos( int64_t adjust );
-   void adjust_write_trans_data_pos( int64_t adjust );
+   void set_write_trans_data_pos( int64_t pos );
 
    void read_trans_data_bytes( char* p_dest, int64_t len );
    void write_trans_data_bytes( const char* p_src, int64_t len );
@@ -810,8 +805,6 @@ class ODS_DECL_SPEC ods
    int64_t trans_read_ops_buffer_num;
    int64_t trans_read_data_buffer_num;
    int64_t trans_read_data_buffer_offs;
-
-   bool has_written_trans_op;
 
    int64_t trans_write_ops_buffer_num;
    int64_t trans_write_data_buffer_num;
