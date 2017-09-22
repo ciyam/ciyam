@@ -2695,6 +2695,7 @@ void ods::rewind_transactions( const string& label_or_txid )
 
       int64_t last_tx_time = 0;
       int64_t first_entry_offset = 0;
+      int64_t largest_commit_offs = 0;
 
       int64_t append_offset = tranlog_info.append_offs;
 
@@ -2719,6 +2720,12 @@ void ods::rewind_transactions( const string& label_or_txid )
 
             if( label_or_txid == next_label_or_txid )
             {
+               if( entry_offset < largest_commit_offs )
+               {
+                  fs.close( );
+                  THROW_ODS_ERROR( "rewind point cannot be an overlapped transaction" );
+               }
+
                tranlog_info.entry_offs = tranlog_entry.prior_entry_offs;
                tranlog_info.entry_time = last_tx_time;
                tranlog_info.append_offs = first_entry_offset = entry_offset;
@@ -2734,6 +2741,9 @@ void ods::rewind_transactions( const string& label_or_txid )
          }
 
          last_tx_time = tranlog_entry.tx_time;
+
+         if( tranlog_entry.commit_offs > largest_commit_offs )
+            largest_commit_offs = tranlog_entry.commit_offs;
 
          if( first_entry_offset )
          {
