@@ -244,6 +244,7 @@ struct regex::impl
    bool prefix_at_boundary;
 
    size_t last_unlimited_part;
+   size_t min_size_from_finish;
    size_t max_size_from_finish;
 
    vector< part > parts;
@@ -261,6 +262,7 @@ regex::impl::impl( const string& expr )
  match_at_finish( false ),
  prefix_at_boundary( false ),
  last_unlimited_part( 0 ),
+ min_size_from_finish( 0 ),
  max_size_from_finish( 0 )
 {
    part next_part;
@@ -954,6 +956,7 @@ string::size_type regex::impl::search(
    }
 
    last_unlimited_part = 0;
+   min_size_from_finish = 0;
    max_size_from_finish = 0;
 
 #ifdef DEBUG
@@ -970,17 +973,22 @@ string::size_type regex::impl::search(
             has_unlimited_parts = true;
 #endif
 
+            min_size_from_finish = 0;
             max_size_from_finish = 0;
          }
          else
+         {
+            min_size_from_finish += parts[ i ].min_matches;
             max_size_from_finish += parts[ i ].max_matches;
+         }
       }
    }
 
 #ifdef DEBUG
    if( has_unlimited_parts )
       cout << "last_unlimited_part = #" << ( last_unlimited_part + 1 ) << endl;
-   cout << "max_size_from_finish = " << max_size_from_finish << '\n' << endl;
+   cout << "min_size_from_finish = " << min_size_from_finish
+    << '\n' << "max_size_from_finish = " << max_size_from_finish << '\n' << endl;
 #endif
    string::size_type pos = string::npos;
 
@@ -1126,81 +1134,37 @@ string::size_type regex::impl::do_search(
                    && text.substr( i, p.min_matches ).find( '\n' ) == string::npos )
                    || match_literal( literal, text, i ) )
                   {
-#ifdef DEBUG
-                     cout << "matched literal in part #" << ( j + 1 ) << " for " << literal
-                      << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
-#endif
-                     if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
-                        ++i;
+                     bool ignore_match = false;
 
-                     if( !okay )
-                        begins = i;
-
-                     okay = true;
-                     found = true;
-
-                     last_found = j;
-                     has_matched = true;
-
-                     if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
+                     // NOTE: If needing to match at the end then if a later literal match is found
+                     // that would still leave enough room then will simply ignore this match (just
+                     // in case it can continue matching with the previous set). Although one would
+                     // not normally expect the non-greedy matching to continue it also makes sense
+                     // that the matching at the end be non-greedy (in which case the last possible
+                     // literal match should be chosen over any earlier one).
+                     if( old_okay && match_at_finish
+                      && j == last_unlimited_part + 1 && i < text.length( ) - min_size_from_finish )
                      {
-                        if( ref_started != string::npos && ref_finished != string::npos )
-                           node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+                        if( literal.empty( ) )
+                           ignore_match = true;
+                        else
+                        {
+                           string::size_type next_pos = text.find( literal, i + 1 );
 
-                        ref_starts = j;
-                        ref_started = i;
-                        ref_started_by = j;
-
-                        ref_finished = string::npos;
-                        node_refs[ ref_starts ] = "";
+                           if( next_pos != string::npos && next_pos <= text.length( ) - min_size_from_finish )
+                              ignore_match = true;
+                        }
                      }
 
-                     part_from = j + 1;
-
-                     if( literal.empty( ) )
-                        i += p.min_matches;
-                     else
-                        i += literal_size( literal );
-
-                     if( p.finish_ref )
-                     {
-                        ref_finished = i;
-
-                        if( ref_started != string::npos )
-                           node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
-                     }
-
-                     finishes = i - 1;
-
-                     has_last_set = false;
-
-                     if( p.max_matches != 1 )
-                        has_last_literal = true;
-                     else
-                        has_last_literal = false;
-
-                     last_lit_part = j;
-
-                     last_literal = p.literal;
-                     last_ref_finish = p.finish_ref;
-
-                     if( !p.min_matches )
-                        remaining = p.max_matches - 1;
-                     else
-                        remaining = p.max_matches - p.min_matches;
-                  }
-               }
-               else
-               {
-                  for( size_t x = 0; x < p.matches.size( ); x++ )
-                  {
-                     if( match_set( text, i, p ) )
+                     if( !ignore_match )
                      {
 #ifdef DEBUG
-                        cout << "matched set in part #" << ( j + 1 )
-                         << ( p.inverted ? " (inverted)" : "" ) << " for " << text[ i ]
+                        cout << "matched literal in part #" << ( j + 1 ) << " for " << literal
                          << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
+                        if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
+                           ++i;
+
                         if( !okay )
                            begins = i;
 
@@ -1210,7 +1174,77 @@ string::size_type regex::impl::do_search(
                         last_found = j;
                         has_matched = true;
 
+                        if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
+                        {
+                           if( ref_started != string::npos && ref_finished != string::npos )
+                              node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+
+                           ref_starts = j;
+                           ref_started = i;
+                           ref_started_by = j;
+
+                           ref_finished = string::npos;
+                           node_refs[ ref_starts ] = "";
+                        }
+
+                        part_from = j + 1;
+
+                        if( literal.empty( ) )
+                           i += p.min_matches;
+                        else
+                           i += literal_size( literal );
+
+                        if( p.finish_ref )
+                        {
+                           ref_finished = i;
+
+                           if( ref_started != string::npos )
+                              node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+                        }
+
+                        finishes = i - 1;
+
+                        has_last_set = false;
+
+                        if( p.max_matches != 1 )
+                           has_last_literal = true;
+                        else
+                           has_last_literal = false;
+
+                        last_lit_part = j;
+
+                        last_literal = p.literal;
+                        last_ref_finish = p.finish_ref;
+
+                        if( !p.min_matches )
+                           remaining = p.max_matches - 1;
+                        else
+                           remaining = p.max_matches - p.min_matches;
+                     }
+                  }
+               }
+               else
+               {
+                  for( size_t x = 0; x < p.matches.size( ); x++ )
+                  {
+                     if( match_set( text, i, p ) )
+                     {
                         int min_matches = max( 1, p.min_matches );
+#ifdef DEBUG
+                        cout << "matched set in part #" << ( j + 1 )
+                         << ( p.inverted ? " (inverted)" : "" )
+                         << " for " << text.substr( i, min_matches )
+                         << " at " << i << ( text.length( ) > 50 ? string( )
+                         : " ==> " + text.substr( start, i - start + min_matches ) ) << endl;
+#endif
+                        if( !okay )
+                           begins = i;
+
+                        okay = true;
+                        found = true;
+
+                        last_found = j;
+                        has_matched = true;
 
                         if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
                         {
@@ -1280,7 +1314,7 @@ string::size_type regex::impl::do_search(
              || ( parts[ j + 1 ].type == e_part_type_lit && parts[ j + 1 ].literal.empty( ) ) ) )
                force_repeat = true;
 
-            // NOTE: If we need to match at the end and have matched the last unlimited part in
+            // NOTE: If needing to match at the end and have matched the last unlimited part in
             // the expression then if the length is less than maximum that can follow prefer to
             // keep matching rather than skipping ahead to the next part (otherwise a match may
             // not be found at all).
@@ -1289,6 +1323,7 @@ string::size_type regex::impl::do_search(
                force_repeat = true;
 
             bool forcing_previous_repeat = false;
+
             if( !found
              && ( ( has_last_set_used && last_set_part_used == last_found - 1 )
              || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) ) )
@@ -1301,11 +1336,11 @@ string::size_type regex::impl::do_search(
                part_from = old_part_from;
             }
 
-            // NOTE: If we have matched with the last unlimited part but have reached the point
+            // NOTE: If matching occurs with the last unlimited part but have reached the point
             // where the remaining parts could require all the remaining characters then simply
             // try matching the next part (from the last position) rather than repeating.
-            if( found && !force_repeat && already_matched
-             && max_size_from_finish && j == last_unlimited_part && li + 1 >= text.size( ) - max_size_from_finish )
+            if( found && !force_repeat && already_matched && max_size_from_finish
+             && j == last_unlimited_part && li + 1 >= text.size( ) - max_size_from_finish )
             {
                i = li - 1;
                continue;
@@ -1558,9 +1593,11 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
 {
    bool okay = false;
    int rounds = p.min_matches;
+
    while( true )
    {
       okay = false;
+
       for( size_t x = 0; x < p.matches.size( ); x++ )
       {
          if( p.matches[ x ].first == '\0'
