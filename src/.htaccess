@@ -1,10 +1,25 @@
 <Files ~ "\.(htms|sio|bat|sh)$">
- order allow,deny
- deny from all
+ #Apache 2.4
+ <IfModule mod_authz_core.c>
+  Require all denied
+ </IfModule>
+
+ #Apache 2.2
+ <IfModule !mod_authz_core.c>
+  Order Allow,Deny
+  Deny from all
+ </IfModule>
 </Files>
 
 <Files identity.txt>
- order allow,deny
- deny from all
-</Files>
+ #Apache 2.4
+ <IfModule mod_authz_core.c>
+  Require all denied
+ </IfModule>
 
+ #Apache 2.2
+ <IfModule !mod_authz_core.c>
+  Order Allow,Deny
+  Deny from all
+ </IfModule>
+</Files>

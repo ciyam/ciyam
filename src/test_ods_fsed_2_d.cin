@@ -1,6 +1,6 @@
-file_replace xxx user2.jpg
+file_replace xxx test2.jpg
 branch objects
-file_replace yyy user2.jpg
+file_replace yyy test2.jpg
 branch objects
 dump
 exit

@@ -23,9 +23,9 @@ file_archives
 ~mkdir test3
 file_archives -status_update
 session_variable @dummy_timestamp 20170313080001
-file_put user1.jpg
+file_put test1.jpg
 session_variable @dummy_timestamp 20170313080002
-file_put user2.jpg
+file_put test2.jpg
 session_variable @dummy_timestamp 20170313080000
 file_put test.jpg
 file_tags ts.*

@@ -104,12 +104,12 @@ test3 [okay      ] (0 B/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080001
 
-> file_put user1.jpg
+> file_put test1.jpg
 file_put b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
 
 > session_variable @dummy_timestamp 20170313080002
 
-> file_put user2.jpg
+> file_put test2.jpg
 file_put efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f
 
 > session_variable @dummy_timestamp 20170313080000

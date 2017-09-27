@@ -15,7 +15,7 @@ xxx (6.7 kB)
 yyy (3.1 kB)
 zzz (3.1 kB)
 
-/> file_replace yyy user1.jpg
+/> file_replace yyy test1.jpg
 
 /> branch objects
 aaa* (3.1 kB)

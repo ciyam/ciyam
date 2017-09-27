@@ -1,5 +1,5 @@
 
-/> file_replace xxx user2.jpg
+/> file_replace xxx test2.jpg
 
 /> branch objects
 aaa* (3.1 kB)
@@ -15,7 +15,7 @@ xxx (3.1 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
 
-/> file_replace yyy user2.jpg
+/> file_replace yyy test2.jpg
 
 /> branch objects
 aaa* (3.1 kB)

@@ -1,9 +1,9 @@
 
 /> file_add xxx test.jpg
 
-/> file_add yyy user1.jpg
+/> file_add yyy test1.jpg
 
-/> file_add zzz user2.jpg
+/> file_add zzz test2.jpg
 
 /> branch objects
 xxx (6.7 kB)
