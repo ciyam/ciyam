@@ -1050,10 +1050,22 @@ void setup_directories( )
 #ifndef _WIN32
          int um = umask( 027 );
 #endif
-         ofstream htaf( ".htaccess", ios::out | ios::binary );
-         htaf << "<Files *>\n";
-         htaf << " deny from all\n";
-         htaf << "</Files>\n";
+         // NOTE: Empty code block for scope purposes.
+         {
+            ofstream htaf( ".htaccess", ios::out | ios::binary );
+
+            htaf << "<Files *>\n";
+            htaf << " #Apache 2.4\n";
+            htaf << " <IfModule mod_authz_core.c>\n";
+            htaf << "  Require all denied\n";
+            htaf << " </IfModule>\n\n";
+
+            htaf << " #Apache 2.2\n";
+            htaf << " <IfModule !mod_authz_core.c>\n";
+            htaf << "  Deny from all\n";
+            htaf << " </IfModule>\n";
+            htaf << "</Files>\n";
+         }
 #ifndef _WIN32
          umask( um );
 #endif
