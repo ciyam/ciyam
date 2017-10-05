@@ -1,3 +1,9 @@
+#!/bin/sh
+# Copyright (c) 2013-2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
 ls -1 *.txt >~genhtml.lst
 
 ../src/xrep @index.html.xrep docs=@~genhtml.lst>index.html

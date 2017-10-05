@@ -1,0 +1,19 @@
+#!/bin/sh
+# Copyright (c) 2017 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: install_html [directory]"
+else
+ if [ ! -d "$1" ]; then
+  echo "Error: Directory '$1' does not exist."
+ else
+  cp document.css "$1"
+  cp name_small.png "$1"
+  cp logo-gryscl-128.png "$1"
+  cp background_texture.png "$1"
+  cp *.html "$1"
+ fi
+fi
