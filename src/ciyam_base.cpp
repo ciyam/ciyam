@@ -37,13 +37,13 @@
 #include "sha1.h"
 #include "array.h"
 #include "base64.h"
-#include "sha256.h"
-#include "sql_db.h"
 #include "config.h"
 #include "format.h"
+#include "sha256.h"
+#include "sql_db.h"
 #include "pointers.h"
-#include "utilities.h"
 #include "date_time.h"
+#include "utilities.h"
 #include "class_base.h"
 #include "ciyam_files.h"
 #ifdef SSL_SUPPORT
@@ -2859,12 +2859,13 @@ string construct_sql_select(
             use_index_fields.push_back( "C_" + next_field );
 
          bool invert = false;
+         bool has_multiple_values = false;
+
          string invert_prefix;
 
          // NOTE: If a fixed key value contains one or more "+val" suffixes then these
-         // are stripped off to behave as an though they are in IN list (although "ORs"
+         // are stripped off to behave as though they are in an IN list (although "ORs"
          // are actually used in the SQL generated here).
-         bool has_multiple_values = false;
          string::size_type pos = next_value.find( '+' );
          if( pos != string::npos )
          {
@@ -10751,6 +10752,7 @@ bool perform_instance_iterate( class_base& instance,
    {
       string class_name( instance.get_class_name( ) );
       class_base* p_parent = instance.get_graph_parent( );
+
       while( p_parent )
       {
          class_name += string( " <- " ) + p_parent->get_class_name( );

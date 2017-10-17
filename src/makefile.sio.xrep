@@ -38,6 +38,7 @@
      <filename>ods.cpp
      <filename>ods_file_system.cpp
 `{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)\
+     <filename>op_algo_handler.cpp
      <filename>pdf.cpp
      <filename>pdf_gen.cpp\
 `}
