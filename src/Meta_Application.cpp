@@ -2238,6 +2238,11 @@ void Meta_Application::impl::impl_Generate( )
          for( size_t i = 0; i < package_training.size( ); i++ )
             outupg << "<" << package_training[ i ] << "\n";
 
+         string algos_file_name( get_obj( ).Name( ) + ".algos.lst" );
+
+         outupg << ".session_variable @algos \"save " + algos_file_name + "\"\n";
+         outupg << ".session_variable @algos \"kill *\"\n";
+
          outupg << "#Finished algo training...\n";
       }
 

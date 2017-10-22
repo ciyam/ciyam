@@ -58,5 +58,18 @@ class op_algo_handler
    void output_algos( std::ostream& os );
 };
 
+struct temporary_algo_prefix
+{
+   temporary_algo_prefix( const std::string& prefix );
+   ~temporary_algo_prefix( );
+
+   std::string old_prefix;
+};
+
+void output_algos( std::ostream& os );
+void output_algos( std::ostream& os, const std::string& type_keys, bool include_type = true );
+
+void exec_algos_action( const std::string& act, const std::string& info_1, const std::string& info_2 );
+
 #endif
 

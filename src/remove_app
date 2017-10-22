@@ -44,6 +44,10 @@ else
   rm $1.idx.lck
  fi
 
+ if [ -f $1.algos.lst ]; then
+  rm $1.algos.lst
+ fi
+
  if [ -f $1.dead_keys.lst ]; then
   rm $1.dead_keys.lst
  fi

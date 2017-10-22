@@ -20,6 +20,8 @@ if exist %1.hdr.lck del %1.hdr.lck
 if exist %1.idx del %1.idx
 if exist %1.idx.lck del %1.idx.lck
 
+if exist %1.algos.lst del %1.algos.lst
+
 if exist %1.dead_keys.lst del %1.dead_keys.lst
 
 if exist %1.modules.lst del %1.modules.lst

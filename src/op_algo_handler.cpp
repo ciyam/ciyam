@@ -31,8 +31,14 @@ namespace
 
 const size_t c_max_rounds_allowed = 100000000;
 
+const char* const c_act_kill = "kill";
+const char* const c_act_load = "load";
+const char* const c_act_save = "save";
+
 const char* const c_goal_found = "found";
+
 const char* const c_type_separator = ":";
+const char* const c_prefix_separator = "-";
 
 bool char_match( char lhs, char rhs, char* p_sch = 0 )
 {
@@ -184,6 +190,8 @@ void parse_stage_info( const string& stage_info, string& stage_name, string& sta
    stage_name = stage_info.substr( 0, pos );
    stage_pattern = stage_info.substr( pos + 1 );
 }
+
+string g_algo_prefix;
 
 multimap< string, string > g_goal_algos;
 multimap< string, string > g_algo_checks;
@@ -502,11 +510,10 @@ bool op_algo_handler::suggest_algo( ostream& os,
       vector< string > patterns;
       split( pat, patterns, '|' );
 
-      multimap< string, string >::iterator mi;
-
       auto_ptr< op_algo_handler > ap_best_handler( create_clone( ) );
 
-      string prefix( type_key( ) + c_type_separator );
+      multimap< string, string >::iterator mi;
+      string prefix( g_algo_prefix + type_key( ) + c_type_separator );
 
       string best_match, best_partial;
       string goal_algo_key( prefix + goal );
@@ -731,7 +738,7 @@ void op_algo_handler::train( const string& info )
       if( lines.size( ) > 1 )
       {
          multimap< string, string >::iterator mi;
-         string type_key_prefix( type_key( ) + c_type_separator );
+         string type_key_prefix( g_algo_prefix + type_key( ) + c_type_separator );
 
          while( true )
          {
@@ -1043,7 +1050,7 @@ void op_algo_handler::train_algo( const string& pat,
          *p_can_keep = true;
       else
       {
-         string prefix( type_key( ) + c_type_separator );
+         string prefix( g_algo_prefix + type_key( ) + c_type_separator );
          g_goal_algos.insert( make_pair( prefix + goal, algx ) );
 
          string algo_check_key( prefix + algx );
@@ -1166,30 +1173,163 @@ void op_algo_handler::attempt_own_algo( ostream& os, const string& pat, const st
 
 void op_algo_handler::output_algos( ostream& os )
 {
-   string type_key_prefix( type_key( ) + c_type_separator );
+   ::output_algos( os, type_key( ), false );
+}
+
+temporary_algo_prefix::temporary_algo_prefix( const string& prefix )
+{
+   old_prefix = g_algo_prefix;
+   g_algo_prefix = prefix + c_prefix_separator;
+}
+
+temporary_algo_prefix::~temporary_algo_prefix( )
+{
+   g_algo_prefix = old_prefix;
+}
+
+void output_algos( ostream& os )
+{
+   string retval;
 
    multimap< string, string >::iterator mi;
 
-   mi = g_goal_algos.lower_bound( type_key_prefix );
+   mi = g_goal_algos.lower_bound( g_algo_prefix );
 
    while( mi != g_goal_algos.end( ) )
    {
-      if( mi->first.find( type_key_prefix ) != 0 )
+      if( !g_algo_prefix.empty( ) && mi->first.find( g_algo_prefix ) != 0 )
          break;
 
-      os << mi->first.substr( type_key_prefix.length( ) ) << " " << mi->second << '\n';
+      string check, check_key( mi->first.substr( 0, mi->first.find( c_type_separator ) + 1 ) + mi->second );
+
+      if( g_algo_checks.count( check_key ) )
+         check = g_algo_checks.lower_bound( check_key )->second;
+
+      os << mi->first.substr( g_algo_prefix.length( ) ) << " " << check << " " << mi->second << '\n';
       ++mi;
    }
+}
 
-   mi = g_algo_checks.lower_bound( type_key_prefix );
-
-   while( mi != g_algo_checks.end( ) )
+void output_algos( ostream& os, const string& type_keys, bool include_type )
+{
+   if( type_keys.empty( ) )
+      output_algos( os );
+   else
    {
-      if( mi->first.find( type_key_prefix ) != 0 )
-         break;
+      vector< string > types;
+      split( type_keys, types );
 
-      os << mi->second << ' ' << mi->first.substr( type_key_prefix.length( ) ) << '\n';
-      ++mi;
+      for( size_t i = 0; i < types.size( ); i++ )
+      {
+         string next_type_key( types[ i ] );
+         string type_key_prefix( g_algo_prefix + next_type_key + c_type_separator );
+
+         multimap< string, string >::iterator mi;
+
+         mi = g_goal_algos.lower_bound( type_key_prefix );
+
+         while( mi != g_goal_algos.end( ) )
+         {
+            if( mi->first.find( type_key_prefix ) != 0 )
+               break;
+
+            string check, check_key( type_key_prefix + mi->second );
+
+            if( g_algo_checks.count( check_key ) )
+               check = g_algo_checks.lower_bound( check_key )->second;
+
+            if( include_type )
+               os << mi->first.substr( g_algo_prefix.length( ) );
+            else
+               os << mi->first.substr( type_key_prefix.length( ) );
+
+            os << " " << check << " " << mi->second << '\n';
+            ++mi;
+         }
+      }
    }
+}
+
+void exec_algos_action( const string& act, const string& info_1, const string& info_2 )
+{
+   if( act == c_act_kill )
+   {
+      vector< string > types;
+      split( info_1, types );
+
+      for( size_t i = 0; i < types.size( ); i++ )
+      {
+         string next_type_key( types[ i ] );
+         string type_key_prefix( g_algo_prefix );
+
+         if( next_type_key != "*" )
+            type_key_prefix += next_type_key + c_type_separator;
+
+         multimap< string, string >::iterator mi;
+
+         while( true )
+         {
+            mi = g_goal_algos.lower_bound( type_key_prefix );
+
+            if( mi == g_goal_algos.end( ) || mi->first.find( type_key_prefix ) != 0 )
+               break;
+
+            g_goal_algos.erase( mi );
+         }
+
+         while( true )
+         {
+            mi = g_algo_checks.lower_bound( type_key_prefix );
+
+            if( mi == g_algo_checks.end( ) || mi->first.find( type_key_prefix ) != 0 )
+               break;
+
+            g_algo_checks.erase( mi );
+         }
+      }
+   }
+   else if( act == c_act_load )
+   {
+      ifstream inpf( info_1.c_str( ) );
+      if( !inpf )
+         throw runtime_error( "unable to open '" + info_1 + "' for input" );
+
+      string next;
+      while( getline( inpf, next ) )
+      {
+         if( next.empty( ) )
+            continue;
+
+         vector< string > parts;
+         split( next, parts, ' ' );
+
+         if( parts.size( ) != 3 )
+            throw runtime_error( "unexpected algo line format '" + next + "'" );
+
+         string type_key_and_goal( parts[ 0 ] );
+         string check( parts[ 1 ] );
+         string algo( parts[ 2 ] );
+
+         string::size_type pos = type_key_and_goal.find( c_type_separator );
+         if( pos == string::npos )
+            throw runtime_error( "unexpected type_key_and_goal value '" + type_key_and_goal + "'" );
+
+         string type_key_prefix( g_algo_prefix + type_key_and_goal.substr( 0, pos + 1 ) );
+         string goal( type_key_and_goal.substr( pos + 1 ) );
+
+         g_goal_algos.insert( make_pair( type_key_prefix + goal, algo ) );
+         g_algo_checks.insert( make_pair( type_key_prefix + algo, check ) );
+      }
+   }
+   else if( act == c_act_save )
+   {
+      ofstream outf( info_1.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open '" + info_1 + "' for output" );
+
+      output_algos( outf, info_2 );
+   }
+   else
+      throw runtime_error( "unknown output_algos act: " + act );
 }
 

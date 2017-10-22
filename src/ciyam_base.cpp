@@ -1528,8 +1528,15 @@ void perform_storage_op( storage_op op,
             }
          }
 
+         string algos_file( gtp_session->p_storage_handler->get_name( ) + ".algos.lst" );
+
          if( lock_for_admin )
             gtp_session->p_storage_handler->set_is_locked_for_admin( );
+         else if( file_exists( algos_file ) )
+         {
+            temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+            exec_algos_action( "load", algos_file, "" );
+         }
 
          set_session_variable( get_special_var_name( e_special_var_storage ), gtp_session->p_storage_handler->get_name( ) );
       }
@@ -5522,6 +5529,15 @@ string get_raw_session_variable( const string& name )
    {
       if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
+      else if( name == get_special_var_name( e_special_var_algos ) )
+      {
+         guard g( g_mutex );
+         temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+
+         ostringstream osstr;
+         output_algos( osstr );
+         retval = osstr.str( );
+      }
       else if( name == get_special_var_name( e_special_var_storage ) )
          retval = get_default_storage( );
       else if( name == get_special_var_name( e_special_var_crypt_key ) )
@@ -5543,6 +5559,10 @@ string get_raw_session_variable( const string& name )
       if( gtp_session->variables.count( temporary_special_name ) )
       {
          gtp_session->variables[ name ] = gtp_session->variables[ temporary_special_name ];
+
+         if( gtp_session->variables[ name ].empty( ) )
+            gtp_session->variables.erase( name );
+
          gtp_session->variables.erase( temporary_special_name );
       }
    }
@@ -5595,6 +5615,8 @@ void set_session_variable( const string& name,
 
       if( name == get_special_var_name( e_special_var_cube ) )
       {
+         temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+
          bool new_cube = false;
 
          bool has_space_or_comma = ( val.find_first_of( " ," ) != string::npos );
@@ -5726,7 +5748,38 @@ void set_session_variable( const string& name,
             }
 
             if( p_set_special_temporary && *p_set_special_temporary )
-                gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+               gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+         }
+      }
+      else if( name == get_special_var_name( e_special_var_algos ) )
+      {
+         temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+
+         ostringstream osstr;
+         string::size_type pos = val.find( ' ' );
+         if( pos == string::npos )
+         {
+            output_algos( osstr, val );
+
+            val = osstr.str( );
+
+            if( p_set_special_temporary )
+            {
+               *p_set_special_temporary = true;
+               gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+            }
+         }
+         else
+         {
+            vector< string > args;
+            split( val, args, ' ' );
+
+            val.erase( );
+
+            if( args.size( ) < 3 )
+               exec_algos_action( args[ 0 ], args[ 1 ], "" );
+            else
+               exec_algos_action( args[ 0 ], args[ 1 ], args[ 2 ] );
          }
       }
       else if( name == get_special_var_name( e_special_var_array ) )
@@ -6211,6 +6264,9 @@ void term_storage( command_handler& cmd_handler )
 
          if( gtp_session->p_storage_handler->get_log_file( ).is_open( ) )
             gtp_session->p_storage_handler->get_log_file( ).close( );
+
+         temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
+         exec_algos_action( "kill", "*", "" );
 
          delete gtp_session->p_storage_handler;
       }
