@@ -162,12 +162,13 @@ void command_handler::execute_command( const string& cmd_and_args )
       if( !s.empty( ) )
       {
          string::size_type pos = s.find( ' ' );
-
          string cmd( s.substr( 0, pos ) );
+
          if( short_commands.count( cmd ) )
             cmd = short_commands[ cmd ];
 
          command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
+
          if( ci == command_dispatchers.end( ) )
             handle_unknown_command( cmd );
          else
@@ -175,10 +176,21 @@ void command_handler::execute_command( const string& cmd_and_args )
             vector< string > arguments;
             map< string, string > parameters;
 
-            if( pos != string::npos )
-               setup_arguments( s.substr( pos + 1 ).c_str( ), arguments );
+            bool valid = true;
 
-            if( ci->second.p_parser->parse_command( arguments, parameters ) )
+            if( pos != string::npos )
+            {
+               try
+               {
+                  setup_arguments( s.substr( pos + 1 ).c_str( ), arguments );
+               }
+               catch( exception& )
+               {
+                  valid = false;
+               }
+            }
+
+            if( valid && ci->second.p_parser->parse_command( arguments, parameters ) )
             {
                // NOTE: Place an empty pair of strings at the start of the map to help the "get_parm_val" function.
                parameters.insert( make_pair( string( ), string( ) ) );

@@ -598,7 +598,7 @@ void cube::move_top( const string& op )
                   rotate_face( top, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }
@@ -720,7 +720,7 @@ void cube::move_left( const string& op )
                   rotate_face( lft, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }
@@ -843,7 +843,7 @@ void cube::move_back( const string& op )
                   rotate_face( bck, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }
@@ -966,7 +966,7 @@ void cube::move_front( const string& op )
                   rotate_face( fnt, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }
@@ -1088,7 +1088,7 @@ void cube::move_right( const string& op )
                   rotate_face( rgt, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }
@@ -1191,7 +1191,7 @@ void cube::move_bottom( const string& op )
                   rotate_face( bot, clockwise );
             }
             else
-               throw runtime_error( "unsupported cube op " + op_val );
+               throw runtime_error( "unsupported cube op " + op );
          }
       }
    }

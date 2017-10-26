@@ -31,6 +31,8 @@ class op_algo_handler
    virtual size_t default_max_suggestions( ) const = 0;
    virtual size_t default_num_train_rounds( ) const = 0;
 
+   virtual std::string step_repeat_suffix( size_t num_repeats ) const { return ""; }
+
    virtual bool is_final_state( ) const { return false; }
 
    virtual std::string random_ops( size_t num_ops ) const = 0;

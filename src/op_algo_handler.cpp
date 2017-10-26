@@ -576,6 +576,12 @@ bool op_algo_handler::suggest_algo( ostream& os,
                   {
                      string next_pat( patterns[ i ] );
 
+                     if( next_pat == "*" )
+                     {
+                        okay = true;
+                        break;
+                     }
+
                      for( size_t j = 0; j <= min_size - next_pat.length( ); j++ )
                      {
                         if( mask[ j ] == '*' )
@@ -617,17 +623,15 @@ bool op_algo_handler::suggest_algo( ostream& os,
                   if( check_only_after_last_round && j != rounds - 1 )
                      continue;
 
+                  string repeat_suffix( ap_new_handler->step_repeat_suffix( j + 1 ) );
+
+                  if( j > 0 && repeat_suffix.empty( ) )
+                     repeat_suffix = to_string( j + 1 );
+
                   if( has_found_goal( ap_new_handler->current_state( ), goal ) )
                   {
                      if( !has_parts )
-                     {
-                        output = algo;
-
-                        if( j == 1 )
-                           output += "2";
-                        else if( j == 2 )
-                           output += "'";
-                     }
+                        output = algo + repeat_suffix;
 
                      rc = found = was_found = true;
 
@@ -650,14 +654,7 @@ bool op_algo_handler::suggest_algo( ostream& os,
                         ap_best_handler.reset( ap_new_handler->create_clone( ) );
 
                         if( !has_parts )
-                        {
-                           output = algo;
-
-                           if( j == 1 )
-                              output += "2";
-                           else if( j == 2 )
-                              output += "'";
-                        }
+                           output = algo + repeat_suffix;
 
                         best_partial = output;
 #ifdef DEBUG
@@ -668,14 +665,7 @@ bool op_algo_handler::suggest_algo( ostream& os,
                       && is_as_close_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
                      {
                         if( !has_parts )
-                        {
-                           output = algo;
-
-                           if( j == 1 )
-                              output += "2";
-                           else if( j == 2 )
-                              output += "'";
-                        }
+                           output = algo + repeat_suffix;
 
                         if( output.length( ) < best_partial.length( ) )
                         {
@@ -814,11 +804,9 @@ void op_algo_handler::train_algo( const string& pat,
    bool found_partial = false;
 
    vector< string > patterns;
-
    split( pat, patterns, '|' );
 
    bool is_full_state = false;
-
    bool using_random_patterns = false;
 
    if( algo.find( '*' ) != string::npos )
@@ -940,6 +928,12 @@ void op_algo_handler::train_algo( const string& pat,
             for( size_t k = 0; k < patterns.size( ); k++ )
             {
                string next_pat( patterns[ k ] );
+
+               if( next_pat == "*" )
+               {
+                  potential = true;
+                  break;
+               }
 
                if( j <= next.length( ) - next_pat.length( ) )
                {

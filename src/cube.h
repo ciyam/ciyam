@@ -58,6 +58,8 @@ class CUBE_DECL_SPEC cube : public op_algo_handler
    size_t default_max_suggestions( ) const { return c_cube_default_max_suggests; }
    size_t default_num_train_rounds( ) const { return c_cube_default_train_rounds; }
 
+   std::string step_repeat_suffix( size_t num_repeats ) const { return num_repeats == 3 ? "'" : ""; }
+
    bool solved( ) const;
 
    bool is_final_state( ) const { return solved( ); }
