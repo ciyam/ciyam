@@ -194,7 +194,6 @@ void parse_stage_info( const string& stage_info, string& stage_name, string& sta
 string g_algo_prefix;
 
 multimap< string, string > g_goal_algos;
-multimap< string, string > g_algo_checks;
 
 }
 
@@ -505,11 +504,8 @@ bool op_algo_handler::suggest_algo( ostream& os,
 
       os << c_goal_found;
    }
-   else if( !goal.empty( ) && !g_algo_checks.empty( ) )
+   else if( !goal.empty( ) )
    {
-      vector< string > patterns;
-      split( pat, patterns, '|' );
-
       auto_ptr< op_algo_handler > ap_best_handler( create_clone( ) );
 
       multimap< string, string >::iterator mi;
@@ -525,169 +521,124 @@ bool op_algo_handler::suggest_algo( ostream& os,
          if( mi->first != goal_algo_key )
             break;
 
+         size_t max_rounds = default_max_rounds( );
+
          string algo( mi->second );
-         string algo_check_key( prefix + algo );
 
-         multimap< string, string >::iterator mmi;
-         mmi = g_algo_checks.lower_bound( algo_check_key );
-
-         while( mmi != g_algo_checks.end( ) &&  mmi->first == algo_check_key )
+         pos = algo.find( '=' );
+         if( pos != string::npos )
          {
-            string mask( mmi->second );
+            max_rounds = from_string< size_t >( algo.substr( 0, pos ) );
+            algo.erase( 0, pos + 1 );
+         }
 
-            auto_ptr< op_algo_handler > ap_tmp_handler( create_clone( ) );
-            auto_ptr< op_algo_handler > ap_new_handler( ap_tmp_handler->create_clone( ) );
+         auto_ptr< op_algo_handler > ap_tmp_handler( create_clone( ) );
+         auto_ptr< op_algo_handler > ap_new_handler( ap_tmp_handler->create_clone( ) );
 
-            replace( algo, ",", " " );
+         replace( algo, ",", " " );
 
-            size_t max_rounds = default_max_rounds( );
+         bool okay = true;
+         bool found = false;
 
-            pos = mask.find( '=' );
-            if( pos != string::npos )
+         bool has_parts = algo.find( ' ' ) != string::npos;
+
+         bool is_full_length_pattern = false;
+
+         if( pat.length( ) == state.length( ) )
+         {
+            rounds = max_rounds = 1;
+            is_full_length_pattern = true;
+         }
+
+         if( rounds <= max_rounds )
+         {
+            // NOTE: If using a full length pattern then it is expected
+            // that the current state must match as if it were the goal.
+            if( is_full_length_pattern )
+               okay = has_found_goal( ap_tmp_handler->current_state( ), pat );
+         }
+
+         if( okay )
+         {
+            string output;
+
+            for( size_t j = 0; j < rounds; j++ )
             {
-               max_rounds = from_string< size_t >( mask.substr( pos + 1 ) );
-               mask.erase( pos );
-            }
-
-            bool okay = false;
-            bool found = false;
-
-            bool has_parts = algo.find( ' ' ) != string::npos;
-
-            size_t min_size = min( goal.size( ), mask.size( ) );
-
-            bool is_full_length_pattern = false;
-
-            if( patterns.size( ) == 1 && patterns[ 0 ].length( ) == mask.length( ) )
-            {
-               rounds = max_rounds = 1;
-               is_full_length_pattern = true;
-            }
-
-            if( rounds <= max_rounds )
-            {
-               // NOTE: If only one pattern that is the same length as the mask then it
-               // is expected that the current state must match as if it were the goal.
-               if( is_full_length_pattern )
-                  okay = has_found_goal( ap_tmp_handler->current_state( ), patterns[ 0 ] );
-               else
+               if( has_parts )
                {
-                  for( size_t i = 0; i < patterns.size( ); i++ )
-                  {
-                     string next_pat( patterns[ i ] );
+                  if( j > 0 )
+                     output += ' ';
 
-                     if( next_pat == "*" )
-                     {
-                        okay = true;
-                        break;
-                     }
-
-                     for( size_t j = 0; j <= min_size - next_pat.length( ); j++ )
-                     {
-                        if( mask[ j ] == '*' )
-                        {
-                           if( matches_pattern( next_pat, state.substr( j, next_pat.length( ) ) ) )
-                           {
-                              okay = true;
-                              break;
-                           }
-                        }
-                     }
-
-                     if( okay )
-                        break;
-                  }
+                  output += algo;
                }
-            }
 
-            if( okay )
-            {
-               string output;
-
-               for( size_t j = 0; j < rounds; j++ )
-               {
-                  if( has_parts )
-                  {
-                     if( j > 0 )
-                        output += ' ';
-
-                     output += algo;
-                  }
-
-                  ap_new_handler->exec_ops( algo );
+               ap_new_handler->exec_ops( algo );
 #ifdef DEBUG
-                  cout << algo << endl;
-                  cout << "news: " << ap_new_handler->current_state( ) << endl;
+               cout << algo << endl;
+               cout << "news: " << ap_new_handler->current_state( ) << endl;
 #endif
 
-                  if( check_only_after_last_round && j != rounds - 1 )
-                     continue;
+               if( check_only_after_last_round && j != rounds - 1 )
+                  continue;
 
-                  string repeat_suffix( ap_new_handler->step_repeat_suffix( j + 1 ) );
+               string repeat_suffix( ap_new_handler->step_repeat_suffix( j + 1 ) );
 
-                  if( j > 0 && repeat_suffix.empty( ) )
-                     repeat_suffix = to_string( j + 1 );
+               if( j > 0 && repeat_suffix.empty( ) )
+                  repeat_suffix = to_string( j + 1 );
 
-                  if( has_found_goal( ap_new_handler->current_state( ), goal ) )
+               if( has_found_goal( ap_new_handler->current_state( ), goal ) )
+               {
+                  if( !has_parts )
+                     output = algo + repeat_suffix;
+
+                  rc = found = was_found = true;
+
+                  if( best_match.empty( ) || output.length( ) < best_match.length( ) )
+                     best_match = output;
+
+#ifdef DEBUG
+                  cout << "[found] best_match: " << best_match << endl;
+#endif
+                  if( p_found )
+                     *p_found = true;
+
+                  break;
+               }
+               else if( !is_full_length_pattern )
+               {
+                  if( is_closer_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
+                  {
+                     ap_tmp_handler.reset( ap_new_handler->create_clone( ) );
+                     ap_best_handler.reset( ap_new_handler->create_clone( ) );
+
+                     if( !has_parts )
+                        output = algo + repeat_suffix;
+
+                     best_partial = output;
+#ifdef DEBUG
+                     cout << "[partial] best_partial: " << best_partial << endl;
+#endif
+                  }
+                  else if( !best_partial.empty( )
+                     && is_as_close_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
                   {
                      if( !has_parts )
                         output = algo + repeat_suffix;
 
-                     rc = found = was_found = true;
-
-                     if( best_match.empty( ) || output.length( ) < best_match.length( ) )
-                        best_match = output;
-
-#ifdef DEBUG
-                     cout << "[found] best_match: " << best_match << endl;
-#endif
-                     if( p_found )
-                        *p_found = true;
-
-                     break;
-                  }
-                  else if( !is_full_length_pattern )
-                  {
-                     if( is_closer_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
+                     if( output.length( ) < best_partial.length( ) )
                      {
+                        best_partial = output;
+
                         ap_tmp_handler.reset( ap_new_handler->create_clone( ) );
                         ap_best_handler.reset( ap_new_handler->create_clone( ) );
 
-                        if( !has_parts )
-                           output = algo + repeat_suffix;
-
-                        best_partial = output;
 #ifdef DEBUG
                         cout << "[partial] best_partial: " << best_partial << endl;
 #endif
                      }
-                     else if( !best_partial.empty( )
-                      && is_as_close_to_goal( ap_new_handler->current_state( ), ap_best_handler->current_state( ), goal ) )
-                     {
-                        if( !has_parts )
-                           output = algo + repeat_suffix;
-
-                        if( output.length( ) < best_partial.length( ) )
-                        {
-                           best_partial = output;
-
-                           ap_tmp_handler.reset( ap_new_handler->create_clone( ) );
-                           ap_best_handler.reset( ap_new_handler->create_clone( ) );
-
-#ifdef DEBUG
-                           cout << "[partial] best_partial: " << best_partial << endl;
-#endif
-                        }
-                     }
                   }
                }
-
-               if( found )
-                  break;
             }
-
-            if( ++mmi == g_algo_checks.end( ) )
-               break;
          }
 
          if( was_found )
@@ -738,16 +689,6 @@ void op_algo_handler::train( const string& info )
                break;
 
             g_goal_algos.erase( mi );
-         }
-
-         while( true )
-         {
-            mi = g_algo_checks.lower_bound( type_key_prefix );
-
-            if( mi == g_algo_checks.end( ) || mi->first.find( type_key_prefix ) != 0 )
-               break;
-
-            g_algo_checks.erase( mi );
          }
       }
 
@@ -1044,44 +985,10 @@ void op_algo_handler::train_algo( const string& pat,
          *p_can_keep = true;
       else
       {
-         string prefix( g_algo_prefix + type_key( ) + c_type_separator );
-         g_goal_algos.insert( make_pair( prefix + goal, algx ) );
-
-         string algo_check_key( prefix + algx );
-
          size_t tries = min( max_tries, max_tries_allowed );
 
-         if( g_algo_checks.count( algo_check_key ) )
-         {
-            string mask_and_tries( g_algo_checks.find( algo_check_key )->second );
-            string::size_type pos = mask_and_tries.find( '=' );
-
-            if( pos == string::npos )
-               throw runtime_error( "unexpected mask_and_tries '" + mask_and_tries + "'" );
-
-            size_t old_tries = from_string< size_t >( mask_and_tries.substr( pos + 1 ) );
-
-            tries = max( tries, old_tries );
-
-            string old_mask( mask_and_tries.substr( 0, pos ) );
-
-            if( mask.size( ) != old_mask.size( ) )
-               throw runtime_error( "unexpected mask.size( ) != old_mask.size( )" );
-
-            // NOTE: If an algo check entry already exists then effectively merge it
-            // with the new one (so a multimap is not really applicable for the algo
-            // checks but the data structure has been kept that way to help simplify
-            // the use of iterators between both the goal algos and algo checks).
-            for( size_t i = 0; i < mask.size( ); i++ )
-            {
-               if( old_mask[ i ] == '*' )
-                  mask[ i ] = '*';
-            }
-
-            g_algo_checks.erase( algo_check_key );
-         }
-
-         g_algo_checks.insert( make_pair( algo_check_key, mask + "=" + to_string( tries ) ) );
+         string prefix( g_algo_prefix + type_key( ) + c_type_separator );
+         g_goal_algos.insert( make_pair( prefix + goal, to_string( tries ) + '=' + algx ) );
       }
    }
 }
@@ -1194,12 +1101,8 @@ void output_algos( ostream& os )
       if( !g_algo_prefix.empty( ) && mi->first.find( g_algo_prefix ) != 0 )
          break;
 
-      string check, check_key( mi->first.substr( 0, mi->first.find( c_type_separator ) + 1 ) + mi->second );
+      os << mi->first.substr( g_algo_prefix.length( ) ) << " " << mi->second << '\n';
 
-      if( g_algo_checks.count( check_key ) )
-         check = g_algo_checks.lower_bound( check_key )->second;
-
-      os << mi->first.substr( g_algo_prefix.length( ) ) << " " << check << " " << mi->second << '\n';
       ++mi;
    }
 }
@@ -1227,17 +1130,13 @@ void output_algos( ostream& os, const string& type_keys, bool include_type )
             if( mi->first.find( type_key_prefix ) != 0 )
                break;
 
-            string check, check_key( type_key_prefix + mi->second );
-
-            if( g_algo_checks.count( check_key ) )
-               check = g_algo_checks.lower_bound( check_key )->second;
-
             if( include_type )
                os << mi->first.substr( g_algo_prefix.length( ) );
             else
                os << mi->first.substr( type_key_prefix.length( ) );
 
-            os << " " << check << " " << mi->second << '\n';
+            os << " " << mi->second << '\n';
+
             ++mi;
          }
       }
@@ -1270,16 +1169,6 @@ void exec_algos_action( const string& act, const string& info_1, const string& i
 
             g_goal_algos.erase( mi );
          }
-
-         while( true )
-         {
-            mi = g_algo_checks.lower_bound( type_key_prefix );
-
-            if( mi == g_algo_checks.end( ) || mi->first.find( type_key_prefix ) != 0 )
-               break;
-
-            g_algo_checks.erase( mi );
-         }
       }
    }
    else if( act == c_act_load )
@@ -1294,25 +1183,21 @@ void exec_algos_action( const string& act, const string& info_1, const string& i
          if( next.empty( ) )
             continue;
 
-         vector< string > parts;
-         split( next, parts, ' ' );
-
-         if( parts.size( ) != 3 )
+         string::size_type pos = next.find( ' ' );
+         if( pos == string::npos )
             throw runtime_error( "unexpected algo line format '" + next + "'" );
 
-         string type_key_and_goal( parts[ 0 ] );
-         string check( parts[ 1 ] );
-         string algo( parts[ 2 ] );
+         string type_key_and_goal( next.substr( 0, pos ) );
+         string maximum_rounds_and_algo( next.substr( pos + 1 ) );
 
-         string::size_type pos = type_key_and_goal.find( c_type_separator );
+         pos = type_key_and_goal.find( c_type_separator );
          if( pos == string::npos )
             throw runtime_error( "unexpected type_key_and_goal value '" + type_key_and_goal + "'" );
 
          string type_key_prefix( g_algo_prefix + type_key_and_goal.substr( 0, pos + 1 ) );
          string goal( type_key_and_goal.substr( pos + 1 ) );
 
-         g_goal_algos.insert( make_pair( type_key_prefix + goal, algo ) );
-         g_algo_checks.insert( make_pair( type_key_prefix + algo, check ) );
+         g_goal_algos.insert( make_pair( type_key_prefix + goal, maximum_rounds_and_algo ) );
       }
    }
    else if( act == c_act_save )
