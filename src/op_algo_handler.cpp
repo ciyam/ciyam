@@ -862,7 +862,7 @@ void op_algo_handler::train_algo( const string& pat,
          bool had_match = false;
          bool had_partial = false;
 
-         for( size_t j = 0; j < start.length( ); j++ )
+         for( size_t j = 0; j < goal.length( ); j++ )
          {
             bool potential = false;
 
@@ -894,7 +894,7 @@ void op_algo_handler::train_algo( const string& pat,
                   had_partial = true;
             }
 
-            if( mask.length( ) < start.length( ) )
+            if( mask.length( ) < goal.length( ) )
             {
                if( goal[ j ] == '.' )
                   mask += '-';
