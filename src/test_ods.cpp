@@ -808,7 +808,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "0" );
       else
          handler.issue_command_reponse( to_string( o.get_transaction_id( ) ) );
-   }      
+   }
    else if( command == c_cmd_test_ods_trans_level )
       handler.issue_command_reponse( to_string( o.get_transaction_level( ) ) );
    else if( command == c_cmd_test_ods_rewind )

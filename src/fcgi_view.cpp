@@ -579,7 +579,7 @@ void setup_view_fields( view_source& view,
    {
       view.display_names[ key_field_index ] = key_field_display_name;
       view.edit_display_names[ key_field_index ] = key_field_display_name;
-   }   
+   }
 
    view.root_folder = vinfo.static_instance_key;
 }
@@ -2935,7 +2935,7 @@ bool output_view_form( ostream& os, const string& act,
                {
                   is_current = true;
                   cell_data = dt_current.as_string( );
-               }   
+               }
                else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }

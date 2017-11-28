@@ -358,7 +358,7 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                               utxo.secret = str.substr( pos + 1, epos - pos - 1 );
                         }
                      }
-                  }   
+                  }
                }
 
                if( from_standard )
@@ -581,7 +581,8 @@ string create_raw_transaction_command( const string& source_addresses,
 
    d /= num_destinations;
 
-   bool is_first = true;;
+   bool is_first = true;
+
    while( true )
    {
       if( is_first )

@@ -1434,7 +1434,7 @@ string class_base::get_fields_and_values(
             str += ",";
 
          if( label_type == e_field_label_type_name )
-            str += get_field_name( i ) ;
+            str += get_field_name( i );
          else
             str += ( label_type == e_field_label_type_full_id ) ? get_field_id( i ) : get_short_field_id( i );
 
@@ -3051,7 +3051,7 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
 
    string tmp( "~" + uuid( ).as_string( ) );
 
-   string cmd( "gpg --fingerprint " + email + ">" + tmp +  " 2>&1" );
+   string cmd( "gpg --fingerprint " + email + ">" + tmp + " 2>&1" );
 
    TRACE_LOG( TRACE_SESSIONS, cmd );
 
@@ -3182,7 +3182,7 @@ void install_gpg_key( const string& key_file,
                                  *p_new_email = email_addr;
 
                               cmd = "gpg --fingerprint ";
-                              cmd += key + ">" + tmp +  " 2>&1";
+                              cmd += key + ">" + tmp + " 2>&1";
 
                               TRACE_LOG( TRACE_SESSIONS, cmd );
 
@@ -5102,7 +5102,7 @@ string get_external_extra( const string& ext_key, const string& extra )
          retval = to_string( info.acct_min_fee );
       else if( extra == string( c_crypto_info_acct_p2sh_fee ) )
          retval = to_string( info.acct_p2sh_fee );
-   }      
+   }
 
    return retval;
 }
@@ -5220,7 +5220,7 @@ string create_new_address( const string& ext_key, const string& label, bool igno
          {
             pos = error.find_first_of( "\r\n" );
             throw runtime_error( error.substr( 0, pos ) );
-         }   
+         }
       }
       else
       {

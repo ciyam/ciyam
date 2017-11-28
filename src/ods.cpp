@@ -471,7 +471,7 @@ struct log_entry_item
    {
       os << "flags = " << ( int )flags;
 
-      unsigned char op =  ( flags & c_log_entry_item_mask_op );
+      unsigned char op = ( flags & c_log_entry_item_mask_op );
 
       if( op == c_log_entry_item_op_store )
          os << " (store)";
@@ -2955,7 +2955,7 @@ void ods::rewind_transactions( const string& label_or_txid )
          // will be correctly zeroed.
          if( !*p_impl->rp_has_changed )
          {
-            *p_impl->rp_has_changed  = true;
+            *p_impl->rp_has_changed = true;
             ++p_impl->rp_header_info->num_writers;
          }
 
@@ -4224,7 +4224,7 @@ void ods::transaction_start( const char* p_label )
 
             if( !p_impl->rp_header_info->tranlog_offset )
                p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
-         }   
+         }
 
          p_impl->p_ods_trans_op_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
          p_impl->p_ods_trans_data_cache_buffer->new_transaction( p_impl->p_trans_buffer->tran_id );
@@ -4237,7 +4237,7 @@ void ods::transaction_start( const char* p_label )
          // "num_trans" and "num_writers" will be both correctly set.
          if( !*p_impl->rp_has_changed )
          {
-            *p_impl->rp_has_changed  = true;
+            *p_impl->rp_has_changed = true;
             ++p_impl->rp_header_info->num_writers;
          }
 
@@ -4603,7 +4603,7 @@ void ods::transaction_completed( bool keep_buffered )
          // though one has in order to correctly set "num_trans" and "num_writers".
          if( !*p_impl->rp_has_changed )
          {
-            *p_impl->rp_has_changed  = true;
+            *p_impl->rp_has_changed = true;
             ++p_impl->rp_header_info->num_writers;
          }
 

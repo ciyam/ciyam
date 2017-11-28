@@ -2275,7 +2275,7 @@ void Meta_Application::impl::impl_Generate( )
                outs << " if [ -f " << get_obj( ).Name( ) << ".txs.log ]; then\n";
                outs << "  rm " << get_obj( ).Name( ) << ".txs.log\n";
                outs << " fi\n";
-            }   
+            }
             outs << " if [ -f " << get_obj( ).Name( ) << ".dead_keys.lst ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".dead_keys.lst\n";
             outs << " fi\n";

@@ -291,7 +291,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
             ap_ofs->set_folder( folder );
             ods_fsed_handler.set_prompt_prefix( folder );
          }
-      }   
+      }
    }
    else if( command == c_cmd_ods_fsed_files )
    {

@@ -3620,7 +3620,7 @@ string construct_new_block(
 
    if( !chain.empty( ) )
    {
-      head_hash = tag_file_hash(  "c" + chain + ".head" );
+      head_hash = tag_file_hash( "c" + chain + ".head" );
 
       block_info binfo;
       get_block_info( binfo, head_hash );
@@ -4035,7 +4035,7 @@ string construct_account_info(
        + "," + string( c_file_type_core_block_detail_account_msg_key_prefix ) + key_info.msg_pubkey
        + "," + string( c_file_type_core_block_detail_account_tx_hash_prefix ) + key_info.trans_hash
        + "," + string( c_file_type_core_block_detail_account_tx_lock_prefix ) + key_info.trans_lock;
-   }    
+   }
 }
 
 string get_account_msg_secret( const string& blockchain, const string& password, const string& account )
@@ -4379,7 +4379,7 @@ uint64_t construct_transaction_scripts_for_blockchain(
             if( !next.empty( ) )
             {
                if( next[ 0 ] != '@' )
-                  outf << '.' ;
+                  outf << '.';
 
                outf << next << '\n';
             }

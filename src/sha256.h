@@ -23,7 +23,7 @@ class sha256
    ~sha256( );
 
    void init( );
-   void update( const std::string& str, bool is_filename = false  );
+   void update( const std::string& str, bool is_filename = false );
    void update( const unsigned char* p_data, unsigned int length );
 
    void copy_digest_to_buffer( unsigned char* p_buffer );

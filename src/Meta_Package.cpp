@@ -1391,7 +1391,7 @@ void Meta_Package::impl::impl_Remove( )
       if( !install_details.empty( ) )
          outl << install_details << "\n\n";
 
-      outl << "Unlinked from existing Standard package...";  // FUTURE: Should be a module string...
+      outl << "Unlinked from existing Standard package..."; // FUTURE: Should be a module string...
 
       get_obj( ).op_apply( );
    }

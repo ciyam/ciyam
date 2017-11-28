@@ -4542,7 +4542,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
    {
       read_script_info( );
       TRACE_LOG( TRACE_ANYTHING, "[manuscript.sio] updated" );
-   }   
+   }
 
    if( !g_scripts.count( script_name ) )
       throw runtime_error( "unknown script '" + script_name + "'" );
@@ -8101,7 +8101,7 @@ void get_all_field_scope_and_permission_info( size_t handle,
       field_scope_and_perm_info.insert( make_pair(
        ( !by_name ) ? field_info[ i ].id : field_info[ i ].name,
        field_info[ i ].scope + "," + field_info[ i ].change ) );
-   }    
+   }
 }
 
 string get_field_name_for_id( size_t handle, const string& context, const string& id, bool no_throw )
@@ -9753,7 +9753,7 @@ void transaction_rollback( )
          {
             gtp_session->p_tx_helper->after_rollback( );
             gtp_session->p_tx_helper = 0;
-         }   
+         }
 
          gtp_session->tx_key_info.clear( );
          gtp_session->sql_undo_statements.clear( );
@@ -9864,7 +9864,7 @@ void transaction_log_command( const string& log_command,
             gtp_session->transaction_log_command += '\n';
 
          gtp_session->transaction_log_command += log_command;
-      }   
+      }
 
       if( p_tx_helper )
          gtp_session->p_tx_helper = p_tx_helper;
@@ -11110,7 +11110,7 @@ bool perform_instance_iterate( class_base& instance,
       if( row_cache_limit < 2 )
          throw runtime_error( "unexpected invalid < 2 row_cache_limit" );
 
-      if( row_limit < 0 && instance.get_persistence_type( ) != 0 )  // i.e. SQL persistence
+      if( row_limit < 0 && instance.get_persistence_type( ) != 0 ) // i.e. SQL persistence
          row_limit = 0;
 
       if( row_limit < 0 )

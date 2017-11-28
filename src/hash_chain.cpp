@@ -98,7 +98,7 @@ hash_chain::impl::impl( const string& name, bool is_new, unsigned int size, bool
          outf.flush( );
 
          if( !outf.good( ) )
-            throw runtime_error( "unexpected bad output stream for hash chain '" + name + "'");
+            throw runtime_error( "unexpected bad output stream for hash chain '" + name + "'" );
       }
    }
 

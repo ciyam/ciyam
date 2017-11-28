@@ -154,9 +154,9 @@ bool files_are_identical( const string& file_path1, const string& file_path2 )
       if( memcmp( buf1, buf2, bytes_read ) != 0 )
          return false;
 
-    } while( inpf1.good( ) || inpf2.good( ) );
+   } while( inpf1.good( ) || inpf2.good( ) );
 
-    return true;
+   return true;
 }
 
 bool delete_directory_files( const string& path, bool include_directory_itself )

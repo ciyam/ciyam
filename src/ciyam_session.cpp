@@ -1438,7 +1438,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             possibly_expected_error = true;
             throw runtime_error( "file not found" );
-         }   
+         }
 
          fetch_file( hash, socket );
       }
@@ -1516,7 +1516,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string all_tags( list_file_tags( pat_or_tag ) );
             split( all_tags, tags, '\n' );
-         }   
+         }
 
          for( size_t i = 0; i < tags.size( ); i++ )
          {
@@ -1706,7 +1706,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             possibly_expected_error = true;
             throw;
-         }   
+         }
       }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
@@ -1729,7 +1729,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                add_peer_ip_addr_for_rejection( ip_addr );
             else
                remove_peer_ip_addr_from_rejection( ip_addr );
-         }      
+         }
       }
       else if( command == c_cmd_ciyam_session_peer_connect )
       {
@@ -3275,7 +3275,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                                  file_hashes.push_back( hash );
 
                                  file_info.push_back( "fe " + hash + " " + i->second );
-                              }   
+                              }
                            }
                            else if( is_file_field )
                            {
@@ -4498,7 +4498,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             remove_file( name + ".log." + osstr.str( ) );
             remove_file( name + ".tlg." + osstr.str( ) );
-         }   
+         }
       }
       else if( command == c_cmd_ciyam_session_storage_rewind )
       {

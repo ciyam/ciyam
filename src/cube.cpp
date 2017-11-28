@@ -174,7 +174,7 @@ string cube::scramble_moves( size_t num_moves, bool for_actual_scramble ) const
    available_moves.push_back( "R" );
    available_moves.push_back( "U" );
 
-   if( !for_actual_scramble  )
+   if( !for_actual_scramble )
    {
       available_moves.push_back( "X" );
       available_moves.push_back( "Y" );

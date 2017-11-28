@@ -1002,7 +1002,7 @@ void request_handler::process_request( )
          {
             session_id.erase( );
             is_invalid_session = false;
-         }   
+         }
       }
 
       if( using_anonymous || cmd == c_cmd_join || cmd == c_cmd_status )

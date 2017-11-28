@@ -1438,7 +1438,7 @@ void delete_file( const string& hash, bool even_if_tagged )
 
       --g_total_files;
       g_total_bytes -= existing_bytes;
-   }   
+   }
 }
 
 void delete_file_tree( const string& hash )

@@ -233,7 +233,7 @@ int main( int argc, char* argv[ ] )
 
          g_string_variables.insert( make_pair( c_true_variable, "True" ) );
          g_string_variables.insert( make_pair( c_false_variable, "False" ) );
-      }   
+      }
 
       if( !g_output_file.empty( ) )
       {

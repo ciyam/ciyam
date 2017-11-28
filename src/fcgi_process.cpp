@@ -1156,7 +1156,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                               fs.flush( );
                               fs.close( );
-                           }   
+                           }
                         }
                      }
 
@@ -1171,7 +1171,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                            if( old_file != new_file && file_exists( old_file.c_str( ) ) )
                               remove( old_file.c_str( ) );
-                        }      
+                        }
 
                         if( !new_file.empty( ) )
                         {
@@ -2429,7 +2429,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                            {
                               file_remove( key + "x.asc" );
 
-                              string cmd(  "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1" );
+                              string cmd( "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1" );
+
                               if( system( cmd.c_str( ) ) != 0 )
                                  LOG_TRACE( buffer_file( "x.tmp" ) );
                            }

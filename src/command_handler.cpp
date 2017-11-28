@@ -242,7 +242,7 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
       {
          is_first = false;
          last_group_num = command_items[ i ].group_num;
-      }   
+      }
       else
       {
          if( last_group_num != command_items[ i ].group_num )

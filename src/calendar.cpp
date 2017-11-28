@@ -317,7 +317,7 @@ void output_calendar( ostream& outf, const udate& ud, const udate& udm )
          weekday_month_day_and_year += "st";
       else if( day_of_month % 10 == 2 )
          weekday_month_day_and_year += "nd";
-      else if( day_of_month  % 10 == 3 )
+      else if( day_of_month % 10 == 3 )
          weekday_month_day_and_year += "rd";
       else
          weekday_month_day_and_year += "th";

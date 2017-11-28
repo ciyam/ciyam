@@ -877,7 +877,7 @@ void create_tmp_file_link_or_copy( string& tmp_path, const string& file_name,
 
          fs.flush( );
          fs.close( );
-      }   
+      }
    }
    else
    {

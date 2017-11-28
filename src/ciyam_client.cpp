@@ -199,7 +199,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
          if( str.substr( 0, pos ) == "chk"
           || str.substr( 0, pos ) == "get" || str.substr( 0, pos ) == "put"
-          || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put"  )
+          || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
          {
             string data( str.substr( pos + 1 ) );
             string extra;
@@ -570,7 +570,7 @@ void ciyam_console_command_handler::process_custom_startup_option( size_t num, c
    {
       if( !option.empty( )
        && option.find( '.' ) == string::npos
-       && option[ 0 ] >= '0' && option[ 0 ] <= '9'  )
+       && option[ 0 ] >= '0' && option[ 0 ] <= '9' )
          port = atoi( option.c_str( ) );
       else
       {

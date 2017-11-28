@@ -7560,7 +7560,7 @@ void Meta_Specification::impl::after_fetch( )
    if( get_obj( ).Specification_Type( ).get_key( ) == "restriction" )
    {
       string name( get_obj( ).Name( ) );
-      string id_suffix( "_"  + get_obj( ).Id( ) );
+      string id_suffix( "_" + get_obj( ).Id( ) );
 
       if( name.length( ) > id_suffix.length( )
        && name.substr( name.length( ) - id_suffix.length( ) ) == id_suffix )

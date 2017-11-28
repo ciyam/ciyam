@@ -868,7 +868,7 @@ void socket_command_handler::issue_cmd_for_peer( )
 
             set_session_variable(
              get_special_var_name( e_special_var_peer_is_synchronising ), "" );
-         }    
+         }
       }
    }
    // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
@@ -891,7 +891,7 @@ void socket_command_handler::issue_cmd_for_peer( )
       {
          pop_next_peer_file_hash_to_get( );
          next_hash = top_next_peer_file_hash_to_get( );
-      }   
+      }
 
       if( !next_hash.empty( ) )
       {

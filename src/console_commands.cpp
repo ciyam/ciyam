@@ -1122,7 +1122,7 @@ fissile_string handle_string_fissile_op(
                if( str.is_compressed( ) && next.is_compressed( ) )
                   str.shrink( next.length( ) );
                else
-                  str = str.substr( 0,  str.length( ) / next.length( ) );
+                  str = str.substr( 0, str.length( ) / next.length( ) );
             }
          }
       }
@@ -1255,7 +1255,7 @@ fissile_string handle_numeric_fissile_op(
             if( old_src.is_compressed( ) )
                src = old_src.shrink( src.length( ) );
             else
-               src = old_src.substr( 0,  old_src.length( ) / src.length( ) );
+               src = old_src.substr( 0, old_src.length( ) / src.length( ) );
          }
       }
 
