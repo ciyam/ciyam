@@ -25,6 +25,7 @@ ciyam_interface
 ciyam_server
 construct
 crypt
+czip
 diff
 diffp
 extract

@@ -13,6 +13,7 @@
      <filename>array.cpp
      <filename>base32.cpp
      <filename>base64.cpp
+     <filename>clz.cpp
      <filename>console.cpp
      <filename>console_commands.cpp
      <filename>command_parser.cpp
@@ -302,6 +303,27 @@
     <dlink_libs>
     <cpp_files/>
      <filename>crypt.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
+    <name>czip
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>czip.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
