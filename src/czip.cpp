@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <string>
 #  include <fstream>
+#  include <sstream>
 #  include <iostream>
 #  include <stdexcept>
 #endif
@@ -25,11 +26,59 @@ const char* const c_cz_ext = ".cz";
 
 const char* const c_quiet_opt = "-q";
 
+bool do_tests( )
+{
+   bool okay = true;
+
+   stringstream sstr1, sstr2;
+
+   cout << "Perfoming single byte tests (1..25000 bytes of 'x')..." << endl;
+
+   size_t min_length = 0;
+   size_t max_length = 0;
+
+   for( size_t i = 1; i <= 25000; i++ )
+   {
+      string s( i, 'x' );
+
+      stringstream sstr1( s );
+      stringstream sstr2;
+
+      encode_clz_data( sstr1, sstr2 );
+
+      size_t length = sstr2.str( ).length( );
+
+      if( !min_length )
+         min_length = length;
+      else if( length < min_length )
+         min_length = length;
+
+      if( length > max_length )
+         max_length = length;
+
+      sstr2.seekg( 0, ios::beg );
+
+      ostringstream osstr;
+      decode_clz_data( sstr2, osstr );
+
+      if( osstr.str( ) != s )
+      {
+         cout << "*** failed for " << i << " length single byte value ***" << endl;
+         okay = false;
+         break;
+      }
+   }
+
+   cout << "[passed] min_length = " << min_length << ", max_length = " << max_length << endl;
+
+   return okay;
+}
+
 int main( int argc, char* argv[ ] )
 {
    int first_arg = 1;
 
-   if( argc < 2 || argc > 3 || ( argc == 3 &&  argv[ 1 ] != string( c_quiet_opt ) ) )
+   if( argc < 2 || argc > 3 || ( argc == 3 && argv[ 1 ] != string( c_quiet_opt ) ) )
    {
       cout << "czip v0.1a\n";
       cout << "Usage: czip [" << c_quiet_opt << "] <file>" << endl;
@@ -48,7 +97,18 @@ int main( int argc, char* argv[ ] )
    {
       string file( argv[ first_arg ] );
 
+      // NOTE: If the file name is "@test" then run tests instead.
+      if( file == "@test" )
+         return do_tests( );
+
       string::size_type pos = file.find( c_cz_ext );
+
+      // NOTE: If <file>.cz exists then assume this was intended.
+      if( pos == string::npos && file_exists( file + c_cz_ext ) )
+      {
+         pos = file.length( );
+         file += string( c_cz_ext );
+      }
 
       if( pos == string::npos )
       {

@@ -583,6 +583,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
          }
       }
 
+      if( repeats )
+         shrunken[ num++ ] = ( c_nibble_one + repeats - 1 );
+
       vector< byte_pair > extra_specials;
 
       if( !repeated_special_counts.empty( ) )
@@ -748,7 +751,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          *( p_buffer + length ) = ch;
       else
       {
-         if( ( ch & c_high_five_bits ) == c_high_five_bits )
+         if( ( ch & c_high_five_bits ) == c_high_five_bits && !back_refs.count( length - 1 ) )
          {
             // NOTE: Expand either a simple repeated value or step repeated values.
             if( ch == c_special_marker )
@@ -771,21 +774,28 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          }
          else
          {
-            if( ( ch & c_high_bit_value ) && ( ( ch & c_nibble_one ) != c_nibble_one ) )
+            // NOTE: The "back_refs" container here is used to hold both back-refs
+            // and back-ref repeat values (so these are not confused with specials
+            // or single character repeats).
+            if( ( ch & c_high_bit_value )
+             && !back_refs.count( length - 1 )
+             && ( ( ( ch & c_nibble_one ) != c_nibble_one )
+             || back_refs.count( length - 2 ) || specials.count( length - 2 ) ) )
                back_refs.insert( length );
 
             bool was_expanded_literal = false;
 
             if( ( ( ch & c_nibble_one ) == c_nibble_one ) )
             {
-               if( !back_refs.count( length - 2 ) && !specials.count( length - 2 ) )
+               if( !back_refs.count( length - 1 )
+                && !back_refs.count( length - 2 ) && !specials.count( length - 2 ) )
                {
                   was_expanded_literal = true;
 
                   for( size_t i = 0; i <= ( ch - c_nibble_one ); i++ )
                      *( p_buffer + length++ ) = last_ch;
 
-                  --length; // NOTE: Due to the incrment below.
+                  --length; // NOTE: Due to the increment below.
                }
             }
 
@@ -1023,7 +1033,7 @@ bool replace_meta_pattern( meta_pattern_info& meta_patterns,
 {
    bool was_replaced = false;
 
-   if( offset > c_min_pat_length + c_meta_pat_length )
+   if( offset >= c_min_pat_length )
    {
       meta_pattern pat;
 
@@ -1180,11 +1190,11 @@ dump_bytes( "", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
 
             if( ( pattern[ c_meta_pat_length - 2 ] & c_nibble_one ) == c_nibble_one )
             {
-               size_t pat_repeats = ( pattern[ c_meta_pat_length - 2 ] & c_nibble_two ) << 4;
-               pat_repeats += pattern[ c_meta_pat_length - 1 ] + 1;
+               size_t pat_repeats = ( pattern[ c_meta_pat_length - 2 ] & c_nibble_two ) << 8;
+               pat_repeats += ( unsigned char )pattern[ c_meta_pat_length - 1 ] + 1;
 
 #ifdef DEBUG_DECODE
-cout << "pat_repeats = " << pat_repeats << endl;
+cout << "pat repeats = " << pat_repeats << endl;
 #endif
                pattern.erase( c_meta_pat_length - 2 );
 
@@ -1196,7 +1206,7 @@ cout << "pat_repeats = " << pat_repeats << endl;
                new_pattern = expand_meta_pattern( pattern.substr( 0, c_meta_pat_length - 2 ), p_encoded, indent + 1 );
                new_pattern += expand_meta_pattern( pattern.substr( c_meta_pat_length - 2 ), p_encoded, indent + 1 );
 #ifdef DEBUG_DECODE
-cout << "new_pattern = " << new_pattern << endl;
+cout << "new pattern = " << new_pattern << endl;
 #endif
             }
 
@@ -1278,8 +1288,8 @@ dump_bytes( "meta: ", ( unsigned char* )pat.c_str( ), 2 );
 #endif
                if( ( byte1 & c_nibble_one ) == c_nibble_one )
                {
-                  num_repeats += ( byte1 & c_nibble_two ) << 4;
-                  num_repeats += byte2 + 1;
+                  num_repeats = ( byte1 & c_nibble_two ) << 8;
+                  num_repeats += ( byte2 + 1 );
 #ifdef DEBUG_DECODE
 cout << "meta repeats = " << num_repeats << endl;
 #endif
@@ -1618,8 +1628,15 @@ dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset 
 
    if( last_pair_repeats )
    {
-      output_buffer[ output_offset++ ] = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
-      output_buffer[ output_offset++ ] = ( last_pair_repeats & 0x00ff );
+      unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
+      unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
+
+      if( !replace_meta_pattern( meta_patterns, output_buffer,
+       last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+      {
+         output_buffer[ output_offset++ ] = rbyte1;
+         output_buffer[ output_offset++ ] = rbyte2;
+      }
    }
 
    if( output_offset )
