@@ -26,35 +26,69 @@ const char* const c_cz_ext = ".cz";
 
 const char* const c_quiet_opt = "-q";
 
-bool do_tests( )
+const char* const c_speed_fast = "fast";
+const char* const c_speed_slow = "slow";
+
+const char* const c_speed_faster = "faster";
+const char* const c_speed_slower = "slower";
+
+const char* const c_speed_fastest = "fastest";
+const char* const c_speed_slowest = "slowest";
+
+enum speed
+{
+   e_speed_fast = 25,
+   e_speed_slow = 5,
+   e_speed_faster = 50,
+   e_speed_slower = 2,
+   e_speed_fastest = 100,
+   e_speed_slowest = 1
+};
+
+bool do_test( size_t length, speed inc )
 {
    bool okay = true;
-
-   stringstream sstr1, sstr2;
-
-   cout << "Perfoming single byte tests (1..25000 bytes of 'x')..." << endl;
 
    size_t min_length = 0;
    size_t max_length = 0;
 
-   for( size_t i = 1; i <= 25000; i++ )
+   size_t max_repeats = 36000;
+
+   size_t max_occurrence = 0;
+
+   string s, alphabet( "abcdefghijklmnopqrstuvwxyz" );
+
+   max_repeats -= ( length * 1000 );
+
+   // NOTE: Do this to reduce the amount of memory re-allocation when looping.
+   s.reserve( max_repeats * length );
+
+   cout << "Perfoming " << length << " byte tests (1.." << max_repeats << " occurrences of '" << alphabet.substr( 0, length ) << "' in steps of " << inc << ")..." << endl;
+
+   for( size_t i = 1; i <= max_repeats; i++ )
    {
-      string s( i, 'x' );
+      s += alphabet.substr( 0, length );
+
+      if( inc > 1 && ( ( i - 1 ) % inc ) )
+         continue;
 
       stringstream sstr1( s );
       stringstream sstr2;
 
       encode_clz_data( sstr1, sstr2 );
 
-      size_t length = sstr2.str( ).length( );
+      size_t next_length = sstr2.str( ).length( );
 
       if( !min_length )
-         min_length = length;
-      else if( length < min_length )
-         min_length = length;
+         min_length = next_length;
+      else if( next_length < min_length )
+         min_length = next_length;
 
-      if( length > max_length )
-         max_length = length;
+      if( next_length > max_length )
+      {
+         max_occurrence = i;
+         max_length = next_length;
+      }
 
       sstr2.seekg( 0, ios::beg );
 
@@ -63,13 +97,66 @@ bool do_tests( )
 
       if( osstr.str( ) != s )
       {
-         cout << "*** failed for " << i << " length single byte value ***" << endl;
+         cout << "*** failed for occurrence " << i << " of " << length << " byte value (" << s.length( ) << " bytes) ***" << endl;
          okay = false;
          break;
       }
    }
 
-   cout << "[passed] min_length = " << min_length << ", max_length = " << max_length << endl;
+   if( okay )
+      cout << "[passed] min_length = " << min_length << ", max_length = " << max_length << " (for occurrence " << max_occurrence << " of " << ( max_occurrence * length ) << " bytes)" << endl;
+
+   return okay;
+}
+
+bool do_tests( const string& test_info )
+{
+   bool okay = true;
+
+   string info( test_info );
+
+   speed inc = e_speed_fast;
+   speed new_inc = e_speed_fast;
+
+   size_t new_start = 0;
+
+   if( !info.empty( ) )
+   {
+      if( info[ 0 ] == ':' )
+         info.erase( 0, 1 );
+
+      string::size_type pos = info.find( '=' );
+      if( pos != string::npos )
+      {
+         new_start = from_string< size_t >( info.substr( pos + 1 ) );
+         info.erase( pos );
+      }
+
+      if( info == string( c_speed_slow ) )
+         new_inc = e_speed_slow;
+      else if( info == string( c_speed_faster ) )
+         new_inc = e_speed_faster;
+      else if( info == string( c_speed_slower ) )
+         new_inc = e_speed_slower;
+      else if( info == string( c_speed_fastest ) )
+         new_inc = e_speed_fastest;
+      else if( info == string( c_speed_slowest ) )
+         new_inc = e_speed_slowest;
+
+      if( !new_start )
+         inc = new_inc;
+   }
+
+   for( size_t i = 1; i <= 26; i++ )
+   {
+      if( i == new_start )
+         inc = new_inc;
+
+      okay = do_test( i, inc );
+
+      if( !okay )
+         break;
+   }
 
    return okay;
 }
@@ -98,8 +185,8 @@ int main( int argc, char* argv[ ] )
       string file( argv[ first_arg ] );
 
       // NOTE: If the file name is "@test" then run tests instead.
-      if( file == "@test" )
-         return do_tests( );
+      if( file.find( "@test" ) == 0 )
+         return do_tests( file.substr( 5 ) );
 
       string::size_type pos = file.find( c_cz_ext );
 

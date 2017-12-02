@@ -48,7 +48,7 @@ namespace
 // [byte 1] [byte 2]
 // 1xxxyyyy yyyyyyyy
 //
-//          xxx = 2^3 length (3-9) 0xF is being reserved for last pair repeats
+// where:   xxx = 2^3 length (3-9) 0xF is being reserved for last pair repeats
 // yyyyyyyyyyyy = 2^12 offset (0-4095) or 2^11 last pair repeat value (1-2048)
 //
 // Back-ref repeats are differentiated by starting with 0xF (thus all back-ref
@@ -415,7 +415,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       for( set< byte_pair >::iterator wi = worst.begin( ); wi != worst.end( ); ++wi )
          pairs.erase( *wi );
 
-      map< size_t, byte_pair > ordered;
+      multimap< size_t, byte_pair > ordered;
 
       // NOTE: Order the pairs and then remove the least repeated ones if there are more of
       // these than the maximum number of specials permitted and then number all remaining.
@@ -427,7 +427,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
       set< byte_pair > specials;
 
-      for( map< size_t, byte_pair >::iterator oi = ordered.begin( ); oi != ordered.end( ); ++oi )
+      for( multimap< size_t, byte_pair >::iterator oi = ordered.begin( ); oi != ordered.end( ); ++oi )
          specials.insert( oi->second );
 
       map< byte_pair, size_t > special_nums;
@@ -948,7 +948,10 @@ dump_bytes( "", p_buffer, offset );
                size_t first_offset = ( ( pat.byte1 & c_nibble_two ) << 8 ) + pat.byte2;
 
                if( meta_patterns.has_offset( first_offset ) )
+               {
+                  meta_patterns.remove_offsets_from( offset - 4 );
                   meta_patterns.add_pattern( pat, offset - 4 );
+               }
             }
          }
       }
@@ -1028,8 +1031,17 @@ cout << "backrepl @" << ( offset - 4 ) << " with: " << pat << endl;
    return can_continue;
 }
 
+void perform_meta_combines( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t& end_offset, size_t& last_pattern_offset )
+{
+   for( size_t i = 0; i < c_max_combines; i++ )
+   {
+      if( !combine_meta_patterns( meta_patterns, p_buffer, end_offset, last_pattern_offset ) )
+         break;
+   }
+}
+
 bool replace_meta_pattern( meta_pattern_info& meta_patterns,
- unsigned char* p_buffer, size_t offset, unsigned char new_byte1, unsigned char new_byte2, size_t& end_offset, size_t& last_pattern_offset )
+ unsigned char* p_buffer, size_t offset, unsigned char& new_byte1, unsigned char& new_byte2, size_t& end_offset, size_t& last_pattern_offset )
 {
    bool was_replaced = false;
 
@@ -1039,6 +1051,13 @@ bool replace_meta_pattern( meta_pattern_info& meta_patterns,
 
       pat.byte1 = *( p_buffer + offset );
       pat.byte2 = *( p_buffer + offset + 1 );
+
+      if( ( ( pat.byte1 & c_nibble_one ) != c_nibble_one )
+       && pat.byte1 == new_byte1 && pat.byte2 == new_byte2 )
+      {
+         new_byte1 = 0xf0;
+         new_byte2 = 0x00;
+      }
 
       pat.byte3 = new_byte1;
       pat.byte4 = new_byte2;
@@ -1061,11 +1080,7 @@ cout << "replaced " << pat << " @" << offset << " with: " << meta_patterns[ pat 
          *( p_buffer + offset ) = meta_patterns[ pat ].first;
          *( p_buffer + offset + 1 ) = meta_patterns[ pat ].second;
 
-         for( size_t i = 0; i < c_max_combines; i++ )
-         {
-            if( !combine_meta_patterns( meta_patterns, p_buffer, end_offset, last_pattern_offset ) )
-               break;
-         }
+         perform_meta_combines( meta_patterns, p_buffer, end_offset, last_pattern_offset );
 
          if( had_prior_pattern && old_end_offset == end_offset )
          {
@@ -1083,6 +1098,8 @@ dump_bytes( "modified ==> ", p_buffer, end_offset );
       }
       else if( ( pat.byte1 & c_nibble_one ) != c_nibble_one )
       {
+         meta_patterns.remove_offsets_from( offset );
+
          last_pattern_offset = offset;
          meta_patterns.add_pattern( pat, offset );
       }
@@ -1523,6 +1540,8 @@ cout << "length = " << length << endl;
             memmove( input_buffer, input_buffer + length, num - length );
 
          num -= length;
+
+         perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
       }
       else
       {
@@ -1614,6 +1633,9 @@ dump_bytes( "input data = ", input_buffer, num );
 dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset );
 #endif
       if( output_offset >= max_offset )
+         perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
+
+      if( output_offset >= max_offset )
       {
          shrink_output( output_buffer, output_offset );
          os.write( ( char* )output_buffer, output_offset + 1 );
@@ -1641,6 +1663,8 @@ dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset 
 
    if( output_offset )
    {
+      perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
+
 #ifdef DEBUG_ENCODE
 cout << "final offset = " << output_offset << endl;
 dump_bytes( "buffered ==> ", output_buffer, output_offset );
