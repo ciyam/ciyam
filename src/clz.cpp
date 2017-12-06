@@ -19,9 +19,12 @@
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>
+#  include <stdexcept>
 #endif
 
 #include "clz.h"
+
+#include "utilities.h"
 
 //#define DEBUG
 
@@ -90,6 +93,82 @@ const unsigned char c_max_repeats_lo = 0xff;
 const unsigned char c_special_marker = 0xf8;
 const unsigned char c_special_nsteps = 0xf9;
 const unsigned char c_special_maxval = 0xff;
+
+const unsigned char c_special_byte_inc = 0x80;
+const unsigned char c_special_byte_dec = 0x90;
+
+const unsigned char c_special_pair_inc = 0xa0;
+const unsigned char c_special_pair_dec = 0xb0;
+
+const unsigned char c_special_pair_low_inc = 0xc0;
+const unsigned char c_special_pair_low_dec = 0xd0;
+
+const unsigned char c_special_pair_high_inc = 0xe0;
+const unsigned char c_special_pair_high_dec = 0xf0;
+
+const unsigned char c_meta_pattern_nibble_one = 0x90;
+
+const unsigned char c_special_dict_pattern_lower = 0xf3;
+const unsigned char c_special_dict_pattern_upper = 0xf4;
+
+enum step_type
+{
+   e_step_type_none = 0,
+   e_step_type_single = 1,
+   e_step_type_double = 2,
+   e_step_type_double_low = 3,
+   e_step_type_double_high = 4
+};
+
+struct dict_pattern
+{
+   const char* p_w1;
+   const char* p_w2;
+   const char* p_w3;
+   const char* p_w4;
+   const char* p_w5;
+   const char* p_w6;
+   const char* p_w7;
+   const char* p_w8;
+}
+g_dict_patterns[ ] =
+{
+   { "ace", "ade", "ack", "age", "air", "ale", "alk", "all" },
+   { "als", "and", "any", "are", "ash", "ass", "bad", "bag" },
+   { "ban", "bat", "bay", "bed", "beg", "ber", "bet", "bid" },
+   { "big", "bin", "bit", "ble", "bon", "boo", "bow", "box" },
+   { "bra", "bun", "bus", "but", "buy", "can", "car", "com" },
+   { "cop", "cos", "cry", "cue", "cup", "cut", "dad", "day" },
+   { "did", "dig", "dim", "dip", "dog", "dry", "ean", "ear" },
+   { "eat", "ell", "end", "eng", "ent", "ero", "ess", "eta" },
+   { "far", "fat", "fee", "few", "fit", "fix", "flu", "fly" },
+   { "foe", "fog", "for", "ful", "fun", "fur", "gen", "ger" },
+   { "gst", "get", "got", "gun", "gut", "had", "hap", "has" },
+   { "hen", "her", "hid", "him", "his", "hit", "hol", "hop" },
+   { "hot", "how", "hub", "hug", "hut", "ice", "ick", "ide" },
+   { "ign", "inf", "ing", "ink", "int", "inv", "ion", "ire" },
+   { "irk", "ish", "ism", "its", "ium", "jag", "jar", "jaw" },
+   { "jet", "jog", "jug", "jus", "ken", "kin", "kly", "lad" },
+   { "lag", "lap", "lay", "led", "leg", "let", "lip", "log" },
+   { "low", "mal", "man", "mat", "men", "met", "mod", "mop" },
+   { "mum", "nap", "nce", "nde", "nes", "net", "new", "not" },
+   { "now", "oft", "oil", "old", "ome", "one", "org", "oth" },
+   { "our", "out", "ove", "owe", "own", "pad", "pas", "pay" },
+   { "pea", "ped", "per", "pie", "pit", "pod", "pop", "pos" },
+   { "pot", "pre", "pub", "pun", "pup", "put", "que", "qui" },
+   { "ran", "rat", "raw", "rib", "rid", "rig", "roo", "rot" },
+   { "row", "rse", "rue", "run", "sab", "sad", "sal", "say" },
+   { "sea", "see", "she", "sis", "ski", "spy", "tab", "tag" },
+   { "tan", "tap", "tar", "tas", "tax", "tea", "ten", "tha" },
+   { "the", "thr", "tio", "tip", "tis", "too", "toy", "tri" },
+   { "tub", "two", "ugh", "und", "uni", "urn", "use", "val" },
+   { "veg", "ver", "vet", "vie", "vow", "war", "was", "way" },
+   { "wed", "wet", "who", "win", "wit", "won", "xed", "xen" },
+   { "xes", "yea", "yen", "yet", "you", "zed", "zes", "zoo" },
+};
+
+map< string, unsigned char > g_dict_lower;
+map< string, unsigned char > g_dict_upper;
 
 #ifdef DEBUG
 void dump_bytes( const char* p_prefix, unsigned char* p_input, size_t num, size_t mark = 0 )
@@ -188,7 +267,7 @@ struct meta_pattern_info
    {
       offsets[ offset ] = pat;
 
-      patterns[ pat ].first = 0x90 | ( ( offset & 0x0f00 ) >> 8 );
+      patterns[ pat ].first = c_meta_pattern_nibble_one | ( ( offset & 0x0f00 ) >> 8 );
       patterns[ pat ].second = ( offset & 0x00ff );
 #ifdef DEBUG_ENCODE
 cout << "add pattern: " << patterns[ pat ] << " ==> " << pat << " @" << offset << endl;
@@ -292,49 +371,9 @@ bool found_stepping_nibbles( unsigned char* p_buffer, size_t offset, size_t leng
 {
    size_t step_amount = 0;
 
-   for( nibbles = 1; nibbles <= 4; nibbles++ )
+   for( nibbles = 2; nibbles <= 5; nibbles++ )
    {
-      if( nibbles == 1 && offset + 3 < length )
-      {
-         unsigned char ch = *( p_buffer + offset );
-
-         unsigned char nibble1 = ( ch & c_nibble_one ) >> 4;
-         unsigned char nibble2 = ch & c_nibble_two;
-
-         if( nibble1 == nibble2 )
-            continue;
-
-         ascending = ( nibble1 < nibble2 ? true : false );
-         step_amount = ( ascending ? nibble2 - nibble1 : nibble1 - nibble2 );
-
-         bool found = true;
-
-         for( size_t j = 1; j < 4; j++ )
-         {
-            ch = *( p_buffer + offset + j );
-
-            unsigned char new_nibble1 = ( ch & c_nibble_one ) >> 4;
-            unsigned char new_nibble2 = ch & c_nibble_two;
-
-            if( ( ascending && new_nibble1 != nibble2 + step_amount )
-             || ( !ascending && new_nibble1 != nibble2 - step_amount )
-             || ( ascending && new_nibble2 != new_nibble1 + step_amount )
-             || ( !ascending && new_nibble2 != new_nibble1 - step_amount ) )
-            {
-               found = false;
-               break;
-            }
-
-            nibble1 = new_nibble1;
-            nibble2 = new_nibble2;
-         }
-
-         if( found )
-            break;
-         else
-            step_amount = 0;
-      }
-      else if( nibbles == 2 && offset + 4 < length )
+      if( nibbles == 2 && offset + 4 < length )
       {
          unsigned char byte1 = *( p_buffer + offset );
          unsigned char byte2 = *( p_buffer + offset + 1 );
@@ -369,7 +408,7 @@ bool found_stepping_nibbles( unsigned char* p_buffer, size_t offset, size_t leng
          else
             step_amount = 0;
       }
-      // FUTURE: Should check for patterns of 3 and 4 nibbles also.
+      // FUTURE: Should check for patterns of 3, 4 and 5 nibbles.
    }
 
    return step_amount;
@@ -381,6 +420,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
    if( length <= c_max_encoded_chunk_size )
    {
+      if( g_dict_lower.empty( ) )
+         init_clz_info( );
+
       map< byte_pair, size_t > pairs;
 
       // NOTE: A "byte pair" is either a back-ref, a meta-pattern
@@ -392,14 +434,17 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       {
          unsigned char next = *( p_buffer + i );
 
-         if( i < length - 1 && ( next & c_high_bit_value ) )
+         if( i < length - 1 )
          {
-            byte_pair next_pair;
+            if( next & c_high_bit_value )
+            {
+               byte_pair next_pair;
 
-            next_pair.first = next;
-            next_pair.second = *( p_buffer + ++i );
+               next_pair.first = next;
+               next_pair.second = *( p_buffer + ++i );
 
-            ++pairs[ next_pair ];
+               ++pairs[ next_pair ];
+            }
          }
       }
 
@@ -440,6 +485,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
       bool steps_ascending = true;
 
+      step_type step_type_val = e_step_type_none;
+
       size_t stepping_amount = 0;
       size_t stepping_nibbles = 0;
 
@@ -456,31 +503,46 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       {
          unsigned char next = *( p_buffer + i );
 
-         if( stepping_amount )
+         if( stepping_amount
+          && ( step_type_val == e_step_type_single || i < length - 1 ) )
          {
+            bool okay = true;
             size_t next_val = last_ch;
 
-            if( stepping_nibbles == 1 )
-               next_val = ( last_ch & c_nibble_one ) >> 4;
+            if( step_type_val == e_step_type_double
+             || step_type_val == e_step_type_double_high )
+               next_val = *( p_buffer + i - 2 );
 
             if( steps_ascending )
                next_val += stepping_amount;
             else
                next_val -= stepping_amount;
 
-            if( stepping_nibbles == 1 )
+            if( step_type_val == e_step_type_double )
             {
-               next_val <<= 4;
-               next_val += ( last_ch & c_nibble_two );
-
-               if( steps_ascending )
-                  next_val += stepping_amount;
+               if( ( steps_ascending && ( last_ch + stepping_amount ) != *( p_buffer + i + 1 ) )
+                || ( !steps_ascending && ( last_ch - stepping_amount ) != *( p_buffer + i + 1 ) ) )
+                  okay = false;
+            }
+            else if( step_type_val == e_step_type_double_low )
+            {
+               if( next == *( p_buffer + i - 2 ) )
+                  next = *( p_buffer + i + 1 );
                else
-                  next_val -= stepping_amount;
+                  okay = false;
+            }
+            else if( step_type_val == e_step_type_double_high )
+            {
+               if( last_ch != *( p_buffer + i + 1 ) )
+                  okay = false;
             }
 
-            if( next == next_val && ( shrunken[ num - 1 ] & c_nibble_two ) < c_max_special_step_vals )
+            if( okay && next == next_val
+             && ( shrunken[ num - 1 ] & c_nibble_two ) < c_max_special_step_vals )
             {
+               if( step_type_val >= e_step_type_double )
+                  ++i;
+
                ++shrunken[ num - 1 ];
                last_ch = next;
                continue;
@@ -491,7 +553,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
          if( next != last_ch && repeats )
          {
-            shrunken[ num++ ] = ( c_nibble_one + repeats - 1 );
+            shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
             repeats = 0;
          }
 
@@ -551,29 +613,206 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
          }
          else
          {
-            // NOTE: Simple characters that repeated are shrunk with a single byte
-            // to indicate this along with the number of repeats (one nibble each).
-            if( next == last_ch && repeats < c_max_special_repeats - 1 )
+            bool was_dict = false;
+            bool new_repeat = false;
+
+            // NOTE: Look for common dictionary word patterns of three bytes (which might just
+            // be prefixes or suffixes or even in the middle of an actual dictionary word).
+            if( !repeats && i < length - 2 && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
+            {
+               string pat( 1, next );
+               pat += *( p_buffer + i + 1 );
+               pat += *( p_buffer + i + 2 );
+
+               map< string, unsigned char >::const_iterator ci = g_dict_lower.find( pat );
+
+               if( ci != g_dict_lower.end( ) )
+               {
+                  was_dict = true;
+                  shrunken[ num++ ] = c_special_dict_pattern_lower;
+                  shrunken[ num++ ] = ci->second;
+               }
+               else
+               {
+                  ci = g_dict_upper.find( pat );
+
+                  if( ci != g_dict_upper.end( ) )
+                  {
+                     was_dict = true;
+                     shrunken[ num++ ] = c_special_dict_pattern_upper;
+                     shrunken[ num++ ] = ci->second;
+                  }
+               }
+
+               if( was_dict )
+               {
+                  i += 2;
+                  last_ch = 0; // NOTE: To allow one dict pattern to follow another.
+
+                  continue;
+               }
+            }
+
+            if( !repeats && last_ch && next == last_ch )
+            {
+               if( i < length - 1 && *( p_buffer + i + 1 ) == next )
+                  new_repeat = true;
+            }
+
+            // NOTE: Simple characters that repeated three or more times are shrunk with one byte required
+            // to indicate this along with the number of repeats (i.e. one nibble each).
+            if( next == last_ch && ( new_repeat || ( repeats && repeats < c_max_special_repeats - 1 ) ) )
                ++repeats;
             else
             {
                bool found_steps = false;
 
-               // NOTE: If groups of nibbles are found to be in a run of incrementing or decrementing steps then
-               // these can be shrunk also.
-               if( i < length - 3 )
+               if( ( i == 0 || last_ch ) && ( i < length - 3 ) )
                {
-                  stepping_amount = found_stepping_nibbles( p_buffer, i, length, stepping_nibbles, steps_ascending );
-
-                  if( stepping_amount )
+                  // NOTE: A few very specific stepping patterns are being identified first with a more generalised
+                  // approach (requiring more bytes to encode) following.
+                  if( ( next + 1 ) == *( p_buffer + i + 1 )
+                   && ( next + 2 ) == *( p_buffer + i + 2 )
+                   && ( next + 3 ) == *( p_buffer + i + 3 ) )
                   {
-                     found_steps = true;
+                     stepping_amount = 1;
+                     step_type_val = e_step_type_single;
+                     found_steps = steps_ascending = true;
+
+                     i += 3;
+                     last_ch = *( p_buffer + i );
 
                      shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = last_ch = *( p_buffer + ++i );
-
                      shrunken[ num++ ] = c_special_nsteps;
-                     shrunken[ num++ ] = ( stepping_nibbles - 1 ) << 4;
+                     shrunken[ num++ ] = c_special_byte_inc;
+                  }
+                  else if( ( next - 1 ) == *( p_buffer + i + 1 )
+                   && ( next - 2 ) == *( p_buffer + i + 2 )
+                   && ( next - 3 ) == *( p_buffer + i + 3 ) )
+                  {
+                     found_steps = true;
+                     stepping_amount = 1;
+                     steps_ascending = false;
+                     step_type_val = e_step_type_single;
+
+                     i += 3;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_byte_dec;
+                  }
+                  else if( i < length - 4
+                   && ( last_ch + 1 ) == *( p_buffer + i + 1 ) && ( next + 1 ) == *( p_buffer + i + 2 )
+                   && ( last_ch + 2 ) == *( p_buffer + i + 3 ) && ( next + 2 ) == *( p_buffer + i + 4 ) )
+                  {
+                     stepping_amount = 1;
+                     step_type_val = e_step_type_double;
+                     found_steps = steps_ascending = true;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_inc;
+                  }
+                  else if( i < length - 4
+                   && ( last_ch - 1 ) == *( p_buffer + i + 1 ) && ( next - 1 ) == *( p_buffer + i + 2 )
+                   && ( last_ch - 2 ) == *( p_buffer + i + 3 ) && ( next - 2 ) == *( p_buffer + i + 4 ) )
+                  {
+                     found_steps = true;
+                     stepping_amount = 1;
+                     steps_ascending = false;
+                     step_type_val = e_step_type_double;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_dec;
+                  }
+                  else if( i < length - 4
+                   && last_ch == *( p_buffer + i + 1 ) && ( next + 1 ) == *( p_buffer + i + 2 )
+                   && last_ch == *( p_buffer + i + 3 ) && ( next + 2 ) == *( p_buffer + i + 4 ) )
+                  {
+                     stepping_amount = 1;
+                     found_steps = steps_ascending = true;
+                     step_type_val = e_step_type_double_low;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_low_inc;
+                  }
+                  else if( i < length - 4
+                   && last_ch == *( p_buffer + i + 1 ) && ( next - 1 ) == *( p_buffer + i + 2 )
+                   && last_ch == *( p_buffer + i + 3 ) && ( next - 2 ) == *( p_buffer + i + 4 ) )
+                  {
+                     found_steps = true;
+                     stepping_amount = 1;
+                     steps_ascending = false;
+                     step_type_val = e_step_type_double_low;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_low_dec;
+                  }
+                  else if( i < length - 4
+                   && ( last_ch + 1 ) == *( p_buffer + i + 1 ) && next == *( p_buffer + i + 2 )
+                   && ( last_ch + 2 ) == *( p_buffer + i + 3 ) && next == *( p_buffer + i + 4 ) )
+                  {
+                     stepping_amount = 1;
+                     found_steps = steps_ascending = true;
+                     step_type_val = e_step_type_double_high;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_high_inc;
+                  }
+                  else if( i < length - 4
+                   && ( last_ch - 1 ) == *( p_buffer + i + 1 ) && next == *( p_buffer + i + 2 )
+                   && ( last_ch - 2 ) == *( p_buffer + i + 3 ) && next == *( p_buffer + i + 4 ) )
+                  {
+                     found_steps = true;
+                     stepping_amount = 1;
+                     steps_ascending = false;
+                     step_type_val = e_step_type_double_high;
+
+                     i += 4;
+                     last_ch = *( p_buffer + i );
+
+                     shrunken[ num++ ] = next;
+                     shrunken[ num++ ] = c_special_nsteps;
+                     shrunken[ num++ ] = c_special_pair_high_dec;
+                  }
+                  else
+                  {
+                     // NOTE: If groups of nibbles are found to be in a run of incrementing or decrementing steps then
+                     // these can be shrunk also (this takes extra space as the stepping amount can only be worked out
+                     // from the first two nibble groups).
+                     stepping_amount = found_stepping_nibbles( p_buffer, i, length, stepping_nibbles, steps_ascending );
+
+                     if( stepping_amount )
+                     {
+                        found_steps = true;
+                        step_type_val = e_step_type_single;
+
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = last_ch = *( p_buffer + ++i );
+
+                        shrunken[ num++ ] = c_special_nsteps;
+                        shrunken[ num++ ] = ( stepping_nibbles - 2 ) << 4;
+                     }
                   }
                }
 
@@ -584,7 +823,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       }
 
       if( repeats )
-         shrunken[ num++ ] = ( c_nibble_one + repeats - 1 );
+         shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
 
       vector< byte_pair > extra_specials;
 
@@ -684,7 +923,6 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
 {
    size_t length = 0;
-   size_t skip_count = 0;
    size_t num_specials = 0;
 
    unsigned char last_ch = 0;
@@ -692,8 +930,14 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
    bool had_marker = false;
    bool process_steps = false;
 
+   bool is_lower_dict_pattern = false;
+   bool is_upper_dict_pattern = false;
+
    set< size_t > back_refs;
    map< size_t, size_t > specials;
+
+   if( g_dict_lower.empty( ) )
+      init_clz_info( );
 
    memset( p_buffer, 0, max_length );
 
@@ -704,45 +948,137 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
       if( !is.read( ( char* )&ch, 1 ) )
          break;
 
-      if( skip_count )
-      {
-         *( p_buffer + length++ ) = ch;
-         --skip_count;
-         continue;
-      }
-
       if( process_steps )
       {
          process_steps = false;
 
+         bool is_low = true;
+         bool is_both = false;
          bool ascending = true;
-
-         size_t nibbles = ( ( ch & c_nibble_one ) >> 4 ) + 1;
-         size_t num_repeats = ( ch & c_nibble_two );
-
+         bool is_byte_pair = false;
          size_t stepping_amount = 0;
 
-         if( nibbles == 1 )
+         size_t num_repeats = ( ch & c_nibble_two );
+
+         // NOTE: First handle a few very specific stepping patterns
+         // with a more generalised approach (which is less compact)
+         // to follow.
+         if( ( ch & c_nibble_one ) == c_special_byte_inc )
          {
-            unsigned char nibble1 = ( *( p_buffer + length - 1 ) & c_nibble_one ) >> 4;
-            unsigned char nibble2 = ( *( p_buffer + length - 1 ) & c_nibble_two );
-
-            ascending = ( nibble1 < nibble2 ? true : false );
-            stepping_amount = ( ascending ? nibble2 - nibble1 : nibble1 - nibble2 );
-
-            stepping_amount = ( stepping_amount << 4 ) + stepping_amount;
+            num_repeats += 3;
+            stepping_amount = 1;
          }
-         else if( nibbles == 2 )
+         else if( ( ch & c_nibble_one ) == c_special_byte_dec )
          {
-            unsigned char byte1 = *( p_buffer + length - 2 );
-            unsigned char byte2 = *( p_buffer + length - 1 );
+            num_repeats += 3;
+            ascending = false;
+            stepping_amount = 1;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_inc )
+         {
+            num_repeats += 2;
+            stepping_amount = 1;
+            is_both = is_byte_pair = true;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_dec )
+         {
+            num_repeats += 2;
+            ascending = false;
+            stepping_amount = 1;
+            is_both = is_byte_pair = true;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_low_inc )
+         {
+            num_repeats += 2;
+            is_byte_pair = true;
+            stepping_amount = 1;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_low_dec )
+         {
+            num_repeats += 2;
+            ascending = false;
+            is_byte_pair = true;
+            stepping_amount = 1;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_high_inc )
+         {
+            is_low = false;
+            num_repeats += 2;
+            is_byte_pair = true;
+            stepping_amount = 1;
+         }
+         else if( ( ch & c_nibble_one ) == c_special_pair_high_dec )
+         {
+            is_low = false;
+            num_repeats += 2;
+            ascending = false;
+            is_byte_pair = true;
+            stepping_amount = 1;
+         }
+         else
+         {
+            size_t nibbles = ( ( ch & c_nibble_one ) >> 4 ) + 2;
 
-            ascending = ( byte1 < byte2 ? true : false );
-            stepping_amount = ( ascending ? byte2 - byte1 : byte1 - byte2 ); 
+            if( nibbles == 2 )
+            {
+               unsigned char byte1 = *( p_buffer + length - 2 );
+               unsigned char byte2 = *( p_buffer + length - 1 );
+
+               ascending = ( byte1 < byte2 ? true : false );
+               stepping_amount = ( ascending ? byte2 - byte1 : byte1 - byte2 ); 
+            }
+            // FUTURE: Should handle patterns of 3, 4 and 5 nibbles as well.
          }
 
-         for( size_t i = 0; i < num_repeats; i++ )
-            *( p_buffer + length ) = *( p_buffer + length++ - 1 ) + stepping_amount;
+         if( !is_byte_pair )
+         {
+            for( size_t i = 0; i < num_repeats; i++ )
+            {
+               if( ascending )
+                  *( p_buffer + length ) = *( p_buffer + length++ - 1 ) + stepping_amount;
+               else
+                  *( p_buffer + length ) = *( p_buffer + length++ - 1 ) - stepping_amount;
+            }
+         }
+         else
+         {
+            for( size_t i = 0; i < num_repeats; i++ )
+            {
+               if( ascending )
+               {
+                  *( p_buffer + length ) = *( p_buffer + length++ - 2 ) + ( ( is_low && !is_both ) ? 0 : stepping_amount );
+                  *( p_buffer + length ) = *( p_buffer + length++ - 2 ) + ( ( is_low || is_both ) ? stepping_amount : 0 );
+               }
+               else
+               {
+                  *( p_buffer + length ) = *( p_buffer + length++ - 2 ) - ( ( is_low && !is_both ) ? 0 : stepping_amount );
+                  *( p_buffer + length ) = *( p_buffer + length++ - 2 ) - ( ( is_low || is_both ) ? stepping_amount : 0 );
+               }
+            }
+         }
+
+         continue;
+      }
+      else if( is_lower_dict_pattern || is_upper_dict_pattern )
+      {
+         map< string, unsigned char >::const_iterator ci;
+
+         if( is_lower_dict_pattern )
+            ci = g_dict_lower.begin( );
+         else
+            ci = g_dict_upper.begin( );
+
+         for( unsigned char i = 0; i < ch; i++ )
+            ++ci;
+
+         string pat( ci->first );
+        
+         *( p_buffer + length++ ) = pat[ 0 ];
+         *( p_buffer + length++ ) = pat[ 1 ];
+         *( p_buffer + length++ ) = pat[ 2 ];
+
+         last_ch = 0;
+         is_lower_dict_pattern = is_upper_dict_pattern = false;
 
          continue;
       }
@@ -783,25 +1119,32 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
              || back_refs.count( length - 2 ) || specials.count( length - 2 ) ) )
                back_refs.insert( length );
 
-            bool was_expanded_literal = false;
+            bool is_expanded = false;
 
             if( ( ( ch & c_nibble_one ) == c_nibble_one ) )
             {
                if( !back_refs.count( length - 1 )
                 && !back_refs.count( length - 2 ) && !specials.count( length - 2 ) )
                {
-                  was_expanded_literal = true;
+                  is_expanded = true;
 
-                  for( size_t i = 0; i <= ( ch - c_nibble_one ); i++ )
-                     *( p_buffer + length++ ) = last_ch;
+                  if( ch == c_special_dict_pattern_lower )
+                     is_lower_dict_pattern = true;
+                  else if( ch == c_special_dict_pattern_upper )
+                     is_upper_dict_pattern = true;
+                  else
+                  {
+                     for( size_t i = 0; i <= ( ch - c_nibble_one ) + 1; i++ )
+                        *( p_buffer + length++ ) = last_ch;
+                  }
 
-                  --length; // NOTE: Due to the increment below.
+                   --length; // NOTE: Due to the increment below.
                }
             }
 
             last_ch = ch;
 
-            if( !was_expanded_literal )
+            if( !is_expanded )
                *( p_buffer + length ) = ch;
          }
       }
@@ -893,7 +1236,7 @@ cout << "replaced " << pat << " @" << ( offset - 4 ) << " with: " << meta_patter
             last_pattern_offset = ( offset - 2 );
          }
          // NOTE: Secondly handle a simple pattern repeat.
-         else if( pat.byte1 == pat.byte3 && pat.byte2 == pat.byte4 )
+         else if( ( pat.byte1 & c_high_bit_value ) && pat.byte1 == pat.byte3 && pat.byte2 == pat.byte4 )
          {
             meta_patterns.remove_offsets_from( offset - 4 );
 
@@ -943,7 +1286,7 @@ dump_bytes( "", p_buffer, offset );
          {
             // NOTE: If the first two bytes part of the current meta-pattern points
             // to an existing meta-pattern then possibly add as a new meta-pattern.
-            if( ( pat.byte1 & c_nibble_one ) == 0x90 && !meta_patterns.has_pattern( pat ) )
+            if( ( pat.byte1 & c_nibble_one ) == c_meta_pattern_nibble_one && !meta_patterns.has_pattern( pat ) )
             {
                size_t first_offset = ( ( pat.byte1 & c_nibble_two ) << 8 ) + pat.byte2;
 
@@ -1052,10 +1395,11 @@ bool replace_meta_pattern( meta_pattern_info& meta_patterns,
       pat.byte1 = *( p_buffer + offset );
       pat.byte2 = *( p_buffer + offset + 1 );
 
-      if( ( ( pat.byte1 & c_nibble_one ) != c_nibble_one )
+      if( ( pat.byte1 & c_high_bit_value )
+       && ( ( pat.byte1 & c_nibble_one ) != c_nibble_one )
        && pat.byte1 == new_byte1 && pat.byte2 == new_byte2 )
       {
-         new_byte1 = 0xf0;
+         new_byte1 = c_nibble_one;
          new_byte2 = 0x00;
       }
 
@@ -1132,7 +1476,8 @@ bool replace_extra_pattern( map< string, size_t >& extra_patterns, const string&
 
       bool was_incremented = false;
 
-      if( output_offset > c_min_pat_length
+      if( ( byte1 & c_high_bit_value )
+       && ( output_offset > c_min_pat_length )
        && *( p_buffer + output_offset - 4 ) == byte1
        && *( p_buffer + output_offset - 3 ) == byte2 )
       {
@@ -1235,6 +1580,31 @@ cout << "new pattern = " << new_pattern << endl;
    return pattern;
 }
 
+}
+
+void init_clz_info( )
+{
+   // NOTE: For multi-threaded applications this function should be called from the main thread
+   // before starting up any child threads (to avoid any potential race condition).
+
+   if( g_dict_lower.empty( ) )
+   {
+      unsigned char offset = 0;
+      for( size_t i = 0; i <  ARRAY_SIZE( g_dict_patterns ); i++ )
+      {
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w1 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w2 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w3 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w4 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w5 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w6 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w7 ), offset++ ) );
+         g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w8 ), offset++ ) );
+      }
+
+      for( map< string, unsigned char >::iterator i = g_dict_lower.begin( ); i != g_dict_lower.end( ); ++i )
+         g_dict_upper.insert( make_pair( upper( i->first ), i->second ) );
+   }
 }
 
 void decode_clz_data( istream& is, ostream& os )
@@ -1386,6 +1756,12 @@ void encode_clz_data( istream& is, ostream& os )
          if( is.read( ( char* )input_buffer + num, 1 ) )
             ++num;
 
+         // FUTURE: Assuming the use of a special indicator then 8-bit data
+         // could be converted to 7-bit on the fly so as not to require the
+         // input to be restricted to 7-bit as is currently being enforced.
+         if( input_buffer[ num ] & c_high_bit_value )
+            throw runtime_error( "can only clz encode a 7-bit data stream" );
+
          size_t bytes_from_end = 1;
 
          if( num && ( input_buffer[ 0 ] & c_high_bit_value ) )
@@ -1487,6 +1863,9 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                break;
             }
          }
+
+         if( length && length < c_min_pat_length )
+            length = 1;
       }
 
       // NOTE: Never output the just first part of a back-ref pair.

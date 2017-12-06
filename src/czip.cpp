@@ -45,6 +45,65 @@ enum speed
    e_speed_slowest = 1
 };
 
+struct simple_tests
+{
+   const char* p_input;
+   const char* p_output;
+}
+g_simple_tests[ ] =
+{
+   { "a", "a" },
+   { "aa", "aa" },
+   { "aaa", "a\xf0" },
+   { "aaaa", "a\xf1" },
+   { "aaaaa", "a\xf2" },
+   { "abc", "abc" },
+   { "abcd", "a\xf9\x80" },
+   { "abcde", "a\xf9\x81" },
+   { "abcdef", "a\xf9\x82" },
+   { "abcdefg", "a\xf9\x83" },
+   { "abcdefgh", "a\xf9\x84" },
+   { "abcdefghi", "a\xf9\x85" },
+   { "abcdefghij", "a\xf9\x86" },
+   { "abcdefghijk", "a\xf9\x87" },
+   { "abcdefghijkl", "a\xf9\x88" },
+   { "abcdefghijklm", "a\xf9\x89" },
+   { "abcdefghijklmn", "a\xf9\x8a" },
+   { "abcdefghijklmno", "a\xf9\x8b" },
+   { "abcdefghijklmnop", "a\xf9\x8c" },
+   { "abcdefghijklmnopq", "a\xf9\x8d" },
+   { "abcdefghijklmnopqr", "a\xf9\x8e" },
+   { "abcdefghijklmnopqrs", "a\xf9\x8f" },
+   { "abcdefghijklmnopqrst", "a\xf9\x8ft" },
+   { "zyx", "zyx" },
+   { "zyxw", "z\xf9\x90" },
+   { "zyxwv", "z\xf9\x91" },
+   { "zyxwvu", "z\xf9\x92" },
+   { "zyxwvut", "z\xf9\x93" },
+   { "zyxwvuts", "z\xf9\x94" },
+   { "zyxwvutsr", "z\xf9\x95" },
+   { "zyxwvutsrq", "z\xf9\x96" },
+   { "zyxwvutsrqp", "z\xf9\x97" },
+   { "zyxwvutsrqpo", "z\xf9\x98" },
+   { "zyxwvutsrqpon", "z\xf9\x99" },
+   { "zyxwvutsrqponm", "z\xf9\x9a" },
+   { "zyxwvutsrqponml", "z\xf9\x9b" },
+   { "zyxwvutsrqponmlk", "z\xf9\x9c" },
+   { "zyxwvutsrqponmlkj", "z\xf9\x9d" },
+   { "zyxwvutsrqponmlkji", "z\xf9\x9e" },
+   { "zyxwvutsrqponmlkjih", "z\xf9\x9f" },
+   { "zyxwvutsrqponmlkjihg", "z\xf9\x9fg" },
+   { "and", "\xf3\x09" },
+   { "not", "\xf3\x97" },
+   { "zoo", "\xf3\xff" },
+   { "AND", "\xf4\x09" },
+   { "NOT", "\xf4\x97" },
+   { "ZOO", "\xf4\xff" },
+   { "andAND", "\xf3\x09\xf4\x09" },
+   { "notNOT", "\xf3\x97\xf4\x97" },
+   { "zooZOO", "\xf3\xff\xf4\xff" },
+};
+
 bool do_test( size_t length, speed inc )
 {
    bool okay = true;
@@ -69,7 +128,7 @@ bool do_test( size_t length, speed inc )
    {
       s += alphabet.substr( 0, length );
 
-      if( inc > 1 && ( ( i - 1 ) % inc ) )
+      if( inc > 1 && i > inc && ( ( i - 1 ) % inc ) )
          continue;
 
       stringstream sstr1( s );
@@ -112,6 +171,19 @@ bool do_test( size_t length, speed inc )
 bool do_tests( const string& test_info )
 {
    bool okay = true;
+
+   for( size_t i = 0; i <  ARRAY_SIZE( g_simple_tests ); i++ )
+   {
+      stringstream is( string( g_simple_tests[ i ].p_input ) );
+      stringstream os;
+
+      encode_clz_data( is, os );
+
+      os.seekg( 0, ios::beg );
+
+      if( os.str( ) != string( g_simple_tests[ i ].p_output ) )
+         throw runtime_error( "failed test with input: " + string( g_simple_tests[ i ].p_input ) );
+   }
 
    string info( test_info );
 
@@ -180,6 +252,8 @@ int main( int argc, char* argv[ ] )
       quiet = true;
    }
 
+   string file_to_remove;
+
    try
    {
       string file( argv[ first_arg ] );
@@ -216,6 +290,7 @@ int main( int argc, char* argv[ ] )
             if( !os )
                throw runtime_error( "unable to open '" + output_file + "' for input" );
 
+            file_to_remove = output_file;
             encode_clz_data( is, os );
          }
 
@@ -251,6 +326,9 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& e )
    {
+      if( !file_to_remove.empty( ) )
+         file_remove( file_to_remove );
+
       cerr << "error: " << e.what( ) << endl;
       return 1;
    }

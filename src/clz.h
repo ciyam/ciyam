@@ -10,6 +10,8 @@
 #     include <iosfwd>
 #  endif
 
+void init_clz_info( );
+
 void decode_clz_data( std::istream& is, std::ostream& os );
 void encode_clz_data( std::istream& is, std::ostream& os );
 
