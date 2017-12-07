@@ -93,15 +93,15 @@ g_simple_tests[ ] =
    { "zyxwvutsrqponmlkji", "z\xf9\x9e" },
    { "zyxwvutsrqponmlkjih", "z\xf9\x9f" },
    { "zyxwvutsrqponmlkjihg", "z\xf9\x9fg" },
-   { "and", "\xf3\x09" },
+   { "and", "\xf3\x0a" },
    { "not", "\xf3\x97" },
-   { "zoo", "\xf3\xff" },
-   { "AND", "\xf4\x09" },
+   { "zes", "\xf3\xff" },
+   { "AND", "\xf4\x0a" },
    { "NOT", "\xf4\x97" },
-   { "ZOO", "\xf4\xff" },
-   { "andAND", "\xf3\x09\xf4\x09" },
+   { "ZES", "\xf4\xff" },
+   { "andAND", "\xf3\x0a\xf4\x0a" },
    { "notNOT", "\xf3\x97\xf4\x97" },
-   { "zooZOO", "\xf3\xff\xf4\xff" },
+   { "zesZES", "\xf3\xff\xf4\xff" },
 };
 
 bool do_test( size_t length, speed inc )

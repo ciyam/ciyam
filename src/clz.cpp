@@ -133,38 +133,38 @@ struct dict_pattern
 }
 g_dict_patterns[ ] =
 {
-   { "ace", "ade", "ack", "age", "air", "ale", "alk", "all" },
-   { "als", "and", "any", "are", "ash", "ass", "bad", "bag" },
-   { "ban", "bat", "bay", "bed", "beg", "ber", "bet", "bid" },
+   { "acc", "ace", "ade", "ack", "age", "ail", "air", "ale" },
+   { "all", "als", "and", "any", "app", "are", "ash", "ass" },
+   { "bad", "ban", "bat", "bed", "beg", "ber", "bet", "bid" },
    { "big", "bin", "bit", "ble", "bon", "boo", "bow", "box" },
    { "bra", "bun", "bus", "but", "buy", "can", "car", "com" },
    { "cop", "cos", "cry", "cue", "cup", "cut", "dad", "day" },
-   { "did", "dig", "dim", "dip", "dog", "dry", "ean", "ear" },
-   { "eat", "ell", "end", "eng", "ent", "ero", "ess", "eta" },
+   { "did", "dig", "dim", "dip", "dog", "ear", "eat", "ect" },
+   { "ell", "end", "ent", "ere", "ero", "ess", "est", "exp" },
    { "far", "fat", "fee", "few", "fit", "fix", "flu", "fly" },
-   { "foe", "fog", "for", "ful", "fun", "fur", "gen", "ger" },
-   { "gst", "get", "got", "gun", "gut", "had", "hap", "has" },
-   { "hen", "her", "hid", "him", "his", "hit", "hol", "hop" },
-   { "hot", "how", "hub", "hug", "hut", "ice", "ick", "ide" },
-   { "ign", "inf", "ing", "ink", "int", "inv", "ion", "ire" },
-   { "irk", "ish", "ism", "its", "ium", "jag", "jar", "jaw" },
-   { "jet", "jog", "jug", "jus", "ken", "kin", "kly", "lad" },
+   { "for", "ful", "fun", "fur", "gen", "ger", "gst", "get" },
+   { "got", "gun", "gut", "had", "han", "hap", "has", "hen" },
+   { "her", "him", "his", "hit", "hol", "hop", "hot", "how" },
+   { "hub", "hug", "hut", "ice", "ick", "ide", "ied", "ign" },
+   { "ill", "inc", "inf", "ing", "int", "ion", "ire", "ish" },
+   { "ism", "ist", "its", "ium", "ive", "jag", "jar", "jaw" },
+   { "jet", "jog", "jug", "jus", "ken", "key", "kin", "lad" },
    { "lag", "lap", "lay", "led", "leg", "let", "lip", "log" },
-   { "low", "mal", "man", "mat", "men", "met", "mod", "mop" },
-   { "mum", "nap", "nce", "nde", "nes", "net", "new", "not" },
-   { "now", "oft", "oil", "old", "ome", "one", "org", "oth" },
-   { "our", "out", "ove", "owe", "own", "pad", "pas", "pay" },
-   { "pea", "ped", "per", "pie", "pit", "pod", "pop", "pos" },
-   { "pot", "pre", "pub", "pun", "pup", "put", "que", "qui" },
-   { "ran", "rat", "raw", "rib", "rid", "rig", "roo", "rot" },
-   { "row", "rse", "rue", "run", "sab", "sad", "sal", "say" },
-   { "sea", "see", "she", "sis", "ski", "spy", "tab", "tag" },
-   { "tan", "tap", "tar", "tas", "tax", "tea", "ten", "tha" },
+   { "low", "mal", "man", "mat", "med", "men", "met", "mod" },
+   { "mum", "nam", "nce", "nde", "nes", "net", "new", "not" },
+   { "now", "old", "ome", "one", "ong", "ord", "org", "oth" },
+   { "our", "out", "ove", "owe", "own", "pas", "pay", "pea" },
+   { "ped", "per", "pie", "pit", "pod", "pop", "pos", "pot" },
+   { "pre", "pub", "pun", "pup", "put", "qui", "ran", "rat" },
+   { "rea", "rec", "red", "rib", "rid", "rig", "roo", "rot" },
+   { "rov", "row", "rse", "rst", "rue", "run", "sal", "ser" },
+   { "ses", "she", "sho", "sis", "ste", "sur", "tab", "tag" },
+   { "tan", "tar", "tas", "tax", "tea", "tel", "ten", "tha" },
    { "the", "thr", "tio", "tip", "tis", "too", "toy", "tri" },
-   { "tub", "two", "ugh", "und", "uni", "urn", "use", "val" },
-   { "veg", "ver", "vet", "vie", "vow", "war", "was", "way" },
-   { "wed", "wet", "who", "win", "wit", "won", "xed", "xen" },
-   { "xes", "yea", "yen", "yet", "you", "zed", "zes", "zoo" },
+   { "tub", "two", "ude", "ugh", "und", "unt", "urn", "use" },
+   { "val", "veg", "ver", "vet", "vie", "vow", "war", "was" },
+   { "way", "wed", "wet", "who", "win", "wit", "won", "xed" },
+   { "xen", "xes", "yea", "yen", "yet", "you", "zed", "zes" },
 };
 
 map< string, unsigned char > g_dict_lower;
@@ -609,7 +609,13 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                shrunken[ num++ ] = next_pair.second;
             }
 
-            last_ch = c_special_maxval;
+            // NOTE: If this pair was a repeat then allow a dict pattern to follow (but must
+            // not allow this otherwise as differentiating between repeats and dict specials
+            // would be impossible).
+            if( ( next & c_nibble_one ) == c_nibble_one )
+               last_ch = 0;
+            else
+               last_ch = c_special_maxval;
          }
          else
          {
@@ -617,7 +623,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             bool new_repeat = false;
 
             // NOTE: Look for common dictionary word patterns of three bytes (which might just
-            // be prefixes or suffixes or even in the middle of an actual dictionary word).
+            // be prefixes or suffixes or letters in the middle of an actual dictionary word).
             if( !repeats && i < length - 2 && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
             {
                string pat( 1, next );
