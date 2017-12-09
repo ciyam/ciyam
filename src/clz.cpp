@@ -61,9 +61,10 @@ namespace
 // 2048 repeats). The leading values 0xFA..0xFF are being reserved for special
 // patterns which can occur in place of any normal back-ref or back-ref repeat
 // value. Because back-ref repeats can only occur immediately after a back-ref
-// the leading values 0xF0..0xF7 are reserved for simple character repeats (to
-// repeat between 1 and 8 times) with the leading value 0xF8 being reserved as
-// a special marker and 0xF9 being reserved for nibble/byte sequences.
+// the leading values 0xF0..0xF7 are reserved for simple character repeats and
+// other repeating patterns (including the usage of a small lookup table which
+// holds 256 commonly repeated 3-letter partial words). The leading value 0xF8
+// is reserved as a special marker and 0xF9 is being used for byte sequences.
 
 const size_t c_max_offset = 4095;
 const size_t c_max_repeats = 2048;
@@ -367,13 +368,13 @@ cout << meta_patterns[ pat ] << " for " << pat << " at @" << offset << endl;
    }
 }
 
-bool found_stepping_nibbles( unsigned char* p_buffer, size_t offset, size_t length, size_t& nibbles, bool& ascending )
+bool found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t length, size_t& bytes, bool& ascending )
 {
    size_t step_amount = 0;
 
-   for( nibbles = 2; nibbles <= 5; nibbles++ )
+   for( bytes = 1; bytes <= 4; bytes++ )
    {
-      if( nibbles == 2 && offset + 4 < length )
+      if( bytes == 1 && offset + 4 < length )
       {
          unsigned char byte1 = *( p_buffer + offset );
          unsigned char byte2 = *( p_buffer + offset + 1 );
@@ -408,7 +409,7 @@ bool found_stepping_nibbles( unsigned char* p_buffer, size_t offset, size_t leng
          else
             step_amount = 0;
       }
-      // FUTURE: Should check for patterns of 3, 4 and 5 nibbles.
+      // FUTURE: Should also check for patterns of 2, 3 and 4 bytes.
    }
 
    return step_amount;
@@ -488,7 +489,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       step_type step_type_val = e_step_type_none;
 
       size_t stepping_amount = 0;
-      size_t stepping_nibbles = 0;
+      size_t stepping_bytes = 0;
 
       size_t last_special_pos = 0;
 
@@ -509,6 +510,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             bool okay = true;
             size_t next_val = last_ch;
 
+            unsigned char new_next = next;
+
             if( step_type_val == e_step_type_double
              || step_type_val == e_step_type_double_high )
                next_val = *( p_buffer + i - 2 );
@@ -526,8 +529,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             }
             else if( step_type_val == e_step_type_double_low )
             {
-               if( next == *( p_buffer + i - 2 ) )
-                  next = *( p_buffer + i + 1 );
+               if( new_next == *( p_buffer + i - 2 ) )
+                  new_next = *( p_buffer + i + 1 );
                else
                   okay = false;
             }
@@ -537,14 +540,17 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                   okay = false;
             }
 
-            if( okay && next == next_val
+            if( okay && new_next == next_val
              && ( shrunken[ num - 1 ] & c_nibble_two ) < c_max_special_step_vals )
             {
                if( step_type_val >= e_step_type_double )
                   ++i;
 
+               if( step_type_val != e_step_type_double_high )
+                  last_ch = new_next;
+
                ++shrunken[ num - 1 ];
-               last_ch = next;
+
                continue;
             }
             else
@@ -665,9 +671,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                   new_repeat = true;
             }
 
-            // NOTE: Simple characters that repeated three or more times are shrunk with one byte required
-            // to indicate this along with the number of repeats (i.e. one nibble each).
-            if( next == last_ch && ( new_repeat || ( repeats && repeats < c_max_special_repeats - 1 ) ) )
+            if( repeats && next == last_ch && ( repeats < c_max_special_repeats - 1 ) )
                ++repeats;
             else
             {
@@ -803,10 +807,10 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                   }
                   else
                   {
-                     // NOTE: If groups of nibbles are found to be in a run of incrementing or decrementing steps then
-                     // these can be shrunk also (this takes extra space as the stepping amount can only be worked out
-                     // from the first two nibble groups).
-                     stepping_amount = found_stepping_nibbles( p_buffer, i, length, stepping_nibbles, steps_ascending );
+                     // NOTE: If groups of bytes are found to be in a run of incrementing or decrementing steps then
+                     // these can be shrunk also (this takes more space as the stepping amount is determined via the
+                     // first two byte groups).
+                     stepping_amount = found_stepping_bytes( p_buffer, i, length, stepping_bytes, steps_ascending );
 
                      if( stepping_amount )
                      {
@@ -817,17 +821,24 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                         shrunken[ num++ ] = last_ch = *( p_buffer + ++i );
 
                         shrunken[ num++ ] = c_special_nsteps;
-                        shrunken[ num++ ] = ( stepping_nibbles - 2 ) << 4;
+                        shrunken[ num++ ] = ( stepping_bytes - 1 ) << 4;
                      }
                   }
                }
 
                if( !found_steps )
-                  shrunken[ num++ ] = last_ch = next;
+               {
+                  if( new_repeat )
+                     ++repeats;
+                  else
+                     shrunken[ num++ ] = last_ch = next;
+               }
             }
          }
       }
 
+      // NOTE: Simple characters that repeated three or more times are shrunk with one byte required
+      // to indicate this along with the number of repeats (i.e. one nibble each).
       if( repeats )
          shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
 
@@ -962,6 +973,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          bool is_both = false;
          bool ascending = true;
          bool is_byte_pair = false;
+
          size_t stepping_amount = 0;
 
          size_t num_repeats = ( ch & c_nibble_two );
@@ -1023,9 +1035,9 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          }
          else
          {
-            size_t nibbles = ( ( ch & c_nibble_one ) >> 4 ) + 2;
+            size_t bytes = ( ( ch & c_nibble_one ) >> 4 ) + 1;
 
-            if( nibbles == 2 )
+            if( bytes == 1 )
             {
                unsigned char byte1 = *( p_buffer + length - 2 );
                unsigned char byte2 = *( p_buffer + length - 1 );
@@ -1033,7 +1045,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                ascending = ( byte1 < byte2 ? true : false );
                stepping_amount = ( ascending ? byte2 - byte1 : byte1 - byte2 ); 
             }
-            // FUTURE: Should handle patterns of 3, 4 and 5 nibbles as well.
+            // FUTURE: Should handle patterns of 2, 3 and 4 bytes as well.
          }
 
          if( !is_byte_pair )
@@ -1446,7 +1458,7 @@ cout << "replaced " << pat << " @" << offset << " with: " << meta_patterns[ pat 
 dump_bytes( "modified ==> ", p_buffer, end_offset );
 #endif
       }
-      else if( ( pat.byte1 & c_nibble_one ) != c_nibble_one )
+      else if( ( pat.byte1 & c_high_bit_value ) && ( pat.byte1 & c_nibble_one ) != c_nibble_one )
       {
          meta_patterns.remove_offsets_from( offset );
 
@@ -1466,6 +1478,33 @@ cout << "************************" << endl;
 bool replace_extra_pattern( map< string, size_t >& extra_patterns, const string& pattern, unsigned char* p_buffer, size_t& output_offset )
 {
    bool was_replaced = false;
+
+   // NOTE: An extra pattern might have become overwritten due to previously
+   // added meta-patterns being combined (if so it will be erased to be then
+   // re-added).
+   if( extra_patterns.count( pattern ) )
+   {
+      size_t offset = extra_patterns[ pattern ];
+
+      bool okay = true;
+
+      if( offset >= output_offset - pattern.length( ) )
+         okay = false;
+      else
+      {
+         for( size_t i = 0; i < pattern.length( ); i++ )
+         {
+            if( *( p_buffer + offset + i ) != ( unsigned char )pattern[ i ] )
+            {
+               okay = false;
+               break;
+            }
+         }
+      }
+
+      if( !okay )
+         extra_patterns.erase( pattern );
+   }
 
    if( !extra_patterns.count( pattern ) )
       extra_patterns.insert( make_pair( pattern, output_offset - 2 ) );
@@ -1813,7 +1852,9 @@ dump_bytes( "input data = ", input_buffer, num );
             was_extra_pattern = replace_extra_pattern( extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( !was_extra_pattern )
+         if( was_extra_pattern )
+            meta_patterns.remove_offsets_from( output_offset - 4 );
+         else
          {
             memcpy( output_buffer + output_offset, input_buffer, min( num, c_min_pat_length ) );
             output_offset += min( num, c_min_pat_length );
@@ -1915,7 +1956,9 @@ cout << "length = " << length << endl;
             was_extra_pattern = replace_extra_pattern( extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( !was_extra_pattern )
+         if( was_extra_pattern )
+            meta_patterns.remove_offsets_from( output_offset - 4 );
+         else
          {
             memcpy( output_buffer + output_offset, input_buffer, length );
             output_offset += length;
@@ -1984,8 +2027,16 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
                    last_back_ref_offset, byte1, byte2, output_offset, last_pattern_offset );
                }
 
-               if( was_replaced )
+               if( was_replaced || ( ( byte1 & c_nibble_one ) == c_nibble_one ) )
                {
+                  if( !was_replaced )
+                  {
+                     // NOTE: If reached here then although not replaced by a meta-pattern the
+                     // pair has now been changed to become a repeat of the previous back-ref.
+                     output_buffer[ output_offset++ ] = byte1;
+                     output_buffer[ output_offset++ ] = byte2;
+                  }
+
                   last_pair.first = last_pair.second = last_pair_repeats = 0;
                   memmove( input_buffer, input_buffer + length, num - length );
                }
