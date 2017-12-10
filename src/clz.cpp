@@ -110,7 +110,8 @@ const unsigned char c_special_pair_high_dec = 0xf0;
 const unsigned char c_meta_pattern_nibble_one = 0x90;
 
 const unsigned char c_special_dict_pattern_lower = 0xf3;
-const unsigned char c_special_dict_pattern_upper = 0xf4;
+const unsigned char c_special_dict_pattern_mixed = 0xf4;
+const unsigned char c_special_dict_pattern_upper = 0xf5;
 
 enum step_type
 {
@@ -164,11 +165,12 @@ g_dict_patterns[ ] =
    { "the", "thr", "tio", "tip", "tis", "too", "toy", "tri" },
    { "tub", "two", "ude", "ugh", "und", "unt", "urn", "use" },
    { "val", "veg", "ver", "vet", "vie", "vow", "war", "was" },
-   { "way", "wed", "wet", "who", "win", "wit", "won", "xed" },
+   { "way", "wed", "wel", "who", "win", "wit", "won", "xed" },
    { "xen", "xes", "yea", "yen", "yet", "you", "zed", "zes" },
 };
 
 map< string, unsigned char > g_dict_lower;
+map< string, unsigned char > g_dict_mixed;
 map< string, unsigned char > g_dict_upper;
 
 #ifdef DEBUG
@@ -275,14 +277,14 @@ cout << "add pattern: " << patterns[ pat ] << " ==> " << pat << " @" << offset <
 #endif
    }
 
-   meta_pair operator [ ]( const meta_pattern& pat )
-   {
-      return patterns[ pat ];
-   }
-
    meta_pattern operator [ ]( size_t offset )
    {
       return offsets[ offset ];
+   }
+
+   meta_pair operator [ ]( const meta_pattern& pat )
+   {
+      return patterns[ pat ];
    }
 
    size_t last_offset( ) const
@@ -646,13 +648,24 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                }
                else
                {
-                  ci = g_dict_upper.find( pat );
+                  ci = g_dict_mixed.find( pat );
 
-                  if( ci != g_dict_upper.end( ) )
+                  if( ci != g_dict_mixed.end( ) )
                   {
                      was_dict = true;
-                     shrunken[ num++ ] = c_special_dict_pattern_upper;
+                     shrunken[ num++ ] = c_special_dict_pattern_mixed;
                      shrunken[ num++ ] = ci->second;
+                  }
+                  else
+                  {
+                     ci = g_dict_upper.find( pat );
+
+                     if( ci != g_dict_upper.end( ) )
+                     {
+                        was_dict = true;
+                        shrunken[ num++ ] = c_special_dict_pattern_upper;
+                        shrunken[ num++ ] = ci->second;
+                     }
                   }
                }
 
@@ -948,6 +961,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
    bool process_steps = false;
 
    bool is_lower_dict_pattern = false;
+   bool is_mixed_dict_pattern = false;
    bool is_upper_dict_pattern = false;
 
    set< size_t > back_refs;
@@ -1077,12 +1091,14 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
 
          continue;
       }
-      else if( is_lower_dict_pattern || is_upper_dict_pattern )
+      else if( is_lower_dict_pattern || is_mixed_dict_pattern || is_upper_dict_pattern )
       {
          map< string, unsigned char >::const_iterator ci;
 
          if( is_lower_dict_pattern )
             ci = g_dict_lower.begin( );
+         else if( is_mixed_dict_pattern )
+            ci = g_dict_mixed.begin( );
          else
             ci = g_dict_upper.begin( );
 
@@ -1096,7 +1112,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          *( p_buffer + length++ ) = pat[ 2 ];
 
          last_ch = 0;
-         is_lower_dict_pattern = is_upper_dict_pattern = false;
+         is_lower_dict_pattern = is_mixed_dict_pattern = is_upper_dict_pattern = false;
 
          continue;
       }
@@ -1148,6 +1164,8 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
 
                   if( ch == c_special_dict_pattern_lower )
                      is_lower_dict_pattern = true;
+                  else if( ch == c_special_dict_pattern_mixed )
+                     is_mixed_dict_pattern = true;
                   else if( ch == c_special_dict_pattern_upper )
                      is_upper_dict_pattern = true;
                   else
@@ -1648,7 +1666,13 @@ void init_clz_info( )
       }
 
       for( map< string, unsigned char >::iterator i = g_dict_lower.begin( ); i != g_dict_lower.end( ); ++i )
+      {
+         string mixed( i->first );
+         mixed[ 0 ] -= 0x20;
+
+         g_dict_mixed.insert( make_pair( mixed, i->second ) );
          g_dict_upper.insert( make_pair( upper( i->first ), i->second ) );
+      }
    }
 }
 
