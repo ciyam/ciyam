@@ -79,7 +79,7 @@ const size_t c_meta_pat_length = 4;
 const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 
 const size_t c_max_specials = 7;
-const size_t c_max_special_repeats = 8;
+const size_t c_max_special_repeats = 5;
 const size_t c_max_special_step_vals = 15;
 
 const unsigned char c_nibble_one = 0xf0;
@@ -630,9 +630,13 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             }
          }
 
-         if( next != last_ch && repeats )
+         if( repeats && ( next != last_ch || repeats == c_max_special_repeats - 1 ) )
          {
             shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
+
+            if( next == last_ch )
+               last_ch = c_special_maxval;
+
             repeats = 0;
          }
 
@@ -755,7 +759,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                   new_repeat = true;
             }
 
-            if( repeats && next == last_ch && ( repeats < c_max_special_repeats - 1 ) )
+            if( repeats && next == last_ch )
                ++repeats;
             else
             {
@@ -2001,6 +2005,7 @@ dump_bytes( "input data = ", input_buffer, num );
          bool was_extra_pattern = false;
 
          if( num < c_min_pat_length
+          && output_offset > c_min_pat_length
           && last_pattern_offset == output_offset - 2
           && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
          {
@@ -2073,12 +2078,39 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
             length = 1;
       }
 
+#ifdef DEBUG_ENCODE
+cout << "length = " << length << ", offset = " << offset << endl;
+cout << "output_offset = " << output_offset << endl;
+#endif
       // NOTE: Never output the just first part of a back-ref pair.
       if( length == 1 && input_starts_with_back_ref )
          ++length;
+      else if( length >= c_min_pat_length
+       && length < c_max_pat_length && offset + length == output_offset
+       && input_buffer[ 0 ] == input_buffer[ 1 ] && input_buffer[ 1 ] == input_buffer[ 2 ] )
+      {
+         // NOTE: Don't allow a run of identical bytes to be any shorter than the maximum
+         // pattern length in order to minimise space required for the run as well as for
+         // possible later repeats.
+         for( ; length < num; length++ )
+         {
+            if( input_buffer[ length ] != input_buffer[ 0 ] )
+               break;
+         }
+
+         memcpy( output_buffer + output_offset, input_buffer, length );
+
+         if( num > length )
+            memmove( input_buffer, input_buffer + length, num - length );
+
+         output_offset += length;
+         num -= length;
+
+         continue;
+      }
 
 #ifdef DEBUG_ENCODE
-cout << "length = " << length << endl;
+cout << "length now = " << length << endl;
 #endif
       if( length < c_min_pat_length )
       {
@@ -2105,6 +2137,7 @@ cout << "length = " << length << endl;
          bool was_extra_pattern = false;
 
          if( length < c_min_pat_length
+          && output_offset > c_min_pat_length
           && last_pattern_offset == output_offset - 2
           && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
          {
