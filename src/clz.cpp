@@ -34,45 +34,42 @@
 #endif
 
 //#define COMPILE_TESTBED_MAIN
+//#define NO_SHRINK_AND_EXPAND
 
 using namespace std;
 
 namespace
 {
 
-// NOTE: This custom LZ encoding/decoding approach works with a 4KB chunk size
+// NOTE: This custom LZ encoding/decoding approach works with a 2KB chunk size
 // although the exact number of bytes used can generally be less due to simple
 // sequence and pattern repeat shrinking that is performed prior to outputting
 // a chunk. Data values are 7-bit with the MSB of each byte being reserved for
-// indicating either a back-ref or a "special" shrunken pattern/sequence. Each
-// back-ref or back-ref repeat consists of two bytes whose bit values are used
-// as follows:
+// indicating either a back-ref (or a back-ref repeat) or a "special" shrunken
+// pattern/sequence. Every back-ref (or back-ref repeat) consists of two bytes
+// whose bit values are used as follows:
 //
 // [byte 1] [byte 2]
-// 1xxxyyyy yyyyyyyy
+// 1xxxxyyy yyyyyyyy
 //
-// where:   xxx = 2^3 length (3-9) 0xF is being reserved for last pair repeats
-// yyyyyyyyyyyy = 2^12 offset (0-4095) or 2^11 last pair repeat value (1-2048)
+// where: xxxx = 2^4 length (3-16) 0xF is being reserved for last pair repeats
+// yyyyyyyyyyy = 2^11 offset (0-2047) or 2^11 last pair repeats value (1-2048)
 //
 // Back-ref repeats are differentiated by starting with 0xF (thus all back-ref
-// lengths must be between 3 and 9 which are the values 0x8..0xE). In order to
-// not confuse back-ref repeats with special shrunk pattern/sequences they are
-// limited to a maximum of 2048 (with 0 being for 1 repeat and 0x7FF being for
-// 2048 repeats). The leading values 0xF9..0xFF are being reserved for special
-// patterns which can occur in place of any normal back-ref or back-ref repeat
-// value. Because back-ref repeats can only occur immediately after a back-ref
-// the leading values 0xF0..0xF7 are reserved for simple character repeats and
-// other repeating patterns (including the usage of a small lookup table which
-// holds 256 commonly repeated 3-letter partial words). The leading value 0xF8
-// is reserved as a special marker.
+// lengths are limited to between 3 and 16 bytes) and values starting with the
+// prefix 0xF8..0xFF are reserved for "specials" (used to shrink encoded data)
+// so the maximum number of repeats is limited to 2048 as well. It should also
+// be noted that a back-ref repeat must immediately follow a back-ref so other
+// 0xF prefixes (0xF0..0xF7) are also used for specials (with these ones being
+// only used where there can be no ambiguity with back-ref repeats).
 
-const size_t c_max_offset = 4095;
+const size_t c_max_offset = 2047;
 const size_t c_max_repeats = 2048;
 
 const size_t c_max_combines = 5;
 
 const size_t c_min_pat_length = 3;
-const size_t c_max_pat_length = 9;
+const size_t c_max_pat_length = 16;
 
 const size_t c_meta_pat_length = 4;
 
@@ -81,6 +78,11 @@ const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 const size_t c_max_specials = 7;
 const size_t c_max_special_repeats = 5;
 const size_t c_max_special_step_vals = 15;
+
+const size_t c_max_expand_meta_recursion = 10;
+
+const size_t c_offset_low_pair_mask = 0x00ff;
+const size_t c_offset_high_pair_mask = 0x0700;
 
 const unsigned char c_nibble_one = 0xf0;
 const unsigned char c_nibble_two = 0x0f;
@@ -105,6 +107,9 @@ const unsigned char c_special_pair_low_dec = 0xd0;
 
 const unsigned char c_special_pair_high_inc = 0xe0;
 const unsigned char c_special_pair_high_dec = 0xf0;
+
+const unsigned char c_offset_high_byte_mask = 0x07;
+const unsigned char c_pattern_high_byte_mask = 0x78;
 
 const unsigned char c_meta_pattern_nibble_one = 0x90;
 
@@ -174,22 +179,24 @@ map< string, unsigned char > g_dict_lower;
 map< string, unsigned char > g_dict_mixed;
 map< string, unsigned char > g_dict_upper;
 
-#ifdef DEBUG
 void dump_bytes( const char* p_prefix, unsigned char* p_input, size_t num, size_t mark = 0 )
 {
    cout << p_prefix << hex;
 
    for( size_t i = 0; i < num; i++ )
    {
+      if( num > 64 && i % 64 == 0 )
+         cout << '\n';
+
       if( mark && i == mark )
          cout << '|';
 
       cout << setw( 2 ) << setfill( '0' ) << ( int )p_input[ i ];
+
    }
 
    cout << dec << endl;
 }
-#endif
 
 struct repeat_info
 {
@@ -1023,6 +1030,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
          }
       }
 
+      if( specials.size( ) )
+         shrunken[ num++ ] = c_special_marker;
+
       // NOTE: The specials are appended at the end - and as only special markers start with
       // all five high bits set (i.e. 0xf8) the number of these used can be determined while
       // reading the input (knowing the maximum number of block bytes and accounting for the
@@ -1032,9 +1042,6 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
          shrunken[ num++ ] = si->first;
          shrunken[ num++ ] = si->second;
       }
-
-      if( extra_specials.size( ) )
-         shrunken[ num++ ] = c_special_marker;
 
       for( size_t i = 0; i < extra_specials.size( ); i++ )
       {
@@ -1195,7 +1202,10 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                   last_val = next_val;
                }
 
-               continue;
+               if( length >= max_length )
+                  break;
+               else
+                  continue;
             }
             // FUTURE: Should handle patterns of 3 and 4 bytes as well (and maybe more).
          }
@@ -1227,7 +1237,10 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
             }
          }
 
-         continue;
+         if( length >= max_length )
+            break;
+         else
+            continue;
       }
       else if( is_lower_dict_pattern || is_mixed_dict_pattern || is_upper_dict_pattern )
       {
@@ -1252,7 +1265,10 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          last_ch = 0;
          is_lower_dict_pattern = is_mixed_dict_pattern = is_upper_dict_pattern = false;
 
-         continue;
+         if( length >= max_length )
+            break;
+         else
+            continue;
       }
 
       if( had_marker )
@@ -1261,11 +1277,12 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
       {
          if( !back_refs.count( length - 1 ) && ch >= c_special_marker )
          {
-            // NOTE: Skip the marker or note a special for later expansion.
+            // NOTE: Finish if found specials marker or keep track of a
+            // special for later replacement/expansion.
             if( ch == c_special_marker )
             {
                had_marker = true;
-               continue;
+               break;
             }
             else
             {
@@ -1331,18 +1348,23 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
    {
       vector< byte_pair > special_pairs;
 
-      size_t specials_offset = length - ( num_specials * 2 );
-
-      // NOTE: Move the specials into a vector otherwise the buffer could potentially be
-      // overrun due to extra special expansion memmove operations.
-      for( size_t i = 0; i < num_specials; i++ )
+      if( !had_marker )
       {
-         special_pairs.push_back( byte_pair(
-          *( p_buffer + specials_offset + ( i * 2 ) ),
-          *( p_buffer + specials_offset + ( i * 2 ) + 1 ) ) );
+         unsigned char ch;
+
+         if( !is.read( ( char* )&ch, 1 ) || ch != c_special_marker )
+            throw runtime_error( "unexpected missing specials marker in expand_input" );
       }
 
-      length = specials_offset;
+      for( size_t i = 0; i < num_specials; i++ )
+      {
+         unsigned char byte1, byte2;
+
+         if( !is.read( ( char* )&byte1, 1 ) || !is.read( ( char* )&byte2, 1 ) )
+            throw runtime_error( "unexpected missing special replacement in expand_input" );
+
+         special_pairs.push_back( byte_pair( byte1, byte2 ) );
+      }
 
       size_t already_adjusted = 0;
 
@@ -1726,15 +1748,18 @@ string expand_meta_pattern( const string& meta, const unsigned char* p_encoded, 
 {
    string pattern( meta );
 
+   if( indent > c_max_expand_meta_recursion )
+      throw runtime_error( "maximum recursion depth for expand_meta_pattern exceeded" );
+
    if( meta.length( ) >= 2 && ( meta[ 0 ] & c_high_bit_value ) )
    {
       unsigned char byte1 = meta[ 0 ];
       unsigned char byte2 = meta[ 1 ];
 
-      size_t pat_length = ( byte1 & 0x70 ) >> 4;
-      size_t pat_offset = ( byte1 & c_nibble_two ) << 8;
-
+      size_t pat_length = ( byte1 & c_pattern_high_byte_mask ) >> 3;
       pat_length += c_min_pat_length;
+
+      size_t pat_offset = ( byte1 & c_offset_high_byte_mask ) << 8;
       pat_offset += byte2;
 
       pattern = string( ( const char* )( p_encoded + pat_offset ), pat_length );
@@ -1823,8 +1848,11 @@ void decode_clz_data( istream& is, ostream& os )
 
    while( true )
    {
+#ifndef NO_SHRINK_AND_EXPAND
       size_t bytes_read = expand_input( is, input_buffer, c_max_encoded_chunk_size );
-
+#else
+      size_t bytes_read = is.readsome( ( char* )input_buffer, c_max_encoded_chunk_size );
+#endif
       if( bytes_read == 0 )
          break;
 
@@ -1917,11 +1945,11 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
             if( last_offset != 0 )
                os.write( ( const char* )input_buffer, last_offset );
 
-            string last_repeat_output;
-            bool in_last_repeat = false;
-
             for( size_t i = 0; i < outputs.size( ); i++ )
                os << outputs[ i ];
+
+            outputs.clear( );
+            meta_offsets.clear( );
          }
       }
 
@@ -1940,6 +1968,7 @@ void encode_clz_data( istream& is, ostream& os )
 
    size_t max_offset = c_max_offset;
    size_t max_repeats = c_max_repeats;
+   size_t max_chunk_size = c_max_encoded_chunk_size;
 
    meta_pair last_pair;
    repeat_info last_repeat_info;
@@ -1969,12 +1998,7 @@ void encode_clz_data( istream& is, ostream& os )
          if( input_buffer[ num ] & c_high_bit_value )
             throw runtime_error( "can only clz encode a 7-bit data stream" );
 
-         size_t bytes_from_end = 1;
-
-         if( num && ( input_buffer[ 0 ] & c_high_bit_value ) )
-            bytes_from_end += 2;
-
-         if( output_offset + num >= max_offset - bytes_from_end )
+         if( output_offset + num > max_chunk_size )
             break;
       }
 
@@ -2006,7 +2030,7 @@ dump_bytes( "input data = ", input_buffer, num );
 
          if( num < c_min_pat_length
           && output_offset > c_min_pat_length
-          && last_pattern_offset == output_offset - 2
+          && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
           && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
          {
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
@@ -2041,12 +2065,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
       bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
 
-      size_t last_offset_for_pattern = max_offset - 2;
-
-      if( input_starts_with_back_ref )
-         last_offset_for_pattern -= 2;
-
-      if( output_offset < last_offset_for_pattern )
+      if( output_offset <= max_chunk_size - 2 )
       {
          for( ; start <= output_offset - c_min_pat_length; start++ )
          {
@@ -2089,16 +2108,21 @@ cout << "output_offset = " << output_offset << endl;
        && length < c_max_pat_length && offset + length == output_offset
        && input_buffer[ 0 ] == input_buffer[ 1 ] && input_buffer[ 1 ] == input_buffer[ 2 ] )
       {
+         unsigned char ch = input_buffer[ 0 ];
+
          // NOTE: Don't allow a run of identical bytes to be any shorter than the maximum
          // pattern length in order to minimise space required for the run as well as for
          // possible later repeats.
          for( ; length < num; length++ )
          {
-            if( input_buffer[ length ] != input_buffer[ 0 ] )
+            if( input_buffer[ length ] != ch || ( output_offset + length > max_offset + 2 ) )
                break;
          }
 
          memcpy( output_buffer + output_offset, input_buffer, length );
+#ifdef DEBUG_ENCODE
+cout << "(appended " << length << " identical bytes)" << endl;
+#endif
 
          if( num > length )
             memmove( input_buffer, input_buffer + length, num - length );
@@ -2138,7 +2162,7 @@ cout << "length now = " << length << endl;
 
          if( length < c_min_pat_length
           && output_offset > c_min_pat_length
-          && last_pattern_offset == output_offset - 2
+          && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
           && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
          {
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
@@ -2167,10 +2191,10 @@ cout << "length now = " << length << endl;
          unsigned char byte1 = 0;
          unsigned char byte2 = 0;
 
-         byte1 = c_high_bit_value | ( ( offset & 0x0f00 ) >> 8 );
-         byte1 |= ( length - c_min_pat_length ) << 4;
+         byte1 = c_high_bit_value | ( ( length - c_min_pat_length ) << 3 );
+         byte1 |= ( ( offset & c_offset_high_pair_mask ) >> 8 );
 
-         byte2 = ( offset & 0x00ff );
+         byte2 = ( offset & c_offset_low_pair_mask );
 
          bool bytes_same_as_last_pair = ( byte1 == last_pair.first && byte2 == last_pair.second );
 
@@ -2193,7 +2217,7 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
             last_pair.first = last_pair.second = last_pair_repeats = 0;
          }
 
-         if( !bytes_same_as_last_pair && output_offset >= max_offset - 1 )
+         if( !bytes_same_as_last_pair && output_offset >= max_chunk_size - 2 )
          {
             output_buffer[ output_offset++ ] = byte1;
             output_buffer[ output_offset++ ] = byte2;
@@ -2259,16 +2283,23 @@ dump_bytes( "input data = ", input_buffer, num );
 #ifdef DEBUG_ENCODE
 dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset );
 #endif
-      if( output_offset >= max_offset )
+      if( output_offset >= max_chunk_size )
          perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
 
-      if( output_offset >= max_offset )
+      if( output_offset >= max_chunk_size )
       {
+#ifdef DEBUG_ENCODE
+cout << "(outputting " << output_offset << " bytes)" << endl;
+#endif
+#ifndef NO_SHRINK_AND_EXPAND
          shrink_output( output_buffer, output_offset );
-         os.write( ( char* )output_buffer, output_offset + 1 );
+#endif
+         os.write( ( char* )output_buffer, output_offset );
 
          meta_patterns.clear( );
          extra_patterns.clear( );
+
+         memset( output_buffer, 0, sizeof( output_buffer ) );
 
          last_pair.first = last_pair.second = last_pair_repeats = 0;
          output_offset = last_pattern_offset = last_back_ref_offset = 0;
@@ -2295,8 +2326,11 @@ dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset 
 #ifdef DEBUG_ENCODE
 cout << "final offset = " << output_offset << endl;
 dump_bytes( "buffered ==> ", output_buffer, output_offset );
+cout << "(outputting " << output_offset << " bytes)" << endl;
 #endif
+#ifndef NO_SHRINK_AND_EXPAND
       shrink_output( output_buffer, output_offset );
+#endif
       os.write( ( const char* )output_buffer, output_offset );
    }
 }
