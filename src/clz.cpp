@@ -141,33 +141,33 @@ struct dict_pattern
 }
 g_dict_patterns[ ] =
 {
-   { "acc", "ace", "ade", "ack", "age", "ail", "air", "ale" },
-   { "all", "als", "and", "any", "app", "are", "ash", "ass" },
+   { "acc", "ace", "ack", "ade", "age", "ail", "ain", "air" },
+   { "ale", "all", "and", "any", "app", "are", "ash", "ass" },
    { "bad", "ban", "bat", "bed", "beg", "ber", "bet", "bid" },
    { "big", "bin", "bit", "ble", "bon", "boo", "bow", "box" },
    { "bra", "bun", "bus", "but", "buy", "can", "car", "com" },
    { "cop", "cos", "cry", "cue", "cup", "cut", "dad", "day" },
-   { "did", "dig", "dim", "dip", "dog", "ear", "eat", "ect" },
-   { "ell", "end", "ent", "ere", "ero", "ess", "est", "exp" },
+   { "dig", "dim", "dip", "dog", "dur", "ear", "eat", "ect" },
+   { "ell", "end", "ent", "ept", "ere", "ero", "ess", "est" },
    { "far", "fat", "fee", "few", "fit", "fix", "flu", "fly" },
    { "for", "ful", "fun", "fur", "gen", "ger", "gst", "get" },
    { "got", "gun", "gut", "had", "han", "hap", "has", "hen" },
    { "her", "him", "his", "hit", "hol", "hop", "hot", "how" },
-   { "hub", "hug", "hut", "ice", "ick", "ide", "ied", "ign" },
-   { "ill", "inc", "inf", "ing", "int", "ion", "ire", "ish" },
-   { "ism", "ist", "its", "ium", "ive", "jag", "jar", "jaw" },
+   { "hub", "hug", "hut", "ice", "ick", "ide", "ied", "ill" },
+   { "inc", "inf", "ing", "int", "ion", "ire", "ish", "ism" },
+   { "ist", "ith", "its", "ity", "ive", "jag", "jar", "jaw" },
    { "jet", "jog", "jug", "jus", "ken", "key", "kin", "lad" },
    { "lag", "lap", "lay", "led", "leg", "let", "lip", "log" },
    { "low", "mal", "man", "mat", "med", "men", "met", "mod" },
    { "mum", "nam", "nce", "nde", "nes", "net", "new", "not" },
-   { "now", "old", "ome", "one", "ong", "ord", "org", "oth" },
-   { "our", "out", "ove", "owe", "own", "pas", "pay", "pea" },
+   { "now", "old", "oll", "ome", "one", "ong", "ord", "ore" },
+   { "oth", "our", "out", "ove", "own", "pas", "pay", "pea" },
    { "ped", "per", "pie", "pit", "pod", "pop", "pos", "pot" },
    { "pre", "pub", "pun", "pup", "put", "qui", "ran", "rat" },
-   { "rea", "rec", "red", "rib", "rid", "rig", "roo", "rot" },
+   { "rea", "red", "ria", "rib", "rid", "rig", "roc", "rot" },
    { "rov", "row", "rse", "rst", "rue", "run", "sal", "ser" },
-   { "ses", "she", "sho", "sis", "ste", "sur", "tab", "tag" },
-   { "tan", "tar", "tas", "tax", "tea", "tel", "ten", "tha" },
+   { "ses", "she", "shi", "sis", "ste", "sur", "tab", "tan" },
+   { "tar", "tas", "tch", "tea", "tel", "ten", "ter", "tha" },
    { "the", "thr", "tio", "tip", "tis", "too", "toy", "tri" },
    { "tub", "two", "ude", "ugh", "und", "unt", "urn", "use" },
    { "val", "veg", "ver", "vet", "vie", "vow", "war", "was" },
@@ -1653,7 +1653,8 @@ cout << "************************" << endl;
    return was_replaced;
 }
 
-bool replace_extra_pattern( map< string, size_t >& extra_patterns, const string& pattern, unsigned char* p_buffer, size_t& output_offset )
+bool replace_extra_pattern( meta_pattern_info& meta_patterns,
+ map< string, size_t >& extra_patterns, const string& pattern, unsigned char* p_buffer, size_t& output_offset )
 {
    bool was_replaced = false;
 
@@ -1737,6 +1738,34 @@ bool replace_extra_pattern( map< string, size_t >& extra_patterns, const string&
 #ifdef DEBUG_ENCODE
 dump_bytes( "extra pattern ==> ", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
 #endif
+   }
+
+   if( was_replaced )
+   {
+      meta_patterns.remove_offsets_from( output_offset - 4 );
+
+      unsigned char ch = *( p_buffer + output_offset - 4 );
+
+      // NOTE: If the extra pattern follows a previous back-ref
+      // (but a not repeat) then add this as a new meta-pattern
+      // (if not one already).
+      if( ch != c_nibble_one && ( ch & c_high_bit_value ) )
+      {
+         meta_pattern pat;
+
+         pat.byte1 = *( p_buffer + output_offset - 4 );
+         pat.byte2 = *( p_buffer + output_offset - 3 );
+         pat.byte3 = *( p_buffer + output_offset - 2 );
+         pat.byte4 = *( p_buffer + output_offset - 1 );
+
+         if( !meta_patterns.has_pattern( pat ) )
+            meta_patterns.add_pattern( pat, output_offset - 4 );
+#ifdef DEBUG_ENCODE
+cout << "************************" << endl;
+check_meta_patterns( meta_patterns, p_buffer, output_offset );
+cout << "************************" << endl;
+#endif
+      }
    }
 
    return was_replaced;
@@ -2036,12 +2065,10 @@ dump_bytes( "input data = ", input_buffer, num );
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
             pattern += string( ( const char* )input_buffer, num );
 
-            was_extra_pattern = replace_extra_pattern( extra_patterns, pattern, output_buffer, output_offset );
+            was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( was_extra_pattern )
-            meta_patterns.remove_offsets_from( output_offset - 4 );
-         else
+         if( !was_extra_pattern )
          {
             memcpy( output_buffer + output_offset, input_buffer, min( num, c_min_pat_length ) );
             output_offset += min( num, c_min_pat_length );
@@ -2053,6 +2080,9 @@ dump_bytes( "input data = ", input_buffer, num );
 
          memmove( input_buffer, input_buffer + c_min_pat_length, num - c_min_pat_length );
          num -= c_min_pat_length;
+
+         if( num == 0 )
+            continue;
       }
 
 #ifdef DEBUG_ENCODE
@@ -2060,19 +2090,47 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 #endif
       size_t start = 0;
 
-      size_t length = 1;
+      size_t length = ( num > 0 ? 1 : 0 );
       size_t offset = 0;
 
       bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
 
-      if( output_offset <= max_chunk_size - 2 )
+      if( output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
       {
-         for( ; start <= output_offset - c_min_pat_length; start++ )
+         vector< size_t > start_offsets;
+
+         if( num >= c_min_pat_length )
          {
-            size_t i = 0;
+            string::size_type pos = 0;
+
+            // NOTE: Find all minimum pattern length starting output offsets
+            // to use for matching as many characters in the input buffer as
+            // possible.
+            while( true )
+            {
+               if( input_buffer[ 0 ] == output_buffer[ pos ]
+                && input_buffer[ 1 ] == output_buffer[ pos + 1 ]
+                && input_buffer[ 2 ] == output_buffer[ pos + 2 ] )
+                  start_offsets.push_back( pos );
+
+               ++pos;
+
+               if( pos >= output_offset )
+                  break;
+            }
+         }
+
+         for( size_t s = 0; s < start_offsets.size( ); s++ )
+         {
+            start = start_offsets[ s ];
+
+            size_t i = ( s > 0 ? c_min_pat_length : c_min_pat_length - 1 );
 
             for( ; i < num; i++ )
             {
+               if( start + i >= output_offset )
+                  break;
+
                if( output_buffer[ start + i ] != input_buffer[ i ] )
                   break;
                else if( i >= length )
@@ -2080,9 +2138,6 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                   length = i + 1;
                   offset = start;
                }
-
-               if( start + i >= output_offset )
-                  break;
             }
 
             if( i == num )
@@ -2168,12 +2223,10 @@ cout << "length now = " << length << endl;
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
             pattern += string( ( const char* )input_buffer, length );
 
-            was_extra_pattern = replace_extra_pattern( extra_patterns, pattern, output_buffer, output_offset );
+            was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( was_extra_pattern )
-            meta_patterns.remove_offsets_from( output_offset - 4 );
-         else
+         if( !was_extra_pattern )
          {
             memcpy( output_buffer + output_offset, input_buffer, length );
             output_offset += length;
@@ -2221,6 +2274,9 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
          {
             output_buffer[ output_offset++ ] = byte1;
             output_buffer[ output_offset++ ] = byte2;
+
+            if( num > length )
+               memmove( input_buffer, input_buffer + length, num - length );
 
             num -= length;
          }
