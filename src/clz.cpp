@@ -111,7 +111,7 @@ const unsigned char c_special_pair_high_dec = 0xf0;
 const unsigned char c_offset_high_byte_mask = 0x07;
 const unsigned char c_pattern_high_byte_mask = 0x78;
 
-const unsigned char c_meta_pattern_nibble_one = 0x90;
+const unsigned char c_meta_pattern_length_val = 0x88;
 
 const unsigned char c_special_dict_pattern_lower = 0xf3;
 const unsigned char c_special_dict_pattern_mixed = 0xf4;
@@ -150,8 +150,8 @@ g_dict_patterns[ ] =
    { "dig", "dim", "dip", "dog", "dur", "ear", "eat", "ect" },
    { "ell", "end", "ent", "ept", "ere", "ero", "ess", "est" },
    { "far", "fat", "fee", "few", "fit", "fix", "flu", "fly" },
-   { "for", "ful", "fun", "fur", "gen", "ger", "gst", "get" },
-   { "got", "gun", "gut", "had", "han", "hap", "has", "hen" },
+   { "for", "ful", "fun", "fur", "gen", "ger", "get", "got" },
+   { "gst", "gun", "gut", "had", "han", "hap", "has", "hen" },
    { "her", "him", "his", "hit", "hol", "hop", "hot", "how" },
    { "hub", "hug", "hut", "ice", "ick", "ide", "ied", "ill" },
    { "inc", "inf", "ing", "int", "ion", "ire", "ish", "ism" },
@@ -278,8 +278,8 @@ struct meta_pattern_info
    {
       offsets[ offset ] = pat;
 
-      patterns[ pat ].first = c_meta_pattern_nibble_one | ( ( offset & 0x0f00 ) >> 8 );
-      patterns[ pat ].second = ( offset & 0x00ff );
+      patterns[ pat ].first = c_meta_pattern_length_val | ( ( offset & c_offset_high_pair_mask ) >> 8 );
+      patterns[ pat ].second = ( offset & c_offset_low_pair_mask );
 #ifdef DEBUG_ENCODE
 cout << "add pattern: " << patterns[ pat ] << " ==> " << pat << " @" << offset << endl;
 #endif
@@ -357,23 +357,33 @@ cout << "rem pattern: " << patterns[ pat ] << " ==> " << pat << " @" << offset <
    map< meta_pattern, meta_pair > patterns;
 };
 
-void check_meta_patterns( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t offset )
+void check_meta_pattern( meta_pattern_info& meta_patterns, const meta_pattern& pat, unsigned char* p_buffer )
 {
-   for( size_t i = 0; i < offset; i++ )
+   size_t offset = ( meta_patterns[ pat ].first & c_offset_high_byte_mask ) << 8;
+   offset += meta_patterns[ pat ].second;
+
+   if( pat.byte1 != *( p_buffer + offset ) || pat.byte2 != *( p_buffer + offset + 1 )
+      || pat.byte3 != *( p_buffer + offset + 2 ) || pat.byte4 != *( p_buffer + offset + 3 ) )
+      throw runtime_error( " found invalid meta pattern @" + to_string( offset ) );
+}
+
+void check_meta_patterns( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t output_offset )
+{
+   for( size_t i = 0; i < output_offset; i++ )
    {
       if( meta_patterns.has_offset( i ) )
       {
          meta_pattern pat = meta_patterns[ i ];
 
-         size_t len = ( ( meta_patterns[ pat ].first & c_nibble_one ) >> 4 ) - 8 + 3;
-         size_t offset = ( ( meta_patterns[ pat ].first & c_nibble_two ) << 8 ) + meta_patterns[ pat ].second;
+         size_t offset = ( meta_patterns[ pat ].first & c_offset_high_byte_mask ) << 8;
+         offset += meta_patterns[ pat ].second;
 
-         if( pat.byte1 != *( p_buffer + offset ) || pat.byte2 != *( p_buffer + offset + 1 )
-          || pat.byte3 != *( p_buffer + offset + 2 ) || pat.byte4 != *( p_buffer + offset + 3 ) )
-            cout << "*** found invalid meta pattern @" << offset << " ***" << endl;
 #ifdef DEBUG_ENCODE
 cout << meta_patterns[ pat ] << " for " << pat << " at @" << offset << endl;
 #endif
+         if( pat.byte1 != *( p_buffer + offset ) || pat.byte2 != *( p_buffer + offset + 1 )
+          || pat.byte3 != *( p_buffer + offset + 2 ) || pat.byte4 != *( p_buffer + offset + 3 ) )
+            throw runtime_error( " found invalid meta pattern @" + to_string( offset ) );
       }
    }
 }
@@ -1482,9 +1492,9 @@ dump_bytes( "", p_buffer, offset );
          {
             // NOTE: If the first two bytes part of the current meta-pattern points
             // to an existing meta-pattern then possibly add as a new meta-pattern.
-            if( ( pat.byte1 & c_nibble_one ) == c_meta_pattern_nibble_one && !meta_patterns.has_pattern( pat ) )
+            if( ( pat.byte1 & c_high_five_bits ) == c_meta_pattern_length_val && !meta_patterns.has_pattern( pat ) )
             {
-               size_t first_offset = ( ( pat.byte1 & c_nibble_two ) << 8 ) + pat.byte2;
+               size_t first_offset = ( ( pat.byte1 & c_offset_high_byte_mask ) << 8 ) + pat.byte2;
 
                if( meta_patterns.has_offset( first_offset ) )
                {
@@ -1748,7 +1758,7 @@ dump_bytes( "extra pattern ==> ", ( unsigned char* )pattern.c_str( ), pattern.le
 
       // NOTE: If the extra pattern follows a previous back-ref
       // (but a not repeat) then add this as a new meta-pattern
-      // (if not one already).
+      // (if it had not already been added).
       if( ch != c_nibble_one && ( ch & c_high_bit_value ) )
       {
          meta_pattern pat;
