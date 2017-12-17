@@ -33,6 +33,8 @@
 #  define DEBUG_ENCODE
 #endif
 
+//#define VISUALISE_BACKREFS
+
 //#define COMPILE_TESTBED_MAIN
 //#define NO_SHRINK_AND_EXPAND
 
@@ -52,11 +54,11 @@ namespace
 // [byte 1] [byte 2]
 // 1xxxxyyy yyyyyyyy
 //
-// where: xxxx = 2^4 length (3-16) 0xF is being reserved for last pair repeats
+// where: xxxx = 2^4 length (3-15) 0xF is being reserved for last pair repeats
 // yyyyyyyyyyy = 2^11 offset (0-2047) or 2^11 last pair repeats value (1-2048)
 //
 // Back-ref repeats are differentiated by starting with 0xF (thus all back-ref
-// lengths are limited to between 3 and 16 bytes) and values starting with the
+// lengths are limited to between 3 and 15 bytes) and values starting with the
 // prefix 0xF8..0xFF are reserved for "specials" (used to shrink encoded data)
 // so the maximum number of repeats is limited to 2048 as well. It should also
 // be noted that a back-ref repeat must immediately follow a back-ref so other
@@ -69,7 +71,7 @@ const size_t c_max_repeats = 2048;
 const size_t c_max_combines = 5;
 
 const size_t c_min_pat_length = 3;
-const size_t c_max_pat_length = 16;
+const size_t c_max_pat_length = 15;
 
 const size_t c_meta_pat_length = 4;
 
@@ -119,6 +121,16 @@ const unsigned char c_special_dict_pattern_upper = 0xf5;
 const unsigned char c_special_step_pattern_fixed = 0xf6;
 const unsigned char c_special_step_pattern_multi = 0xf7;
 
+#ifdef VISUALISE_BACKREFS
+const char* const c_color_red = "\e[31m";
+const char* const c_color_blue = "\e[34m";
+const char* const c_color_cyan = "\e[36m";
+const char* const c_color_green = "\e[32m";
+const char* const c_color_purple = "\e[35m";
+const char* const c_color_yellow = "\e[33m";
+const char* const c_color_default = "\e[39m";
+#endif
+
 enum step_type
 {
    e_step_type_none = 0,
@@ -139,6 +151,8 @@ struct dict_pattern
    const char* p_w7;
    const char* p_w8;
 }
+// NOTE: The following dictionary patterns need to be strictly
+// alphabetically ordered (or they will not decode correctly).
 g_dict_patterns[ ] =
 {
    { "acc", "ace", "ack", "ade", "age", "ail", "ain", "air" },
@@ -165,10 +179,10 @@ g_dict_patterns[ ] =
    { "ped", "per", "pie", "pit", "pod", "pop", "pos", "pot" },
    { "pre", "pub", "pun", "pup", "put", "qui", "ran", "rat" },
    { "rea", "red", "ria", "rib", "rid", "rig", "roc", "rot" },
-   { "rov", "row", "rse", "rst", "rue", "run", "sal", "ser" },
+   { "rou", "row", "rse", "rst", "rue", "run", "sal", "ser" },
    { "ses", "she", "shi", "sis", "ste", "sur", "tab", "tan" },
-   { "tar", "tas", "tch", "tea", "tel", "ten", "ter", "tha" },
-   { "the", "thr", "tio", "tip", "tis", "too", "toy", "tri" },
+   { "tar", "tas", "tch", "tel", "ten", "ter", "tha", "the" },
+   { "thr", "tio", "tip", "tis", "tle", "too", "toy", "tri" },
    { "tub", "two", "ude", "ugh", "und", "unt", "urn", "use" },
    { "val", "veg", "ver", "vet", "vie", "vow", "war", "was" },
    { "way", "wed", "wel", "who", "win", "wit", "won", "xed" },
@@ -179,9 +193,22 @@ map< string, unsigned char > g_dict_lower;
 map< string, unsigned char > g_dict_mixed;
 map< string, unsigned char > g_dict_upper;
 
-void dump_bytes( const char* p_prefix, unsigned char* p_input, size_t num, size_t mark = 0 )
+void dump_bytes( const char* p_prefix, unsigned char* p_input, size_t num, size_t mark = 0, char prefix_seperator = ' ' )
 {
-   cout << p_prefix << hex;
+   if( p_prefix )
+   {
+      string prefix( p_prefix );
+
+      if( prefix.length( ) )
+      {
+         cout << prefix;
+
+         if( num < 64 && prefix_seperator )
+            cout << prefix_seperator;
+      }
+   }
+
+   cout << hex;
 
    for( size_t i = 0; i < num; i++ )
    {
@@ -786,8 +813,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                {
                   unsigned char next_after = *( p_buffer + i + 1 );
 
-                  // NOTE: A few very specific stepping patterns are being identified first with a more generalised
-                  // approach (requiring more bytes to encode) following afterwards.
+                  // NOTE: A few simple stepping patterns are checked for first and if none of these can
+                  // be found then a more generalised approach (requiring more bytes to encode) is used.
                   if( ( next + 1 ) == *( p_buffer + i + 1 )
                    && ( next + 2 ) == *( p_buffer + i + 2 )
                    && ( next + 3 ) == *( p_buffer + i + 3 ) )
@@ -1040,13 +1067,10 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
          }
       }
 
+      // NOTE: Specials are appended after the special marker.
       if( specials.size( ) )
          shrunken[ num++ ] = c_special_marker;
 
-      // NOTE: The specials are appended at the end - and as only special markers start with
-      // all five high bits set (i.e. 0xf8) the number of these used can be determined while
-      // reading the input (knowing the maximum number of block bytes and accounting for the
-      // number of different special markers that are found).
       for( set< byte_pair >::iterator si = specials.begin( ); si != specials.end( ); ++si )
       {
          shrunken[ num++ ] = si->first;
@@ -1063,7 +1087,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       {
          memcpy( p_buffer, shrunken, length = num );
 #ifdef DEBUG_ENCODE
-         dump_bytes( "shrunken ==> ", shrunken, num );
+         dump_bytes( "shrunken ==>", shrunken, num );
 #endif
       }
    }
@@ -1406,7 +1430,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
    }
 
 #ifdef DEBUG_DECODE
-dump_bytes( "expanded ==> ", p_buffer, length );
+dump_bytes( "expanded ==>", p_buffer, length );
 #endif
    return length;
 }
@@ -1643,7 +1667,7 @@ cout << "replaced " << pat << " @" << offset << " with: " << meta_patterns[ pat 
                meta_patterns.add_pattern( pat, offset - 2 );
          }
 #ifdef DEBUG_ENCODE
-dump_bytes( "modified ==> ", p_buffer, end_offset );
+dump_bytes( "modified ==>", p_buffer, end_offset );
 #endif
       }
       else if( ( pat.byte1 & c_high_bit_value ) && ( pat.byte1 & c_nibble_one ) != c_nibble_one )
@@ -1746,7 +1770,7 @@ bool replace_extra_pattern( meta_pattern_info& meta_patterns,
       }
 
 #ifdef DEBUG_ENCODE
-dump_bytes( "extra pattern ==> ", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
+dump_bytes( "extra pattern ==>", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
 #endif
    }
 
@@ -1945,7 +1969,7 @@ cout << "next_offset = " << next_offset << endl;
                unsigned char byte2 = pat[ 1 ];
 
 #ifdef DEBUG_DECODE
-dump_bytes( "meta: ", ( unsigned char* )pat.c_str( ), 2 );
+dump_bytes( "meta:", ( unsigned char* )pat.c_str( ), 2 );
 #endif
                if( ( byte1 & c_nibble_one ) == c_nibble_one )
                {
@@ -1965,6 +1989,9 @@ cout << "meta repeats = " << num_repeats << endl;
 
 #ifdef DEBUG_DECODE
 cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n output ==> " << output << endl;
+#endif
+#ifdef VISUALISE_BACKREFS
+                  output = string( c_color_green ) + "[" + string( c_color_cyan ) + output + string( c_color_green ) + "]" + string( c_color_default );
 #endif
                   num_repeats = 0;
                   outputs.push_front( output );
@@ -2025,16 +2052,15 @@ void encode_clz_data( istream& is, ostream& os )
    {
       while( num < c_max_pat_length )
       {
-         if( is.eof( ) )
-            break;
-
          if( is.read( ( char* )input_buffer + num, 1 ) )
             ++num;
+         else
+            break;
 
          // FUTURE: Assuming the use of a special indicator then 8-bit data
          // could be converted to 7-bit on the fly so as not to require the
          // input to be restricted to 7-bit as is currently being enforced.
-         if( input_buffer[ num ] & c_high_bit_value )
+         if( input_buffer[ num - 1 ] & c_high_bit_value )
             throw runtime_error( "can only clz encode a 7-bit data stream" );
 
          if( output_offset + num > max_chunk_size )
@@ -2046,7 +2072,7 @@ void encode_clz_data( istream& is, ostream& os )
 
 #ifdef DEBUG_ENCODE
 cout << "(read) num = " << num << ' ';
-dump_bytes( "input data = ", input_buffer, num );
+dump_bytes( "input data =", input_buffer, num );
 #endif
       if( num < c_min_pat_length || output_offset < c_min_pat_length )
       {
@@ -2342,12 +2368,12 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
          }
 #ifdef DEBUG_ENCODE
 cout << "num now = " << num << ", ";
-dump_bytes( "input data = ", input_buffer, num );
+dump_bytes( "input data =", input_buffer, num );
 #endif
       }
 
 #ifdef DEBUG_ENCODE
-dump_bytes( "buffered ==> ", output_buffer, output_offset, last_back_ref_offset );
+dump_bytes( "buffered ==>", output_buffer, output_offset, last_back_ref_offset );
 #endif
       if( output_offset >= max_chunk_size )
          perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
@@ -2391,7 +2417,7 @@ cout << "(outputting " << output_offset << " bytes)" << endl;
 
 #ifdef DEBUG_ENCODE
 cout << "final offset = " << output_offset << endl;
-dump_bytes( "buffered ==> ", output_buffer, output_offset );
+dump_bytes( "buffered ==>", output_buffer, output_offset );
 cout << "(outputting " << output_offset << " bytes)" << endl;
 #endif
 #ifndef NO_SHRINK_AND_EXPAND
