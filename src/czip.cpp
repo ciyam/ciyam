@@ -37,11 +37,11 @@ const char* const c_speed_slowest = "slowest";
 
 enum speed
 {
-   e_speed_fast = 25,
-   e_speed_slow = 5,
-   e_speed_faster = 50,
-   e_speed_slower = 2,
-   e_speed_fastest = 100,
+   e_speed_fast = 50,
+   e_speed_slow = 10,
+   e_speed_faster = 100,
+   e_speed_slower = 5,
+   e_speed_fastest = 1000,
    e_speed_slowest = 1
 };
 

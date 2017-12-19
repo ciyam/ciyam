@@ -34,9 +34,10 @@
 #endif
 
 //#define VISUALISE_BACKREFS
-
 //#define COMPILE_TESTBED_MAIN
+
 //#define NO_SHRINK_AND_EXPAND
+//#define USE_SECOND_PASS_BACK_REFS
 
 using namespace std;
 
@@ -77,6 +78,8 @@ const size_t c_meta_pat_length = 4;
 
 const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 
+const size_t c_max_unencoded_chunk_size = 8192;
+
 const size_t c_max_specials = 7;
 const size_t c_max_special_repeats = 5;
 const size_t c_max_special_step_vals = 15;
@@ -85,6 +88,8 @@ const size_t c_max_expand_meta_recursion = 10;
 
 const size_t c_offset_low_pair_mask = 0x00ff;
 const size_t c_offset_high_pair_mask = 0x0700;
+
+const char c_back_ref = '\xff';
 
 const unsigned char c_nibble_one = 0xf0;
 const unsigned char c_nibble_two = 0x0f;
@@ -1305,73 +1310,74 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
             continue;
       }
 
-      if( had_marker )
-         *( p_buffer + length ) = ch;
-      else
+      if( !back_refs.count( length - 1 ) && ch >= c_special_marker )
       {
-         if( !back_refs.count( length - 1 ) && ch >= c_special_marker )
+         // NOTE: Finish if found specials marker or keep track of a
+         // special for later replacement/expansion.
+         if( ch == c_special_marker )
          {
-            // NOTE: Finish if found specials marker or keep track of a
-            // special for later replacement/expansion.
-            if( ch == c_special_marker )
-            {
-               had_marker = true;
-               break;
-            }
-            else
-            {
-               specials[ length++ ] = ( c_special_maxval - ch );
-
-               if( ( c_special_maxval - ch ) + 1 > num_specials )
-                  num_specials = ( c_special_maxval - ch ) + 1;
-            }
+            had_marker = true;
+            break;
          }
          else
          {
-            // NOTE: The "back_refs" container here is used to hold both back-refs
-            // and back-ref repeat values (so these are not confused with specials
-            // or single character repeats).
-            if( ( ch & c_high_bit_value )
-             && !back_refs.count( length - 1 )
-             && ( ( ( ch & c_nibble_one ) != c_nibble_one )
-             || back_refs.count( length - 2 ) || specials.count( length - 2 ) ) )
-               back_refs.insert( length );
+            specials[ length++ ] = ( c_special_maxval - ch );
 
-            bool is_expanded = false;
-
-            if( ( ( ch & c_nibble_one ) == c_nibble_one ) )
-            {
-               if( !back_refs.count( length - 1 )
-                && !back_refs.count( length - 2 ) && !specials.count( length - 2 ) )
-               {
-                  is_expanded = true;
-
-                  if( ch == c_special_dict_pattern_lower )
-                     is_lower_dict_pattern = true;
-                  else if( ch == c_special_dict_pattern_mixed )
-                     is_mixed_dict_pattern = true;
-                  else if( ch == c_special_dict_pattern_upper )
-                     is_upper_dict_pattern = true;
-                  else if( ch == c_special_step_pattern_fixed || ch == c_special_step_pattern_multi )
-                  {
-                     process_steps = true;
-                     steps_are_multi = ( ch == c_special_step_pattern_multi );
-                  }
-                  else
-                  {
-                     for( size_t i = 0; i <= ( ch - c_nibble_one ) + 1; i++ )
-                        *( p_buffer + length++ ) = last_ch;
-                  }
-
-                   --length; // NOTE: Due to the increment below.
-               }
-            }
-
-            last_ch = ch;
-
-            if( !is_expanded )
-               *( p_buffer + length ) = ch;
+            if( ( c_special_maxval - ch ) + 1 > num_specials )
+               num_specials = ( c_special_maxval - ch ) + 1;
          }
+      }
+      else
+      {
+         bool had_repeat = false;
+
+         if( length >= 2 && back_refs.count( length - 2 )
+          && ( ( *( p_buffer + length - 2 ) & c_nibble_one ) == c_nibble_one ) )
+            had_repeat = true;
+
+         // NOTE: The "back_refs" container used here is for holding both back-refs and back-ref
+         // repeats (so that these are not confused with specials, dictionary patterns or single
+         // character repeats).
+         if( ( ch & c_high_bit_value )
+          && !back_refs.count( length - 1 )
+          && ( ( ( ch & c_nibble_one ) != c_nibble_one )
+          || ( !had_repeat && ( back_refs.count( length - 2 ) || specials.count( length - 2 ) ) ) ) )
+            back_refs.insert( length );
+
+         bool is_expanded = false;
+
+         if( ( ( ch & c_nibble_one ) == c_nibble_one ) )
+         {
+            if( !back_refs.count( length )
+             && !back_refs.count( length - 1 ) && !specials.count( length - 2 ) )
+            {
+               is_expanded = true;
+
+               if( ch == c_special_dict_pattern_lower )
+                  is_lower_dict_pattern = true;
+               else if( ch == c_special_dict_pattern_mixed )
+                  is_mixed_dict_pattern = true;
+               else if( ch == c_special_dict_pattern_upper )
+                  is_upper_dict_pattern = true;
+               else if( ch == c_special_step_pattern_fixed || ch == c_special_step_pattern_multi )
+               {
+                  process_steps = true;
+                  steps_are_multi = ( ch == c_special_step_pattern_multi );
+               }
+               else
+               {
+                  for( size_t i = 0; i <= ( ch - c_nibble_one ) + 1; i++ )
+                     *( p_buffer + length++ ) = last_ch;
+               }
+
+               --length; // NOTE: Due to the increment below.
+            }
+         }
+
+         last_ch = ch;
+
+         if( !is_expanded )
+            *( p_buffer + length ) = ch;
       }
 
       if( ++length >= max_length )
@@ -1432,6 +1438,74 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
 #ifdef DEBUG_DECODE
 dump_bytes( "expanded ==>", p_buffer, length );
 #endif
+   return length;
+}
+
+size_t longest_sequence( unsigned char* p_input,
+ size_t input_size, unsigned char* p_buffer, size_t buffer_size, size_t& offset )
+{
+   // NOTE: If a sequence of input bytes starting at the first byte of the
+   // input buffer that is longer than the minimum pattern length is found
+   // in the search buffer then will return that length (along with having
+   // set the offset value) but if no such sequence is found to occur then
+   // this function will simply return one.
+   size_t start = 0;
+   size_t length = 1;
+
+   vector< size_t > start_offsets;
+
+   if( input_size >= c_min_pat_length )
+   {
+      string::size_type pos = 0;
+
+      // NOTE: Find all minimum pattern length starting buffer offsets
+      // to use for matching as many characters in the input buffer as
+      // possible.
+      while( true )
+      {
+         if( *( p_input ) == *( p_buffer + pos )
+          && *( p_input + 1 ) == *( p_buffer + pos + 1 )
+          && *( p_input + 2 ) == *( p_buffer + pos + 2 ) )
+            start_offsets.push_back( pos );
+
+         ++pos;
+
+         if( pos >= buffer_size )
+            break;
+      }
+   }
+
+   for( size_t s = 0; s < start_offsets.size( ); s++ )
+   {
+      start = start_offsets[ s ];
+
+      size_t i = ( s > 0 ? c_min_pat_length : c_min_pat_length - 1 );
+
+      for( ; i < input_size; i++ )
+      {
+         if( start + i >= buffer_size )
+            break;
+
+         if( *( p_buffer + start + i ) != *( p_input + i ) )
+            break;
+         else if( i >= length )
+         {
+            length = i + 1;
+            offset = start;
+         }
+      }
+
+      if( i == input_size )
+      {
+         length = input_size;
+         offset = start;
+         break;
+      }
+   }
+
+   if( length < c_min_pat_length )
+      length = 1;
+
    return length;
 }
 
@@ -1807,7 +1881,7 @@ cout << "************************" << endl;
 
 // NOTE: Format must be either <pat><rpt> or <pat><pat> with <pat> values being either in the
 // form of a simple 7-bit pattern or another meta-pattern which will be expanded recursively.
-string expand_meta_pattern( const string& meta, const unsigned char* p_encoded, size_t indent = 0 )
+string expand_meta_pattern( const string& meta, const unsigned char* p_encoded, size_t indent = 0, size_t offset = 0 )
 {
    string pattern( meta );
 
@@ -1825,43 +1899,48 @@ string expand_meta_pattern( const string& meta, const unsigned char* p_encoded, 
       size_t pat_offset = ( byte1 & c_offset_high_byte_mask ) << 8;
       pat_offset += byte2;
 
-      pattern = string( ( const char* )( p_encoded + pat_offset ), pat_length );
-
-      if( pattern[ 0 ] & c_high_bit_value )
+      if( offset && pat_offset > offset )
+         pattern = c_back_ref + to_string( pat_length ) + ',' + to_string( pat_offset - offset );
+      else
       {
+         pattern = string( ( const char* )( p_encoded + pat_offset ), pat_length );
+
+         if( pattern[ 0 ] & c_high_bit_value )
+         {
 #ifdef DEBUG_DECODE
 cout << "pattern: ";
 if( indent )
 cout << string( indent * 6, ' ' );
 dump_bytes( "", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
 #endif
-         if( pattern.length( ) >= c_meta_pat_length - 1 )
-         {
-            string new_pattern;
-
-            if( ( pattern[ c_meta_pat_length - 2 ] & c_nibble_one ) == c_nibble_one )
+            if( pattern.length( ) >= c_meta_pat_length - 1 )
             {
-               size_t pat_repeats = ( pattern[ c_meta_pat_length - 2 ] & c_nibble_two ) << 8;
-               pat_repeats += ( unsigned char )pattern[ c_meta_pat_length - 1 ] + 1;
+               string new_pattern;
+
+               if( ( pattern[ c_meta_pat_length - 2 ] & c_nibble_one ) == c_nibble_one )
+               {
+                  size_t pat_repeats = ( pattern[ c_meta_pat_length - 2 ] & c_nibble_two ) << 8;
+                  pat_repeats += ( unsigned char )pattern[ c_meta_pat_length - 1 ] + 1;
 
 #ifdef DEBUG_DECODE
 cout << "pat repeats = " << pat_repeats << endl;
 #endif
-               pattern.erase( c_meta_pat_length - 2 );
+                  pattern.erase( c_meta_pat_length - 2 );
 
-               for( size_t i = 0; i < pat_repeats + 1; i++ )
-                  new_pattern += expand_meta_pattern( pattern, p_encoded, indent + 1 );
-            }
-            else
-            {
-               new_pattern = expand_meta_pattern( pattern.substr( 0, c_meta_pat_length - 2 ), p_encoded, indent + 1 );
-               new_pattern += expand_meta_pattern( pattern.substr( c_meta_pat_length - 2 ), p_encoded, indent + 1 );
+                  for( size_t i = 0; i < pat_repeats + 1; i++ )
+                     new_pattern += expand_meta_pattern( pattern, p_encoded, indent + 1 );
+               }
+               else
+               {
+                  new_pattern = expand_meta_pattern( pattern.substr( 0, c_meta_pat_length - 2 ), p_encoded, indent + 1 );
+                  new_pattern += expand_meta_pattern( pattern.substr( c_meta_pat_length - 2 ), p_encoded, indent + 1 );
 #ifdef DEBUG_DECODE
 cout << "new pattern = " << new_pattern << endl;
 #endif
-            }
+               }
 
-            pattern = new_pattern;
+               pattern = new_pattern;
+            }
          }
       }
    }
@@ -1906,11 +1985,20 @@ void decode_clz_data( istream& is, ostream& os )
 {
    deque< string > outputs;
    set< size_t > meta_offsets;
+#ifdef VISUALISE_BACKREFS
+   deque< string > pretty_outputs;
+#endif
 
    unsigned char input_buffer[ c_max_encoded_chunk_size ];
 
    while( true )
    {
+#ifdef VISUALISE_BACKREFS
+      if( !is.tellg( ) )
+         os << c_color_red << "[" << c_color_default;
+      else
+         os << c_color_red << "][" << c_color_default;
+#endif
 #ifndef NO_SHRINK_AND_EXPAND
       size_t bytes_read = expand_input( is, input_buffer, c_max_encoded_chunk_size );
 #else
@@ -1956,7 +2044,12 @@ cout << "meta_offsets.size( ) = " <<  meta_offsets.size( ) << endl;
 
             // NOTE: Any bytes after the last meta-pair are immediately pushed to the back of the output.
             if( next_offset < bytes_read - 2 )
+            {
                outputs.push_back( string( ( const char* )( input_buffer + next_offset + 2 ), last_offset - next_offset - 2 ) );
+#ifdef VISUALISE_BACKREFS
+               pretty_outputs.push_back( string( ( const char* )( input_buffer + next_offset + 2 ), last_offset - next_offset - 2 ) );
+#endif
+            }
 
             while( true )
             {
@@ -1982,7 +2075,7 @@ cout << "meta repeats = " << num_repeats << endl;
                else
                {
                   string output;
-                  pat = expand_meta_pattern( pat, input_buffer );
+                  pat = expand_meta_pattern( pat, input_buffer, 0, next_offset );
 
                   for( size_t i = 0; i < num_repeats + 1; i++ )
                      output += pat;
@@ -1990,11 +2083,14 @@ cout << "meta repeats = " << num_repeats << endl;
 #ifdef DEBUG_DECODE
 cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n output ==> " << output << endl;
 #endif
-#ifdef VISUALISE_BACKREFS
-                  output = string( c_color_green ) + "[" + string( c_color_cyan ) + output + string( c_color_green ) + "]" + string( c_color_default );
-#endif
                   num_repeats = 0;
                   outputs.push_front( output );
+
+#ifdef VISUALISE_BACKREFS
+                  pretty_outputs.push_front(
+                   string( num_repeats == 0 ? c_color_green : c_color_purple ) + "[" + string( c_color_cyan )
+                   + output + string( num_repeats == 0 ? c_color_green : c_color_purple ) + "]" + string( c_color_default ) );
+#endif
                }
 
                last_offset = next_offset;
@@ -2005,29 +2101,88 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
                next_offset = *--si;
 
                if( next_offset < last_offset - 2 )
+               {
                   outputs.push_front( string( ( const char* )( input_buffer + next_offset + 2 ), last_offset - next_offset - 2 ) );
+#ifdef VISUALISE_BACKREFS
+                  pretty_outputs.push_front( string( ( const char* )( input_buffer + next_offset + 2 ), last_offset - next_offset - 2 ) );
+#endif
+               }
             }
 
             if( last_offset != 0 )
-               os.write( ( const char* )input_buffer, last_offset );
+            {
+               outputs.push_front( string( ( const char* )input_buffer, last_offset ) );
+#ifdef VISUALISE_BACKREFS
+               pretty_outputs.push_front( string( ( const char* )input_buffer, last_offset ) );
+#endif
+            }
+
+            string final_output;
+#ifdef VISUALISE_BACKREFS
+            string pretty_output;
+#endif
 
             for( size_t i = 0; i < outputs.size( ); i++ )
-               os << outputs[ i ];
+            {
+               string next( outputs[ i ] );
+
+               if( !next.empty( ) )
+               {
+                  if( next[ 0 ] != c_back_ref )
+                  {
+                     final_output += next;
+#ifdef VISUALISE_BACKREFS
+                     pretty_output += pretty_outputs[ i ];
+#endif
+                  }
+                  else
+                  {
+                     next.erase( 0, 1 );
+                     string::size_type pos = next.find( ',' );
+
+                     if( pos != string::npos )
+                     {
+                        size_t length = from_string< size_t >( next.substr( 0, pos ) );
+                        size_t offset = from_string< size_t >( next.substr( pos + 1 ) );
+
+                        string back_ref_bytes( final_output.substr( final_output.length( ) - offset, length ) );
+
+                        final_output += back_ref_bytes;
+#ifdef VISUALISE_BACKREFS
+                        pretty_output += c_color_yellow + back_ref_bytes + c_color_default;
+#endif
+                     }
+                  }
+               }
+            }
+
+#ifndef VISUALISE_BACKREFS
+            os << final_output;
+#else
+            os << pretty_output;
+#endif
 
             outputs.clear( );
             meta_offsets.clear( );
+#ifdef VISUALISE_BACKREFS
+            pretty_outputs.clear( );
+#endif
          }
       }
 
       if( bytes_read < c_max_encoded_chunk_size )
          break;
    }
+#ifdef VISUALISE_BACKREFS
+   os << c_color_red << "]" << c_color_default << endl;
+#endif
 }
 
 void encode_clz_data( istream& is, ostream& os )
 {
    size_t num = 0;
    size_t output_offset = 0;
+   size_t unencoded_offset = 0;
    size_t last_pair_repeats = 0;
    size_t last_pattern_offset = 0;
    size_t last_back_ref_offset = 0;
@@ -2044,9 +2199,11 @@ void encode_clz_data( istream& is, ostream& os )
 
    unsigned char input_buffer[ c_max_pat_length + 2 ];
    unsigned char output_buffer[ c_max_encoded_chunk_size ];
+   unsigned char unencoded_buffer[ c_max_unencoded_chunk_size ];
 
    memset( input_buffer, 0, sizeof( input_buffer ) );
    memset( output_buffer, 0, sizeof( output_buffer ) );
+   memset( unencoded_buffer, 0, sizeof( unencoded_buffer ) );
 
    while( true )
    {
@@ -2056,6 +2213,9 @@ void encode_clz_data( istream& is, ostream& os )
             ++num;
          else
             break;
+
+         if( unencoded_offset < c_max_unencoded_chunk_size )
+            unencoded_buffer[ unencoded_offset++ ] = input_buffer[ num - 1 ];
 
          // FUTURE: Assuming the use of a special indicator then 8-bit data
          // could be converted to 7-bit on the fly so as not to require the
@@ -2124,69 +2284,53 @@ dump_bytes( "input data =", input_buffer, num );
 #ifdef DEBUG_ENCODE
 cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 #endif
-      size_t start = 0;
-
-      size_t length = ( num > 0 ? 1 : 0 );
       size_t offset = 0;
+      size_t length = ( num > 0 ? 1 : 0 );
 
       bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
 
-      if( output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
+      if( num > 0 && output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
+         length = longest_sequence( input_buffer, num, output_buffer, output_offset, offset );
+
+#ifdef USE_SECOND_PASS_BACK_REFS
+      if( num > 0 && !input_starts_with_back_ref
+       && unencoded_offset > num + c_min_pat_length
+       && output_offset < max_offset - c_min_pat_length )
       {
-         vector< size_t > start_offsets;
+         size_t inverted_length = 0;
+         size_t inverted_offset = 0;
 
-         if( num >= c_min_pat_length )
+         size_t temp_offset = min( unencoded_offset - num, max_offset - output_offset );
+         size_t starting_offset = ( unencoded_offset - temp_offset - num );
+
+         if( temp_offset - starting_offset > c_min_pat_length )
+            inverted_length = longest_sequence( input_buffer, num,
+             ( unencoded_buffer + starting_offset ), temp_offset, inverted_offset );
+
+         if( inverted_length > length )
          {
-            string::size_type pos = 0;
+            inverted_offset = output_offset + ( unencoded_offset - num - inverted_offset );
 
-            // NOTE: Find all minimum pattern length starting output offsets
-            // to use for matching as many characters in the input buffer as
-            // possible.
-            while( true )
+            if( inverted_offset <= max_offset )
             {
-               if( input_buffer[ 0 ] == output_buffer[ pos ]
-                && input_buffer[ 1 ] == output_buffer[ pos + 1 ]
-                && input_buffer[ 2 ] == output_buffer[ pos + 2 ] )
-                  start_offsets.push_back( pos );
+               unsigned byte1 = c_high_bit_value | ( ( inverted_length - c_min_pat_length ) << 3 );
+               byte1 |= ( ( inverted_offset & c_offset_high_pair_mask ) >> 8 );
 
-               ++pos;
+               unsigned byte2 = ( inverted_offset & c_offset_low_pair_mask );
 
-               if( pos >= output_offset )
-                  break;
+               output_buffer[ output_offset++ ] = byte1;
+               output_buffer[ output_offset++ ] = byte2;
+
+               if( num > inverted_length )
+                  memmove( input_buffer, input_buffer + inverted_length, num - inverted_length );
+
+               num -= inverted_length;
+
+               continue;
             }
          }
-
-         for( size_t s = 0; s < start_offsets.size( ); s++ )
-         {
-            start = start_offsets[ s ];
-
-            size_t i = ( s > 0 ? c_min_pat_length : c_min_pat_length - 1 );
-
-            for( ; i < num; i++ )
-            {
-               if( start + i >= output_offset )
-                  break;
-
-               if( output_buffer[ start + i ] != input_buffer[ i ] )
-                  break;
-               else if( i >= length )
-               {
-                  length = i + 1;
-                  offset = start;
-               }
-            }
-
-            if( i == num )
-            {
-               length = num;
-               offset = start;
-               break;
-            }
-         }
-
-         if( length && length < c_min_pat_length )
-            length = 1;
       }
+#endif
 
 #ifdef DEBUG_ENCODE
 cout << "length = " << length << ", offset = " << offset << endl;
@@ -2385,6 +2529,9 @@ cout << "(outputting " << output_offset << " bytes)" << endl;
 #endif
 #ifndef NO_SHRINK_AND_EXPAND
          shrink_output( output_buffer, output_offset );
+#  ifdef DEBUG_ENCODE
+cout << "(now writing " << output_offset << " bytes)" << endl;
+#  endif
 #endif
          os.write( ( char* )output_buffer, output_offset );
 
@@ -2392,9 +2539,10 @@ cout << "(outputting " << output_offset << " bytes)" << endl;
          extra_patterns.clear( );
 
          memset( output_buffer, 0, sizeof( output_buffer ) );
+         memset( unencoded_buffer, 0, sizeof( unencoded_buffer ) );
 
          last_pair.first = last_pair.second = last_pair_repeats = 0;
-         output_offset = last_pattern_offset = last_back_ref_offset = 0;
+         output_offset = unencoded_offset = last_pattern_offset = last_back_ref_offset = 0;
       }
    }
 
@@ -2422,6 +2570,9 @@ cout << "(outputting " << output_offset << " bytes)" << endl;
 #endif
 #ifndef NO_SHRINK_AND_EXPAND
       shrink_output( output_buffer, output_offset );
+#  ifdef DEBUG_ENCODE
+cout << "(now writing " << output_offset << " bytes)" << endl;
+#  endif
 #endif
       os.write( ( const char* )output_buffer, output_offset );
    }
