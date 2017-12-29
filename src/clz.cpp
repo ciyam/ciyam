@@ -37,7 +37,7 @@
 //#define COMPILE_TESTBED_MAIN
 
 //#define NO_SHRINK_AND_EXPAND
-//#define USE_SECOND_PASS_BACK_REFS
+//#define NO_SECOND_PASS_BACK_REFS
 
 using namespace std;
 
@@ -1954,10 +1954,10 @@ void init_clz_info( )
 {
    // NOTE: For multi-threaded applications this function should be called from the main thread
    // before starting up any child threads (to avoid any potential race condition).
-
    if( g_dict_lower.empty( ) )
    {
       unsigned char offset = 0;
+
       for( size_t i = 0; i <  ARRAY_SIZE( g_dict_patterns ); i++ )
       {
          g_dict_lower.insert( make_pair( string( g_dict_patterns[ i ].p_w1 ), offset++ ) );
@@ -1995,9 +1995,9 @@ void decode_clz_data( istream& is, ostream& os )
    {
 #ifdef VISUALISE_BACKREFS
       if( !is.tellg( ) )
-         os << c_color_red << "[" << c_color_default;
+         cout << c_color_red << "[" << c_color_default;
       else
-         os << c_color_red << "][" << c_color_default;
+         cout << c_color_red << "][" << c_color_default;
 #endif
 #ifndef NO_SHRINK_AND_EXPAND
       size_t bytes_read = expand_input( is, input_buffer, c_max_encoded_chunk_size );
@@ -2149,17 +2149,17 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
 
                         final_output += back_ref_bytes;
 #ifdef VISUALISE_BACKREFS
-                        pretty_output += c_color_yellow + back_ref_bytes + c_color_default;
+                        pretty_output += c_color_cyan + string( "[" )
+                         + c_color_green + back_ref_bytes + c_color_cyan + string( "]" ) + c_color_default;
 #endif
                      }
                   }
                }
             }
 
-#ifndef VISUALISE_BACKREFS
             os << final_output;
-#else
-            os << pretty_output;
+#ifdef VISUALISE_BACKREFS
+            cout << pretty_output;
 #endif
 
             outputs.clear( );
@@ -2174,7 +2174,7 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
          break;
    }
 #ifdef VISUALISE_BACKREFS
-   os << c_color_red << "]" << c_color_default << endl;
+   cout << c_color_red << "]" << c_color_default << endl;
 #endif
 }
 
@@ -2287,14 +2287,28 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
       size_t offset = 0;
       size_t length = ( num > 0 ? 1 : 0 );
 
+      bool has_following_sequence = false;
       bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
 
       if( num > 0 && output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
+      {
          length = longest_sequence( input_buffer, num, output_buffer, output_offset, offset );
 
-#ifdef USE_SECOND_PASS_BACK_REFS
-      if( num > 0 && !input_starts_with_back_ref
+         // NOTE: If did not find a pattern at the start of the input buffer but can
+         // two characters ahead then will not try to use a second pass back-ref (as
+         // this gives a better chance for the first pass back-refs to be extended).
+         if( num > 2 && length < c_min_pat_length )
+            has_following_sequence = ( longest_sequence( input_buffer + 2,
+             num - 2, output_buffer, output_offset, offset ) >= c_min_pat_length );
+      }
+
+#ifndef NO_SECOND_PASS_BACK_REFS
+      if( num > 0
+       && !has_following_sequence
+       && length < c_min_pat_length
+       && !input_starts_with_back_ref
        && unencoded_offset > num + c_min_pat_length
+       && unencoded_offset < c_max_unencoded_chunk_size
        && output_offset < max_offset - c_min_pat_length )
       {
          size_t inverted_length = 0;
@@ -2307,12 +2321,28 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
             inverted_length = longest_sequence( input_buffer, num,
              ( unencoded_buffer + starting_offset ), temp_offset, inverted_offset );
 
-         if( inverted_length > length )
+         if( inverted_length >= c_min_pat_length )
          {
-            inverted_offset = output_offset + ( unencoded_offset - num - inverted_offset );
+            inverted_offset = output_offset + ( unencoded_offset - num - inverted_offset ) - starting_offset;
+
+            if( last_pair_repeats )
+               inverted_offset += 2;
 
             if( inverted_offset <= max_offset )
             {
+               if( last_pair_repeats )
+               {
+                  unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
+                  unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
+
+                  if( !replace_meta_pattern( meta_patterns, output_buffer,
+                   last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+                  {
+                     output_buffer[ output_offset++ ] = rbyte1;
+                     output_buffer[ output_offset++ ] = rbyte2;
+                  }
+               }
+
                unsigned byte1 = c_high_bit_value | ( ( inverted_length - c_min_pat_length ) << 3 );
                byte1 |= ( ( inverted_offset & c_offset_high_pair_mask ) >> 8 );
 
@@ -2325,6 +2355,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                   memmove( input_buffer, input_buffer + inverted_length, num - inverted_length );
 
                num -= inverted_length;
+
+               last_pair.first = last_pair.second = last_pair_repeats = 0;
 
                continue;
             }
