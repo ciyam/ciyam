@@ -3,10 +3,10 @@ CIYAM Software Manufacturing Environment
 
 The following environment variables are required by various scripts:
 
-Name   Description                 Sample Value
------  -----------------           ------------
-CPPENV C++ Compiler (Windows only) mvc
-WEBDIR Web Document Root path**    /srv/www/htdocs
+Name   | Description                 | Sample Value
+------ | --------------------------- | ---------------
+CPPENV | C++ Compiler (Windows only) | mvc
+WEBDIR | Web Document Root path**    | /srv/www/htdocs
 
 ** This path must *not* contain spaces and each directory in the path must have "rwx" permissions set so that
 both the Apache2 user (wwwrun) and the user account being used for development can create, update, append and
@@ -14,7 +14,7 @@ delete files in and below the path (for a development only environment it is eas
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
-If wanting to perform a debug build for Windows use the environment variable CPPDBG.
+If wanting to perform a debug build for Windows use the environment variable CPPDBG.<br/>
 (e.g. for VC++ set CPPDBG=DEBUG=1)
 
 The following are platform specific instructions for installing 3rd party libraries:
@@ -38,12 +38,12 @@ Is normally standard but you may need to install the appropriate developer packa
 
 When installing make sure that the option for "Development libraries and headers" is selected.
 
-For VC++ the LIB environment variable will need this added (replace <ver> with the MySQL version):
-C:\Program Files\MySQL\MySQL Server <ver>\lib\opt
+For VC++ the LIB environment variable will need this added (replace <ver> with the MySQL version):<br/>
+C:\Program Files\MySQL\MySQL Server <ver>\lib\opt<br/>
 e.g. set LIB=C:\Program Files\MySQL\MySQL Server 5.1\lib\opt;%LIB%
 
-For VC++ the INCLUDE environment variable will need this added (replace <ver> with the MySQL version):
-C:\Program Files\MySQL\MySQL Server <ver>\include
+For VC++ the INCLUDE environment variable will need this added (replace <ver> with the MySQL version):<br/>
+C:\Program Files\MySQL\MySQL Server <ver>\include<br/>
 e.g. set INCLUDE=C:\Program Files\MySQL\MySQL Server 5.1\include;%INCLUDE%
 
 FastCGI
@@ -52,19 +52,19 @@ https://github.com/ciyam/fcgi
 
 [Linux]
 
-tar -zxvf fcgi-2.4.6.tar.gz
+tar -zxvf fcgi-2.4.6.tar.gz<br/>
 cd fcgi-2.4.6
 
-./configure
-make
-su
+./configure<br/>
+make<br/>
+su<br/>
 make install
 
 [Windows]
 
 nmake -f Makefile.nt
 
-copy libfcgi\Release\libfcgi.dll <dest directory>
+copy libfcgi\Release\libfcgi.dll <dest directory><br/>
 copy libfcgi\Release\libfcgi.lib <dest directory>
 
 Haru PDF Library
@@ -73,12 +73,12 @@ http://libharu.org
 
 [Linux]
 
-unzip libharu-RELEASE_2_2_0.zip
+unzip libharu-RELEASE_2_2_0.zip<br/>
 cd libharu-2.2.0
 
-./configure
-make
-su
+./configure<br/>
+make<br/>
+su<br/>
 make install
 
 cp /usr/local/lib/libhpdf-2.2.0.so /usr/lib (depending upon distro)
@@ -87,8 +87,8 @@ cp /usr/local/lib/libhpdf-2.2.0.so /usr/lib (depending upon distro)
 
 unzip -j \tmp\libharu-2.1.0-vc8.zip lib_dll/libhpdf.lib lib_dll/libhpdf.dll
 
-mkdir haru
-cd haru
+mkdir haru<br/>
+cd haru<br/>
 unzip -j \tmp\libharu-2.1.0-vc8.zip include/*
 
 OpenSSL
@@ -97,28 +97,28 @@ http://www.openssl.org/
 
 [Linux]
 
-tar xzf openssl-1.0.1h.tar.gz
+tar xzf openssl-1.0.1h.tar.gz<br/>
 cd openssl-1.0.1h
 
-./config shared
-make
-make test
-su
+./config shared<br/>
+make<br/>
+make test<br/>
+su<br/>
 make install
 
-cp /usr/local/ssl/lib/libssl.so.1.0.1 /usr/lib (depending upon distro)
+cp /usr/local/ssl/lib/libssl.so.1.0.1 /usr/lib (depending upon distro)<br/>
 cp /usr/local/ssl/lib/libcrypto.so.1.0.1 /usr/lib (depending upon distro)
 
 [Windows]
 
 Download and run the installation program.
 
-For VC++ the LIB environment variable will need this added:
-C:\OpenSSL-Win32\lib
+For VC++ the LIB environment variable will need this added:<br/>
+C:\OpenSSL-Win32\lib<br/>
 e.g. set LIB=C:\OpenSSL-Win32\lib;%LIB%
 
-For VC++ the INCLUDE environment variable will need this added:
-C:\OpenSSL-Win32\include
+For VC++ the INCLUDE environment variable will need this added:<br/>
+C:\OpenSSL-Win32\include<br/>
 e.g. set INCLUDE=C:\OpenSSL-Win32\include;%INCLUDE%
 
 Note that "ciyam_server.pem" and "ciyam_client.pem" are identical public/private test only SSL keys encrypted
