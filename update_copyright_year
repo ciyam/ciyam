@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2013-2017 CIYAM Developers
+# Copyright (c) 2013-2018 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -9,9 +9,8 @@
 # NOTE: Replace with the year u want to replace with or leave it empty to derive the year from 'date'.
 DATEYEAR=""
 
-# NOTE: First some checks to ensure we are inside git repo.
 if [ ! "$1" = "-skip_check" ]; then
- cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
+ cat .git/config | grep github.com:ciyam/ciyam.git 2>&1 > /dev/null
  GITCHECK=$?
 
  if [ "$GITCHECK" != "0" ]; then
@@ -24,7 +23,7 @@ if [ "$DATEYEAR" == "" ]; then
  DATEYEAR=`date +%Y`
 fi
 
-find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
-find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 
 exit 0
