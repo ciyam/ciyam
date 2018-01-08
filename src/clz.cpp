@@ -81,7 +81,7 @@ const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 const size_t c_max_unencoded_chunk_size = 8192;
 
 const size_t c_max_specials = 7;
-const size_t c_max_special_repeats = 5;
+const size_t c_max_special_repeats = 255;
 const size_t c_max_special_step_vals = 15;
 
 const size_t c_max_expand_meta_recursion = 10;
@@ -511,6 +511,19 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
    return step_amount;
 }
 
+void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
+{
+   // NOTE: If just two repeats then simply output one byte but
+   // if more then need to also output the repeat number value.
+   if( repeats == 2 )
+      *( p_shrunken + num++ ) = c_nibble_one;
+   else
+   {
+      *( p_shrunken + num++ ) = c_nibble_one + 1;
+      *( p_shrunken + num++ ) = repeats;
+   }
+}
+
 bool shrink_output( unsigned char* p_buffer, size_t& length )
 {
    unsigned char shrunken[ c_max_encoded_chunk_size ];
@@ -679,9 +692,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             }
          }
 
-         if( repeats && ( next != last_ch || repeats == c_max_special_repeats - 1 ) )
+         if( repeats && ( next != last_ch || repeats == c_max_special_repeats ) )
          {
-            shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
+            output_repeats( shrunken, repeats, num );
 
             if( next == last_ch )
                last_ch = c_special_maxval;
@@ -1004,7 +1017,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       // NOTE: Simple characters that repeated three or more times are shrunk with one byte required
       // to indicate this along with the number of repeats (i.e. one nibble each).
       if( repeats )
-         shrunken[ num++ ] = ( c_nibble_one + repeats - 2 );
+         output_repeats( shrunken, repeats, num );
 
       vector< byte_pair > extra_specials;
 
@@ -1366,8 +1379,23 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                }
                else
                {
-                  for( size_t i = 0; i <= ( ch - c_nibble_one ) + 1; i++ )
+                  if( ch == c_nibble_one )
+                  {
                      *( p_buffer + length++ ) = last_ch;
+                     *( p_buffer + length++ ) = last_ch;
+                  }
+                  else
+                  {
+                     // NOTE: For more than two repeats the number
+                     // of repeats is found in the following byte.
+                     if( !is.read( ( char* )&ch, 1 ) )
+                        break;
+
+                     for( size_t i = 0; i < ch; i++ )
+                        *( p_buffer + length++ ) = last_ch;
+                  }
+
+                  ch = c_nibble_one;
                }
 
                --length; // NOTE: Due to the increment below.
