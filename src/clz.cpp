@@ -120,6 +120,7 @@ const unsigned char c_pattern_high_byte_mask = 0x78;
 
 const unsigned char c_meta_pattern_length_val = 0x88;
 
+const unsigned char c_special_compressed_numeric = 0xf2;
 const unsigned char c_special_dict_pattern_lower = 0xf3;
 const unsigned char c_special_dict_pattern_mixed = 0xf4;
 const unsigned char c_special_dict_pattern_upper = 0xf5;
@@ -511,6 +512,47 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
    return step_amount;
 }
 
+size_t shrink_special_numeric( unsigned char* p_buffer, size_t len )
+{
+   size_t offset = 1;
+   unsigned char next = 0;
+
+   unsigned char ch = *p_buffer;
+
+   *p_buffer = c_special_compressed_numeric;
+
+   for( size_t i = 0; i < len; i++ )
+   {
+      if( ch == ' ' )
+         next |= 0x0e;
+      else if( ch >= '0' && ch <= '9' )
+         next |= ( ch - '0' );
+      else if( ch >= '+' && ch <= '.' )
+         next |= ( ch - '+' + 0x0a );
+
+      if( i % 2 == 0 )
+         next <<= 4;
+      else
+      {
+         *( p_buffer + offset++ ) = next;
+         next = 0;
+      }
+
+      if( i < len )
+         ch = *( p_buffer + i + 1 );
+   }
+
+   if( len % 2 == 1 )
+      *( p_buffer + offset ) = ( next | 0x0f );
+   else
+   {
+      next = 0xff;
+      *( p_buffer + offset ) = next;
+   }
+
+   return ( len - offset - 1 );
+}
+
 void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
 {
    // NOTE: If just two repeats then simply output one byte but
@@ -603,6 +645,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
       size_t last_special_pos = 0;
 
+      size_t special_numeric_start = 0;
+      size_t special_numeric_length = 0;
+
       unsigned char last_ch = c_special_maxval;
 
       size_t available_specials = ( c_max_specials - special_nums.size( ) );
@@ -613,6 +658,28 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       for( size_t i = 0; i < length; i++ )
       {
          unsigned char next = *( p_buffer + i );
+
+         bool is_special_numeric = false;
+
+         if( !repeats && ( next == ' '
+          || ( next >= '0' && next <= '9' ) || ( next >= '+' && next <= '.' ) ) )
+            is_special_numeric = true;
+
+         if( !is_special_numeric && special_numeric_length )
+         {
+            if( special_numeric_length >= 5
+             && ( special_numeric_start + special_numeric_length == num ) )
+               num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
+
+            special_numeric_length = 0;
+         }
+
+         // NOTE: Don't allow a special numeric to immediately follow a
+         // back-ref as this would be ambiguous with a back-ref repeat.
+         if( ( num > 0 && ( last_ch & c_high_bit_value ) )
+          || ( num > 2 && ( shrunken[ num - 2 ] & c_high_bit_value )
+          && ( ( shrunken[ num - 2 ] & c_nibble_one ) < c_nibble_one ) ) )
+            is_special_numeric = false;
 
          if( stepping_amount
           && ( step_type_val == e_step_type_single || i < length - 1 ) )
@@ -754,9 +821,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                shrunken[ num++ ] = next_pair.second;
             }
 
-            // NOTE: If this pair was a repeat then allow a dict pattern to follow (but must
-            // not allow this otherwise as differentiating between repeats and dict specials
-            // would be impossible).
+            // NOTE: If this pair was a repeat then allow a dict pattern or special numeric
+            // to follow but must not allow this to occur otherwise because differentiating
+            // between back-ref repeats and nother specials would be impossible.
             if( ( next & c_nibble_one ) == c_nibble_one )
                last_ch = 0;
             else
@@ -1008,16 +1075,37 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
                   if( new_repeat )
                      ++repeats;
                   else
+                  {
+                     if( is_special_numeric )
+                     {
+                        if( !special_numeric_length || ( special_numeric_start + special_numeric_length == num ) )
+                        {
+                           if( !special_numeric_length )
+                              special_numeric_start = num;
+                           ++special_numeric_length;
+                        }
+                        else
+                        {
+                           // NOTE: Restart a special numeric characters run.
+                           special_numeric_start = num;
+                           special_numeric_length = 1;
+                        }
+                     }
+
                      shrunken[ num++ ] = last_ch = next;
+                  }
                }
             }
          }
       }
 
-      // NOTE: Simple characters that repeated three or more times are shrunk with one byte required
-      // to indicate this along with the number of repeats (i.e. one nibble each).
+      // NOTE: If finished with a single character repeat pattern or
+      // a special compressed numeric then complete that output now.
       if( repeats )
          output_repeats( shrunken, repeats, num );
+      else if( special_numeric_length >= 5
+       && ( special_numeric_start + special_numeric_length == num ) )
+         num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
 
       vector< byte_pair > extra_specials;
 
@@ -1122,6 +1210,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
    bool process_steps = false;
    bool steps_are_multi = false;
 
+   bool is_compressed_numeric = false;
    bool is_lower_dict_pattern = false;
    bool is_mixed_dict_pattern = false;
    bool is_upper_dict_pattern = false;
@@ -1294,6 +1383,37 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          else
             continue;
       }
+      else if( is_compressed_numeric )
+      {
+         unsigned char nibble1 = ( ch & c_nibble_one ) >> 4;
+         unsigned char nibble2 = ( ch & c_nibble_two );
+
+         if( nibble1 == c_nibble_two )
+            is_compressed_numeric = false;
+         else
+         {
+            if( nibble1 >= 0 && nibble1 <= 9 )
+               *( p_buffer + length++ ) = '0' + nibble1;
+            else if( nibble1 >= 10 && nibble1 <= 13 )
+               *( p_buffer + length++ ) = '+' + ( nibble1 - 10 );
+            else if( nibble1 == 14 )
+               *( p_buffer + length++ ) = ' ';
+
+            if( nibble2 >= 0 && nibble2 <= 9 )
+               *( p_buffer + length++ ) = '0' + nibble2;
+            else if( nibble2 >= 10 && nibble2 <= 13 )
+               *( p_buffer + length++ ) = '+' + ( nibble2 - 10 );
+            else if( nibble2 == 14 )
+               *( p_buffer + length++ ) = ' ';
+
+            if( nibble2 == c_nibble_two )
+               is_compressed_numeric = false;
+         }
+
+         last_ch = *( p_buffer + length - 1 );
+
+         continue;
+      }
       else if( is_lower_dict_pattern || is_mixed_dict_pattern || is_upper_dict_pattern )
       {
          map< string, unsigned char >::const_iterator ci;
@@ -1366,7 +1486,9 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
             {
                is_expanded = true;
 
-               if( ch == c_special_dict_pattern_lower )
+               if( ch == c_special_compressed_numeric )
+                  is_compressed_numeric = true;
+               else if( ch == c_special_dict_pattern_lower )
                   is_lower_dict_pattern = true;
                else if( ch == c_special_dict_pattern_mixed )
                   is_mixed_dict_pattern = true;
