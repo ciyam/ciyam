@@ -67,6 +67,8 @@ g_simple_tests[ ] =
    { "aaaaaaaaaaaaa", "a\xf1\x0c" },
    { "aaaaaaaaaaaaaa", "a\xf1\x0d" },
    { "aaaaaaaaaaaaaaa", "a\xf1\x0e" },
+   { "aaaaaaaaaaaaaaaa", "a\xf1\x0f" },
+   { "aaaaaaaaaaaaaaaaa", "a\xf1\x0f""a" },
    { "091", "091" },
    { "0918", "0918" },
    { "09182", "\xf2\x09\x18\x2f" },

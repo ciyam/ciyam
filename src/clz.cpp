@@ -81,7 +81,7 @@ const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 const size_t c_max_unencoded_chunk_size = 8192;
 
 const size_t c_max_specials = 7;
-const size_t c_max_special_repeats = 255;
+const size_t c_max_special_repeats = 15;
 const size_t c_max_special_step_vals = 15;
 
 const size_t c_max_expand_meta_recursion = 10;
@@ -120,6 +120,8 @@ const unsigned char c_pattern_high_byte_mask = 0x78;
 
 const unsigned char c_meta_pattern_length_val = 0x88;
 
+const unsigned char c_special_char_double_repeat = 0xf0;
+const unsigned char c_special_char_multi_repeats = 0xf1;
 const unsigned char c_special_compressed_numeric = 0xf2;
 const unsigned char c_special_dict_pattern_lower = 0xf3;
 const unsigned char c_special_dict_pattern_mixed = 0xf4;
@@ -558,10 +560,10 @@ void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
    // NOTE: If just two repeats then simply output one byte but
    // if more then need to also output the repeat number value.
    if( repeats == 2 )
-      *( p_shrunken + num++ ) = c_nibble_one;
+      *( p_shrunken + num++ ) = c_special_char_double_repeat;
    else
    {
-      *( p_shrunken + num++ ) = c_nibble_one + 1;
+      *( p_shrunken + num++ ) = c_special_char_multi_repeats;
       *( p_shrunken + num++ ) = repeats;
    }
 }
@@ -644,6 +646,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       size_t stepping_last_val = 0;
 
       size_t last_special_pos = 0;
+      size_t last_back_ref_pos = 0;
 
       size_t special_numeric_start = 0;
       size_t special_numeric_length = 0;
@@ -676,9 +679,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
          // NOTE: Don't allow a special numeric to immediately follow a
          // back-ref as this would be ambiguous with a back-ref repeat.
-         if( ( num > 0 && ( last_ch & c_high_bit_value ) )
-          || ( num > 2 && ( shrunken[ num - 2 ] & c_high_bit_value )
-          && ( ( shrunken[ num - 2 ] & c_nibble_one ) < c_nibble_one ) ) )
+         if( num > 2 && ( last_back_ref_pos == num - 2 ) )
             is_special_numeric = false;
 
          if( stepping_amount
@@ -777,6 +778,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
             next_pair.first = next;
             next_pair.second = *( p_buffer + ++i );
+
+            if( ( next & c_nibble_one ) < c_nibble_one )
+               last_back_ref_pos = num;
 
             if( special_nums.count( next_pair ) )
             {
@@ -1501,7 +1505,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                }
                else
                {
-                  if( ch == c_nibble_one )
+                  if( ch == c_special_char_double_repeat )
                   {
                      *( p_buffer + length++ ) = last_ch;
                      *( p_buffer + length++ ) = last_ch;
