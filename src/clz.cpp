@@ -1774,9 +1774,31 @@ size_t longest_sequence( unsigned char* p_input,
 
 bool combine_meta_patterns( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t& offset, size_t& last_pattern_offset )
 {
+   bool can_combine = true;
    bool can_continue = false;
 
-   if( offset > ( c_min_pat_length + c_meta_pat_length ) )
+   if( offset <= ( c_min_pat_length + c_meta_pat_length ) )
+      can_combine = false;
+   else
+   {
+      bool is_back_ref = false;
+
+      // NOTE: If the first byte that will be used
+      // to identify a pattern is actually part of
+      // a back-ref then it cannot be combined.
+      for( size_t i = 0; i < offset - 4; i++ )
+      {
+         if( is_back_ref )
+            is_back_ref = false;
+         else if( *( p_buffer + i ) & c_high_bit_value )
+            is_back_ref = true;
+      }
+
+      if( is_back_ref )
+         can_combine = false;
+   }
+
+   if( can_combine )
    {
       meta_pattern pat;
 
@@ -1950,8 +1972,8 @@ void perform_meta_combines( meta_pattern_info& meta_patterns, unsigned char* p_b
    }
 }
 
-bool replace_meta_pattern( meta_pattern_info& meta_patterns,
- unsigned char* p_buffer, size_t offset, unsigned char& new_byte1, unsigned char& new_byte2, size_t& end_offset, size_t& last_pattern_offset )
+bool replace_meta_pattern( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t offset,
+ unsigned char& new_byte1, unsigned char& new_byte2, size_t& end_offset, size_t& last_pattern_offset )
 {
    bool was_replaced = false;
 
@@ -2014,13 +2036,13 @@ dump_bytes( "modified ==>", p_buffer, end_offset );
          last_pattern_offset = offset;
          meta_patterns.add_pattern( pat, offset );
       }
-   }
-
 #ifdef DEBUG_ENCODE
 cout << "************************" << endl;
 check_meta_patterns( meta_patterns, p_buffer, offset );
 cout << "************************" << endl;
 #endif
+   }
+
    return was_replaced;
 }
 
@@ -2162,6 +2184,9 @@ string expand_meta_pattern( const string& meta, const unsigned char* p_encoded, 
       size_t pat_offset = ( byte1 & c_offset_high_byte_mask ) << 8;
       pat_offset += byte2;
 
+#ifdef DEBUG_DECODE
+cout << "pat_length = " << pat_length << ", pat_offset = " << pat_offset << endl;
+#endif
       if( offset && pat_offset > offset )
          pattern = c_back_ref + to_string( pat_length ) + ',' + to_string( pat_offset - offset );
       else
@@ -2449,6 +2474,7 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
 void encode_clz_data( istream& is, ostream& os )
 {
    size_t num = 0;
+   size_t total_chunks = 1;
    size_t output_offset = 0;
    size_t unencoded_offset = 0;
    size_t last_pair_repeats = 0;
@@ -2501,6 +2527,8 @@ void encode_clz_data( istream& is, ostream& os )
 #ifdef DEBUG_ENCODE
 cout << "(read) num = " << num << ' ';
 dump_bytes( "input data =", input_buffer, num );
+cout << "last_pattern_offset = " << last_pattern_offset << endl;
+cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
 #endif
       if( num < c_min_pat_length || output_offset < c_min_pat_length )
       {
@@ -2532,7 +2560,9 @@ dump_bytes( "input data =", input_buffer, num );
             was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( !was_extra_pattern )
+         if( was_extra_pattern )
+            last_back_ref_offset = 0;
+         else
          {
             memcpy( output_buffer + output_offset, input_buffer, min( num, c_min_pat_length ) );
             output_offset += min( num, c_min_pat_length );
@@ -2565,7 +2595,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
          // NOTE: If did not find a pattern at the start of the input buffer but can
          // two characters ahead then will not try to use a second pass back-ref (as
          // this gives a better chance for the first pass back-refs to be extended).
-         if( num > 2 && length < c_min_pat_length )
+         if( length < c_min_pat_length && ( num > c_min_pat_length + 2 ) )
             has_following_sequence = ( longest_sequence( input_buffer + 2,
              num - 2, output_buffer, output_offset, offset ) >= c_min_pat_length );
       }
@@ -2593,6 +2623,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
          {
             inverted_offset = output_offset + ( unencoded_offset - num - inverted_offset ) - starting_offset;
 
+            // NOTE: In case the repeat bytes are not combined with the last pattern will need to
+            // increment the offset here (but then decrement it back later if actually combined).
             if( last_pair_repeats )
                inverted_offset += 2;
 
@@ -2609,6 +2641,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                      output_buffer[ output_offset++ ] = rbyte1;
                      output_buffer[ output_offset++ ] = rbyte2;
                   }
+                  else
+                     inverted_offset -= 2;
                }
 
                unsigned byte1 = c_high_bit_value | ( ( inverted_length - c_min_pat_length ) << 3 );
@@ -2624,7 +2658,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
                num -= inverted_length;
 
-               last_back_ref_offset = output_offset;
+               last_back_ref_offset = 0;
                last_pair.first = last_pair.second = last_pair_repeats = 0;
 
                continue;
@@ -2707,7 +2741,9 @@ cout << "length now = " << length << endl;
             was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
          }
 
-         if( !was_extra_pattern )
+         if( was_extra_pattern )
+            last_back_ref_offset = 0;
+         else
          {
             memcpy( output_buffer + output_offset, input_buffer, length );
             output_offset += length;
@@ -2835,6 +2871,8 @@ cout << "(now writing " << output_offset << " bytes)" << endl;
 #  endif
 #endif
          os.write( ( char* )output_buffer, output_offset );
+
+         ++total_chunks;
 
          meta_patterns.clear( );
          extra_patterns.clear( );
