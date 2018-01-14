@@ -71,6 +71,8 @@ const size_t c_max_repeats = 2048;
 
 const size_t c_max_combines = 5;
 
+const size_t c_max_dict_words = 110;
+
 const size_t c_min_pat_length = 3;
 const size_t c_max_pat_length = 15;
 
@@ -109,6 +111,9 @@ const unsigned char c_special_byte_dec = 0x90;
 const unsigned char c_special_pair_inc = 0xa0;
 const unsigned char c_special_pair_dec = 0xb0;
 
+const unsigned char c_special_word_start = 0x10;
+const unsigned char c_special_word_partial = 0x50;
+
 const unsigned char c_special_pair_low_inc = 0xc0;
 const unsigned char c_special_pair_low_dec = 0xd0;
 
@@ -122,6 +127,7 @@ const unsigned char c_meta_pattern_length_val = 0x88;
 
 const unsigned char c_special_char_double_repeat = 0xf0;
 const unsigned char c_special_char_multi_repeats = 0xf1;
+const unsigned char c_special_dict_word_entry_id = 0xf1;
 const unsigned char c_special_compressed_numeric = 0xf2;
 const unsigned char c_special_dict_pattern_lower = 0xf3;
 const unsigned char c_special_dict_pattern_mixed = 0xf4;
@@ -146,6 +152,46 @@ enum step_type
    e_step_type_double = 2,
    e_step_type_double_low = 3,
    e_step_type_double_high = 4
+};
+
+struct dict_word
+{
+   const char* p_w;
+}
+g_dict_words[ ] =
+{
+   { "CIYAM" },
+   { "Extra" },
+   { "Level" },
+   { "Total" },
+   { "Width" },
+   { "</sio" },
+   { "Access" },
+   { "fields" },
+   { "please" },
+   { "Plural" },
+   { "record" },
+   { "Sample" },
+   { "Static" },
+   { "Symbol" },
+   { "Unique" },
+   { "<sio/>" },
+   { "Default" },
+   { "http://" },
+   { "Initial" },
+   { "license" },
+   { "MIT/X11" },
+   { "Numeric" },
+   { "project" },
+   { "https://" },
+   { "Security" },
+   { "Specific" },
+   { "software" },
+   { "Algorithm" },
+   { "Anonymous" },
+   { "Copyright" },
+   { "Developers" },
+   { "Distributed" },
 };
 
 struct dict_pattern
@@ -658,13 +704,35 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       map< byte_pair, size_t > repeated_special_counts;
       map< size_t, byte_pair > repeated_special_offsets;
 
+      map< size_t, size_t > dict_words_found;
+
+      string buffer_str( ( const char* )p_buffer, length );
+
+      for( size_t i = 0; i < ARRAY_SIZE( g_dict_words ); i++ )
+      {
+         if( i >= c_max_dict_words )
+            throw runtime_error( "exceeded maximum CLZ dict words allowed" );
+
+         string word( g_dict_words[ i ].p_w );
+
+         string::size_type pos = buffer_str.find( word );
+
+         if( pos != string::npos )
+            dict_words_found.insert( make_pair( pos, i ) );
+      }
+
       for( size_t i = 0; i < length; i++ )
       {
          unsigned char next = *( p_buffer + i );
 
+         bool just_had_back_ref = false;
+
+         if( num > 2 && last_back_ref_pos >= num - 2 )
+            just_had_back_ref = true;
+
          bool is_special_numeric = false;
 
-         if( !repeats && ( next == ' '
+         if( !repeats && !just_had_back_ref && ( next == ' '
           || ( next >= '0' && next <= '9' ) || ( next >= '+' && next <= '.' ) ) )
             is_special_numeric = true;
 
@@ -677,10 +745,27 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             special_numeric_length = 0;
          }
 
-         // NOTE: Don't allow a special numeric to immediately follow a
-         // back-ref as this would be ambiguous with a back-ref repeat.
-         if( num > 2 && ( last_back_ref_pos == num - 2 ) )
-            is_special_numeric = false;
+         if( !repeats && dict_words_found.count( i ) )
+         {
+            string word( g_dict_words[ dict_words_found[ i ] ].p_w );
+
+            unsigned char start_from = c_special_word_start;
+
+            if( just_had_back_ref )
+            {
+               start_from += c_special_word_partial;
+               shrunken[ num++ ] = next;
+            }
+
+            shrunken[ num++ ] = c_special_dict_word_entry_id;
+            shrunken[ num++ ] = start_from + ( unsigned char )dict_words_found[ i ];
+
+            stepping_amount = 0;
+
+            i += word.length( ) - 1;
+
+            continue;
+         }
 
          if( stepping_amount
           && ( step_type_val == e_step_type_single || i < length - 1 ) )
@@ -1517,8 +1602,32 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                      if( !is.read( ( char* )&ch, 1 ) )
                         break;
 
-                     for( size_t i = 0; i < ch; i++ )
-                        *( p_buffer + length++ ) = last_ch;
+                     unsigned char start_from = c_special_word_start;
+
+                     // NOTE: Special dict words are handled here.
+                     if( ch >= start_from )
+                     {
+                        bool skip_first = false;
+
+                        if( ch >= start_from + c_special_word_partial )
+                        {
+                           ch -= c_special_word_partial;
+                           skip_first = true;
+                        }
+
+                        string word( g_dict_words[ ch - start_from ].p_w );
+
+                        if( skip_first )
+                           word.erase( 0, 1 );
+
+                        for( size_t i = 0; i < word.length( ); i++ )
+                           *( p_buffer + length++ ) = word[ i ];
+                     }
+                     else
+                     {
+                        for( size_t i = 0; i < ch; i++ )
+                           *( p_buffer + length++ ) = last_ch;
+                     }
                   }
 
                   ch = c_nibble_one;
@@ -2157,6 +2266,11 @@ void decode_clz_data( istream& is, ostream& os )
       size_t bytes_read = expand_input( is, input_buffer, c_max_encoded_chunk_size );
 #else
       size_t bytes_read = is.readsome( ( char* )input_buffer, c_max_encoded_chunk_size );
+
+      // NOTE: The "readsome" function may return when in fact there are further bytes to be read so if less than
+      // the maximum encoded chunk size bytes were read then call a second time to try and fill the input buffer.
+      if( bytes_read && bytes_read < c_max_encoded_chunk_size )
+         bytes_read += is.readsome( ( char* )( input_buffer + bytes_read ), c_max_encoded_chunk_size - bytes_read );
 #endif
       if( bytes_read == 0 )
          break;
@@ -2510,6 +2624,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
                num -= inverted_length;
 
+               last_back_ref_offset = output_offset;
                last_pair.first = last_pair.second = last_pair_repeats = 0;
 
                continue;
