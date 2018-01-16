@@ -2635,6 +2635,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                   unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
                   unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
+                  size_t old_output_offset = output_offset;
+
                   if( !replace_meta_pattern( meta_patterns, output_buffer,
                    last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
                   {
@@ -2642,7 +2644,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                      output_buffer[ output_offset++ ] = rbyte2;
                   }
                   else
-                     inverted_offset -= 2;
+                     inverted_offset -= ( 2 + ( old_output_offset - output_offset ) );
                }
 
                unsigned byte1 = c_high_bit_value | ( ( inverted_length - c_min_pat_length ) << 3 );
