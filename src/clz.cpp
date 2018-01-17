@@ -614,8 +614,11 @@ void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
    }
 }
 
-bool shrink_output( unsigned char* p_buffer, size_t& length )
+bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_after_pair = 0 )
 {
+   size_t mark_pos = 0;
+   size_t shrunken_mark_pos = 0;
+
    unsigned char shrunken[ c_max_encoded_chunk_size ];
 
    if( length <= c_max_encoded_chunk_size )
@@ -642,6 +645,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
 
                next_pair.first = next;
                next_pair.second = *( p_buffer + ++i );
+
+               if( p_mark_after_pair && next_pair == *p_mark_after_pair )
+                  mark_pos = i + 1;
 
                ++pairs[ next_pair ];
             }
@@ -724,6 +730,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       for( size_t i = 0; i < length; i++ )
       {
          unsigned char next = *( p_buffer + i );
+
+         if( mark_pos && !shrunken_mark_pos && i >= mark_pos )
+            shrunken_mark_pos = num;
 
          bool just_had_back_ref = false;
 
@@ -983,7 +992,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
             {
                bool found_steps = false;
 
-               if( i < length - 3 )
+               if( i < length - 3 && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
                {
                   unsigned char next_after = *( p_buffer + i + 1 );
 
@@ -1281,9 +1290,13 @@ bool shrink_output( unsigned char* p_buffer, size_t& length )
       if( num < length )
       {
          memcpy( p_buffer, shrunken, length = num );
+
 #ifdef DEBUG_ENCODE
-         dump_bytes( "shrunken ==>", shrunken, num );
+         if( !shrunken_mark_pos )
+            dump_bytes( "shrunken ==>", shrunken, num );
 #endif
+         if( shrunken_mark_pos )
+            dump_bytes( "shrunken ==>", shrunken, num, shrunken_mark_pos );
       }
    }
 }
