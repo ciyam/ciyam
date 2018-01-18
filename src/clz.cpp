@@ -919,13 +919,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
                shrunken[ num++ ] = next_pair.second;
             }
 
-            // NOTE: If this pair was a repeat then allow a dict pattern or special numeric
-            // to follow but must not allow this to occur otherwise because differentiating
-            // between back-ref repeats and nother specials would be impossible.
-            if( ( next & c_nibble_one ) == c_nibble_one )
-               last_ch = 0;
-            else
-               last_ch = c_special_maxval;
+            // NOTE: Cannot permit a dict or numeric pattern to immediately follow a special
+            // pair as "expand" cannot differentiate between back-refs and back-ref repeats.
+            last_ch = c_special_maxval;
          }
          else
          {
