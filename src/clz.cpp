@@ -162,12 +162,15 @@ g_dict_words[ ] =
 {
    { "CIYAM" },
    { "Extra" },
+   { "field" },
    { "Level" },
+   { "Limit" },
    { "Total" },
    { "Width" },
    { "</sio" },
    { "Access" },
    { "fields" },
+   { "M100C1" },
    { "please" },
    { "Plural" },
    { "record" },
@@ -912,16 +915,23 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
                }
 
                last_special_pos = num++;
+
+               // NOTE: Cannot permit a dict or numeric pattern to immediately follow a special
+               // pair as "expand" cannot differentiate between back-refs and back-ref repeats.
+               last_ch = c_special_maxval;
             }
             else
             {
                shrunken[ num++ ] = next_pair.first;
                shrunken[ num++ ] = next_pair.second;
-            }
 
-            // NOTE: Cannot permit a dict or numeric pattern to immediately follow a special
-            // pair as "expand" cannot differentiate between back-refs and back-ref repeats.
-            last_ch = c_special_maxval;
+               // NOTE: If this was a back-ref repeat then a dict or numeric pattern can follow
+               // immediately after it as this wouldn't be ambiguous when processed in "expand".
+               if( ( next & c_nibble_one ) == c_nibble_one )
+                  last_ch = 0;
+               else
+                  last_ch = c_special_maxval;
+            }
          }
          else
          {
@@ -1726,6 +1736,10 @@ size_t longest_sequence( unsigned char* p_input,
 
    vector< size_t > start_offsets;
 
+#ifndef NO_SHRINK_AND_EXPAND
+   bool long_numeric_sequence = false;
+#endif
+
    if( input_size >= c_min_pat_length )
    {
       string::size_type pos = 0;
@@ -1745,6 +1759,23 @@ size_t longest_sequence( unsigned char* p_input,
          if( pos >= buffer_size )
             break;
       }
+
+#ifndef NO_SHRINK_AND_EXPAND
+      size_t numeric_sequence_length = 0;
+
+      for( size_t i = 0; i < input_size; i++ )
+      {
+         unsigned char ch = *( p_input + i );
+
+         if( ch == ' ' || ( ch >= '0' && ch <= '9' ) || ( ch >= '+' && ch <= '.' ) )
+            ++numeric_sequence_length;
+         else
+            break;
+      }
+
+      if( numeric_sequence_length >= ( c_min_pat_length * 3 ) )
+         long_numeric_sequence = true;
+#endif
    }
 
    for( size_t s = 0; s < start_offsets.size( ); s++ )
@@ -1777,6 +1808,10 @@ size_t longest_sequence( unsigned char* p_input,
 
    if( length < c_min_pat_length )
       length = 1;
+#ifndef NO_SHRINK_AND_EXPAND
+   else if( long_numeric_sequence && ( length < c_min_pat_length * 2 ) )
+      length = 1;
+#endif
 
    return length;
 }
