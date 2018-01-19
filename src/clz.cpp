@@ -2529,7 +2529,6 @@ void encode_clz_data( istream& is, ostream& os )
    size_t max_repeats = c_max_repeats;
    size_t max_chunk_size = c_max_encoded_chunk_size;
 
-   meta_pair last_pair;
    repeat_info last_repeat_info;
 
    meta_pattern_info meta_patterns;
@@ -2589,7 +2588,7 @@ cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
             }
          }
 
-         last_pair.first = last_pair.second = last_pair_repeats = 0;
+         last_pair_repeats = 0;
 
          bool was_extra_pattern = false;
 
@@ -2663,7 +2662,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
             inverted_length = longest_sequence( input_buffer, num,
              ( unencoded_buffer + starting_offset ), temp_offset, inverted_offset );
 
-         if( inverted_length >= c_min_pat_length )
+         if( inverted_length > c_min_pat_length )
          {
             inverted_offset = output_offset + ( unencoded_offset - num - inverted_offset ) - starting_offset;
 
@@ -2704,8 +2703,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
                num -= inverted_length;
 
-               last_back_ref_offset = 0;
-               last_pair.first = last_pair.second = last_pair_repeats = 0;
+               last_pair_repeats = last_back_ref_offset = 0;
 
                continue;
             }
@@ -2769,7 +2767,7 @@ cout << "length now = " << length << endl;
                }
             }
 
-            last_pair.first = last_pair.second = last_pair_repeats = 0;
+            last_pair_repeats = 0;
          }
          else
             last_back_ref_offset = output_offset;
@@ -2812,7 +2810,12 @@ cout << "length now = " << length << endl;
 
          byte2 = ( offset & c_offset_low_pair_mask );
 
-         bool bytes_same_as_last_pair = ( byte1 == last_pair.first && byte2 == last_pair.second );
+         bool bytes_same_as_last_pair = false;
+
+         if( output_offset > c_min_pat_length
+          && byte1 == output_buffer[ output_offset - 2 ]
+          && byte2 == output_buffer[ output_offset - 1 ] )
+            bytes_same_as_last_pair = true;
 
 #ifdef DEBUG_ENCODE
 cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 << setw( 2 ) << setfill( '0' ) << ( int )byte2 << dec << endl;
@@ -2829,8 +2832,8 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
                output_buffer[ output_offset++ ] = rbyte2;
             }
 
+            last_pair_repeats = 0;
             bytes_same_as_last_pair = false;
-            last_pair.first = last_pair.second = last_pair_repeats = 0;
          }
 
          if( !bytes_same_as_last_pair && output_offset >= max_chunk_size - 2 )
@@ -2871,7 +2874,7 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
                      output_buffer[ output_offset++ ] = byte2;
                   }
 
-                  last_pair.first = last_pair.second = last_pair_repeats = 0;
+                  last_pair_repeats = 0;
                   memmove( input_buffer, input_buffer + length, num - length );
                }
                else
@@ -2882,8 +2885,8 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
                   // NOTE: Insert the back-reference at the start of the input buffer to support
                   // back-referencing from an existing back-reference (to efficiently handle any
                   // steadily increasing in length repeating patterns).
-                  input_buffer[ 0 ] = last_pair.first = byte1;
-                  input_buffer[ 1 ] = last_pair.second = byte2;
+                  input_buffer[ 0 ] = byte1;
+                  input_buffer[ 1 ] = byte2;
 
                   num += 2;
                }
@@ -2926,8 +2929,8 @@ cout << "(now writing " << output_offset << " bytes)" << endl;
          memset( output_buffer, 0, sizeof( output_buffer ) );
          memset( unencoded_buffer, 0, sizeof( unencoded_buffer ) );
 
-         last_pair.first = last_pair.second = last_pair_repeats = 0;
-         output_offset = unencoded_offset = last_pattern_offset = last_back_ref_offset = 0;
+         output_offset = unencoded_offset = 0;
+         last_pair_repeats = last_pattern_offset = last_back_ref_offset = 0;
       }
    }
 
