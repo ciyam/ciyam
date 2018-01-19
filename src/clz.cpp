@@ -186,7 +186,9 @@ g_dict_words[ ] =
    { "MIT/X11" },
    { "Numeric" },
    { "project" },
+   { "Without" },
    { "https://" },
+   { "Manually" },
    { "Security" },
    { "Specific" },
    { "software" },
@@ -194,6 +196,7 @@ g_dict_words[ ] =
    { "Anonymous" },
    { "Copyright" },
    { "Developers" },
+   { "Create_Only" },
    { "Distributed" },
 };
 
