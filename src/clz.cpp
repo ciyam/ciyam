@@ -1727,7 +1727,8 @@ dump_bytes( "expanded ==>", p_buffer, length );
 }
 
 size_t longest_sequence( unsigned char* p_input,
- size_t input_size, unsigned char* p_buffer, size_t buffer_size, size_t& offset )
+ size_t input_size, unsigned char* p_buffer, size_t buffer_size,
+ size_t& offset, unsigned char* p_output_buffer = 0, size_t output_buffer_size = 0 )
 {
    // NOTE: If a sequence of input bytes starting at the first byte of the
    // input buffer that is longer than the minimum pattern length is found
@@ -1737,10 +1738,17 @@ size_t longest_sequence( unsigned char* p_input,
    size_t start = 0;
    size_t length = 1;
 
+   if( !p_output_buffer )
+   {
+      p_output_buffer = p_buffer;
+      output_buffer_size = buffer_size;
+   }
+
    vector< size_t > start_offsets;
 
 #ifndef NO_SHRINK_AND_EXPAND
    bool long_numeric_sequence = false;
+   size_t numeric_sequence_length = 0;
 #endif
 
    if( input_size >= c_min_pat_length )
@@ -1764,8 +1772,6 @@ size_t longest_sequence( unsigned char* p_input,
       }
 
 #ifndef NO_SHRINK_AND_EXPAND
-      size_t numeric_sequence_length = 0;
-
       for( size_t i = 0; i < input_size; i++ )
       {
          unsigned char ch = *( p_input + i );
@@ -1776,6 +1782,9 @@ size_t longest_sequence( unsigned char* p_input,
             break;
       }
 
+      // NOTE: If the input contains long special numeric sequence
+      // then will ignore the matching sequence if that's found to
+      // not be long enough.
       if( numeric_sequence_length >= ( c_min_pat_length * 3 ) )
          long_numeric_sequence = true;
 #endif
@@ -1814,6 +1823,27 @@ size_t longest_sequence( unsigned char* p_input,
 #ifndef NO_SHRINK_AND_EXPAND
    else if( long_numeric_sequence && ( length < c_min_pat_length * 2 ) )
       length = 1;
+   else if( numeric_sequence_length >= length
+    && ( output_buffer_size > c_min_pat_length * 2 ) && ( length < c_min_pat_length * 2 ) )
+   {
+      bool prior_numeric_sequence = true;
+
+      // NOTE: If a short enough entirely special numeric sequence follows another one that has just
+      // been output then ignore this matching sequence.
+      for( size_t i = output_buffer_size - 1; i >= output_buffer_size - ( c_min_pat_length * 2 ); i-- )
+      {
+         unsigned char ch = *( p_output_buffer + i );
+
+         if( !( ch == ' ' || ( ch >= '0' && ch <= '9' ) || ( ch >= '+' && ch <= '.' ) ) )
+         {
+            prior_numeric_sequence = false;
+            break;
+         }
+      }
+
+      if( prior_numeric_sequence )
+         length = 1;
+   }
 #endif
 
    return length;
@@ -2663,7 +2693,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
          if( temp_offset - starting_offset > c_min_pat_length )
             inverted_length = longest_sequence( input_buffer, num,
-             ( unencoded_buffer + starting_offset ), temp_offset, inverted_offset );
+             ( unencoded_buffer + starting_offset ), temp_offset, inverted_offset, output_buffer, output_offset );
 
          if( inverted_length > c_min_pat_length )
          {
@@ -2718,6 +2748,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 cout << "length = " << length << ", offset = " << offset << endl;
 cout << "output_offset = " << output_offset << endl;
 #endif
+      bool at_end_of_buffer = false;
+
       // NOTE: Never output the just first part of a back-ref pair.
       if( length == 1 && input_starts_with_back_ref )
          ++length;
@@ -2727,13 +2759,19 @@ cout << "output_offset = " << output_offset << endl;
       {
          unsigned char ch = input_buffer[ 0 ];
 
-         // NOTE: Don't allow a run of identical bytes to be any shorter than the maximum
-         // pattern length in order to minimise space required for the run as well as for
-         // possible later repeats.
-         for( ; length < num; length++ )
+         // NOTE: Don't allow a run of identical bytes to be any shorter than the
+         // maximum pattern length in order to allow the maximum usage of the run
+         // in a later back-ref.
+         if( output_offset + length >= c_max_encoded_chunk_size )
+            length = c_max_encoded_chunk_size - output_offset;
+         else
          {
-            if( input_buffer[ length ] != ch || ( output_offset + length > max_offset + 2 ) )
-               break;
+            for( ; length < num; length++ )
+            {
+               if( input_buffer[ length ] != ch 
+                || ( output_offset + length >= c_max_encoded_chunk_size - 1 ) )
+                  break;
+            }
          }
 
          memcpy( output_buffer + output_offset, input_buffer, length );
@@ -2747,7 +2785,10 @@ cout << "(appended " << length << " identical bytes)" << endl;
          output_offset += length;
          num -= length;
 
-         continue;
+         if( output_offset >= c_max_encoded_chunk_size )
+            at_end_of_buffer = true;
+         else
+            continue;
       }
 
 #ifdef DEBUG_ENCODE
@@ -2803,7 +2844,7 @@ cout << "length now = " << length << endl;
 
          perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
       }
-      else
+      else if( !at_end_of_buffer )
       {
          unsigned char byte1 = 0;
          unsigned char byte2 = 0;
