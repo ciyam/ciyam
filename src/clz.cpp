@@ -486,6 +486,10 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
          unsigned char byte1 = *( p_buffer + offset );
          unsigned char byte2 = *( p_buffer + offset + 1 );
 
+         if( ( byte1 & c_high_bit_value )
+          || ( byte2 & c_high_bit_value ) )
+            break;
+
          if( byte1 == byte2 )
             continue;
 
@@ -494,6 +498,13 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
 
          unsigned char byte3 = *( p_buffer + offset + 2 );
          unsigned char byte4 = *( p_buffer + offset + 3 );
+
+         if( ( byte3 & c_high_bit_value )
+          || ( byte4 & c_high_bit_value ) )
+         {
+            step_amount = 0;
+            break;
+         }
 
          bool found = true;
 
@@ -505,6 +516,9 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
          else
          {
             unsigned char byte5 = *( p_buffer + offset + 4 );
+
+            if( byte5 & c_high_bit_value )
+               break;
 
             if( ( ascending && byte5 != byte4 + step_amount )
              || ( !ascending && byte5 != byte4 - step_amount ) )
@@ -537,10 +551,24 @@ size_t found_stepping_bytes( unsigned char* p_buffer, size_t offset, size_t leng
          unsigned char byte5 = *( p_buffer + offset + 4 );
          unsigned char byte6 = *( p_buffer + offset + 5 );
 
+         if( ( byte5 & c_high_bit_value )
+          || ( byte6 & c_high_bit_value ) )
+         {
+            step_amount = 0;
+            break;
+         }
+
          size_t val3 = ( byte5 << 8 ) + byte6;
 
          unsigned char byte7 = *( p_buffer + offset + 6 );
          unsigned char byte8 = *( p_buffer + offset + 7 );
+
+         if( ( byte7 & c_high_bit_value )
+          || ( byte8 & c_high_bit_value ) )
+         {
+            step_amount = 0;
+            break;
+         }
 
          size_t val4 = ( byte7 << 8 ) + byte8;
 
@@ -1000,8 +1028,14 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
             else
             {
                bool found_steps = false;
+               bool ignore_steps = false;
 
-               if( i < length - 3 && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
+               if( is_special_numeric && special_numeric_length >= 4
+                && ( special_numeric_start + special_numeric_length == num ) )
+                  ignore_steps = true;
+
+               if( !ignore_steps && ( i < length - 3 )
+                && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
                {
                   unsigned char next_after = *( p_buffer + i + 1 );
 
@@ -1011,139 +1045,171 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
                    && ( next + 2 ) == *( p_buffer + i + 2 )
                    && ( next + 3 ) == *( p_buffer + i + 3 ) )
                   {
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     step_type_val = e_step_type_single;
-                     found_steps = steps_ascending = true;
+                     if( !( ( next + 3 ) & c_high_bit_value ) )
+                     {
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        step_type_val = e_step_type_single;
+                        found_steps = steps_ascending = true;
 
-                     i += 3;
-                     last_ch = *( p_buffer + i );
+                        i += 3;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_byte_inc;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_byte_inc;
+                     }
                   }
                   else if( ( next - 1 ) == *( p_buffer + i + 1 )
                    && ( next - 2 ) == *( p_buffer + i + 2 )
                    && ( next - 3 ) == *( p_buffer + i + 3 ) )
                   {
-                     found_steps = true;
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     steps_ascending = false;
-                     step_type_val = e_step_type_single;
+                     if( !( ( next - 3 ) & c_high_bit_value ) )
+                     {
+                        found_steps = true;
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        steps_ascending = false;
+                        step_type_val = e_step_type_single;
 
-                     i += 3;
-                     last_ch = *( p_buffer + i );
+                        i += 3;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_byte_dec;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_byte_dec;
+                     }
                   }
                   else if( i < length - 5
                    && ( next + 1 ) == *( p_buffer + i + 2 ) && ( next_after + 1 ) == *( p_buffer + i + 3 )
                    && ( next + 2 ) == *( p_buffer + i + 4 ) && ( next_after + 2 ) == *( p_buffer + i + 5 ) )
                   {
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     step_type_val = e_step_type_double;
-                     found_steps = steps_ascending = true;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next + 2 ) & c_high_bit_value )
+                      && !( ( next_after + 2 ) & c_high_bit_value ) )
+                     {
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        step_type_val = e_step_type_double;
+                        found_steps = steps_ascending = true;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_inc;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_inc;
+                     }
                   }
                   else if( i < length - 5
                    && ( next - 1 ) == *( p_buffer + i + 2 ) && ( next_after - 1 ) == *( p_buffer + i + 3 )
                    && ( next - 2 ) == *( p_buffer + i + 4 ) && ( next_after - 2 ) == *( p_buffer + i + 5 ) )
                   {
-                     found_steps = true;
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     steps_ascending = false;
-                     step_type_val = e_step_type_double;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next - 2 ) & c_high_bit_value )
+                      && !( ( next_after - 2 ) & c_high_bit_value ) )
+                     {
+                        found_steps = true;
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        steps_ascending = false;
+                        step_type_val = e_step_type_double;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_dec;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_dec;
+                     }
                   }
                   else if( i < length - 5
                    && next == *( p_buffer + i + 2 ) && ( next_after + 1 ) == *( p_buffer + i + 3 )
                    && next == *( p_buffer + i + 4 ) && ( next_after + 2 ) == *( p_buffer + i + 5 ) )
                   {
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     found_steps = steps_ascending = true;
-                     step_type_val = e_step_type_double_low;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next_after + 2 ) & c_high_bit_value ) )
+                     {
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        found_steps = steps_ascending = true;
+                        step_type_val = e_step_type_double_low;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_low_inc;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_low_inc;
+                     }
                   }
                   else if( i < length - 5
                    && next == *( p_buffer + i + 2 ) && ( next_after - 1 ) == *( p_buffer + i + 3 )
                    && next == *( p_buffer + i + 4 ) && ( next_after - 2 ) == *( p_buffer + i + 5 ) )
                   {
-                     found_steps = true;
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     steps_ascending = false;
-                     step_type_val = e_step_type_double_low;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next_after - 2 ) & c_high_bit_value ) )
+                     {
+                        found_steps = true;
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        steps_ascending = false;
+                        step_type_val = e_step_type_double_low;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_low_dec;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_low_dec;
+                     }
                   }
                   else if( i < length - 5
                    && ( next + 1 ) == *( p_buffer + i + 2 ) && next_after == *( p_buffer + i + 3 )
                    && ( next + 2 ) == *( p_buffer + i + 4 ) && next_after == *( p_buffer + i + 5 ) )
                   {
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     found_steps = steps_ascending = true;
-                     step_type_val = e_step_type_double_high;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next + 2 ) & c_high_bit_value ) )
+                     {
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        found_steps = steps_ascending = true;
+                        step_type_val = e_step_type_double_high;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_high_inc;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_high_inc;
+                     }
                   }
                   else if( i < length - 5
                    && ( next - 1 ) == *( p_buffer + i + 2 ) && next_after == *( p_buffer + i + 3 )
                    && ( next - 2 ) == *( p_buffer + i + 4 ) && next_after == *( p_buffer + i + 5 ) )
                   {
-                     found_steps = true;
-                     stepping_bytes = 0;
-                     stepping_amount = 1;
-                     steps_ascending = false;
-                     step_type_val = e_step_type_double_high;
+                     if( !( next_after & c_high_bit_value )
+                      && !( ( next - 2 ) & c_high_bit_value ) )
+                     {
+                        found_steps = true;
+                        stepping_bytes = 0;
+                        stepping_amount = 1;
+                        steps_ascending = false;
+                        step_type_val = e_step_type_double_high;
 
-                     i += 5;
-                     last_ch = *( p_buffer + i );
+                        i += 5;
+                        last_ch = *( p_buffer + i );
 
-                     shrunken[ num++ ] = next;
-                     shrunken[ num++ ] = next_after;
-                     shrunken[ num++ ] = c_special_step_pattern_fixed;
-                     shrunken[ num++ ] = c_special_pair_high_dec;
+                        shrunken[ num++ ] = next;
+                        shrunken[ num++ ] = next_after;
+                        shrunken[ num++ ] = c_special_step_pattern_fixed;
+                        shrunken[ num++ ] = c_special_pair_high_dec;
+                     }
                   }
                   else
                   {
@@ -1206,8 +1272,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
          }
       }
 
-      // NOTE: If finished with a single character repeat pattern or
-      // a special compressed numeric then complete that output now.
+      // NOTE: If finished either with a single character repeat pattern or a special compressed
+      // numeric then complete the output for that pattern before then processing special pairs.
       if( repeats )
          output_repeats( shrunken, repeats, num );
       else if( special_numeric_length >= 5
