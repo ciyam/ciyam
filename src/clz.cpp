@@ -71,7 +71,7 @@ const size_t c_max_repeats = 2048;
 
 const size_t c_max_combines = 5;
 
-const size_t c_max_dict_words = 110;
+const size_t c_max_dict_words = 256;
 
 const size_t c_min_pat_length = 3;
 const size_t c_max_pat_length = 15;
@@ -82,7 +82,7 @@ const size_t c_max_encoded_chunk_size = c_max_offset + c_min_pat_length + 2;
 
 const size_t c_max_unencoded_chunk_size = 8192;
 
-const size_t c_max_specials = 7;
+const size_t c_max_special_pairs = 6;
 const size_t c_max_special_repeats = 15;
 const size_t c_max_special_step_vals = 15;
 
@@ -102,7 +102,7 @@ const unsigned char c_high_five_bits = 0xf8;
 const unsigned char c_max_repeats_hi = 0xf7;
 const unsigned char c_max_repeats_lo = 0xff;
 
-const unsigned char c_special_marker = 0xf8;
+const unsigned char c_special_marker = 0xf9;
 const unsigned char c_special_maxval = 0xff;
 
 const unsigned char c_special_byte_inc = 0x80;
@@ -110,9 +110,6 @@ const unsigned char c_special_byte_dec = 0x90;
 
 const unsigned char c_special_pair_inc = 0xa0;
 const unsigned char c_special_pair_dec = 0xb0;
-
-const unsigned char c_special_word_start = 0x10;
-const unsigned char c_special_word_partial = 0x50;
 
 const unsigned char c_special_pair_low_inc = 0xc0;
 const unsigned char c_special_pair_low_dec = 0xd0;
@@ -127,13 +124,13 @@ const unsigned char c_meta_pattern_length_val = 0x88;
 
 const unsigned char c_special_char_double_repeat = 0xf0;
 const unsigned char c_special_char_multi_repeats = 0xf1;
-const unsigned char c_special_dict_word_entry_id = 0xf1;
 const unsigned char c_special_compressed_numeric = 0xf2;
 const unsigned char c_special_dict_pattern_lower = 0xf3;
 const unsigned char c_special_dict_pattern_mixed = 0xf4;
 const unsigned char c_special_dict_pattern_upper = 0xf5;
 const unsigned char c_special_step_pattern_fixed = 0xf6;
 const unsigned char c_special_step_pattern_multi = 0xf7;
+const unsigned char c_special_dict_word_list_num = 0xf8;
 
 #ifdef VISUALISE_BACKREFS
 const char* const c_color_red = "\e[31m";
@@ -160,12 +157,17 @@ struct dict_word
 }
 g_dict_words[ ] =
 {
+   { "begin" },
    { "CIYAM" },
    { "Extra" },
+   { "false" },
    { "field" },
+   { "graph" },
    { "Level" },
    { "Limit" },
+   { "split" },
    { "Total" },
+   { "value" },
    { "Width" },
    { "</sio" },
    { "Access" },
@@ -175,9 +177,12 @@ g_dict_words[ ] =
    { "Plural" },
    { "record" },
    { "Sample" },
+   { "size_t" },
+   { "socket" },
    { "Static" },
    { "Symbol" },
    { "Unique" },
+   { "#ifdef" },
    { "<sio/>" },
    { "Default" },
    { "http://" },
@@ -187,6 +192,8 @@ g_dict_words[ ] =
    { "Numeric" },
    { "project" },
    { "Without" },
+   { "#pragma" },
+   { "children" },
    { "https://" },
    { "Manually" },
    { "Security" },
@@ -195,9 +202,14 @@ g_dict_words[ ] =
    { "Algorithm" },
    { "Anonymous" },
    { "Copyright" },
+   { "utilities" },
+   { "const char" },
    { "Developers" },
+   { "unexpected" },
    { "Create_Only" },
    { "Distributed" },
+   { "STD_HEADERS" },
+   { "Pty. Ltd. ACN" },
 };
 
 struct dict_pattern
@@ -707,7 +719,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
       for( map< byte_pair, size_t >::iterator pi = pairs.begin( ); pi != pairs.end( ); ++pi )
          ordered.insert( make_pair( pi->second, pi->first ) );
 
-      while( ordered.size( ) > c_max_specials )
+      while( ordered.size( ) > c_max_special_pairs )
          ordered.erase( ordered.begin( ) );
 
       set< byte_pair > specials;
@@ -739,7 +751,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
       unsigned char last_ch = c_special_maxval;
 
-      size_t available_specials = ( c_max_specials - special_nums.size( ) );
+      size_t available_specials = ( c_max_special_pairs - special_nums.size( ) );
 
       map< byte_pair, size_t > repeated_special_counts;
       map< size_t, byte_pair > repeated_special_offsets;
@@ -792,16 +804,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
          {
             string word( g_dict_words[ dict_words_found[ i ] ].p_w );
 
-            unsigned char start_from = c_special_word_start;
-
-            if( just_had_back_ref )
-            {
-               start_from += c_special_word_partial;
-               shrunken[ num++ ] = next;
-            }
-
-            shrunken[ num++ ] = c_special_dict_word_entry_id;
-            shrunken[ num++ ] = start_from + ( unsigned char )dict_words_found[ i ];
+            shrunken[ num++ ] = c_special_dict_word_list_num;
+            shrunken[ num++ ] = ( unsigned char )dict_words_found[ i ];
 
             stepping_amount = 0;
 
@@ -1620,11 +1624,23 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
             continue;
       }
 
-      if( !back_refs.count( length - 1 ) && ch >= c_special_marker )
+      if( !back_refs.count( length - 1 ) && ch >= c_special_dict_word_list_num )
       {
+         if( ch == c_special_dict_word_list_num )
+         {
+            if( !is.read( ( char* )&ch, 1 ) )
+               break;
+
+            string word( g_dict_words[ ch ].p_w );
+
+            for( size_t i = 0; i < word.length( ); i++ )
+               *( p_buffer + length++ ) = word[ i ];
+
+            --length; // NOTE: Due to the increment below.
+         }
          // NOTE: Finish if found specials marker or keep track of a
          // special for later replacement/expansion.
-         if( ch == c_special_marker )
+         else if( ch == c_special_marker )
          {
             had_marker = true;
             break;
@@ -1690,32 +1706,8 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                      if( !is.read( ( char* )&ch, 1 ) )
                         break;
 
-                     unsigned char start_from = c_special_word_start;
-
-                     // NOTE: Special dict words are handled here.
-                     if( ch >= start_from )
-                     {
-                        bool skip_first = false;
-
-                        if( ch >= start_from + c_special_word_partial )
-                        {
-                           ch -= c_special_word_partial;
-                           skip_first = true;
-                        }
-
-                        string word( g_dict_words[ ch - start_from ].p_w );
-
-                        if( skip_first )
-                           word.erase( 0, 1 );
-
-                        for( size_t i = 0; i < word.length( ); i++ )
-                           *( p_buffer + length++ ) = word[ i ];
-                     }
-                     else
-                     {
-                        for( size_t i = 0; i < ch; i++ )
-                           *( p_buffer + length++ ) = last_ch;
-                     }
+                     for( size_t i = 0; i < ch; i++ )
+                        *( p_buffer + length++ ) = last_ch;
                   }
 
                   ch = c_nibble_one;
@@ -1768,7 +1760,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
 
          // NOTE: If extra specials were used then need to expand them as two normal specials
          // along with doing a memmove to make room for the doubled expansion.
-         if( ( *( p_buffer + offset ) & c_high_five_bits ) == c_special_marker )
+         if( *( p_buffer + offset ) > c_special_marker )
          {
             size_t num_1 = c_special_maxval - *( p_buffer + offset );
             size_t num_2 = c_special_maxval - *( p_buffer + offset + 1 );
