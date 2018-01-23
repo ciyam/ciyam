@@ -157,7 +157,23 @@ struct dict_word
 }
 g_dict_words[ ] =
 {
+   { "Args" },
+   { "edit" },
+   { "Enum" },
+   { "File" },
+   { "High" },
+   { "line" },
+   { "Link" },
+   { "name" },
+   { "Next" },
+   { "root" },
+   { "Save" },
+   { "Sort" },
+   { "Spec" },
+   { "Type" },
+   { "View" },
    { "begin" },
+   { "Child" },
    { "CIYAM" },
    { "Extra" },
    { "false" },
@@ -165,9 +181,12 @@ g_dict_words[ ] =
    { "graph" },
    { "Level" },
    { "Limit" },
+   { "Model" },
+   { "reign" },
    { "split" },
    { "Total" },
    { "value" },
+   { "Value" },
    { "Width" },
    { "</sio" },
    { "Access" },
@@ -177,6 +196,7 @@ g_dict_words[ ] =
    { "Plural" },
    { "record" },
    { "Sample" },
+   { "Search" },
    { "size_t" },
    { "socket" },
    { "Static" },
@@ -770,7 +790,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
          string::size_type pos = buffer_str.find( word );
 
          if( pos != string::npos )
-            dict_words_found.insert( make_pair( pos, i ) );
+            dict_words_found[ pos ] = i;
       }
 
       for( size_t i = 0; i < length; i++ )
@@ -1302,15 +1322,6 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
          set< byte_pair > repeated_specials;
          map< byte_pair, size_t > repeated_specials_used;
-
-         // NOTE: If there is only one potential extra special and it
-         // only has 3 repeats then it isn't worth the effort (due to
-         // the need for a marker byte when using extra specials).
-         if( ordered.size( ) == 1 && ordered.begin( )->first == 3 )
-         {
-            ordered.clear( );
-            repeated_special_offsets.clear( );
-         }
 
          for( map< size_t, byte_pair >::iterator oi = ordered.begin( ); oi != ordered.end( ); ++oi )
             repeated_specials.insert( oi->second );
