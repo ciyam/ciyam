@@ -172,6 +172,14 @@ g_dict_words[ ] =
    { "Spec" },
    { "Type" },
    { "View" },
+   { "Work" },
+   { ".com" },
+   { ".css" },
+   { ".gif" },
+   { ".jpg" },
+   { ".org" },
+   { ".png" },
+   { ".txt" },
    { "begin" },
    { "Child" },
    { "CIYAM" },
@@ -179,6 +187,7 @@ g_dict_words[ ] =
    { "false" },
    { "field" },
    { "graph" },
+   { "Index" },
    { "Level" },
    { "Limit" },
    { "Model" },
@@ -188,13 +197,15 @@ g_dict_words[ ] =
    { "value" },
    { "Value" },
    { "Width" },
-   { "</sio" },
+   { "@key," },
    { "Access" },
+   { "Change" },
    { "fields" },
    { "M100C1" },
    { "please" },
    { "Plural" },
    { "record" },
+   { "Record" },
    { "Sample" },
    { "Search" },
    { "size_t" },
@@ -204,7 +215,9 @@ g_dict_words[ ] =
    { "Unique" },
    { "#ifdef" },
    { "<sio/>" },
+   { "</sio>" },
    { "Default" },
+   { "Exclude" },
    { "http://" },
    { "Initial" },
    { "license" },
@@ -219,15 +232,19 @@ g_dict_words[ ] =
    { "Security" },
    { "Specific" },
    { "software" },
+   { "<record>" },
    { "Algorithm" },
    { "Anonymous" },
    { "Copyright" },
+   { "Procedure" },
    { "utilities" },
    { "const char" },
    { "Developers" },
+   { "Permission" },
    { "unexpected" },
    { "Create_Only" },
    { "Distributed" },
+   { "Restriction" },
    { "STD_HEADERS" },
    { "Pty. Ltd. ACN" },
 };
@@ -2644,6 +2661,23 @@ void encode_clz_data( istream& is, ostream& os )
    memset( output_buffer, 0, sizeof( output_buffer ) );
    memset( unencoded_buffer, 0, sizeof( unencoded_buffer ) );
 
+#ifndef NO_SHRINK_AND_EXPAND
+   size_t max_word_length = 0;
+
+   set< string > found_words;
+   map< string, size_t > dict_words;
+
+   for( size_t i = 0; i < ARRAY_SIZE( g_dict_words ); i++ )
+   {
+      string word( g_dict_words[ i ].p_w );
+
+      if( word.length( ) > max_word_length )
+         max_word_length = word.length( );
+
+      dict_words.insert( make_pair( word, i ) );
+   }
+#endif
+
    while( true )
    {
       while( num < c_max_pat_length )
@@ -2732,6 +2766,59 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
       bool has_following_sequence = false;
       bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
+
+#ifndef NO_SHRINK_AND_EXPAND
+      if( num > c_min_pat_length && !input_starts_with_back_ref )
+      {
+         bool found = false;
+
+         string pat( ( const char* )input_buffer, min( num, max_word_length ) );
+
+         // NOTE: If a dictionary word that hasn't already appeared is found then
+         // rather than risk splitting it with a back-ref simply skip over it (as
+         // it will be shrunk to two bytes when shrunk).
+         while( pat.length( ) > c_min_pat_length )
+         {
+            if( !found_words.count( pat ) && dict_words.count( pat ) )
+            {
+               found = true;
+               break;
+            }
+
+            pat.erase( pat.length( ) - 1 );
+         }
+
+         if( found && output_offset < max_offset - pat.length( ) )
+         {
+            if( last_pair_repeats )
+            {
+               unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
+               unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
+
+               if( !replace_meta_pattern( meta_patterns, output_buffer,
+                last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+               {
+                  output_buffer[ output_offset++ ] = rbyte1;
+                  output_buffer[ output_offset++ ] = rbyte2;
+               }
+            }
+
+            last_pair_repeats = 0;
+
+            found_words.insert( pat );
+
+            memcpy( output_buffer + output_offset, input_buffer, pat.length( ) );
+            output_offset += pat.length( );
+
+            if( num > pat.length( ) )
+               memmove( input_buffer, input_buffer + pat.length( ), num - pat.length( ) );
+
+            num -= pat.length( );
+
+            continue;
+         }
+      }
+#endif
 
       if( num > 0 && output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
       {
@@ -3036,6 +3123,9 @@ cout << "(now writing " << output_offset << " bytes)" << endl;
 
          ++total_chunks;
 
+#ifndef NO_SHRINK_AND_EXPAND
+         found_words.clear( );
+#endif
          meta_patterns.clear( );
          extra_patterns.clear( );
 
