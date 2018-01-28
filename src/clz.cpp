@@ -158,6 +158,7 @@ struct dict_word
 g_dict_words[ ] =
 {
    { "Args" },
+   { "Auto" },
    { "edit" },
    { "Enum" },
    { "File" },
@@ -168,11 +169,14 @@ g_dict_words[ ] =
    { "Next" },
    { "root" },
    { "Save" },
+   { "Size" },
    { "Sort" },
    { "Spec" },
+   { "Text" },
    { "Type" },
    { "View" },
    { "Work" },
+   { "www." },
    { ".com" },
    { ".css" },
    { ".gif" },
@@ -236,6 +240,7 @@ g_dict_words[ ] =
    { "Algorithm" },
    { "Anonymous" },
    { "Copyright" },
+   { "Mandatory" },
    { "Procedure" },
    { "utilities" },
    { "const char" },
@@ -1935,7 +1940,8 @@ size_t longest_sequence( unsigned char* p_input,
    return length;
 }
 
-bool combine_meta_patterns( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t& offset, size_t& last_pattern_offset )
+bool combine_meta_patterns( meta_pattern_info& meta_patterns,
+ unsigned char* p_buffer, size_t& offset, size_t& last_pattern_offset, size_t last_second_pass_offset )
 {
    bool can_combine = true;
    bool can_continue = false;
@@ -1957,7 +1963,7 @@ bool combine_meta_patterns( meta_pattern_info& meta_patterns, unsigned char* p_b
             is_back_ref = true;
       }
 
-      if( is_back_ref )
+      if( is_back_ref || last_pattern_offset <= last_second_pass_offset )
          can_combine = false;
    }
 
@@ -2101,13 +2107,13 @@ cout << "inc removed @" << ( offset - 6 ) << " with: " << pat << endl;
             {
                meta_patterns.remove_offsets_from( offset - 8 );
 
-               *( p_buffer + offset - 6 ) = rpt.byte1;
-               *( p_buffer + offset - 5 ) = rpt.byte2;
+               pat.byte1 = meta_patterns[ rpt ].first;
+               pat.byte2 = meta_patterns[ rpt ].second;
+
+               *( p_buffer + offset - 6 ) = pat.byte1;
+               *( p_buffer + offset - 5 ) = pat.byte2;
                *( p_buffer + offset - 4 ) = pat.byte3;
                *( p_buffer + offset - 3 ) = pat.byte4;
-
-               pat.byte1 = rpt.byte1;
-               pat.byte2 = rpt.byte2;
 #ifdef DEBUG_ENCODE
 cout << "backrepl @" << ( offset - 4 ) << " with: " << pat << endl;
 #endif
@@ -2126,17 +2132,20 @@ cout << "backrepl @" << ( offset - 4 ) << " with: " << pat << endl;
    return can_continue;
 }
 
-void perform_meta_combines( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t& end_offset, size_t& last_pattern_offset )
+void perform_meta_combines( meta_pattern_info& meta_patterns,
+ unsigned char* p_buffer, size_t& end_offset, size_t& last_pattern_offset, size_t last_second_pass_offset )
 {
    for( size_t i = 0; i < c_max_combines; i++ )
    {
-      if( !combine_meta_patterns( meta_patterns, p_buffer, end_offset, last_pattern_offset ) )
+      if( !combine_meta_patterns( meta_patterns, p_buffer, end_offset, last_pattern_offset, last_second_pass_offset ) )
          break;
    }
 }
 
-bool replace_meta_pattern( meta_pattern_info& meta_patterns, unsigned char* p_buffer, size_t offset,
- unsigned char& new_byte1, unsigned char& new_byte2, size_t& end_offset, size_t& last_pattern_offset )
+bool replace_meta_pattern(
+ meta_pattern_info& meta_patterns, unsigned char* p_buffer,
+ size_t offset, unsigned char& new_byte1, unsigned char& new_byte2,
+ size_t& end_offset, size_t& last_pattern_offset, size_t last_second_pass_offset )
 {
    bool was_replaced = false;
 
@@ -2176,7 +2185,8 @@ cout << "replaced " << pat << " @" << offset << " with: " << meta_patterns[ pat 
          *( p_buffer + offset ) = meta_patterns[ pat ].first;
          *( p_buffer + offset + 1 ) = meta_patterns[ pat ].second;
 
-         perform_meta_combines( meta_patterns, p_buffer, end_offset, last_pattern_offset );
+         perform_meta_combines( meta_patterns,
+          p_buffer, end_offset, last_pattern_offset, last_second_pass_offset );
 
          if( had_prior_pattern && old_end_offset == end_offset )
          {
@@ -2192,7 +2202,7 @@ cout << "replaced " << pat << " @" << offset << " with: " << meta_patterns[ pat 
 dump_bytes( "modified ==>", p_buffer, end_offset );
 #endif
       }
-      else if( ( pat.byte1 & c_high_bit_value ) && ( pat.byte1 & c_nibble_one ) != c_nibble_one )
+      else if( ( pat.byte1 & c_high_bit_value ) && ( ( pat.byte1 & c_nibble_one ) != c_nibble_one ) )
       {
          meta_patterns.remove_offsets_from( offset );
 
@@ -2293,6 +2303,9 @@ bool replace_extra_pattern( meta_pattern_info& meta_patterns,
 
 #ifdef DEBUG_ENCODE
 dump_bytes( "extra pattern ==>", ( unsigned char* )pattern.c_str( ), pattern.length( ) );
+cout << "now becomes: "
+ << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1
+ << setw( 2 ) << setfill( '0' ) << ( int )byte2 << dec << endl;
 #endif
    }
 
@@ -2305,7 +2318,7 @@ dump_bytes( "extra pattern ==>", ( unsigned char* )pattern.c_str( ), pattern.len
       // NOTE: If the extra pattern follows a previous back-ref
       // (but a not repeat) then add this as a new meta-pattern
       // (if it had not already been added).
-      if( ch != c_nibble_one && ( ch & c_high_bit_value ) )
+      if( ch < c_nibble_one && ( ch & c_high_bit_value ) )
       {
          meta_pattern pat;
 
@@ -2539,7 +2552,6 @@ cout << "meta repeats = " << num_repeats << endl;
 #ifdef DEBUG_DECODE
 cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n output ==> " << output << endl;
 #endif
-                  num_repeats = 0;
                   outputs.push_front( output );
 
 #ifdef VISUALISE_BACKREFS
@@ -2547,6 +2559,7 @@ cout << "num_repeats = " << num_repeats << ", expanded pat: " << pat << "\n outp
                    string( num_repeats == 0 ? c_color_green : c_color_purple ) + "[" + string( c_color_cyan )
                    + output + string( num_repeats == 0 ? c_color_green : c_color_purple ) + "]" + string( c_color_default ) );
 #endif
+                  num_repeats = 0;
                }
 
                last_offset = next_offset;
@@ -2643,6 +2656,7 @@ void encode_clz_data( istream& is, ostream& os )
    size_t last_pair_repeats = 0;
    size_t last_pattern_offset = 0;
    size_t last_back_ref_offset = 0;
+   size_t last_second_pass_offset = 0;
 
    size_t max_offset = c_max_offset;
    size_t max_repeats = c_max_repeats;
@@ -2708,6 +2722,7 @@ cout << "(read) num = " << num << ' ';
 dump_bytes( "input data =", input_buffer, num );
 cout << "last_pattern_offset = " << last_pattern_offset << endl;
 cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
+cout << "last_second_pass_offset = " << last_second_pass_offset << endl;
 #endif
       if( num < c_min_pat_length || output_offset < c_min_pat_length )
       {
@@ -2716,8 +2731,8 @@ cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
             unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
             unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
-            if( !replace_meta_pattern( meta_patterns, output_buffer,
-             last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+            if( !replace_meta_pattern( meta_patterns, output_buffer, last_back_ref_offset,
+             rbyte1, rbyte2, output_offset, last_pattern_offset, last_second_pass_offset ) )
             {
                output_buffer[ output_offset++ ] = rbyte1;
                output_buffer[ output_offset++ ] = rbyte2;
@@ -2730,8 +2745,9 @@ cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
 
          if( num < c_min_pat_length
           && output_offset > c_min_pat_length
+          && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value )
           && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
-          && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
+          && ( ( output_buffer[ last_pattern_offset ] & c_nibble_one ) != c_nibble_one ) )
          {
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
             pattern += string( ( const char* )input_buffer, num );
@@ -2776,7 +2792,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
          // NOTE: If a dictionary word that hasn't already appeared is found then
          // rather than risk splitting it with a back-ref simply skip over it (as
-         // it will be shrunk to two bytes when shrunk).
+         // it will be shrunk to two bytes afterwards).
          while( pat.length( ) > c_min_pat_length )
          {
             if( !found_words.count( pat ) && dict_words.count( pat ) )
@@ -2788,15 +2804,21 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
             pat.erase( pat.length( ) - 1 );
          }
 
-         if( found && output_offset < max_offset - pat.length( ) )
+         size_t length = pat.length( );
+
+         if( last_pair_repeats )
+            length += 2;
+
+         if( found && output_offset < max_offset - length )
          {
             if( last_pair_repeats )
             {
                unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
                unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
-               if( !replace_meta_pattern( meta_patterns, output_buffer,
-                last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+               if( !replace_meta_pattern( meta_patterns,
+                output_buffer, last_back_ref_offset, rbyte1, rbyte2,
+                output_offset, last_pattern_offset, last_second_pass_offset ) )
                {
                   output_buffer[ output_offset++ ] = rbyte1;
                   output_buffer[ output_offset++ ] = rbyte2;
@@ -2869,8 +2891,9 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
 
                   size_t old_output_offset = output_offset;
 
-                  if( !replace_meta_pattern( meta_patterns, output_buffer,
-                   last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+                  if( !replace_meta_pattern( meta_patterns,
+                   output_buffer, last_back_ref_offset, rbyte1, rbyte2,
+                   output_offset, last_pattern_offset, last_second_pass_offset ) )
                   {
                      output_buffer[ output_offset++ ] = rbyte1;
                      output_buffer[ output_offset++ ] = rbyte2;
@@ -2883,6 +2906,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
                byte1 |= ( ( inverted_offset & c_offset_high_pair_mask ) >> 8 );
 
                unsigned byte2 = ( inverted_offset & c_offset_low_pair_mask );
+
+               last_second_pass_offset = output_offset;
 
                output_buffer[ output_offset++ ] = byte1;
                output_buffer[ output_offset++ ] = byte2;
@@ -2959,8 +2984,9 @@ cout << "length now = " << length << endl;
                unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
                unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
-               if( !replace_meta_pattern( meta_patterns, output_buffer,
-                last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+               if( !replace_meta_pattern( meta_patterns,
+                output_buffer, last_back_ref_offset, rbyte1, rbyte2,
+                output_offset, last_pattern_offset, last_second_pass_offset ) )
                {
                   output_buffer[ output_offset++ ] = rbyte1;
                   output_buffer[ output_offset++ ] = rbyte2;
@@ -2976,8 +3002,9 @@ cout << "length now = " << length << endl;
 
          if( length < c_min_pat_length
           && output_offset > c_min_pat_length
+          && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value )
           && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
-          && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value ) )
+          && ( ( output_buffer[ last_pattern_offset ] & c_nibble_one ) != c_nibble_one ) )
          {
             string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
             pattern += string( ( const char* )input_buffer, length );
@@ -2998,7 +3025,8 @@ cout << "length now = " << length << endl;
 
          num -= length;
 
-         perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
+         perform_meta_combines( meta_patterns,
+          output_buffer, output_offset, last_back_ref_offset, last_second_pass_offset );
       }
       else if( !at_end_of_buffer )
       {
@@ -3013,8 +3041,9 @@ cout << "length now = " << length << endl;
          bool bytes_same_as_last_pair = false;
 
          if( output_offset > c_min_pat_length
-          && byte1 == output_buffer[ output_offset - 2 ]
-          && byte2 == output_buffer[ output_offset - 1 ] )
+          && ( last_back_ref_offset == offset - 2 )
+          && ( byte1 == output_buffer[ output_offset - 2 ] )
+          && ( byte2 == output_buffer[ output_offset - 1 ] ) )
             bytes_same_as_last_pair = true;
 
 #ifdef DEBUG_ENCODE
@@ -3025,8 +3054,9 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
             unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
             unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
-            if( !replace_meta_pattern( meta_patterns, output_buffer,
-             last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+            if( !replace_meta_pattern( meta_patterns,
+             output_buffer, last_back_ref_offset, rbyte1, rbyte2,
+             output_offset, last_pattern_offset, last_second_pass_offset ) )
             {
                output_buffer[ output_offset++ ] = rbyte1;
                output_buffer[ output_offset++ ] = rbyte2;
@@ -3060,8 +3090,9 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
                // NOTE: One back-ref that immediately follows another is handled as a meta-pattern.
                if( last_back_ref_offset && last_back_ref_offset == output_offset - 2 )
                {
-                  was_replaced = replace_meta_pattern( meta_patterns, output_buffer,
-                   last_back_ref_offset, byte1, byte2, output_offset, last_pattern_offset );
+                  was_replaced = replace_meta_pattern( meta_patterns,
+                   output_buffer, last_back_ref_offset, byte1, byte2,
+                   output_offset, last_pattern_offset, last_second_pass_offset );
                }
 
                if( was_replaced || ( ( byte1 & c_nibble_one ) == c_nibble_one ) )
@@ -3106,7 +3137,8 @@ dump_bytes( "input data =", input_buffer, num );
 dump_bytes( "buffered ==>", output_buffer, output_offset, last_back_ref_offset );
 #endif
       if( output_offset >= max_chunk_size )
-         perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
+         perform_meta_combines( meta_patterns,
+          output_buffer, output_offset, last_back_ref_offset, last_second_pass_offset );
 
       if( output_offset >= max_chunk_size )
       {
@@ -3142,8 +3174,9 @@ cout << "(now writing " << output_offset << " bytes)" << endl;
       unsigned char rbyte1 = c_nibble_one | ( ( --last_pair_repeats & 0x0f00 ) >> 8 );
       unsigned char rbyte2 = ( last_pair_repeats & 0x00ff );
 
-      if( !replace_meta_pattern( meta_patterns, output_buffer,
-       last_back_ref_offset, rbyte1, rbyte2, output_offset, last_pattern_offset ) )
+      if( !replace_meta_pattern( meta_patterns,
+       output_buffer, last_back_ref_offset, rbyte1, rbyte2,
+       output_offset, last_pattern_offset, last_second_pass_offset ) )
       {
          output_buffer[ output_offset++ ] = rbyte1;
          output_buffer[ output_offset++ ] = rbyte2;
@@ -3152,7 +3185,8 @@ cout << "(now writing " << output_offset << " bytes)" << endl;
 
    if( output_offset )
    {
-      perform_meta_combines( meta_patterns, output_buffer, output_offset, last_back_ref_offset );
+      perform_meta_combines( meta_patterns,
+       output_buffer, output_offset, last_back_ref_offset, last_second_pass_offset );
 
 #ifdef DEBUG_ENCODE
 cout << "final offset = " << output_offset << endl;
