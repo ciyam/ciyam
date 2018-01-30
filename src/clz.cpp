@@ -161,19 +161,23 @@ g_dict_words[ ] =
    { "Auto" },
    { "edit" },
    { "Enum" },
+   { "Exec" },
    { "File" },
    { "High" },
    { "line" },
    { "Link" },
+   { "miss" },
    { "name" },
    { "Next" },
    { "root" },
    { "Save" },
+   { "ship" },
    { "Size" },
    { "Sort" },
    { "Spec" },
    { "Text" },
    { "Type" },
+   { "var_" },
    { "View" },
    { "Work" },
    { "www." },
@@ -184,9 +188,11 @@ g_dict_words[ ] =
    { ".org" },
    { ".png" },
    { ".txt" },
+   { " (c) " },
    { "begin" },
    { "Child" },
    { "CIYAM" },
+   { "Exact" },
    { "Extra" },
    { "false" },
    { "field" },
@@ -237,9 +243,13 @@ g_dict_words[ ] =
    { "Specific" },
    { "software" },
    { "<record>" },
+   { "<class/>" },
+   { "</class>" },
    { "Algorithm" },
    { "Anonymous" },
+   { "Behaviour" },
    { "Copyright" },
+   { "directory" },
    { "Mandatory" },
    { "Procedure" },
    { "utilities" },
@@ -252,6 +262,7 @@ g_dict_words[ ] =
    { "Restriction" },
    { "STD_HEADERS" },
    { "Pty. Ltd. ACN" },
+   { "mit-license.php" },
 };
 
 struct dict_pattern
@@ -811,8 +822,15 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
          string::size_type pos = buffer_str.find( word );
 
-         if( pos != string::npos )
+         // NOTE: Although the same word would not be expected to be found
+         // twice (as the second occurrence would be a back-ref) if a word
+         // is actually the prefix of a longer word then it still might be
+         // found twice (or even more times).
+         while( pos != string::npos )
+         {
             dict_words_found[ pos ] = i;
+            pos = buffer_str.find( word, pos + word.length( ) );
+         }
       }
 
       for( size_t i = 0; i < length; i++ )
