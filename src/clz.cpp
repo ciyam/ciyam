@@ -666,7 +666,7 @@ size_t shrink_special_numeric( unsigned char* p_buffer, size_t len )
 
    unsigned char ch = *p_buffer;
 
-   *p_buffer = c_special_compressed_numeric;
+   *p_buffer = ( len == 4 ? c_special_char_multi_repeats : c_special_compressed_numeric );
 
    for( size_t i = 0; i < len; i++ )
    {
@@ -689,15 +689,23 @@ size_t shrink_special_numeric( unsigned char* p_buffer, size_t len )
          ch = *( p_buffer + i + 1 );
    }
 
-   if( len % 2 == 1 )
-      *( p_buffer + offset ) = ( next | 0x0f );
+   if( len == 4 )
+   {
+      --offset;
+      return 1;
+   }
    else
    {
-      next = 0xff;
-      *( p_buffer + offset ) = next;
-   }
+      if( len % 2 == 1 )
+         *( p_buffer + offset ) = ( next | 0x0f );
+      else
+      {
+         next = 0xff;
+         *( p_buffer + offset ) = next;
+      }
 
-   return ( len - offset - 1 );
+      return ( len - offset - 1 );
+   }
 }
 
 void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
@@ -847,15 +855,18 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
          bool is_special_numeric = false;
 
-         if( !repeats && !just_had_back_ref && ( next == ' '
-          || ( next >= '0' && next <= '9' ) || ( next >= '+' && next <= '.' ) ) )
+         if( !repeats && !just_had_back_ref && ( i == 0 || !( last_ch & c_high_bit_value ) )
+          && ( next == ' ' || ( next >= '0' && next <= '9' ) || ( next >= '+' && next <= '.' ) ) )
             is_special_numeric = true;
 
          if( !is_special_numeric && special_numeric_length )
          {
-            if( special_numeric_length >= 5
-             && ( special_numeric_start + special_numeric_length == num ) )
-               num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
+            if( special_numeric_start + special_numeric_length == num )
+            {
+               if( special_numeric_length >= 5
+                || ( special_numeric_length == 4 && shrunken[ special_numeric_start ] != '0' ) )
+                  num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
+            }
 
             special_numeric_length = 0;
          }
@@ -1083,6 +1094,8 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
             if( !repeats && last_ch && next == last_ch )
             {
+               // NOTE: This will be ignored if is already in a long
+               // enough special numeric run (as follows).
                if( i < length - 1 && *( p_buffer + i + 1 ) == next )
                   new_repeat = true;
             }
@@ -1094,9 +1107,15 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
                bool found_steps = false;
                bool ignore_steps = false;
 
-               if( is_special_numeric && special_numeric_length >= 4
+               if( is_special_numeric
                 && ( special_numeric_start + special_numeric_length == num ) )
-                  ignore_steps = true;
+               {
+                  if( special_numeric_length >= 3 )
+                     new_repeat = false;
+
+                  if( special_numeric_length >= 4 )
+                     ignore_steps = true;
+               }
 
                if( !ignore_steps && ( i < length - 3 )
                 && ( i == 0 || !( last_ch & c_high_bit_value ) ) )
@@ -1310,7 +1329,10 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
                if( !found_steps )
                {
                   if( new_repeat )
+                  {
                      ++repeats;
+                     special_numeric_length = 0;
+                  }
                   else
                   {
                      if( is_special_numeric )
@@ -1340,9 +1362,12 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
       // numeric then complete the output for that pattern before then processing special pairs.
       if( repeats )
          output_repeats( shrunken, repeats, num );
-      else if( special_numeric_length >= 5
-       && ( special_numeric_start + special_numeric_length == num ) )
-         num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
+      else if( special_numeric_length && special_numeric_start + special_numeric_length == num )
+      {
+         if( special_numeric_length >= 5
+          || ( special_numeric_length == 4 && shrunken[ special_numeric_start ] != '0' ) )
+            num -= shrink_special_numeric( &shrunken[ special_numeric_start ], special_numeric_length );
+      }
 
       vector< byte_pair > extra_specials;
 
@@ -1429,6 +1454,38 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
             dump_bytes( "shrunken ==>", shrunken, num, shrunken_mark_pos );
       }
    }
+}
+
+bool uncompress_numeric_pair( unsigned char* p_buffer, size_t& length, unsigned char ch )
+{
+   bool retval = true;
+
+   unsigned char nibble1 = ( ch & c_nibble_one ) >> 4;
+   unsigned char nibble2 = ( ch & c_nibble_two );
+
+   if( nibble1 == c_nibble_two )
+      retval = false;
+   else
+   {
+      if( nibble1 >= 0 && nibble1 <= 9 )
+         *( p_buffer + length++ ) = '0' + nibble1;
+      else if( nibble1 >= 10 && nibble1 <= 13 )
+         *( p_buffer + length++ ) = '+' + ( nibble1 - 10 );
+      else if( nibble1 == 14 )
+         *( p_buffer + length++ ) = ' ';
+
+      if( nibble2 >= 0 && nibble2 <= 9 )
+         *( p_buffer + length++ ) = '0' + nibble2;
+      else if( nibble2 >= 10 && nibble2 <= 13 )
+         *( p_buffer + length++ ) = '+' + ( nibble2 - 10 );
+      else if( nibble2 == 14 )
+         *( p_buffer + length++ ) = ' ';
+
+      if( nibble2 == c_nibble_two )
+         retval = false;
+   }
+
+   return retval;
 }
 
 size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
@@ -1617,30 +1674,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
       }
       else if( is_compressed_numeric )
       {
-         unsigned char nibble1 = ( ch & c_nibble_one ) >> 4;
-         unsigned char nibble2 = ( ch & c_nibble_two );
-
-         if( nibble1 == c_nibble_two )
-            is_compressed_numeric = false;
-         else
-         {
-            if( nibble1 >= 0 && nibble1 <= 9 )
-               *( p_buffer + length++ ) = '0' + nibble1;
-            else if( nibble1 >= 10 && nibble1 <= 13 )
-               *( p_buffer + length++ ) = '+' + ( nibble1 - 10 );
-            else if( nibble1 == 14 )
-               *( p_buffer + length++ ) = ' ';
-
-            if( nibble2 >= 0 && nibble2 <= 9 )
-               *( p_buffer + length++ ) = '0' + nibble2;
-            else if( nibble2 >= 10 && nibble2 <= 13 )
-               *( p_buffer + length++ ) = '+' + ( nibble2 - 10 );
-            else if( nibble2 == 14 )
-               *( p_buffer + length++ ) = ' ';
-
-            if( nibble2 == c_nibble_two )
-               is_compressed_numeric = false;
-         }
+         is_compressed_numeric = uncompress_numeric_pair( p_buffer, length, ch );
 
          last_ch = *( p_buffer + length - 1 );
 
@@ -1757,8 +1791,23 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                      if( !is.read( ( char* )&ch, 1 ) )
                         break;
 
-                     for( size_t i = 0; i < ch; i++ )
-                        *( p_buffer + length++ ) = last_ch;
+                     // NOTE: A special compressed numeric which is
+                     // exactly four digits in length is identified
+                     // here (but it cannot start with a zero).
+                     if( ch > c_nibble_two )
+                     {
+                        uncompress_numeric_pair( p_buffer, length, ch );
+
+                        if( !is.read( ( char* )&ch, 1 ) )
+                           break;
+
+                        uncompress_numeric_pair( p_buffer, length, ch );
+                     }
+                     else
+                     {
+                        for( size_t i = 0; i < ch; i++ )
+                           *( p_buffer + length++ ) = last_ch;
+                     }
                   }
 
                   ch = c_nibble_one;
@@ -2712,12 +2761,17 @@ void encode_clz_data( istream& is, ostream& os )
 
    while( true )
    {
+      bool at_eof = false;
+
       while( num < c_max_pat_length )
       {
          if( is.read( ( char* )input_buffer + num, 1 ) )
             ++num;
          else
+         {
+            at_eof = true;
             break;
+         }
 
          if( unencoded_offset < c_max_unencoded_chunk_size )
             unencoded_buffer[ unencoded_offset++ ] = input_buffer[ num - 1 ];
@@ -2742,7 +2796,8 @@ cout << "last_pattern_offset = " << last_pattern_offset << endl;
 cout << "last_back_ref_offset = " << last_back_ref_offset << endl;
 cout << "last_second_pass_offset = " << last_second_pass_offset << endl;
 #endif
-      if( num < c_min_pat_length || output_offset < c_min_pat_length )
+      if( ( output_offset + num <= max_chunk_size )
+       && ( num < c_min_pat_length || output_offset < c_min_pat_length ) )
       {
          if( last_pair_repeats )
          {
@@ -2781,14 +2836,25 @@ cout << "last_second_pass_offset = " << last_second_pass_offset << endl;
             output_offset += min( num, c_min_pat_length );
          }
 
-         // NOTE: If less than the minimum pattern length then it is the last output.
+         bool is_empty = false;
+
+         // NOTE: If less than the minimum pattern length remains then the input buffer is now
+         // empty due to being at the end of the file or having just filled the output buffer.
          if( num < c_min_pat_length )
-            break;
+         {
+            if( at_eof )
+               break;
 
-         memmove( input_buffer, input_buffer + c_min_pat_length, num - c_min_pat_length );
-         num -= c_min_pat_length;
+            num = 0;
+            is_empty = true;
+         }
+         else
+         {
+            memmove( input_buffer, input_buffer + c_min_pat_length, num - c_min_pat_length );
+            num -= c_min_pat_length;
+         }
 
-         if( num == 0 )
+         if( !is_empty && num == 0 )
             continue;
       }
 
@@ -2799,7 +2865,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
       size_t length = ( num > 0 ? 1 : 0 );
 
       bool has_following_sequence = false;
-      bool input_starts_with_back_ref = ( input_buffer[ 0 ] & c_high_bit_value );
+      bool input_starts_with_back_ref = ( num == 0 ? false : ( input_buffer[ 0 ] & c_high_bit_value ) );
 
 #ifndef NO_SHRINK_AND_EXPAND
       if( num > c_min_pat_length && !input_starts_with_back_ref )
@@ -2860,7 +2926,8 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
       }
 #endif
 
-      if( num > 0 && output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
+      if( num >= c_min_pat_length
+       && output_offset >= c_min_pat_length && output_offset <= max_chunk_size - 2 )
       {
          length = longest_sequence( input_buffer, num, output_buffer, output_offset, offset );
 
@@ -2873,7 +2940,7 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
       }
 
 #ifndef NO_SECOND_PASS_BACK_REFS
-      if( num > 0
+      if( num >= c_min_pat_length
        && !has_following_sequence
        && length < c_min_pat_length
        && !input_starts_with_back_ref
@@ -3016,35 +3083,38 @@ cout << "length now = " << length << endl;
          else
             last_back_ref_offset = output_offset;
 
-         bool was_extra_pattern = false;
-
-         if( length < c_min_pat_length
-          && output_offset > c_min_pat_length
-          && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value )
-          && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
-          && ( ( output_buffer[ last_pattern_offset ] & c_nibble_one ) != c_nibble_one ) )
+         if( length )
          {
-            string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
-            pattern += string( ( const char* )input_buffer, length );
+            bool was_extra_pattern = false;
 
-            was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
+            if( length < c_min_pat_length
+             && output_offset > c_min_pat_length
+             && ( ( input_buffer[ 0 ] & c_high_bit_value ) != c_high_bit_value )
+             && last_pattern_offset && ( last_pattern_offset == output_offset - 2 )
+             && ( ( output_buffer[ last_pattern_offset ] & c_nibble_one ) != c_nibble_one ) )
+            {
+               string pattern( ( const char* )&output_buffer[ last_pattern_offset ], 2 );
+               pattern += string( ( const char* )input_buffer, length );
+
+               was_extra_pattern = replace_extra_pattern( meta_patterns, extra_patterns, pattern, output_buffer, output_offset );
+            }
+
+            if( was_extra_pattern )
+               last_back_ref_offset = 0;
+            else
+            {
+               memcpy( output_buffer + output_offset, input_buffer, length );
+               output_offset += length;
+            }
+
+            if( num > length )
+               memmove( input_buffer, input_buffer + length, num - length );
+
+            num -= length;
+
+            perform_meta_combines( meta_patterns,
+            output_buffer, output_offset, last_back_ref_offset, last_second_pass_offset );
          }
-
-         if( was_extra_pattern )
-            last_back_ref_offset = 0;
-         else
-         {
-            memcpy( output_buffer + output_offset, input_buffer, length );
-            output_offset += length;
-         }
-
-         if( num > length )
-            memmove( input_buffer, input_buffer + length, num - length );
-
-         num -= length;
-
-         perform_meta_combines( meta_patterns,
-          output_buffer, output_offset, last_back_ref_offset, last_second_pass_offset );
       }
       else if( !at_end_of_buffer )
       {
@@ -3146,7 +3216,7 @@ cout << "found pattern: " << hex << setw( 2 ) << setfill( '0' ) << ( int )byte1 
             num -= length;
          }
 #ifdef DEBUG_ENCODE
-cout << "num now = " << num << ", ";
+cout << "num now = " << num << ", output_offset = " << output_offset << ", ";
 dump_bytes( "input data =", input_buffer, num );
 #endif
       }
