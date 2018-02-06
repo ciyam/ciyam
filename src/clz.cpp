@@ -72,6 +72,8 @@ const size_t c_max_repeats = 2048;
 const size_t c_max_combines = 5;
 
 const size_t c_max_dict_words = 256;
+const size_t c_dict_words_offset = 10;
+const size_t c_max_dict_words_run = 12;
 
 const size_t c_min_pat_length = 3;
 const size_t c_max_pat_length = 15;
@@ -157,28 +159,58 @@ struct dict_word
 }
 g_dict_words[ ] =
 {
+   { " -= " },
+   { " += " },
+   { " || " },
+   { " |= " },
+   { " && " },
+   { " &= " },
+   { " == " },
+   { " != " },
+   { " <= " },
+   { " >= " },
+   { " << " },
+   { " >> " },
    { "Args" },
    { "Auto" },
+   { "bool" },
+   { "cerr" },
+   { "char" },
+   { "cout" },
    { "edit" },
+   { "else" },
+   { "endl" },
    { "Enum" },
    { "Exec" },
    { "File" },
    { "High" },
+   { "inpf" },
    { "line" },
    { "Link" },
+   { "main" },
+   { "make" },
+   { "map<" },
    { "miss" },
    { "name" },
    { "Next" },
+   { "node" },
+   { "open" },
+   { "outf" },
+   { "read" },
    { "root" },
    { "Save" },
+   { "set<" },
    { "ship" },
    { "Size" },
    { "Sort" },
    { "Spec" },
    { "Text" },
+   { "true" },
    { "Type" },
    { "var_" },
    { "View" },
+   { "void" },
+   { "what" },
    { "Work" },
    { "www." },
    { ".com" },
@@ -190,45 +222,62 @@ g_dict_words[ ] =
    { ".txt" },
    { " (c) " },
    { "begin" },
+   { "catch" },
+   { "child" },
    { "Child" },
    { "CIYAM" },
+   { "const" },
+   { "empty" },
+   { "error" },
    { "Exact" },
    { "Extra" },
    { "false" },
    { "field" },
+   { "first" },
    { "graph" },
    { "Index" },
    { "Level" },
    { "Limit" },
    { "Model" },
+   { "pair<" },
    { "reign" },
    { "split" },
    { "Total" },
+   { "using" },
    { "value" },
    { "Value" },
+   { "while" },
    { "Width" },
    { "@key," },
    { "Access" },
    { "Change" },
+   { "except" },
    { "fields" },
    { "M100C1" },
+   { "output" },
    { "please" },
    { "Plural" },
    { "record" },
    { "Record" },
+   { "return" },
    { "Sample" },
    { "Search" },
+   { "second" },
    { "size_t" },
    { "socket" },
    { "Static" },
+   { "Status" },
    { "Symbol" },
    { "Unique" },
+   { "vector" },
+   { "verify" },
    { "#ifdef" },
    { "<sio/>" },
    { "</sio>" },
    { "Default" },
    { "Exclude" },
    { "http://" },
+   { "include" },
    { "Initial" },
    { "license" },
    { "MIT/X11" },
@@ -237,8 +286,12 @@ g_dict_words[ ] =
    { "Without" },
    { "#pragma" },
    { "children" },
+   { "generate" },
    { "https://" },
+   { "ifstream" },
+   { "int main" },
    { "Manually" },
+   { "ofstream" },
    { "Security" },
    { "Specific" },
    { "software" },
@@ -251,8 +304,11 @@ g_dict_words[ ] =
    { "Copyright" },
    { "directory" },
    { "Mandatory" },
+   { "namespace" },
    { "Procedure" },
+   { "stdexcept" },
    { "utilities" },
+   { "x.what( )" },
    { "const char" },
    { "Developers" },
    { "Permission" },
@@ -261,8 +317,14 @@ g_dict_words[ ] =
    { "Distributed" },
    { "Restriction" },
    { "STD_HEADERS" },
+   { "const char* " },
+   { "ifstream inpf" },
+   { "ofstream outf" },
    { "Pty. Ltd. ACN" },
+   { "runtime_error" },
    { "mit-license.php" },
+   { "using namespace" },
+   { "( exception& x " },
 };
 
 struct dict_pattern
@@ -804,6 +866,9 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
       size_t stepping_amount = 0;
       size_t stepping_last_val = 0;
 
+      size_t dict_words_run = 0;
+      size_t last_dict_word_pos = 0;
+
       size_t last_special_pos = 0;
       size_t last_back_ref_pos = 0;
 
@@ -823,7 +888,7 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
       for( size_t i = 0; i < ARRAY_SIZE( g_dict_words ); i++ )
       {
-         if( i >= c_max_dict_words )
+         if( i >= c_max_dict_words - c_dict_words_offset )
             throw runtime_error( "exceeded maximum CLZ dict words allowed" );
 
          string word( g_dict_words[ i ].p_w );
@@ -873,16 +938,55 @@ bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_a
 
          if( !repeats && dict_words_found.count( i ) )
          {
+            if( dict_words_run && last_dict_word_pos == num - 2 )
+            {
+               ++dict_words_run;
+               last_dict_word_pos += 2;
+            }
+            else
+            {
+               dict_words_run = 1;
+               last_dict_word_pos = num;
+            }
+
             string word( g_dict_words[ dict_words_found[ i ] ].p_w );
 
             shrunken[ num++ ] = c_special_dict_word_list_num;
-            shrunken[ num++ ] = ( unsigned char )dict_words_found[ i ];
+            shrunken[ num++ ] = c_dict_words_offset + ( unsigned char )dict_words_found[ i ];
 
             stepping_amount = 0;
 
             i += word.length( ) - 1;
 
             continue;
+         }
+
+         // NOTE: If a run of three or more dict words in a row was
+         // found then change the byte that immediately follows the
+         // dict word special indicator to instead become the total
+         // number of words to follow (as now only each words index
+         // is required).
+         if( dict_words_run > 2 && last_dict_word_pos == num - 2 )
+         {
+            if( dict_words_run > c_max_dict_words_run )
+               dict_words_run = c_max_dict_words_run;
+
+            size_t from = num - ( dict_words_run * 2 ) + 1;
+            size_t dest = from + 1;
+
+            for( size_t j = 0; j < dict_words_run; j++ )
+            {
+               unsigned char val = shrunken[ from ];
+               shrunken[ dest++ ] = val;
+
+               if( j == 0 )
+                  shrunken[ from ] = ( dict_words_run - 3 );
+
+               from += 2;
+            }
+
+            num = dest;
+            dict_words_run = 0;
          }
 
          if( stepping_amount
@@ -1714,12 +1818,33 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
          if( ch == c_special_dict_word_list_num )
          {
             if( !is.read( ( char* )&ch, 1 ) )
-               break;
+               throw runtime_error( "unexpected eof found while expanding dict words" );
 
-            string word( g_dict_words[ ch ].p_w );
+            size_t num_words = 1;
 
-            for( size_t i = 0; i < word.length( ); i++ )
-               *( p_buffer + length++ ) = word[ i ];
+            // NOTE: If the value found is less than the minimum offset then it is instead
+            // the number of word offsets to follow (for a sequential run of dict words).
+            if( ch < c_dict_words_offset )
+            {
+               num_words = ch + 3;
+
+               if( !is.read( ( char* )&ch, 1 ) )
+                  throw runtime_error( "unexpected eof found while expanding dict words" );
+            }
+
+            while( true )
+            {
+               string word( g_dict_words[ ch - c_dict_words_offset ].p_w );
+
+               for( size_t i = 0; i < word.length( ); i++ )
+                  *( p_buffer + length++ ) = word[ i ];
+
+               if( --num_words == 0 )
+                  break;
+
+               if( !is.read( ( char* )&ch, 1 ) )
+                  throw runtime_error( "unexpected eof found while expanding dict words" );
+            }
 
             --length; // NOTE: Due to the increment below.
          }
@@ -1789,7 +1914,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                      // NOTE: For more than two repeats the number
                      // of repeats is found in the following byte.
                      if( !is.read( ( char* )&ch, 1 ) )
-                        break;
+                        throw runtime_error( "unexpected eof found while expanding repeats" );
 
                      // NOTE: A special compressed numeric which is
                      // exactly four digits in length is identified
@@ -1799,7 +1924,7 @@ size_t expand_input( istream& is, unsigned char* p_buffer, size_t max_length )
                         uncompress_numeric_pair( p_buffer, length, ch );
 
                         if( !is.read( ( char* )&ch, 1 ) )
-                           break;
+                           throw runtime_error( "unexpected eof found while expanding special numeric" );
 
                         uncompress_numeric_pair( p_buffer, length, ch );
                      }
@@ -2747,6 +2872,7 @@ void encode_clz_data( istream& is, ostream& os )
 
    set< string > found_words;
    map< string, size_t > dict_words;
+   multimap< string, string > shorter_words;
 
    for( size_t i = 0; i < ARRAY_SIZE( g_dict_words ); i++ )
    {
@@ -2756,6 +2882,16 @@ void encode_clz_data( istream& is, ostream& os )
          max_word_length = word.length( );
 
       dict_words.insert( make_pair( word, i ) );
+
+      string shorter( word.substr( 0, word.length( ) - 1 ) );
+
+      while( shorter.length( ) > c_min_pat_length )
+      {
+         if( dict_words.count( shorter ) )
+            shorter_words.insert( make_pair( word, shorter ) );
+
+         shorter.erase( shorter.length( ) - 1 );
+      }
    }
 #endif
 
@@ -2912,6 +3048,21 @@ cout << "num now = " << num << ", output_offset = " << output_offset << endl;
             last_pair_repeats = 0;
 
             found_words.insert( pat );
+
+            multimap< string, string >::iterator swi = shorter_words.lower_bound( pat );
+
+            // NOTE: Any words that are prefixes of the one found need to be treated as
+            // though they were found as well to ensure that they will later be used as
+            // a back-ref rather than left as is.
+            while( swi != shorter_words.end( ) )
+            {
+               if( swi->first != pat )
+                  break;
+
+               found_words.insert( swi->second );
+
+               ++swi;
+            }
 
             memcpy( output_buffer + output_offset, input_buffer, pat.length( ) );
             output_offset += pat.length( );
