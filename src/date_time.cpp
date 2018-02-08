@@ -3115,8 +3115,8 @@ bool operator ==( const date_time& lhs, const date_time& rhs )
 
 seconds operator -( const date_time& lhs, const date_time& rhs )
 {
-   seconds lhss = ( ( daynum )lhs.ud * c_seconds_per_day ) + ( ( seconds )( lhs.mt ) / 1000.0 );
-   seconds rhss = ( ( daynum )rhs.ud * c_seconds_per_day ) + ( ( seconds )( rhs.mt ) / 1000.0 );
+   seconds lhss = ( ( daynum )lhs.ud * c_seconds_per_day ) + ( seconds )( lhs.mt );
+   seconds rhss = ( ( daynum )rhs.ud * c_seconds_per_day ) + ( seconds )( rhs.mt );
 
    return lhss - rhss;
 }

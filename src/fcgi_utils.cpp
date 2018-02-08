@@ -357,15 +357,17 @@ string get_cookie_value( const string& session_id,
 void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& sess_info )
 {
    string utcdtm( input_data[ c_param_utcdtm ] );
+
    if( !utcdtm.empty( ) )
    {
       date_time dt( input_data[ c_param_utcdtm ] );
-      sess_info.dtm_offset = ( int )( dt - date_time::standard( ) );
+      sess_info.dtm_offset = ( seconds )( dt - date_time::standard( ) );
    }
 
    // NOTE: The current GMT offset is used to determine "defcurrent" values
    // for date and times (as they are not adjusted like a datetime type is).
    string gmt_offcur( input_data[ c_param_tzoffcur ] );
+
    if( !gmt_offcur.empty( ) )
       sess_info.gmt_offset = atoi( gmt_offcur.c_str( ) ) * -60;
 }
@@ -489,6 +491,7 @@ string string_message( const string& display_string,
 
    // NOTE: Check for a "closing" parameter such as "{#parm}" for simple HTML closing tags.
    string close( parm1.first );
+
    if( close.length( ) > 2 )
    {
       close[ 1 ] = '#';
