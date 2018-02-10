@@ -17,6 +17,9 @@ const char* const c_meta_model = "Meta";
 
 const char* const c_ignore_field = "@ignore";
 
+const char* const c_local_ip_addr = "127.0.0.1";
+const char* const c_local_ip_addr_for_ipv6 = "::1";
+
 const char* const c_file_zero_length = "*";
 
 const char* const c_file_archives_folder = "arch";

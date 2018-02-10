@@ -5531,7 +5531,7 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
 
-   if( ip_addr == "127.0.0.1" )
+   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
    string pid;

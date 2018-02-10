@@ -462,7 +462,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      {
                         handle_command_response( response.substr( pos + 1 ) );
 
-                        socket.write_line( "127.0.0.1" );
+                        socket.write_line( c_local_ip_addr );
 
                         response.erase( );
                         socket.read_line( response );

@@ -88,8 +88,6 @@ const char* const c_openid_ext_email = "openid.ext1.value.email";
 const char* const c_user_key_arg = "$user";
 const char* const c_user_perms_arg = "$perms";
 
-const char* const c_local_ip_addr = "127.0.0.1";
-
 const char* const c_dummy_server_command = "wait";
 
 const char* const c_sign_up_types_map = "sign_up_types.map";
@@ -1449,7 +1447,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   if( file_exists( c_sign_up_testers_file ) )
                   {
                      testers.insert( "10.0.0.1" );
-                     testers.insert( "127.0.0.1" );
+
+                     testers.insert( c_local_ip_addr );
+                     testers.insert( c_local_ip_addr_for_ipv6 );
 
                      buffer_file_lines( c_sign_up_testers_file, testers );
                   }
