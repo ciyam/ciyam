@@ -142,12 +142,16 @@ void request_handler::process_request( )
 
    FCGX_FPrintF( p_out, "\r\n\r\n<html>\n<head>\n   <title>FCGI File Upload</title>\n" );
 
-   // NOTE: It is expected that if a parent exists it will contain a "refresh" function.
+   // NOTE: It is expected that if a parent exists it will contain a "refresh" function
+   // unless Chrome has been detected (in which case issue a "location.reload" instead).
    FCGX_FPrintF( p_out, "<script type=\"text/javascript\">\n" );
    FCGX_FPrintF( p_out, "if( window.parent )\n" );
-   FCGX_FPrintF( p_out, "   window.parent.refresh( );\n" );
-   FCGX_FPrintF( p_out, "else\n" );
-   FCGX_FPrintF( p_out, "   setTimeout( \"history.go( -1 );\", 2500 );\n" );
+   FCGX_FPrintF( p_out, "{\n" );
+   FCGX_FPrintF( p_out, "   if( window.chrome )\n" );
+   FCGX_FPrintF( p_out, "      window.parent.location.reload( );\n" );
+   FCGX_FPrintF( p_out, "   else\n" );
+   FCGX_FPrintF( p_out, "      window.parent.refresh( );\n" );
+   FCGX_FPrintF( p_out, "}\n" );
    FCGX_FPrintF( p_out, "</script>\n" );
 
    FCGX_FPrintF( p_out, "</head>\n<body>\n" );

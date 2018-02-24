@@ -3141,7 +3141,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       extra_content << "</div>\n";
 
       if( performed_file_attach_or_detach )
+      {
+         // NOTE: Set this so that the UI can detect that a file upload has just taken place.
+         if( act != c_act_remove )
+            extra_content_func += "sessionStorage.setItem( 'uploaded', 'true' );\n";
+
          extra_content_func += "refresh( false );\n"; // KLUDGE: Refresh so current version is viewed (otherwise actions will fail).
+      }
 
       // NOTE: Erase any existing cookie value first.
       if( created_session && cookies_permitted )

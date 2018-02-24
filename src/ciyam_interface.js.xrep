@@ -845,8 +845,21 @@ function process( )
    }
 
    if( can_write_to_session_storage( ) )
+   {
       sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
 
+      if( sessionStorage.getItem( 'uploaded' ) == 'true' )
+      {
+         sessionStorage.removeItem( 'uploaded' );
+
+         // KLUDGE: After a file upload the history (for non-Chrome browsers) ends up having a
+         // repeat that is therefore being removed here (this will probably need to have a bit
+         // more tweaking in the future).
+         if( window.chrome == null )
+            history.go( -1 );
+      }
+   }
+   
    force_update( );
 }
 

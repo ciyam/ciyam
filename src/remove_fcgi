@@ -32,7 +32,7 @@ else
     $WEBDIR/$1/ciyam_interface.kill.sh
    fi
 
-   rm -r $WEBDIR/$1
+   rm -rf $WEBDIR/$1
   fi
  fi
 fi
