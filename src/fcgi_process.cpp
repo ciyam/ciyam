@@ -1337,9 +1337,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       }
 
       if( cookies_permitted )
-         extra_content_func += "document.cookie = '"
-          + get_cookie_value( session_id, p_session_info->user_id,
-          cmd == c_cmd_quit, p_session_info->dtm_offset, p_session_info->gmt_offset ) + "';";
+         extra_content_func += "document.cookie = '" + get_cookie_value( session_id,
+          p_session_info->user_id, cmd == c_cmd_quit, p_session_info->dtm_offset ) + "';";
 
       remove_session_temp_directory( session_id );
 
@@ -1740,15 +1739,27 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             string time_info;
 
+            // NOTE: If a user has a selected timezone then "current_dtm" will be the server's
+            // UTC time converted to that otherwise just starts with the current UTC value and
+            // adds the UTC offset. In either case the UTC skew (i.e. "dtm_offset") value will
+            // be taken into account (so what is displayed makes the most sense to the user).
             if( !p_session_info->current_dtm.empty( ) )
             {
-               time_info = date_time( p_session_info->current_dtm ).as_string( e_time_format_hhmm, true );
+               date_time dt( p_session_info->current_dtm );
+
+               dt += ( seconds )p_session_info->dtm_offset;
+
+               time_info = dt.as_string( e_time_format_hhmm, true );
+
                if( !p_session_info->tz_abbr.empty( ) )
                   time_info += ' ' + p_session_info->tz_abbr;
             }
             else
             {
-               date_time dt( date_time::standard( ) + ( seconds )p_session_info->gmt_offset );
+               date_time dt( date_time::standard( ) + ( seconds )p_session_info->dtm_offset );
+
+               dt += ( seconds )p_session_info->gmt_offset;
+
                time_info = dt.as_string( e_time_format_hhmm, true );
             }
 
@@ -3154,9 +3165,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key ) + "';\n";
 
       if( cookies_permitted )
-         extra_content_func += "document.cookie = '"
-          + get_cookie_value( session_id, p_session_info->user_id,
-          cmd == c_cmd_quit, p_session_info->dtm_offset, p_session_info->gmt_offset ) + "';\n";
+         extra_content_func += "document.cookie = '" + get_cookie_value( session_id,
+          p_session_info->user_id, cmd == c_cmd_quit, p_session_info->dtm_offset ) + "';\n";
 
       extra_content_func += "displayTimeout = '"
        + replaced( GDS( c_display_timeout ), "\"", "\\x22", "'", "\\x27" ) + "';\n";

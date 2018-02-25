@@ -78,7 +78,7 @@ std::string get_checksum( const session_info& sess_info, const std::string& valu
 void get_session_dtm( const session_info& sess_info, date_time& dt );
 
 std::string get_cookie_value( const std::string& session_id,
- const std::string& user_id, bool is_login_or_logout = false, int dtm_offset = 0, int gmt_offset = 0 );
+ const std::string& user_id, bool is_login_or_logout = false, int dtm_offset = 0 );
 
 void setup_gmt_and_dtm_offset( std::map< std::string, std::string >& input_data, session_info& sess_info );
 

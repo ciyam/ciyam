@@ -312,7 +312,7 @@ string get_checksum( const session_info& sess_info, const string& values )
 }
 
 string get_cookie_value( const string& session_id,
- const string& user_id, bool is_login_or_logout, int dtm_offset, int gmt_offset )
+ const string& user_id, bool is_login_or_logout, int dtm_offset )
 {
    string cookie;
 
