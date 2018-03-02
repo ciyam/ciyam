@@ -5,11 +5,11 @@
 `{`$rnums`=`'0 1 2 3 4 5 6 7 8 9`'`}
 `{`$cnums`=`'00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19`'`}
 `{`}
-<sio/>
 # Copyright (c) `{`$year_created`}`{`!`@eq`(`$y`,`$year_created`)-`{`$y`}`} CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+<sio/>
  <id>`{`$model_id`}
  <name>`{`$model_name`}
  <perm>`{`$model_perm`}

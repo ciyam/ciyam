@@ -28,6 +28,7 @@ namespace
 
 /* Sample "sio" file format...
 
+# An initial comment
 <sio/>
  <section/>
   <attr1>value1
@@ -41,7 +42,7 @@ namespace
  </section>
 </sio>
 
-It should be noted that comments are not permitted before <sio/> or after </sio> (but can occur anywhere else).
+It should be noted that comments are not permitted after </sio> (but can occur anywhere else).
 
 */
 
@@ -70,7 +71,7 @@ void write_section_attributes( sio_writer& writer, const section_node& node )
 
 }
 
-sio_reader::sio_reader( istream& is, bool include_comments )
+sio_reader::sio_reader( istream& is, bool include_comments, vector< string >* p_initial_comments )
  :
  is( is ),
  line_num( 0 ),
@@ -84,6 +85,20 @@ sio_reader::sio_reader( istream& is, bool include_comments )
    if( !is.eof( ) )
    {
       read_line( );
+
+      if( p_initial_comments )
+      {
+         string comment;
+
+         while( true )
+         {
+            if( has_read_comment( comment ) )
+               p_initial_comments->push_back( comment );
+            else
+               break;
+         }
+      }
+
       if( !has_started_section( c_root_section ) )
          throw runtime_error( "invalid root section" );
    }
@@ -130,10 +145,12 @@ string sio_reader::read_opt_attribute( const string& name, const string& default
 bool sio_reader::has_read_comment( string& comment )
 {
    string::size_type pos = line.find_first_not_of( " \t" );
+
    if( pos != string::npos && line[ pos ] == '#' ) // i.e. is a comment
    {
       comment = line;
       read_line( );
+
       return true;
    }
    else
@@ -366,13 +383,19 @@ void write_graph( const sio_graph& graph, ostream* p_ostream )
    sio_writer( *p_ostream, graph );
 }
 
-sio_writer::sio_writer( ostream& os )
+sio_writer::sio_writer( ostream& os, vector< string >* p_initial_comments )
  :
  os( os ),
  can_write_attribute( false )
 {
    if( !os.good( ) )
       throw runtime_error( "output stream is bad" );
+
+   if( p_initial_comments )
+   {
+      for( size_t i = 0; i < p_initial_comments->size( ); i++ )
+         write_comment( ( *p_initial_comments )[ i ] );
+   }
 
    start_section( c_root_section );
 }

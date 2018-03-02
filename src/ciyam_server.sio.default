@@ -1,9 +1,8 @@
-<sio/>
 # Copyright (c) 2012-2018 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
-#
+<sio/>
 # <domain>server.com
 # <ip_addrs>127.0.0.1
 # <na_addrs>

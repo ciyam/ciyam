@@ -1,4 +1,3 @@
-// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
 // Copyright (c) 2012-2018 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
@@ -2485,7 +2484,6 @@ void Meta_Specification_Field_Action::get_sql_column_names(
  vector< string >& names, bool* p_done, const string* p_class_name ) const
 {
    parent_class_type::get_sql_column_names( names, p_done, p_class_name );
-
    if( p_done && *p_done )
       return;
 
@@ -2505,7 +2503,6 @@ void Meta_Specification_Field_Action::get_sql_column_values(
  vector< string >& values, bool* p_done, const string* p_class_name ) const
 {
    parent_class_type::get_sql_column_values( values, p_done, p_class_name );
-
    if( p_done && *p_done )
       return;
 
@@ -2625,7 +2622,6 @@ void Meta_Specification_Field_Action::do_generate_sql( generate_sql_type type,
  vector< string >& sql_stmts, set< string >& tx_key_info, vector< string >* p_sql_undo_stmts ) const
 {
    parent_class_type::do_generate_sql( type, sql_stmts, tx_key_info, p_sql_undo_stmts );
-
    generate_sql( static_class_name( ), type, sql_stmts, tx_key_info, p_sql_undo_stmts );
 }
 

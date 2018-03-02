@@ -26,7 +26,7 @@ class sio_reader
    void this_type_does_not_support_comparisons( ) const { }
 
    public:
-   sio_reader( std::istream& is, bool include_comments = false );
+   sio_reader( std::istream& is, bool include_comments = false, std::vector< std::string >* p_initial_comments = 0 );
 
    operator bool_type( ) const;
 
@@ -108,7 +108,7 @@ class sio_writer
    friend void write_graph( const sio_graph& graph, std::ostream* p_ostream );
 
    public:
-   sio_writer( std::ostream& os );
+   sio_writer( std::ostream& os, std::vector< std::string >* p_initial_comments = 0 );
 
    void write_comment( const std::string& comment );
 

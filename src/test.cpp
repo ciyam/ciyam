@@ -253,10 +253,13 @@ void test_sio_reader_writer( const string& file_name )
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input" );
 
-   sio_reader reader( inpf, true );
+   // NOTE: Initial comments are found at the very top of the sio file.
+   vector< string > initial_comments;
+
+   sio_reader reader( inpf, true, &initial_comments );
 
    ostringstream osstr;
-   sio_writer writer( osstr );
+   sio_writer writer( osstr, &initial_comments );
 
    string comment;
    while( reader )
@@ -298,8 +301,10 @@ void test_sio_reader_writer( const string& file_name )
    if( reader.get_current_line_num( ) > 0 )
    {
       string orig_line, copy_line;
-      int orig_lines = reader.get_current_line_num( ) - 1;
-      int copy_lines = 0;
+
+      size_t copy_lines = 0;
+      size_t orig_lines = reader.get_current_line_num( ) - 1;
+
       while( getline( inpf, orig_line ) )
       {
          remove_trailing_cr_from_text_file_line( orig_line );
