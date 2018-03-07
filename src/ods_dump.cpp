@@ -10,9 +10,11 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
 #  include <string>
 #  include <iomanip>
 #  include <iostream>
+#  include <algorithm>
 #  include <stdexcept>
 #endif
 
@@ -28,32 +30,46 @@ int main( int argc, char* argv[ ] )
       if( argc < 2
        || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
       {
-         cout << "Usage: ods_dump [[-d] <entries>] <file>" << endl;
+         cout << "Usage: ods_dump [[-d|-t|-dt] <entries>] <database>" << endl;
          return 0;
       }
 
       int name_arg = 1;
 
       size_t next_pos;
-      int64_t first_entry;
-      int64_t final_entry;
+
       bool show_data = false;
-      string entry, entries;
+      bool show_tranlog_entries = false;
+
+      string all_entries;
+      map< int64_t, int64_t > entry_items;
 
       if( argc > 2 )
       {
          name_arg++;
-         if( string( argv[ 1 ] ) == "-d" )
+
+         string first_arg( argv[ 1 ] );
+
+         if( first_arg == "-d" || first_arg == "-t" || first_arg == "-dt" || first_arg == "-td" )
          {
             if( argc == 4 )
             {
                name_arg++;
-               show_data = true;
-               entries = string( argv[ 2 ] );
+
+               if( first_arg == "-d" )
+                  show_data = true;
+               else if( first_arg == "-t" )
+                  show_tranlog_entries = true;
+               else
+                  show_data = show_tranlog_entries = true;
+
+               all_entries = string( argv[ 2 ] );
             }
+            else
+               throw runtime_error( "invalid usage (use no args or -? for usage)" );
          }
          else
-            entries = string( argv[ 1 ] );
+            all_entries = first_arg;
       }
 
       bool has_data = file_exists( string( argv[ name_arg ] ) + ".dat" );
@@ -79,75 +95,41 @@ int main( int argc, char* argv[ ] )
       cout << "** File Info" << endl;
       o.dump_file_info( cout );
 
-      if( entries.length( ) )
+      if( !all_entries.empty( ) && o.get_total_entries( ) )
       {
-         next_pos = entries.find( "," );
+         split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
 
-         entry = entries.substr( 0, next_pos );
+         // NOTE: After the range pairs have been condensed reconstruct "all_entries" from the result.
+         all_entries.erase( );
+         for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
+         {
+            if( !all_entries.empty( ) )
+               all_entries += ',';
 
-         if( entry.find( "all" ) != string::npos )
-         {
-            first_entry = 0;
-            final_entry = o.get_total_entries( );
-         }
-         else
-         {
-            size_t range = entry.find( "-" );
-            first_entry = atoi( entry.substr( 0, range ).c_str( ) );
-            if( range == string::npos )
-               final_entry = first_entry + 1;
+            if( i->first == i->second )
+               all_entries += to_string( i->first );
             else
-               final_entry = atoi( entry.substr( range + 1 ).c_str( ) ) + 1;
+               all_entries += to_string( i->first ) + '-' + to_string( i->second );
          }
       }
 
-      if( entries.length( ) )
+      if( !entry_items.empty( ) )
       {
          int64_t total_entries_dumped = 0;
-         cout << endl << "** Entry Info for: " << entries << endl;
+         cout << "\n** Entry Info for: " << all_entries << endl;
 
-         while( true )
+         for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
          {
-            for( int64_t i = first_entry; i < final_entry; i++ )
+            for( int64_t j = i->first; j <= i->second; j++ )
             {
-               o.dump_index_entry( cout, i );
-
-               if( show_data )
-                  o.dump_instance_data( cout, i, false );
-               else
-                  o.dump_instance_data( cout, i, true );
+               o.dump_index_entry( cout, j );
+               o.dump_instance_data( cout, j, !show_data );
 
                cout << '\n';
 
                if( ++total_entries_dumped % 500 == 0 )
                   bulk_dump.pause( );
             }
-
-            if( next_pos != string::npos )
-            {
-               entry = entries.substr( next_pos + 1 );
-               if( entry.find( "," ) != string::npos )
-                  entry = entry.substr( 0, entry.find( "," ) );
-
-               if( entry.find( "all" ) != string::npos )
-               {
-                  first_entry = 0;
-                  final_entry = o.get_total_entries( );
-               }
-               else
-               {
-                  size_t range = entry.find( "-" );
-                  first_entry = atoi( entry.substr( 0, range ).c_str( ) );
-                  if( range == string::npos )
-                     final_entry = first_entry + 1;
-                  else
-                     final_entry = atoi( entry.substr( range + 1 ).c_str( ) ) + 1;
-               }
-
-               next_pos = entries.find( ",", next_pos + 1 );
-            }
-            else
-               break;
          }
       }
       else
@@ -158,8 +140,14 @@ int main( int argc, char* argv[ ] )
 
       if( o.is_using_transaction_log( ) )
       {
-         cout << "\n** Transaction Log" << endl;
-         o.dump_transaction_log( cout, !show_data );
+         cout << "\n** Transaction Log Info" << endl;
+         o.dump_transaction_log( cout );
+
+         if( !all_entries.empty( ) && show_tranlog_entries )
+         {
+            cout << "\n** Transaction Log Info for: " << all_entries << endl;
+            o.dump_transaction_log( cout, false, &all_entries, true, true );
+         }
       }
 
       return 0;

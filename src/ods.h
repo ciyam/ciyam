@@ -646,7 +646,9 @@ class ODS_DECL_SPEC ods
    void dump_index_entry( std::ostream& os, int64_t num );
    void dump_instance_data( std::ostream& os, int64_t num, bool only_pos_and_size );
 
-   void dump_transaction_log( std::ostream& os, bool header_only );
+   void dump_transaction_log( std::ostream& os,
+    bool header_only = true, std::string* p_entry_ranges = 0,
+    bool skip_header = false, bool entries_are_condensed = false );
 
    struct bulk_dump;
    struct bulk_read;

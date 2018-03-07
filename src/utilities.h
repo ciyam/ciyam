@@ -792,6 +792,121 @@ inline void remove_trailing_cr_from_text_file_line( std::string& s, bool also_re
       remove_utf8_bom_impl( s );
 }
 
+// NOTE: For a map that is a collection of "range pairs" (such as 0-3,1-4) this function condenses
+// any overlapping ranges (so 0-3,1-4 becomes just 0-4) and can also remove any out of range items
+// that are found (assuming "num_items" is non-zero).
+template< typename N > void condense_range_pairs( std::map< N, N >& range_pairs, N num_items = 0 )
+{
+   typename std::map< N, N >::iterator i = range_pairs.begin( );
+
+   while( true )
+   {
+      if( i == range_pairs.end( ) )
+         break;
+
+      N first = i->first;
+      typename std::map< N, N >::iterator oi = i;
+
+      if( num_items && first >= num_items )
+      {
+         range_pairs.erase( first );
+         i = range_pairs.lower_bound( first );
+
+         continue;
+      }
+
+      if( num_items && i->second >= num_items )
+         i->second = num_items - 1;
+
+      N second = i->second;
+
+      if( ++i == range_pairs.end( ) )
+         break;
+
+      while( i->first <= second + 1 )
+      {
+         first = i->first;
+
+         if( num_items && i->second >= num_items )
+            i->second = num_items - 1;
+
+         if( oi->second < i->second )
+            second = oi->second = i->second;
+
+         range_pairs.erase( i );
+
+         i = range_pairs.lower_bound( first );
+
+         if( i == range_pairs.end( ) )
+            break;
+      }
+   }
+}
+
+// NOTE: Split a textual comma separated list of "range pairs" (such as "0-1,4-8") into a map with
+// the lower value of each pair being the first item of the pair. If "num_items" has a value which
+// is different to "start_from" then the string "*" or "all" is replaced by the range which occurs
+// between these.
+template< typename N > void split_range_pairs(
+ const std::string& all_ranges, std::map< N, N >& range_pairs, N num_items = 0, N start_from = 0 )
+{
+   std::vector< std::string > ranges;
+
+   if( !all_ranges.empty( ) )
+      split( all_ranges, ranges );
+
+   if( !ranges.empty( ) )
+   {
+      for( size_t i = 0; i < ranges.size( ); i++ )
+      {
+         std::string range( ranges[ i ] );
+
+         if( range.empty( ) )
+            continue;
+
+         if( ( num_items != start_from ) && ( range == "*" || range == "all" ) )
+         {
+            range_pairs[ start_from ] = ( num_items - 1 );
+            break;
+         }
+
+         std::string lhs, rhs;
+         std::string::size_type pos = range.find( '-' );
+
+         lhs = range.substr( 0, pos );
+
+         if( pos == std::string::npos )
+            rhs = lhs;
+         else
+            rhs = range.substr( pos + 1 );
+
+         N first = from_string< N >( lhs );
+         N second = from_string< N >( rhs );
+
+         if( second < first )
+            std::swap( first, second );
+
+         if( first < start_from )
+            first = start_from;
+
+         if( num_items != start_from && second >= num_items )
+            second = num_items - 1;
+
+         if( !range_pairs.count( first ) )
+            range_pairs.insert( std::make_pair( first, second ) );
+         else
+            range_pairs[ first ] = ( range_pairs[ first ] < second ? second : range_pairs[ first ] );
+      }
+   }
+}
+
+template< typename N > void split_and_condense_range_pairs(
+ const std::string& all_ranges, std::map< N, N >& range_pairs, N num_items = 0 )
+{
+   split_range_pairs( all_ranges, range_pairs, num_items );
+   condense_range_pairs( range_pairs, num_items );
+}
+
 struct version_info
 {
    int major;

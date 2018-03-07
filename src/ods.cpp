@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
 #  include <set>
 #  include <stack>
 #  include <vector>
@@ -3707,7 +3708,8 @@ void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
    }
 }
 
-void ods::dump_transaction_log( ostream& os, bool header_only )
+void ods::dump_transaction_log( ostream& os,
+ bool header_only, string* p_entry_ranges, bool skip_header, bool entries_are_condensed )
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
@@ -3723,20 +3725,43 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
    log_info tranlog_info;
    tranlog_info.read( fs );
 
-   tranlog_info.dump( os );
+   if( header_only || !skip_header )
+      tranlog_info.dump( os );
 
    if( !header_only && tranlog_info.entry_offs )
    {
-      while( true )
+      map< int64_t, int64_t > range_pairs;
+
+      // NOTE: Optionally restrict the output to a map of log entry item ranges.
+      if( p_entry_ranges && !p_entry_ranges->empty( ) )
       {
+         if( entries_are_condensed )
+            split_range_pairs( *p_entry_ranges, range_pairs );
+         else
+            split_and_condense_range_pairs( *p_entry_ranges, range_pairs, get_total_entries( ) );
+      }
+
+      if( !skip_header )
          os << '\n';
 
+      bool first_entry = true;
+
+      while( true )
+      {
          int64_t offs = fs.tellg( );
 
          log_entry tranlog_entry;
          tranlog_entry.read( fs );
 
-         tranlog_entry.dump( os, offs );
+         bool first_item = true;
+         ostringstream osstr;
+
+         if( first_entry )
+            first_entry = false;
+         else
+            osstr << '\n';
+
+         tranlog_entry.dump( osstr, offs );
 
          int64_t next_offs = tranlog_entry.next_entry_offs;
 
@@ -3745,21 +3770,44 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
 
          while( fs.tellg( ) < next_offs )
          {
-            os << '\n';
-
             int64_t offs = fs.tellg( );
 
             log_entry_item tranlog_item;
             tranlog_item.read( fs );
 
-            tranlog_item.dump( os, offs );
+            bool dump_item = true;
+
+            if( !range_pairs.empty( ) )
+            {
+               map< int64_t, int64_t >::iterator i = range_pairs.lower_bound( tranlog_item.index_entry_id );
+
+               if( i == range_pairs.end( )
+                || ( i != range_pairs.begin( ) && i->first > tranlog_item.index_entry_id ) )
+                  --i;
+
+               if( !( tranlog_item.index_entry_id >= i->first && tranlog_item.index_entry_id <= i->second ) )
+                  dump_item = false;
+            }
+
+            if( dump_item )
+            {
+               if( first_item )
+               {
+                  first_item = false;
+                  os << osstr.str( );
+               }
+
+               os << '\n';
+               tranlog_item.dump( os, offs );
+            }
 
             if( tranlog_item.has_pos_and_size( ) )
             {
                int64_t chunk = 16;
                unsigned char buffer[ 16 ];
 
-               os << hex;
+               if( dump_item )
+                  os << hex;
 
                for( int64_t i = 0; i < tranlog_item.data_size; i += chunk )
                {
@@ -3768,27 +3816,31 @@ void ods::dump_transaction_log( ostream& os, bool header_only )
 
                   fs.read( ( char* )buffer, chunk );
 
-                  os << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << i << "  ";
-
-                  for( int j = 0; j < chunk; j++ )
-                     os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
-
-                  if( chunk < 16 )
-                     os << string( ( 16 - chunk ) * 3, ' ' );
-
-                  os << ' ';
-                  for( int j = 0; j < chunk; j++ )
+                  if( dump_item )
                   {
-                     if( !is_print( buffer[ j ] ) )
-                        os << ".";
-                     else
-                        os << buffer[ j ];
-                  }
+                     os << setw( sizeof( int64_t ) * 2 ) << setfill( '0' ) << i << "  ";
 
-                  os << "\n";
+                     for( int j = 0; j < chunk; j++ )
+                        os << setw( 2 ) << setfill( '0' ) << ( unsigned )buffer[ j ] << " ";
+
+                     if( chunk < 16 )
+                        os << string( ( 16 - chunk ) * 3, ' ' );
+
+                     os << ' ';
+                     for( int j = 0; j < chunk; j++ )
+                     {
+                        if( !is_print( buffer[ j ] ) )
+                           os << ".";
+                        else
+                           os << buffer[ j ];
+                     }
+
+                     os << "\n";
+                  }
                }
 
-               os << dec;
+               if( dump_item )
+                  os << dec;
             }
          }
 
