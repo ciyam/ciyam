@@ -4103,6 +4103,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw;
          }
       }
+      else if( command == c_cmd_ciyam_session_perform_package_update )
+      {
+         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_update_name ) );
+
+         update_package( name );
+      }
       else if( command == c_cmd_ciyam_session_session_list )
       {
          bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_list_minimal ) );
@@ -4875,7 +4881,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   bool old_skip_fetches = session_skip_fk_fetches( );
                   session_skip_fk_fetches( true );
 
-                  if( name == c_meta_model )
+                  if( name == c_meta_model_name )
                   {
                      ifstream std_inpf( "Meta_init_std.cin" );
                      if( !std_inpf )

@@ -8080,12 +8080,17 @@ void get_all_enum_pairs( size_t handle, const string& context, vector< pair< str
    instance.get_all_enum_pairs( pairs );
 }
 
-void get_all_field_names( size_t handle, const string& context, vector< string >& fields )
+void get_all_field_names( size_t handle, const string& context, vector< string >& fields, bool include_transients )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    for( int i = 0; i < instance.get_num_fields( ); i++ )
+   {
+      if( !include_transients && instance.is_field_transient( i ) )
+         continue;
+
       fields.push_back( instance.get_field_name( i ) );
+   }
 }
 
 void get_all_field_scope_and_permission_info( size_t handle,
@@ -8234,6 +8239,13 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 
       field_values += next_csv_value;
    }
+}
+
+string get_field_value( size_t handle, const string& context, const string& field )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_field_value( instance.get_field_num( field ) );
 }
 
 string get_field_values( size_t handle,

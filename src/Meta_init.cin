@@ -23,18 +23,30 @@ session_variable @attached_file_path .
 pc admin 20120102 100 135100 Standard "135101=New_Package_Type"
 pu admin 20120102 100 135100 Standard "135103=new.package.bun.gz"
 pe admin 20120102 100 135100 Standard 135410
+@ifdef %CIYAM_TEST_STORAGE%
+~rm Standard.info
+@endif
 ~cp Auto_Code.package.bun.gz new.package.bun.gz
 pc admin 20120102 100 135100 Auto_Code "135101=New_Package_Type"
 pu admin 20120102 100 135100 Auto_Code "135103=new.package.bun.gz"
 pe admin 20120102 100 135100 Auto_Code 135410
+@ifdef %CIYAM_TEST_STORAGE%
+~rm Auto_Code.info
+@endif
 ~cp User.package.bun.gz new.package.bun.gz
 pc admin 20120102 100 135100 User "135101=New_Package_Type"
 pu admin 20120102 100 135100 User "135103=new.package.bun.gz"
 pe admin 20120102 100 135100 User 135410
+@ifdef %CIYAM_TEST_STORAGE%
+~rm User.info
+@endif
 ~cp Group.package.bun.gz new.package.bun.gz
 pc admin 20120102 100 135100 Group "135101=New_Package_Type"
 pu admin 20120102 100 135100 Group "135103=new.package.bun.gz"
 pe admin 20120102 100 135100 Group 135410
+@ifdef %CIYAM_TEST_STORAGE%
+~rm Group.info
+@endif
 ~rm new.package.bun.gz
 storage_term
 quit

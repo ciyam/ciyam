@@ -340,6 +340,248 @@ void export_data( ostream& outs,
    destroy_object_instance( handle );
 }
 
+void read_skip_fields( const string& module_id, const string& skip_field_info, map< string, map< string, string > >& skip_fields )
+{
+   if( !skip_field_info.empty( ) )
+   {
+      vector< string > skip_field_items;
+
+      // NOTE: The skip info can alternatively be placed in an external list file for convenience.
+      // Each skip entry is in the format <class>:<field>[=<value>] where both "class" and "field"
+      // can be specified as either names or id's. If specified as <class>:<field> then all values
+      // for the name field are ignored (i.e. as though the field was not in each record). For the
+      // use <class>:<field>=[<value>] then the record itself will be skipped if the field's value
+      // matches that specified.
+      if( skip_field_info[ 0 ] != '@' )
+         split( skip_field_info, skip_field_items );
+      else
+         buffer_file_lines( skip_field_info.substr( 1 ), skip_field_items );
+
+      for( size_t i = 0; i < skip_field_items.size( ); i++ )
+      {
+         string::size_type pos = skip_field_items[ i ].find( ':' );
+         if( pos == string::npos )
+            throw runtime_error( "invalid skip_field_info item format '" + skip_field_items[ i ] + "'" );
+
+         string sclass( skip_field_items[ i ].substr( 0, pos ) );
+
+         string xinfo( "for skip_field_info '" + skip_field_items[ i ] + "'" );
+         sclass = resolve_class_id( module_id, sclass, xinfo );
+
+         string sfield( skip_field_items[ i ].substr( pos + 1 ) );
+         string svalue;
+
+         pos = sfield.find( '=' );
+         if( pos != string::npos )
+         {
+            svalue = sfield.substr( pos + 1 );
+            sfield.erase( pos );
+         }
+
+         sfield = resolve_field_id( module_id, sclass, sfield, xinfo );
+
+         skip_fields[ sclass ][ sfield ] = svalue;
+      }
+   }
+}
+
+void create_new_package_file( const string& module_id, const string& filename,
+ set< string >* p_found_keys = 0, set< string >* p_skipped_keys = 0, map< string, map< string, string > >* p_skip_fields = 0 )
+{
+   ifstream inpf( filename.c_str( ) );
+
+   if( !inpf )
+      throw runtime_error( "unable to open file '" + filename + "' for input" );
+
+   vector< string > initial_comments;
+   sio_reader reader( inpf, true, &initial_comments );
+
+   string new_filename( filename + ".new" );
+
+   ofstream outf( new_filename.c_str( ) );
+   if( !outf )
+      throw runtime_error( "unable to open file '" + new_filename + "' for output" );
+
+   sio_writer writer( outf, &initial_comments );
+
+   size_t line_num = 1;
+   while( reader.has_started_section( c_section_class ) )
+   {
+      ++line_num;
+
+      string comment;
+      while( reader.has_read_comment( comment ) )
+      {
+         ++line_num;
+         writer.write_comment( comment );
+      }
+
+      writer.start_section( c_section_class );
+
+      string mclass( reader.read_attribute( c_attribute_name ) );
+      writer.write_attribute( c_attribute_name, mclass );
+
+      string field_list( reader.read_attribute( c_attribute_fields ) );
+
+      bool forced_field_list = false;
+
+      if( !field_list.empty( ) && field_list[ 0 ] == '!' )
+      {
+         forced_field_list = true;
+         field_list.erase( 0, 1 );
+      }
+
+      line_num += 2;
+
+      vector< string > fields;
+      split( field_list, fields );
+
+      map< string, size_t > field_value_offsets;
+
+      // NOTE: Map each field (apart from the initial @key one) to its
+      // offset so its value can be obtained from the list of values.
+      for( size_t i = 1; i < fields.size( ); i++ )
+         field_value_offsets.insert( make_pair( fields[ i ], i ) );
+
+      mclass = get_class_id_for_id_or_name( module_id, mclass );
+
+      size_t handle = create_object_instance( module_id, mclass, 0, false );
+
+      try
+      {
+         vector< string > field_names;
+
+         if( forced_field_list )
+         {
+            field_names = fields;
+
+            if( field_names.size( ) && field_names[ 0 ] == c_key_field )
+               field_names.erase( field_names.begin( ) );
+         }
+         else
+            get_all_field_names( handle, "", field_names, false );
+
+         map< string, string > field_skip_values;
+
+         for( size_t i = 0; i < field_names.size( ); i++ )
+         {
+            string sfield( resolve_field_id( module_id, mclass, field_names[ i ], field_list ) );
+
+            if( p_skip_fields && p_skip_fields->count( mclass ) && ( *p_skip_fields )[ mclass ].count( sfield ) )
+            {
+               if( !( *p_skip_fields )[ mclass ][ sfield ].empty( ) )
+                  field_skip_values[ field_names[ i ] ] = ( *p_skip_fields )[ mclass ][ sfield ];
+
+               field_names.erase( field_names.begin( ) + i );
+               --i;
+            }
+         }
+
+         string output_fields( forced_field_list ? "!" : "" );
+         output_fields += fields[ 0 ] + ',' + join( field_names );
+
+         writer.write_attribute( c_attribute_fields, output_fields );
+
+         while( reader.has_read_comment( comment ) )
+         {
+            ++line_num;
+            writer.write_comment( comment );
+         }
+
+         string next_record;
+         while( reader.has_read_attribute( c_attribute_record, next_record ) )
+         {
+            ++line_num;
+
+            string unescaped_crs_and_lfs;
+
+            // NOTE: Need to ensure that \\r and \\n are not being confused with \r and \n here.
+            replace( next_record, "\\\\", "\1" );
+            replace( next_record, "\\r", "\r", "\\n", "\n" );
+            replace( next_record, "\1", "\\\\" );
+
+            vector< string > field_values;
+            split( next_record, field_values );
+
+            if( field_values.size( ) != fields.size( ) )
+               throw runtime_error( "found " + to_string( field_values.size( ) )
+                  + " field values but was expecting " + to_string( fields.size( ) ) );
+
+            if( fields.size( ) )
+            {
+               if( fields[ 0 ] != c_key_field )
+                  throw runtime_error( "unexpected missing key field processing line #" + to_string( line_num ) );
+
+               string output_values( field_values[ 0 ] );
+
+               bool skip_record = false;
+
+               for( size_t i = 0; i < field_names.size( ); i++ )
+               {
+                  string next_value( get_field_value( handle, "", field_names[ i ] ) );
+
+                  if( field_value_offsets.count( field_names[ i ] ) )
+                     next_value = field_values[ field_value_offsets[ field_names[ i ] ] ];
+
+                  if( field_skip_values.count( field_names[ i ] ) && next_value == field_skip_values[ field_names[ i ] ] )
+                  {
+                     skip_record = true;
+                     break;
+                  }
+
+                  output_values += ',';
+                  output_values += escaped( next_value, ",\"", '\\', "rn\r\n" );
+               }
+
+               if( skip_record )
+               {
+                  if( p_skipped_keys )
+                     p_skipped_keys->insert( field_values[ 0 ] );
+               }
+               else
+               {
+                  if( p_found_keys )
+                     p_found_keys->insert( field_values[ 0 ] );
+
+                  writer.write_attribute( c_attribute_record, output_values );
+               }
+            }
+
+            while( reader.has_read_comment( comment ) )
+            {
+               ++line_num;
+               writer.write_comment( comment );
+            }
+         }
+
+         while( reader.has_read_comment( comment ) )
+         {
+            ++line_num;
+            writer.write_comment( comment );
+         }
+
+         reader.finish_section( c_section_class );
+         writer.finish_section( c_section_class );
+
+         while( reader.has_read_comment( comment ) )
+         {
+            ++line_num;
+            writer.write_comment( comment );
+         }
+
+         destroy_object_instance( handle );
+         ++line_num;
+      }
+      catch( ... )
+      {
+         destroy_object_instance( handle );
+         throw;
+      }
+   }
+
+   writer.finish_sections( );
+}
+
 }
 
 void export_package( const string& module,
@@ -596,48 +838,7 @@ void import_package( const string& module,
    bool is_using_blockchain = get_session_is_using_blockchain( );
 
    map< string, map< string, string > > skip_fields;
-
-   if( !skip_field_info.empty( ) )
-   {
-      vector< string > skip_field_items;
-
-      // NOTE: The skip info can alternatively be placed in an external list file for convenience.
-      // Each skip entry is in the format <class>:<field>[=<value>] where both "class" and "field"
-      // can be specified as either names or id's. If specified as <class>:<field> then all values
-      // for the name field are ignored (i.e. as though the field was not in each record). For the
-      // use <class>:<field>=[<value>] then the record itself will be skipped if the field's value
-      // matches that specified.
-      if( skip_field_info[ 0 ] != '@' )
-         split( skip_field_info, skip_field_items );
-      else
-         buffer_file_lines( skip_field_info.substr( 1 ), skip_field_items );
-
-      for( size_t i = 0; i < skip_field_items.size( ); i++ )
-      {
-         string::size_type pos = skip_field_items[ i ].find( ':' );
-         if( pos == string::npos )
-            throw runtime_error( "invalid skip_field_info item format '" + skip_field_items[ i ] + "'" );
-
-         string sclass( skip_field_items[ i ].substr( 0, pos ) );
-
-         string xinfo( "for skip_field_info '" + skip_field_items[ i ] + "'" );
-         sclass = resolve_class_id( module_id, sclass, xinfo );
-
-         string sfield( skip_field_items[ i ].substr( pos + 1 ) );
-         string svalue;
-
-         pos = sfield.find( '=' );
-         if( pos != string::npos )
-         {
-            svalue = sfield.substr( pos );
-            sfield.erase( pos );
-         }
-
-         sfield = resolve_field_id( module_id, sclass, sfield, xinfo );
-
-         skip_fields[ sclass ][ sfield ] = svalue;
-      }
-   }
+   read_skip_fields( module_id, skip_field_info, skip_fields );
 
    ifstream inpf( filename.c_str( ) );
    if( !inpf )
@@ -675,8 +876,8 @@ void import_package( const string& module,
             continue;
 
          // NOTE: If the replace info starts with an asterisk then search/replacing
-         // will be performed seach string itself (this can be useful when compound
-         // keys that contain other package keys need to be optional).
+         // will be performed for the search string itself (this can be useful when
+         // compound keys that contain other package keys need to be optional).
          bool do_replaces_for_find_string = false;
          if( replace_items[ i ][ 0 ] == '*' )
          {
@@ -784,6 +985,9 @@ void import_package( const string& module,
          string mclass( reader.read_attribute( c_attribute_name ) );
          string field_list( reader.read_attribute( c_attribute_fields ) );
 
+         if( !field_list.empty( ) && field_list[ 0 ] == '!' )
+            field_list.erase( 0, 1 );
+
          line_num += 2;
 
          mclass = get_class_id_for_id_or_name( module_id, mclass );
@@ -876,7 +1080,7 @@ void import_package( const string& module,
                            if( skip_fields.count( next_cid ) && skip_fields[ next_cid ].count( fields[ i ] ) )
                            {
                               if( !skip_fields[ next_cid ][ fields[ i ] ].empty( )
-                               && field_values[ i ] == skip_fields[ next_cid ][ fields[ i ] ].substr( 1 ) )
+                               && field_values[ i ] == skip_fields[ next_cid ][ fields[ i ] ] )
                                  skip_op = true;
                            }
                         }
@@ -1125,6 +1329,128 @@ void import_package( const string& module,
 
       for( map< string, string >::iterator i = keys_created.begin( ); i != keys_created.end( ); ++i )
          outf << i->second << ':' << i->first << '\n';
+   }
+}
+
+void update_package( const string& name )
+{
+   string module_id( loaded_module_id( c_meta_model_name ) );
+
+   set< string > found_keys;
+   set< string > missing_keys;
+   set< string > skipped_keys;
+   set< string > repeated_keys;
+
+   string package_sio_file( name + ".package.sio" );
+
+   if( !file_exists( package_sio_file ) )
+      throw runtime_error( "package file '" + package_sio_file + "' not found in update_package" );
+   else
+   {
+      string specs_sio_file( name + ".specs.sio" );
+
+      if( file_exists( specs_sio_file ) )
+         create_new_package_file( module_id, specs_sio_file );
+
+      string skip_field_info( "@" + string( c_meta_model_name )
+      + "_" + string( c_meta_class_name_class ) + ".skips.lst" );
+
+      map< string, map< string, string > > skip_fields;
+      read_skip_fields( module_id, skip_field_info, skip_fields );
+
+      create_new_package_file( module_id, package_sio_file, &found_keys, &skipped_keys, &skip_fields );
+
+      string package_keys_file( name + ".keys.lst" );
+
+      if( !file_exists( package_keys_file ) )
+         throw runtime_error( "package keys file '" + package_keys_file + "' not found in update_package" );
+      else
+      {
+         vector< string > lines;
+         buffer_file_lines( package_keys_file, lines );
+
+         string new_package_keys_file( package_keys_file + ".new" );
+   
+         ofstream outf( new_package_keys_file.c_str( ) );
+
+         if( !outf )
+            throw runtime_error( "unable to open file '" + new_package_keys_file + "' for output in update_package" );
+
+         set< string > used_keys;
+
+         for( size_t i = 0; i < lines.size( ); i++ )
+         {
+            string next_line( lines[ i ] );
+
+            bool skip_line = false;
+
+            if( !next_line.empty( ) )
+            {
+               if( !next_line[ 0 ] == ';' )
+               {
+                  string::size_type pos = next_line.find( '=' );
+                  if( pos != string::npos )
+                  {
+                     string key( next_line.substr( 0, pos ) );
+                     string rhs( next_line.substr( pos + 1 ) );
+
+                     if( skipped_keys.count( key ) )
+                        skip_line = true;
+                     else if( !found_keys.count( key ) )
+                        missing_keys.insert( key );
+                     else
+                     {
+                        if( !rhs.empty( ) && rhs[ 0 ] != '?' && rhs[ 0 ] != '!' )
+                        {
+                           if( used_keys.count( key ) )
+                              repeated_keys.insert( key );
+                           else
+                              used_keys.insert( key );
+                        }
+                     }
+                  }
+               }
+            }
+
+            if( !skip_line )
+               outf << next_line << '\n';
+         }
+      }
+   }
+
+   if( !found_keys.empty( ) )
+   {
+      string report_file( name + ".report.txt" );
+
+      ofstream outf( report_file.c_str( ) );
+      if( !outf )
+         throw runtime_error( "unable to open file '" + report_file + "' for output in update_package" );
+
+      outf << "Total Keys: " << found_keys.size( ) << endl;
+
+      if( !missing_keys.empty( ) )
+      {
+         outf << "\nMissing Keys:" << endl;
+
+         for( set< string >::iterator i = missing_keys.begin( ); i != missing_keys.end( ); ++i )
+            outf << *i << endl;
+      }
+
+      if( !skipped_keys.empty( ) )
+      {
+         outf << "\nSkipped Keys:" << endl;
+
+         for( set< string >::iterator i = skipped_keys.begin( ); i != skipped_keys.end( ); ++i )
+            outf << *i << endl;
+      }
+
+      if( !repeated_keys.empty( ) )
+      {
+         outf << "\nRepeated Keys:" << endl;
+
+         for( set< string >::iterator i = repeated_keys.begin( ); i != repeated_keys.end( ); ++i )
+            outf << *i << endl;
+      }
    }
 }
 

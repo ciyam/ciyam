@@ -17,5 +17,4 @@ Field:Internal=1
 Procedure:Id
 Relationship:Field_Id
 Specification:Id
-Specification:Name
 Specification:Order

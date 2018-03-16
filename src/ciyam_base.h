@@ -529,7 +529,7 @@ void CIYAM_BASE_DECL_SPEC get_all_enum_pairs( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& pairs );
 
 void CIYAM_BASE_DECL_SPEC get_all_field_names( size_t handle,
- const std::string& context, std::vector< std::string >& fields );
+ const std::string& context, std::vector< std::string >& fields, bool include_transients = true );
 
 void CIYAM_BASE_DECL_SPEC get_all_field_scope_and_permission_info( size_t handle,
  const std::string& context, std::map< std::string, std::string >& field_scope_and_perm_info, bool by_name = false );
@@ -549,6 +549,8 @@ std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol(
 
 std::string CIYAM_BASE_DECL_SPEC get_field_display_name(
  size_t handle, const std::string& context, const std::string& id_or_name );
+
+std::string CIYAM_BASE_DECL_SPEC get_field_value( size_t handle, const std::string& context, const std::string& field );
 
 std::string CIYAM_BASE_DECL_SPEC get_field_values( size_t handle,
  const std::string& parent_context, const std::vector< std::string >& field_list,

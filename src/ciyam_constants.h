@@ -13,7 +13,11 @@ const int c_tx_id_standard = 5;
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
-const char* const c_meta_model = "Meta";
+const char* const c_meta_model_name = "Meta";
+
+const char* const c_meta_class_name_class = "Class";
+const char* const c_meta_class_name_model = "Model";
+const char* const c_meta_class_name_application = "Application";
 
 const char* const c_ignore_field = "@ignore";
 

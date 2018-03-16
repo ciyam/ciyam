@@ -28,5 +28,7 @@ void CIYAM_BASE_DECL_SPEC import_package(
  const std::string& key_prefix, const std::string& replace_info,
  const std::string& skip_field_info, bool new_only = false, bool for_remove = false );
 
+void CIYAM_BASE_DECL_SPEC update_package( const std::string& name );
+
 #endif
 
