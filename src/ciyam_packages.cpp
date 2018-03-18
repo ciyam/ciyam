@@ -404,17 +404,11 @@ void create_new_package_file( const string& module_id, const string& filename,
 
    sio_writer writer( outf, &initial_comments );
 
-   size_t line_num = 1;
    while( reader.has_started_section( c_section_class ) )
    {
-      ++line_num;
-
       string comment;
       while( reader.has_read_comment( comment ) )
-      {
-         ++line_num;
          writer.write_comment( comment );
-      }
 
       writer.start_section( c_section_class );
 
@@ -430,8 +424,6 @@ void create_new_package_file( const string& module_id, const string& filename,
          forced_field_list = true;
          field_list.erase( 0, 1 );
       }
-
-      line_num += 2;
 
       vector< string > fields;
       split( field_list, fields );
@@ -483,16 +475,11 @@ void create_new_package_file( const string& module_id, const string& filename,
          writer.write_attribute( c_attribute_fields, output_fields );
 
          while( reader.has_read_comment( comment ) )
-         {
-            ++line_num;
             writer.write_comment( comment );
-         }
 
          string next_record;
          while( reader.has_read_attribute( c_attribute_record, next_record ) )
          {
-            ++line_num;
-
             string unescaped_crs_and_lfs;
 
             // NOTE: Need to ensure that \\r and \\n are not being confused with \r and \n here.
@@ -510,7 +497,9 @@ void create_new_package_file( const string& module_id, const string& filename,
             if( fields.size( ) )
             {
                if( fields[ 0 ] != c_key_field )
-                  throw runtime_error( "unexpected missing key field processing line #" + to_string( line_num ) );
+                  throw runtime_error(
+                   "unexpected missing key field processing line #"
+                   + to_string( reader.get_last_line_num( ) ) );
 
                string output_values( field_values[ 0 ] );
 
@@ -548,29 +537,19 @@ void create_new_package_file( const string& module_id, const string& filename,
             }
 
             while( reader.has_read_comment( comment ) )
-            {
-               ++line_num;
                writer.write_comment( comment );
-            }
          }
 
          while( reader.has_read_comment( comment ) )
-         {
-            ++line_num;
             writer.write_comment( comment );
-         }
 
          reader.finish_section( c_section_class );
          writer.finish_section( c_section_class );
 
          while( reader.has_read_comment( comment ) )
-         {
-            ++line_num;
             writer.write_comment( comment );
-         }
 
          destroy_object_instance( handle );
-         ++line_num;
       }
       catch( ... )
       {
@@ -977,18 +956,13 @@ void import_package( const string& module,
 
    try
    {
-      size_t line_num = 1;
       while( reader.has_started_section( c_section_class ) )
       {
-         ++line_num;
-
          string mclass( reader.read_attribute( c_attribute_name ) );
          string field_list( reader.read_attribute( c_attribute_fields ) );
 
          if( !field_list.empty( ) && field_list[ 0 ] == '!' )
             field_list.erase( 0, 1 );
-
-         line_num += 2;
 
          mclass = get_class_id_for_id_or_name( module_id, mclass );
 
@@ -1026,13 +1000,12 @@ void import_package( const string& module,
             string next_record;
             while( reader.has_read_attribute( c_attribute_record, next_record ) )
             {
-               ++line_num;
-
                if( time( 0 ) - ts >= 10 )
                {
                   ts = time( 0 );
                   // FUTURE: This message should be handled as a server string message.
-                  get_session_command_handler( ).output_progress( "Processed " + to_string( line_num ) + " lines..." );
+                  get_session_command_handler( ).output_progress( "Processed "
+                   + to_string( reader.get_last_line_num( ) ) + " lines..." );
                }
 
                map< string, string > search_replaces_used;
@@ -1063,7 +1036,9 @@ void import_package( const string& module,
                if( fields.size( ) )
                {
                   if( fields[ 0 ] != c_key_field )
-                     throw runtime_error( "unexpected missing key field processing line #" + to_string( line_num ) );
+                     throw runtime_error(
+                      "unexpected missing key field processing line #"
+                      + to_string( reader.get_last_line_num( ) ) );
 
                   bool skip_op = false;
 
@@ -1117,7 +1092,8 @@ void import_package( const string& module,
                   {
                      string::size_type pos = next_key.find( '_' );
                      if( pos == string::npos )
-                        throw runtime_error( "unexpected key format '" + next_key + "' processing line #" + to_string( line_num ) );
+                        throw runtime_error( "unexpected key format '" + next_key
+                         + "' processing line #" + to_string( reader.get_last_line_num( ) ) );
 
                      original_key.erase( 0, pos + 1 );
 
@@ -1135,7 +1111,8 @@ void import_package( const string& module,
                         else if( pos == next_key.length( ) - 1 )
                            skip_op = true;
                         else
-                           throw runtime_error( "unexpected key prefix '" + next_key + "' processing line #" + to_string( line_num ) );
+                           throw runtime_error( "unexpected key prefix '" + next_key
+                            + "' processing line #" + to_string( reader.get_last_line_num( ) ) );
                      }
                   }
 
@@ -1282,7 +1259,6 @@ void import_package( const string& module,
 
             reader.finish_section( c_section_class );
             destroy_object_instance( handle );
-            ++line_num;
          }
          catch( ... )
          {

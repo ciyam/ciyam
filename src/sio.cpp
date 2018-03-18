@@ -74,6 +74,7 @@ void write_section_attributes( sio_writer& writer, const section_node& node )
 sio_reader::sio_reader( istream& is, bool include_comments, vector< string >* p_initial_comments )
  :
  is( is ),
+ last_num( 0 ),
  line_num( 0 ),
  start_pos( 0 ),
  finish_pos( 0 ),
@@ -98,6 +99,8 @@ sio_reader::sio_reader( istream& is, bool include_comments, vector< string >* p_
                break;
          }
       }
+
+      last_num = line_num;
 
       if( !has_started_section( c_root_section ) )
          throw runtime_error( "invalid root section" );
@@ -246,6 +249,8 @@ void sio_reader::verify_finished_sections( )
 
 void sio_reader::read_line( )
 {
+   last_num = line_num;
+
    while( true )
    {
       if( is.eof( ) )

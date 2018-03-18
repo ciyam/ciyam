@@ -298,12 +298,12 @@ void test_sio_reader_writer( const string& file_name )
 
    istringstream isstr( osstr.str( ) );
 
-   if( reader.get_current_line_num( ) > 0 )
+   if( reader.get_next_line_num( ) > 0 )
    {
       string orig_line, copy_line;
 
       size_t copy_lines = 0;
-      size_t orig_lines = reader.get_current_line_num( ) - 1;
+      size_t orig_lines = reader.get_next_line_num( ) - 1;
 
       while( getline( inpf, orig_line ) )
       {

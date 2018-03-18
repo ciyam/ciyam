@@ -664,7 +664,7 @@ int main( int argc, char* argv[ ] )
                if( socket.had_timeout( ) )
                   error = "timeout occurred trying to connect to server";
                else
-                  error = "application server has terminated this connection";
+                  error = "unable to connect to the application server (not active?)";
 
                socket.close( );
                throw runtime_error( error );

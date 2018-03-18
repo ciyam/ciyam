@@ -65,8 +65,9 @@ class sio_reader
 
    bool is_root_section( ) const;
 
-   size_t get_last_line_num( ) const { return line_num - 1; }
-   size_t get_current_line_num( ) const { return line_num; }
+   size_t get_last_line_num( ) const { return last_num; }
+   size_t get_next_line_num( ) const { return line_num; }
+
    size_t get_current_section_level( ) const { return sections.size( ); }
 
    private:
@@ -87,7 +88,9 @@ class sio_reader
 
    bool include_comments;
 
+   size_t last_num;
    size_t line_num;
+
    std::string line;
    std::stack< std::string > sections;
 
