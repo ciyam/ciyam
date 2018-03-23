@@ -744,8 +744,8 @@ void storage_handler::dump_cache( ostream& os ) const
 
 void storage_handler::dump_locks( ostream& os ) const
 {
-   os << "handle key (lock_class:instance)                     type       tx_type    tran_id    tran_level p_session p_class_base p_root_class\n";
-   os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- --------- ------------ ------------\n";
+   os << "handle key (lock_class:instance)                     type       tx_type    tran_id    tran_level p_session      p_class_base   p_root_class\n";
+   os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- -------------- -------------- --------------\n";
 
    lock_index_const_iterator lici;
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
@@ -759,8 +759,9 @@ void storage_handler::dump_locks( ostream& os ) const
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type )
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.tx_type )
        << ' ' << setw( 10 ) << next_lock.transaction_id
-       << ' ' << setw( 10 ) << next_lock.transaction_level << ' ' << next_lock.p_session
-       << "  " << next_lock.p_class_base << "     " << next_lock.p_root_class << '\n';
+       << ' ' << setw( 10 ) << next_lock.transaction_level
+       << ' ' << setw( 14 ) << next_lock.p_session
+       << ' ' << setw( 14 ) << next_lock.p_class_base << ' ' << next_lock.p_root_class << '\n';
    }
 }
 

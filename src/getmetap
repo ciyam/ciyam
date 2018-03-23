@@ -1,0 +1,24 @@
+#!/bin/sh
+# Copyright (c) 2018 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -ne 3 ]; then
+ echo "Usage: getmetap [meta type] [key val] [field1,[field2,[...]]]"
+else
+ if [ "$CIYAM_PACKAGE" = "" ]; then
+  echo "Error: Missing environment variable 'CIYAM_PACKAGE'."
+ else
+  ./getmeta $* $CIYAM_PACKAGE >~getmetap
+
+  if [ $? -ne 0 ]; then
+   cat ~getmetap
+  else
+   cat ~getmetap | xclip -selection clipboard
+   echo "(result is on the clipboard)"
+  fi
+
+  rm ~getmetap
+ fi
+fi

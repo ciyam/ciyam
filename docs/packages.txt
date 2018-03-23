@@ -31,7 +31,8 @@ used (e.g. "user_code").
 After creating the Initial_Record the Initial_Record_Values for Name and Mask must be provided. For the above
 example the Initial_Record_Value's Value for Name could be set to "User_Code" with the Mask's Value being set
 to a useful "auto increment mask" (e.g. "U#####"). It should be noted that the Name must be unique (but isn't
-otherwise important).
+otherwise important). The System Information value must be set to "system" in order to satisfy that mandatory
+relationship value.
 
 An "auto incement mask" must contain one or more "#" or "?" characters that are replaced when determining the
 "next" auto increment value with digits and letters respectively. The following table of auto code masks with
@@ -230,6 +231,22 @@ be dividing records between different Groups.
 Package Options:
 
 @use_demo_data - Use this option to create demo Groups (and demo Users belonging to them).
+
+-------------------------------------------------------------------------------------------------------------
+Holding
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a simple implementation for recording a collection of Holding Items (where each item is
+a company share or other similar unit holding) which includes the ability to record all item acquisitions and
+disposals as well as other potentially relevant events such as bonuses, splits and consolidations. Each group
+of holding items has a start and finish date which are intended to be the start and end of the financial year
+so that the PDF reports of current holdings and capital gains can be generated for accounting purposes.
+
+Package Options:
+
+@use_demo_data - Use this option to create demo set of Holding Items for a sample financial year.
 
 -------------------------------------------------------------------------------------------------------------
 Itinerary
@@ -471,3 +488,19 @@ the application has a need for different user "types" that have different permis
 * A "quick link" is a method for extending the standard menu so applications can include menu items which are
 either links to a specific record or to a specific record search (these are also known as "user links").
 
+-------------------------------------------------------------------------------------------------------------
+Wallet
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard Transaction
+
+This package provides a Bitcoin (and clone) Wallet implementation that supports multiple wallets which can be
+each either external and optionally watch-only or internal and optionally deterministic.
+
+Package Options:
+
+@use_demo_data - Use this option to create a demo watch-only wallet.
+
+key_name (and key_plural) - Change these options from the default Key/Keys if desired.
+
+user_package - Optional "user" package to tie wallets to users.
