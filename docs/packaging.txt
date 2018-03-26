@@ -378,8 +378,8 @@ Using the console client issue a command similar to the following (if package is
 then replace ... with the comma separated key list).
 
 > storage_init Meta
-> perform_package_export Meta Class <class_key>[,...] Sample.package.sio -t=@Meta_Class.tests.lst
- -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
+> perform_package_export Meta Class <class_key>[,...] Sample.package.sio -s=@Meta_Class.skips.lst
+ -t=@Meta_Class.tests.lst -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
 
 The initial export file will require a number of changes in order to become a usuable package with the major
 part of this process resulting in the creation of a key mapping file (e.g. Sample.keys.lst) which will later
@@ -400,14 +400,14 @@ Step 1. Replace group and model keys
 The semi-colons are comments and so the actual mapping for "key_group" and "key_model" will be provided when
 package installation occurs, however, it is necessary to replace the actual group and model key values found
 in the .package.sio file with "key_group" and "key_model" respectively. When performing the search & replace
-it should be noted that various field types are prefixed by the group key (so you it is expected that values
-such as "key_group_string" will end up in the .package.sio file).
+it should be noted that various field types are prefixed by the group key (so it's expected that values such
+as "key_group_string" will end up in the .package.sio file).
 
 Step 2. Remove foreign key fields
 
 Foreign key fields are automatically created when a Relationship is created therefore the Field records that
 are in the .package.sio file need to be removed. As the previous step will have changed their type prefix to
-"key_group" search on "key_group_foreign_key" and remove the matching Field records.
+"key_group" search on "key_group_foreign_key" and remove any matching Field records.
 
 Step 3. Replace external package keys with mapping variables and remove external artifacts
 
@@ -422,11 +422,10 @@ case.
   <name>Relationship
   <fields>@key,Cascade_Op,Child_Class,Extra,Field_Id,Field_Key,Mandatory,Model,Name
   <record>20120506183822750008,0,20120506055523350008,1,M100C100F101,20120506183822750008_C,0,key_model,User
+==>
+  <record>20120506183822750008,0,var_user_class,1,M100C100F101,20120506183822750008_C,0,key_model,User
  </class>
 ...
-
-Note that the "var_user_class" used above is not a literal value but instead will be determined according to
-the value that was created for this variable when the User package was installed.
 
 As well as Classes there may also be Fields and other artifacts belonging to external packages that may need
 key mapping entries. If such artifacts are not able to be identified at this stage then they will be readily

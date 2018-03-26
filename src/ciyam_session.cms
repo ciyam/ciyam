@@ -65,7 +65,7 @@ perform_update|pu "update an existing persistent instance" <val//uid><val//dtm><
 perform_destroy|pd "destroy an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-g=/grp>][<val/-tz=/tz_name>][<olist/-v=/set_values>][<opt/-p/progress>][<opt/-q/quiet>]<val//key>[<val/=/ver_info>]
 perform_execute|pe "execute a method for a persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-g=/grp>][<val/-tz=/tz_name>][<olist/-v=/set_values>]<list//keys>[<list/=/vers>]<val//method>[<val//args>]
 perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>]<val//filename>[<opt/-destroy/destroy_records>|<list/-export=/export_fields>[<val/-t=/search_text>][<val/-q=/search_query>]|<list//fixed_field_values>]
-perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
+perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-s=/skip_field_info>][<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>|<opt/-for_remove/for_remove>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
 perform_package_update "update an existing meta package" <val//name>
 session_list "list active sessions" [<opt/-min/minimal>]

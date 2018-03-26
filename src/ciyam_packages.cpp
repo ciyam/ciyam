@@ -46,12 +46,13 @@ const char* const c_attribute_record = "record";
 void export_data( ostream& outs,
  const string& module, string class_id, const string& key,
  string& last_class_id, bool output_children, command_handler& handler,
- const map< string, int >& all_class_ids, const map< string, set< string > >& excludes,
- const map< string, map< string, string > >& tests, const map< string, set< string > >& includes,
- map< string, set< string > >& exported_records, map< string, set< string > >& exported_children,
- deque< pair< string, string > >& next_pass, map< string, set< string > >& will_be_exported,
- map< string, set< string > >& partial_export, const map< string, int >& rounds,
- int current_round, map< int, deque< pair< string, string > > >& future_rounds, time_t& ts, size_t& total )
+ const map< string, int >& all_class_ids, const map< string, map< string, string > >& skip_fields,
+ const map< string, set< string > >& excludes, const map< string, map< string, string > >& tests,
+ const map< string, set< string > >& includes, map< string, set< string > >& exported_records,
+ map< string, set< string > >& exported_children, deque< pair< string, string > >& next_pass,
+ map< string, set< string > >& will_be_exported, map< string, set< string > >& partial_export,
+ const map< string, int >& rounds, int current_round,
+ map< int, deque< pair< string, string > > >& future_rounds, time_t& ts, size_t& total )
 {
    size_t handle = create_object_instance( module, class_id );
    class_base& cb( get_class_base_from_handle_for_op( handle, "" ) );
@@ -157,16 +158,34 @@ void export_data( ostream& outs,
 
    if( !skip_record )
    {
+      string all_values( key );
+
       bool need_to_repeat = false;
+      bool has_exported_fk = false;
+
       int position = all_class_ids.find( class_id )->second;
 
-      string all_values( key );
       for( size_t i = 0; i < all_field_data.size( ); i++ )
       {
          if( all_field_data[ i ].transient )
             continue;
 
          string next_value( all_field_data[ i ].value );
+
+         if( skip_fields.count( class_id )
+          && skip_fields.find( class_id )->second.count( all_field_data[ i ].id ) )
+         {
+            string value( skip_fields.find( class_id )->second.find( all_field_data[ i ].id )->second );
+
+            // NOTE: The whole record is being skipped (not just the column) for this case.
+            if( !value.empty( ) && value == next_value )
+            {
+               all_values.erase( );
+               break;
+            }
+
+            continue;
+         }
 
          if( !next_value.empty( ) && !all_field_data[ i ].class_id.empty( )
           && !partial_export[ all_field_data[ i ].class_id ].count( next_value )
@@ -185,10 +204,15 @@ void export_data( ostream& outs,
 
             if( first_output_ids.count( all_field_data[ i ].id )
              || all_class_ids.find( all_field_data[ i ].class_id )->second < position )
-               export_data( outs, module, all_field_data[ i ].class_id,
-                all_field_data[ i ].value, last_class_id, output_fk_children, handler,
-                all_class_ids, excludes, tests, includes, exported_records, exported_children,
-                next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
+            {
+               export_data( outs, module, all_field_data[ i ].class_id, next_value,
+                last_class_id, output_fk_children, handler, all_class_ids, skip_fields,
+                excludes, tests, includes, exported_records, exported_children, next_pass,
+                will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
+
+               if( exported_records[ all_field_data[ i ].class_id ].count( next_value ) )
+                  has_exported_fk = true;
+            }
             else if( !all_field_data[ i ].mandatory )
             {
                // NOTE: If a foreign key cannot be processed first but is not mandatory (as is often
@@ -215,125 +239,137 @@ void export_data( ostream& outs,
          all_values += escaped( next_value, ",\"", '\\', "rn\r\n" );
       }
 
-      if( need_to_repeat )
+      if( !all_values.empty( ) )
       {
-         if( !will_be_exported[ class_id ].count( key ) )
+         if( need_to_repeat )
          {
-            will_be_exported[ class_id ].insert( key );
-            for( size_t i = 0; i < base_class_info.size( ); i++ )
-               will_be_exported[ base_class_info[ i ].first ].insert( key );
-
-            next_pass.push_back( make_pair( class_id, key ) );
-
-            partial_export[ class_id ].insert( key );
-            for( size_t i = 0; i < base_class_info.size( ); i++ )
-               partial_export[ base_class_info[ i ].first ].insert( key );
-         }
-      }
-
-      if( !exported_records[ class_id ].count( key ) )
-      {
-         if( class_id != last_class_id )
-         {
-            if( !last_class_id.empty( ) )
-               outs << " </class>\n";
-
-            outs << " <class/>\n";
-            outs << "  <name>" << class_name << '\n';
-
-            string field_info( "  <fields>" + to_string( c_key_field ) );
-            for( size_t i = 0; i < all_field_data.size( ); i++ )
+            if( !will_be_exported[ class_id ].count( key ) )
             {
-               if( all_field_data[ i ].transient )
-                  continue;
+               will_be_exported[ class_id ].insert( key );
+               for( size_t i = 0; i < base_class_info.size( ); i++ )
+                  will_be_exported[ base_class_info[ i ].first ].insert( key );
 
-               field_info += ',';
-               field_info += all_field_data[ i ].name;
+               next_pass.push_back( make_pair( class_id, key ) );
+
+               partial_export[ class_id ].insert( key );
+               for( size_t i = 0; i < base_class_info.size( ); i++ )
+                  partial_export[ base_class_info[ i ].first ].insert( key );
             }
-
-            outs << field_info << '\n';
-         }
-         outs << "  <record>" << all_values << '\n';
-
-         ++total;
-         last_class_id = class_id;
-
-         if( !need_to_repeat )
-         {
-            exported_records[ class_id ].insert( key );
-            for( size_t i = 0; i < base_class_info.size( ); i++ )
-               exported_records[ base_class_info[ i ].first ].insert( key );
          }
 
-         if( time( 0 ) - ts >= 10 )
+         if( !exported_records[ class_id ].count( key ) )
          {
-            ts = time( 0 );
-            // FUTURE: This message should be handled as a server string message.
-            handler.output_progress( "Processed " + to_string( total ) + " records..." );
-         }
-      }
-
-      if( output_children && !exported_children[ class_id ].count( key ) )
-      {
-         class_base_accessor instance_accessor( cb );
-
-         size_t num_children = instance_accessor.get_num_foreign_key_children( );
-         for( int pass = 0; pass < 2; ++pass )
-         {
-            cascade_op next_op;
-            if( pass == 0 )
-               next_op = e_cascade_op_restrict;
-            else
-               next_op = e_cascade_op_destroy;
-
-            for( size_t i = 0; i < num_children; i++ )
+            if( class_id != last_class_id )
             {
-               string next_child_field;
-               class_base* p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
+               if( !last_class_id.empty( ) )
+                  outs << " </class>\n";
 
-               string child_class_and_field;
+               outs << " <class/>\n";
+               outs << "  <name>" << class_name << '\n';
 
-               if( p_class_base )
+               string field_info( "  <fields>" + to_string( c_key_field ) );
+               for( size_t i = 0; i < all_field_data.size( ); i++ )
                {
-                  child_class_and_field = p_class_base->get_class_id( ) + "#" + next_child_field;
-
-                  if( excludes.count( class_id )
-                   && ( excludes.find( class_id )->second.count( "*" + exclude_suffix )
-                   || excludes.find( class_id )->second.count( p_class_base->get_class_id( ) + exclude_suffix )
-                   || excludes.find( class_id )->second.count( child_class_and_field + exclude_suffix ) ) )
+                  if( all_field_data[ i ].transient )
                      continue;
 
-                  string key_info( p_class_base->get_order_field_name( ) );
-                  if( !key_info.empty( ) )
-                     key_info += ' ';
+                  if( skip_fields.count( class_id )
+                  && skip_fields.find( class_id )->second.count( all_field_data[ i ].id ) )
+                     continue;
 
-                  if( ( !key_info.empty( ) && p_class_base->iterate_forwards( key_info ) )
-                   || ( key_info.empty( ) && p_class_base->iterate_forwards( true, 0, e_sql_optimisation_unordered ) ) )
+                  field_info += ',';
+                  field_info += all_field_data[ i ].name;
+               }
+
+               outs << field_info << '\n';
+            }
+
+            outs << "  <record>" << all_values << '\n';
+
+            ++total;
+            last_class_id = class_id;
+
+            if( !need_to_repeat )
+            {
+               exported_records[ class_id ].insert( key );
+               for( size_t i = 0; i < base_class_info.size( ); i++ )
+                  exported_records[ base_class_info[ i ].first ].insert( key );
+            }
+
+            if( time( 0 ) - ts >= 10 )
+            {
+               ts = time( 0 );
+               // FUTURE: This message should be handled as a server string message.
+               handler.output_progress( "Processed " + to_string( total ) + " records..." );
+            }
+         }
+
+         if( output_children && !exported_children[ class_id ].count( key ) )
+         {
+            class_base_accessor instance_accessor( cb );
+
+            size_t num_children = instance_accessor.get_num_foreign_key_children( );
+            for( int pass = 0; pass < 2; ++pass )
+            {
+               cascade_op next_op;
+               if( pass == 0 )
+                  next_op = e_cascade_op_restrict;
+               else
+                  next_op = e_cascade_op_destroy;
+
+               for( size_t i = 0; i < num_children; i++ )
+               {
+                  string next_child_field;
+                  class_base* p_class_base = instance_accessor.get_next_foreign_key_child( i, next_child_field, next_op );
+
+                  string child_class_and_field;
+
+                  if( p_class_base )
                   {
-                     do
-                     {
-                        if( rounds.count( p_class_base->get_class_id( ) )
-                         && rounds.find( p_class_base->get_class_id( ) )->second > current_round )
-                        {
-                           int round( rounds.find( p_class_base->get_class_id( ) )->second );
-                           future_rounds[ round ].push_back(
-                            make_pair( p_class_base->get_class_id( ), p_class_base->get_key( ) ) );
-                           continue;
-                        }
+                     child_class_and_field = p_class_base->get_class_id( ) + "#" + next_child_field;
 
-                        export_data( outs, module, p_class_base->get_class_id( ),
-                         p_class_base->get_key( ), last_class_id, true, handler, all_class_ids,
-                         excludes, tests, includes, exported_records, exported_children, next_pass,
-                         will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
-                     } while( p_class_base->iterate_next( ) );
+                     if( excludes.count( class_id )
+                      && ( excludes.find( class_id )->second.count( "*" + exclude_suffix )
+                      || excludes.find( class_id )->second.count( p_class_base->get_class_id( ) + exclude_suffix )
+                      || excludes.find( class_id )->second.count( child_class_and_field + exclude_suffix ) ) )
+                        continue;
+
+                     string key_info( p_class_base->get_order_field_name( ) );
+                     if( !key_info.empty( ) )
+                        key_info += ' ';
+
+                     if( ( !key_info.empty( ) && p_class_base->iterate_forwards( key_info ) )
+                      || ( key_info.empty( ) && p_class_base->iterate_forwards( true, 0, e_sql_optimisation_unordered ) ) )
+                     {
+                        do
+                        {
+                           if( rounds.count( p_class_base->get_class_id( ) )
+                            && rounds.find( p_class_base->get_class_id( ) )->second > current_round )
+                           {
+                              int round( rounds.find( p_class_base->get_class_id( ) )->second );
+
+                              future_rounds[ round ].push_back(
+                               make_pair( p_class_base->get_class_id( ), p_class_base->get_key( ) ) );
+
+                              continue;
+                           }
+
+                           export_data( outs, module,
+                            p_class_base->get_class_id( ), p_class_base->get_key( ),
+                            last_class_id, true, handler, all_class_ids, skip_fields,
+                            excludes, tests, includes, exported_records, exported_children, next_pass,
+                            will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
+
+                        } while( p_class_base->iterate_next( ) );
+                     }
                   }
                }
             }
-         }
 
-         exported_children[ class_id ].insert( key );
-         for( size_t i = 0; i < base_class_info.size( ); i++ )
-            exported_children[ base_class_info[ i ].first ].insert( key );
+            exported_children[ class_id ].insert( key );
+            for( size_t i = 0; i < base_class_info.size( ); i++ )
+               exported_children[ base_class_info[ i ].first ].insert( key );
+         }
       }
    }
 
@@ -442,6 +478,7 @@ void create_new_package_file( const string& module_id, const string& filename,
       try
       {
          vector< string > field_names;
+         map< string, string > field_skip_values;
 
          if( forced_field_list )
          {
@@ -451,21 +488,21 @@ void create_new_package_file( const string& module_id, const string& filename,
                field_names.erase( field_names.begin( ) );
          }
          else
+         {
             get_all_field_names( handle, "", field_names, false );
 
-         map< string, string > field_skip_values;
-
-         for( size_t i = 0; i < field_names.size( ); i++ )
-         {
-            string sfield( resolve_field_id( module_id, mclass, field_names[ i ], field_list ) );
-
-            if( p_skip_fields && p_skip_fields->count( mclass ) && ( *p_skip_fields )[ mclass ].count( sfield ) )
+            for( size_t i = 0; i < field_names.size( ); i++ )
             {
-               if( !( *p_skip_fields )[ mclass ][ sfield ].empty( ) )
-                  field_skip_values[ field_names[ i ] ] = ( *p_skip_fields )[ mclass ][ sfield ];
+               string sfield( resolve_field_id( module_id, mclass, field_names[ i ], field_list ) );
 
-               field_names.erase( field_names.begin( ) + i );
-               --i;
+               if( p_skip_fields && p_skip_fields->count( mclass ) && ( *p_skip_fields )[ mclass ].count( sfield ) )
+               {
+                  if( !( *p_skip_fields )[ mclass ][ sfield ].empty( ) )
+                     field_skip_values[ field_names[ i ] ] = ( *p_skip_fields )[ mclass ][ sfield ];
+
+                  field_names.erase( field_names.begin( ) + i );
+                  --i;
+               }
             }
          }
 
@@ -498,8 +535,7 @@ void create_new_package_file( const string& module_id, const string& filename,
             {
                if( fields[ 0 ] != c_key_field )
                   throw runtime_error(
-                   "unexpected missing key field processing line #"
-                   + to_string( reader.get_last_line_num( ) ) );
+                   "unexpected missing key field processing line #" + to_string( reader.get_last_line_num( ) ) );
 
                string output_values( field_values[ 0 ] );
 
@@ -563,13 +599,15 @@ void create_new_package_file( const string& module_id, const string& filename,
 
 }
 
-void export_package( const string& module,
- const string& mclass, const string& keys, const string& exclude_info,
+void export_package( const string& module, const string& mclass,
+ const string& keys, const string& exclude_info, const string& skip_field_info,
  const string& test_info, const string& include_info, const string& filename )
 {
    string last_class_id;
+
    map< string, int > all_class_ids;
    deque< pair< string, string > > next_pass;
+
    map< string, set< string > > partial_export;
    map< string, set< string > > will_be_exported;
    map< string, set< string > > exported_records;
@@ -577,6 +615,9 @@ void export_package( const string& module,
 
    string module_id( loaded_module_id( module ) );
    string class_id( get_class_id_for_id_or_name( module_id, mclass ) );
+
+   map< string, map< string, string > > skip_fields;
+   read_skip_fields( module_id, skip_field_info, skip_fields );
 
    ofstream outf( filename.c_str( ) );
    if( !outf )
@@ -695,6 +736,7 @@ void export_package( const string& module,
 
    map< string, int > rounds;
    map< string, set< string > > includes;
+
    if( !include_info.empty( ) )
    {
       vector< string > include_items;
@@ -764,30 +806,25 @@ void export_package( const string& module,
 
    outf << "<sio/>\n";
 
-   bool is_first = true;
-
    // NOTE: An export "package" contains foreign key and child related records reached
    // from the nominated starting record. In some cases there may be dependencies that
    // require a record to be output twice (the first time with one or more optional fk
    // links set to blank).
    size_t total = 0;
    time_t ts( time( 0 ) );
+
    while( true )
    {
       export_data( outf, module_name, next_class_id,
-       next_key, last_class_id, is_first, get_session_command_handler( ),
-       all_class_ids, excludes, tests, includes, exported_records, exported_children,
+       next_key, last_class_id, true, get_session_command_handler( ),
+       all_class_ids, skip_fields, excludes, tests, includes, exported_records, exported_children,
        next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
-
-      if( current_round == 0 )
-         is_first = false;
 
       if( next_pass.empty( ) && !future_rounds.empty( ) )
       {
          current_round = future_rounds.begin( )->first;
-         next_pass = future_rounds.begin( )->second;
 
-         is_first = true;
+         next_pass = future_rounds.begin( )->second;
          future_rounds.erase( future_rounds.begin( ) );
       }
 

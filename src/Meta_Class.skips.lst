@@ -5,8 +5,11 @@ Permission:Id
 Class:Id
 Class:Header_File
 Class:Source_File
+Class:Created_List
+Class:Created_View
 Class:Commands_File
 Class:Next_Field_Id
+Class:Quick_Link_Field
 Class:Next_Procedure_Id
 Relationship:Field_Id
 Field:Id

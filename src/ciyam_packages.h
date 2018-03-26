@@ -18,8 +18,9 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-void CIYAM_BASE_DECL_SPEC export_package( const std::string& module,
- const std::string& mclass, const std::string& key, const std::string& exclude_info,
+void CIYAM_BASE_DECL_SPEC export_package(
+ const std::string& module, const std::string& mclass,
+ const std::string& key, const std::string& exclude_info, const std::string& skip_field_info,
  const std::string& test_info, const std::string& include_info, const std::string& filename );
 
 void CIYAM_BASE_DECL_SPEC import_package(

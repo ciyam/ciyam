@@ -4072,11 +4072,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_mclass ) );
          string keys( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_keys ) );
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_filename ) );
+         string skip_field_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_skip_field_info ) );
          string test_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_test_info ) );
          string exclude_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_exclude_info ) );
          string include_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_export_include_info ) );
 
-         export_package( module, mclass, keys, exclude_info, test_info, include_info, filename );
+         export_package( module, mclass, keys, exclude_info, skip_field_info, test_info, include_info, filename );
       }
       else if( command == c_cmd_ciyam_session_perform_package_import )
       {
