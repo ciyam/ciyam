@@ -64,13 +64,13 @@ const unsigned int c_max_core_line_size = 200000;
 
 const uint16_t c_tx_max_unconfirmed = 5;
 
-const uint64_t c_mask_factor_8 UINT64_C( 0xffffffffffffff00 );
-const uint64_t c_mask_factor_7 UINT64_C( 0xffffffffffff0000 );
-const uint64_t c_mask_factor_6 UINT64_C( 0xffffffffff000000 );
-const uint64_t c_mask_factor_5 UINT64_C( 0xffffffff00000000 );
-const uint64_t c_mask_factor_4 UINT64_C( 0xffffff0000000000 );
-const uint64_t c_mask_factor_3 UINT64_C( 0xffff000000000000 );
-const uint64_t c_mask_factor_2 UINT64_C( 0xff00000000000000 );
+const uint64_t c_mask_adjust_factor_8 = UINT64_C( 0xffffffffffffff00 );
+const uint64_t c_mask_adjust_factor_7 = UINT64_C( 0xffffffffffff0000 );
+const uint64_t c_mask_adjust_factor_6 = UINT64_C( 0xffffffffff000000 );
+const uint64_t c_mask_adjust_factor_5 = UINT64_C( 0xffffffff00000000 );
+const uint64_t c_mask_adjust_factor_4 = UINT64_C( 0xffffff0000000000 );
+const uint64_t c_mask_adjust_factor_3 = UINT64_C( 0xffff000000000000 );
+const uint64_t c_mask_adjust_factor_2 = UINT64_C( 0xff00000000000000 );
 
 struct block_info
 {
@@ -228,38 +228,38 @@ uint64_t adjusted_hit( uint64_t hit, uint64_t target, int factor )
       break;
 
       case 2:
-      adjusted_hit &= ( hit & ~c_mask_factor_2 );
-      adjusted_hit |= ( target & c_mask_factor_2 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_2 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_2 );
       break;
 
       case 3:
-      adjusted_hit &= ( hit & ~c_mask_factor_3 );
-      adjusted_hit |= ( target & c_mask_factor_3 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_3 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_3 );
       break;
 
       case 4:
-      adjusted_hit &= ( hit & ~c_mask_factor_4 );
-      adjusted_hit |= ( target & c_mask_factor_4 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_4 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_4 );
       break;
 
       case 5:
-      adjusted_hit &= ( hit & ~c_mask_factor_5 );
-      adjusted_hit |= ( target & c_mask_factor_5 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_5 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_5 );
       break;
 
       case 6:
-      adjusted_hit &= ( hit & ~c_mask_factor_6 );
-      adjusted_hit |= ( target & c_mask_factor_6 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_6 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_6 );
       break;
 
       case 7:
-      adjusted_hit &= ( hit & ~c_mask_factor_7 );
-      adjusted_hit |= ( target & c_mask_factor_7 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_7 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_7 );
       break;
 
       default:
-      adjusted_hit &= ( hit & ~c_mask_factor_8 );
-      adjusted_hit |= ( target & c_mask_factor_8 );
+      adjusted_hit &= ( hit & ~c_mask_adjust_factor_8 );
+      adjusted_hit |= ( target & c_mask_adjust_factor_8 );
    }
 
    return adjusted_hit;
