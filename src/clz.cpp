@@ -785,7 +785,7 @@ void output_repeats( unsigned char* p_shrunken, size_t repeats, size_t& num )
    }
 }
 
-bool shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_after_pair = 0 )
+void shrink_output( unsigned char* p_buffer, size_t& length, byte_pair* p_mark_after_pair = 0 )
 {
    size_t mark_pos = 0;
    size_t shrunken_mark_pos = 0;

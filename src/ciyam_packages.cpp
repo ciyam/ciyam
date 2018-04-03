@@ -1399,7 +1399,7 @@ void update_package( const string& name )
 
             if( !next_line.empty( ) )
             {
-               if( !next_line[ 0 ] == ';' )
+               if( next_line[ 0 ] != ';' )
                {
                   string::size_type pos = next_line.find( '=' );
                   if( pos != string::npos )
