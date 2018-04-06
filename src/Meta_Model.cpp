@@ -6013,6 +6013,10 @@ void Meta_Model::impl::impl_Generate( )
 
             bool first_row = true;
             vector< string > values;
+
+            map< string, bool > mandatory_fk_fields;
+            map< string, bool > any_non_empty_values;
+
             do
             {
                Meta_Initial_Record& initial_Record( get_obj( ).child_Class( ).child_Initial_Record( ) );
@@ -6032,10 +6036,25 @@ void Meta_Model::impl::impl_Generate( )
                            columns += ",";
                      }
 
+                     string field_name( initial_Record.child_Initial_Record_Value( ).Field( ).Name( ) );
+
                      if( first_row )
-                        columns += initial_Record.child_Initial_Record_Value( ).Field( ).Name( );
+                     {
+                        columns += field_name;
+
+                        mandatory_fk_fields[ field_name ] = false;
+
+                        if( initial_Record.child_Initial_Record_Value( ).Field( ).Mandatory( )
+                         && !is_null( initial_Record.child_Initial_Record_Value( ).Field( ).Parent_Class( ) ) )
+                           mandatory_fk_fields[ field_name ] = true;
+                     }
 
                      string next_value( initial_Record.child_Initial_Record_Value( ).Value( ) );
+
+                     if( !next_value.empty( ) )
+                        any_non_empty_values[ field_name ] = true;
+                     else if( first_row )
+                        any_non_empty_values[ field_name ] = false;
 
                      if( next_value.find_first_of( ",\"\r\n" ) == string::npos )
                         next_row += next_value;
@@ -6056,7 +6075,32 @@ void Meta_Model::impl::impl_Generate( )
             if( !outi )
                throw runtime_error( "unexpected error opening file '" + iname + "' for output" );
 
-            outi << columns << '\n';
+            vector< string > column_names;
+            split( columns, column_names );
+
+            // NOTE: A mandatory FK field could be provided with a value from a "default_fk_global"
+            // specification (i.e. via "at_create") in which case existing initial records that are
+            // not updated would cause issues by having empty values for these. Assuming that every
+            // initial record for such a FK has an empty value then the column name can be replaced
+            // by the special "@ignore" column name.
+            // FUTURE: Maybe it would be better to work out a way to instead provide default values
+            // to initial record values for such cases (presumably by finding such specifications).
+            for( size_t i = 0; i < column_names.size( ); i++ )
+            {
+               string next_column_name( column_names[ i ] );
+
+               if( i > 0
+                && mandatory_fk_fields[ next_column_name ]
+                && !any_non_empty_values[ next_column_name ] )
+                  next_column_name = "@ignore";
+
+               if( i > 0 )
+                  outi << ',';
+
+               outi << next_column_name;
+            }
+            outi << '\n';
+
             for( size_t i = 0; i < values.size( ); i++ )
                outi << values[ i ] << '\n';
 
