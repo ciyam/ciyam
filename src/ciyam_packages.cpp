@@ -998,8 +998,13 @@ void import_package( const string& module,
          string mclass( reader.read_attribute( c_attribute_name ) );
          string field_list( reader.read_attribute( c_attribute_fields ) );
 
+         bool ignore_skips = false;
+
          if( !field_list.empty( ) && field_list[ 0 ] == '!' )
+         {
+            ignore_skips = true;
             field_list.erase( 0, 1 );
+         }
 
          mclass = get_class_id_for_id_or_name( module_id, mclass );
 
@@ -1079,9 +1084,12 @@ void import_package( const string& module,
 
                   bool skip_op = false;
 
-                  if( field_values[ 0 ].empty( ) || field_values[ 0 ] == "!" )
+                  if( field_values[ 0 ].empty( ) || field_values[ 0 ] == "!" || field_values[ 0 ] == "~" )
+                  {
                      skip_op = true;
-                  else
+                     field_values[ 0 ].erase( );
+                  }
+                  else if( !ignore_skips )
                   {
                      for( size_t i = 1; i < fields.size( ); i++ )
                      {
@@ -1208,16 +1216,20 @@ void import_package( const string& module,
                      for( size_t i = 1; i < fields.size( ); i++ )
                      {
                         bool skip_field = false;
-                        for( size_t j = 0; j < base_class_info.size( ); j++ )
-                        {
-                           string next_cid = base_class_info[ j ].first;
 
-                           if( skip_fields.count( next_cid ) && skip_fields[ next_cid ].count( fields[ i ] ) )
+                        if( !ignore_skips )
+                        {
+                           for( size_t j = 0; j < base_class_info.size( ); j++ )
                            {
-                              if( skip_fields[ next_cid ][ fields[ i ] ].empty( ) )
+                              string next_cid = base_class_info[ j ].first;
+
+                              if( skip_fields.count( next_cid ) && skip_fields[ next_cid ].count( fields[ i ] ) )
                               {
-                                 skip_field = true;
-                                 break;
+                                 if( skip_fields[ next_cid ][ fields[ i ] ].empty( ) )
+                                 {
+                                    skip_field = true;
+                                    break;
+                                 }
                               }
                            }
                         }

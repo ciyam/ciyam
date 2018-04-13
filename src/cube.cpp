@@ -186,12 +186,6 @@ string cube::scramble_moves( size_t num_moves, bool for_actual_scramble ) const
       available_moves.push_back( "M" );
       available_moves.push_back( "E" );
       available_moves.push_back( "S" );
-      available_moves.push_back( "Bw" );
-      available_moves.push_back( "Dw" );
-      available_moves.push_back( "Fw" );
-      available_moves.push_back( "Lw" );
-      available_moves.push_back( "Uw" );
-      available_moves.push_back( "Rw" );
    }
 
    if( type == c_type_4_4_4 || type == c_type_5_5_5 )
@@ -224,9 +218,9 @@ string cube::scramble_moves( size_t num_moves, bool for_actual_scramble ) const
       if( type == c_type_3_3_3 )
          scramble_moves = 20;
       else if( type == c_type_4_4_4 )
-         scramble_moves = 50;
+         scramble_moves = 30;
       else if( type == c_type_5_5_5 )
-         scramble_moves = 100;
+         scramble_moves = 40;
    }
 
    for( size_t i = 0; i < scramble_moves; i++ )
@@ -1227,6 +1221,8 @@ void cube::perform_moves( const string& ops )
          else if( type == c_type_5_5_5 )
             all_ops = "Ll' U2 Ll' U2 F2 Ll' F2 Rr U2 Rr' U2 Ll2";
       }
+      else if( all_ops == "lfish" )
+         all_ops = "L' U' L U' L' U2 L";
       else if( all_ops == "parity" )
       {
          if( type == c_type_4_4_4 )
@@ -1240,6 +1236,8 @@ void cube::perform_moves( const string& ops )
          all_ops = "R2 U R U R' U' R' U' R' U R'";
       else if( all_ops == "topright" )
          all_ops = "R U' R U R U R U' R' U' R2";
+      else if( all_ops == "swapleft" )
+         all_ops = "M M U' M M U' M' U2 M M U2 M' U2";
       else if( all_ops == "swapcross" )
          all_ops = "L2 R2 U2 L2 R2 U L2 R2 U2 L2 R2 U'";
       else if( all_ops == "swapedges" )
@@ -1247,6 +1245,8 @@ void cube::perform_moves( const string& ops )
          if( type == c_type_4_4_4 )
             all_ops = "Uu2 Rr2 U2 r2 U2 Rr2 Uu2";
       }
+      else if( all_ops == "swapright" )
+         all_ops = "M M U M M U M' U2 M M U2 M' U2";
       else
       {
          replace( all_ops, "M2", "M M" );
@@ -1269,17 +1269,11 @@ void cube::perform_moves( const string& ops )
       replace( all_ops, "E'", "Dd' D", "E", "Dd D'" );
       replace( all_ops, "S'", "Ff' F", "S", "Ff F'" );
    }
-   else if( type == c_type_4_4_4 )
+   else if( type == c_type_4_4_4 || type == c_type_5_5_5 )
    {
-      replace( all_ops, "M'", "Lw' L", "M", "Lw L'" );
+      replace( all_ops, "M'", "Rw R'", "M", "Rw' R" );
       replace( all_ops, "E'", "Dw' D", "E", "Dw D'" );
-      replace( all_ops, "S'", "Bw B'", "S", "Bw' B" );
-   }
-   else if( type == c_type_5_5_5 )
-   {
-      replace( all_ops, "M'", "Rw' Rr l'", "M", "Rw Rr' l" );
-      replace( all_ops, "E'", "Dw' u' Dd", "E", "Dw u Dd'" );
-      replace( all_ops, "S'", "Fw' Ff b'", "S", "Fw Ff' b" );
+      replace( all_ops, "S'", "Fw' F'", "S", "Fw F'" );
    }
 
    replace( all_ops, ",", " " );
@@ -1302,95 +1296,230 @@ string cube::cleanup_output( const string& original ) const
 
    for( size_t i = 0; i < 3; i++ )
    {
+      replace( output, " l l' ", " " );
+      replace( output, " r r' ", " " );
+      replace( output, " u u' ", " " );
+      replace( output, " d d' ", " " );
+      replace( output, " f f' ", " " );
+      replace( output, " b b' ", " " );
       replace( output, " L L' ", " " );
       replace( output, " R R' ", " " );
       replace( output, " U U' ", " " );
       replace( output, " D D' ", " " );
       replace( output, " F F' ", " " );
       replace( output, " B B' ", " " );
+      replace( output, " M M' ", " " );
+      replace( output, " E E' ", " " );
+      replace( output, " S S' ", " " );
       replace( output, " X X' ", " " );
       replace( output, " Y Y' ", " " );
       replace( output, " Z Z' ", " " );
+      replace( output, " Ll Ll' ", " " );
+      replace( output, " Rr Rr' ", " " );
+      replace( output, " Uu Uu' ", " " );
+      replace( output, " Dd Dd' ", " " );
+      replace( output, " Ff Ff' ", " " );
+      replace( output, " Bb Bb' ", " " );
 
+      replace( output, " l' l ", " " );
+      replace( output, " r' r ", " " );
+      replace( output, " u' u ", " " );
+      replace( output, " d' d ", " " );
+      replace( output, " f' f ", " " );
+      replace( output, " b' b ", " " );
       replace( output, " L' L ", " " );
       replace( output, " R' R ", " " );
       replace( output, " U' U ", " " );
       replace( output, " D' D ", " " );
       replace( output, " F' F ", " " );
       replace( output, " B' B ", " " );
+      replace( output, " M' M ", " " );
+      replace( output, " E' E ", " " );
+      replace( output, " S' S ", " " );
       replace( output, " X' X ", " " );
       replace( output, " Y' Y ", " " );
       replace( output, " Z' Z ", " " );
+      replace( output, " Ll' Ll ", " " );
+      replace( output, " Rr' Rr ", " " );
+      replace( output, " Uu' Uu ", " " );
+      replace( output, " Dd' Dd ", " " );
+      replace( output, " Ff' Ff ", " " );
+      replace( output, " Bb' Bb ", " " );
 
+      replace( output, " l l ", " l2 " );
+      replace( output, " r r ", " r2 " );
+      replace( output, " u u ", " u2 " );
+      replace( output, " d d ", " d2 " );
+      replace( output, " f f ", " f2 " );
+      replace( output, " b b ", " b2 " );
       replace( output, " L L ", " L2 " );
       replace( output, " R R ", " R2 " );
       replace( output, " U U ", " U2 " );
       replace( output, " D D ", " D2 " );
       replace( output, " F F ", " F2 " );
       replace( output, " B B ", " B2 " );
+      replace( output, " M M ", " M2 " );
+      replace( output, " E E ", " E2 " );
+      replace( output, " S S ", " S2 " );
       replace( output, " X X ", " X2 " );
       replace( output, " Y Y ", " Y2 " );
       replace( output, " Z Z ", " Z2 " );
+      replace( output, " Ll Ll ", " Ll2 " );
+      replace( output, " Rr Rr ", " Rr2 " );
+      replace( output, " Uu Uu ", " Uu2 " );
+      replace( output, " Dd Dd ", " Dd2 " );
+      replace( output, " Ff Ff ", " Ff2 " );
+      replace( output, " Bb Bb ", " Bb2 " );
 
+      replace( output, " l l2 ", " l' " );
+      replace( output, " r r2 ", " r' " );
+      replace( output, " u u2 ", " u' " );
+      replace( output, " d d2 ", " d' " );
+      replace( output, " f f2 ", " f' " );
+      replace( output, " b b2 ", " b' " );
       replace( output, " L L2 ", " L' " );
       replace( output, " R R2 ", " R' " );
       replace( output, " U U2 ", " U' " );
       replace( output, " D D2 ", " D' " );
       replace( output, " F F2 ", " F' " );
       replace( output, " B B2 ", " B' " );
+      replace( output, " M M2 ", " M' " );
+      replace( output, " E E2 ", " E' " );
+      replace( output, " S S2 ", " S' " );
       replace( output, " X X2 ", " X' " );
       replace( output, " Y Y2 ", " Y' " );
       replace( output, " Z Z2 ", " Z' " );
+      replace( output, " Ll Ll2 ", " Ll' " );
+      replace( output, " Rr Rr2 ", " Rr' " );
+      replace( output, " Uu Uu2 ", " Uu' " );
+      replace( output, " Dd Dd2 ", " Dd' " );
+      replace( output, " Ff Ff2 ", " Ff' " );
+      replace( output, " Bb Bb2 ", " Bb' " );
 
+      replace( output, " l2 l ", " l' " );
+      replace( output, " r2 r ", " r' " );
+      replace( output, " u2 u ", " u' " );
+      replace( output, " d2 d ", " d' " );
+      replace( output, " f2 f ", " f' " );
+      replace( output, " b2 b ", " b' " );
       replace( output, " L2 L ", " L' " );
       replace( output, " R2 R ", " R' " );
       replace( output, " U2 U ", " U' " );
       replace( output, " D2 D ", " D' " );
       replace( output, " F2 F ", " F' " );
       replace( output, " B2 B ", " B' " );
+      replace( output, " M2 M ", " M' " );
+      replace( output, " E2 E ", " E' " );
+      replace( output, " S2 S ", " S' " );
       replace( output, " X2 X ", " X' " );
       replace( output, " Y2 Y ", " Y' " );
       replace( output, " Z2 Z ", " Z' " );
+      replace( output, " Ll2 Ll ", " Ll' " );
+      replace( output, " Rr2 Rr ", " Rr' " );
+      replace( output, " Uu2 Uu ", " Uu' " );
+      replace( output, " Dd2 Dd ", " Dd' " );
+      replace( output, " Ff2 Ff ", " Ff' " );
+      replace( output, " Bb2 Bb ", " Bb' " );
 
+      replace( output, " l' l2 ", " l " );
+      replace( output, " r' r2 ", " r " );
+      replace( output, " u' u2 ", " u " );
+      replace( output, " d' d2 ", " d " );
+      replace( output, " f' f2 ", " f " );
+      replace( output, " b' b2 ", " b " );
       replace( output, " L' L2 ", " L " );
       replace( output, " R' R2 ", " R " );
       replace( output, " U' U2 ", " U " );
       replace( output, " D' D2 ", " D " );
       replace( output, " F' F2 ", " F " );
       replace( output, " B' B2 ", " B " );
+      replace( output, " M' M2 ", " M " );
+      replace( output, " E' E2 ", " E " );
+      replace( output, " S' S2 ", " S " );
       replace( output, " X' X2 ", " X " );
       replace( output, " Y' Y2 ", " Y " );
       replace( output, " Z' Z2 ", " Z " );
+      replace( output, " Ll' Ll2 ", " Ll " );
+      replace( output, " Rr' Rr2 ", " Rr " );
+      replace( output, " Uu' Uu2 ", " Uu " );
+      replace( output, " Dd' Dd2 ", " Dd " );
+      replace( output, " Ff' Ff2 ", " Ff " );
+      replace( output, " Bb' Bb2 ", " Bb " );
 
+      replace( output, " l2 l' ", " l " );
+      replace( output, " r2 r' ", " r " );
+      replace( output, " u2 u' ", " u " );
+      replace( output, " d2 d' ", " d " );
+      replace( output, " f2 f' ", " f " );
+      replace( output, " b2 b' ", " b " );
       replace( output, " L2 L' ", " L " );
       replace( output, " R2 R' ", " R " );
       replace( output, " U2 U' ", " U " );
       replace( output, " D2 D' ", " D " );
       replace( output, " F2 F' ", " F " );
       replace( output, " B2 B' ", " B " );
+      replace( output, " M2 M' ", " M " );
+      replace( output, " E2 E' ", " E " );
+      replace( output, " S2 S' ", " S " );
       replace( output, " X2 X' ", " X " );
       replace( output, " Y2 Y' ", " Y " );
       replace( output, " Z2 Z' ", " Z " );
+      replace( output, " Ll2 Ll' ", " Ll " );
+      replace( output, " Rr2 Rr' ", " Rr " );
+      replace( output, " Uu2 Uu' ", " Uu " );
+      replace( output, " Dd2 Dd' ", " Dd " );
+      replace( output, " Ff2 Ff' ", " Ff " );
+      replace( output, " Bb2 Bb' ", " Bb " );
 
+      replace( output, " l' l' ", " l2 " );
+      replace( output, " r' r' ", " r2 " );
+      replace( output, " u' u' ", " u2 " );
+      replace( output, " d' d' ", " d2 " );
+      replace( output, " f' f' ", " f2 " );
+      replace( output, " b' b' ", " b2 " );
       replace( output, " L' L' ", " L2 " );
       replace( output, " R' R' ", " R2 " );
       replace( output, " U' U' ", " U2 " );
       replace( output, " D' D' ", " D2 " );
       replace( output, " F' F' ", " F2 " );
       replace( output, " B' B' ", " B2 " );
+      replace( output, " M' M' ", " M2 " );
+      replace( output, " E' E' ", " E2 " );
+      replace( output, " S' S' ", " S2 " );
       replace( output, " X' X' ", " X2 " );
       replace( output, " Y' Y' ", " Y2 " );
       replace( output, " Z' Z' ", " Z2 " );
+      replace( output, " Ll' Ll' ", " Ll2 " );
+      replace( output, " Rr' Rr' ", " Rr2 " );
+      replace( output, " Uu' Uu' ", " Uu2 " );
+      replace( output, " Dd' Dd' ", " Dd2 " );
+      replace( output, " Ff' Ff' ", " Ff2 " );
+      replace( output, " Bb' Bb' ", " Bb2 " );
 
+      replace( output, " l2 l2 ", " " );
+      replace( output, " r2 r2 ", " " );
+      replace( output, " u2 u2 ", " " );
+      replace( output, " d2 d2 ", " " );
+      replace( output, " f2 f2 ", " " );
+      replace( output, " b2 b2 ", " " );
       replace( output, " L2 L2 ", " " );
       replace( output, " R2 R2 ", " " );
       replace( output, " U2 U2 ", " " );
       replace( output, " D2 D2 ", " " );
       replace( output, " F2 F2 ", " " );
       replace( output, " B2 B2 ", " " );
+      replace( output, " M2 M2 ", " " );
+      replace( output, " E2 E2 ", " " );
+      replace( output, " S2 S2 ", " " );
       replace( output, " X2 X2 ", " " );
       replace( output, " Y2 Y2 ", " " );
       replace( output, " Z2 Z2 ", " " );
+      replace( output, " Ll2 Ll2 ", " " );
+      replace( output, " Rr2 Rr2 ", " " );
+      replace( output, " Uu2 Uu2 ", " " );
+      replace( output, " Dd2 Dd2 ", " " );
+      replace( output, " Ff2 Ff2 ", " " );
+      replace( output, " Bb2 Bb2 ", " " );
    }
 
    output = output.substr( 1, output.length( ) - 2 );

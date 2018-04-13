@@ -15,6 +15,10 @@ else
   if [ $? -ne 0 ]; then
    cat ~getmetap
   else
+   # NOTE: Remove the trailing LF if the field list is just "@key".
+   if [ "$3" = "@key" ]; then
+    truncate -s -1 ~getmetap
+   fi
    cat ~getmetap | xclip -selection clipboard
    echo "(result is on the clipboard)"
   fi
