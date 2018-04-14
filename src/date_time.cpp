@@ -1205,18 +1205,20 @@ mtime mtime::local( )
     ( minute )st.wMinute, ( second )st.wSecond, ( millisecond )st.wMilliseconds );
 #else
    time_t t;
-   struct tm* p_t;
-
-   t = time( 0 );
-   p_t = localtime( &t );
-
    millisecond m = 0;
+
 #  ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
+   t = tv.tv_sec;
    m = tv.tv_usec / 1000;
+#  else
+   t = time( 0 );
 #  endif
+
+   struct tm* p_t;
+   p_t = localtime( &t );
 
    return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
 #endif
@@ -1232,19 +1234,20 @@ mtime mtime::standard( )
     ( minute )st.wMinute, ( second )st.wSecond, ( millisecond )st.wMilliseconds );
 #else
    time_t t;
-   struct tm* p_t;
-
-   t = time( 0 );
-   p_t = gmtime( &t );
-
    millisecond m = 0;
 
 #  ifdef __GNUG__
    struct timeval tv;
    ::gettimeofday( &tv, 0 );
 
+   t = tv.tv_sec;
    m = tv.tv_usec / 1000;
+#  else
+   t = time( 0 );
 #  endif
+
+   struct tm* p_t;
+   p_t = gmtime( &t );
 
    return mtime( p_t->tm_hour, p_t->tm_min, p_t->tm_sec, m );
 #endif
