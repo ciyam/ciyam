@@ -1,0 +1,10 @@
+`{`@eq`(`'static_class_init`'`,`$section`)\
+   // [(start static_class_map)] `{`$arg_id`}
+   add_class_map( `{`$full_class_name`}::static_class_id( ), "`{`$arg_map_id`}", "`{`$arg_map_id`}.`{`$arg_extension`}" );
+   // [(finish static_class_map)] `{`$arg_id`}
+`}
+`{`@eq`(`'static_class_term`'`,`$section`)\
+   // [(start static_class_map)] `{`$arg_id`}
+   remove_class_map( `{`$full_class_name`}::static_class_id( ), "`{`$arg_map_id`}" );
+   // [(finish static_class_map)] `{`$arg_id`}
+`}

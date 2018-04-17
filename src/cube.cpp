@@ -1208,59 +1208,17 @@ void cube::perform_moves( const string& ops )
    }
    else
    {
-      if( all_ops == "bar" )
-         all_ops = "F R U R' U' F'";
-      else if( all_ops == "hook" )
-         all_ops = "F U R U' R' F'";
-      else if( all_ops == "fish" )
-         all_ops = "R U R' U R U2 R'";
-      else if( all_ops == "edges" )
-      {
-         if( type == c_type_4_4_4 )
-            all_ops = "Dd R F' U R' F Dd'";
-         else if( type == c_type_5_5_5 )
-            all_ops = "Ll' U2 Ll' U2 F2 Ll' F2 Rr U2 Rr' U2 Ll2";
-      }
-      else if( all_ops == "lfish" )
-         all_ops = "L' U' L U' L' U2 L";
-      else if( all_ops == "parity" )
-      {
-         if( type == c_type_4_4_4 )
-            all_ops = "r' U2 l F2 l' F2 r2 U2 r U2 r' U2 F2 r2 F2";
-         else if( type == c_type_5_5_5 )
-            all_ops = "Rr2 B2 U2 Ll U2 Rr' U2 Rr U2 F2 Rr F2 Ll' B2 Rr2";
-      }
-      else if( all_ops == "corners" )
-         all_ops = "R' F R' B2 R F' R' B2 R2";
-      else if( all_ops == "topleft" )
-         all_ops = "R2 U R U R' U' R' U' R' U R'";
-      else if( all_ops == "topright" )
-         all_ops = "R U' R U R U R U' R' U' R2";
-      else if( all_ops == "swapleft" )
-         all_ops = "M M U' M M U' M' U2 M M U2 M' U2";
-      else if( all_ops == "swapcross" )
-         all_ops = "L2 R2 U2 L2 R2 U L2 R2 U2 L2 R2 U'";
-      else if( all_ops == "swapedges" )
-      {
-         if( type == c_type_4_4_4 )
-            all_ops = "Uu2 Rr2 U2 r2 U2 Rr2 Uu2";
-      }
-      else if( all_ops == "swapright" )
-         all_ops = "M M U M M U M' U2 M M U2 M' U2";
-      else
-      {
-         replace( all_ops, "M2", "M M" );
-         replace( all_ops, "E2", "E E" );
-         replace( all_ops, "S2", "S S" );
+      replace( all_ops, "M2", "M M" );
+      replace( all_ops, "E2", "E E" );
+      replace( all_ops, "S2", "S S" );
 
-         replace( all_ops, "X2", "X X" );
-         replace( all_ops, "Y2", "Y Y" );
-         replace( all_ops, "Z2", "Z Z" );
+      replace( all_ops, "X2", "X X" );
+      replace( all_ops, "Y2", "Y Y" );
+      replace( all_ops, "Z2", "Z Z" );
 
-         replace( all_ops, "X'", "Rw' L", "X", "Rw L'" );
-         replace( all_ops, "Y'", "Uw' D", "Y", "Uw D'" );
-         replace( all_ops, "Z'", "Bw F'", "Z", "Bw' F" );
-      }
+      replace( all_ops, "X'", "Rw' L", "X", "Rw L'" );
+      replace( all_ops, "Y'", "Uw' D", "Y", "Uw D'" );
+      replace( all_ops, "Z'", "Bw F'", "Z", "Bw' F" );
    }
 
    if( type == c_type_3_3_3 )

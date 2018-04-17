@@ -3000,6 +3000,7 @@ void Meta_Specification_Field_Action::static_class_init( const char* p_module_na
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
    Meta_Specification::static_insert_derivation( "Meta_Specification_Field_Action" );
+
    g_field_action_create_access_restriction_enum.insert( 0 );
    g_field_action_create_access_restriction_enum.insert( 1 );
    g_field_action_create_access_restriction_enum.insert( 2 );

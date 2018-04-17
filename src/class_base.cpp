@@ -4216,6 +4216,7 @@ void add_class_map( const string& class_id, const string& map_id, const string& 
       {
          string next_line( lines[ i ] );
          string::size_type pos = next_line.find( ' ' );
+
          if( pos == string::npos )
             throw runtime_error( "found incorrect line formatting '"
              + next_line + "' whilst adding class map '" + map_name + "'" );
@@ -4229,6 +4230,15 @@ void add_class_map( const string& class_id, const string& map_id, const string& 
       g_class_maps.insert( make_pair( map_name, make_pair( 1, new_map ) ) );
       TRACE_LOG( TRACE_MODS_GEN, "[add_class_map] " + map_name + " " + file_name + ( !in_reverse ? "" : " (reverse)" ) );
    }
+}
+
+bool has_class_map( const string& class_id, const string& map_id )
+{
+   guard g( g_mutex );
+
+   string map_name( class_id + ":" + map_id );
+
+   return g_class_maps.count( map_name );
 }
 
 void remove_class_map( const string& class_id, const string& map_id )

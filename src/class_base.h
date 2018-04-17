@@ -1425,6 +1425,8 @@ bool CIYAM_BASE_DECL_SPEC schedulable_month_and_day( int month, int day );
 void CIYAM_BASE_DECL_SPEC add_class_map( const std::string& class_id,
  const std::string& map_id, const std::string& file_name, bool in_reverse = false );
 
+bool CIYAM_BASE_DECL_SPEC has_class_map( const std::string& class_id, const std::string& map_id );
+
 void CIYAM_BASE_DECL_SPEC remove_class_map( const std::string& class_id, const std::string& map_id );
 
 std::string CIYAM_BASE_DECL_SPEC get_class_map_value(

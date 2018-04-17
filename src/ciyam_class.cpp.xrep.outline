@@ -4802,21 +4802,22 @@ void `{`$full_class_name`}::static_class_init( const char* p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
-
-`{`@eq`(`$is_alias`,`'true`'`)\
+`{`@eq`(`$is_alias`,`'true`'`)
    `{`$parent_class`}::static_insert_external_alias( "`{`$full_class_name`}", new `{`$full_class_name`} );
 `,\
-`{`(`?`$parent_class`)\
+`{`(`?`$parent_class`)
    `{`$parent_class`}::static_insert_derivation( "`{`$full_class_name`}" );
 `}`}`{`(`?`$file_field_names`)`[`$file_field_names`,\
    g_file_field_ids.insert( c_field_id_\$ );
    g_file_field_names.insert( c_field_name_\$ );
-`+\n`]`}`{`(`?`$file_field_names`&`?`$all_enums`)\n`}`{`(`?`$all_enums`)`[`$all_enums`%,`,\
+`+\n`]`}`{`(`?`$all_enums`)\n`}`{`(`?`$all_enums`)`[`$all_enums`%,`,\
 `{`[`$enum_\0`%=`,\
    g_\0_enum.insert( `{`@eq`(`'\2`'`,`'numlit`'`)\\0`,"\\0"`} );
-`]`}`+\n`]`}`{`?`$all_static_class_init_specifications`[`$all_static_class_init_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'dummy`'`)
-`{`#dummy.spec.xrep section=static_class_init full_class_name=$full_class_name`}
+`]`}`+\n`]`}`{`(`!`?`$file_field_names`&`!`?`$all_enums`)`}
+`{`?`$all_static_class_init_specifications`[`$all_static_class_init_specifications`%,`,\
+`{`@eq`(`'\1`'`,`'static_class_map`'`)\
+`{`#static_class_map.spec.xrep section=static_class_init full_class_name=$full_class_name\
+ arg_id=$specification_\0_id arg_map_id=$specification_\0_map_id arg_extension=$specification_\0_extension`}
 ### static_class_init
 `}`]`}
    // [<start static_class_init>]
@@ -4836,8 +4837,9 @@ void `{`$full_class_name`}::static_class_term( const char* p_module_name )
    `{`$parent_class`}::static_remove_derivation( "`{`$full_class_name`}" );
 `}`}
 `{`?`$all_static_class_term_specifications`[`$all_static_class_term_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'dummy`'`)
-`{`#dummy.spec.xrep section=static_class_term full_class_name=$full_class_name`}
+`{`@eq`(`'\1`'`,`'static_class_map`'`)\
+`{`#static_class_map.spec.xrep section=static_class_term full_class_name=$full_class_name\
+ arg_id=$specification_\0_id arg_map_id=$specification_\0_map_id`}
 ### static_class_term
 `}`]`}
    // [<start static_class_term>]
