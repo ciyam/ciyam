@@ -652,6 +652,7 @@ struct source
 
    std::string pdf_spec_name;
 
+   std::string special_field;
    std::string filename_field;
    std::string orientation_field;
 
@@ -827,6 +828,8 @@ struct list_source : source
 
    std::set< std::string > omit_label_fields;
    std::set< std::string > use_list_title_fields;
+   std::set< std::string > special_prefixed_fields;
+   std::set< std::string > special_suffixed_fields;
 
    std::set< std::string > print_summary_fields;
    std::vector< std::string > print_summary_field_ids;

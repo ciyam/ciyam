@@ -38658,7 +38658,7 @@
     <id>530
     <name>field_extra
     <type>int
-    <key_values>0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln,3=image=str,7=mailto=str,21=file\_link=str,8=actions=str,29=qr\_code=str,22=filename=str,25=field\_hash=str,10=password=str,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\_link=str,12=user\_perms=str,14=current\_year=int,18=security\_level=str,27=hpassword\_salt=str,15=create\_datetime=dtm,16=modify\_datetime=dtm,30=ignore\_encrypted,28=is\_effective\_owner=bln,19=replace\_underbars=str,20=enforce\_uppercase=str,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
+    <key_values>0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str,6=active=bln,3=image=str,7=mailto=str,21=file\_link=str,8=actions=str,31=special,29=qr\_code=str,22=filename=str,25=field\_hash=str,10=password=str,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\_link=str,12=user\_perms=str,14=current\_year=int,18=security\_level=str,32=prefix\_special,33=suffix\_special,27=hpassword\_salt=str,15=create\_datetime=dtm,16=modify\_datetime=dtm,30=ignore\_encrypted,28=is\_effective\_owner=bln,19=replace\_underbars=str,20=enforce\_uppercase=str,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
    </user_defined_enum>
    <user_defined_enum/>
     <id>600

@@ -270,6 +270,9 @@ void setup_view_fields( view_source& view,
           || is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info ) )
             view.hidden_fields.insert( value_id );
 
+         if( extra_data.count( c_field_extra_special ) )
+            view.special_field = value_id;
+
          if( has_perm_extra( c_field_extra_link, extra_data, sess_info ) )
             view.link_fields.insert( value_id );
 
@@ -1437,6 +1440,16 @@ bool output_view_form( ostream& os, const string& act,
 
       if( source.field_values.count( source_value_id ) )
          cell_data = source.field_values.find( source_value_id )->second;
+
+      string special_prefix, special_suffix;
+
+      if( !source.special_field.empty( ) && source.field_values.count( source.special_field ) )
+      {
+         if( extra_data.count( c_field_extra_prefix_special ) )
+            special_prefix = source.field_values.find( source.special_field )->second;
+         else if( extra_data.count( c_field_extra_suffix_special ) )
+            special_suffix = source.field_values.find( source.special_field )->second;
+      }
 
       string td_type( "td" );
 
@@ -3095,6 +3108,12 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = string( cell_data.length( ), '*' );
             else if( source.replace_underbar_fields.count( source_value_id ) )
                cell_data = replace_underbars( cell_data );
+
+            if( !special_prefix.empty( ) )
+               cell_data = special_prefix + " " + cell_data;
+
+            if( !special_suffix.empty( ) )
+               cell_data += " " + special_suffix;
 
             os << data_or_nbsp( escape_markup( unescaped( cell_data ) ) );
 

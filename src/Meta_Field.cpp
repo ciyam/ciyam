@@ -612,6 +612,7 @@ const int c_enum_field_extra_image( 3 );
 const int c_enum_field_extra_mailto( 7 );
 const int c_enum_field_extra_file_link( 21 );
 const int c_enum_field_extra_actions( 8 );
+const int c_enum_field_extra_special( 31 );
 const int c_enum_field_extra_qr_code( 29 );
 const int c_enum_field_extra_filename( 22 );
 const int c_enum_field_extra_field_hash( 25 );
@@ -624,6 +625,8 @@ const int c_enum_field_extra_manual_link( 13 );
 const int c_enum_field_extra_user_perms( 12 );
 const int c_enum_field_extra_current_year( 14 );
 const int c_enum_field_extra_security_level( 18 );
+const int c_enum_field_extra_prefix_special( 32 );
+const int c_enum_field_extra_suffix_special( 33 );
 const int c_enum_field_extra_hpassword_salt( 27 );
 const int c_enum_field_extra_create_datetime( 15 );
 const int c_enum_field_extra_modify_datetime( 16 );
@@ -667,6 +670,8 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_file_link";
    else if( to_string( val ) == to_string( "8" ) )
       string_name = "enum_field_extra_actions";
+   else if( to_string( val ) == to_string( "31" ) )
+      string_name = "enum_field_extra_special";
    else if( to_string( val ) == to_string( "29" ) )
       string_name = "enum_field_extra_qr_code";
    else if( to_string( val ) == to_string( "22" ) )
@@ -691,6 +696,10 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_current_year";
    else if( to_string( val ) == to_string( "18" ) )
       string_name = "enum_field_extra_security_level";
+   else if( to_string( val ) == to_string( "32" ) )
+      string_name = "enum_field_extra_prefix_special";
+   else if( to_string( val ) == to_string( "33" ) )
+      string_name = "enum_field_extra_suffix_special";
    else if( to_string( val ) == to_string( "27" ) )
       string_name = "enum_field_extra_hpassword_salt";
    else if( to_string( val ) == to_string( "15" ) )
@@ -8372,6 +8381,7 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_7", get_enum_string_field_extra( 7 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_21", get_enum_string_field_extra( 21 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_8", get_enum_string_field_extra( 8 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_31", get_enum_string_field_extra( 31 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_29", get_enum_string_field_extra( 29 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_22", get_enum_string_field_extra( 22 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_25", get_enum_string_field_extra( 25 ) ) );
@@ -8384,6 +8394,8 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_12", get_enum_string_field_extra( 12 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_14", get_enum_string_field_extra( 14 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_18", get_enum_string_field_extra( 18 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_32", get_enum_string_field_extra( 32 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_33", get_enum_string_field_extra( 33 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_27", get_enum_string_field_extra( 27 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_15", get_enum_string_field_extra( 15 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_16", get_enum_string_field_extra( 16 ) ) );
@@ -8500,6 +8512,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 7 );
    g_field_extra_enum.insert( 21 );
    g_field_extra_enum.insert( 8 );
+   g_field_extra_enum.insert( 31 );
    g_field_extra_enum.insert( 29 );
    g_field_extra_enum.insert( 22 );
    g_field_extra_enum.insert( 25 );
@@ -8512,6 +8525,8 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 12 );
    g_field_extra_enum.insert( 14 );
    g_field_extra_enum.insert( 18 );
+   g_field_extra_enum.insert( 32 );
+   g_field_extra_enum.insert( 33 );
    g_field_extra_enum.insert( 27 );
    g_field_extra_enum.insert( 15 );
    g_field_extra_enum.insert( 16 );

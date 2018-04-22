@@ -18,10 +18,10 @@ user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_gro
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
 user_defined_enum_add -id=522 field_alignment int 0=default,1=left,2=right,3=center,4=justify
 user_defined_enum_add -id=530 field_extra int 0=none,1=file=str,2=href=str,9=html=str,23=text=str,4=notes=str,5=order=str\
-,6=active=bln,3=image=str,7=mailto=str,21=file\\_link=str,8=actions=str,29=qr\\_code=str,22=filename=str,25=field\\_hash=str\
+,6=active=bln,3=image=str,7=mailto=str,21=file\\_link=str,8=actions=str,31=special,29=qr\\_code=str,22=filename=str,25=field\\_hash=str\
 ,10=password=str,11=defcurrent=dtm|dte|tme,17=permission=str,24=orientation=int,26=hpassword=str,13=manual\\_link=str,12=user\\_perms=str\
-,14=current\\_year=int,18=security\\_level=str,27=hpassword\\_salt=str,15=create\\_datetime=dtm,16=modify\\_datetime=dtm,30=ignore\\_encrypted\
-,28=is\\_effective\\_owner=bln,19=replace\\_underbars=str,20=enforce\\_uppercase=str\
+,14=current\\_year=int,18=security\\_level=str,32=prefix\\_special,33=suffix\\_special,27=hpassword\\_salt=str,15=create\\_datetime=dtm\
+,16=modify\\_datetime=dtm,30=ignore\\_encrypted,28=is\\_effective\\_owner=bln,19=replace\\_underbars=str,20=enforce\\_uppercase=str\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key
 user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg,900=number,901=dollars,902=percent,999=customised
 user_defined_enum_add -id=540 modifier_affect_scope int 0=field,1=class

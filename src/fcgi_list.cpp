@@ -265,6 +265,9 @@ void setup_list_fields( list_source& list,
          else if( extra_data.count( c_field_extra_qr_code ) )
             list.qr_code_fields.insert( value_id );
 
+         if( extra_data.count( c_field_extra_special ) )
+            list.special_field = field_id;
+
          if( extra_data.count( c_field_extra_filename ) )
             list.filename_field = field_id;
 
@@ -482,6 +485,12 @@ void setup_list_fields( list_source& list,
             list.omit_label_fields.insert( value_id );
          else if( extra_data.count( c_list_field_extra_use_list_title ) )
             list.use_list_title_fields.insert( value_id );
+
+         if( extra_data.count( c_field_extra_prefix_special ) )
+            list.special_prefixed_fields.insert( value_id );
+
+         if( extra_data.count( c_field_extra_suffix_special ) )
+            list.special_suffixed_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_child_always ) )
             child_always = true;
@@ -2462,6 +2471,7 @@ void output_list_form( ostream& os,
    }
 
    int col_num = 0;
+   int special_col = -1;
    int filename_col = -1;
    int nextsortfield = 0;
    int display_offset = 0;
@@ -2480,6 +2490,9 @@ void output_list_form( ostream& os,
 
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
+      if( source.field_ids[ i ] == source.special_field )
+         special_col = col_num;
+
       if( source.field_ids[ i ] == source.filename_field )
          filename_col = col_num;
 
@@ -2721,6 +2734,8 @@ void output_list_form( ostream& os,
       size_t fk_column = 0;
       set< string > fk_refs;
 
+      string special_value;
+
       bool had_link = false;
 
       size_t total_column = 0;
@@ -2728,6 +2743,7 @@ void output_list_form( ostream& os,
       for( size_t j = 0; j < source.field_ids.size( ); j++ )
       {
          string cell_data;
+
          string source_field_id( source.field_ids[ j ] );
          string source_value_id( source.value_ids[ j ] );
 
@@ -2750,6 +2766,9 @@ void output_list_form( ostream& os,
             else
                cell_data = "*** COLUMN ERROR ***";
          }
+
+         if( special_col >= 0 )
+            special_value = columns[ special_col ];
 
          bool skip_column = false;
          bool is_fk_column = false;
@@ -3615,6 +3634,14 @@ void output_list_form( ostream& os,
             }
             else if( source.replace_underbar_fields.count( source_value_id ) )
                cell_data = replace_underbars( cell_data );
+
+            if( !special_value.empty( ) )
+            {
+               if( source.special_prefixed_fields.count( source_value_id ) )
+                  cell_data = special_value + " " + cell_data;
+               else if( source.special_suffixed_fields.count( source_value_id ) )
+                  cell_data += " " + special_value;
+            }
 
             if( !is_image && !was_output )
                os << data_or_nbsp( escape_markup( unescaped( cell_data ) ) );

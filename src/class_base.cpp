@@ -6793,6 +6793,18 @@ string meta_field_extras( int uom,
       all_extras.push_back( "ignore_encrypted" );
       break;
 
+      case 31:
+      all_extras.push_back( "special" );
+      break;
+
+      case 32:
+      all_extras.push_back( "prefix_special" );
+      break;
+
+      case 33:
+      all_extras.push_back( "suffix_special" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }

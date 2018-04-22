@@ -609,6 +609,10 @@
      <filter>str
     </value>
     <value/>
+     <data>31
+     <name>enum_field_extra_special
+    </value>
+    <value/>
      <data>29
      <name>enum_field_extra_qr_code
      <filter>str
@@ -667,6 +671,14 @@
      <data>18
      <name>enum_field_extra_security_level
      <filter>str
+    </value>
+    <value/>
+     <data>32
+     <name>enum_field_extra_prefix_special
+    </value>
+    <value/>
+     <data>33
+     <name>enum_field_extra_suffix_special
     </value>
     <value/>
      <data>27
