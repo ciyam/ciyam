@@ -2398,6 +2398,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          string st1fields;
          string st2fields;
 
+         string extra_special;
+
          int num_fields = 0;
          int num_tfields = 0;
 
@@ -2414,6 +2416,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
          set< string > wide_fields;
          set< string > notes_fields;
+         set< string > wider_fields;
          set< string > hidden_fields;
          set< string > narrow_fields;
 
@@ -2430,6 +2433,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
          map< string, string > extras;
          map< string, string > prefixes;
+         map< string, string > suffixes;
 
          map< string, string > uom_fields;
          map< string, string > trunc_fields;
@@ -2475,20 +2479,27 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                if( !is_null( p_type_field->Enum( ) ) )
                {
                   extras.insert( make_pair( name, "indirect" ) );
-                  prefixes.insert( make_pair( name, "@enum_"
-                   + p_type_field->Enum( ).Name( ) + "_" ) );
+
+                  prefixes.insert(
+                   make_pair( name, "@enum_" + p_type_field->Enum( ).Name( ) + "_" ) );
                }
 
                if( p_type_field->Extra( ) == 9 ) // i.e. html
                   html_fields.insert( name );
+               else if( p_type_field->Extra( ) == 31 ) // i.e. special
+                  extra_special = name;
+               else if( p_type_field->Extra( ) == 32 ) // i.e. prefix_special
+                  prefixes.insert( make_pair( name, "@special" ) );
+               else if( p_type_field->Extra( ) == 33 ) // i.e. suffix_special
+                  suffixes.insert( make_pair( name, "@special" ) );
 
                if( get_obj( ).child_List_Field( ).Access_Restriction( ) == 4 ) // i.e. denied_always
                   hidden_fields.insert( name );
                else if( p_type_field->Extra( ) == 4 // i.e. notes
                 || p_type_field->Extra( ) == 9 ) // i.e. html
                {
-                  wide_fields.insert( name );
                   notes_fields.insert( name );
+                  wider_fields.insert( name );
 
                   trunc_fields.insert( make_pair( name,
                    to_string( get_obj( ).child_List_Field( ).Notes_Truncation( ) ) ) );
@@ -2496,6 +2507,9 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
                 && p_type_field->Type( ).Max_Size( ) <= 10 )
                   narrow_fields.insert( name );
+               else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
+                && p_type_field->Type( ).Max_Size( ) >= 100 )
+                  wider_fields.insert( name );
                else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
                 && p_type_field->Type( ).Max_Size( ) >= 50 )
                   wide_fields.insert( name );
@@ -2541,8 +2555,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                   else if( p_type_field->Type( ).Primitive( ) == 4 // i.e. numeric
                    || p_type_field->Type( ).Primitive( ) == 5 ) // i.e. int
                   {
-                     numeric_fields.insert( make_pair( name, domain_mask ) );
                      total_masks.insert( make_pair( name, tmask ) );
+                     numeric_fields.insert( make_pair( name, domain_mask ) );
                   }
                }
             }
@@ -2722,11 +2736,13 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          for( size_t i = 0; i < field_names.size( ); i++ )
          {
             if( narrow_fields.count( field_names[ i ] ) )
-               total_units += 3;
+               total_units += 2;
             else if( wide_fields.count( field_names[ i ] ) )
-               total_units += 5;
-            else
                total_units += 4;
+            else if( wider_fields.count( field_names[ i ] ) )
+               total_units += 9;
+            else if( !hidden_fields.count( field_names[ i ] ) )
+               total_units += 3;
          }
 
          int unit_size = page_width / total_units;
@@ -2781,6 +2797,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          string font_name;
          string font_bname;
          string font_encoding;
+
          switch( get_obj( ).PDF_Font_Type( ) )
          {
             case 0:
@@ -2917,8 +2934,28 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                 << "_assign\x60=\x60'@summary" << ( i + 1 ) << "\x60'\x60}\n";
 
             if( prefixes.count( next_field ) )
-               varsf << "\x60{\x60$sf" << to_string( i + 1 )
-                << "_prefix\x60=\x60'" << prefixes[ next_field ] << "\x60'\x60}\n";
+            {
+               string prefix_value = prefixes[ next_field ];
+
+               if( prefix_value == "@special" )
+                  prefix_value = extra_special;
+
+               if( !prefix_value.empty( ) )
+                  varsf << "\x60{\x60$sf" << to_string( i + 1 )
+                   << "_prefix\x60=\x60'" << prefix_value << "\x60'\x60}\n";
+            }
+
+            if( suffixes.count( next_field ) )
+            {
+               string suffix_value = suffixes[ next_field ];
+
+               if( suffix_value == "@special" )
+                  suffix_value = extra_special;
+
+               if( !suffix_value.empty( ) )
+                  varsf << "\x60{\x60$sf" << to_string( i + 1 )
+                   << "_suffix\x60=\x60'" << suffix_value << "\x60'\x60}\n";
+            }
 
             if( !hidden_fields.count( next_field ) )
                shpos += 10;
@@ -2953,11 +2990,13 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                if( !hidden_fields.count( next_field ) )
                {
                   if( narrow_fields.count( next_field ) )
-                     width = unit_size * 3;
+                     width = unit_size * 2;
                   else if( wide_fields.count( next_field ) )
-                     width = unit_size * 5;
-                  else
                      width = unit_size * 4;
+                  else if( wider_fields.count( next_field ) )
+                     width = unit_size * 9;
+                  else
+                     width = unit_size * 3;
 
                   hpos += width;
                   width -= 10; // i.e. make sure there is some gap between fields
@@ -3023,11 +3062,13 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             if( !hidden_fields.count( next_field ) )
             {
                if( narrow_fields.count( next_field ) )
-                  width = unit_size * 3;
+                  width = unit_size * 2;
                else if( wide_fields.count( next_field ) )
-                  width = unit_size * 5;
-               else
                   width = unit_size * 4;
+               else if( wider_fields.count( next_field ) )
+                  width = unit_size * 9;
+               else
+                  width = unit_size * 3;
 
                hpos += width;
                width -= 10; // i.e. make sure there is some gap between fields
@@ -3117,8 +3158,28 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                 << "_dtype\x60=\x60'" << dtype << "\x60'\x60}\n";
 
             if( prefixes.count( next_field ) )
-               varsf << "\x60{\x60$f" << to_string( fnum )
-                << "_prefix\x60=\x60'" << prefixes[ next_field ] << "\x60'\x60}\n";
+            {
+               string prefix_value = prefixes[ next_field ];
+
+               if( prefix_value == "@special" )
+                  prefix_value = extra_special;
+
+               if( !prefix_value.empty( ) )
+                  varsf << "\x60{\x60$f" << to_string( fnum )
+                   << "_prefix\x60=\x60'" << prefix_value << "\x60'\x60}\n";
+            }
+
+            if( suffixes.count( next_field ) )
+            {
+               string suffix_value = suffixes[ next_field ];
+
+               if( suffix_value == "@special" )
+                  suffix_value = extra_special;
+
+               if( !suffix_value.empty( ) )
+                  varsf << "\x60{\x60$f" << to_string( fnum )
+                   << "_suffix\x60=\x60'" << suffix_value << "\x60'\x60}\n";
+            }
 
             ++fnum;
          }

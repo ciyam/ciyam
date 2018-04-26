@@ -239,8 +239,8 @@
    <dtype>numeric
    <clear>@summary2
    <suffix>@records
-  </field>
-`{`(`?`$st2fields`)`[`$st2fields`,\
+  </field>\
+`{`(`?`$st2fields`)`[`$st2fields`,
   <field/>
    <pos>`{`$\\\$_pos`}
    <name>`{`$\\\$_name`}`{`(`?`$\\\$_perm`)
@@ -285,8 +285,8 @@
    <dtype>numeric
    <clear>@summary1
    <suffix>@records
-  </field>
-`{`(`?`$st1fields`)`[`$st1fields`,\
+  </field>\
+`{`(`?`$st1fields`)`[`$st1fields`,
   <field/>
    <pos>`{`$\\\$_pos`}
    <name>`{`$\\\$_name`}`{`(`?`$\\\$_perm`)

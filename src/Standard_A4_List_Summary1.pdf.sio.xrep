@@ -214,8 +214,8 @@
    <dtype>numeric
    <clear>@summary
    <suffix>@records
-  </field>
-`{`(`?`$stfields`)`[`$stfields`,\
+  </field>\
+`{`(`?`$stfields`)`[`$stfields`,
   <field/>
    <pos>`{`$\\\$_pos`}
    <name>`{`$\\\$_name`}`{`(`?`$\\\$_perm`)

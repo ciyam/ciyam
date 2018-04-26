@@ -1256,6 +1256,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
    if( get_obj( ).PDF_View_Type( ) == 2 ) // i.e. Standard 2 Column
    {
       string key_info( to_string( Meta_View_Field::static_get_field_id( Meta_View_Field::e_field_id_Order ) ) + ' ' );
+
       if( get_obj( ).child_View_Field( ).iterate_forwards( key_info ) )
       {
          string groups;
@@ -1269,12 +1270,15 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
          int num_fields = 0;
 
+         string extra_special;
+
          vector< string > field_names;
 
          set< string > html_fields;
 
          set< string > wide_fields;
          set< string > notes_fields;
+         set< string > hidden_fields;
 
          set< string > large_font_fields;
          set< string > small_font_fields;
@@ -1283,6 +1287,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
          map< string, string > extras;
          map< string, string > prefixes;
+         map< string, string > suffixes;
 
          map< string, string > uom_fields;
 
@@ -1296,10 +1301,8 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
          do
          {
-            if( get_obj( ).child_View_Field( ).Access_Restriction( ) == 4 ) // i.e. denied_always
-               continue;
-
             string name;
+
             if( !is_null( get_obj( ).child_View_Field( ).Source_Field( ) ) )
             {
                name = get_obj( ).child_View_Field( ).Source_Field( ).Name( );
@@ -1315,8 +1318,16 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
                if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
                   html_fields.insert( name );
+               else if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 31 ) // i.e. special
+                  extra_special = name;
+               else if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 32 ) // i.e. prefix_special
+                  prefixes.insert( make_pair( name, "@special" ) );
+               else if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 33 ) // i.e. suffix_special
+                  suffixes.insert( make_pair( name, "@special" ) );
 
-               if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
+               if( get_obj( ).child_View_Field( ).Access_Restriction( ) == 4 ) // i.e. denied_always
+                  hidden_fields.insert( name );
+               else if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
                 || get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
                   notes_fields.insert( name );
                else if( get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
@@ -1407,6 +1418,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
             switch( get_obj( ).child_View_Field( ).Access_Restriction( ) )
             {
                case 0:
+               case 4: // NOTE: Hidden fields are taken care of above.
                break;
 
                case 1:
@@ -1477,6 +1489,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
          string font_name;
          string font_bname;
          string font_encoding;
+
          switch( get_obj( ).PDF_Font_Type( ) )
          {
             case 0:
@@ -1552,6 +1565,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
             {
                is_label = true;
                test_field = next_field.substr( 1 );
+
                if( notes_fields.count( test_field ) )
                {
                   ++group;
@@ -1600,6 +1614,9 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                else
                   width = 200;
             }
+
+            if( hidden_fields.count( test_field ) )
+               width = 0;
 
             int height = 2;
             if( is_growable )
@@ -1706,10 +1723,29 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                 << "_dtype\x60=\x60'datetime\x60'\x60}\n";
 
             if( prefixes.count( next_field ) )
-               varsf << "\x60{\x60$f" << to_string( i + 1 )
-                << "_prefix\x60=\x60'" << prefixes[ next_field ] << "\x60'\x60}\n";
+            {
+               string prefix_value = prefixes[ next_field ];
 
-            if( is_label && uom_fields.count( next_field ) )
+               if( prefix_value == "@special" )
+                  prefix_value = extra_special;
+
+               if( !prefix_value.empty( ) )
+                  varsf << "\x60{\x60$f" << to_string( i + 1 )
+                   << "_prefix\x60=\x60'" << prefix_value << "\x60'\x60}\n";
+            }
+
+            if( suffixes.count( next_field ) )
+            {
+               string suffix_value = suffixes[ next_field ];
+
+               if( suffix_value == "@special" )
+                  suffix_value = extra_special;
+
+               if( !suffix_value.empty( ) )
+                  varsf << "\x60{\x60$f" << to_string( i + 1 )
+                   << "_suffix\x60=\x60'" << suffix_value << "\x60'\x60}\n";
+            }
+            else if( is_label && uom_fields.count( next_field ) )
                varsf << "\x60{\x60$f" << to_string( i + 1 )
                 << "_suffix\x60=\x60' (" << uom_fields[ next_field ] << ")\x60'\x60}\n";
 

@@ -2841,10 +2841,15 @@ bool process_group(
          if( !format.fields[ j ].prefix.empty( ) )
          {
             string prefix( format.fields[ j ].prefix );
+
             if( variables.count( prefix ) )
-               prefix = variables.find( prefix )->second;
+               prefix = variables.find( prefix )->second + " ";
             else if( dynamic_variables.count( prefix ) )
-               prefix = dynamic_variables.find( prefix )->second;
+               prefix = dynamic_variables.find( prefix )->second + " ";
+            else if( variables.count( row_prefix + group_prefix + prefix ) )
+               prefix = variables.find( row_prefix + group_prefix + prefix )->second + " ";
+            else if( dynamic_variables.count( row_prefix + group_prefix + prefix ) )
+               prefix = dynamic_variables.find( row_prefix + group_prefix + prefix )->second + " ";
 
             data = prefix + data;
 
@@ -2863,10 +2868,15 @@ bool process_group(
          if( !format.fields[ j ].suffix.empty( ) )
          {
             string suffix( format.fields[ j ].suffix );
+
             if( variables.count( suffix ) )
-               suffix = variables.find( suffix )->second;
+               suffix = " " + variables.find( suffix )->second;
             else if( dynamic_variables.count( suffix ) )
-               suffix = dynamic_variables.find( suffix )->second;
+               suffix = " " + dynamic_variables.find( suffix )->second;
+            else if( variables.count( row_prefix + group_prefix + suffix ) )
+               suffix = " " + variables.find( row_prefix + group_prefix + suffix )->second;
+            else if( dynamic_variables.count( row_prefix + group_prefix + suffix ) )
+               suffix = " " + dynamic_variables.find( row_prefix + group_prefix + suffix )->second;
             else if( suffix == " (uom)" )
             {
                string uom_symbol( format.fields[ j ].data + "_" + suffix.substr( 1 ) );

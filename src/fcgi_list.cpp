@@ -2642,7 +2642,10 @@ void output_list_form( ostream& os,
 
    size_t last_j_val = 0;
    size_t row = 0, row_num = 0;
+
+   string special_value;
    vector< string > final_subtotals;
+
    for( size_t i = 0; i < source.row_data.size( ); i++ )
    {
       bool was_odd = false;
@@ -2734,12 +2737,10 @@ void output_list_form( ostream& os,
       size_t fk_column = 0;
       set< string > fk_refs;
 
-      string special_value;
-
       bool had_link = false;
-
       size_t total_column = 0;
       bool is_first_column = true;
+
       for( size_t j = 0; j < source.field_ids.size( ); j++ )
       {
          string cell_data;
@@ -2899,6 +2900,18 @@ void output_list_form( ostream& os,
 
                         if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
                            total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
+
+                        // NOTE: If the field being sub-totalled has a special prefix/suffix then it is assumed that
+                        // all such records will have the same suffix/prefix so it will appear as a prefix/suffix in
+                        // the displayed sub-total value also (if it is possible that the records would not all have
+                        // the same prefix/suffix then they should probably not be being sub-totalled).
+                        if( !special_value.empty( ) )
+                        {
+                           if( source.special_prefixed_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                              total_string = special_value + " " + total_string;
+                           else if( source.special_suffixed_fields.count( print_total_col_value_ids[ next_total ] ) )
+                              total_string += " " + special_value;
+                        }
 
                         if( print_total_col_nums.at( next_total ) != x )
                            osxs << "  <td>&nbsp;</td>\n";
@@ -3741,6 +3754,15 @@ void output_list_form( ostream& os,
 
                   if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
                      total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
+
+                  // NOTE: See the note that applies to sub-totals and special prefix/suffix values above.
+                  if( !special_value.empty( ) )
+                  {
+                     if( source.special_prefixed_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                        total_string = special_value + " " + total_string;
+                     else if( source.special_suffixed_fields.count( print_total_col_value_ids[ next_total ] ) )
+                        total_string += " " + special_value;
+                  }
 
                   ++next_total;
                   os << "  <td class=\"" << class_tag << "\">" << total_string << "</td>\n";
