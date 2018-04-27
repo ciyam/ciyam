@@ -23,7 +23,12 @@ if [ "$DATEYEAR" == "" ]; then
  DATEYEAR=`date +%Y`
 fi
 
+git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 git ls-files | grep -Ev "\.gz$|\.jpg$|\.png$" | xargs -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+
+echo
+echo "NOTE: Also need to manually update 'footer.htms' files for generated applications as well as re-generate all HTML documentation files."
 
 exit 0
