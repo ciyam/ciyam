@@ -2508,7 +2508,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                 && p_type_field->Type( ).Max_Size( ) <= 10 )
                   narrow_fields.insert( name );
                else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
-                && p_type_field->Type( ).Max_Size( ) >= 100 )
+                && p_type_field->Type( ).Max_Size( ) >= 125 )
                   wider_fields.insert( name );
                else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
                 && p_type_field->Type( ).Max_Size( ) >= 50 )
