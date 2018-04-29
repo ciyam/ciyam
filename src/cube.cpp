@@ -1252,7 +1252,9 @@ string cube::cleanup_output( const string& original ) const
 {
    string output( " " + original + " " );
 
-   for( size_t i = 0; i < 3; i++ )
+   size_t last_length = output.length( );
+
+   while( true )
    {
       replace( output, " l l' ", " " );
       replace( output, " r r' ", " " );
@@ -1478,9 +1480,19 @@ string cube::cleanup_output( const string& original ) const
       replace( output, " Dd2 Dd2 ", " " );
       replace( output, " Ff2 Ff2 ", " " );
       replace( output, " Bb2 Bb2 ", " " );
+
+      size_t new_length = output.length( );
+
+      if( new_length > 2 && new_length < last_length )
+         last_length = new_length;
+      else
+         break;
    }
 
-   output = output.substr( 1, output.length( ) - 2 );
+   if( output.length( ) <= 2 )
+      output.erase( );
+   else
+      output = output.substr( 1, output.length( ) - 2 );
 
    return output;
 }

@@ -204,6 +204,8 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
    string stop_at_stage;
 
+   ostringstream osstr;
+
    auto_ptr< op_algo_handler > ap_ops_handler( create_clone( ) );
 
 #ifdef DEBUG
@@ -442,7 +444,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
       if( num_found >= lines.size( ) )
       {
-         os << c_goal_found;
+         osstr << c_goal_found;
          break;
       }
 
@@ -450,18 +452,12 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          break;
       else
       {
-         // NOTE: It's possible that unwanted repeats can occur
-         // due to the algorithm beginning with an op which had
-         // been the last op from the previous algorithm (or in
-         // fact an exact opposite op which should cancel out).
-         output = cleanup_output( output );
-
          if( output.empty( ) )
             break;
 
          if( has_had_output )
-            os << ' ';
-         os << output;
+            osstr << ' ';
+         osstr << output;
 
          has_had_output = true;
       }
@@ -470,6 +466,19 @@ void op_algo_handler::suggest( ostream& os, const string& info )
        || ( !stop_at_stage.empty( ) && stage_reached == stop_at_stage ) )
          break;
 
+   }
+
+   string final_output( osstr.str( ) );
+
+   if( !final_output.empty( ) )
+   {
+      // NOTE: It's possible that unwanted repeats can occur
+      // due to the algorithm beginning with an op which had
+      // been the last op from the previous algorithm (or in
+      // fact an exact opposite op which should cancel out).
+      final_output = cleanup_output( final_output );
+
+      os << final_output;
    }
 }
 
@@ -986,6 +995,9 @@ void op_algo_handler::train_algo( const string& pat,
       else
       {
          size_t tries = min( max_tries, max_tries_allowed );
+
+         if( tries > rounds )
+            throw runtime_error( "unexpected tries > rounds for: " + goal + " " + algx );
 
          string prefix( g_algo_prefix + type_key( ) + c_type_separator );
          g_goal_algos.insert( make_pair( prefix + goal, to_string( tries ) + '=' + algx ) );
