@@ -3925,8 +3925,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !fields_and_values.empty( ) )
                      {
                         next_command = "pu " + uid + " " + dtm + " "
-                         + module + " " + mclass + " " + next_key + " =" + next_ver
-                         + " \"" + instance_get_fields_and_values( handle, "", next_key ) + "\"";
+                         + module + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
 
                         remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
 

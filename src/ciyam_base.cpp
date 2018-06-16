@@ -5686,6 +5686,13 @@ void set_session_variable( const string& name,
                tmp_cube.reset( );
                val = tmp_cube.get_state( );
             }
+            else if( val == "state" )
+            {
+               val = tmp_cube.get_state( false );
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
             else if( val.substr( 0, pos ) == "train" )
             {
                p_command_handler->output_progress( "training..." );

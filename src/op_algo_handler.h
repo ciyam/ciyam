@@ -7,8 +7,9 @@
 #  define OP_ALGO_HANDLER_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
-#     include <string>
 #     include <iosfwd>
+#     include <string>
+#     include <vector>
 #  endif
 
 class op_algo_handler
@@ -43,7 +44,8 @@ class op_algo_handler
 
    void suggest( std::ostream& os, const std::string& info );
 
-   bool suggest_algo( std::ostream& os, const std::string& info,
+   bool suggest_algo( std::ostream& os,
+    const std::string& info, std::vector< std::string >* p_prefix_ops = 0,
     size_t rounds = 1, bool check_only_after_last_round = false, bool* p_found = 0 );
 
    void train( const std::string& info );

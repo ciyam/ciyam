@@ -203,6 +203,13 @@ string cube::scramble_moves( size_t num_moves, bool for_actual_scramble ) const
       available_moves.push_back( "Ll" );
       available_moves.push_back( "Rr" );
       available_moves.push_back( "Uu" );
+
+      available_moves.push_back( "Bw" );
+      available_moves.push_back( "Dw" );
+      available_moves.push_back( "Fw" );
+      available_moves.push_back( "Lw" );
+      available_moves.push_back( "Rw" );
+      available_moves.push_back( "Uw" );
    }
 
    vector< string > moves;
@@ -1194,7 +1201,14 @@ void cube::move_bottom( const string& op )
 void cube::perform_moves( const string& ops )
 {
    string all_ops( ops );
-   vector< string > move_ops;
+
+   bool reverse_ops = false;
+
+   if( !all_ops.empty( ) && all_ops[ 0 ] == '~' )
+   {
+      reverse_ops = true;
+      all_ops.erase( 0, 1 );
+   }
 
    if( type == c_type_2_2_2 )
    {
@@ -1231,16 +1245,40 @@ void cube::perform_moves( const string& ops )
    {
       replace( all_ops, "M'", "Rw R'", "M", "Rw' R" );
       replace( all_ops, "E'", "Dw' D", "E", "Dw D'" );
-      replace( all_ops, "S'", "Fw' F'", "S", "Fw F'" );
+      replace( all_ops, "S'", "Fw' F", "S", "Fw F'" );
    }
 
    replace( all_ops, ",", " " );
 
+   vector< string > move_ops;
+
    if( !all_ops.empty( ) )
       split( all_ops, move_ops, ' ' );
 
-   for( size_t i = 0; i < move_ops.size( ); i++ )
-      move( move_ops[ i ] );
+   if( !reverse_ops )
+   {
+      for( size_t i = 0; i < move_ops.size( ); i++ )
+         move( move_ops[ i ] );
+   }
+   else
+   {
+      reverse( move_ops.begin( ), move_ops.end( ) );
+
+      for( size_t i = 0; i < move_ops.size( ); i++ )
+      {
+         string next_op( move_ops[ i ] );
+
+         if( !next_op.empty( ) )
+         {
+            if( next_op[ next_op.length( ) - 1 ] == '\'' )
+               next_op = next_op.substr( 0, next_op.length( ) - 1 );
+            else if( next_op[ next_op.length( ) - 1 ] != '2' )
+               next_op += '\'';
+
+            move( next_op );
+         }
+      }
+   }
 }
 
 string cube::random_ops( size_t num_ops ) const

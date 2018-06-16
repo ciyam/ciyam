@@ -1438,7 +1438,7 @@ string class_base::get_fields_and_values(
          else
             str += ( label_type == e_field_label_type_full_id ) ? get_field_id( i ) : get_short_field_id( i );
 
-         str += "=" + escaped( get_field_value( i ), ",\"" );
+         str += "=" + escaped( escaped( get_field_value( i ), "," ), ",\"", c_nul, "rn\r\n" );
       }
    }
 

@@ -12,7 +12,6 @@
 #  include <cmath>
 #  include <map>
 #  include <memory>
-#  include <vector>
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>
@@ -180,15 +179,22 @@ string expand_pattern( const op_algo_handler& handler, const string& algo )
    return algx;
 }
 
-void parse_stage_info( const string& stage_info, string& stage_name, string& stage_pattern )
+void parse_stage_info( const string& stage_info, string& stage_name, string& stage_pattern, bool* p_force_break = 0 )
 {
    string::size_type pos = stage_info.find( ' ' );
 
-   if( pos == string::npos )
-      throw runtime_error( "unexpected stage info '" + stage_info + "'" );
-
    stage_name = stage_info.substr( 0, pos );
-   stage_pattern = stage_info.substr( pos + 1 );
+
+   if( !stage_name.empty( ) && stage_name[ stage_name.length( ) - 1 ] == '!' )
+   {
+      stage_name.erase( stage_name.length( ) - 1 );
+
+      if( p_force_break )
+         *p_force_break = true;
+   }
+
+   if( pos != string::npos )
+      stage_pattern = stage_info.substr( pos + 1 );
 }
 
 string g_algo_prefix;
@@ -205,19 +211,10 @@ void op_algo_handler::suggest( ostream& os, const string& info )
    string stop_at_stage;
 
    ostringstream osstr;
+   vector< string > lines;
 
-   auto_ptr< op_algo_handler > ap_ops_handler( create_clone( ) );
-
-#ifdef DEBUG
-   cout << "[suggest] " << info << endl;
-#endif
-   while( !info.empty( ) )
+   if( !info.empty( ) )
    {
-      string output;
-      vector< string > lines;
-
-      auto_ptr< op_algo_handler > ap_tmp_handler( ap_ops_handler->create_clone( ) );
-
       if( info[ 0 ] != '@' )
          lines.push_back( info );
       else
@@ -237,7 +234,20 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
          buffer_file_lines( filename, lines, false );
       }
+   }
 
+   auto_ptr< op_algo_handler > ap_ops_handler( create_clone( ) );
+
+#ifdef DEBUG
+   cout << "[suggest] " << info << endl;
+#endif
+   while( !lines.empty( ) )
+   {
+      string output;
+
+      auto_ptr< op_algo_handler > ap_tmp_handler( ap_ops_handler->create_clone( ) );
+
+      size_t find_from = 0;
       size_t start_from = 0;
 
       string last_pattern;
@@ -245,14 +255,20 @@ void op_algo_handler::suggest( ostream& os, const string& info )
       bool last_was_found = false;
       bool ignore_next_for_start = false;
 
+      vector< string > prefix_ops;
+      vector< string > start_from_prefix_ops;
+
       map< int, bool > continuations;
       map< int, string > continuation_patterns;
 
-      string stage_reached;
+      string start_prefix, stage_reached;
 
-      // NOTE: Find the last goal that has already been reached to be
-      // the starting point for algo suggestions.
-      for( size_t i = 0; i < lines.size( ); i++ )
+      bool found_since_label = false;
+      bool has_seen_stop_at_stage = false;
+
+      // NOTE: Find the last goal that has already been reached
+      // to become the starting point for new algo suggestions.
+      for( size_t i = find_from; i < lines.size( ); i++ )
       {
          string next_line( lines[ i ] );
 
@@ -262,18 +278,35 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          if( next_line.empty( ) || next_line[ 0 ] == '#' )
             continue;
 
+         if( next_line[ 0 ] == '^' )
+         {
+            next_line.erase( 0, 1 );
+
+            if( next_line.empty( ) )
+               prefix_ops.clear( );
+            else
+               split( next_line, prefix_ops, ' ' );
+
+            continue;
+         }
+
          if( next_line[ 0 ] == ':' )
          {
             string stage_name, stage_pattern;
             parse_stage_info( next_line.substr( 1 ), stage_name, stage_pattern );
 
-            if( has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
-            {
+            if( stage_name == stop_at_stage )
+               has_seen_stop_at_stage = true;
+
+            if( !stage_pattern.empty( )
+             && has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
                stage_reached = stage_name;
 
-               if( stage_reached == stop_at_stage )
-                  break;
-            }
+            if( stage_name == stop_at_stage )
+               break;
+
+            start_prefix.erase( );
+            found_since_label = false;
 
             continue;
          }
@@ -301,26 +334,75 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             {
                last_pattern = pattern;
 
-                if( !ignore_next_for_start
-                 && pattern.length( ) == state.length( ) && has_found_goal( state, pattern ) )
-                  start_from = i;
+               if( !ignore_next_for_start && pattern.length( ) == state.length( ) )
+               {
+                  if( has_found_goal( state, pattern ) )
+                  {
+                     start_from = i;
+                     start_prefix.clear( );
+
+                     found_since_label = true;
+                     start_from_prefix_ops.clear( );
+                  }
+                  else if( !prefix_ops.empty( ) && ( !found_since_label || !start_prefix.empty( ) ) )
+                  {
+                     for( size_t j = 0; j < prefix_ops.size( ); j++ )
+                     {
+                        string next( prefix_ops[ j ] );
+
+                        // NOTE: If already found a prefixed match then do not prefer starting
+                        // from a later one if this later one is using a longer prefix (noting
+                        // that this resets after a new label is reached).
+                        if( !start_prefix.empty( ) && next.length( ) > start_prefix.length( ) )
+                           continue;
+
+                        auto_ptr< op_algo_handler > ap_tmp_handler( ap_ops_handler->create_clone( ) );
+                        ap_tmp_handler->exec_ops( next );
+
+                        if( has_found_goal( ap_tmp_handler->current_state( ), pattern ) )
+                        {
+                           start_from = i;
+                           start_prefix = next;
+
+                           found_since_label = true;
+                           start_from_prefix_ops = prefix_ops;
+
+                           break;
+                        }
+                     }
+                  }
+               }
             }
 
             if( !ignore_next_for_start
              && has_found_goal( state, next_line.substr( pos + 1 ) ) )
+            {
                start_from = i;
+               start_from_prefix_ops.clear( );
+            }
 
             ignore_next_for_start = false;
          }
       }
 
-      if( !stop_at_stage.empty( ) && stage_reached == stop_at_stage )
-         break;
+      if( !stop_at_stage.empty( ) )
+      {
+         if( stage_reached == stop_at_stage )
+            osstr << "?:" << stop_at_stage << " (done)";
+         else if( !has_seen_stop_at_stage && stop_at_stage != "?" )
+            osstr << "?:" << stop_at_stage << " (unknown)";
+
+         if( ( stage_reached == stop_at_stage )
+          || ( !has_seen_stop_at_stage && stop_at_stage != "?" ) )
+            break;
+      }
 
       int num_found = 0;
       bool had_any_ops = false;
 
       size_t max_suggestions = default_max_suggestions( );
+
+      prefix_ops = start_from_prefix_ops;
 
 #ifdef DEBUG
       cout << "starting from line # " << ( start_from + 1 ) << endl;
@@ -336,21 +418,42 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
          if( next_line[ 0 ] == ':' )
          {
-            string stage_name, stage_pattern;
-            parse_stage_info( next_line.substr( 1 ), stage_name, stage_pattern );
+            bool force_break = false;
 
-            if( has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
+            string stage_name, stage_pattern;
+            parse_stage_info( next_line.substr( 1 ), stage_name, stage_pattern, &force_break );
+
+            if( !stage_pattern.empty( )
+             && has_found_goal( ap_ops_handler->current_state( ), stage_pattern ) )
             {
+               find_from = i;
                stage_reached = stage_name;
 #ifdef DEBUG
                cout << "reached stage: " << stage_reached << endl;
 #endif
-               if( stop_at_stage == "?:" )
+               if( stop_at_stage == "?:" || ap_ops_handler->is_final_state( ) )
                   stop_at_stage = stage_reached;
 
-               if( stage_reached == stop_at_stage )
+               // NOTE: After each stage is reached (and not stopping) then will search for
+               // the last matching goal as being the next starting point for continuation.
+               if( i > start_from || stage_reached == stop_at_stage )
                   break;
             }
+
+            if( force_break || stage_name == stop_at_stage )
+               break;
+
+            continue;
+         }
+
+         if( next_line[ 0 ] == '^' )
+         {
+            next_line.erase( 0, 1 );
+
+            if( next_line.empty( ) )
+               prefix_ops.clear( );
+            else
+               split( next_line, prefix_ops, ' ' );
 
             continue;
          }
@@ -387,7 +490,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             {
                stringstream ss;
 
-               if( ap_tmp_handler->suggest_algo( ss, next_line, j + 1, true, &found_next ) )
+               if( ap_tmp_handler->suggest_algo( ss, next_line, &prefix_ops, j + 1, true, &found_next ) )
                {
                   string result( ss.str( ) );
 
@@ -452,9 +555,6 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          break;
       else
       {
-         if( output.empty( ) )
-            break;
-
          if( has_had_output )
             osstr << ' ';
          osstr << output;
@@ -465,7 +565,6 @@ void op_algo_handler::suggest( ostream& os, const string& info )
       if( ap_ops_handler->is_final_state( )
        || ( !stop_at_stage.empty( ) && stage_reached == stop_at_stage ) )
          break;
-
    }
 
    string final_output( osstr.str( ) );
@@ -473,7 +572,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
    if( !final_output.empty( ) )
    {
       // NOTE: It's possible that unwanted repeats can occur
-      // due to the algorithm beginning with an op which had
+      // due to any algorithm beginning with an op which had
       // been the last op from the previous algorithm (or in
       // fact an exact opposite op which should cancel out).
       final_output = cleanup_output( final_output );
@@ -482,8 +581,8 @@ void op_algo_handler::suggest( ostream& os, const string& info )
    }
 }
 
-bool op_algo_handler::suggest_algo( ostream& os,
- const string& info, size_t rounds, bool check_only_after_last_round, bool* p_found )
+bool op_algo_handler::suggest_algo( ostream& os, const string& info,
+ vector< string >* p_prefix_ops, size_t rounds, bool check_only_after_last_round, bool* p_found )
 {
    bool rc = false;
    bool was_found = false;
@@ -559,18 +658,45 @@ bool op_algo_handler::suggest_algo( ostream& os,
             is_full_length_pattern = true;
          }
 
+         string output;
+
          if( rounds <= max_rounds )
          {
             // NOTE: If using a full length pattern then it is expected
             // that the current state must match as if it were the goal.
             if( is_full_length_pattern )
+            {
                okay = has_found_goal( ap_tmp_handler->current_state( ), pat );
+
+               // NOTE: If prefix ops were provided then each of these will be
+               // executed in order to attempt to find a match for the current
+               // state after execution.
+               if( !okay && p_prefix_ops )
+               {
+                  for( size_t i = 0; i < p_prefix_ops->size( ); i++ )
+                  {
+                     string next( ( *p_prefix_ops )[ i ] );
+
+                     replace( next, ",", " " );
+
+                     ap_tmp_handler.reset( create_clone( ) );
+                     ap_tmp_handler->exec_ops( next );
+
+                     okay = has_found_goal( ap_tmp_handler->current_state( ), pat );
+
+                     if( okay )
+                     {
+                        ap_tmp_handler.reset( create_clone( ) );
+                        algo = next + " " + algo;
+                        break;
+                     }
+                  }
+               }
+            }
          }
 
          if( okay )
          {
-            string output;
-
             for( size_t j = 0; j < rounds; j++ )
             {
                if( has_parts )
@@ -997,7 +1123,7 @@ void op_algo_handler::train_algo( const string& pat,
          size_t tries = min( max_tries, max_tries_allowed );
 
          if( tries > rounds )
-            throw runtime_error( "unexpected tries > rounds for: " + goal + " " + algx );
+            throw runtime_error( "unexpected tries > rounds for: " + pat + " " + goal + " " + algx );
 
          string prefix( g_algo_prefix + type_key( ) + c_type_separator );
          g_goal_algos.insert( make_pair( prefix + goal, to_string( tries ) + '=' + algx ) );
