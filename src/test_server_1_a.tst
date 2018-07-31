@@ -121,9 +121,21 @@ Zm9yX3Rlc3RpbmdfcGFzc3dvcmQ=
 > 
 > 
 > 
+> ifndef false
+
+> 
+> 
+> 
+> 
 > 
 > ifdef false
 
+> 
+> 
+> ifndef true
+
+> 
+> 
 > 
 > 
 > 1234567890
@@ -137,6 +149,202 @@ Zm9yX3Rlc3RpbmdfcGFzc3dvcmQ=
 > 
 > c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646
 
+> 
+> 
+> 
+> 
+> 
+> @ifeq x y false
+
+> 
+> 
+> @ifneq x y true
+
+> 
+> 
+> 
+> 
+> 
+> @ifeq y y true
+
+> 
+> 
+> 
+> 
+> 
+> 
+> @ifneq y y false
+
+> 
+> 
+> xxyyzz
+
+> 
+> xxyyxx
+
+> 
+> (no history is available)
+
+> a
+
+> b
+
+> c
+
+> d
+
+> e
+
+> 1	#a
+2	#b
+3	#c
+4	#d
+5	#e
+
+> 
+> 1	#b
+2	#c
+3	#d
+4	#e
+
+> 
+> 1	#b
+2	#c
+3	#d
+
+> b
+
+> d
+
+> c
+
+> b
+c
+
+> e
+
+> c
+d
+
+> c
+d
+e
+
+> f
+
+> g
+
+> 1	#b
+2	#c
+3	#d
+4	#e
+5	#f
+6	#g
+
+> 
+> 1	#b
+2	#c
+3	#d
+
+> b
+c
+d
+
+> e
+
+> f
+
+> g
+
+> 1	#b
+2	#c
+3	#d
+4	#e
+5	#f
+6	#g
+
+> 
+> 1	#b
+2	#f
+3	#g
+
+> h
+
+> i
+
+> j
+
+> 1	#b
+2	#f
+3	#g
+4	#h
+5	#i
+6	#j
+
+> 
+> 1	#b
+2	#f
+
+> 
+> 
+> 
+> 
+> 
+> 
+> Looping with aaa
+
+> 
+> 
+> 
+> 
+> 
+> Looping with bbb
+
+> 
+> 
+> 
+> 
+> Looping with ccc
+
+> 
+> 
+> 
+> 
+> Looping with ddd
+
+> 
+> 
+> 
+> session_variable @set aaa
+
+> session_variable @set aaa
+aaa
+
+> session_variable @set bbb
+
+> session_variable @set bbb
+bbb
+
+> session_variable @set ccc
+
+> session_variable @set ccc
+ccc
+
+> session_variable @set aaa
+aaa
+
+> session_variable @set bbb
+bbb
+
+> session_variable @set ccc
+ccc
+
+> session_variable @set
+aaa
+bbb
+ccc
+
+> 
 > utc_to_local AEST "2013-10-05 15:00"
 2013-10-06 01:00 AEST
 

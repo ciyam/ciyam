@@ -44,6 +44,7 @@ const char* const c_special_variable_dtm = "@dtm";
 const char* const c_special_variable_grp = "@grp";
 const char* const c_special_variable_key = "@key";
 const char* const c_special_variable_sec = "@sec";
+const char* const c_special_variable_set = "@set";
 const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
@@ -172,6 +173,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_sec:
       s = string( c_special_variable_sec );
+      break;
+
+      case e_special_var_set:
+      s = string( c_special_variable_set );
       break;
 
       case e_special_var_uid:

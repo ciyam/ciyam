@@ -379,6 +379,9 @@ struct session
    string transaction_log_command;
    transaction_commit_helper* p_tx_helper;
 
+   string last_set_item;
+   set< string > set_items;
+
    map< string, string > variables;
 
    deque< string > file_hashs_to_get;
@@ -5528,7 +5531,25 @@ string get_raw_session_variable( const string& name )
 
    if( !found )
    {
-      if( name == get_special_var_name( e_special_var_none ) )
+      if( name == get_special_var_name( e_special_var_set ) )
+      {
+         if( !gtp_session->last_set_item.empty( ) )
+         {
+            retval = gtp_session->last_set_item;
+            gtp_session->last_set_item.erase( );
+         }
+         else
+         {
+            for( set< string >::const_iterator
+             ci = gtp_session->set_items.begin( ); ci != gtp_session->set_items.end( ); ++ci )
+            {
+               if( !retval.empty( ) )
+                  retval += '\n';
+               retval += *ci;
+            }
+         }
+      }
+      else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
       else if( name == get_special_var_name( e_special_var_algos ) )
       {
@@ -5614,7 +5635,31 @@ void set_session_variable( const string& name,
             val = to_string( num_value );
       }
 
-      if( name == get_special_var_name( e_special_var_cube ) )
+      bool skip_actual_variable = false;
+
+      if( name == get_special_var_name( e_special_var_set ) )
+      {
+         skip_actual_variable = true;
+
+         if( value.empty( ) )
+            gtp_session->set_items.clear( );
+         else
+         {
+            if( gtp_session->set_items.count( value ) )
+            {
+               gtp_session->last_set_item = value;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else
+            {
+               gtp_session->last_set_item.erase( );
+               gtp_session->set_items.insert( value );
+            }
+         }
+      }
+      else if( name == get_special_var_name( e_special_var_cube ) )
       {
          temporary_algo_prefix tmp_algo_prefix( gtp_session->p_storage_handler->get_name( ) );
 
@@ -5835,17 +5880,20 @@ void set_session_variable( const string& name,
          }
       }
 
-      if( val.empty( ) )
+      if( !skip_actual_variable )
       {
-         if( gtp_session->variables.count( name ) )
-            gtp_session->variables.erase( name );
-      }
-      else
-      {
-         if( gtp_session->variables.count( name ) )
-            gtp_session->variables[ name ] = val;
+         if( val.empty( ) )
+         {
+            if( gtp_session->variables.count( name ) )
+               gtp_session->variables.erase( name );
+         }
          else
-            gtp_session->variables.insert( make_pair( name, val ) );
+         {
+            if( gtp_session->variables.count( name ) )
+               gtp_session->variables[ name ] = val;
+            else
+               gtp_session->variables.insert( make_pair( name, val ) );
+         }
       }
    }
 }

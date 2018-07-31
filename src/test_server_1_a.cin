@@ -67,11 +67,21 @@ Y=@$Y/4000
 @else
 #ifdef false
 @endif
+@ifndef $Y
+#ifndef true
+@else
+#ifndef false
+@endif
 Y=
 @ifdef $Y
 #ifdef true
 @else
 #ifdef false
+@endif
+@ifndef $Y
+#ifndef true
+@else
+#ifndef false
 @endif
 ASC=1234567890
 #$ASC
@@ -81,6 +91,107 @@ ASC=@hexasc:$HEX
 #$ASC
 HASH=@sha256:$ASC
 #$HASH
+X=x
+Y=y
+@ifeq $X $Y
+#@ifeq $X $Y true
+@else
+#@ifeq $X $Y false
+@endif
+@ifneq $X $Y
+#@ifneq $X $Y true
+@else
+#@ifneq $X $Y false
+@endif
+X=$Y
+@ifeq $X $Y
+#@ifeq $X $Y true
+@else
+#@ifeq $X $Y false
+@endif
+@ifneq $X $Y
+#@ifneq $X $Y true
+@else
+#@ifneq $X $Y false
+@endif
+X=xxyyzz
+#$X
+X=@repstr:zz/xx:$X
+#$X
+!-0
+!
+#a
+#b
+#c
+#d
+#e
+!
+!-1
+!
+!!-
+!
+!1
+!!
+!2
+!1#2
+#e
+!2#2
+!2#0
+#f
+#g
+!
+!-#3
+!
+!0
+#e
+#f
+#g
+!
+!-2#3
+!
+#h
+#i
+#j
+!
+!-3#0
+!
+!-0
+;
+@label L1
+TEST=aaa
+;
+@:LOOP
+#Looping with $TEST
+@skip
+;
+@:L1
+@label L2
+TEST=bbb
+!!@:LOOP
+;
+@:L2
+@label L3
+TEST=ccc
+!!@:LOOP
+;
+@:L3
+@label L4
+TEST=ddd
+!!@:LOOP
+:
+@:L4
+;
+session_variable @set aaa
+session_variable @set aaa
+session_variable @set bbb
+session_variable @set bbb
+session_variable @set ccc
+session_variable @set ccc
+session_variable @set aaa
+session_variable @set bbb
+session_variable @set ccc
+session_variable @set
+;
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"

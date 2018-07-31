@@ -827,6 +827,8 @@ void op_algo_handler::train( const string& info )
          }
       }
 
+      set< pair< string, string > > unique_pat_and_goals;
+
       for( size_t i = 0; i < lines.size( ); i++ )
       {
          string next_line( lines[ i ] );
@@ -839,6 +841,13 @@ void op_algo_handler::train( const string& info )
 
          if( train_args.size( ) < 3 )
             throw runtime_error( "unexpected train args < 3" );
+
+         pair< string, string > pat_and_goal( make_pair( train_args[ 0 ], train_args[ 1 ] ) );
+
+         if( unique_pat_and_goals.count( pat_and_goal ) )
+            throw runtime_error( "found duplicate pat and goal at line #" + to_string( i + 1 ) );
+
+         unique_pat_and_goals.insert( pat_and_goal );
 
          if( train_args.size( ) == 3 )
             train_algo( train_args[ 0 ], train_args[ 1 ], train_args[ 2 ] );

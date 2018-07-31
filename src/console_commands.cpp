@@ -87,13 +87,16 @@ const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
 const char* const c_function_hexlit = "hexlit";
 const char* const c_function_padlen = "padlen";
+const char* const c_function_repstr = "repstr";
 const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
 
 const char* const c_envcond_command_else = "else";
+const char* const c_envcond_command_ifeq = "ifeq";
 const char* const c_envcond_command_skip = "skip";
 const char* const c_envcond_command_endif = "endif";
 const char* const c_envcond_command_ifdef = "ifdef";
+const char* const c_envcond_command_ifneq = "ifneq";
 const char* const c_envcond_command_label = "label";
 const char* const c_envcond_command_ifndef = "ifndef";
 
@@ -2503,6 +2506,28 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  str = rhs;
                               }
                            }
+                           else if( lhs == c_function_repstr )
+                           {
+                              pos = str.find( op, pos + 1 );
+
+                              if( pos != string::npos )
+                              {
+                                 string rhs( str.substr( pos + 1 ) );
+
+                                 str.erase( pos );
+                                 pos = str.find( '/' );
+
+                                 string find, repl;
+                                 find = str.substr( 0, pos );
+
+                                 find.erase( 0, strlen( c_function_repstr ) + 1 );
+
+                                 if( pos != string::npos )
+                                    repl = str.substr( pos + 1 );
+
+                                 str = replace( rhs, find, repl );
+                              }
+                           }
                            else if( lhs == c_function_sha256 )
                               str = sha256( str.substr( pos + 1 ) ).get_digest_as_string( );
                            else if( lhs == c_function_substr )
@@ -2756,16 +2781,31 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         size_t offset = 1;
                         bool remove = false;
 
-                        if( str.size( ) > 2 && str[ 1 ] == '-' )
+                        if( str.size( ) >= 2 && str[ 1 ] == '-' )
                         {
                            offset = 2;
                            remove = true;
                         }
 
+                        int b = 0;
+                        int e = 0;
                         int n = 0;
-                        int s = 0;
+                        int r = 0;
 
                         bool is_loop = false;
+                        bool is_range = false;
+
+                        string::size_type pos = str.find( '#' );
+                        if( pos != string::npos )
+                        {
+                           r = ( int )atoi( str.substr( pos + 1 ).c_str( ) );
+
+                           if( r > command_history.size( ) )
+                              r = command_history.size( );
+
+                           is_range = true;
+                           str.erase( pos );
+                        }
 
                         if( str.size( ) >= 2 && str[ 1 ] == c_history_command_prefix )
                         {
@@ -2775,7 +2815,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               {
                                  if( command_history[ i ] == str.substr( 2 ) )
                                  {
-                                    s = i;
+                                    b = i;
                                     is_loop = true;
 
                                     break;
@@ -2785,14 +2825,44 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               if( !is_loop )
                                  throw runtime_error( "command '" + str.substr( 2 ) + "' not found in history" );
                            }
+                           else if( str.size( ) == 3 && str[ 2 ] == '-' )
+                           {
+                              remove = true;
+
+                              if( !is_range )
+                                 n = command_history.size( );
+                           }
                            else
                               n = ( int )command_history.size( );
                         }
                         else
-                           n = atoi( str.substr( offset ).c_str( ) );
+                        {
+                           if( offset >= str.length( ) )
+                              n = ( ( !remove || is_range ) ? 0 : command_history.size( ) ); // i.e. treat !- the same as !!-
+                           else
+                              n = atoi( str.substr( offset ).c_str( ) );
+                        }
 
                         if( n < 0 || n > ( int )( command_history.size( ) ) )
                            throw runtime_error( "command #" + str.substr( 1 ) + " is invalid" );
+
+                        if( is_range )
+                        {
+                           if( n > 0 )
+                              b = n - 1;
+                           else if( r > 0 )
+                              b = command_history.size( ) - r;
+
+                           n = 0;
+
+                           if( r > 0 )
+                              e = b + r;
+                           else
+                              e = command_history.size( );
+                        }
+
+                        if( e == 0 || e > command_history.size( ) )
+                           e = command_history.size( );
 
                         if( !remove )
                         {
@@ -2803,7 +2873,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               execute_command( command_history[ n - 1 ] );
                            else
                            {
-                              for( vector< string >::size_type i = s; i < command_history.size( ); i++ )
+                              for( vector< string >::size_type i = b; i < e; i++ )
                                  execute_command( command_history[ i ] );
 
                               // NOTE: The format !!@<label> is intended for looping (and thus should have
@@ -2816,7 +2886,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         else
                         {
                            if( n == 0 )
-                              command_history.clear( );
+                           {
+                              if( !is_range )
+                                 command_history.clear( );
+                              else
+                                 command_history.erase( command_history.begin( ) + b, command_history.begin( ) + e );
+                           }
                            else
                               command_history.erase( command_history.begin( ) + ( n - 1 ) );
                         }
@@ -2884,6 +2959,23 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   }
                   else if( token.empty( ) || is_skipping_to_label )
                      ; // i.e. do nothing
+                  else if( token == c_envcond_command_ifeq )
+                  {
+                     if( !conditions.empty( ) && !conditions.back( ) )
+                        dummy_conditions.push_back( 0 );
+                     else
+                     {
+                        completed.push_back( false );
+
+                        vector< string > cond_args;
+                        size_t num_args = setup_arguments( symbol, cond_args );
+
+                        if( num_args != 2 )
+                           throw runtime_error( "unexpected num_args != 2 for 'ifeq' expression" + error_context );
+
+                        conditions.push_back( cond_args[ 0 ] == cond_args[ 1 ] );
+                     }
+                  }
                   else if( token == c_envcond_command_ifdef )
                   {
                      if( !conditions.empty( ) && !conditions.back( ) )
@@ -2892,6 +2984,23 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                      {
                         completed.push_back( false );
                         conditions.push_back( !symbol.empty( ) );
+                     }
+                  }
+                  else if( token == c_envcond_command_ifneq )
+                  {
+                     if( !conditions.empty( ) && !conditions.back( ) )
+                        dummy_conditions.push_back( 0 );
+                     else
+                     {
+                        completed.push_back( false );
+
+                        vector< string > cond_args;
+                        size_t num_args = setup_arguments( symbol, cond_args );
+
+                        if( num_args != 2 )
+                           throw runtime_error( "unexpected num_args != 2 for 'ifneq' expression" + error_context );
+
+                        conditions.push_back( cond_args[ 0 ] != cond_args[ 1 ] );
                      }
                   }
                   else if( token == c_envcond_command_ifndef )

@@ -51,6 +51,7 @@ enum special_var
    e_special_var_grp,
    e_special_var_key,
    e_special_var_sec,
+   e_special_var_set,
    e_special_var_uid,
    e_special_var_arg1,
    e_special_var_arg2,
