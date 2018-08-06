@@ -249,6 +249,8 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
       size_t find_from = 0;
       size_t start_from = 0;
+      size_t start_prefix_ops = 0;
+      size_t finish_prefix_ops = 0;
 
       string last_pattern;
 
@@ -283,9 +285,15 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             next_line.erase( 0, 1 );
 
             if( next_line.empty( ) )
+            {
                prefix_ops.clear( );
+               finish_prefix_ops = i;
+            }
             else
+            {
+               start_prefix_ops = i;
                split( next_line, prefix_ops, ' ' );
+            }
 
             continue;
          }
@@ -525,6 +533,10 @@ void op_algo_handler::suggest( ostream& os, const string& info )
 
                had_any_ops = true;
 
+               // NOTE: If we are in a prefix ops group and have matched then will proceed to search
+               // for matching states after the entire group.
+               if( found_next && start_prefix_ops && i > start_prefix_ops && i < finish_prefix_ops )
+                  find_from = finish_prefix_ops + 1;
 #ifdef DEBUG
                cout << "ops: " << ops << endl;
 #endif
@@ -543,6 +555,10 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          }
 
          last_was_found = found_next;
+
+         // NOTE: If true then needs to skip past the rest of the prefix op group.
+         if( find_from > i )
+            break;
       }
 
       if( num_found >= lines.size( ) )
