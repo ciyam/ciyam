@@ -952,10 +952,13 @@ std::string buffer_file_lines( const std::string& file_name,
  bool skip_blank_lines = true, bool strip_extra_crs = true );
 
 void buffer_file_lines( const std::string& file_name,
- std::vector< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );
+ std::set< std::string >& lines, bool strip_extra_crs = true );
 
 void buffer_file_lines( const std::string& file_name,
- std::set< std::string >& lines, bool strip_extra_crs = true );
+ std::deque< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );
+
+void buffer_file_lines( const std::string& file_name,
+ std::vector< std::string >& lines, bool skip_blank_lines = true, bool strip_extra_crs = true );
 
 void buffer_file_items( const std::string& file_name,
  std::map< std::string, std::string >& items, char separator = '=', bool strip_extra_crs = true );

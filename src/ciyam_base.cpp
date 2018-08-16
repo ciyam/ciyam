@@ -382,6 +382,9 @@ struct session
    string last_set_item;
    set< string > set_items;
 
+   string last_deque_item;
+   deque< string > deque_items;
+
    map< string, string > variables;
 
    deque< string > file_hashs_to_get;
@@ -5551,6 +5554,24 @@ string get_raw_session_variable( const string& name )
       }
       else if( name == get_special_var_name( e_special_var_none ) )
          retval = " ";
+      else if( name == get_special_var_name( e_special_var_deque ) )
+      {
+         if( !gtp_session->last_deque_item.empty( ) )
+         {
+            retval = gtp_session->last_deque_item;
+            gtp_session->last_deque_item.erase( );
+         }
+         else
+         {
+            for( deque< string >::const_iterator
+             ci = gtp_session->deque_items.begin( ); ci != gtp_session->deque_items.end( ); ++ci )
+            {
+               if( !retval.empty( ) )
+                  retval += '\n';
+               retval += *ci;
+            }
+         }
+      }
       else if( name == get_special_var_name( e_special_var_algos ) )
       {
          guard g( g_mutex );
@@ -5641,21 +5662,32 @@ void set_session_variable( const string& name,
       {
          skip_actual_variable = true;
 
-         if( value.empty( ) )
+         if( val.empty( ) )
             gtp_session->set_items.clear( );
          else
          {
-            if( gtp_session->set_items.count( value ) )
+            if( val[ 0 ] == '@' )
             {
-               gtp_session->last_set_item = value;
-
-               if( p_set_special_temporary )
-                  *p_set_special_temporary = true;
+               if( val != "@deque" )
+                  buffer_file_lines( val.substr( 1 ), gtp_session->set_items );
+               else
+                  copy( gtp_session->deque_items.begin( ),
+                   gtp_session->deque_items.end( ), inserter( gtp_session->set_items, gtp_session->set_items.end( ) ) );
             }
             else
             {
-               gtp_session->last_set_item.erase( );
-               gtp_session->set_items.insert( value );
+               if( gtp_session->set_items.count( val ) )
+               {
+                  gtp_session->last_set_item = val;
+
+                  if( p_set_special_temporary )
+                     *p_set_special_temporary = true;
+               }
+               else
+               {
+                  gtp_session->last_set_item.erase( );
+                  gtp_session->set_items.insert( val );
+               }
             }
          }
       }
@@ -5877,6 +5909,69 @@ void set_session_variable( const string& name,
 
             if( p_set_special_temporary && *p_set_special_temporary )
                 gtp_session->variables[ name + c_temporary_special_variable_suffix ] = old_val;
+         }
+      }
+      else if( name == get_special_var_name( e_special_var_deque ) )
+      {
+         skip_actual_variable = true;
+
+         if( val.empty( ) )
+            gtp_session->deque_items.clear( );
+         else
+         {
+            string::size_type pos = val.find( ' ' );
+
+            if( val[ 0 ] == '@' )
+            {
+               if( val != "@set" )
+                  buffer_file_lines( val.substr( 1 ), gtp_session->deque_items );
+               else
+                  copy( gtp_session->set_items.begin( ),
+                   gtp_session->set_items.end( ), inserter( gtp_session->deque_items, gtp_session->deque_items.end( ) ) );
+            }
+            else if( val == "back" )
+            {
+               if( gtp_session->deque_items.empty( ) )
+                  val.erase( );
+               else
+                  val = gtp_session->deque_items.back( );
+
+               gtp_session->last_deque_item = val;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val == "front" )
+            {
+               if( gtp_session->deque_items.empty( ) )
+                  val.erase( );
+               else
+                  val = gtp_session->deque_items.front( );
+
+               gtp_session->last_deque_item = val;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val == "reverse" )
+            {
+               if( !gtp_session->deque_items.empty( ) )
+                  reverse( gtp_session->deque_items.begin( ), gtp_session->deque_items.end( ) );
+            }
+            else if( val.substr( 0, pos ) == "pop_back" )
+            {
+               if( !gtp_session->deque_items.empty( ) )
+                  gtp_session->deque_items.pop_back( );
+            }
+            else if( val.substr( 0, pos ) == "pop_front" )
+            {
+               if( !gtp_session->deque_items.empty( ) )
+                  gtp_session->deque_items.pop_front( );
+            }
+            else if( val.substr( 0, pos ) == "push_back" )
+               gtp_session->deque_items.push_back( val.substr( pos + 1 ) );
+            else if( val.substr( 0, pos ) == "push_front" )
+               gtp_session->deque_items.push_front( val.substr( pos + 1 ) );
          }
       }
 

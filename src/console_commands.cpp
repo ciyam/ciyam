@@ -120,6 +120,31 @@ command_definition startup_command_definitions[ ] =
 const char* const c_command_prompt = "\n> ";
 const char* const c_message_press_any_key = "(press any key to continue)...";
 
+string::size_type find_non_escaped_char( const string& s, char ch, string::size_type from = 0, char esc = '\\' )
+{
+   string::size_type pos = string::npos;
+
+   bool had_escape = false;
+
+   for( string::size_type i = from; i < s.length( ); i++ )
+   {
+      if( had_escape )
+      {
+         had_escape = false;
+         continue;
+      }
+      else if( s[ i ] == esc )
+         had_escape = true;
+      else if( s[ i ] == ch )
+      {
+         pos = i;
+         break;
+      }
+   }
+
+   return pos;
+}
+
 string replace_input_arg_values( const vector< string >& args, const string& input, char marker )
 {
    string str( input );
@@ -2282,8 +2307,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 #endif
       string str_for_history( str );
 
-      last_command = str_for_history;
-
       string error_context;
       if( !script_file.empty( ) )
          error_context = " processing script '" + script_file + "' at line #" + to_string( line_number );
@@ -2296,6 +2319,17 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                str.erase( );
          }
       }
+
+      bool add_to_history = allow_history_addition;
+
+      // NOTE: Any single space prefixed command will not be added to history.
+      if( !str.empty( ) && str[ 0 ] == ' ' )
+      {
+         str.erase( 0, 1 );
+         add_to_history = false;
+      }
+      else
+         last_command = str_for_history;
 
       string::size_type pos = str.find( ' ' );
       string::size_type apos = string::npos;
@@ -2326,8 +2360,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
           || !has_option( c_cmd_quiet ) ) )
             cout << str << endl;
       }
-
-      bool add_to_history = allow_history_addition;
 
       if( !str.empty( ) )
       {
@@ -2508,14 +2540,14 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                            }
                            else if( lhs == c_function_repstr )
                            {
-                              pos = str.find( op, pos + 1 );
+                              pos = find_non_escaped_char( str, op, pos + 1 );
 
                               if( pos != string::npos )
                               {
                                  string rhs( str.substr( pos + 1 ) );
 
                                  str.erase( pos );
-                                 pos = str.find( '/' );
+                                 pos = find_non_escaped_char( str, '/' );
 
                                  string find, repl;
                                  find = str.substr( 0, pos );
@@ -2524,6 +2556,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                                  if( pos != string::npos )
                                     repl = str.substr( pos + 1 );
+
+                                 unescape( find );
+                                 unescape( repl );
 
                                  str = replace( rhs, find, repl );
                               }
@@ -2629,7 +2664,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                   ap_tmp_permit_history_addition.reset( new restorable< bool >( allow_history_addition, false ) );
 
                vector< string > new_args;
-               size_t num_new_args = setup_arguments( str.c_str( ) + 1, new_args );
+               size_t num_new_args = setup_arguments( str.c_str( ) + file_name_offset, new_args );
 
                if( num_new_args == 0 )
                   throw runtime_error( "unexpected missing file name for input" );
@@ -2653,12 +2688,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                restorable< string > tmp_script_file( script_file, new_args[ 0 ] );
                restorable< vector< bool > > tmp_completed( completed, dummy_vector );
                restorable< vector< bool > > tmp_conditions( conditions, dummy_vector );
-               restorable< bool > tmp_executing_commands( is_executing_commands, true );
+               restorable< bool > tmp_executing_commands( is_executing_commands, false );
                restorable< vector< bool > > tmp_dummy_conditions( dummy_conditions, dummy_vector );
 
                string next;
                string next_command;
                bool is_first = true;
+
                while( getline( inpf, next ) )
                {
                   ++line_number;
@@ -2794,6 +2830,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                         bool is_loop = false;
                         bool is_range = false;
+                        bool is_old_loop = false;
 
                         string::size_type pos = str.find( '#' );
                         if( pos != string::npos )
@@ -2813,10 +2850,23 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                            {
                               for( vector< string >::size_type i = command_history.size( ) - 1; i > 0; i-- )
                               {
-                                 if( command_history[ i ] == str.substr( 2 ) )
+                                 // NOTE: If an older loop is being re-run via history then make sure that
+                                 // no history commands after that loop will be executed as a part of that.
+                                 if( command_history[ i ] == str )
+                                 {
+                                    e = i + 1;
+                                    is_old_loop = true;
+                                 }
+                                 else if( command_history[ i ] == str.substr( 2 ) )
                                  {
                                     b = i;
                                     is_loop = true;
+
+                                    // NOTE: Unlike normal history commands loops
+                                    // are included in the history to allow these
+                                    // to be nested.
+                                    if( !is_executing_commands )
+                                       command_history.push_back( str_for_history );
 
                                     break;
                                  }
@@ -2869,18 +2919,19 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                            restorable< bool > tmp_executing_commands( is_executing_commands, true );
                            restorable< bool > tmp_allow_history_addition( allow_history_addition, false );
 
+                           auto_ptr< restorable< bool > > ap_tmp_is_skipping_to_label;
+
+                           // NOTE: If an existing loop is being replayed then make sure that once it has been completed no further
+                           // skipping will take place (otherwise the console could effectively end up "stuck" waiting for a label).
+                           if( is_old_loop )
+                              ap_tmp_is_skipping_to_label.reset( new restorable< bool >( is_skipping_to_label, is_skipping_to_label ) );
+
                            if( n > 0 )
                               execute_command( command_history[ n - 1 ] );
                            else
                            {
                               for( vector< string >::size_type i = b; i < e; i++ )
                                  execute_command( command_history[ i ] );
-
-                              // NOTE: The format !!@<label> is intended for looping (and thus should have
-                              // some test with a @skip in order to break out of the loop) so therefore it
-                              // is now re-executed (unlike any normal history command).
-                              if( is_loop )
-                                 execute_command( str );
                            }
                         }
                         else
@@ -2952,6 +3003,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                    && ( token == c_envcond_command_skip || token == c_envcond_command_label ) )
                      token.erase( );
 
+                  // NOTE: This first condition must take place before the next
+                  // one in order for skipping to label to operate as expected.
                   if( !token.empty( ) && token[ 0 ] == ':' )
                   {
                      if( is_skipping_to_label && token.substr( 1 ) == label )
@@ -2965,14 +3018,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         dummy_conditions.push_back( 0 );
                      else
                      {
-                        completed.push_back( false );
-
                         vector< string > cond_args;
                         size_t num_args = setup_arguments( symbol, cond_args );
 
                         if( num_args != 2 )
                            throw runtime_error( "unexpected num_args != 2 for 'ifeq' expression" + error_context );
 
+                        completed.push_back( false );
                         conditions.push_back( cond_args[ 0 ] == cond_args[ 1 ] );
                      }
                   }
@@ -2992,14 +3044,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         dummy_conditions.push_back( 0 );
                      else
                      {
-                        completed.push_back( false );
-
                         vector< string > cond_args;
                         size_t num_args = setup_arguments( symbol, cond_args );
 
                         if( num_args != 2 )
                            throw runtime_error( "unexpected num_args != 2 for 'ifneq' expression" + error_context );
 
+                        completed.push_back( false );
                         conditions.push_back( cond_args[ 0 ] != cond_args[ 1 ] );
                      }
                   }
@@ -3021,7 +3072,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                      if( dummy_conditions.empty( ) )
                      {
                         if( conditions.empty( ) || completed.back( ) )
-                           throw runtime_error( "no matching 'ifdef' found for 'else' expression" + error_context );
+                           throw runtime_error( "no matching 'if' found for 'else' expression" + error_context );
 
                         bool val = conditions.back( );
 
@@ -3057,7 +3108,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         is_skipping_to_label = true;
                   }
                   else if( token == c_envcond_command_label )
-                     label = symbol;
+                  {
+                     if( !symbol.empty( ) )
+                        label = symbol;
+                     else
+                        cout << label << '\n';
+                  }
                   else
                      throw runtime_error( "invalid conditional expression '" + str + "'" + error_context );
                }
@@ -3292,4 +3348,3 @@ void startup_command_processor::finalise_command_processing( )
    for( size_t i = num; i < extra_args.size( ); i++ )
       handler.handle_extraneous_custom_option( extra_args[ i ] );
 }
-

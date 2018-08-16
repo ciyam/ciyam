@@ -183,6 +183,15 @@ Zm9yX3Rlc3RpbmdfcGFzc3dvcmQ=
 > xxyyxx
 
 > 
+> ab/cd/ef
+
+> 
+> ab:cd:ef
+
+> 
+> ab/cd/ef
+
+> 
 > (no history is available)
 
 > a
@@ -315,6 +324,67 @@ d
 > 
 > 
 > 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> NEXT
+
+> 
+> 
+> XXX YYY
+
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> CONT
+
+> 
+> 
+> 
+> CONT
+CONT
+DONE
+
+> 
+> 
+> NEXT
+XX YYYY
+CONT
+CONT
+CONT
+CONT
+DONE
+NEXT
+X YYYYY
+CONT
+CONT
+CONT
+CONT
+CONT
+DONE
+END
+
+> 
+> 
 > session_variable @set aaa
 
 > session_variable @set aaa
@@ -343,6 +413,72 @@ ccc
 aaa
 bbb
 ccc
+
+> session_variable @deque @set
+
+> session_variable @deque
+aaa
+bbb
+ccc
+
+> session_variable @deque @set
+
+> session_variable @deque
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
+
+> session_variable @deque "push_back yyy"
+
+> session_variable @deque "push_front xxx"
+
+> session_variable @deque
+xxx
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
+yyy
+
+> session_variable @deque pop_back
+
+> session_variable @deque pop_front
+
+> session_variable @deque
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
+
+> session_variable @deque "push_front eee"
+
+> session_variable @deque "push_front ddd"
+
+> session_variable @deque
+ddd
+eee
+aaa
+bbb
+ccc
+aaa
+bbb
+ccc
+
+> session_variable @set @deque
+
+> session_variable @set
+aaa
+bbb
+ccc
+ddd
+eee
 
 > 
 > utc_to_local AEST "2013-10-05 15:00"

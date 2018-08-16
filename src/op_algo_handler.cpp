@@ -287,15 +287,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          // point if one without any prefix has been found (as it's being assumed
          // that there would not be any better point to start from).
          if( found_since_label && start_prefix.empty( ) && break_if_found_match )
-         {
-            // NOTE: Only break if no stop at stage (or just the generic one) has
-            // been specified (otherwise still need to check that the stage which
-            // has been specified actually exists).
-            if( stop_at_stage.empty( ) || stop_at_stage == "?" )
-               break;
-            else
-               just_checking_labels = true;
-         }
+            just_checking_labels = true;
 
          if( next_line[ 0 ] == '^' )
          {
@@ -347,9 +339,6 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             continue;
          }
 
-         if( just_checking_labels )
-            continue;
-
          if( next_line[ 0 ] == '!' )
          {
             ignore_next_for_start = true;
@@ -372,6 +361,11 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             else
             {
                last_pattern = pattern;
+
+               // NOTE: Continue rather than break so that continuations will be
+               // correctly handled.
+               if( just_checking_labels )
+                  continue;
 
                if( !ignore_next_for_start && pattern.length( ) == state.length( ) )
                {
@@ -507,7 +501,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             if( patterns.find_first_not_of( "." ) == string::npos )
             {
                if( continuation_patterns[ i ].empty( ) )
-                  throw runtime_error( "unexpected continuation without a continuation pattern" );
+                  throw runtime_error( "unexpected continuation without a continuation pattern at line #" + to_string( i + 1 ) );
 
                next_line = continuation_patterns[ i ] + " " + next_line.substr( pos + 1 );
             }

@@ -66,6 +66,7 @@ const char* const c_special_variable_array = "@array";
 const char* const c_special_variable_async = "@async";
 const char* const c_special_variable_bytes = "@bytes";
 const char* const c_special_variable_class = "@class";
+const char* const c_special_variable_deque = "@deque";
 const char* const c_special_variable_embed = "@embed";
 const char* const c_special_variable_print = "@print";
 const char* const c_special_variable_quiet = "@quiet";
@@ -261,6 +262,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_class:
       s = string( c_special_variable_class );
+      break;
+
+      case e_special_var_deque:
+      s = string( c_special_variable_deque );
       break;
 
       case e_special_var_embed:

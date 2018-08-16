@@ -1773,8 +1773,32 @@ string buffer_file_lines( const string& file_name, bool skip_blank_lines, bool s
    return str;
 }
 
+void buffer_file_lines( const string& file_name, set< string >& lines, bool strip_extra_crs )
+{
+   ifstream inpf( file_name.c_str( ) );
+   if( !inpf )
+      throw runtime_error( "unable to open file '" + file_name + "' for input in buffer_file_lines" );
+
+   string next;
+   size_t line_num = 0;
+   while( getline( inpf, next ) )
+   {
+      ++line_num;
+
+      if( strip_extra_crs )
+         remove_trailing_cr_from_text_file_line( next, line_num == 1 );
+
+      if( !next.empty( ) )
+         lines.insert( next );
+   }
+
+   if( !inpf.eof( ) )
+      throw runtime_error(
+       "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_lines" );
+}
+
 void buffer_file_lines( const string& file_name,
- vector< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
+ deque< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
@@ -1798,7 +1822,8 @@ void buffer_file_lines( const string& file_name,
        "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_lines" );
 }
 
-void buffer_file_lines( const string& file_name, set< string >& lines, bool strip_extra_crs )
+void buffer_file_lines( const string& file_name,
+ vector< string >& lines, bool skip_blank_lines, bool strip_extra_crs )
 {
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
@@ -1813,8 +1838,8 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
       if( strip_extra_crs )
          remove_trailing_cr_from_text_file_line( next, line_num == 1 );
 
-      if( !next.empty( ) )
-         lines.insert( next );
+      if( !skip_blank_lines || !next.empty( ) )
+         lines.push_back( next );
    }
 
    if( !inpf.eof( ) )

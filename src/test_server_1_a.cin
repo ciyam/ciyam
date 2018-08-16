@@ -118,6 +118,12 @@ X=xxyyzz
 #$X
 X=@repstr:zz/xx:$X
 #$X
+X=ab/cd/ef
+#$X
+X=@repstr:\//\::$X
+#$X
+X=@repstr:\:/\/:$X
+#$X
 !-0
 !
 #a
@@ -178,8 +184,47 @@ TEST=ccc
 @label L4
 TEST=ddd
 !!@:LOOP
-:
+;
 @:L4
+;
+X=XXX
+@:MAIN_LOOP
+Y=YYY
+;
+@ifeq "$X" "XX"
+Y=YYYY
+@endif
+;
+@ifeq "$X" "X"
+Y=YYYYY
+@endif
+;
+@label NEXT
+@ifndef $X
+@label END
+@endif
+;
+@label
+@skip
+@:NEXT
+#$X $Y
+X=@substr:1:$X
+;
+@:INNER_LOOP
+@label CONT
+@ifndef $Y
+@label DONE
+@endif
+;
+@label
+@skip
+@:CONT
+Y=@substr:1:$Y
+!!@:INNER_LOOP
+@:DONE
+;
+!!@:MAIN_LOOP
+@:END
 ;
 session_variable @set aaa
 session_variable @set aaa
@@ -190,6 +235,21 @@ session_variable @set ccc
 session_variable @set aaa
 session_variable @set bbb
 session_variable @set ccc
+session_variable @set
+session_variable @deque @set
+session_variable @deque
+session_variable @deque @set
+session_variable @deque
+session_variable @deque "push_back yyy"
+session_variable @deque "push_front xxx"
+session_variable @deque
+session_variable @deque pop_back
+session_variable @deque pop_front
+session_variable @deque
+session_variable @deque "push_front eee"
+session_variable @deque "push_front ddd"
+session_variable @deque
+session_variable @set @deque
 session_variable @set
 ;
 utc_to_local AEST "2013-10-05 15:00"
