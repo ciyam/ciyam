@@ -292,6 +292,7 @@ struct session
     peer_files_downloaded( 0 ),
     cmd_handler( cmd_handler ),
     skip_is_constrained( false ),
+    session_commands_executed( 0 ),
     is_peer_session( is_peer_session ),
     p_storage_handler( p_storage_handler )
    {
@@ -355,6 +356,8 @@ struct session
 
    size_t peer_files_downloaded;
    int64_t peer_bytes_downloaded;
+
+   size_t session_commands_executed;
 
    module_container modules_by_id;
    module_container modules_by_name;
@@ -4963,6 +4966,8 @@ void list_sessions( ostream& os, bool inc_dtms )
          else
             os << ' ' << g_sessions[ i ]->peer_files_downloaded << ':' << g_sessions[ i ]->peer_bytes_downloaded;
 
+         os << ' ' << g_sessions[ i ]->session_commands_executed;
+
          if( g_sessions[ i ]->is_captured )
             os << '*';
 
@@ -5027,6 +5032,14 @@ void increment_peer_files_downloaded( int64_t bytes )
       ++gtp_session->peer_files_downloaded;
       gtp_session->peer_bytes_downloaded += bytes;
    }
+}
+
+void increment_session_commands_executed( )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      ++gtp_session->session_commands_executed;
 }
 
 void set_slowest_if_applicable( )

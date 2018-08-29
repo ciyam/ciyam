@@ -243,6 +243,8 @@ class CIYAM_BASE_DECL_SPEC session_file_buffer_access
 void CIYAM_BASE_DECL_SPEC increment_peer_files_uploaded( int64_t bytes );
 void CIYAM_BASE_DECL_SPEC increment_peer_files_downloaded( int64_t bytes );
 
+void CIYAM_BASE_DECL_SPEC increment_session_commands_executed( );
+
 void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd_and_hash( const std::string& cmd, const std::string& parameter_info );
 

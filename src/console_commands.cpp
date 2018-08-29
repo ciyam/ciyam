@@ -2557,8 +2557,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  if( pos != string::npos )
                                     repl = str.substr( pos + 1 );
 
-                                 unescape( find );
-                                 unescape( repl );
+                                 unescape( find, c_special_characters );
+                                 unescape( repl, c_special_characters );
 
                                  str = replace( rhs, find, repl );
                               }
@@ -2859,7 +2859,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  }
                                  else if( command_history[ i ] == str.substr( 2 ) )
                                  {
-                                    b = i;
+                                    b = i + 1;
                                     is_loop = true;
 
                                     // NOTE: Unlike normal history commands loops
@@ -2930,8 +2930,22 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               execute_command( command_history[ n - 1 ] );
                            else
                            {
-                              for( vector< string >::size_type i = b; i < e; i++ )
-                                 execute_command( command_history[ i ] );
+                              // NOTE: Rather than call "execute_command" for the actual loop will simply keep on
+                              // executing each of the commands within the loop until it is skipping past the end
+                              // of it (otherwise a large loop could cause a stack overflow to occur).
+                              do
+                              {
+                                 for( vector< string >::size_type i = b; i < e; i++ )
+                                 {
+                                    if( is_loop && i == e - 1 )
+                                    {
+                                       if( is_skipping_to_label )
+                                          is_loop = false;
+                                    }
+                                    else
+                                       execute_command( command_history[ i ] );
+                                 }
+                              } while( is_loop );
                            }
                         }
                         else

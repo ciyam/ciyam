@@ -73,7 +73,7 @@ Two Test App Name Is Over Here
 Two Test App Name Is Soon Found
 
 > session_list -min
-5* session_list <none> <unknown> 5:5 0:0
+5* session_list <none> <unknown> 5:5 0:0 28
 
 > object_list
 1 Meta User

@@ -89,6 +89,8 @@ makefile.vars.xrep
 *.algos.txt
 *.specs.sio
 *.steps.txt
+3x3x3.*.cin
+3x3x3.*.txt
 *_extkeys.txt
 *.package.sio
 for_*.spec.xrep

@@ -1377,6 +1377,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    clear_perms( );
 
+   increment_session_commands_executed( );
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
    progress* p_progress = 0;
