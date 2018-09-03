@@ -481,6 +481,32 @@ ddd
 eee
 
 > 
+> arg $0 is "test_args.cin"
+arg $1 is "XXX"
+arg $2 is ""
+arg $3 is ""
+
+> arg $0 is "test_args.cin"
+arg $1 is "XXX"
+arg $2 is "YYY"
+arg $3 is ""
+
+> arg $0 is "test_args.cin"
+arg $1 is "XXX"
+arg $2 is "YYY"
+arg $3 is "ZZZ"
+
+> arg $0 is "test_args.cin"
+arg $1 is "XXX"
+arg $2 is ""
+arg $3 is "ZZZ"
+
+> arg $0 is "test_args.cin"
+arg $1 is ""
+arg $2 is ""
+arg $3 is "ZZZ"
+
+> 
 > utc_to_local AEST "2013-10-05 15:00"
 2013-10-06 01:00 AEST
 

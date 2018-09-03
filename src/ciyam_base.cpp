@@ -1389,6 +1389,8 @@ void perform_storage_op( storage_op op,
       if( name == g_storage_name_lock )
          throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
 
+      bool file_not_found = false;
+
       ods::open_mode open_mode;
 
       if( op == e_storage_op_attach )
@@ -1402,7 +1404,7 @@ void perform_storage_op( storage_op op,
 
       try
       {
-         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive, true ) );
+         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive, true, &file_not_found ) );
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
          ap_handler->obtain_bulk_write( );
@@ -1499,8 +1501,14 @@ void perform_storage_op( storage_op op,
       catch( ... )
       {
          ods::instance( 0, true );
-         throw;
+
+         // NOTE: Swallow this exception to output a simpler error message below.
+         if( !file_not_found )
+            throw;
       }
+
+      if( file_not_found )
+         throw runtime_error( "storage '" + name + "' was not found" );
    }
 
    if( p_new_handler && p_new_handler != gtp_session->p_storage_handler )

@@ -252,6 +252,12 @@ session_variable @deque
 session_variable @set @deque
 session_variable @set
 ;
+<test_args.cin XXX
+<test_args.cin XXX YYY
+<test_args.cin XXX YYY ZZZ
+<test_args.cin XXX "" ZZZ
+<test_args.cin "" "" ZZZ
+;
 utc_to_local AEST "2013-10-05 15:00"
 utc_to_local AEST+ "2013-10-05 15:00"
 utc_from_local AEST "2013-10-06 01:00"

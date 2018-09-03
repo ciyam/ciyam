@@ -2283,7 +2283,7 @@ ods::ods( const ods& o )
    permit_copy = true;
 }
 
-ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tranlog )
+ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tranlog, bool* p_not_found )
  :
  okay( false ),
  is_in_read( false ),
@@ -2363,8 +2363,13 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
       if( p_impl->is_new )
       {
          ap_header_file_lock.reset( );
+
          p_impl->rp_header_file = 0;
          remove( p_impl->header_file_name.c_str( ) );
+
+         if( p_not_found )
+            *p_not_found = true;
+
          THROW_ODS_ERROR( "database index file does not exist" );
       }
       break;

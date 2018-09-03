@@ -589,7 +589,7 @@ class ODS_DECL_SPEC ods
    ods( const ods& o );
 
    ods( const char* name, open_mode o_mode,
-    write_mode w_mode = e_write_mode_shared, bool using_tranlog = false );
+    write_mode w_mode = e_write_mode_shared, bool using_tranlog = false, bool* p_not_found = 0 );
 
    virtual ~ods( );
 

@@ -1,5 +1,5 @@
-User Interface Technical Design and Implementation
---------------------------------------------------
+User Interface via FCGI Server
+------------------------------
 
 The UI (apart from the console only "ciyam_client") is provided by the FCGI server "ciyam_interface" which is
 suitable for any web server that supports FCGI. For a development environment only use an FCGI implementation
@@ -10,7 +10,7 @@ Static Content
 
 A basic tenet of the technical design itself is that all content that is "seen" is loaded via what is usually
 referred to as an AJAX request (although the request itself is not performed asynchronously and all data that
-is requested in this manner is returned in the form of HTML).
+is requested in this manner is returned in the form of HTML rather than JSON).
 
 So at any point a "View Source" will display something very similar to the following:
 
@@ -109,7 +109,7 @@ similar to the following:
 
 </div>
 
-<div id="footer"><p>&copy; 2012-2013 CIYAM Open Developers</p></div>
+<div id="footer"><p>&copy; 2012-2018 CIYAM Open Developers</p></div>
 
 </div>
 
@@ -122,4 +122,3 @@ similar to the following:
 The "centered" div would contain the actual login form HTML (omitted above for brevity). The "normal_content"
 div is standard for all injected HTML except for "print" versions where applicable (which use "print_content"
 instead).
-

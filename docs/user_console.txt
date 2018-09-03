@@ -1,0 +1,204 @@
+User Interface via Console
+--------------------------
+
+The simplest UI implementation used in "ciyam_client" and by several other CIYAM testbed applications such as
+"test_numeric" is a console UI which is provided by what is called the "console command handler" (which forms
+a part of the CIYAM "base" library).
+
+The features provided by the console command handler support the creation of console scripts that can include
+conditional statements, looping and string manipulation along with supporting a unique interpreted functional
+programming language known as FISSILE.
+
+Note that by convention the ".cin" file extension is used for CIYAM console scripts. These scripts can either
+be designed for interactive or non-interactive usage.
+
+Environment Variables and System Commands
+-----------------------------------------
+
+One key feature of the CIYAM Console UI is that the '~' character is a prefix for invoking any system command
+(such as as an external shell script or program) and as the console command handler also supports environment
+variables these can be used to pass information from the console session to external scripts and/or programs.
+
+Assuming we have a script file (called "x") that contains the following:
+
+[x]
+echo "TEST is: $TEST"
+
+From a "console command handler" (such as ./test_numeric for example) you can execute this script with this:
+
+> ~./x
+
+assuming that "x" is in the CIYAM src directory (and has its execute permission set) you should see:
+
+TEST is:
+
+this can then be repeated after assigning the value ABC to TEST from the console as follows:
+
+> TEST=ABC
+
+> ~./x
+
+TEST is: ABC
+
+When using the "ciyam_client" console the following environment variable names are used internally (which are
+essential for creating many useful CIYAM scripts):
+
+ERROR (the result of the last error returned by the server for the session)
+OUTPUT (the result of the last successfully executed session command assuming that it returned any output)
+
+An environment variable can be assigned to the content of an external file in the following manner:
+
+> TEST=@modules.lst.default
+
+and the value of an environment variable can be displayed using the '#' command (the console "echo" command):
+
+> #Now TEST is $TEST
+Now TEST is Meta
+
+Note that if you really wanted to assign the value "@x" to TEST (rather than the content of the file "x") you
+would need to double the @ character as follows:
+
+> TEST=@@x
+
+> #$TEST
+@x
+
+Another feature of this sort of environment variable assignment is that the prefix "@~" will execute a system
+command and assign the variable to the value of its output (both stdout and stderr output are included).
+
+> TEST=@~wc -l config.info.default
+
+> #$TEST
+10 config.info.default
+
+Console Command Prefixes
+------------------------
+
+There are a number of special console command prefixes that can be used and although they will generally work
+with all programs that implement a console command handler some (such as the '.' prefix) may not work so well
+with programs other than "ciyam_client" (as apart from regression tests all CIYAM console scripts are written
+for usage only by "ciyam_client").
+
+Prefixes are a single character (surround by single quotes) as follows:
+
+'@' - conditional command prefix (covered in the next section)
+'#' - echo whatever characters that follow
+';' - ignore whatever characters that follow (i.e. a comment)
+'.' - use this as a prefix for any normal command to suppress command output (OUTPUT still being assigned)
+' ' - use this as a prefix for any normal command in order to not have the command line recorded in history
+'<' - use this prefix followed by a file name and optional arguments for executing an input script
+'>' - use this prefix followed by a file name to redirect command output to that file (use no name to stop)
+'~' - use this prefix to execute what follows as a "system" command (such as an external script or program)
+'*' - use this prefix for executing a FISSILE command (an interpreted functional programming language)
+
+It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
+into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already
+existing output file (rather than truncating any such existing output file).
+
+The following prefixes are designed for use with interactive scripts:
+
+'^' - use this for a simple pause that waits for a key to be pressed (suffix for a custom prompt)
+'&' - use this for either single key selection of choices or a general user appended command input
+
+For user input the following is a selection choice example (sets/clears environment variable "Continue"):
+
+> &Continue? [yes=1|no=] (choose one)
+
+whilst this is a simpler user appended command input example to set the TEST variable to any arbitrary text):
+
+> &TEST=
+
+Console Command History
+-----------------------
+
+The console command handler automatically keeps a list of previously entered commands (use the ' ' prefix for
+omitting a command from being included in history) although this list is restricted in size (in order to stop
+long running sessions from consuming too much memory due to this feature).
+
+To see the history list simply type a '!' character and to execute a specific command in the list follow this
+character with the history list entry number. The number 0 is reserved to mean "rest of range" and if "!0" is
+entered then all commands in the list will be re-executed in order.
+
+If an execute history command is followed by a '#' character and another number (e.g. !3#2) then two commands
+of the history will be executed starting from the third command. Thus "!1#0" executes all history commands in
+the same way as "!0" would but "!3#0" would execute all history commands starting from third one. If this '#'
+character is appended immediately after the '!' prefix then the last X commands will be executed (thus "!#10"
+would execute the last ten history commands). In this manner "!!" is actually the same as "!#1" which results
+in the last history command being executed.
+
+If a '-' prefix is used before the history list entry number then instead of being executed the commands will
+be removed from the history list (noting that this will potentially renumber some or all of the list). As the
+zero value is again used to mean "all of range" the command "!-0" will remove all history (and just like "!!"
+the command "!!-" is the same as "!!-#1" which results in the last history command being removed).
+
+To write the history command list to a file called "x" you would simply issue the command "!>x" (or "!>>x" to
+append the history command list to "x" if it is an existing file).
+
+It should be noted that history execution and/or removal commands are not included in the command history.
+
+Conditional Command Handling
+----------------------------
+
+One of the useful features of the console command handler are its special conditional tests (which start with
+the '@' character) which can be used to form "if .. else .. endif" statements such as the following:
+
+[x.cin]
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+#This is a Linux OS
+@else
+#This is not a Linux OS
+@endif
+
+In this case the OUTPUT environment variable is being set to the value of the system variable "@os" and which
+is then being checked using the "@ifeq" conditional statement (which tests two string values).
+
+Assuming that the CIYAM application server is running this could be run as follows:
+
+./ciyam_client -quiet -no_prompt < x.cin
+This is a Linux OS
+
+Along with "@ifeq" there is also "@ifneq" (which is an opposite conditional test) and there are also two more
+conditional tests "@ifdef" and "@ifndef" which test whether (or not) an environment variable has a value.
+
+These can be particularly useful for handling errors such as is being done in the following script:
+
+[x.cin]
+storage_init Sample
+@ifndef $ERROR
+#Found Sample storage!
+@endif
+
+It should be noted that CIYAM script conditional statements can be nested.
+
+Labels and Looping
+------------------
+
+Along with conditional statements the '@' prefix can also be used to identify a "label" and to cause commands
+to be skipped until a label has been reached. Along with an "execute all history starting from label" command
+this allows CIYAM scripts to perform looping (which can be nested).
+
+The following is an example of a simple loop that will output X, then XX and finally XXX:
+
+I=X
+@:LOOP
+;
+@label NEXT
+@ifeq "$I" "XXXX"
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+#$I
+I=%I%X
+!!@:LOOP
+;
+@:DONE
+
+The "@label" command is what determines which commands are skipped over when the "@skip" command is executed.
+And the "!!@:LOOP" special history execute command will scan backwards for the "@:LOOP" label to then execute
+all of the history (including the actual !!@:LOOP command itself) only stopping when the "@skip" command will
+cause the commands to no longer be issued (which is the case when "$I" equals "XXXX" with "@label DONE" being
+conditionally executed causing the "@skip" to ignore the loop waiting for the "@:DONE" label to be reached).
