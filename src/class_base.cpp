@@ -5519,7 +5519,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
       cmd += " >" + file_name + " 2>&1";
    }
    else if( client_info.protocol == c_protocol_blockchain )
-      cmd = "curl -s \"http://blockchain.info/unspent?active="
+      cmd = "curl -s \"https://blockchain.info/unspent?active="
        + replaced( source_addresses, " ", "|", ",", "|" ) + "\" >" + file_name + " 2>&1";
 
    if( !cmd.empty( ) )
@@ -6115,7 +6115,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
          string tmp( "~" + uuid( ).as_string( ) );
 
          // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
-         string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp + " 2>&1" );
+         string cmd( "curl -s --data tx=" + tx + " https://blockchain.info/decode-tx >" + tmp + " 2>&1" );
 
          TRACE_LOG( TRACE_SESSIONS, cmd );
 
@@ -6140,7 +6140,7 @@ string send_raw_transaction( const string& ext_key, const string& tx )
             {
                s.erase( pos );
 
-               string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp + " 2>&1" );
+               string cmd( "curl -s --data tx=" + tx + " https://blockchain.info/pushtx >" + tmp + " 2>&1" );
 
                TRACE_LOG( TRACE_SESSIONS, cmd );
 

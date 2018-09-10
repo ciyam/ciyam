@@ -188,7 +188,7 @@ void get_utxo_information( const string& source_addresses, const string& file_na
          pipe_separated[ i ] = '|';
    }
 
-   string cmd( "curl -s \"http://blockchain.info/unspent?active=" + pipe_separated + "\" >" + file_name );
+   string cmd( "curl -s \"https://blockchain.info/unspent?active=" + pipe_separated + "\" >" + file_name );
 
    int rc = system( cmd.c_str( ) );
    ( void )rc;
