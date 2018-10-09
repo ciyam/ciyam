@@ -54,10 +54,11 @@ const size_t c_password_rounds_multiplier = 3;
 }
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
-// and is very quick, however, it is not considered "strong encryption" and
-// therefore is not recommended for encrypting highly sensitive information
-// (but is of zero concern assuming that the data has already been securely
-// encrypted).
+// and is very quick. It prevents the key used from being easily discovered
+// by constantly modifying a copy of it and by doing this in a manner which
+// also prevents its length being discovered through frequency analysis. It
+// should be noted that the strength of this cypher depends upon the length
+// of the key that is used.
 void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
