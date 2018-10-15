@@ -1402,11 +1402,11 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                larger_font_fields.insert( name );
                break;
 
-               case 6:
+               case 5:
                small_font_fields.insert( name );
                break;
 
-               case 7:
+               case 6:
                smaller_font_fields.insert( name );
                break;
 
