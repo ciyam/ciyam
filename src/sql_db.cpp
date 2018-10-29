@@ -16,6 +16,7 @@
 
 #include "sql_db.h"
 
+#include "pointers.h"
 #include "utilities.h"
 
 #ifdef RDBMS_SQLITE
@@ -390,6 +391,128 @@ string sql_dataset::as_string( int col ) const
       return string( p_text );
 }
 
+struct sql_dataset_group::impl
+{
+   impl( sql_db& db, const vector< string >& sql_queries, bool is_reverse )
+    :
+    is_new( true ),
+    next_dataset( -1 ),
+    is_reverse( is_reverse )
+   {
+      for( size_t i = 0; i < sql_queries.size( ); i++ )
+         sql_datasets.push_back( ref_count_ptr< sql_dataset >( new sql_dataset( db, sql_queries[ i ] ) ) );
+   }
+
+   bool is_new;
+   bool is_reverse;
+
+   int next_dataset;
+   vector< string > next_values;
+
+   vector< bool > has_more;
+   vector< ref_count_ptr< sql_dataset > > sql_datasets;
+};
+
+sql_dataset_group::sql_dataset_group( sql_db& db, const vector< string >& sql_queries, bool is_reverse )
+{
+   p_impl = new impl( db, sql_queries, is_reverse );
+}
+
+sql_dataset_group::~sql_dataset_group( )
+{
+   delete p_impl;
+}
+
+bool sql_dataset_group::next( )
+{
+   bool has_next = false;
+
+   if( !p_impl->is_new )
+   {
+      if( p_impl->next_dataset < 0 || p_impl->next_dataset >= p_impl->sql_datasets.size( ) )
+         throw runtime_error( "unexpected next_dataset out of range" );
+
+      p_impl->has_more[ p_impl->next_dataset ] = p_impl->sql_datasets[ p_impl->next_dataset ]->next( );
+
+      p_impl->next_values.clear( );
+   }
+
+   for( size_t i = 0; i < p_impl->sql_datasets.size( ); i++ )
+   {
+      bool is_next = false;
+      bool next = p_impl->is_new ? p_impl->sql_datasets[ i ]->next( ) : p_impl->has_more[ i ];
+
+      if( p_impl->is_new )
+         p_impl->has_more.push_back( next );
+
+      if( next )
+      {
+         size_t field_count = ( size_t )p_impl->sql_datasets[ i ]->get_fieldcount( );
+
+         has_next = true;
+
+         if( p_impl->next_values.empty( ) )
+         {
+            is_next = true;
+            p_impl->next_dataset = i;
+         }
+         else
+         {
+            for( size_t j = 0; j < field_count; j++ )
+            {
+               string value( p_impl->sql_datasets[ i ]->as_string( j ) );
+
+               if( j >= p_impl->next_values.size( ) )
+                  break;
+
+               if( ( !p_impl->is_reverse && value < p_impl->next_values[ j ] )
+                || ( p_impl->is_reverse && value > p_impl->next_values[ j ] ) )
+               {
+                  is_next = true;
+                  p_impl->next_dataset = i;
+               }
+
+               if( is_next
+                || ( ( !p_impl->is_reverse && value > p_impl->next_values[ j ] )
+                || ( p_impl->is_reverse && value < p_impl->next_values[ j ] ) ) )
+                  break;
+            }
+         }
+
+         if( is_next )
+         {
+            for( size_t j = 0; j < field_count; j++ )
+            {
+               if( j == 0 )
+                  p_impl->next_values.clear( );
+
+               p_impl->next_values.push_back( p_impl->sql_datasets[ i ]->as_string( j ) );
+            }
+         }
+      }
+   }
+
+   p_impl->is_new = false;
+
+   return has_next;
+}
+
+int sql_dataset_group::get_fieldcount( ) const
+{
+   if( p_impl->next_dataset < 0 || p_impl->next_dataset >= p_impl->sql_datasets.size( ) )
+      throw runtime_error( "unexpected next_dataset out of range" );
+
+   return p_impl->sql_datasets[ p_impl->next_dataset ]->get_fieldcount( );
+}
+
+string sql_dataset_group::as_string( int col ) const
+{
+   if( p_impl->next_dataset < 0 || p_impl->next_dataset >= p_impl->sql_datasets.size( ) )
+      throw runtime_error( "unexpected next_dataset out of range" );
+
+   return p_impl->sql_datasets[ p_impl->next_dataset ]->as_string( col );
+}
+
 #ifdef RDBMS_SQLITE
 sql_exception::sql_exception( sqlite3* p_db )
  : runtime_error( sqlite3_errmsg( p_db ) )
@@ -401,4 +524,3 @@ sql_exception::sql_exception( MYSQL* p_db )
 {
 }
 #endif
-

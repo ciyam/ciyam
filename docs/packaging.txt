@@ -37,11 +37,8 @@ will need to be created.
 
 The recommended method to devise the specification "tree" is to start with the root node (which is the main
 class for each source file) and determine what artifacts this specification will contain and then determine
-how a child specifications will relate to the root node.
-
-If the main class contains numerous fields and other artifacts that the manually written code is using then
-the one specification will probably not be enough to hold even this. In this case the first (and maybe also
-subsequent) child specification(s) will need to get its Class from the Parent Specification.
+how (if used) any child specifications relate to the root node (as each will need to get its Class from the
+Parent Specification).
 
 When creating the actual Specification Type records that will then be used to automatically generate source
 the order needs to be from leaves to root (as each child Specification Type needs to be known to its parent
@@ -66,7 +63,7 @@ Other_Field: Start
 Other_Field_2: Finish
 Source_Parent: Address
 
-second pass:
+Second pass:
 
    [for_sample_info]
    Class: Sample <Class from parent>
@@ -81,7 +78,7 @@ Other_Field_2: Finish
 Source_Parent: Address
 <Actions to have Add_Info to create for_sample_info>
 
-third pass:
+Third pass:
 
       [for_sample_info_cinfo]
       Class: Transaction <Child_Rel from parent>
@@ -103,7 +100,7 @@ Other_Field_2: Finish
 Source_Parent: Address
 <Add_Info to create for_sample_info>
 
-fourth pass:
+Fourth pass:
 
    [for_sample_sinfo]
    Class: Address <Source_Parent from parent>

@@ -1667,48 +1667,45 @@ bool fetch_instance_from_db( class_base& instance,
  const map< int, int >& fields, const vector< int >& columns, bool skip_after_fetch )
 {
    class_base_accessor instance_accessor( instance );
-   sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
+   sql_data& sd( *instance_accessor.p_sql_data( ) );
 
-   bool found = ds.next( );
+   bool found = sd.next( );
    instance_accessor.clear( );
 
    if( !found )
    {
-      delete instance_accessor.p_sql_dataset( );
-      instance_accessor.p_sql_dataset( ) = 0;
-
-      instance_accessor.after_fetch_from_db( );
-
-      if( !skip_after_fetch )
-         instance_accessor.perform_after_fetch( );
+      delete instance_accessor.p_sql_data( );
+      instance_accessor.p_sql_data( ) = 0;
    }
    else
    {
       TRACE_LOG( TRACE_SQLCLSET, "(from instance dataset)" );
 
-      instance_accessor.set_key( ds.as_string( 0 ), true );
-      instance_accessor.set_version( from_string< uint16_t >( ds.as_string( 1 ) ) );
-      instance_accessor.set_revision( from_string< uint64_t >( ds.as_string( 2 ) ) );
+      instance_accessor.set_key( sd.as_string( 0 ), true );
+      instance_accessor.set_version( from_string< uint16_t >( sd.as_string( 1 ) ) );
+      instance_accessor.set_revision( from_string< uint64_t >( sd.as_string( 2 ) ) );
 
       instance_accessor.set_original_revision( instance.get_revision( ) );
-      instance_accessor.set_original_identity( ds.as_string( 3 ) );
+      instance_accessor.set_original_identity( sd.as_string( 3 ) );
 
-      for( int i = 4; i < ds.get_fieldcount( ); i++ )
+      int fcount = sd.get_fieldcount( );
+
+      for( int i = 4; i < fcount; i++ )
       {
          if( !fields.count( columns[ i - 4 ] ) )
             throw runtime_error( "unexpected field # not found for column #" + to_string( i - 4 ) );
 
          int fnum( fields.find( columns[ i - 4 ] )->second );
 
-         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + ds.as_string( i ) );
-         instance.set_field_value( fnum, ds.as_string( i ) );
+         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + sd.as_string( i ) );
+         instance.set_field_value( fnum, sd.as_string( i ) );
       }
-
-      instance_accessor.after_fetch_from_db( );
-
-      if( !skip_after_fetch )
-         instance_accessor.perform_after_fetch( );
    }
+
+   instance_accessor.after_fetch_from_db( );
+
+   if( !skip_after_fetch )
+      instance_accessor.perform_after_fetch( );
 
    return found;
 }
@@ -11265,9 +11262,9 @@ bool perform_instance_iterate( class_base& instance,
 
             TRACE_LOG( TRACE_SQLSTMTS, sql );
 
-            if( instance_accessor.p_sql_dataset( ) )
-               delete instance_accessor.p_sql_dataset( );
-            instance_accessor.p_sql_dataset( ) = new sql_dataset( *gtp_session->ap_db, sql );
+            if( instance_accessor.p_sql_data( ) )
+               delete instance_accessor.p_sql_data( );
+            instance_accessor.p_sql_data( ) = new sql_dataset( *gtp_session->ap_db, sql );
 
             setup_select_columns( instance, field_info );
          }
@@ -11379,18 +11376,20 @@ bool perform_instance_iterate( class_base& instance,
 
          if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
-            if( !instance_accessor.p_sql_dataset( ) )
-               throw runtime_error( "unexpected null dataset in perform_instance_iterate" );
+            if( !instance_accessor.p_sql_data( ) )
+               throw runtime_error( "unexpected null sql_data in perform_instance_iterate" );
 
-            sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
+            sql_data& sd( *instance_accessor.p_sql_data( ) );
 
-            while( ds.next( ) )
+            while( sd.next( ) )
             {
                found_next = true;
 
                vector< string > columns;
-               for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
-                  columns.push_back( ds.as_string( i ) );
+               int fcount = sd.get_fieldcount( );
+
+               for( int i = 0; i < fcount; i++ )
+                  columns.push_back( sd.as_string( i ) );
 
                rows.push_back( columns );
 
@@ -11465,8 +11464,8 @@ bool perform_instance_iterate( class_base& instance,
          {
             if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
             {
-               delete instance_accessor.p_sql_dataset( );
-               instance_accessor.p_sql_dataset( ) = 0;
+               delete instance_accessor.p_sql_data( );
+               instance_accessor.p_sql_data( ) = 0;
             }
          }
       }
@@ -11475,9 +11474,11 @@ bool perform_instance_iterate( class_base& instance,
       {
          if( instance.get_persistence_type( ) == 0 ) // i.e. SQL persistence
          {
-            if( instance_accessor.p_sql_dataset( ) )
-               delete instance_accessor.p_sql_dataset( );
-            instance_accessor.p_sql_dataset( ) = 0;
+            if( instance_accessor.p_sql_data( ) )
+            {
+               delete instance_accessor.p_sql_data( );
+               instance_accessor.p_sql_data( ) = 0;
+            }
          }
 
          instance_accessor.transient_filter_field_values( ).clear( );

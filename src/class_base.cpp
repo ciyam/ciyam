@@ -643,9 +643,9 @@ class_base::class_base( )
  original_revision( 0 ),
  op( e_op_type_none ),
  index_num( 0 ),
+ p_sql_data( 0 ),
  lock_handle( 0 ),
  xlock_handle( 0 ),
- p_sql_dataset( 0 ),
  p_graph_parent( 0 ),
  in_op_begin( false ),
  is_singular( false ),
@@ -688,7 +688,7 @@ class_base::~class_base( )
    if( p_dynamic_instance != this )
       delete p_dynamic_instance;
 
-   delete p_sql_dataset;
+   delete p_sql_data;
    delete p_impl;
 }
 
@@ -1141,10 +1141,10 @@ void class_base::iterate_stop( )
    in_forwards_iteration = false;
    in_backwards_iteration = false;
 
-   if( p_sql_dataset )
+   if( p_sql_data )
    {
-      delete p_sql_dataset;
-      p_sql_dataset = 0;
+      delete p_sql_data;
+      p_sql_data = 0;
    }
 
    init( false );

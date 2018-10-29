@@ -9,8 +9,9 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <map>
-#     include <string>
 #     include <iosfwd>
+#     include <string>
+#     include <vector>
 #     include <stdexcept>
 #  endif
 
@@ -63,7 +64,18 @@ void exec_sql( sql_db& db, const std::string& sql );
 void exec_sql_from_file( sql_db& db,
  const std::string& sql_file, progress* p_progress = 0, bool unescape = false );
 
-class sql_dataset
+struct sql_data
+{
+   virtual ~sql_data( ) { }
+
+   virtual bool next( ) = 0;
+
+   virtual int get_fieldcount( ) const = 0;
+
+   virtual std::string as_string( int col ) const = 0;
+};
+
+class sql_dataset : public sql_data
 {
    private:
 #  ifdef RDBMS_SQLITE
@@ -112,6 +124,23 @@ class sql_dataset
    int as_int( int ) const;
    std::string as_string( const std::string& ) const;
    std::string as_string( int ) const;
+};
+
+class sql_dataset_group : public sql_data
+{
+   public:
+   sql_dataset_group( sql_db& db, const std::vector< std::string >& sql_queries, bool is_reverse = false );
+   ~sql_dataset_group( );
+
+   bool next( );
+
+   int get_fieldcount( ) const;
+
+   std::string as_string( int col ) const;
+
+   private:
+   struct impl;
+   impl* p_impl;
 };
 
 class sql_exception : public std::runtime_error

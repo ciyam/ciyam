@@ -33,7 +33,8 @@ class ods;
 class numeric;
 class date_time;
 class class_base;
-class sql_dataset;
+
+struct sql_data;
 
 const char* const c_key_field = "@key";
 
@@ -534,7 +535,7 @@ class CIYAM_BASE_DECL_SPEC class_base
 
    std::string ver_exp;
 
-   sql_dataset* p_sql_dataset;
+   sql_data* p_sql_data;
 
    std::vector< int > field_nums;
 
@@ -943,7 +944,7 @@ struct class_base_accessor
    const std::string& get_ver_exp( ) const { return cb.get_ver_exp( ); }
    void set_ver_exp( const std::string& new_ver_exp ) { cb.set_ver_exp( new_ver_exp ); }
 
-   sql_dataset*& p_sql_dataset( ) { return cb.p_sql_dataset; }
+   sql_data*& p_sql_data( ) { return cb.p_sql_data; }
 
    std::vector< int >& field_nums( ) { return cb.field_nums; }
 
