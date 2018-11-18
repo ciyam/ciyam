@@ -1184,15 +1184,15 @@ void CIYAM_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::vec
 void CIYAM_BASE_DECL_SPEC link_file( const std::string& source, const std::string& name );
 
 std::string CIYAM_BASE_DECL_SPEC copy_class_file( const std::string& src_path,
- const std::string& dest_class_id, const std::string& dest_file_name, bool return_name_only = false, bool return_full_path = false );
+ const std::string& dest_class_id, const std::string& dest_file_name, bool copy_only_if_missing = false, bool return_full_path = false );
 
 inline void copy_field_or_file_and_field( class_base& dest, const std::string& dest_key,
- const std::string& dest_field_name, const class_base& src, const std::string& src_field_name, bool return_name_only )
+ const std::string& dest_field_name, const class_base& src, const std::string& src_field_name, bool copy_only_if_missing = false )
 {
    if( dest.is_file_field( dest_field_name ) )
       dest.set_field_value(
        dest.get_field_num( dest_field_name ), copy_class_file( src.get_field_value(
-       src.get_field_num( src_field_name ) ), dest.get_class_id( ), dest_key, return_name_only ) );
+       src.get_field_num( src_field_name ) ), dest.get_class_id( ), dest_key, copy_only_if_missing ) );
    else
       dest.set_field_value( dest.get_field_num( dest_field_name ),
        src.get_field_value( src.get_field_num( src_field_name ) ) );

@@ -2894,7 +2894,7 @@ void link_file( const string& source, const string& name )
 }
 
 string copy_class_file( const string& src_path,
- const string& dest_class_id, const string& dest_file_name, bool return_name_only, bool return_full_path )
+ const string& dest_class_id, const string& dest_file_name, bool copy_only_if_missing, bool return_full_path )
 {
    string dest_path( src_path );
 
@@ -2922,7 +2922,7 @@ string copy_class_file( const string& src_path,
 
    dest_path += dest_class_id + "/" + dest_file_name + ext;
 
-   if( !return_name_only )
+   if( !copy_only_if_missing || ( exists_file( src_path ) && !exists_file( dest_path ) ) )
       copy_file( src_path, dest_path );
 
    if( !return_full_path )

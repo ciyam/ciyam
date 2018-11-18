@@ -5186,6 +5186,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !flags.empty( ) )
          {
+            if( !( get_trace_flags( ) & TRACE_COMMANDS ) )
+               log_trace_message( TRACE_COMMANDS, "trace " + flags );
+
             istringstream isstr( flags );
 
             int trace_flags;

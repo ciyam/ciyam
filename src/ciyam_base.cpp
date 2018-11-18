@@ -11075,6 +11075,7 @@ bool perform_instance_iterate( class_base& instance,
             // function until no further field names (or deps) have been added.
             size_t required_fields_size = required_fields.size( );
             size_t field_dependents_size = field_dependents.size( );
+
             while( required_fields_size )
             {
                instance.get_required_field_names( required_fields, false, &field_dependents );
@@ -11100,7 +11101,7 @@ bool perform_instance_iterate( class_base& instance,
             }
          }
 
-         // NOTE: If this class object is its graph parent's "child" then the iteration is
+         // NOTE: If this class instance is its graph parent's "child" then the iteration is
          // restricted to those instances that belong to the parent (via a non-primary index).
          if( instance.get_graph_parent( ) && !instance.get_is_singular( ) )
          {

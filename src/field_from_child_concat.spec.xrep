@@ -82,7 +82,7 @@
 `,\
       string xs, str;
 `}\
-      for( map< string, string >::iterator i = parts.begin( ); i!= parts.end( ); ++i )
+      for( map< string, string >::iterator i = parts.begin( ); i != parts.end( ); ++i )
       {
          if( !str.empty( ) )
             str += "`{`$arg_separator`}";
