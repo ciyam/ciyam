@@ -129,7 +129,10 @@ class sql_dataset : public sql_data
 class sql_dataset_group : public sql_data
 {
    public:
-   sql_dataset_group( sql_db& db, const std::vector< std::string >& sql_queries, bool is_reverse = false );
+   sql_dataset_group( sql_db& db,
+    const std::vector< std::string >& sql_queries,
+    bool is_reverse = false, bool ignore_first_column_for_ordering = true );
+
    ~sql_dataset_group( );
 
    bool next( );
@@ -156,4 +159,3 @@ class sql_exception : public std::runtime_error
 };
 
 #endif
-

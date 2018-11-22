@@ -10970,9 +10970,9 @@ bool perform_instance_iterate( class_base& instance,
 {
    bool found = false;
 
-   TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '"
-    + instance.get_class_name( ) + "', key_info = '" + key_info
-    + "', fields = '" + fields + "', direction = " + to_string( direction ) );
+   TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '" + instance.get_class_name( )
+    + "', key_info = '" + key_info + "', fields = '" + fields + "', direction = "
+    + to_string( direction ) + ", text = '" + text + "', query = '" + query + "'" );
 
    oid id;
    string sql, key;
@@ -11018,6 +11018,9 @@ bool perform_instance_iterate( class_base& instance,
          vector< pair< string, string > > query_info;
          vector< pair< string, string > > fixed_info;
          vector< pair< string, string > > paging_info;
+
+         string group_key_marker;
+         vector< string > group_keys;
 
          set< string > supplied_fields;
          set< string > transient_field_names;
@@ -11112,7 +11115,17 @@ bool perform_instance_iterate( class_base& instance,
             if( !is_transient )
             {
                order_info.push_back( fk_field );
-               fixed_info.push_back( make_pair( fk_field, instance.get_graph_parent( )->get_key( ) ) );
+               string parent_key_value( instance.get_graph_parent( )->get_key( ) );
+
+               // NOTE: If the parent key value has one or more pipe separators then
+               // it will instead considered to be multiple keys in a "query group".
+               if( parent_key_value.find( '|' ) != string::npos )
+               {
+                  split( parent_key_value, group_keys, '|' );
+                  parent_key_value = group_key_marker = uuid( ).as_string( );
+               }
+
+               fixed_info.push_back( make_pair( fk_field, parent_key_value ) );
             }
             else
             {
@@ -11261,11 +11274,29 @@ bool perform_instance_iterate( class_base& instance,
              field_info, order_info, query_info, fixed_info, paging_info, security_info,
              ( direction == e_iter_direction_backwards ), inclusive, row_limit, ( fields == c_key_field ), text );
 
-            TRACE_LOG( TRACE_SQLSTMTS, sql );
-
             if( instance_accessor.p_sql_data( ) )
                delete instance_accessor.p_sql_data( );
-            instance_accessor.p_sql_data( ) = new sql_dataset( *gtp_session->ap_db, sql );
+
+            if( !group_keys.empty( ) )
+            {
+               vector< string > sql_stmts;
+
+               for( size_t i = 0; i < group_keys.size( ); i++ )
+               {
+                  sql_stmts.push_back( replaced( sql, group_key_marker, group_keys[ i ] ) );
+
+                  TRACE_LOG( TRACE_SQLSTMTS, sql_stmts.back( ) );
+               }
+
+               instance_accessor.p_sql_data( ) = new sql_dataset_group(
+                *gtp_session->ap_db, sql_stmts, ( direction == e_iter_direction_backwards ), true );
+            }
+            else
+            {
+               TRACE_LOG( TRACE_SQLSTMTS, sql );
+
+               instance_accessor.p_sql_data( ) = new sql_dataset( *gtp_session->ap_db, sql );
+            }
 
             setup_select_columns( instance, field_info );
          }
@@ -11540,4 +11571,3 @@ bool perform_instance_iterate_next( class_base& instance )
       return perform_instance_iterate( instance, c_nul_key, "", "", "", "",
        instance.get_is_in_forwards_iteration( ) ? e_iter_direction_forwards : e_iter_direction_backwards, false, -1 );
 }
-

@@ -393,11 +393,12 @@ string sql_dataset::as_string( int col ) const
 
 struct sql_dataset_group::impl
 {
-   impl( sql_db& db, const vector< string >& sql_queries, bool is_reverse )
+   impl( sql_db& db, const vector< string >& sql_queries, bool is_reverse, bool ignore_first )
     :
     is_new( true ),
     next_dataset( -1 ),
-    is_reverse( is_reverse )
+    is_reverse( is_reverse ),
+    ignore_first( ignore_first )
    {
       for( size_t i = 0; i < sql_queries.size( ); i++ )
          sql_datasets.push_back( ref_count_ptr< sql_dataset >( new sql_dataset( db, sql_queries[ i ] ) ) );
@@ -405,6 +406,7 @@ struct sql_dataset_group::impl
 
    bool is_new;
    bool is_reverse;
+   bool ignore_first;
 
    int next_dataset;
    vector< string > next_values;
@@ -413,9 +415,10 @@ struct sql_dataset_group::impl
    vector< ref_count_ptr< sql_dataset > > sql_datasets;
 };
 
-sql_dataset_group::sql_dataset_group( sql_db& db, const vector< string >& sql_queries, bool is_reverse )
+sql_dataset_group::sql_dataset_group( sql_db& db,
+ const vector< string >& sql_queries, bool is_reverse, bool ignore_first_column_for_ordering )
 {
-   p_impl = new impl( db, sql_queries, is_reverse );
+   p_impl = new impl( db, sql_queries, is_reverse, ignore_first_column_for_ordering );
 }
 
 sql_dataset_group::~sql_dataset_group( )
@@ -458,7 +461,12 @@ bool sql_dataset_group::next( )
          }
          else
          {
-            for( size_t j = 0; j < field_count; j++ )
+            size_t start = 0;
+
+            if( p_impl->ignore_first )
+               ++start;
+
+            for( size_t j = start; j < field_count; j++ )
             {
                string value( p_impl->sql_datasets[ i ]->as_string( j ) );
 
