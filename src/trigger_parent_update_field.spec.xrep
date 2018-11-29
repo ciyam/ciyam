@@ -11,27 +11,31 @@
     && `}`{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
 `}\
     `{`@eq`(`'for_destroy`'`,`$section`)&& !get_obj( ).get_is_being_cascaded( ) `}&& ( !get_obj( ).get_graph_parent( )
-    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
+    || `{`@eq`(`$arg_skip_cloned_parent`,`'true`'`)( get_obj( ).get_graph_parent( )->get_clone_key( ).empty( )
+    && `}get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )`{`@eq`(`$arg_skip_cloned_parent`,`'true`'`) )`}
    {
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_ignore_locked`,`'true`'`)`{`$i`=`'   `'`}`}`{`@eq`(`$arg_ignore_locked`,`'`'`)\
       if( !was_create_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) ) )
       {
-`{`!`@eq`(`$arg_from_other`,`'`'`)\
-         class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
-         cp_other->perform_fetch( get_obj( ).get_key( ) );
+`}`{`!`@eq`(`$arg_from_other`,`'`'`)\
+`{`$i`}      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
+`{`$i`}      cp_other->perform_fetch( get_obj( ).get_key( ) );
 
 `}\
-         get_obj( ).`{`$arg_spfield`}( ).op_update( );
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_update( );
 `{`!`@eq`(`$arg_scfield`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_field`}( ) );
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_field`}( ) );
 `}\
 `{`!`@eq`(`$arg_oscfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_ofield`}( ) );
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_oscfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_ofield`}( ) );
 `}\
 `{`!`@eq`(`$arg_o2scfield`,`'`'`)`&`!`@eq`(`$arg_o2field`,`'`'`)\
-         get_obj( ).`{`$arg_spfield`}( ).`{`$arg_o2scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_o2field`}( ) );
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_o2scfield`}( `{`@eq`(`$arg_from_other`,`'`'`)get_obj( ).`,cp_other->`}`{`$arg_o2field`}( ) );
 `}\
-         get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+`{`$i`}      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+`{`@eq`(`$arg_ignore_locked`,`'`'`)\
       }   
+`}\
    }
    // [(finish trigger_parent_update_field)] `{`$arg_id`}
 `}

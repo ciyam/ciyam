@@ -638,6 +638,17 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
 
       info.user_group_field_id = reader.read_opt_attribute( c_attribute_user_group );
 
+      if( !info.user_group_field_id.empty( ) )
+      {
+         string::size_type pos = info.user_group_field_id.find( ':' );
+
+         if( pos != string::npos )
+         {
+            info.user_mgrps_field_id = info.user_group_field_id.substr( pos + 1 );
+            info.user_group_field_id.erase( pos );
+         }
+      }
+
       string user_qlink_info = reader.read_opt_attribute( c_attribute_user_qlink );
 
       if( !user_qlink_info.empty( ) )

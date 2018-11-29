@@ -24,7 +24,7 @@
  <user_perm>`{`$specification_user_info_perm`}
  <user_extra>`{`(`?`$specification_user_info_extra1`&`!`@eq`(`$specification_user_info_extra1`,`'`'`)`)`$specification_user_info_extra1`}\
 `{`(`?`$specification_user_info_extra2`&`!`@eq`(`$specification_user_info_extra2`,`'`'`)`),`{`$specification_user_info_extra2`}`}
- <user_group>`{`$specification_user_info_group`}`{`(`?`$specification_qlink_info_id`)
+ <user_group>`{`$specification_user_info_group`}`{`(`?`$specification_user_info_mgrps`):`{`$specification_user_info_mgrps`}`}`{`(`?`$specification_qlink_info_id`)
  <user_qlink>`{`$specification_qlink_info_cid`}:`{`$specification_qlink_info_parent`}\
 ,`{`$specification_qlink_info_url`},`{`$specification_qlink_info_name`}\
 ,`{`(`?`$specification_qlink_info_tfield`&`!`@eq`(`$specification_qlink_info_tfield`,`'`'`)`)\

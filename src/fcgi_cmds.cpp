@@ -1646,7 +1646,12 @@ bool populate_list_info( list_source& list,
       if( list.type == c_list_type_nongroup )
          key_info = ":" + key_prefix;
       else
-         key_info = sess_info.user_group + ":" + key_prefix;
+      {
+         if( sess_info.user_mgrps.empty( ) )
+            key_info = sess_info.user_group + ":" + key_prefix;
+         else
+            key_info = sess_info.user_mgrps + ":" + key_prefix;
+      }
 
       class_info = ( list.lici->second )->pclass;
       class_info += ":_" + ( list.lici->second )->pfield;
@@ -2082,6 +2087,9 @@ bool fetch_user_record(
    if( !mod_info.user_group_field_id.empty( ) )
       field_list += "," + mod_info.user_group_field_id;
 
+   if( !mod_info.user_mgrps_field_id.empty( ) )
+      field_list += "," + mod_info.user_group_field_id + "." + mod_info.user_mgrps_field_id;
+
    if( !mod_info.user_other_field_id.empty( ) )
       field_list += "," + mod_info.user_other_field_id;
 
@@ -2228,6 +2236,9 @@ bool fetch_user_record(
 
    if( !mod_info.user_group_field_id.empty( ) )
       sess_info.user_group = user_data[ offset++ ];
+
+   if( !mod_info.user_mgrps_field_id.empty( ) )
+      sess_info.user_mgrps = user_data[ offset++ ];
 
    if( !mod_info.user_other_field_id.empty( ) )
       sess_info.user_other = user_data[ offset++ ];

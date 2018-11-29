@@ -1900,10 +1900,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_bool_uid.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_admin=$specification_\0_admin arg_system=$specification_\0_system`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_from_class`'`)
-`{`#transient_field_from_class.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
-`,\
 `@eq`(`'\1`'`,`'transient_field_concat`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield\
@@ -1914,6 +1910,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_separator=$specification_\0_separator arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse\
  arg_non_empty=$specification_\0_non_empty arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_top_level=$specification_\0_top_level arg_always_use_separator=$specification_\0_always_use_separator`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_class`'`)
+`{`#transient_field_from_class.spec.xrep section=after_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_dtm`'`)
 `{`#transient_field_from_dtm.spec.xrep section=after_fetch class_name=$class_name\
@@ -1926,6 +1926,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_from_file_attachment`'`)
 `{`#transient_field_from_file_attachment.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_suffix=$specification_\0_suffix`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_graph_parent`'`)
+`{`#transient_field_from_graph_parent.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pclass=$specification_\0_pclass arg_pfield=$specification_\0_pfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_key.spec.xrep section=after_fetch class_name=$class_name\
@@ -2899,7 +2903,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
  arg_oscfield=$specification_\0_oscfield arg_o2scfield=$specification_\0_o2scfield\
- arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other`}\
+ arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other\
+ arg_ignore_locked=$specification_\0_ignore_locked arg_skip_cloned_parent=$specification_\0_skip_cloned_parent`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'`'`)
 `{`#update_children.spec.xrep section=for_or_after_store full_class_name=$full_class_name\
@@ -3038,7 +3043,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
  arg_oscfield=$specification_\0_oscfield arg_o2scfield=$specification_\0_o2scfield\
- arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other`}\
+ arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other\
+ arg_ignore_locked=$specification_\0_ignore_locked arg_skip_cloned_parent=$specification_\0_skip_cloned_parent`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_parent_update_old_and_new`'`)
 `{`#trigger_parent_update_old_and_new.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
@@ -3125,7 +3131,8 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield\
  arg_oscfield=$specification_\0_oscfield arg_o2scfield=$specification_\0_o2scfield\
- arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other`}\
+ arg_create_only=$specification_\0_create_only arg_from_other=$specification_\0_from_other\
+ arg_ignore_locked=$specification_\0_ignore_locked arg_skip_cloned_parent=$specification_\0_skip_cloned_parent`}\
 `,\
 `@eq`(`'\1`'`,`'update_parent`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)`&`@eq`(`$specification_\0_destroy_also`,`'true`'`)
 `{`#update_parent.spec.xrep section=for_or_after_destroy class_name=$class_name module_name=$module_name\

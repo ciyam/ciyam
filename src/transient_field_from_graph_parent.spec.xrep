@@ -1,0 +1,11 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_from_graph_parent)] `{`$arg_id`}
+   if( get_obj( ).get_graph_parent( ) )
+   {
+      `{`$module_name`}_`{`$arg_pclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_pclass`}* >( get_obj( ).get_graph_parent( ) );
+
+      if( p_parent )
+         get_obj( ).`{`$arg_field`}( p_parent->`{`$arg_pfield`}( ) );
+   }
+   // [(finish transient_field_from_graph_parent)] `{`$arg_id`}
+`}
