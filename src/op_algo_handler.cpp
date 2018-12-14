@@ -317,8 +317,10 @@ void op_algo_handler::suggest( ostream& os, const string& info )
             string stage_name, stage_pattern;
             parse_stage_info( next_line.substr( 1 ), stage_name, stage_pattern, &force_break );
 
+            // NOTE: If there are no prefix ops then will not stop searching
+            // for a possible later starting point after finding a match.
             if( !just_checking_labels )
-               break_if_found_match = force_break;
+               break_if_found_match = ( force_break && !prefix_ops.empty( ) );
 
             if( stage_name == stop_at_stage )
                has_seen_stop_at_stage = true;
@@ -367,7 +369,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
                if( just_checking_labels )
                   continue;
 
-               if( !ignore_next_for_start && pattern.length( ) == state.length( ) )
+               if( !ignore_next_for_start && ( pattern.length( ) == state.length( ) ) )
                {
                   if( has_found_goal( state, pattern ) )
                   {
@@ -405,13 +407,6 @@ void op_algo_handler::suggest( ostream& os, const string& info )
                      }
                   }
                }
-            }
-
-            if( !ignore_next_for_start
-             && has_found_goal( state, next_line.substr( pos + 1 ) ) )
-            {
-               start_from = i;
-               start_from_prefix_ops.clear( );
             }
 
             ignore_next_for_start = false;

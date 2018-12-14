@@ -24,7 +24,8 @@ peer_account_mint "start or stop minting or list minting peer accounts" <val//bl
 peer_persist_file "add/extract a local file from peer repository storage" [<val/-h=/hash>][<val/-k=/pubkey>]<val//filename><val//password>
 peer_transactions "create and process application tx scripts" <val//blockchain>
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>
-crypto_keys "create keys" <val//extkey>[<opt/-b64/base64>][<val//passphrase>]
+crypto_keys "output an address and corresponding key pair" <val//extkey>[<opt/-b64/base64>][<val//seed>]
+crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
 crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
 crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//seed>]
 crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>

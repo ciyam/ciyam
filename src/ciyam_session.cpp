@@ -1829,16 +1829,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_extkey ) );
          bool use_base64( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_base64 ) );
-         string passphrase( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_passphrase ) );
+         string seed( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_seed ) );
 
          string pub_key, priv_key;
 
-         if( passphrase.empty( ) )
+         if( seed.empty( ) )
             response = create_address_key_pair( extkey, pub_key, priv_key, use_base64 );
          else
-            response = create_address_key_pair( extkey, pub_key, priv_key, passphrase, true, use_base64 );
+            response = create_address_key_pair( extkey, pub_key, priv_key, seed, true, use_base64 );
 
          response += '\n' + pub_key + '\n' + priv_key;
+      }
+      else if( command == c_cmd_ciyam_session_crypto_seed )
+      {
+         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_seed_mnemonics_or_hex_seed ) );
+
+         response = get_mnemonics_or_hex_seed( mnenomics_or_hex_seed );
       }
       else if( command == c_cmd_ciyam_session_crypto_sign )
       {

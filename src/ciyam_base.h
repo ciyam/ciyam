@@ -110,6 +110,8 @@ std::string CIYAM_BASE_DECL_SPEC get_string_message( const std::string& string_m
  const std::pair< std::string, std::string >& parm1, const std::pair< std::string, std::string >& parm2,
  const std::pair< std::string, std::string >& parm3, const std::pair< std::string, std::string >& parm4 );
 
+std::string CIYAM_BASE_DECL_SPEC get_mnemonics_or_hex_seed( const std::string& mnemonics_or_hex_seed );
+
 unsigned int CIYAM_BASE_DECL_SPEC get_max_peers( );
 
 unsigned int CIYAM_BASE_DECL_SPEC get_max_user_limit( );
