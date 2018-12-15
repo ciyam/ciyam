@@ -1825,6 +1825,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = construct_new_transaction( blockchain, password, account, application, tx_data, false );
       }
+      else if( command == c_cmd_ciyam_session_crypto_hash )
+      {
+         bool use_sha512( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_sha512 ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_hex_decode ) );
+         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_data ) );
+
+         response = crypto_digest( data, use_sha512, hex_decode );
+      }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
          string extkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_keys_extkey ) );

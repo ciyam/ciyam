@@ -52,6 +52,7 @@
      <filename>sio_convert.cpp
      <filename>sha1.cpp
      <filename>sha256.cpp
+     <filename>sha512.cpp
      <filename>smtp.cpp
      <filename>sockets.cpp
 `{`(`?`$use_ssl`)`&`(`@eq`(`$use_ssl`,`'1`'`)`|`@eq`(`$use_ssl`,`'true`'`)`)\

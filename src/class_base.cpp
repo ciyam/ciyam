@@ -14,6 +14,7 @@
 #  include <cstdio>
 #  include <climits>
 #  include <cassert>
+#  include <bitset>
 #  include <locale>
 #  include <sstream>
 #  include <fstream>
@@ -45,6 +46,7 @@
 #include "config.h"
 #include "format.h"
 #include "sha256.h"
+#include "sha512.h"
 #include "sql_db.h"
 #include "numeric.h"
 #include "hashcash.h"
@@ -139,6 +141,9 @@ const char* const c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
 typedef map< string, size_t > foreign_key_lock_container;
 typedef foreign_key_lock_container::iterator foreign_key_lock_iterator;
 typedef foreign_key_lock_container::const_iterator foreign_key_lock_const_iterator;
+
+vector< string > g_mnemonics;
+map< string, int > g_mnemonic_values;
 
 timezone_container g_timezones;
 
@@ -4845,6 +4850,43 @@ string create_html_embedded_image( const string& source_file, bool is_encrypted 
    return s;
 }
 
+string crypto_digest( const string& data, bool use_sha512, bool decode_hex_data )
+{
+   string retval;
+
+   if( !decode_hex_data || ( data.size( ) < 2 ) )
+   {
+      if( !use_sha512 )
+      {
+         sha256 hash( data );
+         retval = hash.get_digest_as_string( );
+      }
+      else
+      {
+         sha512 hash( data );
+         retval = hash.get_digest_as_string( );
+      }
+   }
+   else
+   {
+      vector< unsigned char > buffer( data.size( ) / 2, 0 );
+      hex_decode( data, &buffer[ 0 ], buffer.size( ) );
+
+      if( !use_sha512 )
+      {
+         sha256 hash( &buffer[ 0 ], buffer.size( ) );
+         retval = hash.get_digest_as_string( );
+      }
+      else
+      {
+         sha512 hash( &buffer[ 0 ], buffer.size( ) );
+         retval = hash.get_digest_as_string( );
+      }
+   }
+
+   return retval;
+}
+
 uint64_t crypto_amount( const string& amount )
 {
    uint64_t amt = 0;
@@ -5039,6 +5081,199 @@ string create_address_key_pair( const string& ext_key,
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
+}
+
+string get_mnemonics_or_hex_seed( const string& mnemonics_or_hex_seed )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   // NOTE: This implemtation only supports 12 mnemonics which are each
+   // 11 bits long (the final nibble for the full 132 bits is the first
+   // nibble of the SHA256 digest of the 128 bits of entropy).
+   bitset< 132 > bits;
+   size_t bit_offset = 0;
+
+   if( g_mnemonics.empty( ) )
+   {
+      buffer_file_lines( "mnemonics.txt", g_mnemonics );
+
+      for( size_t i = 0; i < g_mnemonics.size( ); i++ )
+         g_mnemonic_values[ g_mnemonics[ i ] ] = i;
+   }
+
+   string seed( mnemonics_or_hex_seed );
+
+   bool space_separated = false;
+   string::size_type pos = seed.find( ' ' );
+
+   if( pos == string::npos )
+      pos = seed.find( ',' );
+   else
+      space_separated = true;
+
+   if( pos != string::npos )
+   {
+      vector< string > mnemonics;
+      split( seed, mnemonics, ( space_separated ? ' ' : ',' ) );
+
+      if( mnemonics.size( ) != 12 )
+         throw runtime_error( "unexpected number of seed mnemonics != 12" );
+      else
+      {
+         for( size_t i = 0; i < 12; i++ )
+         {
+            string next( mnemonics[ i ] );
+
+            if( !g_mnemonic_values.count( next ) )
+               throw runtime_error( "invalid mnemonic word '" + next + "'" );
+
+            int bit = 1024;
+            int val = g_mnemonic_values[ next ];
+
+            for( size_t j = 0; j < 11; j++ )
+            {
+               if( val & bit )
+                  bits[ bit_offset++ ] = 1;
+               else
+                  bits[ bit_offset++ ] = 0;
+
+               bit /= 2;
+            }
+         }
+
+         sha256 hash;
+         ostringstream osstr;
+
+         bit_offset = 0;
+         for( size_t i = 0; i < 16; i++ )
+         {
+            unsigned char byte = 0;
+            unsigned char bit_val = 128;
+
+            for( size_t j = 0; j < 8; j++ )
+            {
+               if( bits[ bit_offset++ ] )
+                  byte |= bit_val;
+
+               bit_val /= 2;
+            }
+
+            osstr << setw( 2 ) << setfill( '0' ) << hex << ( int )byte;
+
+            hash.update( ( const unsigned char* )&byte, 1 );
+         }
+
+         unsigned char byte = 0;
+         unsigned char bit_val = 8;
+
+         for( size_t i = 0; i < 4; i++ )
+         {
+            if( bits[ bit_offset++ ] )
+               byte |= bit_val;
+
+            bit_val /= 2;
+         }
+
+         string digest( hash.get_digest_as_string( ) );
+         unsigned char first_nibble = hex_nibble( digest[ 0 ] );
+
+         if( byte != first_nibble )
+            throw runtime_error( "invalid checksum for seed mnemonics" );
+
+         retval = osstr.str( );
+      }
+   }
+   else
+   {
+      if( seed.empty( ) )
+         seed = uuid( ).as_string( );
+      else if( seed.size( ) != 32 )
+         throw runtime_error( "unexpected seed size != 32" );
+
+      sha256 hash;
+      unsigned char byte = 0;
+
+      // NOTE: Place the seed bits into a bitset and update
+      // the hash using every byte value that is processed.
+      for( size_t i = 0; i < seed.size( ); i++ )
+      {
+         unsigned char nibble = hex_nibble( seed[ i ] );
+
+         if( i % 2 == 1 )
+            byte <<= 4;
+
+         byte |= nibble;
+
+         if( i % 2 == 1 )
+         {
+            hash.update( ( const unsigned char* )&byte, 1 );
+            byte = 0;
+         }
+
+         if( nibble & 0x08 )
+            bits[ bit_offset ] = 1;
+
+         ++bit_offset;
+
+         if( nibble & 0x04 )
+            bits[ bit_offset ] = 1;
+
+         ++bit_offset;
+
+         if( nibble & 0x02 )
+            bits[ bit_offset ] = 1;
+
+         ++bit_offset;
+
+         if( nibble & 0x01 )
+            bits[ bit_offset ] = 1;
+
+         ++bit_offset;
+      }
+
+      string digest( hash.get_digest_as_string( ) );
+      unsigned char first_nibble = hex_nibble( digest[ 0 ] );
+
+      unsigned char bit_val = 8;
+
+      // NOTE: Append first nibble of the hash digest output to the bitset.
+      for( size_t i = 0; i < 4; i++ )
+      {
+         if( first_nibble & bit_val )
+            bits[ bit_offset++ ] = 1;
+         else
+            bits[ bit_offset++ ] = 0;
+
+         bit_val /= 2;
+      }
+
+      bit_offset = 0;
+
+      // NOTE: Finally determine the list of 12 mnemonic words.
+      for( size_t i = 0; i < 12; i++ )
+      {
+         int mnemonic = 0;
+
+         unsigned int bit_val = 1024;
+
+         for( size_t j = 0; j < 11; j++ )
+         {
+            if( bits[ bit_offset++ ] )
+               mnemonic |= bit_val;
+
+            bit_val /= 2;
+         }
+
+         if( i > 0 )
+            retval += ' ';
+
+         retval += g_mnemonics[ mnemonic ];
+      }
+   }
+
+   return retval;
 }
 
 bool active_external_service( const string& ext_key )

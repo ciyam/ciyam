@@ -41,4 +41,3 @@ std::string hmac_sha256( const std::string& key, const std::string& message );
 void hmac_sha256( const std::string& key, const std::string& message, unsigned char* p_buffer );
 
 #endif
-

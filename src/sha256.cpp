@@ -227,7 +227,7 @@ sha256::sha256( )
    init( );
 }
 
-sha256::sha256( const std::string& str )
+sha256::sha256( const string& str )
 {
    p_impl = new impl;
 
@@ -254,7 +254,7 @@ void sha256::init( )
    sha256_init( &p_impl->context );
 }
 
-void sha256::update( const std::string& str, bool is_filename )
+void sha256::update( const string& str, bool is_filename )
 {
    if( !is_filename )
       update( ( const unsigned char* )&str[ 0 ], str.length( ) );
@@ -295,6 +295,7 @@ void sha256::update( const unsigned char* p_data, unsigned int length )
 
       pos += chunk;
       length -= chunk;
+
       chunk = min( length, c_buffer_size );
    }
 }
@@ -318,10 +319,10 @@ void sha256::get_digest_as_string( string& s )
       sha256_final( &p_impl->context, p_impl->digest );
    }
 
-   if( s.length( ) > 64 )
-      s.resize( 64 );
-   else if( s.length( ) != 64 )
-      s = string( 64, '\0' );
+   if( s.length( ) > c_sha256_digest_size * 2 )
+      s.resize( c_sha256_digest_size * 2 );
+   else if( s.length( ) != c_sha256_digest_size * 2 )
+      s = string( c_sha256_digest_size * 2, '\0' );
 
    for( size_t i = 0, j = 0; i < c_sha256_digest_size; i++ )
    {
@@ -351,7 +352,7 @@ string sha256::get_digest_as_string( char separator )
 
 string hmac_sha256( const string& key, const string& message )
 {
-   string s( 64, '\0' );
+   string s( c_sha256_digest_size * 2, '\0' );
    unsigned char buffer[ c_sha256_digest_size ];
 
    hmac_sha256( key, message, buffer );
@@ -469,4 +470,3 @@ int main( int argc, char* argv[ ] )
    }
 }
 #endif
-

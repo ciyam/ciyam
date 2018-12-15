@@ -1491,6 +1491,9 @@ std::string CIYAM_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 std::string CIYAM_BASE_DECL_SPEC create_html_embedded_image(
  const std::string& source_file, bool is_encrypted = false );
 
+std::string CIYAM_BASE_DECL_SPEC crypto_digest(
+ const std::string& data, bool use_sha512 = false, bool decode_hex_data = false );
+
 uint64_t CIYAM_BASE_DECL_SPEC crypto_amount( const std::string& amount );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_sign(
@@ -1517,6 +1520,8 @@ std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
 std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key,
  const std::string& priv_info, bool is_seed = true, bool use_base64 = false );
+
+std::string CIYAM_BASE_DECL_SPEC get_mnemonics_or_hex_seed( const std::string& mnemonics_or_hex_seed );
 
 bool CIYAM_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
