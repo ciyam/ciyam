@@ -958,13 +958,13 @@ bool output_view_form( ostream& os, const string& act,
 
       if( !error_message.empty( ) )
       {
-         // NOTE: Don't display as an error unless was actually received that way from the server.
+         // NOTE: Don't display as an error unless it was actually received that way from the server.
          if( error_message.find( GDS( c_display_error ) ) != 0 )
          {
             if( !is_ui_prototype( ) )
-               os << "<td>" << error_message << "</td>";
+               os << "<td>" << replace_crlfs( error_message, "<br/>" ) << "</td>";
             else
-               os << "<p class=\"table-cell center view-message\">" << error_message << "</p>\n";
+               os << "<p class=\"table-cell center view-message\">" << replace_crlfs( error_message, "<br/>" ) << "</p>\n";
 
             extra_content_func += "had_act_error = false;\n";
          }

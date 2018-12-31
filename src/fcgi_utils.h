@@ -120,6 +120,8 @@ std::string replace_spaces( const std::string& input, const char* p_rep, size_t 
 
 std::string replace_crlfs_and_spaces( const std::string& input, const char* p_rep, const char* p_srep );
 
+inline std::string replace_crlfs( const std::string& input, const char* p_rep ) { return replace_crlfs_and_spaces( input, p_rep, 0 ); }
+
 void force_html_tags_to_lower_case( std::string& html );
 
 void create_tmp_file_link_or_copy( std::string& tmp_path,

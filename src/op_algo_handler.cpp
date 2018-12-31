@@ -206,9 +206,11 @@ multimap< string, string > g_goal_algos;
 void op_algo_handler::suggest( ostream& os, const string& info )
 {
    int num_suggests = 0;
+
+   bool add_step_trace = false;
    bool has_had_output = false;
 
-   string stop_at_stage;
+   string extra, stop_at_stage;
 
    ostringstream osstr;
    vector< string > lines;
@@ -225,6 +227,12 @@ void op_algo_handler::suggest( ostream& os, const string& info )
          if( pos != string::npos )
          {
             stop_at_stage = filename.substr( pos + 1 );
+
+            if( stop_at_stage.length( ) > 1 && stop_at_stage.substr( 0, 2 ) == "??" )
+            {
+               add_step_trace = true;
+               stop_at_stage.erase( 0, 1 );
+            }
 
             if( stop_at_stage.length( ) > 2 && stop_at_stage.substr( 0, 2 ) == "?:" )
                stop_at_stage.erase( 0, 2 );
@@ -557,6 +565,9 @@ void op_algo_handler::suggest( ostream& os, const string& info )
                // for matching states after the entire group.
                if( found_next && start_prefix_ops && i > start_prefix_ops && i < finish_prefix_ops )
                   find_from = finish_prefix_ops + 1;
+
+               if( add_step_trace )
+                  extra += "\n#" + to_string( i + 1 ) + ' ' + ops;
 #ifdef DEBUG
                cout << "ops: " << ops << endl;
 #endif
@@ -613,7 +624,7 @@ void op_algo_handler::suggest( ostream& os, const string& info )
       // fact an exact opposite op which should cancel out).
       final_output = cleanup_output( final_output );
 
-      os << final_output;
+      os << final_output << extra;
    }
 }
 
