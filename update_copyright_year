@@ -1,12 +1,12 @@
 #!/bin/sh
-# Copyright (c) 2013-2018 CIYAM Developers
+# Copyright (c) 2013-2019 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 #
 # Task #T00004 - Update copyright dates to 2013
 
-# NOTE: Replace with the year u want to replace with or leave it empty to derive the year from 'date'.
+# NOTE: Replace with an explicit year leave this empty to derive the year from 'date'.
 DATEYEAR=""
 
 if [ ! "$1" = "-skip_check" ]; then
