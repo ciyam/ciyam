@@ -28,6 +28,8 @@
 #  include <stdexcept>
 #endif
 
+#define CIYAM_BASE_IMPL
+
 #include "ciyam_session.h"
 
 #include "ods.h"
@@ -5543,6 +5545,32 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
+ciyam_session::ciyam_session( ssl_socket* p_socket, const string& ip_addr )
+#else
+ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
+#endif
+ :
+ is_local( false ),
+ pid_is_self( false )
+{
+   ap_socket.reset( p_socket );
+
+   if( !( *ap_socket ) )
+      throw runtime_error( "unexpected invalid socket in ciyam_session::ciyam_session" );
+
+   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
+      is_local = true;
+
+   string pid;
+   ap_socket->read_line( pid, c_request_timeout );
+
+   if( is_local && pid == to_string( get_pid( ) ) )
+      pid_is_self = true;
+
+   increment_session_count( );
+}
+
+#ifdef SSL_SUPPORT
 ciyam_session::ciyam_session( auto_ptr< ssl_socket >& ap_socket, const string& ip_addr )
 #else
 ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& ip_addr )
@@ -5635,3 +5663,21 @@ void ciyam_session::decrement_session_count( )
    --g_active_sessions;
 }
 
+#ifdef SSL_SUPPORT
+void init_ciyam_session( ssl_socket* p_socket, const char* p_address )
+#else
+void init_ciyam_session( tcp_socket* p_socket, const char* p_address )
+#endif
+{
+   ciyam_session* p_session = new ciyam_session( p_socket, p_address );
+
+   // NOTE: Even if the server is being shut down will still start sessions
+   // that were initiated by the server itself (so that operations that use
+   // a separate session for completion are correctly performed). Therefore
+   // non-essential scripts should not be executed by the server if already
+   // shutting down.
+   if( g_server_shutdown && !p_session->is_own_pid( ) )
+      delete p_session;
+   else
+      p_session->start( );
+}

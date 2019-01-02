@@ -39,14 +39,7 @@
 #  endif
 #endif
 
-//#define USE_MAC_LICENSE
-
-#ifdef USE_MAC_LICENSE
-#  include "mac.h"
-#  include "sha1.h"
-#endif
 #include "config.h"
-#include "sql_db.h"
 #include "sockets.h"
 #include "utilities.h"
 #include "ciyam_base.h"
@@ -56,6 +49,7 @@
 #endif
 #include "peer_session.h"
 #include "ciyam_session.h"
+#include "dynamic_library.h"
 #include "console_commands.h"
 
 using namespace std;
@@ -199,10 +193,6 @@ const char* const c_cmd_quiet = "quiet";
 const char* const c_cmd_no_auto = "no_auto";
 const char* const c_cmd_no_peers = "no_peers";
 
-#ifdef USE_MAC_LICENSE
-const char* const c_cmd_register = "register";
-#endif
-
 #ifdef _WIN32
 const char* const c_cmd_svcins = "svcins";
 const char* const c_cmd_svcrem = "svcrem";
@@ -220,9 +210,45 @@ bool g_is_daemon = false;
 
 int g_port = c_default_ciyam_port;
 
+int g_flags = 0;
+bool g_has_flags = false;
+
 const int c_accept_timeout = 250;
 
+const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
+
+#ifndef _WIN32
+const char* const c_ciyam_base_lib = "ciyam_base.so";
+#else
+const char* const c_ciyam_base_lib = "ciyam_base.dll";
+#endif
+
+#ifndef __BORLANDC__
+const char* const c_trace_flags_func_name = "trace_flags";
+const char* const c_init_globals_func_name = "init_globals";
+const char* const c_term_globals_func_name = "term_globals";
+const char* const c_init_auto_script_func_name = "init_auto_script";
+const char* const c_log_trace_string_func_name = "log_trace_string";
+const char* const c_register_listener_func_name = "register_listener";
+const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
+const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
+const char* const c_check_timezone_info_func_name = "check_timezone_info";
+const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
+const char* const c_unregister_listener_func_name = "unregister_listener";
+#else
+const char* const c_trace_flags_func_name = "_trace_flags";
+const char* const c_init_globals_func_name = "_init_globals";
+const char* const c_term_globals_func_name = "_term_globals";
+const char* const c_init_auto_script_func_name = "_init_auto_script";
+const char* const c_log_trace_string_func_name = "_log_trace_string";
+const char* const c_register_listener_func_name = "_register_listener";
+const char* const c_init_ciyam_session_func_name = "_init_ciyam_session";
+const char* const c_init_peer_sessions_func_name = "_init_peer_sessions";
+const char* const c_check_timezone_info_func_name = "_check_timezone_info";
+const char* const c_is_accepted_ip_addr_func_name = "_is_accepted_ip_addr";
+const char* const c_unregister_listener_func_name = "_unregister_listener";
+#endif
 
 string application_title( app_info_request request )
 {
@@ -291,11 +317,10 @@ class ciyam_server_startup_functor : public command_functor
       {
          string flags( get_parm_val( parameters, c_cmd_parm_trace_flags ) );
 
-         int trace_flags;
          istringstream isstr( flags );
-         isstr >> hex >> trace_flags;
+         isstr >> hex >> g_flags;
 
-         set_trace_flags( trace_flags );
+         g_has_flags = true;
       }
       else if( command == c_cmd_quiet )
          g_is_quiet = true;
@@ -303,13 +328,6 @@ class ciyam_server_startup_functor : public command_functor
          g_start_autoscript = false;
       else if( command == c_cmd_no_peers )
          g_start_peer_listeners = false;
-#ifdef USE_MAC_LICENSE
-      else if( command == c_cmd_register )
-      {
-         g_had_exiting_command = true;
-         cout << "Registration Key: " << get_checksum( get_mac_addr( ) ) << endl;
-      }
-#endif
 #ifdef _WIN32
       else if( command == c_cmd_svcins )
       {
@@ -416,10 +434,6 @@ int main( int argc, char* argv[ ] )
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
-#ifdef USE_MAC_LICENSE
-         cmd_handler.add_command( c_cmd_register, 3,
-          "", "get registration key", new ciyam_server_startup_functor( cmd_handler ) );
-#endif
          processor.process_commands( );
       }
 
@@ -467,167 +481,167 @@ int main( int argc, char* argv[ ] )
       pthread_create( &tid, 0, signal_handler, ( void* )1 );
 #endif
 
-      init_globals( );
       srand( time( 0 ) );
 
-#ifdef USE_MAC_LICENSE
-      // NOTE: Make sure that server has the correct registration key.
-      string reg_hash( get_checksum( get_mac_addr( ) ) );
+      string pid( to_string( get_pid( ) ) );
+      set_environment_variable( "PID", pid.c_str( ) );
 
-      bool is_registered = false;
-      for( int i = 0; i < 100; i++ )
+      bool is_update = false;
+      auto_ptr< dynamic_library > ap_dynamic_library;
+
+      while( true )
       {
-         hash.init( );
-         hash.update( reg_hash + to_string( i ) );
+         ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
-         sha1_quads.clear( );
-         split( hash.get_digest_as_string( ',' ), sha1_quads );
+         is_update = false;
+         file_remove( c_update_signal_file );
 
-         if( sha1_quads.size( ) != 5 )
-            throw runtime_error( "unexpected hash result" );
+         fp_trace_flags fp_trace_flags_func;
+         fp_trace_flags_func = ( fp_trace_flags )ap_dynamic_library->bind_to_function( c_trace_flags_func_name );
 
-         string reg( get_identity( ) );
+         fp_init_globals fp_init_globals_func;
+         fp_init_globals_func = ( fp_init_globals )ap_dynamic_library->bind_to_function( c_init_globals_func_name );
 
-         set< string > all_regs;
-         split( reg, all_regs, '+' );
+         fp_term_globals fp_term_globals_func;
+         fp_term_globals_func = ( fp_term_globals )ap_dynamic_library->bind_to_function( c_term_globals_func_name );
 
-         if( all_regs.count( sha1_quads[ 2 ] ) )
-         {
-            set_max_user_limit( i );
-            is_registered = true;
-            break;
-         }
-      }
+         fp_init_auto_script fp_init_auto_script_func;
+         fp_init_auto_script_func = ( fp_init_auto_script )ap_dynamic_library->bind_to_function( c_init_auto_script_func_name );
 
-      if( !is_registered )
-         throw runtime_error( "server is not registered" );
-#endif
+         fp_log_trace_string fp_log_trace_string_func;
+         fp_log_trace_string_func = ( fp_log_trace_string )ap_dynamic_library->bind_to_function( c_log_trace_string_func_name );
 
-      tcp_socket s;
-      bool okay = s.open( );
+         fp_register_listener fp_register_listener_func;
+         fp_register_listener_func = ( fp_register_listener )ap_dynamic_library->bind_to_function( c_register_listener_func_name );
 
-      ip_address address( g_port );
+         fp_init_ciyam_session fp_init_ciyam_session_func;
+         fp_init_ciyam_session_func = ( fp_init_ciyam_session )ap_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
 
-      if( okay )
-      {
-         if( !s.set_reuse_addr( ) && !g_is_quiet )
-            cout << "warning: set_reuse_addr failed..." << endl;
+         fp_init_peer_sessions fp_init_peer_sessions_func;
+         fp_init_peer_sessions_func = ( fp_init_peer_sessions )ap_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
 
-         listener_registration registration( g_port, "main" );
+         fp_check_timezone_info fp_check_timezone_info_func;
+         fp_check_timezone_info_func = ( fp_check_timezone_info )ap_dynamic_library->bind_to_function( c_check_timezone_info_func_name );
 
-         okay = s.bind( address );
+         fp_is_accepted_ip_addr fp_is_accepted_ip_addr_func;
+         fp_is_accepted_ip_addr_func = ( fp_is_accepted_ip_addr )ap_dynamic_library->bind_to_function( c_is_accepted_ip_addr_func_name );
+
+         fp_unregister_listener fp_unregister_listener_func;
+         fp_unregister_listener_func = ( fp_unregister_listener )ap_dynamic_library->bind_to_function( c_unregister_listener_func_name );
+
+         ( *fp_init_globals_func )( );
+
+         if( g_has_flags )
+            ( *fp_trace_flags_func )( g_flags );
+
+         tcp_socket s;
+         bool okay = s.open( );
+
+         ip_address address( g_port );
 
          if( okay )
-            okay = s.listen( );
-
-         if( okay )
          {
-            if( !g_is_quiet )
-               cout << "server now listening on port " << g_port << "..." << endl;
+            if( !s.set_reuse_addr( ) && !g_is_quiet )
+               cout << "warning: set_reuse_addr failed..." << endl;
 
-            string pid( to_string( get_pid( ) ) );
-            set_environment_variable( "PID", pid.c_str( ) );
+            ( *fp_register_listener_func )( g_port, "main" );
 
-            TRACE_LOG( TRACE_ANYTHING,
-             "server started on port " + to_string( g_port ) + " (pid = " + pid + ")" );
+            okay = s.bind( address );
 
-            file_remove( c_shutdown_signal_file );
+            if( okay )
+               okay = s.listen( );
 
-            if( g_start_autoscript )
+            if( okay )
             {
-               autoscript_session* p_autoscript_session = new autoscript_session;
-               p_autoscript_session->start( );
-            }
+               if( !g_is_quiet )
+                  cout << "server now listening on port " << g_port << "..." << endl;
 
-            if( g_start_peer_listeners )
-            {
-               map< int, string > blockchains;
-               get_blockchains( blockchains );
+               string start_message( "server started on port "
+                + to_string( g_port ) + " (pid = " + pid + ")" );
 
-               for( map< int, string >::iterator i = blockchains.begin( ); i != blockchains.end( ); ++i )
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+
+               file_remove( c_shutdown_signal_file );
+
+               if( g_start_autoscript )
+                  ( *fp_init_auto_script_func )( );
+
+               ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
+
+               bool reported_shutdown = false;
+               while( s && ( !g_server_shutdown || g_active_sessions ) )
                {
-                  peer_listener* p_peer_litener = new peer_listener( i->first, i->second );
-                  p_peer_litener->start( );
-               }
-            }
+                  if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
+                     ++g_server_shutdown;
 
-            create_initial_peer_sessions( );
+                  if( g_server_shutdown && !reported_shutdown )
+                  {
+                     reported_shutdown = true;
 
-            bool reported_shutdown = false;
-            while( s && ( !g_server_shutdown || g_active_sessions ) )
-            {
-               if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
-                  ++g_server_shutdown;
+                     if( !g_is_quiet )
+                        cout << "server shutdown (due to interrupt) now underway..." << endl;
+                  }
 
-               if( g_server_shutdown && !reported_shutdown )
-               {
-                  reported_shutdown = true;
-                  if( !g_is_quiet )
-                     cout << "server shutdown (due to interrupt) now underway..." << endl;
-               }
+                  if( !is_update && !g_server_shutdown && file_exists( c_update_signal_file ) )
+                     is_update = true;
 
-               // NOTE: If there are no active sessions (apart from the autoscript session) and is not
-               // shutting down then check and update the timezone information if it has been changed.
-               if( !g_server_shutdown
-                && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
-                  check_timezone_info( );
+                  if( is_update && !g_server_shutdown
+                   && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
+                     break;
 
-               // NOTE: Check for accepts and create new sessions.
+                  // NOTE: If there are no active sessions (apart from the autoscript session) and is not
+                  // shutting down then check and update the timezone information if it has been changed.
+                  if( !g_server_shutdown
+                   && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
+                     ( *fp_check_timezone_info_func )( );
+
+                  // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
-               auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
+                  auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
-               auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+                  auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-               if( *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
-               {
-                  ciyam_session* p_session = new ciyam_session( ap_socket, address.get_addr_string( ) );
-
-                  // NOTE: Even if the server is being shut down will still start sessions
-                  // that were initiated by the server itself (so that operations that use
-                  // a separate session for completion are correctly performed). Therefore
-                  // non-essential scripts should not be executed by the server if already
-                  // shutting down.
-                  if( g_server_shutdown && !p_session->is_own_pid( ) )
-                     delete p_session;
-                  else
-                     p_session->start( );
+                  if( *ap_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
+                     ( *fp_init_ciyam_session_func )( ap_socket.release( ), address.get_addr_string( ).c_str( ) );
                }
+
+               s.close( );
+               file_remove( c_shutdown_signal_file );
+
+               if( !g_is_quiet )
+                  cout << "server shutdown (due to interrupt) now completed..." << endl;
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
+            }
+            else
+            {
+               rc = 1;
+               s.close( );
+
+               cerr << "error: unexpected socket error" << endl;
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, "error: unexpected socket error" );
             }
 
-            s.close( );
-            file_remove( c_shutdown_signal_file );
-
-            if( !g_is_quiet )
-               cout << "server shutdown (due to interrupt) now completed..." << endl;
-            TRACE_LOG( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
+            ( *fp_unregister_listener_func )( g_port );
          }
-         else
-         {
-            rc = 1;
-            s.close( );
 
-            cerr << "error: unexpected socket error" << endl;
-            TRACE_LOG( TRACE_ANYTHING, "error: unexpected socket error" );
-         }
+         ( *fp_term_globals_func )( );
+
+         if( !is_update )
+            break;
       }
-
-      term_globals( );
    }
    catch( exception& x )
    {
       rc = 2;
 
       cerr << "error: " << x.what( ) << endl;
-      TRACE_LOG( TRACE_ANYTHING, "error: " + string( x.what( ) ) );
    }
    catch( ... )
    {
       rc = 3;
 
       cerr << "error: unexpected unknown exception caught" << endl;
-      TRACE_LOG( TRACE_ANYTHING, "error: unexpected unknown exception caught" );
    }
 
    return rc;
 }
-

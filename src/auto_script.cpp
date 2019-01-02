@@ -20,6 +20,8 @@
 #  include <stdexcept>
 #endif
 
+#define CIYAM_BASE_IMPL
+
 #include "auto_script.h"
 
 #include "sio.h"
@@ -509,3 +511,8 @@ void autoscript_session::on_start( )
    delete this;
 }
 
+void init_auto_script( )
+{
+   autoscript_session* p_autoscript_session = new autoscript_session;
+   p_autoscript_session->start( );
+}

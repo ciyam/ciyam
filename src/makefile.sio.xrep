@@ -88,6 +88,7 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
+     <filename>auto_script.cpp
      <filename>ciyam_base.cpp
      <filename>ciyam_base_array.cpp
      <filename>ciyam_base_command_handler.cpp
@@ -99,16 +100,20 @@
      <filename>ciyam_core_files.cpp
      <filename>ciyam_files.cpp
      <filename>ciyam_packages.cpp
+     <filename>ciyam_session.cpp
      <filename>ciyam_variables.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp
      <filename>mail_source.cpp
      <filename>module_management.cpp
+     <filename>peer_session.cpp
     </cpp_files>
     <cms_files/>
+     <filename>ciyam_session.cms
      <filename>date_time.cms
      <filename>numeric.cms
+     <filename>peer_session.cms
     </cms_files>
    </dyn_lib>
 `{`?`$modules`[`$modules`,\
@@ -254,16 +259,11 @@
     <dynamic>false
     <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
-    <dlink_libs>ciyam_base
+    <dlink_libs>
     <cpp_files/>
-     <filename>auto_script.cpp
-     <filename>peer_session.cpp
      <filename>ciyam_server.cpp
-     <filename>ciyam_session.cpp
     </cpp_files>
     <cms_files/>
-     <filename>peer_session.cms
-     <filename>ciyam_session.cms
     </cms_files>
    </executable>
    <executable/>

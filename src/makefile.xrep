@@ -57,10 +57,10 @@ CPPFLAGS = -fPIC -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONS
 	@./generate_commands $<
 
 %.compile:
-#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >compile.sh
-	@echo echo \$$2 >compile.sh
+#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2>compile.sh
+	@echo echo \$$2>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ -f sid.enc.chk ]; then encrypt=1; ./crypt -t sid.enc; fi">>compile.sh
-	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >>compile.sh
+	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2>>compile.sh
 	@echo "if [ \"\$$2\" = \"ciyam_base.cpp\" ] || [ \"\$$2\" = \"fcgi_utils.cpp\" ] && [ \"\$$encrypt\" = \"1\" ]; then ./crypt -c -t sid.enc; fi">>compile.sh;chmod u+x compile.sh
 
 # Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
@@ -68,7 +68,7 @@ CPPFLAGS = -fPIC -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONS
 
 BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
 
-LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
+LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -export-dynamic -o $@
 LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
 
 LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
@@ -194,4 +194,3 @@ clean:
 
 # Dependency include
 -include $(ALL_DEP_FILES)
-

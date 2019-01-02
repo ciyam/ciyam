@@ -20,6 +20,8 @@
 #  include <stdexcept>
 #endif
 
+#define CIYAM_BASE_IMPL
+
 #include "peer_session.h"
 
 #include "base64.h"
@@ -2242,3 +2244,19 @@ void create_initial_peer_sessions( )
    }
 }
 
+void init_peer_sessions( int start_listeners )
+{
+   if( start_listeners )
+   {
+      map< int, string > blockchains;
+      get_blockchains( blockchains );
+
+      for( map< int, string >::iterator i = blockchains.begin( ); i != blockchains.end( ); ++i )
+      {
+         peer_listener* p_peer_litener = new peer_listener( i->first, i->second );
+         p_peer_litener->start( );
+      }
+   }
+
+   create_initial_peer_sessions( );
+}

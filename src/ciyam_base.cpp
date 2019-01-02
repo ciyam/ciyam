@@ -1302,16 +1302,6 @@ typedef listener_container::const_iterator listener_const_iterator;
 
 listener_container g_listeners;
 
-void register_listener( int port, const string& info )
-{
-   g_listeners.insert( make_pair( port, info ) );
-}
-
-void unregister_listener( int port )
-{
-   g_listeners.erase( port );
-}
-
 size_t g_next_session_id;
 
 typedef vector< session* > session_container;
@@ -3747,6 +3737,11 @@ void set_trace_flags( size_t flags )
    g_trace_flags = flags;
 }
 
+void trace_flags( unsigned flags )
+{
+   set_trace_flags( flags );
+}
+
 void list_trace_flags( vector< string >& flag_names )
 {
    flag_names.push_back( "commands" ); // TRACE_COMMANDS
@@ -3839,6 +3834,11 @@ void log_trace_message( int flag, const string& message )
     << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
 }
 
+void log_trace_string( int flag, const char* p_message )
+{
+   log_trace_message( flag, p_message );
+}
+
 void trace_mutex::pre_acquire( const guard* p_guard, const char* p_msg )
 {
    string extra;
@@ -3872,13 +3872,23 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
 }
 
+void register_listener( int port, const char* p_info )
+{
+   g_listeners.insert( make_pair( port, p_info ) );
+}
+
+void unregister_listener( int port )
+{
+   g_listeners.erase( port );
+}
+
 listener_registration::listener_registration( int port, const string& info )
  :
  port( port )
 {
    guard g( g_mutex );
 
-   register_listener( port, info );
+   register_listener( port, info.c_str( ) );
 }
 
 listener_registration::~listener_registration( )
@@ -4201,6 +4211,11 @@ bool get_is_accepted_peer_ip_addr( const string& ip_addr )
 
    return ( g_rejected_peer_ip_addrs.empty( ) || g_rejected_peer_ip_addrs.count( ip_addr ) == 0 )
     && ( g_accepted_peer_ip_addrs.empty( ) || ( g_accepted_peer_ip_addrs.count( ip_addr ) > 0 ) );
+}
+
+int is_accepted_ip_addr( const char* p_addr )
+{
+   return get_is_accepted_ip_addr( p_addr );
 }
 
 void add_peer_ip_addr_for_rejection( const string& ip_addr )
@@ -7913,6 +7928,7 @@ void module_unload( const string& module_name, command_handler& cmd_handler, boo
    }
 
    module_iterator mi = gtp_session->modules_by_name.find( module_name );
+
    if( mi == gtp_session->modules_by_name.end( ) )
       throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
        make_pair( c_str_parm_module_not_loaded_module, module_name ) ) );
@@ -7933,6 +7949,7 @@ void module_unload( const string& module_name, command_handler& cmd_handler, boo
    gtp_session->modules_by_name.erase( mi );
 
    mi = gtp_session->modules_by_id.find( get_module_id( module_name ) );
+
    if( mi != gtp_session->modules_by_id.end( ) )
       gtp_session->modules_by_id.erase( mi );
 }
@@ -7940,6 +7957,7 @@ void module_unload( const string& module_name, command_handler& cmd_handler, boo
 void module_unload_all( command_handler& cmd_handler )
 {
    vector< string > module_names;
+
    for( module_iterator mi = gtp_session->modules_by_name.begin( ); mi != gtp_session->modules_by_name.end( ); ++mi )
       module_names.push_back( mi->first );
 
@@ -7981,9 +7999,10 @@ void register_module_commands( const string& module_name, command_handler& handl
 {
    dynamic_library* p_dynamic_library = get_module_ptr( module_name );
 
-   fp_obtain_module_commands_func obtain_module_commands;
+   fp_obtain_module_commands obtain_module_commands;
+
    obtain_module_commands =
-    ( fp_obtain_module_commands_func )p_dynamic_library->bind_to_function( c_obtain_module_commands_func_name );
+    ( fp_obtain_module_commands )p_dynamic_library->bind_to_function( c_obtain_module_commands_func_name );
 
    if( obtain_module_commands )
    {
@@ -8009,6 +8028,7 @@ void unregister_module_commands( const string& module_name, command_handler& han
    module_commands_registry_container& commands_registry( gtp_session->commands_registry );
 
    module_commands_registry_iterator i = commands_registry.find( module_name );
+
    if( i != commands_registry.end( ) )
    {
       handler.remove_commands( module_name + c_module_prefix_separator,
@@ -8023,6 +8043,7 @@ void unregister_all_module_commands( command_handler& handler )
    module_commands_registry_container& commands_registry( gtp_session->commands_registry );
 
    module_commands_registry_iterator i( commands_registry.begin( ) );
+
    while( i != commands_registry.end( ) )
    {
       handler.remove_commands( i->first + c_module_prefix_separator,
@@ -8036,6 +8057,7 @@ void list_object_instances( ostream& os )
 {
    object_instance_registry_iterator oiri, end;
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
+
    for( oiri = instance_registry.begin( ), end = instance_registry.end( ); oiri != end; ++oiri )
    {
       os << oiri->first
@@ -8116,6 +8138,7 @@ void destroy_object_instance( size_t handle )
 {
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
    object_instance_registry_iterator oiri = instance_registry.find( handle );
+
    if( oiri == instance_registry.end( ) )
       throw runtime_error( "invalid object instance handle #" + to_string( handle ) );
 
@@ -8136,6 +8159,7 @@ void destroy_object_instances( const string& module_name )
 
    object_instance_registry_iterator oiri, end;
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
+
    for( oiri = instance_registry.begin( ), end = instance_registry.end( ); oiri != end; )
    {
       if( ( oiri->second ).p_dynamic_library == p_dynamic_library )
@@ -8157,6 +8181,7 @@ void destroy_all_object_instances( )
 {
    object_instance_registry_iterator oiri, end;
    object_instance_registry_container& instance_registry( gtp_session->instance_registry );
+
    for( oiri = instance_registry.begin( ), end = instance_registry.end( ); oiri != end; ++oiri )
    {
       class_base* p_class_base( ( oiri->second ).p_class_base );

@@ -12,18 +12,27 @@
 #  endif
 
 #  include "config.h"
+#  include "macros.h"
 #  include "sockets.h"
 #  include "threads.h"
 #  ifdef SSL_SUPPORT
 #     include "ssl_socket.h"
 #  endif
 
-class ciyam_session : public thread
+#  ifdef CIYAM_BASE_IMPL
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
+#  else
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
+#  endif
+
+class CIYAM_BASE_DECL_SPEC ciyam_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
+   ciyam_session( ssl_socket* p_socket, const std::string& ip_addr );
    ciyam_session( std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr );
 #  else
+   ciyam_session( tcp_socket* p_socket, const std::string& ip_addr );
    ciyam_session( std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr );
 #  endif
 
@@ -46,5 +55,16 @@ class ciyam_session : public thread
 #  endif
 };
 
-#endif
+#  ifdef SSL_SUPPORT
+extern "C" void CIYAM_BASE_DECL_SPEC init_ciyam_session( ssl_socket* p_socket, const char* p_address );
+#  else
+extern "C" void CIYAM_BASE_DECL_SPEC init_ciyam_session( tcp_socket* p_socket, const char* p_address );
+#  endif
 
+#  ifdef SSL_SUPPORT
+typedef void ( *fp_init_ciyam_session )( ssl_socket*, const char* );
+#  else
+typedef void ( *fp_init_ciyam_session )( tcp_socket*, const char* );
+#  endif
+
+#endif

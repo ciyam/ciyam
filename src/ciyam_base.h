@@ -62,9 +62,17 @@ if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
 size_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
 void CIYAM_BASE_DECL_SPEC set_trace_flags( size_t flags );
 
+extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( unsigned flags );
+
+typedef void ( *fp_trace_flags )( unsigned );
+
 void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
 
 void CIYAM_BASE_DECL_SPEC log_trace_message( int flag, const std::string& message );
+
+extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( int flag, const char* p_message );
+
+typedef void ( *fp_log_trace_string )( int, const char* );
 
 class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 {
@@ -74,6 +82,12 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 
    void has_released( const guard* p_guard, const char* p_msg );
 };
+
+extern "C" void CIYAM_BASE_DECL_SPEC register_listener( int port, const char* p_info );
+extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( int port );
+
+typedef void ( *fp_register_listener )( int, const char* );
+typedef void ( *fp_unregister_listener )( int );
 
 class CIYAM_BASE_DECL_SPEC listener_registration
 {
@@ -89,10 +103,15 @@ bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 
-void CIYAM_BASE_DECL_SPEC init_globals( );
-void CIYAM_BASE_DECL_SPEC term_globals( );
+extern "C" void CIYAM_BASE_DECL_SPEC init_globals( );
+extern "C" void CIYAM_BASE_DECL_SPEC term_globals( );
 
-void CIYAM_BASE_DECL_SPEC check_timezone_info( );
+typedef void ( *fp_init_globals )( );
+typedef void ( *fp_term_globals )( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC check_timezone_info( );
+
+typedef void ( *fp_check_timezone_info )( );
 
 std::string CIYAM_BASE_DECL_SPEC get_string( const std::string& key );
 
@@ -132,6 +151,10 @@ void CIYAM_BASE_DECL_SPEC get_initial_peer_ips( std::map< std::string, std::stri
 
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_ip_addr( const std::string& ip_addr );
+
+extern "C" int CIYAM_BASE_DECL_SPEC is_accepted_ip_addr( const char* p_addr );
+
+typedef int ( *fp_is_accepted_ip_addr )( const char* );
 
 void CIYAM_BASE_DECL_SPEC add_peer_ip_addr_for_rejection( const std::string& ip_addr );
 void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string& ip_addr );
@@ -814,4 +837,3 @@ bool CIYAM_BASE_DECL_SPEC perform_instance_iterate(
 bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );
 
 #endif
-

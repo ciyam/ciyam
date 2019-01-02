@@ -137,17 +137,17 @@ extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_strings( const module_s
 extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_commands(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
-typedef void ( *fp_init_dir_func )( const char* p_dir );
-typedef bool ( *fp_load_strings_func )( const char* p_name );
-typedef void ( *fp_init_classes_func )( const char* p_name );
-typedef void ( *fp_term_classes_func )( const char* p_name );
-typedef void ( *fp_obtain_externals_func )( externals_container*& p_externals );
-typedef void ( *fp_create_class_object_func )( const char* p_name, class_base*& p_object );
-typedef void ( *fp_destroy_class_object_func )( const char* p_name, class_base*& p_object );
-typedef void ( *fp_obtain_class_registry_func )( const class_registry_container*& p_class_registry );
-typedef void ( *fp_obtain_module_details_func )( const module_details*& p_info );
-typedef void ( *fp_obtain_module_strings_func )( const module_strings_container*& p_module_strings );
-typedef void ( *fp_obtain_module_commands_func )(
+typedef void ( *fp_init_dir )( const char* p_dir );
+typedef bool ( *fp_load_strings )( const char* p_name );
+typedef void ( *fp_init_classes )( const char* p_name );
+typedef void ( *fp_term_classes )( const char* p_name );
+typedef void ( *fp_obtain_externals )( externals_container*& p_externals );
+typedef void ( *fp_create_class_object )( const char* p_name, class_base*& p_object );
+typedef void ( *fp_destroy_class_object )( const char* p_name, class_base*& p_object );
+typedef void ( *fp_obtain_class_registry )( const class_registry_container*& p_class_registry );
+typedef void ( *fp_obtain_module_details )( const module_details*& p_info );
+typedef void ( *fp_obtain_module_strings )( const module_strings_container*& p_module_strings );
+typedef void ( *fp_obtain_module_commands )(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
 #  ifndef __BORLANDC__

@@ -207,6 +207,8 @@ void term_ssl( )
       thread_cleanup( );
 
    SSL_CTX_free( p_ctx );
+
+   p_ctx = 0;
 }
 
 ssl_socket::ssl_socket( )

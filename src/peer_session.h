@@ -14,13 +14,20 @@
 #  endif
 
 #  include "config.h"
+#  include "macros.h"
 #  include "sockets.h"
 #  include "threads.h"
 #  ifdef SSL_SUPPORT
 #     include "ssl_socket.h"
 #  endif
 
-class peer_session : public thread
+#  ifdef CIYAM_BASE_IMPL
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
+#  else
+#     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
+#  endif
+
+class CIYAM_BASE_DECL_SPEC peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
@@ -51,7 +58,7 @@ class peer_session : public thread
 #  endif
 };
 
-class peer_listener : public thread
+class CIYAM_BASE_DECL_SPEC peer_listener : public thread
 {
    public:
    peer_listener( int port ) : port( port ) { }
@@ -64,25 +71,28 @@ class peer_listener : public thread
    std::string blockchain;
 };
 
-void list_mutex_lock_ids_for_peer_session( std::ostream& outs );
+void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );
 
-std::string use_peer_account(
+std::string CIYAM_BASE_DECL_SPEC use_peer_account(
  const std::string& blockchain, const std::string& password, bool release = false, bool is_pwd_hash = false );
 
-std::string get_account_password( const std::string& blockchain, const std::string& account );
+std::string CIYAM_BASE_DECL_SPEC get_account_password( const std::string& blockchain, const std::string& account );
 
-void lock_blockchain_transaction( std::auto_ptr< guard >& ap_guard );
+void CIYAM_BASE_DECL_SPEC lock_blockchain_transaction( std::auto_ptr< guard >& ap_guard );
 
-std::string create_blockchain_transaction(
+std::string CIYAM_BASE_DECL_SPEC create_blockchain_transaction(
  const std::string& blockchain, const std::string& application,
  const std::string& log_command, const std::vector< std::string >* p_file_info = 0 );
 
-void create_peer_listener( int port, const std::string& blockchain );
+void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchain );
 
-void create_peer_initiator( int port,
+void CIYAM_BASE_DECL_SPEC create_peer_initiator( int port,
  const std::string& ip_addr, const std::string& blockchain, bool force = false );
 
-void create_initial_peer_sessions( );
+void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC init_peer_sessions( int start_listeners );
+
+typedef void ( *fp_init_peer_sessions )( int );
 
 #endif
-

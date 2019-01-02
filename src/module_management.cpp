@@ -47,21 +47,22 @@ namespace
 struct module_library_info
 {
    module_library_info( const module_details* p_details, dynamic_library* p_dynamic_library,
-    fp_term_classes_func term_classes_func, fp_obtain_externals_func obtain_externals_func )
+    fp_term_classes fp_term_classes_func, fp_obtain_externals fp_obtain_externals_func )
     :
     ref_count( 1 ),
     p_details( p_details ),
     p_dynamic_library( p_dynamic_library ),
-    term_classes_func( term_classes_func ),
-    obtain_externals_func( obtain_externals_func )
+    fp_term_classes_func( fp_term_classes_func ),
+    fp_obtain_externals_func( fp_obtain_externals_func )
    {
    }
 
    size_t ref_count;
    const module_details* p_details;
    dynamic_library* p_dynamic_library;
-   fp_term_classes_func term_classes_func;
-   fp_obtain_externals_func obtain_externals_func;
+
+   fp_term_classes fp_term_classes_func;
+   fp_obtain_externals fp_obtain_externals_func;
 
    map< string, string > class_ids;
    map< string, string > class_names;
@@ -125,10 +126,10 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
    if( mi == g_modules.end( ) )
       return e_module_class_list_error_name_unknown;
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -196,12 +197,13 @@ module_load_error load_module( const string& module_name )
       directory += "/";
 
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_name ) );
+
    if( mi != g_modules.end( ) )
    {
       ++( mi->second ).ref_count;
 
       externals_container* p_externals;
-      ( *( mi->second ).obtain_externals_func )( p_externals );
+      ( *( mi->second ).fp_obtain_externals_func )( p_externals );
 
       for( size_t i = 0; i < p_externals->size( ); i++ )
       {
@@ -234,37 +236,37 @@ module_load_error load_module( const string& module_name )
 
    auto_ptr< dynamic_library > ap_dynamic_library( new dynamic_library( dyn_lib_name, module_name ) );
 
-   fp_init_dir_func init_dir_func;
-   init_dir_func = ( fp_init_dir_func )ap_dynamic_library->bind_to_function( c_init_dir_func_name );
+   fp_init_dir fp_init_dir_func;
+   fp_init_dir_func = ( fp_init_dir )ap_dynamic_library->bind_to_function( c_init_dir_func_name );
 
-   fp_load_strings_func load_strings_func;
-   load_strings_func = ( fp_load_strings_func )ap_dynamic_library->bind_to_function( c_load_strings_func_name );
+   fp_load_strings fp_load_strings_func;
+   fp_load_strings_func = ( fp_load_strings )ap_dynamic_library->bind_to_function( c_load_strings_func_name );
 
-   fp_init_classes_func init_classes_func;
-   init_classes_func = ( fp_init_classes_func )ap_dynamic_library->bind_to_function( c_init_classes_func_name );
+   fp_init_classes fp_init_classes_func;
+   fp_init_classes_func = ( fp_init_classes )ap_dynamic_library->bind_to_function( c_init_classes_func_name );
 
-   fp_term_classes_func term_classes_func;
-   term_classes_func = ( fp_term_classes_func )ap_dynamic_library->bind_to_function( c_term_classes_func_name );
+   fp_term_classes fp_term_classes_func;
+   fp_term_classes_func = ( fp_term_classes )ap_dynamic_library->bind_to_function( c_term_classes_func_name );
 
-   fp_obtain_externals_func obtain_externals_func;
-   obtain_externals_func = ( fp_obtain_externals_func )ap_dynamic_library->bind_to_function( c_obtain_externals_func_name );
+   fp_obtain_externals fp_obtain_externals_func;
+   fp_obtain_externals_func = ( fp_obtain_externals )ap_dynamic_library->bind_to_function( c_obtain_externals_func_name );
 
-   fp_obtain_module_details_func obtain_module_details_func;
-   obtain_module_details_func = ( fp_obtain_module_details_func )ap_dynamic_library->bind_to_function( c_obtain_module_details_func_name );
+   fp_obtain_module_details fp_obtain_module_details_func;
+   fp_obtain_module_details_func = ( fp_obtain_module_details )ap_dynamic_library->bind_to_function( c_obtain_module_details_func_name );
 
    const module_details* p_details;
-   ( *obtain_module_details_func )( p_details );
+   ( *fp_obtain_module_details_func )( p_details );
 
-   ( *init_dir_func )( directory.c_str( ) );
+   ( *fp_init_dir_func )( directory.c_str( ) );
 
-   if( !( *load_strings_func )( p_details->p_name ) )
+   if( !( *fp_load_strings_func )( p_details->p_name ) )
       throw runtime_error( "unexpected error loading module strings for '"
        + directory + p_details->p_name + "' (file missing or contains bad formatting?)" );
 
-   ( *init_classes_func )( p_details->p_id );
+   ( *fp_init_classes_func )( p_details->p_id );
 
    externals_container* p_externals;
-   ( *obtain_externals_func )( p_externals );
+   ( *fp_obtain_externals_func )( p_externals );
 
    for( size_t i = 0; i < p_externals->size( ); i++ )
    {
@@ -277,14 +279,14 @@ module_load_error load_module( const string& module_name )
 
    if( g_module_ids.count( directory + p_details->p_id ) )
    {
-      ( *term_classes_func )( p_details->p_id );
+      ( *fp_term_classes_func )( p_details->p_id );
 
       throw runtime_error( "module id '" + string( p_details->p_id )
        + "' is already being used by '" + g_module_ids[ directory + p_details->p_id ] + "'" );
    }
 
    g_modules.insert( module_value_type( directory + p_details->p_id,
-    module_library_info( p_details, ap_dynamic_library.get( ), term_classes_func, obtain_externals_func ) ) );
+    module_library_info( p_details, ap_dynamic_library.get( ), fp_term_classes_func, fp_obtain_externals_func ) ) );
 
    g_module_ids.insert( make_pair( directory + p_details->p_id, p_details->p_name ) );
    g_module_names.insert( make_pair( directory + p_details->p_name, p_details->p_id ) );
@@ -307,7 +309,7 @@ module_unload_error unload_module( const string& module_id_or_name )
       return e_module_unload_error_name_unknown;
 
    externals_container* p_externals;
-   ( *( mi->second ).obtain_externals_func )( p_externals );
+   ( *( mi->second ).fp_obtain_externals_func )( p_externals );
 
    for( size_t i = 0; i < p_externals->size( ); i++ )
    {
@@ -320,7 +322,7 @@ module_unload_error unload_module( const string& module_id_or_name )
 
    if( --( mi->second ).ref_count == 0 )
    {
-      ( *( mi->second ).term_classes_func )( module_id_from_id_or_name( module_id_or_name ).c_str( ) );
+      ( *( mi->second ).fp_term_classes_func )( module_id_from_id_or_name( module_id_or_name ).c_str( ) );
 
       delete ( mi->second ).p_dynamic_library;
       g_modules.erase( mi );
@@ -396,10 +398,10 @@ void init_module_class_field_info( const string& module_id_or_name,
          map< string, string > field_ids;
          map< string, string > field_names;
 
-         fp_obtain_class_registry_func obtain_class_registry_func;
+         fp_obtain_class_registry obtain_class_registry_func;
 
          obtain_class_registry_func
-          = ( fp_obtain_class_registry_func )( module_info ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+          = ( fp_obtain_class_registry )( module_info ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
          const class_registry_container* p_class_registry;
          ( *obtain_class_registry_func )( p_class_registry );
@@ -440,10 +442,10 @@ module_string_list_error list_module_strings( const string& module_id_or_name, o
    if( mi == g_modules.end( ) )
       return e_module_string_list_error_name_unknown;
 
-   fp_obtain_module_strings_func obtain_module_strings_func;
+   fp_obtain_module_strings obtain_module_strings_func;
 
    obtain_module_strings_func
-    = ( fp_obtain_module_strings_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_module_strings_func_name );
+    = ( fp_obtain_module_strings )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_module_strings_func_name );
 
    const module_strings_container* p_module_strings;
    ( *obtain_module_strings_func )( p_module_strings );
@@ -468,10 +470,10 @@ module_class_field_list_error list_module_class_fields(
    if( mi == g_modules.end( ) )
       return e_module_class_field_list_error_name_unknown;
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -545,10 +547,10 @@ module_class_procedure_list_error list_module_class_procedures(
    if( mi == g_modules.end( ) )
       return e_module_class_procedure_list_error_name_unknown;
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -638,9 +640,9 @@ class_base* construct_object( const string& module_id_or_name, const string& cla
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
    {
-      fp_create_class_object_func create_class_object_func;
+      fp_create_class_object create_class_object_func;
       create_class_object_func
-       = ( fp_create_class_object_func )( mi->second ).p_dynamic_library->bind_to_function( c_create_class_object_func_name );
+       = ( fp_create_class_object )( mi->second ).p_dynamic_library->bind_to_function( c_create_class_object_func_name );
 
       ( *create_class_object_func )( class_id.c_str( ), p_class_base );
    }
@@ -659,9 +661,9 @@ void destroy_object( const string& module_id_or_name, const string& class_id, cl
    module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
    {
-      fp_destroy_class_object_func destroy_class_object_func;
+      fp_destroy_class_object destroy_class_object_func;
       destroy_class_object_func
-       = ( fp_destroy_class_object_func )( mi->second ).p_dynamic_library->bind_to_function( c_destroy_class_object_func_name );
+       = ( fp_destroy_class_object )( mi->second ).p_dynamic_library->bind_to_function( c_destroy_class_object_func_name );
 
       ( *destroy_class_object_func )( class_id.c_str( ), p_cb );
       p_cb = 0;
@@ -680,10 +682,10 @@ void get_class_info_for_module_class( const string& module_id_or_name, const str
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_info_for_module_class" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -846,10 +848,10 @@ bool get_module_class_has_derivations( const string& module_id_or_name, const st
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_module_class_has_derivations" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -874,10 +876,10 @@ void get_foreign_key_info_for_module_class( const string& module_id_or_name,
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_foreign_key_info_for_module_class" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -901,10 +903,10 @@ const procedure_info_container& get_procedure_info_for_module_class( const strin
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_procedure_info_for_module_class" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -930,10 +932,10 @@ string get_sql_columns_for_module_class( const string& module_id_or_name, const 
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_columns_for_module_class" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
@@ -961,10 +963,10 @@ void get_sql_indexes_for_module_class(
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_indexes_for_module_class" );
 
-   fp_obtain_class_registry_func obtain_class_registry_func;
+   fp_obtain_class_registry obtain_class_registry_func;
 
    obtain_class_registry_func
-    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+    = ( fp_obtain_class_registry )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
 
    const class_registry_container* p_class_registry;
    ( *obtain_class_registry_func )( p_class_registry );
