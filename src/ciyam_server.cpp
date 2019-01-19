@@ -66,8 +66,10 @@ int main( int argc, char* argv[ ] );
 sigset_t sig_set;
 #endif
 
-size_t g_active_sessions;
-volatile sig_atomic_t g_server_shutdown;
+size_t g_active_sessions = 0;
+size_t g_active_listeners = 0;
+
+volatile sig_atomic_t g_server_shutdown = 0;
 
 #ifdef _WIN32
 LPSTR lpServiceName = "CIYAM Server";
@@ -493,7 +495,6 @@ int main( int argc, char* argv[ ] )
       {
          ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
-         is_update = false;
          file_remove( c_update_signal_file );
 
          fp_trace_flags fp_trace_flags_func;
@@ -553,13 +554,18 @@ int main( int argc, char* argv[ ] )
 
             if( okay )
             {
-               if( !g_is_quiet )
-                  cout << "server now listening on port " << g_port << "..." << endl;
+               if( !is_update )
+               {
+                  if( !g_is_quiet )
+                     cout << "server now listening on port " << g_port << "..." << endl;
 
-               string start_message( "server started on port "
-                + to_string( g_port ) + " (pid = " + pid + ")" );
+                  string start_message( "server started on port "
+                   + to_string( g_port ) + " (pid = " + pid + ")" );
 
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+               }
+
+               is_update = false;
 
                file_remove( c_shutdown_signal_file );
 
@@ -608,9 +614,22 @@ int main( int argc, char* argv[ ] )
                s.close( );
                file_remove( c_shutdown_signal_file );
 
-               if( !g_is_quiet )
-                  cout << "server shutdown (due to interrupt) now completed..." << endl;
-               ( *fp_log_trace_string_func )( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
+               if( !is_update )
+               {
+                  if( !g_is_quiet )
+                     cout << "server shutdown (due to interrupt) now completed..." << endl;
+                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
+               }
+               else
+               {
+                  g_server_shutdown = 1;
+
+                  // NOTE: Wait for all active sessions and peer listeners to finish up before continuing.
+                  while( g_active_sessions || g_active_listeners )
+                     msleep( c_accept_timeout * 2 );
+
+                  g_server_shutdown = 0;
+               }
             }
             else
             {
@@ -628,6 +647,11 @@ int main( int argc, char* argv[ ] )
 
          if( !is_update )
             break;
+
+         ( *fp_log_trace_string_func )( TRACE_ANYTHING, "*** reloading ciyam_base library ***" );
+
+         // NOTE: Force the dynamic library to be unloaded.
+         ap_dynamic_library.reset( 0 );
       }
    }
    catch( exception& x )

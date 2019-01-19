@@ -602,8 +602,7 @@ string get_raw_system_variable( const string& name )
    if( g_variables.count( c_special_variable_sys_var_prefix ) )
       sys_var_prefix = g_variables[ c_special_variable_sys_var_prefix ];
 
-   g_variables.insert(
-    make_pair( to_string( c_special_variable_unix_timestamp ), to_string( unix_timestamp( ) ) ) );
+   g_variables[ to_string( c_special_variable_unix_timestamp ) ] = to_string( unix_timestamp( ) ); 
 
    // NOTE: One or more persistent variables can have their values
    // either stored or restored depending upon the prefix used and

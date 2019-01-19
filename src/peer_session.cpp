@@ -49,6 +49,8 @@
 using namespace std;
 
 extern size_t g_active_sessions;
+extern size_t g_active_listeners;
+
 extern volatile sig_atomic_t g_server_shutdown;
 
 namespace
@@ -124,6 +126,18 @@ inline void issue_error( const string& message )
 inline void issue_warning( const string& message )
 {
    TRACE_LOG( TRACE_SESSIONS, string( "peer session warning: " ) + message );
+}
+
+void increment_active_listeners( )
+{
+   guard g( g_mutex );
+   ++g_active_listeners;
+}
+
+void decrement_active_listeners( )
+{
+   guard g( g_mutex );
+   --g_active_listeners;
 }
 
 string get_hello_data( string& hello_hash )
@@ -1871,6 +1885,8 @@ void peer_listener::on_start( )
 {
    try
    {
+      increment_active_listeners( );
+
       tcp_socket s;
       bool okay = s.open( );
 
@@ -1984,6 +2000,8 @@ void peer_listener::on_start( )
    TRACE_LOG( TRACE_SESSIONS,
     "peer listener finished (port " + to_string( port ) + ")"
     + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+
+   decrement_active_listeners( );
 
    delete this;
 }

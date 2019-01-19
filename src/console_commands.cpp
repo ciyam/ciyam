@@ -2299,12 +2299,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             str = get_input_from_choices( msg );
       }
 
-#ifdef __GNUG__
-#  ifdef RDLINE_SUPPORT
-      if( isatty( STDIN_FILENO ) && !is_executing_commands && !str.empty( ) && str != last_command )
-         add_history( str.c_str( ) );
-#  endif
-#endif
       string str_for_history( str );
 
       string error_context;
@@ -3168,6 +3162,13 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
       if( add_to_history && !str_for_history.empty( ) )
       {
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+         if( isatty( STDIN_FILENO ) )
+            add_history( str_for_history.c_str( ) );
+#  endif
+#endif
+
          command_history.push_back( str_for_history );
 
          if( command_history.size( ) > c_max_history )
