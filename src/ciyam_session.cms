@@ -21,7 +21,7 @@ peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/fo
 peer_block_info "get new peer block information" <val//blockchain><val//password>[<val//account>]
 peer_account_info "get new peer account information" <val//blockchain><val//password>[<val//exponent>]
 peer_account_mint "start or stop minting or list minting peer accounts" <val//blockchain>[<val/-k=/pubkey>|<opt/-stop/stop>][<val//password>]
-peer_persist_file "add/extract a local file from peer repository storage" [<val/-h=/hash>][<val/-k=/pubkey>]<val//filename><val//password>
+peer_persist_file "create/decrypt a peer repository file request/response" [<val/-h=/hash>][<val/-k=/pubkey>]<val//filename><val//password>
 peer_transactions "create and process application tx scripts" <val//blockchain>
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>
 crypto_hash "output hash digest for data" [<opt/-512/sha512>][<opt/-hex/hex_decode>]<oval//data>
@@ -101,6 +101,8 @@ system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value
 system_listeners "list system listeners"
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
+decode "decode base64 to hex" <val//data>
+encode "encode hex to base64" <val//data>
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>
 password "retrieve an encrypted system password" <val//name>
 passtotp "retrieve a TOTP password" <val//secret>
@@ -110,7 +112,7 @@ smtpinfo "retrieves the sendmail sender address"
 starttls "start TLS session"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 externals "display a list of known external services"
-runscript "run an external script or program" [<val//script_name>]
+runscript "run an external script or program" <val//script_name>
 timezones "display a list of known timezones"
 utc_now "get the current UTC time"
 utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>

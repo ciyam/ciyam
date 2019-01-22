@@ -1418,7 +1418,7 @@ fissile_string get_fissile_value(
 }
 
 void process_fissile_commands(
- ostream& outs, bool interractive,
+ ostream& outs, bool interactive,
  const string& input, fissile_string& fissile_data,
  string& last_fissile_line, fissile_string& last_fissile_output,
  map< string, fissile_string >& fissile_values, bool& use_special_fissile_character )
@@ -1549,7 +1549,7 @@ void process_fissile_commands(
                else
                   outs << get_fissile_numeric( fissile_values, default_base, final_output );
 
-               if( interractive )
+               if( interactive )
                   outs << endl;
             }
             else if( !final_execute.empty( ) )
@@ -1815,7 +1815,7 @@ void process_fissile_commands(
 
                outs << fissile_data;
 
-               if( interractive )
+               if( interactive )
                   outs << endl;
             }
          }
@@ -1930,7 +1930,7 @@ void process_fissile_commands(
 
             outs << output;
 
-            if( interractive )
+            if( interactive )
                outs << endl;
          }
       }
@@ -1947,7 +1947,7 @@ void process_fissile_commands(
 
             outs << fissile_data;
 
-            if( interractive )
+            if( interactive )
                outs << endl;
          }
       }
@@ -1975,7 +1975,7 @@ void process_fissile_commands(
                   else
                      outs << get_fissile_numeric( fissile_values, default_base, value );
 
-                  if( interractive )
+                  if( interactive )
                      outs << endl;
                }
             }
@@ -2046,7 +2046,7 @@ void process_fissile_commands(
 
                      outs << output;
 
-                     if( interractive )
+                     if( interactive )
                         outs << endl;
                   }
                }
@@ -2073,7 +2073,7 @@ void process_fissile_commands(
 
                      outs << output;
 
-                     if( interractive )
+                     if( interactive )
                         outs << endl;
                   }
                }

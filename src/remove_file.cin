@@ -3,5 +3,5 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-.file_kill %1
+.file_kill -q %1
 .quit

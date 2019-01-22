@@ -316,7 +316,7 @@ string get_file_stats( )
    s = '[' + to_string( g_total_files ) + '/' + to_string( max_num )
     + ']' + format_bytes( g_total_bytes ) + '/' + format_bytes( max_bytes );
 
-   s += " ";
+   s += ":";
    s += to_string( g_hash_tags.size( ) );
    s += " tag(s)";
 
@@ -1106,8 +1106,9 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string list_file_tags( const string& pat,
- size_t max_tags, int64_t max_bytes, int64_t* p_min_bytes, deque< string >* p_hashes )
+string list_file_tags(
+ const string& pat, size_t max_tags, int64_t max_bytes,
+ int64_t* p_min_bytes, deque< string >* p_hashes, bool include_multiples )
 {
    guard g( g_mutex );
 
@@ -1128,12 +1129,24 @@ string list_file_tags( const string& pat,
       {
          if( wildcard_match( pat, i->first ) )
          {
-            ++num_tags;
+            // NOTE: Skip matching tags for files that have more than one tag.
+            if( !include_multiples )
+            {
+               multimap< string, string >::iterator j = g_hash_tags.lower_bound( i->second );
+
+               if( j != g_hash_tags.end( ) && ++j != g_hash_tags.end( ) )
+               {
+                  if( j->first == i->second )
+                     continue;
+               }
+            }
 
             int64_t next_bytes = file_bytes( i->second );
 
             if( max_bytes && num_bytes + next_bytes > max_bytes )
                continue;
+
+            ++num_tags;
 
             if( !min_bytes || next_bytes < min_bytes )
                min_bytes = next_bytes;
@@ -1159,12 +1172,24 @@ string list_file_tags( const string& pat,
    {
       for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
       {
-         ++num_tags;
+         // NOTE: Skip matching tags for files that have more than one tag.
+         if( !include_multiples )
+         {
+            multimap< string, string >::iterator j = g_hash_tags.lower_bound( i->second );
+
+            if( j != g_hash_tags.end( ) && ++j != g_hash_tags.end( ) )
+            {
+               if( j->first == i->second )
+                  continue;
+            }
+         }
 
          int64_t next_bytes = file_bytes( i->second );
 
          if( max_bytes && num_bytes + next_bytes > max_bytes )
             break;
+
+         ++num_tags;
 
          if( !min_bytes || next_bytes < min_bytes )
             min_bytes = next_bytes;
@@ -1898,18 +1923,21 @@ string relegate_timestamped_files( const string& hash,
       string timestamp_expr( c_timestamp_tag_prefix );
       timestamp_expr += "*";
 
-      string all_tags( list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &file_hashes ) );
+      string all_tags( list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
 
-      vector< string > tags;
-      split( all_tags, tags, '\n' );
-
-      if( tags.size( ) != file_hashes.size( ) )
-         throw runtime_error( "unexpected tags.size( ) != file_hashes.size( )" );
-
-      for( size_t i = 0; i < tags.size( ); i++ )
+      if( !all_tags.empty( ) )
       {
-         if( tags[ i ].find( c_important_file_suffix ) != string::npos )
-            importants.insert( file_hashes[ i ] );
+         vector< string > tags;
+         split( all_tags, tags, '\n' );
+
+         if( tags.size( ) != file_hashes.size( ) )
+            throw runtime_error( "unexpected tags.size( ) != file_hashes.size( )" );
+
+         for( size_t i = 0; i < tags.size( ); i++ )
+         {
+            if( tags[ i ].find( c_important_file_suffix ) != string::npos )
+               importants.insert( file_hashes[ i ] );
+         }
       }
    }
 

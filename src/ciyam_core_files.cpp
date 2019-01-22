@@ -4116,12 +4116,49 @@ string get_account_msg_secret( const string& blockchain, const string& password,
    return key_info.msg_secret;
 }
 
-string create_peer_repository_entry_info( const string& filename, const string& password )
+string create_peer_repository_entry_pull_info( const string& hash )
 {
    string retval;
 
 #ifndef SSL_SUPPORT
-   throw runtime_error( "create_peer_repository_entry_info requires SSL support" );
+   throw runtime_error( "create_peer_repository_entry_pull_info requires SSL support" );
+#else
+   string local_hash, local_public_key, master_public_key;
+
+   if( fetch_repository_entry_record( hash,
+    local_hash, local_public_key, master_public_key, false ) && has_file( local_hash ) )
+   {
+      string file_data( c_file_type_str_blob );
+
+      file_data += c_file_repository_meta_data_line_prefix;
+      file_data += c_file_repository_meta_data_info_type_raw;
+      file_data += '\n';
+
+      file_data += c_file_repository_public_key_line_prefix;
+      file_data += base64::encode( hex_decode( local_public_key ) );
+      file_data += '\n';
+
+      file_data += c_file_repository_source_hash_line_prefix;
+      file_data += base64::encode( hex_decode( local_hash ) );
+      file_data += '\n';
+
+      file_data += c_file_repository_target_hash_line_prefix;
+      file_data += base64::encode( hex_decode( hash ) );
+
+      // NOTE: Don't allow compression to help with interactive testing.
+      retval = create_raw_file( file_data, false );
+   }
+#endif
+
+   return retval;
+}
+
+string create_peer_repository_entry_push_info( const string& filename, const string& password )
+{
+   string retval;
+
+#ifndef SSL_SUPPORT
+   throw runtime_error( "create_peer_repository_entry_push_info requires SSL support" );
 #else
    if( !file_exists( filename ) )
       throw runtime_error( "file '" + filename + "' not found" );
@@ -4137,7 +4174,9 @@ string create_peer_repository_entry_info( const string& filename, const string& 
    file_data += c_file_repository_meta_data_info_type_raw;
    file_data += '\n';
 
-   private_key priv_key( sha256( file_hash + password ).get_digest_as_string( ) );
+   // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+   // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+   private_key priv_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) );
 
    file_data += c_file_repository_public_key_line_prefix;
    file_data += priv_key.get_public( true, true );
@@ -4146,32 +4185,65 @@ string create_peer_repository_entry_info( const string& filename, const string& 
    file_data += c_file_repository_source_hash_line_prefix;
    file_data += base64::encode( hex_decode( file_hash ) );
 
-   retval = create_raw_file( file_data );
+   // NOTE: Don't allow compression to help with interactive testing.
+   retval = create_raw_file( file_data, false );
 #endif
 
    return retval;
 }
 
-void extract_repository_entry_file( const string& hash, const string& filename, const string& password )
+void decrypt_pulled_peer_file( const string& dest_hash, const string& src_hash, const string& password )
 {
 #ifndef SSL_SUPPORT
-   throw runtime_error( "extract_repository_entry_file requires SSL support" );
+   throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
 #else
-   string local_hash, local_public_key, master_public_key;
-   fetch_repository_entry_record( hash, local_hash, local_public_key, master_public_key );
+   string all_tags( get_hash_tags( src_hash ) );
 
-   private_key priv_key( sha256( hash + password ).get_digest_as_string( ) );
+   vector< string > tags;
+   if( !all_tags.empty( ) )
+   {
+      split( all_tags, tags, '\n' );
 
-   if( master_public_key != hex_encode( base64::decode( priv_key.get_public( true, true ) ) ) )
-      throw runtime_error( "password is incorrect" );
+      string public_key_in_hex;
 
-   public_key pub_key( local_public_key );
-   string file_data( extract_file( local_hash, "" ) );
+      // NOTE: The source file is expected to have a tag that starts with a tilda
+      // and is followed by the public key (in hex) for the ephemeral private key
+      // that had been used to encrypt the content.
+      for( size_t i = 0; i < tags.size( ); i++ )
+      {
+         string next( tags[ i ] );
 
-   stringstream ss( file_data );
-   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+         if( next.size( ) > 48 && next[ 0 ] == '~' )
+         {
+            public_key_in_hex = next.substr( 1 );
+            break;
+         }
+      }
 
-   write_file( filename, ss.str( ) );
+      if( public_key_in_hex.empty( ) )
+         throw runtime_error( "unable to locate peer public key tag for file '" + src_hash + "'" );
+      else
+      {
+         public_key pub_key( public_key_in_hex );
+
+         // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+         // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+         private_key priv_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) );
+
+         string file_data( extract_file( src_hash, "" ) );
+
+         stringstream ss( file_data );
+         crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+
+         string hash( create_raw_file( string( c_file_type_str_blob ) + ss.str( ) ) );
+
+         if( hash != dest_hash )
+         {
+            delete_file( hash );
+            throw runtime_error( "cannot decrypt peer file (bad password or incorrect content)" );
+         }
+      }
+   }
 #endif
 }
 

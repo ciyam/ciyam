@@ -5424,13 +5424,16 @@ void store_repository_entry_record( const string& key,
    gap_ofs->store_file( key, 0, &sio_data );
 }
 
-void fetch_repository_entry_record( const string& key,
- string& local_hash, string& local_public_key, string& master_public_key )
+bool fetch_repository_entry_record( const string& key,
+ string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( c_file_repository_folder );
+
+   if( !must_exist && !gap_ofs->has_file( key ) )
+      return false;
 
    stringstream sio_data;
    gap_ofs->get_file( key, &sio_data, true );
@@ -5440,6 +5443,8 @@ void fetch_repository_entry_record( const string& key,
    local_hash = reader.read_attribute( c_attribute_local_hash );
    local_public_key = reader.read_attribute( c_attribute_local_public_key );
    master_public_key = reader.read_attribute( c_attribute_master_public_key );
+
+   return true;
 }
 
 string top_next_peer_file_hash_to_get( )

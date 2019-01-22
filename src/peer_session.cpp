@@ -87,6 +87,13 @@ const size_t c_recconect_timeout = 1000;
 const size_t c_request_throttle_sleep_time = 250;
 #endif
 
+enum op
+{
+   e_op_chk,
+   e_op_pip,
+   e_op_init
+};
+
 enum peer_state
 {
    e_peer_state_invalid,
@@ -504,34 +511,58 @@ void process_core_file( const string& hash, const string& blockchain )
 }
 
 #ifdef SSL_SUPPORT
-void process_repository_file( const string& hash )
+void process_repository_file( const string& hash_info, bool use_dummy_private_key = false )
 {
    guard g( g_mutex );
 
-   string::size_type pos = hash.find( ':' );
+   string::size_type pos = hash_info.find( ':' );
 
    if( pos == string::npos )
       throw runtime_error( "unexpected missing public key for process_repository_file" );
 
-   string file_data( extract_file( hash.substr( 0, pos ), "" ) );
+   string src_hash( hash_info.substr( 0, pos ) );
+   string extra_info( hash_info.substr( pos + 1 ) );
 
-   public_key pub_key( hash.substr( pos + 1 ), true );
-   private_key priv_key;
+   string file_data( extract_file( src_hash, "" ) );
 
-   stringstream ss( file_data );
-   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+   pos = extra_info.find( ';' );
 
-   file_data = string( c_file_type_str_blob ) + ss.str( );
+   // NOTE: If this file is the result of a repository pull request
+   // then tag it with both the target hash and public key (in hex)
+   // so it can be detected by a standard session to be decrypted.
+   if( pos != string::npos )
+   {
+      string target_hash( extra_info.substr( 0, pos ) );
+      string hex_pub_key( extra_info.substr( pos + 1 ) );
 
-   delete_file( hash.substr( 0, pos ) );
+      tag_file( '@' + target_hash, src_hash );
+      tag_file( '~' + hex_pub_key, src_hash );
+   }
+   else
+   {
+      public_key pub_key( extra_info, true );
 
-   string local_hash( create_raw_file( file_data, false ) );
+      auto_ptr< private_key > ap_priv_key;
 
-   store_repository_entry_record( hash.substr( 0, pos ),
-    local_hash, priv_key.get_public( ), pub_key.get_public( ) );
+      if( !use_dummy_private_key )
+         ap_priv_key.reset( new private_key );
+      else
+         ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+
+      stringstream ss( file_data );
+      crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
+
+      file_data = string( c_file_type_str_blob ) + ss.str( );
+
+      delete_file( src_hash );
+
+      string local_hash( create_raw_file( file_data, false ) );
+
+      store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+   }
 }
 
-string get_file_hash_from_put_data( const string& encoded_pubkey, const string& encoded_source_hash )
+string get_file_hash_from_put_data( const string& encoded_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
 {
    string retval;
 
@@ -543,7 +574,15 @@ string get_file_hash_from_put_data( const string& encoded_pubkey, const string& 
       // NOTE: Construct a public key object for the purpose of validation.
       public_key pubkey( encoded_pubkey, true );
 
-      retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + encoded_pubkey + c_repository_suffix;
+      string extra( encoded_pubkey );
+
+      if( !encoded_target_hash.empty( ) )
+      {
+         base64::validate( encoded_target_hash );
+         extra += ';' + hex_encode( base64::decode( encoded_target_hash ) );
+      }
+
+      retval = hex_encode( base64::decode( encoded_source_hash ) ) + ':' + extra + c_repository_suffix;
    }
    catch( ... )
    {
@@ -574,6 +613,9 @@ class socket_command_handler : public command_handler
       needs_blockchain_info = !blockchain.empty( );
       is_responder = ( session_state == e_peer_state_responder );
 
+      if( get_is_test_session( ) )
+         want_to_do_op( e_op_init );
+
       last_issued_was_put = !is_responder;
    }
 
@@ -603,6 +645,8 @@ class socket_command_handler : public command_handler
 
    const string& get_blockchain( ) const { return blockchain; }
 
+   bool get_is_test_session( ) const { return is_local && is_responder && blockchain.empty( ); }
+
    pair< string, string >& get_blockchain_info( ) { return blockchain_info; }
 
    string& prior_put( ) { return prior_put_hash; }
@@ -616,6 +660,8 @@ class socket_command_handler : public command_handler
    void pip_peer( const string& ip_address );
 
    void chk_file( const string& hash, string* p_response = 0 );
+
+   bool want_to_do_op( op o ) const;
 
    void issue_cmd_for_peer( );
 
@@ -856,6 +902,34 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
       throw runtime_error( "unexpected invalid chk response: " + response );
 }
 
+bool socket_command_handler::want_to_do_op( op o ) const
+{
+   // NOTE: These statics are only to provide consistent behaviour for a
+   // single interactive test session (and are not used by normal peers).
+   static unsigned int chk_count = 0;
+   static unsigned int pip_count = 0;
+
+   bool retval = false;
+
+   if( get_is_test_session( ) )
+   {
+      if( o == e_op_init )
+         chk_count = pip_count = 0;
+      else if( o == e_op_pip )
+         retval = ( ++pip_count % 5 == 0 );
+      else
+         retval = ( ++chk_count % 10 == 0 );
+   }
+   else
+   {
+      // KLUDGE: For now just randomly decide (this should instead
+      // be based upon the actual needs of the peer).
+      retval = ( rand( ) % 10 == 0 );
+   }
+
+   return retval;
+}
+
 void socket_command_handler::issue_cmd_for_peer( )
 {
    // NOTE: If a prior put no longer exists locally then it is to be expected
@@ -887,11 +961,9 @@ void socket_command_handler::issue_cmd_for_peer( )
          }
       }
    }
-   // KLUDGE: For now just randomly perform a "chk", "pip" or a "get" (this should instead be
-   // based upon the actual needs of the peer).
-   else if( !prior_put( ).empty( ) && rand( ) % 10 == 0 )
+   else if( !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
       chk_file( prior_put( ) );
-   else if( rand( ) % 10 == 0 )
+   else if( want_to_do_op( e_op_pip ) )
       pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
    else if( get_last_issued_was_put( ) )
    {
@@ -918,8 +990,9 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_core_file( next_hash, blockchain );
 #ifdef SSL_SUPPORT
          else
-            process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ) );
+            process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
 #endif
+
          if( !blockchain.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
             set_needs_blockchain_info( true );
       }
@@ -1089,7 +1162,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          // with the blockchain tag prefix (otherwise a peer might be able to find files
          // that are not intended for their discovery).
          if( !blockchain.empty( )
-          && tag_or_hash.length( ) != 64 && tag_or_hash.find( "c" + blockchain ) != 0 )
+          && tag_or_hash.find( "c" + blockchain ) != 0
+          && tag_or_hash.length( ) != ( c_sha256_digest_size * 2 ) )
             throw runtime_error( "invalid non-blockchain prefixed tag" );
 
          bool has = has_file( hash, false );
@@ -1149,6 +1223,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
+#ifdef SSL_SUPPORT
+            else
+            {
+               string pull_hash( create_peer_repository_entry_pull_info( hash ) );
+
+               if( !pull_hash.empty( ) )
+                  add_peer_file_hash_for_put( pull_hash );
+            }
+#endif
          }
          else
          {
@@ -1263,7 +1346,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                bool okay = false;
 
-               if( lines.size( ) == 3 )
+               if( lines.size( ) >= 3 )
                {
                   string::size_type pos = lines[ 0 ].find( c_file_repository_meta_data_line_prefix );
 
@@ -1284,10 +1367,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                               string source_hash(
                                lines[ 2 ].substr( strlen( c_file_repository_source_hash_line_prefix ) ) );
 
+                              string target_hash;
+
+                              if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
+                                 target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
+
 #ifndef SSL_SUPPORT
                               okay = true;
 #else
-                              string hash_info( get_file_hash_from_put_data( public_key, source_hash ) );
+                              string hash_info( get_file_hash_from_put_data( public_key, source_hash, target_hash ) );
 
                               if( !hash_info.empty( ) )
                               {
@@ -1331,7 +1419,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( has_file( hash ) )
          {
-            if( socket_handler.prior_put( ).empty( ) || ( rand( ) % 100 < 5 ) )
+            if( socket_handler.prior_put( ).empty( ) )
                socket_handler.prior_put( ) = hash;
          }
 
@@ -1704,7 +1792,7 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
    if( !blockchain.empty( ) && !has_tag( "c" + blockchain ) )
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
-   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
+   if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
    if( port.empty( ) )

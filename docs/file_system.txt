@@ -180,10 +180,10 @@ File System Statistics
 The "file_stats" command can be used to see a summary of the file system usage:
 
 > file_stats
-[3/1000]152 B/97.7 MiB 3 tag(s)
+[3/1000]152 B/100.0 MB:5 tag(s)
 
 This indicates that 3 out of a possible 1,000 files are currently stored with 152 bytes of the total capacity
-of 97.7 MiB being used with 3 file tags in existence.
+of 100 MB being used with 5 file tags in existence.
 
 There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
@@ -230,19 +230,19 @@ use for an archive is expected to already exist (i.e. it will not be created) as
 a "mount point" or a "drive" (depending upon whether using Linux or Windows).
 
 Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
-to hold up to 10MiB of data the create command would be as follows:
+to hold up to 10MB of data the create command would be as follows:
 
-file_archive -add /mnt/a001 10MiB 001
+file_archive -add /mnt/a001 10MB 001
 
 To see a list of archives that also displays their last known status use "file_archives". Assuming that there
 was no issue with the path (when adding it tests that it can access the path and write to it) then the output
 from the "file_archives" command would be as follows:
 
-001 [okay      ] (0 B/10.0 MiB) /mnt/a001
+001 [okay      ] (0 B/10.0 MB) /mnt/a001
 
 If the path wasn't accessible then you would instead see the following:
 
-001 [bad access] (0 B/10.0 MiB) /mnt/a001
+001 [bad access] (0 B/10.0 MB) /mnt/a001
 
 Assuming the issue with the path was then resolved use the "-status_update" option for "file_archives" for it
 to re-check that it can access and write to the path. It should be noted that the size that was specified for

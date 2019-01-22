@@ -13,6 +13,8 @@ const int c_tx_id_standard = 5;
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
+const char* const c_dummy = "dummy";
+
 const char* const c_meta_model_name = "Meta";
 
 const char* const c_meta_class_name_class = "Class";
@@ -34,6 +36,7 @@ const char* const c_system_variables_folder = "vars";
 const char* const c_file_repository_meta_data_line_prefix = "md:";
 const char* const c_file_repository_public_key_line_prefix = "pk:";
 const char* const c_file_repository_source_hash_line_prefix = "sh:";
+const char* const c_file_repository_target_hash_line_prefix = "th:";
 
 const char* const c_file_repository_meta_data_info_type_raw = "raw";
 

@@ -491,6 +491,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                }
                else if( response == string( c_response_not_found ) )
                {
+                  if( was_chk )
+                  {
+                     handle_command_response( response );
+
+                     response.erase( );
+                     continue;
+                  }
+
                   had_not_found = true;
 #ifdef DEBUG
                   cout << response;
