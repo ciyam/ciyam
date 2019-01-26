@@ -4145,7 +4145,7 @@ string create_peer_repository_entry_pull_info( const string& hash )
       file_data += c_file_repository_target_hash_line_prefix;
       file_data += base64::encode( hex_decode( hash ) );
 
-      // NOTE: Don't allow compression to help with interactive testing.
+      // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
       retval = create_raw_file( file_data, false );
    }
 #endif
@@ -4153,22 +4153,14 @@ string create_peer_repository_entry_pull_info( const string& hash )
    return retval;
 }
 
-string create_peer_repository_entry_push_info( const string& filename, const string& password )
+string create_peer_repository_entry_push_info( const string& file_hash, const string& password )
 {
    string retval;
 
 #ifndef SSL_SUPPORT
    throw runtime_error( "create_peer_repository_entry_push_info requires SSL support" );
 #else
-   if( !file_exists( filename ) )
-      throw runtime_error( "file '" + filename + "' not found" );
-
    string file_data( c_file_type_str_blob );
-   file_data += buffer_file( filename );
-
-   string file_hash( create_raw_file( file_data, 0, filename.c_str( ) ) );
-
-   file_data = string( c_file_type_str_blob );
 
    file_data += c_file_repository_meta_data_line_prefix;
    file_data += c_file_repository_meta_data_info_type_raw;
@@ -4185,7 +4177,7 @@ string create_peer_repository_entry_push_info( const string& filename, const str
    file_data += c_file_repository_source_hash_line_prefix;
    file_data += base64::encode( hex_decode( file_hash ) );
 
-   // NOTE: Don't allow compression to help with interactive testing.
+   // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
    retval = create_raw_file( file_data, false );
 #endif
 

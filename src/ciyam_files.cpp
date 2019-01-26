@@ -53,6 +53,8 @@ namespace
 
 const int c_status_info_pad_len = 10;
 
+const int c_depth_to_omit_blob_content = 999;
+
 const char* const c_timestamp_tag_prefix = "ts.";
 const char* const c_important_file_suffix = "!";
 
@@ -509,8 +511,17 @@ string file_type_info( const string& tag_or_hash,
    if( !file_exists( filename ) )
       throw runtime_error( "file '" + tag_or_hash + "' was not found" );
 
-   string data( buffer_file( filename ) );
+   long file_size = 0;
+   long max_to_buffer = 0;
 
+   // NOTE: If not going to output blob content then to make things faster
+   // only read the first byte to get the file type information then later
+   // re-read the whole file only if it is a "list".
+   if( max_depth == c_depth_to_omit_blob_content )
+      max_to_buffer = 1;
+
+   string data( buffer_file( filename, max_to_buffer, &file_size ) );
+   
    if( data.empty( ) )
       throw runtime_error( "unexpected empty file" );
 
@@ -522,7 +533,11 @@ string file_type_info( const string& tag_or_hash,
    if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
 
-   if( !is_compressed )
+   if( file_type == c_file_type_val_list && max_depth == c_depth_to_omit_blob_content )
+      data = buffer_file( filename );
+
+   if( !is_compressed
+    && ( file_type == c_file_type_val_list || max_depth != c_depth_to_omit_blob_content ) )
    {
       sha256 test_hash( data );
 
@@ -533,7 +548,7 @@ string file_type_info( const string& tag_or_hash,
    string final_data( data );
 
 #ifdef ZLIB_SUPPORT
-   if( is_compressed )
+   if( is_compressed && final_data.size( ) > 1 )
    {
       session_file_buffer_access file_buffer;
 
@@ -570,7 +585,7 @@ string file_type_info( const string& tag_or_hash,
          retval += "list]";
    }
 
-   string size_info( "(" + format_bytes( final_data.size( ) ) + ")" );
+   string size_info( "(" + format_bytes( file_size ) + ")" );
 
    if( expansion == e_file_expansion_none )
    {
@@ -594,36 +609,25 @@ string file_type_info( const string& tag_or_hash,
             retval += lower( hash );
          else
          {
-            string blob_info( final_data.substr( 1 ) );
+            retval += " " + lower( hash );
 
-            if( is_valid_utf8( blob_info ) )
+            if( add_size )
+               retval += " " + size_info;
+
+            if( max_depth && indent >= max_depth )
+               retval += "\n" + string( indent, ' ' ) + "...";
+            else if( max_depth != c_depth_to_omit_blob_content )
             {
-               retval += " " + lower( hash );
+               string blob_info( final_data.substr( 1 ) );
 
-               if( add_size )
-                  retval += " " + size_info;
-
-               if( max_depth && indent >= max_depth )
-                  retval += "\n" + string( indent, ' ' ) + "...";
-               else
+               if( is_valid_utf8( blob_info ) )
                {
                   retval += " [utf8]";
                   retval += "\n" + utf8_replace( blob_info, "\r", "" );
                }
-            }
-            else
-            {
-               retval += " " + lower( hash );
-
-               if( add_size )
-                  retval += " " + size_info;
-
-               if( max_depth && indent >= max_depth )
-                  retval += "\n" + string( indent, ' ' ) + "...";
                else
                {
                   retval += " [base64]";
-
                   retval += "\n" + base64::encode( blob_info );
                }
             }
@@ -1354,7 +1358,7 @@ void store_file( const string& hash, tcp_socket& socket,
          bool rc = true;
 
          if( file_type != c_file_type_val_blob )
-            validate_list( ( const char* )&file_buffer.get_buffer( )[ size ], &rc );
+            validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc );
 
          if( !rc )
             throw runtime_error( "invalid 'list' file" );
@@ -1364,7 +1368,7 @@ void store_file( const string& hash, tcp_socket& socket,
       bool rc = true;
 
       if( !is_compressed && file_type != c_file_type_val_blob )
-         validate_list( ( const char* )file_buffer.get_buffer( ), &rc );
+         validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc );
 
       if( !rc )
          throw runtime_error( "invalid 'list' file" );

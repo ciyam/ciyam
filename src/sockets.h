@@ -141,7 +141,8 @@ class tcp_socket
 enum ft_direction
 {
    e_ft_direction_send,
-   e_ft_direction_recv
+   e_ft_direction_recv,
+   e_ft_direction_recv_app
 };
 
 void file_transfer(

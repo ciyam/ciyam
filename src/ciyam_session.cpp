@@ -1779,18 +1779,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_peer_persist_file )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_hash ) );
+         string dest_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_dest_hash ) );
          string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_pubkey ) );
-         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_filename ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_tag_or_hash ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_peer_persist_file_password ) );
 
          if( !pubkey.empty( ) )
             password = session_shared_decrypt( pubkey, password );
 
-         if( !hash.empty( ) )
-            decrypt_pulled_peer_file( hash, filename, password );
+         string src_hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            src_hash = tag_file_hash( tag_or_hash );
+
+         if( !dest_hash.empty( ) )
+            decrypt_pulled_peer_file( dest_hash, src_hash, password );
          else
-            response = create_peer_repository_entry_push_info( filename, password );
+            response = create_peer_repository_entry_push_info( src_hash, password );
       }
       else if( command == c_cmd_ciyam_session_peer_transactions )
       {

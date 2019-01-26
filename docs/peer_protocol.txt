@@ -139,26 +139,29 @@ owner of a file creates a repository storage request (which will be later used v
 
 ./ciyam_client
 
-> peer_persist_file test.jpg test
-2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e
+> file_put test.jpg
+file_put a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+
+> peer_persist_file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 password
+8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54
 
 > file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
-> file_get 2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e
+> file_get 8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54
 
 > file_kill a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
-> file_kill 2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e
+> file_kill 8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54
 
 > quit
 
-The final argument in the "peer_persist_file" command (which is "test") is a password to generate a key pair.
+The final argument in the "peer_persist_file" command (i.e. "password") is a password to generate a key pair.
 The hash "a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753" is the content hash of "test.jpg"
-whilst "2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e" is the file repository push request
+whilst "8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54" is the file repository push request
 hash with its content being as follows:
 
 md:raw
-pk:ArqW9lvOj637RI0E01ZJCG9hoCAPRJz6w2QaxJrVPOBr
+pk:AqtK7SZmPjLTKlUPGRhYRU8CfQ4Hn7p5lh6ZK8Hju562
 sh:pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M=
 
 Next a peer session is started in order to send this file repository storage request via a "put" (a "get" for
@@ -171,7 +174,7 @@ issued for "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef"):
 (not found)
 put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
-> put 2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e
+> put 8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54
 put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
@@ -179,7 +182,7 @@ put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 > get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
-> ~rm 2ec565fe18b1488dfda358237b37a8f28d9e7d6fe1919e72ce24093f4b66809e
+> ~rm 8d0e868bc9fbf6c5ec4f7192d33e17042c8b6cba05f5e7e4c279abf31ac23d54
 
 > ~rm a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
@@ -189,8 +192,8 @@ get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
 After this the encrypted file content exists in the file system and the file repository contains an entry for
 tying the original content hash to the locally encrypted content. If using an "interactive test session" then
-the hash of the encrypted file will be 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e which
-in base64 format is "PCsAs+NxD0VhXKM4iFLaAuPVe4RR4j8S9pPiQFgWiT4=".
+the hash of the encrypted file will be c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c which
+in base64 format is "wuYo7wLCE4n+j1+Q562AXPUu2pOoUVX6Idoh3s0yUZw=".
 
 So let's assume the peer that initially pushed the repository file ("test.jpg") no longer possesses a copy of
 that file but does know the original file hash and the password for the master private key. In order to fetch
@@ -209,22 +212,22 @@ put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
 > chk a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 (not found)
-put 8adadafe131e762804dbcdb0b72e2ea07682efa20f7e67706ecfa395b88e39e1
+put f78a8ea4b26e7eed6266477841fbace99218ce009c5617b48493497876401b98
 
-> ~cat 8adadafe131e762804dbcdb0b72e2ea07682efa20f7e67706ecfa395b88e39e1
+> ~cat f78a8ea4b26e7eed6266477841fbace99218ce009c5617b48493497876401b98
 md:raw
 pk:Aj4XW1jZbIENUUW8Q0dWWoEPoWliHngyNgvZDe+Eyu9o
-sh:PCsAs+NxD0VhXKM4iFLaAuPVe4RR4j8S9pPiQFgWiT4=
+sh:wuYo7wLCE4n+j1+Q562AXPUu2pOoUVX6Idoh3s0yUZw=
 th:pascJuUlP7cxa1Hn9AaHGDcU4NaDA0lU4ej8Z7ykJ1M=
-> ~rm 8adadafe131e762804dbcdb0b72e2ea07682efa20f7e67706ecfa395b88e39e1
+> ~rm f78a8ea4b26e7eed6266477841fbace99218ce009c5617b48493497876401b98
 
 > put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 get cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
-> get 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e
+> get c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c
 put cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
-> ~rm 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e
+> ~rm c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c
 
 > ~rm cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
 
@@ -234,11 +237,11 @@ A final standard protocol session can now decrypt and extract the original file 
 
 ./ciyam_client
 
-> file_tag 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e @a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
+> file_tag c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c @a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
-> file_tag 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e ~023e175b58d96c810d5145bc4347565a810fa169621e7832360bd90def84caef68
+> file_tag c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c ~023e175b58d96c810d5145bc4347565a810fa169621e7832360bd90def84caef68
 
-> peer_persist_file -h=a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 3c2b00b3e3710f45615ca3388852da02e3d57b8451e23f12f693e2405816893e test
+> peer_persist_file -dh=a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 c2e628ef02c21389fe8f5f90e7ad805cf52eda93a85155fa21da21decd32519c password
 
 > file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 xxx.jpg
 
@@ -246,7 +249,7 @@ A final standard protocol session can now decrypt and extract the original file 
 
 > ~rm xxx.jpg
 
-> file_kill 8adadafe131e762804dbcdb0b72e2ea07682efa20f7e67706ecfa395b88e39e1
+> file_kill f78a8ea4b26e7eed6266477841fbace99218ce009c5617b48493497876401b98
 
 > file_kill a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 

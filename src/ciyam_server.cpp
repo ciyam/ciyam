@@ -488,6 +488,8 @@ int main( int argc, char* argv[ ] )
       string pid( to_string( get_pid( ) ) );
       set_environment_variable( "PID", pid.c_str( ) );
 
+      string shutdown_reason( "due to interrupt" );
+
       bool is_update = false;
       auto_ptr< dynamic_library > ap_dynamic_library;
 
@@ -547,6 +549,13 @@ int main( int argc, char* argv[ ] )
 
             ( *fp_register_listener_func )( g_port, "main" );
 
+            if( !is_update )
+            {
+               string init_message( "server started (pid = " + pid + ")" );
+
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, init_message.c_str( ) );
+            }
+
             okay = s.bind( address );
 
             if( okay )
@@ -554,16 +563,12 @@ int main( int argc, char* argv[ ] )
 
             if( okay )
             {
-               if( !is_update )
-               {
-                  if( !g_is_quiet )
-                     cout << "server now listening on port " << g_port << "..." << endl;
+               if( !g_is_quiet )
+                  cout << "server now listening on port " << g_port << "..." << endl;
 
-                  string start_message( "server started on port "
-                   + to_string( g_port ) + " (pid = " + pid + ")" );
+               string start_message( "main listener started on port " + to_string( g_port ) );
 
-                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
-               }
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
 
                is_update = false;
 
@@ -578,7 +583,10 @@ int main( int argc, char* argv[ ] )
                while( s && ( !g_server_shutdown || g_active_sessions ) )
                {
                   if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
+                  {
                      ++g_server_shutdown;
+                     shutdown_reason = "due to stop file";
+                  }
 
                   if( g_server_shutdown && !reported_shutdown )
                   {
@@ -614,13 +622,7 @@ int main( int argc, char* argv[ ] )
                s.close( );
                file_remove( c_shutdown_signal_file );
 
-               if( !is_update )
-               {
-                  if( !g_is_quiet )
-                     cout << "server shutdown (due to interrupt) now completed..." << endl;
-                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
-               }
-               else
+               if( is_update && !g_server_shutdown )
                {
                   g_server_shutdown = 1;
 
@@ -629,6 +631,19 @@ int main( int argc, char* argv[ ] )
                      msleep( c_accept_timeout * 2 );
 
                   g_server_shutdown = 0;
+               }
+
+               string finish_message( "main listener finished (port " + to_string( g_port ) + ")" );
+
+               ( *fp_log_trace_string_func )( TRACE_ANYTHING, finish_message.c_str( ) );
+
+               if( !is_update )
+               {
+                  if( !g_is_quiet )
+                     cout << "server shutdown (" << shutdown_reason << ") now completed..." << endl;
+
+                  string term_message( "server shutdown (" + shutdown_reason + ")" );
+                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, term_message.c_str( ) );
                }
             }
             else

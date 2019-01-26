@@ -24,6 +24,7 @@
 
 #include "regex.h"
 #include "config.h"
+#include "format.h"
 #include "macros.h"
 #include "sha256.h"
 #include "sockets.h"
@@ -66,6 +67,8 @@ const char* const c_cmd_parm_args_file_name = "name";
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
+
+const char* const c_list_file_ext = ".list";
 
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
@@ -145,6 +148,10 @@ class ciyam_console_command_handler : public console_command_handler
     :
     port( c_default_ciyam_port ),
     host( c_default_ciyam_host ),
+    chunk( 0 ),
+    file_pos( 0 ),
+    file_bytes( 0 ),
+    chunk_size( 0 ),
     socket( socket ),
     had_chk_command( false )
    {
@@ -158,6 +165,20 @@ class ciyam_console_command_handler : public console_command_handler
    int port;
    string host;
 
+   int chunk;
+
+   long file_pos;
+   long file_bytes;
+
+   long chunk_size;
+
+   string file_name;
+   string file_extra;
+
+   string file_list_data;
+
+   deque< string > additional_commands;
+
 #ifdef SSL_SUPPORT
    ssl_socket& socket;
 #else
@@ -166,10 +187,25 @@ class ciyam_console_command_handler : public console_command_handler
 
    bool had_chk_command;
 
+   string get_additional_command( );
+
    string preprocess_command_and_args( const string& cmd_and_args );
 
    void process_custom_startup_option( size_t num, const string& option );
 };
+
+string ciyam_console_command_handler::get_additional_command( )
+{
+   string cmd;
+
+   if( !additional_commands.empty( ) )
+   {
+      cmd = additional_commands.front( );
+      additional_commands.pop_front( );
+   }
+
+   return cmd;
+}
 
 string ciyam_console_command_handler::preprocess_command_and_args( const string& cmd_and_args )
 {
@@ -191,6 +227,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool was_pip = false;
          bool was_chk_tag = false;
          bool was_chk_token = false;
+         bool was_list_prefix = false;
+         bool delete_after_put = false;
 
          string get_dest_file, put_source_file;
 
@@ -215,6 +253,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
              || str.substr( 0, pos ) == "file_get" || str.substr( 0, pos ) == "file_put" )
             {
                string::size_type spos = data.find( ' ' );
+
                if( spos != string::npos )
                {
                   if( str.substr( 0, pos ) == "file_put" )
@@ -253,6 +292,35 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                put_source_file = data;
 
+               if( !put_source_file.empty( ) && put_source_file[ 0 ] >= '1' && put_source_file[ 0 ] <= '9' )
+               {
+                  pos = put_source_file.find( '*' );
+
+                  if( pos != string::npos )
+                  {
+                     chunk = 0;
+
+                     file_pos = 0;
+                     file_bytes = 0;
+
+                     file_extra = extra;
+
+                     extra.erase( );
+                     file_list_data.clear( );
+
+                     chunk_size = unformat_bytes( put_source_file.substr( 0, pos ) );
+                     put_source_file.erase( 0, pos + 1 );
+
+                     if( chunk_size <= 1 )
+                        throw runtime_error( "chunk size too small" );
+
+                     // NOTE: Reduce the chunk size by one due to the one byte "type" prefix.
+                     --chunk_size;
+
+                     file_name = put_source_file;
+                  }
+               }
+
                if( !file_exists( put_source_file ) )
                {
                   cerr << "Error: File '" << put_source_file << "' not found." << endl;
@@ -265,9 +333,75 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   return string( );
                }
 
+               string chunk_name;
+
+               if( chunk_size )
+               {
+                  chunk_name = file_name;
+                  chunk_name += '.' + to_comparable_string( chunk, false, 5 );
+
+                  string chunk_data;
+
+                  if( chunk == 0 )
+                     chunk_data = buffer_file( file_name, chunk_size, &file_bytes );
+                  else
+                     chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
+
+                  write_file( chunk_name, chunk_data );
+
+                  delete_after_put = true;
+                  put_source_file = chunk_name;
+
+                  if( file_bytes <= chunk_size )
+                  {
+                     file_bytes = 0;
+                     chunk_size = 0;
+                  }
+                  else
+                  {
+                     ++chunk;
+                     file_bytes -= chunk_size;
+
+                     additional_commands.push_back( "file_put " + file_name );
+                  }
+               }
+               else if( !file_name.empty( ) )
+               {
+                  was_list_prefix = true;
+                  prefix = string( c_file_type_str_list );
+
+                  string list_name( file_name );
+                  list_name += string( c_list_file_ext );
+
+                  delete_after_put = true;
+                  put_source_file = list_name;
+
+                  file_name.erase( );
+               }
+
                data = buffer_file( put_source_file );
 
-               str += sha256( prefix + data ).get_digest_as_string( ) + extra;
+               string hash( sha256( prefix + data ).get_digest_as_string( ) );
+
+               if( !chunk_name.empty( ) )
+               {
+                  if( !file_list_data.empty( ) )
+                     file_list_data += '\n';
+
+                  file_list_data += hash + ' ' + chunk_name;
+
+                  if( file_bytes == 0 )
+                  {
+                     string list_name( file_name );
+                     list_name += string( c_list_file_ext );
+
+                     write_file( list_name, file_list_data );
+
+                     additional_commands.push_back( "file_put " + file_name + file_extra );
+                  }
+               }
+
+               str += hash + extra;
 
                handle_command_response( str );
             }
@@ -306,9 +440,22 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
 
+                  bool appending = false;
+                  bool append_chunks = false;
                   bool delete_after_transfer = false;
 
-                  if( file_exists( filename ) )
+                  if( !filename.empty( ) )
+                  {
+                     if( filename[ 0 ] == '?' )
+                        appending = true;
+                     else if( filename[ 0 ] == '*' )
+                        append_chunks = true;
+                  }
+
+                  if( appending || append_chunks )
+                     filename.erase( 0, 1 );
+
+                  if( !appending && file_exists( filename ) )
                   {
                      handle_command_response( "local file '" + filename + "' already exists", true );
 
@@ -316,9 +463,12 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      filename = "~" + uuid( ).as_string( );
                   }
 
+                  if( appending )
+                     handle_command_response( str );
+
                   file_transfer( filename, socket,
-                   e_ft_direction_recv, c_max_file_transfer_size,
-                   c_response_okay_more, c_file_transfer_initial_timeout,
+                   ( !appending ? e_ft_direction_recv : e_ft_direction_recv_app ),
+                   c_max_file_transfer_size, c_response_okay_more, c_file_transfer_initial_timeout,
                    c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
 #ifdef ZLIB_SUPPORT
@@ -334,9 +484,32 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      expanded_data.erase( usize );
 
-                     write_file( filename, expanded_data );
+                     write_file( filename, expanded_data, appending );
                   }
 #endif
+
+                  // NOTE: If the local filename was prefixed with a '*' and the file content is a list
+                  // then will assume it is a list of "chunks" that must be appended one after another.
+                  if( append_chunks && ( prefix & c_file_type_char_list ) )
+                  {
+                     delete_after_transfer = true;
+
+                     string all_chunks( buffer_file( filename ) );
+
+                     if( !all_chunks.empty( ) )
+                     {
+                        vector< string > chunks;
+                        split( all_chunks, chunks, '\n' );
+
+                        for( size_t i = 0; i < chunks.size( ); i++ )
+                        {
+                           string next( chunks[ i ] );
+                           string::size_type pos = next.find( ' ' );
+
+                           additional_commands.push_back( "file_get " + next.substr( 0, pos ) + " ?" + filename );
+                        }
+                     }
+                  }
 
                   if( delete_after_transfer )
                      file_remove( filename );
@@ -347,10 +520,22 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   unsigned char prefix( !put_source_file.empty( ) ? c_file_type_char_blob : '\0' );
 
+                  // NOTE: For a file that has been split into chunks the final file transfer is a list.
+                  if( prefix && was_list_prefix )
+                     prefix = c_file_type_char_list;
+
+                  was_list_prefix = false;
+
                   file_transfer( filename, socket,
                    e_ft_direction_send, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_initial_timeout,
                    c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+
+                  if( delete_after_put )
+                  {
+                     delete_after_put = false;
+                     file_remove( put_source_file );
+                  }
                }
             }
             catch( exception& x )

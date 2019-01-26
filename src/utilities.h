@@ -917,7 +917,8 @@ struct version_info
 
 std::string get_version_info( const std::string& s, version_info& ver_info );
 
-bool check_version_info( const version_info& ver_info, int major_version, int minor_version, bool* p_old = 0 );
+bool check_version_info( const version_info& ver_info,
+ int major_version, int minor_version, bool* p_old = 0 );
 
 size_t setup_arguments( const char* p_input,
  std::vector< std::string >& arguments, char esc = c_esc, const char* p_specials = c_special_characters );
@@ -931,19 +932,23 @@ inline size_t setup_arguments( const std::string& s,
 void setup_arguments( int argc, const char* argv[ ],
  std::vector< std::string >& arguments, char esc = '\0', const char* p_specials = 0 );
 
-std::string buffer_file( const char* p_file_name );
-inline std::string buffer_file( const std::string& file_name ) { return buffer_file( file_name.c_str( ) ); }
+std::string buffer_file( const char* p_file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 );
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length );
-
-inline void write_file( const std::string& file_name, unsigned char* p_data, size_t length )
+inline std::string buffer_file( const std::string& file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
 {
-   write_file( file_name.c_str( ), p_data, length );
+   return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos );
 }
 
-inline void write_file( const std::string& file_name, const std::string& file_buffer )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append = false );
+
+inline void write_file( const std::string& file_name, unsigned char* p_data, size_t length, bool append = false )
 {
-   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ) );
+   write_file( file_name.c_str( ), p_data, length, append );
+}
+
+inline void write_file( const std::string& file_name, const std::string& file_buffer, bool append = false )
+{
+   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append );
 }
 
 void write_file_lines( const std::string& file_name, const std::vector< std::string >& lines );

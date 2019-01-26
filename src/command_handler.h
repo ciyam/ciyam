@@ -207,6 +207,8 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    virtual void handle_command_response( const std::string& response, bool is_special = false ) { }
 
    protected:
+   virtual std::string get_additional_command( ) { return std::string( ); }
+
    bool get_is_quiet_command( ) const { return quiet_command; }
    void set_quiet_command( bool new_val ) { quiet_command = new_val; }
 

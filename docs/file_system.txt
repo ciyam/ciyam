@@ -115,6 +115,15 @@ also means that although we have two List files we actually only have a single f
 So in this way Blobs can be used with different Lists but disk space is not being wasted as only one file per
 "hash" ever exists.
 
+If the appearance of "..." (rather than actual content) is not wanted and also to recurse multiple levels of
+lists the value 999 should be used for the depth argument (also useful if the blob content is expected to be
+large as the content will not be retrieved for them making the command much faster if there are many blobs):
+
+> file_info -recurse -d=999 start
+[list] 5a5df977b247df3c493deca2977ce81e7ea4b3451ce393c6cc85cd879864bc58 (75 B)
+greetings
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B)
+
 Although only one file per hash exists each file can have multiple tags which can be particularly useful when
 identifying things by a specific version or simply as the latest version. To illustrate we'll add two version
 specific tags to the two List files we had previously created.
@@ -180,16 +189,16 @@ File System Statistics
 The "file_stats" command can be used to see a summary of the file system usage:
 
 > file_stats
-[3/1000]152 B/100.0 MB:5 tag(s)
+[3/10000]152 B/10.0 GB:5 tag(s)
 
-This indicates that 3 out of a possible 1,000 files are currently stored with 152 bytes of the total capacity
-of 100 MB being used with 5 file tags in existence.
+The response means that 3 out of 10,000 possible files are currently being stored in the files area and these
+files are using 152 bytes of the maximum possible capacity of 10 GB being used with 5 file tags in existence.
 
 There are two settings in "ciyam_server.sio" configuration file that are relevant to the file system and they
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
-# <files_area_item_max_num>1000
-# <files_area_item_max_size>100K
+# <files_area_item_max_num>10K
+# <files_area_item_max_size>1MB
 
 It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
 is possible to re-synchronise the application server with the following command:
@@ -230,19 +239,19 @@ use for an archive is expected to already exist (i.e. it will not be created) as
 a "mount point" or a "drive" (depending upon whether using Linux or Windows).
 
 Assuming the path for the archive is "/mnt/a001", the name chosen for the archive is "001" and it is intended
-to hold up to 10MB of data the create command would be as follows:
+to hold up to 100GB of data the create command would be as follows:
 
-file_archive -add /mnt/a001 10MB 001
+file_archive -add /mnt/a001 100GB 001
 
 To see a list of archives that also displays their last known status use "file_archives". Assuming that there
 was no issue with the path (when adding it tests that it can access the path and write to it) then the output
 from the "file_archives" command would be as follows:
 
-001 [okay      ] (0 B/10.0 MB) /mnt/a001
+001 [okay      ] (0 B/100.0 GB) /mnt/a001
 
 If the path wasn't accessible then you would instead see the following:
 
-001 [bad access] (0 B/10.0 MB) /mnt/a001
+001 [bad access] (0 B/100.0 GB) /mnt/a001
 
 Assuming the issue with the path was then resolved use the "-status_update" option for "file_archives" for it
 to re-check that it can access and write to the path. It should be noted that the size that was specified for
@@ -272,7 +281,7 @@ file_put ciyam_server.sio
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
-ts.2017032013404998700000000
+ts.2018123018404998700000000
 
 As the tag is based upon the current time when multiple such tags are found they will be output in order from
 oldest to most recently added. This is then used to determine which files to automatically archive (or simply
@@ -325,4 +334,3 @@ identified as well as remove the file from the files area (if it exists there as
 can be used instead of the "-destroy" one which will add the hash of the file being removed from the archives
 and the files area to a "blacklist" which belongs to the global ODS DB. This will prevent the file from being
 later stored via a "file_put" (or "put" for the blockchain peer protocol) into the files area and archives.
-

@@ -1211,8 +1211,9 @@ const size_t c_max_sessions_limit = 1000;
 
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
-const size_t c_files_area_item_max_num_default = 1000;
-const size_t c_files_area_item_max_size_default = 100000; // i.e. 100kB
+
+const size_t c_files_area_item_max_num_default = 10000;
+const size_t c_files_area_item_max_size_default = 1000000; // i.e. 1MB
 
 string g_empty_string;
 
@@ -3509,7 +3510,8 @@ void read_server_configuration( )
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
 
-      g_files_area_item_max_num = atoi( reader.read_opt_attribute(
+      // NOTE: Use "unformat_bytes" here as well so 10K (instead of 10000) can be used in the config file.
+      g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
        c_attribute_files_area_item_max_num, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
 
       g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
@@ -5016,7 +5018,9 @@ session_file_buffer_access::session_file_buffer_access( )
 
    unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
 
-   if( !gtp_session->ap_buffer.get( ) )
+   if( gtp_session->ap_buffer.get( ) )
+      memset( gtp_session->ap_buffer.get( ), 0, bufsize );
+   else
       gtp_session->ap_buffer.reset( new unsigned char[ bufsize ] );
 
    gtp_session->buffer_is_locked = true;

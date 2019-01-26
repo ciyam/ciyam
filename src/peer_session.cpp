@@ -2085,7 +2085,7 @@ void peer_listener::on_start( )
       issue_error( "unexpected unknown exception occurred" );
    }
 
-   TRACE_LOG( TRACE_SESSIONS,
+   TRACE_LOG( TRACE_ANYTHING,
     "peer listener finished (port " + to_string( port ) + ")"
     + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 

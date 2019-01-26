@@ -158,7 +158,7 @@ std::string CIYAM_BASE_DECL_SPEC get_account_msg_secret(
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
- const std::string& filename, const std::string& password );
+ const std::string& file_hash, const std::string& password );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash, const std::string& password );

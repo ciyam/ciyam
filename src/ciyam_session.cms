@@ -21,7 +21,7 @@ peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/fo
 peer_block_info "get new peer block information" <val//blockchain><val//password>[<val//account>]
 peer_account_info "get new peer account information" <val//blockchain><val//password>[<val//exponent>]
 peer_account_mint "start or stop minting or list minting peer accounts" <val//blockchain>[<val/-k=/pubkey>|<opt/-stop/stop>][<val//password>]
-peer_persist_file "create/decrypt a peer repository file request/response" [<val/-h=/hash>][<val/-k=/pubkey>]<val//filename><val//password>
+peer_persist_file "create/decrypt a peer repository file request/response" [<val/-dh=/dest_hash>][<val/-k=/pubkey>]<val//tag_or_hash><val//password>
 peer_transactions "create and process application tx scripts" <val//blockchain>
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>
 crypto_hash "output hash digest for data" [<opt/-512/sha512>][<opt/-hex/hex_decode>]<oval//data>

@@ -46,8 +46,14 @@ void command_processor::process_commands( )
          }
       }
 
-      execute_command( cmd_and_args );
-      cmd_and_args.erase( );
+      while( true )
+      {
+         execute_command( cmd_and_args );
+         cmd_and_args = handlers.top( )->get_additional_command( );
+
+         if( cmd_and_args.empty( ) )
+            break;
+      }
 
       if( handlers.top( )->has_finished( ) )
          handlers.pop( );

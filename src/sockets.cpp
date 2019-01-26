@@ -603,7 +603,12 @@ void file_transfer( const string& name,
       if( use_recv_buffer && buffer_size < max_size )
          throw runtime_error( "buffer_size < max_size for file_transfer" );
 
-      ofstream outf( name.c_str( ), ios::binary );
+      ios::openmode oflags = ios::binary;
+
+      if( d == e_ft_direction_recv_app )
+         oflags |= ios::app;
+
+      ofstream outf( name.c_str( ), oflags );
       if( !outf )
          throw runtime_error( "file '" + name + "' could not be opened for output" );
 

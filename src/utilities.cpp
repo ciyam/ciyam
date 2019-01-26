@@ -1701,7 +1701,7 @@ void setup_arguments( int argc, const char* argv[ ],
    }
 }
 
-string buffer_file( const char* p_file_name )
+string buffer_file( const char* p_file_name, long max_bytes, long* p_size, long start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
@@ -1717,11 +1717,25 @@ string buffer_file( const char* p_file_name )
    fseek( fp, 0, SEEK_END );
    long size = ftell( fp );
 
+   if( p_size )
+      *p_size = size;
+
+   if( start_pos > size )
+      size = 0;
+   else if( max_bytes )
+   {
+      if( size - start_pos > max_bytes )
+         size = max_bytes;
+      else
+         size -= start_pos;
+   }
+
    string str( size, '\0' );
 
    if( size )
    {
-      fseek( fp, 0, SEEK_SET );
+      fseek( fp, start_pos, SEEK_SET );
+
       if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
          throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
    }
@@ -1731,12 +1745,12 @@ string buffer_file( const char* p_file_name )
    return str;
 }
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in write_file" );
 
-   FILE* fp = fopen( p_file_name, "wb" );
+   FILE* fp = fopen( p_file_name, ( append ? "ab" : "wb" ) );
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
 
