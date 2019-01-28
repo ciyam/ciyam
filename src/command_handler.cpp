@@ -151,6 +151,24 @@ void command_handler::remove_command( const string& name )
 
 void command_handler::execute_command( const string& cmd_and_args )
 {
+   string next_command( cmd_and_args );
+
+   additional_command = false;
+
+   while( true )
+   {
+      do_execute_command( next_command );
+      next_command = get_additional_command( );
+
+      if( next_command.empty( ) )
+         break;
+      else
+         additional_command = true;
+   }
+}
+
+void command_handler::do_execute_command( const string& cmd_and_args )
+{
    command_and_args = cmd_and_args;
 
    if( is_special_command( cmd_and_args ) )

@@ -24,6 +24,11 @@
   <arguments>remove_file.cin @hash
  </script>
  <script/>
+  <name>import_files
+  <filename>*script*
+  <arguments>import_files.cin @path
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash

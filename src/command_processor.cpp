@@ -27,13 +27,14 @@ command_processor::command_processor( command_handler& handler )
 void command_processor::process_commands( )
 {
    string cmd_and_args;
+
    while( !handlers.empty( ) && is_still_processing( ) )
    {
       is_continuation = !cmd_and_args.empty( );
 
       cmd_and_args += get_cmd_and_args( );
 
-      if( cmd_and_args.size( ) )
+      if( !cmd_and_args.empty( ) )
       {
          remove_trailing_cr_from_text_file_line( cmd_and_args );
 
@@ -44,15 +45,9 @@ void command_processor::process_commands( )
             cmd_and_args.erase( cmd_and_args.size( ) - 1 );
             continue;
          }
-      }
 
-      while( true )
-      {
          execute_command( cmd_and_args );
-         cmd_and_args = handlers.top( )->get_additional_command( );
-
-         if( cmd_and_args.empty( ) )
-            break;
+         cmd_and_args.erase( );
       }
 
       if( handlers.top( )->has_finished( ) )
@@ -83,4 +78,3 @@ void command_processor::pop_handler( )
    if( !handlers.empty( ) )
       handlers.pop( );
 }
-

@@ -32,6 +32,7 @@
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "fs_iterator.h"
 
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
@@ -82,6 +83,8 @@ const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 
 const char* const c_unix_timestamp = "unix";
 
+const char* const c_function_files = "files";
+const char* const c_function_paths = "paths";
 const char* const c_function_aschex = "aschex";
 const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
@@ -2199,6 +2202,11 @@ console_command_handler::~console_command_handler( )
    delete p_impl;
 }
 
+bool console_command_handler::has_option_echo( ) const
+{
+   return has_option( c_cmd_echo );
+}
+
 bool console_command_handler::has_option_quiet( ) const
 {
    return has_option( c_cmd_quiet );
@@ -2495,7 +2503,116 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                         {
                            was_transform = true;
 
-                           if( lhs == c_function_aschex )
+                           if( lhs == c_function_files )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              vector< string > includes;
+                              vector< string > excludes;
+
+                              pos = rhs.find( op );
+
+                              // NOTE: Allows for a comma separated list of strings to
+                              // act as includes/excludes (prefix with ^ for excludes)
+                              // for filtering file names. XX=@files:/path:^.tmp,^.sav
+                              if( pos != string::npos )
+                              {
+                                 string all_extras( rhs.substr( pos + 1 ) );
+                                 rhs.erase( pos );
+
+                                 if( !all_extras.empty( ) )
+                                 {
+                                    vector< string > extras;
+                                    split( all_extras, extras );
+
+                                    for( size_t i = 0; i < extras.size( ); i++ )
+                                    {
+                                       string next( extras[ i ] );
+
+                                       if( !next.empty( ) )
+                                       {
+                                          if( next[ 0 ] != '^' )
+                                             includes.push_back( next );
+                                          else
+                                             excludes.push_back( next.substr( 1 ) );
+                                       }
+                                    }
+                                 }
+                              }
+
+                              file_filter ff;
+                              fs_iterator ffsi( rhs, &ff );
+
+                              str.erase( );
+
+                              while( ffsi.has_next( ) )
+                              {
+                                 string next( ffsi.get_name( ) );
+
+                                 bool found = false;
+
+                                 if( !excludes.empty( ) )
+                                 {
+                                    for( size_t i = 0; i < excludes.size( ); i++ )
+                                    {
+                                       if( next.find( excludes[ i ] ) != string::npos )
+                                       {
+                                          found = true;
+                                          break;
+                                       }
+                                    }
+                                 }
+
+                                 if( found )
+                                    continue;
+
+                                 if( includes.empty( ) )
+                                    found = true;
+                                 else
+                                 {
+                                    for( size_t i = 0; i < includes.size( ); i++ )
+                                    {
+                                       if( next.find( includes[ i ] ) != string::npos )
+                                       {
+                                          found = true;
+                                          break;
+                                       }
+                                    }
+                                 }
+
+                                 if( !found )
+                                    continue;
+
+                                 if( !str.empty( ) )
+                                    str += '\n';
+
+                                 str += next;
+                              }
+                           }
+                           else if( lhs == c_function_paths )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              directory_filter df;
+                              fs_iterator dfsi( rhs, &df );
+
+                              str.erase( );
+
+                              size_t len = rhs.length( ) + 1;
+
+                              while( dfsi.has_next( ) )
+                              {
+                                 string next_path( dfsi.get_full_name( ) );
+
+                                 if( next_path.length( ) <= len )
+                                    continue;
+
+                                 if( !str.empty( ) )
+                                    str += '\n';
+                                 str += next_path.substr( len );
+                              }
+                           }
+                           else if( lhs == c_function_aschex )
                               str = hex_encode( str.substr( pos + 1 ) );
                            else if( lhs == c_function_hexasc )
                               str = hex_decode( str.substr( pos + 1 ) );

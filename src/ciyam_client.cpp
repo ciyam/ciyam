@@ -176,6 +176,7 @@ class ciyam_console_command_handler : public console_command_handler
    string file_extra;
 
    string file_list_data;
+   string file_strip_prefix;
 
    deque< string > additional_commands;
 
@@ -216,9 +217,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
    if( !str.empty( ) )
    {
-      string::size_type pos = str.find( ' ' );
-
-      if( str[ 0 ] != '?' && str.substr( 0, pos ) != "help" )
+      if( str[ 0 ] != '?' && str.substr( 0, str.find( ' ' ) ) != "help" )
          str = console_command_handler::preprocess_command_and_args( str );
 
       if( !str.empty( ) )
@@ -231,6 +230,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool delete_after_put = false;
 
          string get_dest_file, put_source_file;
+
+         string::size_type pos = str.find( ' ' );
 
          if( str.substr( 0, pos ) == "pip" )
             was_pip = true;
@@ -280,8 +281,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                str += sha256( prefix + data ).get_digest_as_string( ) + extra;
 
+#ifdef DEBUG
                handle_command_response( str );
-
+#endif
                was_chk_tag = false;
             }
 
@@ -292,32 +294,65 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                put_source_file = data;
 
-               if( !put_source_file.empty( ) && put_source_file[ 0 ] >= '1' && put_source_file[ 0 ] <= '9' )
+               if( !put_source_file.empty( ) )
                {
-                  pos = put_source_file.find( '*' );
-
-                  if( pos != string::npos )
+                  // NOTE: If the file name starts with a ? then it will be handled
+                  // as a "list" rather than a "blob".
+                  if( put_source_file[ 0 ] == '?' )
                   {
-                     chunk = 0;
+                     was_list_prefix = true;
+                     prefix = string( c_file_type_str_list );
 
-                     file_pos = 0;
-                     file_bytes = 0;
+                     put_source_file.erase( 0, 1 );
 
-                     file_extra = extra;
+                     string buffer( buffer_file( put_source_file ) );
 
-                     extra.erase( );
-                     file_list_data.clear( );
+                     // NOTE: If the list had been constructed via a script it might have
+                     // ended up with an invalid final trailing line feed (so remove it).
+                     if( !buffer.empty( ) && buffer[ buffer.length( ) - 1 ] == '\n' )
+                     {
+                        buffer.erase( buffer.length( ) - 1 );
+                        write_file( put_source_file, buffer );
+                     }
+                  }
+                  else if( put_source_file[ 0 ] >= '1' && put_source_file[ 0 ] <= '9' )
+                  {
+                     pos = put_source_file.find( '*' );
 
-                     chunk_size = unformat_bytes( put_source_file.substr( 0, pos ) );
-                     put_source_file.erase( 0, pos + 1 );
+                     if( pos != string::npos )
+                     {
+                        chunk = 0;
 
-                     if( chunk_size <= 1 )
-                        throw runtime_error( "chunk size too small" );
+                        file_pos = 0;
+                        file_bytes = 0;
 
-                     // NOTE: Reduce the chunk size by one due to the one byte "type" prefix.
-                     --chunk_size;
+                        if( extra.size( ) > 0 )
+                           file_extra = extra.substr( 1 );
 
-                     file_name = put_source_file;
+                        extra.erase( );
+                        file_list_data.clear( );
+
+                        chunk_size = unformat_bytes( put_source_file.substr( 0, pos ) );
+                        put_source_file.erase( 0, pos + 1 );
+
+                        if( chunk_size <= 1 )
+                           throw runtime_error( "chunk size too small" );
+
+                        // NOTE: Reduce the chunk size by one due to the one byte "type" prefix.
+                        --chunk_size;
+
+                        file_name = put_source_file;
+
+                        pos = file_extra.find( '?' );
+
+                        if( pos == string::npos )
+                           file_strip_prefix.erase( );
+                        else
+                        {
+                           file_strip_prefix = file_extra.substr( 0, pos );
+                           file_extra.erase( 0, pos + 1 );
+                        }
+                     }
                   }
                }
 
@@ -362,7 +397,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      ++chunk;
                      file_bytes -= chunk_size;
 
-                     additional_commands.push_back( "file_put " + file_name );
+                     // NOTE: Ensure that the additional command will neither be
+                     // included in console history nor sent to standard output.
+                     additional_commands.push_back( " .file_put " + file_name );
                   }
                }
                else if( !file_name.empty( ) )
@@ -388,7 +425,12 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( !file_list_data.empty( ) )
                      file_list_data += '\n';
 
-                  file_list_data += hash + ' ' + chunk_name;
+                  string item_name( chunk_name );
+
+                  if( !file_strip_prefix.empty( ) && item_name.find( file_strip_prefix ) == 0 )
+                     item_name.erase( 0, file_strip_prefix.length( ) );
+
+                  file_list_data += hash + ' ' + item_name;
 
                   if( file_bytes == 0 )
                   {
@@ -397,13 +439,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      write_file( list_name, file_list_data );
 
-                     additional_commands.push_back( "file_put " + file_name + file_extra );
+                     if( !file_extra.empty( ) )
+                        file_extra = " " + file_extra;
+
+                     // NOTE: Ensure that the additional command will neither be
+                     // included in console history nor sent to standard output.
+                     additional_commands.push_back( " .file_put " + file_name + file_extra );
                   }
                }
 
                str += hash + extra;
-
+#ifdef DEBUG
                handle_command_response( str );
+#endif
             }
          }
 
@@ -463,8 +511,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      filename = "~" + uuid( ).as_string( );
                   }
 
+#ifdef DEBUG
                   if( appending )
                      handle_command_response( str );
+#endif
 
                   file_transfer( filename, socket,
                    ( !appending ? e_ft_direction_recv : e_ft_direction_recv_app ),
@@ -506,7 +556,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                            string next( chunks[ i ] );
                            string::size_type pos = next.find( ' ' );
 
-                           additional_commands.push_back( "file_get " + next.substr( 0, pos ) + " ?" + filename );
+                           // NOTE: Ensure that the additional command will neither be
+                           // included in console history nor sent to standard output.
+                           additional_commands.push_back( " .file_get " + next.substr( 0, pos ) + " ?" + filename );
                         }
                      }
                   }
@@ -931,4 +983,3 @@ int main( int argc, char* argv[ ] )
 
    return rc;
 }
-

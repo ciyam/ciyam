@@ -1,0 +1,88 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: The script requires a starting directory point to import from the branch below.
+@else
+.session_variable @uuid
+UUID=$OUTPUT
+;
+PATHS=@paths:$1
+.session_variable @set ""
+.session_variable @set "~$PATHS"
+;
+@:PATH_LOOP
+@label NEXT_PATH
+.session_variable @deque ""
+.session_variable @deque @set
+.session_variable @set ""
+;
+OUTPUT=
+.session_variable @deque front
+NEXT_PATH=$OUTPUT
+;
+@ifndef $NEXT_PATH
+@label EXIT_PATH
+@endif
+;
+@skip
+@:NEXT_PATH
+HAD_ANY_FILES=
+.session_variable @deque pop_front
+.session_variable @set @deque
+;
+FILES=@files:$1/$NEXT_PATH
+.session_variable @deque ""
+.session_variable @deque "~$FILES"
+;
+@:FILE_LOOP
+@label NEXT_FILE
+;
+OUTPUT=
+.session_variable @deque front
+NEXT_FILE=$OUTPUT
+;
+@ifndef $NEXT_FILE
+@label EXIT_FILE
+@endif
+;
+@skip
+@:NEXT_FILE
+@ifndef $HAD_ANY_FILES
+#$NEXT_PATH
+@endif
+HAD_ANY_FILES=1
+.session_variable @deque pop_front
+;
+#$1/$NEXT_PATH/$NEXT_FILE
+;
+; NOTE: Each file is split into a set of 1M chunks and a
+; the UUID variable is used to tag the "list" file which
+; will be automatically created by "ciyam_client".
+.file_put 1M*$1/$NEXT_PATH/$NEXT_FILE $1/?$UUID
+;
+; NOTE: Get the file hash of the tagged "list" of chunks
+; and append it to a "list" that will be effectively the
+; list of files that are in a specific directory.
+.file_hash $UUID
+HASH=$OUTPUT
+>>~$UUID
+#$HASH $NEXT_PATH/$NEXT_FILE
+>>
+;
+!!@:FILE_LOOP
+;
+@:EXIT_FILE
+;
+@ifdef $HAD_ANY_FILES
+.file_put ?~$UUID $NEXT_PATH
+~rm ~$UUID
+.file_tag -remove $UUID
+@endif
+;
+!!@:PATH_LOOP
+;
+@:EXIT_PATH
+@endif

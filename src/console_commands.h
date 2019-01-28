@@ -29,6 +29,7 @@ class console_command_handler : public command_handler
    console_command_handler( );
    ~console_command_handler( );
 
+   bool has_option_echo( ) const;
    bool has_option_quiet( ) const;
 
    bool is_handling_startup_options( ) const { return handling_startup_options; }

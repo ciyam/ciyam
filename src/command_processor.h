@@ -44,4 +44,3 @@ class command_processor
 };
 
 #endif
-

@@ -77,57 +77,30 @@ at 1...
 
 > file_kill -recurse 35dddd1f6a57c18adddca0b99478114fdef5a97cf5b5d0c2474dc777fe029473
 
-> file_put 1k*test.jpg test
-file_put 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998
-file_put test.jpg
-file_put 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e
-file_put test.jpg
-file_put fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07
-file_put test.jpg
-file_put 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af
-file_put test.jpg
-file_put 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770
-file_put test.jpg
-file_put fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145
-file_put test.jpg
-file_put 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270
-file_put test.jpg test
-file_put a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 test
+> file_put 1K*test.jpg test
+
+> file_info -recurse -d=999 test
+[list] a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 (560 B)
+test.jpg.00000
+ [blob] 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 (1.0 kB)
+test.jpg.00001
+ [blob] 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e (1.0 kB)
+test.jpg.00002
+ [blob] fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 (1.0 kB)
+test.jpg.00003
+ [blob] 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af (1.0 kB)
+test.jpg.00004
+ [blob] 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 (1.0 kB)
+test.jpg.00005
+ [blob] fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 (1.0 kB)
+test.jpg.00006
+ [blob] 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 (715 B)
 
 > file_get test *~test.jpg
-file_get 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 ?~test.jpg
-file_get 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 ?~test.jpg
-file_get 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e ?~test.jpg
-file_get 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e ?~test.jpg
-file_get fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 ?~test.jpg
-file_get fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 ?~test.jpg
-file_get 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af ?~test.jpg
-file_get 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af ?~test.jpg
-file_get 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 ?~test.jpg
-file_get 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 ?~test.jpg
-file_get fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 ?~test.jpg
-file_get fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 ?~test.jpg
-file_get 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 ?~test.jpg
-file_get 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 ?~test.jpg
 
 > file_kill -p=test
 
-> file_put 1k*~test.jpg test
-file_put 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998
-file_put ~test.jpg
-file_put 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e
-file_put ~test.jpg
-file_put fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07
-file_put ~test.jpg
-file_put 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af
-file_put ~test.jpg
-file_put 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770
-file_put ~test.jpg
-file_put fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145
-file_put ~test.jpg
-file_put 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270
-file_put ~test.jpg test
-file_put d73bec4715acbc7c18b68bfb176a001f29977ab8584bdd5c8a363e2a1ba607ea test
+> file_put 1K*~test.jpg test
 
 > 
 > file_info -recurse -d=999 test
@@ -177,17 +150,14 @@ test3 [okay      ] (0 B/10.5 MB) test3
 > session_variable @dummy_timestamp 20170313080001
 
 > file_put test1.jpg
-file_put b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
 
 > session_variable @dummy_timestamp 20170313080002
 
 > file_put test2.jpg
-file_put efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f
 
 > session_variable @dummy_timestamp 20170313080000
 
 > file_put test.jpg
-file_put a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
 > file_tags ts.*
 ts.20170313080000
@@ -278,7 +248,6 @@ test2
 > file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ~test.jpg
 
 > file_put ~test.jpg
-file_put a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 
 > 
 > file_tags ts.*

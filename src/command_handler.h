@@ -119,6 +119,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
     finished( false ),
     change_notify( true ),
     quiet_command( false ),
+    additional_command( false ),
     p_command_processor( 0 )
    {
    }
@@ -127,6 +128,9 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
 
    bool has_finished( ) const { return finished; }
    void set_finished( ) { finished = true; }
+
+   bool get_is_quiet_command( ) const { return quiet_command; }
+   bool is_additional_command( ) const { return additional_command; }
 
    void add_option( const std::string& name );
    bool has_option( const std::string& name ) const;
@@ -144,6 +148,8 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    void remove_command( const std::string& name );
 
    void execute_command( const std::string& cmd_and_args );
+
+   void do_execute_command( const std::string& cmd_and_args );
 
    void issue_command_reponse( const std::string& response, bool is_special = false )
    {
@@ -171,6 +177,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    bool finished;
    bool change_notify;
    bool quiet_command;
+   bool additional_command;
 
    std::string command_prefix;
    std::string command_and_args;
@@ -209,7 +216,6 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    protected:
    virtual std::string get_additional_command( ) { return std::string( ); }
 
-   bool get_is_quiet_command( ) const { return quiet_command; }
    void set_quiet_command( bool new_val ) { quiet_command = new_val; }
 
    std::string get_cmd_and_args( ) const { return command_and_args; }

@@ -5716,6 +5716,8 @@ void set_session_variable( const string& name,
                   copy( gtp_session->deque_items.begin( ),
                    gtp_session->deque_items.end( ), inserter( gtp_session->set_items, gtp_session->set_items.end( ) ) );
             }
+            else if( val[ 0 ] == '~' )
+               split( val.substr( 1 ), gtp_session->set_items, '\n' );
             else
             {
                if( gtp_session->set_items.count( val ) )
@@ -5971,6 +5973,8 @@ void set_session_variable( const string& name,
                   copy( gtp_session->set_items.begin( ),
                    gtp_session->set_items.end( ), inserter( gtp_session->deque_items, gtp_session->deque_items.end( ) ) );
             }
+            else if( val[ 0 ] == '~' )
+               split( val.substr( 1 ), gtp_session->deque_items, '\n' );
             else if( val == "back" )
             {
                if( gtp_session->deque_items.empty( ) )

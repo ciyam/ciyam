@@ -23,7 +23,7 @@
  <session_timeout>0
 # <max_storage_handlers>10
 # <files_area_item_max_num>10K
-# <files_area_item_max_size>1MB
+# <files_area_item_max_size>1M
  <email/>
 #  <pop3/>
 #   <server>mail.server.com:995
