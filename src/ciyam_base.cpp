@@ -98,17 +98,10 @@ const int c_storable_file_pad_len = 32;
 
 const int c_max_file_buffer_expansion = 10;
 
-const char* const c_true = "true";
-const char* const c_false = "false";
-
 const char* const c_ciyam_server = "ciyam_server";
 
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
-
-const char* const c_timezones_file = "timezones.sio";
-const char* const c_autoscript_file = "autoscript.sio";
-const char* const c_manuscript_file = "manuscript.sio";
 
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
@@ -3336,30 +3329,37 @@ bool scripts_file_has_changed( )
 
 void read_script_info( )
 {
-   ifstream inpf( c_manuscript_file );
-
-   g_scripts.clear( );
-
-   if( inpf )
+   try
    {
-      sio_reader reader( inpf );
+      ifstream inpf( c_manuscript_file );
 
-      string name;
-      while( reader.has_started_section( c_section_script ) )
+      g_scripts.clear( );
+
+      if( inpf )
       {
-         script_info info;
+         sio_reader reader( inpf );
 
-         string name = reader.read_attribute( c_attribute_name );
+         string name;
+         while( reader.has_started_section( c_section_script ) )
+         {
+            script_info info;
 
-         info.filename = reader.read_attribute( c_attribute_filename );
-         info.arguments = reader.read_opt_attribute( c_attribute_arguments );
+            string name = reader.read_attribute( c_attribute_name );
 
-         g_scripts.insert( make_pair( name, info ) );
+            info.filename = reader.read_attribute( c_attribute_filename );
+            info.arguments = reader.read_opt_attribute( c_attribute_arguments );
 
-         reader.finish_section( c_section_script );
+            g_scripts.insert( make_pair( name, info ) );
+
+            reader.finish_section( c_section_script );
+         }
+
+         reader.verify_finished_sections( );
       }
-
-      reader.verify_finished_sections( );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " in " ) + string( c_manuscript_file ) );
    }
 }
 
@@ -3919,65 +3919,73 @@ void init_globals( )
 {
    guard g( g_mutex );
 
-   if( !file_exists( c_server_sid_file ) )
+   try
    {
-      g_sid = upper( uuid( ).as_string( ) );
-      write_file( c_server_sid_file, g_sid );
-   }
-   else
-      g_sid = buffer_file( c_server_sid_file );
+      if( !file_exists( c_server_sid_file ) )
+      {
+         g_sid = upper( uuid( ).as_string( ) );
+         write_file( c_server_sid_file, g_sid );
+      }
+      else
+         g_sid = buffer_file( c_server_sid_file );
 
-   read_server_configuration( );
+      read_server_configuration( );
 
-   init_ciyam_ods( );
+      init_ciyam_ods( );
 
-   init_files_area( );
+      init_files_area( );
 
-   check_timezone_info( );
+      check_timezone_info( );
 
 #ifndef _WIN32
-   set_system_variable( get_special_var_name( e_special_var_os ), "Linux" );
+      set_system_variable( get_special_var_name( e_special_var_os ), "Linux" );
 #else
-   set_system_variable( get_special_var_name( e_special_var_os ), "Windows" );
+      set_system_variable( get_special_var_name( e_special_var_os ), "Windows" );
 #endif
 
-   // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
-   // to be run, however, it is been read at startup just to ensure that the .sio file isn't
-   // initially malformed.
-   if( scripts_file_has_changed( ) )
-      read_script_info( );
+      // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
+      // to be run, however, it is been read at startup just to ensure that the .sio file isn't
+      // initially malformed.
+      if( scripts_file_has_changed( ) )
+         read_script_info( );
 
-   // NOTE: This "get_tz_info" call is performed to verify that the server timezone is valid.
-   float offset = 0.0;
-   string tz_name( get_timezone( ) );
-   date_time now( date_time::standard( ) );
-   get_tz_info( now, tz_name, offset );
+      // NOTE: This "get_tz_info" call is performed to verify that the server timezone is valid.
+      float offset = 0.0;
+      string tz_name( get_timezone( ) );
+      date_time now( date_time::standard( ) );
+      get_tz_info( now, tz_name, offset );
 
-   read_strings( "ciyam_strings.txt", g_strings, "c_str_" );
-   read_strings( "module_strings.txt", g_strings, "c_str_" );
+      read_strings( "ciyam_strings.txt", g_strings, "c_str_" );
+      read_strings( "module_strings.txt", g_strings, "c_str_" );
 
-   for( size_t i = 0; i < g_max_sessions; i++ )
-      g_sessions.push_back( 0 );
+      for( size_t i = 0; i < g_max_sessions; i++ )
+         g_sessions.push_back( 0 );
 
-   for( size_t i = 0; i < g_max_storage_handlers; i++ )
-      g_storage_handlers.push_back( 0 );
+      for( size_t i = 0; i < g_max_storage_handlers; i++ )
+         g_storage_handlers.push_back( 0 );
 
-   g_storage_handlers[ 0 ] = new storage_handler( 0, c_default_storage_name );
-   g_storage_handlers[ 0 ]->get_root( ).identity = c_default_storage_identity;
+      g_storage_handlers[ 0 ] = new storage_handler( 0, c_default_storage_name );
+      g_storage_handlers[ 0 ]->get_root( ).identity = c_default_storage_identity;
 
-   g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
+      g_storage_handler_index.insert( make_pair( c_default_storage_name, 0 ) );
 
 #ifdef SSL_SUPPORT
-   if( file_exists( "ciyam_server.pem" ) )
-   {
-      string password( c_default_pem_password );
-      if( !g_pem_password.empty( ) )
-         password = get_pem_password( );
+      if( file_exists( "ciyam_server.pem" ) )
+      {
+         string password( c_default_pem_password );
+         if( !g_pem_password.empty( ) )
+            password = get_pem_password( );
 
-      init_ssl( "ciyam_server.pem", password.c_str( ), 0, true );
-      g_using_ssl = true;
-   }
+         init_ssl( "ciyam_server.pem", password.c_str( ), 0, true );
+         g_using_ssl = true;
+      }
 #endif
+   }
+   catch( exception& x )
+   {
+      TRACE_LOG( TRACE_ANYTHING, x.what( ) );
+      throw;
+   }
 }
 
 void term_globals( )

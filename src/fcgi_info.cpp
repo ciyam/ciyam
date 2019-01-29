@@ -33,6 +33,8 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 storage_info g_storage_info;
 
 const size_t c_default_quick_link_limit = 10;

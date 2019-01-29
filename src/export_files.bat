@@ -5,14 +5,15 @@ REM Distributed under the MIT/X11 software license, please refer to the file lic
 REM in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if '%1' == '' goto usage
+if '%2' == '' goto usage
 
-echo ^<^<import_files.cin %1 >~import_files
-ciyam_client -echo -quiet -no_prompt -no_stderr < ~import_files
+echo ^<^<export_files.cin %1 %2 >~export_files
+ciyam_client -echo -quiet -no_prompt -no_stderr < ~export_files
 
-del ~import_files
+del ~export_files
 goto end
 
 :usage
-echo Usage: import_files [start path]
+echo Usage: export_files [list tag] [start path]
 
 :end

@@ -24,6 +24,11 @@
   <arguments>remove_file.cin @hash
  </script>
  <script/>
+  <name>export_files
+  <filename>*script*
+  <arguments>export_files.cin @tag @path
+ </script>
+ <script/>
   <name>import_files
   <filename>*script*
   <arguments>import_files.cin @path

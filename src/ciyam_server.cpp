@@ -532,10 +532,12 @@ int main( int argc, char* argv[ ] )
          fp_unregister_listener fp_unregister_listener_func;
          fp_unregister_listener_func = ( fp_unregister_listener )ap_dynamic_library->bind_to_function( c_unregister_listener_func_name );
 
-         ( *fp_init_globals_func )( );
-
+         // NOTE: If trace flags are provided then set them before calling "init_globals"
+         // as they may be of some assistance in tracing an issue with the init function.
          if( g_has_flags )
             ( *fp_trace_flags_func )( g_flags );
+
+         ( *fp_init_globals_func )( );
 
          tcp_socket s;
          bool okay = s.open( );

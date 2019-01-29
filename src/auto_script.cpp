@@ -41,7 +41,7 @@ extern volatile sig_atomic_t g_server_shutdown;
 namespace
 {
 
-const char* const c_autoscript_file = "autoscript.sio";
+#include "ciyam_constants.h"
 
 const char* const c_script_dummy_filename = "*script*";
 
@@ -119,109 +119,114 @@ void read_script_info( )
 {
    guard g( g_mutex );
 
-   if( !g_has_read )
-      g_has_read = true;
-   else
+   try
    {
-      // NOTE: If is not the first read then log the re-read.
-      TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] updated" );
-   }
 
-   g_scripts.clear( );
-   g_script_schedule.clear( );
-
-   if( file_exists( c_autoscript_file ) )
-   {
-      ifstream inpf( c_autoscript_file );
-
-      if( !inpf )
-         throw runtime_error( "unable to open '" + string( c_autoscript_file ) + " for input" );
-
-      sio_reader reader( inpf );
-      while( reader.has_started_section( c_section_script ) )
+      if( !g_has_read )
+         g_has_read = true;
+      else
       {
-         script_info info;
+         // NOTE: If is not the first read then log the re-read.
+         TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] updated" );
+      }
 
-         info.name = reader.read_attribute( c_attribute_name );
+      g_scripts.clear( );
+      g_script_schedule.clear( );
 
-         string time_info( reader.read_attribute( c_attribute_time ) );
-         string::size_type pos = time_info.find( '-' );
+      if( file_exists( c_autoscript_file ) )
+      {
+         ifstream inpf( c_autoscript_file );
 
-         if( pos == string::npos )
-            info.start_time = info.finish_time = mtime( time_info );
-         else
+         sio_reader reader( inpf );
+         while( reader.has_started_section( c_section_script ) )
          {
-            info.start_time = mtime( time_info.substr( 0, pos ) );
-            info.finish_time = mtime( time_info.substr( pos + 1 ) );
-         }
+            script_info info;
 
-         string cycle( reader.read_attribute( c_attribute_cycle ) );
-         if( !cycle.empty( ) && cycle[ cycle.size( ) - 1 ] == '*' )
-         {
-            info.allow_late_exec = true;
-            cycle.erase( cycle.size( ) - 1 );
-         }
+            info.name = reader.read_attribute( c_attribute_name );
 
-         info.cycle_seconds = unformat_duration( cycle );
+            string time_info( reader.read_attribute( c_attribute_time ) );
+            string::size_type pos = time_info.find( '-' );
 
-         info.start_date = udate::local( );
-         string s( reader.read_opt_attribute( c_attribute_start ) );
-         if( !s.empty( ) )
-            info.start_date = udate( s );
-
-         s = reader.read_opt_attribute( c_attribute_finish );
-         if( !s.empty( ) )
-            info.finish_date = udate( s );
-
-         string exclude( reader.read_opt_attribute( c_attribute_exclude ) );
-         if( !exclude.empty( ) )
-         {
-            string val = lower( exclude );
-
-            if( val == "mondays" )
-               info.exclude = e_exclude_type_mondays;
-            else if( val == "tuesdays" )
-               info.exclude = e_exclude_type_tuesdays;
-            else if( val == "wednesdays" )
-               info.exclude = e_exclude_type_wednesdays;
-            else if( val == "thursdays" )
-               info.exclude = e_exclude_type_thursdays;
-            else if( val == "fridays" )
-               info.exclude = e_exclude_type_fridays;
-            else if( val == "saturdays" )
-               info.exclude = e_exclude_type_saturdays;
-            else if( val == "sundays" )
-               info.exclude = e_exclude_type_sundays;
-            else if( val == "weekdays" )
-               info.exclude = e_exclude_type_weekdays;
-            else if( val == "weekends" )
-               info.exclude = e_exclude_type_weekends;
+            if( pos == string::npos )
+               info.start_time = info.finish_time = mtime( time_info );
             else
-               throw runtime_error( "invalid exclude value '" + exclude + "'" );
+            {
+               info.start_time = mtime( time_info.substr( 0, pos ) );
+               info.finish_time = mtime( time_info.substr( pos + 1 ) );
+            }
+
+            string cycle( reader.read_attribute( c_attribute_cycle ) );
+            if( !cycle.empty( ) && cycle[ cycle.size( ) - 1 ] == '*' )
+            {
+               info.allow_late_exec = true;
+               cycle.erase( cycle.size( ) - 1 );
+            }
+
+            info.cycle_seconds = unformat_duration( cycle );
+
+            info.start_date = udate::local( );
+            string s( reader.read_opt_attribute( c_attribute_start ) );
+            if( !s.empty( ) )
+               info.start_date = udate( s );
+
+            s = reader.read_opt_attribute( c_attribute_finish );
+            if( !s.empty( ) )
+               info.finish_date = udate( s );
+
+            string exclude( reader.read_opt_attribute( c_attribute_exclude ) );
+            if( !exclude.empty( ) )
+            {
+               string val = lower( exclude );
+
+               if( val == "mondays" )
+                  info.exclude = e_exclude_type_mondays;
+               else if( val == "tuesdays" )
+                  info.exclude = e_exclude_type_tuesdays;
+               else if( val == "wednesdays" )
+                  info.exclude = e_exclude_type_wednesdays;
+               else if( val == "thursdays" )
+                  info.exclude = e_exclude_type_thursdays;
+               else if( val == "fridays" )
+                  info.exclude = e_exclude_type_fridays;
+               else if( val == "saturdays" )
+                  info.exclude = e_exclude_type_saturdays;
+               else if( val == "sundays" )
+                  info.exclude = e_exclude_type_sundays;
+               else if( val == "weekdays" )
+                  info.exclude = e_exclude_type_weekdays;
+               else if( val == "weekends" )
+                  info.exclude = e_exclude_type_weekends;
+               else
+                  throw runtime_error( "invalid exclude value '" + exclude + "'" );
+            }
+
+            info.filename = reader.read_attribute( c_attribute_filename );
+            info.arguments = reader.read_opt_attribute( c_attribute_arguments );
+            info.tsfilename = reader.read_opt_attribute( c_attribute_timestamp );
+
+            if( file_exists( info.tsfilename ) )
+               info.last_mod = last_modification_time( info.tsfilename );
+
+            g_scripts.push_back( info );
+
+            reader.finish_section( c_section_script );
          }
 
-         info.filename = reader.read_attribute( c_attribute_filename );
-         info.arguments = reader.read_opt_attribute( c_attribute_arguments );
-         info.tsfilename = reader.read_opt_attribute( c_attribute_timestamp );
+         reader.verify_finished_sections( );
 
-         if( file_exists( info.tsfilename ) )
-            info.last_mod = last_modification_time( info.tsfilename );
+         for( int i = 0; i < g_scripts.size( ); i++ )
+         {
+            date_time starts_at = max(
+             date_time( udate::local( ), g_scripts[ i ].start_time ),
+             date_time( g_scripts[ i ].start_date, g_scripts[ i ].start_time ) );
 
-         g_scripts.push_back( info );
-
-         reader.finish_section( c_section_script );
+            g_script_schedule.insert( make_pair( starts_at, i ) );
+         }
       }
-
-      reader.verify_finished_sections( );
-
-      for( int i = 0; i < g_scripts.size( ); i++ )
-      {
-         date_time starts_at = max(
-          date_time( udate::local( ), g_scripts[ i ].start_time ),
-          date_time( g_scripts[ i ].start_date, g_scripts[ i ].start_time ) );
-
-         g_script_schedule.insert( make_pair( starts_at, i ) );
-      }
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " in " ) + string( c_autoscript_file ) );
    }
 }
 

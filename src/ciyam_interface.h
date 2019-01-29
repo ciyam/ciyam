@@ -70,9 +70,6 @@ const char* const c_http_param_uagent = "HTTP_USER_AGENT";
 
 const char* const c_tmp_directory = "tmp";
 
-const char* const c_true = "true";
-const char* const c_false = "false";
-
 const char* const c_true_value = "1";
 const char* const c_false_value = "0";
 

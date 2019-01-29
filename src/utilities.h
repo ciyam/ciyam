@@ -287,11 +287,11 @@ inline void file_link( const std::string& src, const char* p_name = 0 ) { file_l
 inline void file_link( const std::string& src, const std::string& name ) { file_link( src.c_str( ), name.c_str( ) ); }
 inline void file_linkw( const wchar_t* p_wsrc, const wchar_t* p_wname ) { file_link( "", "", p_wsrc, p_wname ); }
 
-void file_copy( const char* p_src, const char* p_dest );
-inline void file_copy( const std::string& src, const char* p_dest ) { file_copy( src.c_str( ), p_dest ); }
-inline void file_copy( const std::string& src, const std::string& dest ) { file_copy( src.c_str( ), dest.c_str( ) ); }
+void file_copy( const char* p_src, const char* p_dest, bool append = false );
+inline void file_copy( const std::string& src, const char* p_dest, bool append = false ) { file_copy( src.c_str( ), p_dest, append ); }
+inline void file_copy( const std::string& src, const std::string& dest, bool append = false ) { file_copy( src.c_str( ), dest.c_str( ), append ); }
 
-void file_append( const char* p_src, const char* p_dest );
+inline void file_append( const char* p_src, const char* p_dest ) { file_copy( p_src, p_dest, true ); }
 inline void file_append( const std::string& src, const char* p_dest ) { file_append( src.c_str( ), p_dest ); }
 inline void file_append( const std::string& src, const std::string& dest ) { file_append( src.c_str( ), dest.c_str( ) ); }
 

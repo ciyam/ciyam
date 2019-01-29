@@ -634,18 +634,13 @@ void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, co
 #endif
 }
 
-void file_copy( const char* p_src, const char* p_dest )
+void file_copy( const char* p_src, const char* p_dest, bool append )
 {
-   ifstream inpf( p_src, ios::in | ios::binary );
-   ofstream outf( p_dest, ios::out | ios::binary );
+   ios::openmode iflags = ( ios::in | ios::binary );
+   ios::openmode oflags = ( !append ? ios::out | ios::binary : ios::app | ios::out | ios::binary );
 
-   copy_stream( inpf, outf );
-}
-
-void file_append( const char* p_src, const char* p_dest )
-{
-   ifstream inpf( p_src, ios::in | ios::binary );
-   ofstream outf( p_dest, ios::out | ios::app | ios::binary );
+   ifstream inpf( p_src, iflags );
+   ofstream outf( p_dest, oflags );
 
    copy_stream( inpf, outf );
 }

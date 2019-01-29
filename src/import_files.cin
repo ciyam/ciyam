@@ -51,7 +51,7 @@ NEXT_FILE=$OUTPUT
 @skip
 @:NEXT_FILE
 @ifndef $HAD_ANY_FILES
-#$NEXT_PATH
+#$1/$NEXT_PATH
 @endif
 HAD_ANY_FILES=1
 .session_variable @deque pop_front

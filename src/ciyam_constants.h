@@ -13,6 +13,9 @@ const int c_tx_id_standard = 5;
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
+const char* const c_true = "true";
+const char* const c_false = "false";
+
 const char* const c_dummy = "dummy";
 
 const char* const c_meta_model_name = "Meta";
@@ -25,6 +28,10 @@ const char* const c_ignore_field = "@ignore";
 
 const char* const c_local_ip_addr = "127.0.0.1";
 const char* const c_local_ip_addr_for_ipv6 = "::1";
+
+const char* const c_timezones_file = "timezones.sio";
+const char* const c_autoscript_file = "autoscript.sio";
+const char* const c_manuscript_file = "manuscript.sio";
 
 const char* const c_file_zero_length = "*";
 
@@ -52,7 +59,7 @@ const char* const c_file_kill_command = "file_kill";
 
 const char* const c_application_script_prefix = "app_script:";
 
-const size_t c_max_file_transfer_size = 102400;
+const size_t c_max_file_transfer_size = 1000000;
 
 const size_t c_file_transfer_line_timeout = 10000;
 const size_t c_file_transfer_initial_timeout = 60000;
