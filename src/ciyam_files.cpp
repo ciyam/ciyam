@@ -988,6 +988,9 @@ void tag_file( const string& name, const string& hash )
 
       if( pos == string::npos )
       {
+         if( name != valid_file_name( name ) )
+            throw runtime_error( "invalid file tag name '" + name + "'" );
+
          tag_del( name );
          tag_name = name;
       }

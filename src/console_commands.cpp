@@ -93,6 +93,7 @@ const char* const c_function_padlen = "padlen";
 const char* const c_function_repstr = "repstr";
 const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
+const char* const c_function_fullpath = "fullpath";
 
 const char* const c_envcond_command_else = "else";
 const char* const c_envcond_command_ifeq = "ifeq";
@@ -122,6 +123,64 @@ command_definition startup_command_definitions[ ] =
 
 const char* const c_command_prompt = "\n> ";
 const char* const c_message_press_any_key = "(press any key to continue)...";
+
+void split_all_extras( const string& all_extras, vector< string >& includes, vector< string >& excludes )
+{
+   if( !all_extras.empty( ) )
+   {
+      vector< string > extras;
+      split( all_extras, extras );
+
+      for( size_t i = 0; i < extras.size( ); i++ )
+      {
+         string next( extras[ i ] );
+
+         if( !next.empty( ) )
+         {
+            if( next[ 0 ] != '^' )
+               includes.push_back( next );
+            else
+               excludes.push_back( next.substr( 1 ) );
+         }
+      }
+   }
+}
+
+bool should_be_included( const string& name, const vector< string >& includes, const vector< string >& excludes )
+{
+   bool found = false;
+
+   if( !excludes.empty( ) )
+   {
+      for( size_t i = 0; i < excludes.size( ); i++ )
+      {
+         if( name.find( excludes[ i ] ) != string::npos )
+         {
+            found = true;
+            break;
+         }
+      }
+   }
+
+   if( found )
+      return false;
+
+   if( includes.empty( ) )
+      found = true;
+   else
+   {
+      for( size_t i = 0; i < includes.size( ); i++ )
+      {
+         if( name.find( includes[ i ] ) != string::npos )
+         {
+            found = true;
+            break;
+         }
+      }
+   }
+
+   return found;
+}
 
 string::size_type find_non_escaped_char( const string& s, char ch, string::size_type from = 0, char esc = '\\' )
 {
@@ -2521,23 +2580,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  rhs.erase( pos );
 
                                  if( !all_extras.empty( ) )
-                                 {
-                                    vector< string > extras;
-                                    split( all_extras, extras );
-
-                                    for( size_t i = 0; i < extras.size( ); i++ )
-                                    {
-                                       string next( extras[ i ] );
-
-                                       if( !next.empty( ) )
-                                       {
-                                          if( next[ 0 ] != '^' )
-                                             includes.push_back( next );
-                                          else
-                                             excludes.push_back( next.substr( 1 ) );
-                                       }
-                                    }
-                                 }
+                                    split_all_extras( all_extras, includes, excludes );
                               }
 
                               file_filter ff;
@@ -2549,38 +2592,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               {
                                  string next( ffsi.get_name( ) );
 
-                                 bool found = false;
-
-                                 if( !excludes.empty( ) )
-                                 {
-                                    for( size_t i = 0; i < excludes.size( ); i++ )
-                                    {
-                                       if( next.find( excludes[ i ] ) != string::npos )
-                                       {
-                                          found = true;
-                                          break;
-                                       }
-                                    }
-                                 }
-
-                                 if( found )
-                                    continue;
-
-                                 if( includes.empty( ) )
-                                    found = true;
-                                 else
-                                 {
-                                    for( size_t i = 0; i < includes.size( ); i++ )
-                                    {
-                                       if( next.find( includes[ i ] ) != string::npos )
-                                       {
-                                          found = true;
-                                          break;
-                                       }
-                                    }
-                                 }
-
-                                 if( !found )
+                                 if( !should_be_included( next, includes, excludes ) )
                                     continue;
 
                                  if( !str.empty( ) )
@@ -2592,6 +2604,23 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                            else if( lhs == c_function_paths )
                            {
                               string rhs( str.substr( pos + 1 ) );
+
+                              vector< string > includes;
+                              vector< string > excludes;
+
+                              pos = rhs.find( op );
+
+                              // NOTE: Allows for a comma separated list of strings to
+                              // act as includes/excludes (prefix with ^ for excludes)
+                              // for filtering path names. XX=@paths:/path:^.tmp,^.sav
+                              if( pos != string::npos )
+                              {
+                                 string all_extras( rhs.substr( pos + 1 ) );
+                                 rhs.erase( pos );
+
+                                 if( !all_extras.empty( ) )
+                                    split_all_extras( all_extras, includes, excludes );
+                              }
 
                               directory_filter df;
                               fs_iterator dfsi( rhs, &df );
@@ -2605,6 +2634,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  string next_path( dfsi.get_full_name( ) );
 
                                  if( next_path.length( ) <= len )
+                                    continue;
+
+                                 if( !should_be_included( next_path, includes, excludes ) )
                                     continue;
 
                                  if( !str.empty( ) )
@@ -2704,6 +2736,15 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                        str.erase( );
                                  }
                               }
+                           }
+                           else if( lhs == c_function_fullpath )
+                           {
+                              string abs_path;
+
+                              if( !absolute_path( str.substr( pos + 1 ), abs_path ) )
+                                 throw runtime_error( "invalid path '" + str.substr( pos + 1 ) + "'" );
+
+                              str = abs_path;
                            }
                         }
                         else

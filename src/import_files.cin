@@ -6,10 +6,12 @@
 @ifndef $1
 #NOTE: The script requires a starting directory point to import from the branch below.
 @else
+START=@fullpath:$1
+@ifndef $ERROR
 .session_variable @uuid
 UUID=$OUTPUT
 ;
-PATHS=@paths:$1
+PATHS=@paths:$START
 .session_variable @set ""
 .session_variable @set "~$PATHS"
 ;
@@ -33,7 +35,7 @@ HAD_ANY_FILES=
 .session_variable @deque pop_front
 .session_variable @set @deque
 ;
-FILES=@files:$1/$NEXT_PATH
+FILES=@files:$START/$NEXT_PATH
 .session_variable @deque ""
 .session_variable @deque "~$FILES"
 ;
@@ -61,7 +63,7 @@ HAD_ANY_FILES=1
 ; NOTE: Each file is split into a set of 1M chunks and a
 ; the UUID variable is used to tag the "list" file which
 ; will be automatically created by "ciyam_client".
-.file_put 1M*$1/$NEXT_PATH/$NEXT_FILE $1/?$UUID
+.file_put 1M*$1/$NEXT_PATH/$NEXT_FILE $START/?$UUID
 ;
 ; NOTE: Get the file hash of the tagged "list" of chunks
 ; and append it to a "list" that will be effectively the
@@ -77,7 +79,10 @@ HASH=$OUTPUT
 @:EXIT_FILE
 ;
 @ifdef $HAD_ANY_FILES
-.file_put ?~$UUID $NEXT_PATH
+; NOTE: Change '/' to '.' for the tag.
+TAG_NAME=@repstr:\//.:$NEXT_PATH
+;
+.file_put ?~$UUID $TAG_NAME
 ~rm ~$UUID
 .file_tag -remove $UUID
 @endif
@@ -85,4 +90,5 @@ HASH=$OUTPUT
 !!@:PATH_LOOP
 ;
 @:EXIT_PATH
+@endif
 @endif
