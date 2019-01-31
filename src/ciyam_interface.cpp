@@ -1687,7 +1687,7 @@ void request_handler::process_request( )
                   path += "/" + session_id;
 
                   bool rc;
-                  create_dir( path, &rc, ( dir_perms )c_directory_perm_val );
+                  create_dir( path, &rc );
 
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
@@ -2785,7 +2785,7 @@ int main( int argc, char* argv[ ] )
    try
    {
 #ifndef _WIN32
-      umask( DEFAULT_UMASK );
+      umask( STANDARD_UMASK );
 #endif
       string exe_path = string( argv[ 0 ] );
 

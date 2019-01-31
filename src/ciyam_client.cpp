@@ -649,7 +649,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         }
 
                         append_last_name = append_parent_name;
-                        create_directories( prefixed_append_name, c_directory_perm_val );
+                        create_directories( prefixed_append_name );
 
                         file_append( filename, prefixed_append_name );
                      }

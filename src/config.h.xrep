@@ -8,7 +8,7 @@
 #ifndef CONFIG_H
 #  define CONFIG_H
 
-`{`!`@eq`(`$port`,`'12345`'`)//`}#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+//#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
 
 `{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)//`}#  define SSL_SUPPORT
 `{`!`(`?`$use_hpdf`)`|`@eq`(`$use_hpdf`,`'0`'`)`|`@eq`(`$use_hpdf`,`'false`'`)//`}#  define HPDF_SUPPORT
@@ -29,11 +29,8 @@ const char* const c_protocol_version = "0.1";
 
 const size_t c_password_hash_rounds = `{`$pwd_rounds`};
 
-const int c_directory_perm_val = `{`@eq`(`$port`,`'12345`'`)1`,2`};
+#  define WEB_FILES_UMASK 0002
 
-#  ifndef _WIN32
-#     define DEFAULT_UMASK `{`@eq`(`$port`,`'12345`'`)0`,007`}
-#  endif
+const int c_web_files_dir_perm_val = 2;
 
 #endif
-

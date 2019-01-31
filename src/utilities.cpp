@@ -81,10 +81,12 @@ const unsigned char c_high_mask = 0xc0;
 
 #ifndef _WIN32
 const int c_open_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
-const int c_group_directory_perms = S_IRWXU | S_IRWXG;
-const int c_private_directory_perms = S_IRWXU;
+const int c_group_directory_perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+const int c_standard_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
+const int c_restricted_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP;
+const int c_confidential_directory_perms = S_IRWXU;
 
-const int c_default_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
+const int c_default_directory_perms = c_standard_directory_perms;
 #endif
 
 const char* const c_env_var_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
@@ -280,41 +282,55 @@ void set_cwd( const string& path, bool* p_rc )
       *p_rc = true;
 }
 
-void create_dir( const string& path, bool* p_rc, dir_perms perms )
+void create_dir( const string& path, bool* p_rc, dir_perms perms, int um )
 {
 #ifdef _WIN32
    ( void )perms;
+   ( void )umask;
 
    if( _mkdir( path.c_str( ) ) != 0 )
 #else
-   int um = umask( 0 );
-   int pv = c_default_directory_perms;
+   int oum = umask( um );
+   int pval = c_default_directory_perms;
 
    switch( perms )
    {
       case e_dir_perms_open:
-      pv = c_open_directory_perms;
+      pval = c_open_directory_perms;
       break;
 
       case e_dir_perms_group:
-      pv = c_group_directory_perms;
+      pval = c_group_directory_perms;
       break;
 
-      case e_dir_perms_private:
-      pv = c_private_directory_perms;
+      case e_dir_perms_standard:
+      pval = c_standard_directory_perms;
+      break;
+
+      case e_dir_perms_restricted:
+      pval = c_restricted_directory_perms;
+      break;
+
+      case e_dir_perms_confidential:
+      pval = c_confidential_directory_perms;
       break;
    }
 
-   if( _mkdir( path.c_str( ), pv ) )
+   if( _mkdir( path.c_str( ), pval ) )
 #endif
    {
       if( p_rc )
          *p_rc = false;
       else
+      {
+#ifndef _WIN32
+         umask( oum );
+#endif
          throw runtime_error( "unable to create '" + path + "' directory" );
+      }
    }
 #ifndef _WIN32
-   umask( um );
+   umask( oum );
 #endif
 
    if( p_rc )

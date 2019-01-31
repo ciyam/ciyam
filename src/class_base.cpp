@@ -3014,7 +3014,7 @@ void delete_directory_tree( const string& path )
 
 void create_directories_for_file_name( const string& file_name )
 {
-   create_directories( file_name, c_directory_perm_val );
+   create_directories( file_name, c_web_files_dir_perm_val, WEB_FILES_UMASK );
 }
 
 string get_directory_for_file_name( const string& file_name )

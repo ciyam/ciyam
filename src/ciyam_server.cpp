@@ -447,6 +447,8 @@ int main( int argc, char* argv[ ] )
       if( !SetConsoleCtrlHandler( ( PHANDLER_ROUTINE )CtrlHandler, TRUE ) )
          throw runtime_error( "unable to register CtrlHandler" );
 #else
+      umask( STANDARD_UMASK );
+
       if( g_is_daemon )
       {
          pid_t pid = fork( );
@@ -454,10 +456,6 @@ int main( int argc, char* argv[ ] )
             exit( EXIT_FAILURE );
          if( pid > 0 )
             exit( EXIT_SUCCESS );
-
-         umask( DEFAULT_UMASK );
-
-         // FUTURE: A chdir to "/" might be advised (as the current directory could be anything).
 
          pid_t sid = setsid( );
          if( sid < 0 )
@@ -468,8 +466,6 @@ int main( int argc, char* argv[ ] )
          close( STDOUT_FILENO );
          // close( STDERR_FILENO );
       }
-      else
-         umask( DEFAULT_UMASK );
 
       // NOTE: For a non-windows multi-threaded application need to create a thread to wait on the signal.
       pthread_t tid;

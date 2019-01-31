@@ -967,7 +967,7 @@ void setup_directories( )
 
    if( !rc )
    {
-      create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
+      create_dir( c_files_directory, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
       set_cwd( c_files_directory );
    }
 
@@ -977,7 +977,7 @@ void setup_directories( )
 
    if( !rc )
    {
-      create_dir( c_tmp_directory, &rc, ( dir_perms )c_directory_perm_val );
+      create_dir( c_tmp_directory, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
       set_cwd( c_tmp_directory );
    }
    else
@@ -1038,7 +1038,7 @@ void setup_directories( )
 
       if( !rc )
       {
-         create_dir( module_id, &rc, ( dir_perms )c_directory_perm_val );
+         create_dir( module_id, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
          set_cwd( module_id );
       }
 
@@ -1050,9 +1050,6 @@ void setup_directories( )
 
       if( !file_exists( ".htaccess" ) )
       {
-#ifndef _WIN32
-         int um = umask( 027 );
-#endif
          // NOTE: Empty code block for scope purposes.
          {
             ofstream htaf( ".htaccess", ios::out | ios::binary );
@@ -1069,9 +1066,6 @@ void setup_directories( )
             htaf << " </IfModule>\n";
             htaf << "</Files>\n";
          }
-#ifndef _WIN32
-         umask( um );
-#endif
       }
 
       for( set< string >::iterator si = i->second.begin( ), end = i->second.end( ); si != end; ++si )
@@ -1084,7 +1078,7 @@ void setup_directories( )
          if( rc )
             set_cwd( ".." );
          else
-            create_dir( name, &rc, ( dir_perms )c_directory_perm_val );
+            create_dir( name, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
       }
 
       set_cwd( ".." );

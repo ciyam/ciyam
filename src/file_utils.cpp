@@ -72,7 +72,7 @@ bool delete_files( const char* p_dir, bool recycle )
 
 }
 
-void create_directories( const string& file_path, int perm )
+void create_directories( const string& file_path, int perm, int mask )
 {
    string::size_type pos = file_path.find_last_of( "/\\" );
 
@@ -120,7 +120,7 @@ void create_directories( const string& file_path, int perm )
 
          if( !rc )
          {
-            create_dir( sub_directories[ i ], &rc, ( dir_perms )perm );
+            create_dir( sub_directories[ i ], &rc, ( dir_perms )perm, ( mask < 0 ? STANDARD_UMASK : mask ) );
             set_cwd( sub_directories[ i ] );
          }
       }

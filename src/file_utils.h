@@ -11,7 +11,7 @@
 #     include <string>
 #  endif
 
-void create_directories( const std::string& file_path, int perm );
+void create_directories( const std::string& file_path, int perm = 0, int mask = -1 );
 
 bool files_are_identical( const std::string& file_path1, const std::string& file_path2 );
 

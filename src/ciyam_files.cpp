@@ -89,7 +89,7 @@ void create_directory_if_not_exists( const string& dir_name )
 
    if( !rc )
    {
-      create_dir( dir_name, &rc, ( dir_perms )c_directory_perm_val );
+      create_dir( dir_name, &rc );
       if( !rc )
          throw runtime_error( "unable to create directory '" + dir_name + "'" );
    }
@@ -335,7 +335,7 @@ void init_files_area( vector< string >* p_untagged )
       set_cwd( c_files_directory, &rc );
 
       if( !rc )
-         create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
+         create_dir( c_files_directory, &rc );
       else
       {
          directory_filter df;
@@ -776,13 +776,8 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       if( g_total_bytes + final_data.size( ) > max_bytes )
          throw runtime_error( "maximum file area size limit cannot be exceeded" );
 
-#ifndef _WIN32
-      int um = umask( 077 );
-#endif
       ofstream outf( filename.c_str( ), ios::out | ios::binary );
-#ifndef _WIN32
-      umask( um );
-#endif
+
       if( !outf )
          throw runtime_error( "unable to create output file '" + filename + "'" );
 
@@ -1253,9 +1248,6 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
    string tmp_filename( "~" + uuid( ).as_string( ) );
    string filename( construct_file_name_from_hash( hash, false, false ) );
 
-#ifndef _WIN32
-   int um = umask( 077 );
-#endif
    try
    {
       // NOTE: As the file may end up being deleted whilst it is being
@@ -1276,16 +1268,10 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
        c_response_okay_more, c_file_transfer_initial_timeout,
        c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 
-#ifndef _WIN32
-      umask( um );
-#endif
       file_remove( tmp_filename );
    }
    catch( ... )
    {
-#ifndef _WIN32
-      umask( um );
-#endif
       file_remove( tmp_filename );
 
       throw;
@@ -1318,9 +1304,6 @@ void store_file( const string& hash, tcp_socket& socket,
          existing_bytes = file_size( filename );
    }
 
-#ifndef _WIN32
-   int um = umask( 077 );
-#endif
    try
    {
       session_file_buffer_access file_buffer;
@@ -1385,9 +1368,6 @@ void store_file( const string& hash, tcp_socket& socket,
             throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
       }
 
-#ifndef _WIN32
-      umask( um );
-#endif
       if( rc )
       {
          guard g( g_mutex );
@@ -1421,10 +1401,6 @@ void store_file( const string& hash, tcp_socket& socket,
    }
    catch( ... )
    {
-#ifndef _WIN32
-      umask( um );
-#endif
-
       file_remove( tmp_filename );
       throw;
    }
@@ -1527,27 +1503,10 @@ void fetch_temp_file( const string& name, tcp_socket& socket, progress* p_progre
 
 void store_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
 {
-#ifndef _WIN32
-   int um = umask( 077 );
-#endif
-   try
-   {
-      file_transfer( name, socket,
-       e_ft_direction_recv, get_files_area_item_max_size( ),
-       c_response_okay_more, c_file_transfer_initial_timeout,
-       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
-
-#ifndef _WIN32
-      umask( um );
-#endif
-   }
-   catch( ... )
-   {
-#ifndef _WIN32
-      umask( um );
-#endif
-      throw;
-   }
+   file_transfer( name, socket,
+    e_ft_direction_recv, get_files_area_item_max_size( ),
+    c_response_okay_more, c_file_transfer_initial_timeout,
+    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 }
 
 bool temp_file_is_identical( const string& temp_name, const string& hash )

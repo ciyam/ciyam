@@ -380,7 +380,7 @@ int main( int /*argc*/, char* argv[ ] )
    try
    {
 #ifndef _WIN32
-      umask( DEFAULT_UMASK );
+      umask( WEB_FILES_UMASK );
 #endif
       g_exe_path = string( argv[ 0 ] );
 
