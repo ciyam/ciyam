@@ -995,6 +995,9 @@ void request_handler::process_request( )
             needs_identity = true;
 
          cmd = c_cmd_home;
+
+         if( !needs_identity && !file_exists( c_id_file ) )
+            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
       }
 
       if( cmd == c_cmd_password || cmd == c_cmd_credentials )
@@ -2785,7 +2788,7 @@ int main( int argc, char* argv[ ] )
    try
    {
 #ifndef _WIN32
-      umask( STANDARD_UMASK );
+      umask( WEB_FILES_UMASK );
 #endif
       string exe_path = string( argv[ 0 ] );
 
