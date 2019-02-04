@@ -39,6 +39,7 @@
 #include "ciyam_base.h"
 #include "file_utils.h"
 #include "fs_iterator.h"
+#include "crypt_stream.h"
 #include "ciyam_variables.h"
 #include "ods_file_system.h"
 
@@ -52,6 +53,8 @@ namespace
 {
 
 const int c_status_info_pad_len = 10;
+
+const int c_min_size_to_compress = 33;
 
 const int c_depth_to_omit_blob_content = 999;
 
@@ -148,7 +151,16 @@ void validate_list( const string& data, bool* p_rc = 0 )
       *p_rc = true;
 }
 
-void validate_hash_with_uncompressed_content( const string& hash, unsigned char* p_data, unsigned long length )
+void validate_hash_with_uncompressed_content( const string& hash, const string& filename )
+{
+   sha256 test_hash;
+   test_hash.update( filename, true );
+
+   if( hash != test_hash.get_digest_as_string( ) )
+      throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+}
+
+void validate_hash_with_uncompressed_content( const string& hash, unsigned char* p_data, unsigned long length, const char* p_alt_error_message = 0 )
 {
    bool okay = false;
 
@@ -173,7 +185,12 @@ void validate_hash_with_uncompressed_content( const string& hash, unsigned char*
    }
 
    if( !okay )
-      throw runtime_error( "invalid content for file hash '" + hash + "'" );
+   {
+      if( p_alt_error_message )
+         throw runtime_error( p_alt_error_message );
+      else
+         throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
+   }
 }
 
 string get_archive_status( const string& path )
@@ -459,7 +476,7 @@ bool has_tag( const string& name )
    guard g( g_mutex );
 
    string::size_type pos = name.rfind( '*' );
-   map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
+   map< string, string >::iterator i = ( pos == 0 ? g_tag_hashes.end( ) : g_tag_hashes.lower_bound( name.substr( 0, pos ) ) );
 
    if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
       return false;
@@ -523,20 +540,21 @@ string file_type_info( const string& tag_or_hash,
    string data( buffer_file( filename, max_to_buffer, &file_size ) );
    
    if( data.empty( ) )
-      throw runtime_error( "unexpected empty file" );
+      throw runtime_error( "unexpected empty file '" + tag_or_hash + "'" );
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
    bool is_core = ( data[ 0 ] & c_file_type_val_extra_core );
+   bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
    if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
-      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for raw file creation" );
+      throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in file_info" );
 
    if( file_type == c_file_type_val_list && max_depth == c_depth_to_omit_blob_content )
       data = buffer_file( filename );
 
-   if( !is_compressed
+   if( !is_encrypted && !is_compressed
     && ( file_type == c_file_type_val_list || max_depth != c_depth_to_omit_blob_content ) )
    {
       sha256 test_hash( data );
@@ -548,15 +566,14 @@ string file_type_info( const string& tag_or_hash,
    string final_data( data );
 
 #ifdef ZLIB_SUPPORT
-   if( is_compressed && final_data.size( ) > 1 )
+   if( !is_encrypted && is_compressed && final_data.size( ) > 1 )
    {
       session_file_buffer_access file_buffer;
 
-      unsigned long size = data.size( ) - 1;
+      unsigned long size = final_data.size( ) - 1;
       unsigned long usize = file_buffer.get_size( ) - size;
 
-      if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
-       &usize, ( Bytef * )&data[ 1 ], size ) != Z_OK )
+      if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
          throw runtime_error( "invalid content for '" + tag_or_hash + "' (bad compressed or uncompressed too large)" );
 
       final_data.erase( 1 );
@@ -587,16 +604,20 @@ string file_type_info( const string& tag_or_hash,
 
    string size_info( "(" + format_bytes( file_size ) + ")" );
 
-   if( expansion == e_file_expansion_none )
+   if( is_encrypted || ( expansion == e_file_expansion_none ) )
    {
       retval += " " + lower( hash );
 
       if( add_size )
          retval += " " + size_info;
 
-      if( is_core )
+      if( is_encrypted && ( expansion != e_file_expansion_none ) )
+         retval += " [***]";
+
+      if( is_core && !is_encrypted )
       {
          string::size_type pos = final_data.find( ':' );
+
          if( pos != string::npos )
             retval += " " + final_data.substr( 1, pos - 1 );
       }
@@ -678,7 +699,7 @@ string file_type_info( const string& tag_or_hash,
    return retval;
 }
 
-string create_raw_file( const string& data, bool compress, const char* p_tag, bool* p_is_existing )
+string create_raw_file( const string& data, bool compress, const char* p_tag, bool* p_is_existing, const char* p_hash )
 {
    guard g( g_mutex );
 
@@ -698,33 +719,32 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    string final_data( data );
 
+   bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
    bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
 #ifdef ZLIB_SUPPORT
    session_file_buffer_access file_buffer;
 
-   if( is_compressed )
+   if( !is_encrypted && is_compressed )
    {
       unsigned long size = final_data.size( ) - 1;
-      unsigned long usize = file_buffer.get_size( ) - size;
+      unsigned long usize = file_buffer.get_size( );
 
-      size_t offset = 1;
-
-      if( uncompress( ( Bytef * )file_buffer.get_buffer( ),
-       &usize, ( Bytef * )&final_data[ offset ], size ) != Z_OK )
+      if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
          throw runtime_error( "invalid content for create_raw_file (bad compressed or uncompressed too large)" );
 
       compress = true;
       is_compressed = false;
 
-      final_data = string( ( const char* )file_buffer.get_buffer( ) );
+      final_data = ( data[ 0 ] & ~c_file_type_val_compressed );
+      final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
    }
 #else
    if( is_compressed )
       throw runtime_error( "create_raw_file doesn't support compressed files (without ZLIB support)" );
 #endif
 
-   string hash( sha256( final_data ).get_digest_as_string( ) );
+   string hash( p_hash ? string( p_hash ) : sha256( final_data ).get_digest_as_string( ) );
 
    string filename( construct_file_name_from_hash( hash, true ) );
 
@@ -732,18 +752,18 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       validate_list( final_data.substr( 1 ) );
 
 #ifdef ZLIB_SUPPORT
-   if( compress && !is_compressed && data.size( ) > 32 ) // i.e. don't even bother trying to compress tiny files
+   if( compress && !is_compressed && final_data.size( ) >= c_min_size_to_compress )
    {
-      unsigned long size = data.size( ) - 1;
+      unsigned long size = final_data.size( ) - 1;
       unsigned long csize = file_buffer.get_size( );
 
       size_t offset = 1;
 
       if( compress2( ( Bytef * )file_buffer.get_buffer( ),
-       &csize, ( Bytef * )&data[ offset ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
+       &csize, ( Bytef * )&final_data[ offset ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
          throw runtime_error( "invalid content in create_raw_file (bad compress or buffer too small)" );
 
-      if( csize + offset < data.size( ) )
+      if( csize + offset < final_data.size( ) )
       {
          final_data[ 0 ] |= c_file_type_val_compressed;
 
@@ -1243,6 +1263,140 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
+void crypt_file( const string& tag_or_hash, const string& password )
+{
+   string hash( tag_or_hash );
+
+   if( has_tag( tag_or_hash ) )
+      hash = tag_file_hash( tag_or_hash );
+
+   string filename( construct_file_name_from_hash( hash ) );
+
+   if( !file_exists( filename ) )
+      throw runtime_error( hash + " was not found" );
+
+   string file_data( buffer_file( filename ) );
+
+   if( file_data.empty( ) )
+      throw runtime_error( "unexpected empty file content for '" + hash + "'" );
+
+   unsigned char flags = file_data[ 0 ];
+
+   unsigned char file_type = ( flags & c_file_type_val_mask );
+
+   bool is_encrypted = ( flags & c_file_type_val_encrypted );
+   bool is_compressed = ( flags & c_file_type_val_compressed );
+
+   if( !is_encrypted )
+   {
+      string uncompressed_data( file_data );
+
+#ifdef ZLIB_SUPPORT
+      if( is_compressed && file_data.size( ) > 1 )
+      {
+         session_file_buffer_access file_buffer;
+
+         unsigned long size = file_data.size( ) - 1;
+         unsigned long usize = file_buffer.get_size( ) - size;
+
+         if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&file_data[ 1 ], size ) != Z_OK )
+            throw runtime_error( "invalid content for '" + tag_or_hash + "' (bad compressed or uncompressed too large)" );
+
+         uncompressed_data = file_data.substr( 0, 1 );
+         uncompressed_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+      }
+#endif
+
+      stringstream ss( file_data.substr( 1 ) );
+      crypt_stream( ss, password );
+
+      string new_file_data( file_data.substr( 0, 1 ) );
+
+      new_file_data += ss.str( );
+
+      new_file_data[ 0 ] |= c_file_type_val_encrypted;
+
+      write_file( filename, new_file_data );
+
+      if( file_type == c_file_type_val_list )
+      {
+         string list_info( uncompressed_data.substr( 1 ) );
+
+         if( !list_info.empty( ) )
+         {
+            vector< string > list_items;
+            split( list_info, list_items, '\n' );
+
+            for( size_t i = 0; i < list_items.size( ); i++ )
+            {
+               string next( list_items[ i ] );
+               string::size_type pos = next.find( ' ' );
+
+               crypt_file( next.substr( 0, pos ), password );
+            }
+         }
+      }
+   }
+   else
+   {
+      stringstream ss( file_data.substr( 1 ) );
+      crypt_stream( ss, password );
+
+      file_data.erase( 1 );
+      file_data += ss.str( );
+
+      file_data[ 0 ] &= ~c_file_type_val_encrypted;
+
+      string uncompressed_data( file_data );
+
+      string bad_hash_error( "invalid password to decrypt file '" + tag_or_hash + "'" );
+
+#ifdef ZLIB_SUPPORT
+      if( is_compressed && file_data.size( ) > 1 )
+      {
+         session_file_buffer_access file_buffer;
+
+         unsigned long size = file_data.size( ) - 1;
+         unsigned long usize = file_buffer.get_size( ) - size;
+
+         if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&file_data[ 1 ], size ) != Z_OK )
+            throw runtime_error( bad_hash_error ); // NOTE: Assume it is a bad password rather than a bad uncompress.
+
+         uncompressed_data = file_data.substr( 0, 1 );
+         uncompressed_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+
+         validate_hash_with_uncompressed_content( hash,
+          ( unsigned char* )uncompressed_data.data( ), uncompressed_data.length( ), bad_hash_error.c_str( ) );
+      }
+#endif
+
+      if( !is_compressed )
+         validate_hash_with_uncompressed_content( hash,
+          ( unsigned char* )file_data.data( ), file_data.length( ), bad_hash_error.c_str( ) );
+
+      write_file( filename, file_data );
+
+      if( file_type == c_file_type_val_list )
+      {
+         string list_info( uncompressed_data.substr( 1 ) );
+
+         if( !list_info.empty( ) )
+         {
+            vector< string > list_items;
+            split( list_info, list_items, '\n' );
+
+            for( size_t i = 0; i < list_items.size( ); i++ )
+            {
+               string next( list_items[ i ] );
+               string::size_type pos = next.find( ' ' );
+
+               crypt_file( next.substr( 0, pos ), password );
+            }
+         }
+      }
+   }
+}
+
 void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 {
    string tmp_filename( "~" + uuid( ).as_string( ) );
@@ -1326,10 +1480,11 @@ void store_file( const string& hash, tcp_socket& socket,
             throw runtime_error( "core file not allowed for this store_file" );
       }
 
+      bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
 
 #ifdef ZLIB_SUPPORT
-      if( is_compressed )
+      if( !is_encrypted && is_compressed )
       {
          unsigned long size = file_size( tmp_filename ) - 1;
          unsigned long usize = file_buffer.get_size( ) - size;
@@ -1337,6 +1492,9 @@ void store_file( const string& hash, tcp_socket& socket,
          if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
           &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+
+         if( usize + 1 > max_bytes )
+            throw runtime_error( "uncompressed file size exceeds maximum permitted file size" );
 
          file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
          validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
@@ -1353,20 +1511,14 @@ void store_file( const string& hash, tcp_socket& socket,
 
       bool rc = true;
 
-      if( !is_compressed && file_type != c_file_type_val_blob )
+      if( !is_encrypted && !is_compressed && file_type != c_file_type_val_blob )
          validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc );
 
       if( !rc )
          throw runtime_error( "invalid 'list' file" );
 
-      if( !is_compressed )
-      {
-         sha256 test_hash;
-         test_hash.update( tmp_filename, true );
-
-         if( hash != test_hash.get_digest_as_string( ) )
-            throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
-      }
+      if( !is_encrypted && !is_compressed )
+         validate_hash_with_uncompressed_content( hash, tmp_filename );
 
       if( rc )
       {
@@ -1385,7 +1537,34 @@ void store_file( const string& hash, tcp_socket& socket,
          }
 
          if( !is_in_blacklist )
+         {
+#ifndef ZLIB_SUPPORT
             file_copy( tmp_filename, filename );
+#else
+            if( is_encrypted || is_compressed )
+               file_copy( tmp_filename, filename );
+            else if( !is_compressed )
+            {
+               unsigned long size = file_size( tmp_filename ) - 1;
+               unsigned long csize = file_buffer.get_size( );
+
+               if( size >= c_min_size_to_compress
+                && compress2( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+                &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
+                  throw runtime_error( "invalid content in store_file (bad compress or buffer too small)" );
+
+               if( csize < size )
+               {
+                  is_compressed = true;
+                  file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
+
+                  write_file( filename, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+               }
+               else
+                  file_copy( tmp_filename, filename );
+            }
+#endif
+         }
 
          file_remove( tmp_filename );
 
@@ -1548,8 +1727,8 @@ string extract_file( const string& hash, const string& dest_filename, unsigned c
       {
          unsigned long usize = file_buffer.get_size( ) - size;
 
-         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ 0 ],
-          &usize, ( Bytef * )&data[ offset ], size ) != Z_OK )
+         if( uncompress(
+          ( Bytef * )&file_buffer.get_buffer( )[ 0 ], &usize, ( Bytef * )&data[ offset ], size ) != Z_OK )
             throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
          size = usize;
@@ -2069,7 +2248,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
                   if( tag_for_file.empty( ) )
                      tag_for_file = current_timestamp_tag( false, days_ahead );
 
-                  create_raw_file( file_data, false, tag_for_file.c_str( ) );
+                  create_raw_file( file_data, false, tag_for_file.c_str( ), 0, hash.c_str( ) );
 
                   break;
                }
@@ -2190,4 +2369,3 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    if( ap_ods_tx.get( ) )
       ap_ods_tx->commit( );
 }
-

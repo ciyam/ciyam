@@ -81,9 +81,7 @@ const size_t c_greeting_timeout = 10000;
 
 const size_t c_max_length_for_output_env_var = 1000;
 
-const unsigned long c_max_uncompressed_bytes = 100000;
-
-const int64_t c_max_size_to_buffer = INT64_C( 1073741824 );
+const unsigned long c_max_uncompressed_bytes = 1000000;
 
 string application_title( app_info_request request )
 {
@@ -368,12 +366,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   return string( );
                }
 
-               if( file_size( put_source_file ) > c_max_size_to_buffer )
-               {
-                  cerr << "Error: File exceeds max. length restriction of " << to_string( c_max_size_to_buffer ) << " bytes." << endl;
-                  return string( );
-               }
-
                string chunk_name;
 
                if( chunk_size )
@@ -422,9 +414,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   file_name.erase( );
                }
 
-               data = buffer_file( put_source_file );
+               sha256 tmp_hash( prefix );
+               tmp_hash.update( put_source_file, true );
 
-               string hash( sha256( prefix + data ).get_digest_as_string( ) );
+               string hash( tmp_hash.get_digest_as_string( ) );
 
                if( !chunk_name.empty( ) )
                {
@@ -492,7 +485,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                {
                   string filename( !get_dest_file.empty( ) ? get_dest_file : str.substr( pos + 1 ) );
 
-                  unsigned char prefix( !get_dest_file.empty( ) ? '\1' : '\0' );
+                  unsigned char prefix = '\0';
 
                   bool appending = false;
                   bool append_chunks = false;
@@ -527,10 +520,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         {
                            if( append_prefix.empty( )
                             && !is_additional_command( ) && file_exists( append_filename ) )
-                           {
                               append_chunks = false;
-                              append_filename.erase( );
-                           }
                            else
                               filename = "~" + uuid( ).as_string( );
                         }
@@ -556,18 +546,29 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      }
                   }
 
+                  long start_pos = 0;
+
                   if( appending )
+                  {
                      filename.erase( 0, 1 );
+
+                     if( file_exists( filename ) )
+                        start_pos = file_size( filename );
+                  }
 
                   if( ( !appending && file_exists( filename ) )
                    || ( !append_chunks && !append_filename.empty( ) ) )
                   {
                      if( append_filename.empty( ) )
                         handle_command_response( "local file '" + filename + "' already exists", true );
+                     else if( !appending_multiple )
+                        handle_command_response( "local file '" + append_filename + "' already exists", true );
                      else
-                        handle_command_response( "local path '" + append_filename + "' is not valid", true );
+                        handle_command_response( "local path '" + append_filename + "' not found or not valid", true );
 
+                     append_filename.erase( );
                      delete_after_transfer = true;
+
                      filename = "~" + uuid( ).as_string( );
                   }
 
@@ -594,7 +595,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      expanded_data.erase( usize );
 
-                     write_file( filename, expanded_data, appending );
+                     write_file( filename, expanded_data, false, start_pos );
                   }
 #endif
 

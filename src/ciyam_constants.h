@@ -71,8 +71,7 @@ const int c_file_type_val_list = 0x02;
 
 const int c_file_type_val_mask = 0x03;
 
-// NOTE: The 0x04 bit is available for future usage.
-
+const int c_file_type_val_encrypted = 0x04;
 const int c_file_type_val_compressed = 0x08;
 
 const int c_file_type_val_extra_core = 0x10;

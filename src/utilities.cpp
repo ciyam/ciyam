@@ -1756,7 +1756,7 @@ string buffer_file( const char* p_file_name, long max_bytes, long* p_size, long 
    return str;
 }
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, long start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in write_file" );
@@ -1764,6 +1764,9 @@ void write_file( const char* p_file_name, unsigned char* p_data, size_t length, 
    FILE* fp = fopen( p_file_name, ( append ? "ab" : "wb" ) );
    if( !fp )
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for output in write_file" );
+
+   if( !append && start_pos )
+      fseek( fp, start_pos, SEEK_SET );
 
    if( length && fwrite( p_data, 1, length, fp ) != length )
       throw runtime_error( "writing to output file '" + string( p_file_name ) + "'" );
@@ -2363,4 +2366,3 @@ string extract_text_from_html( const string& html )
 
    return text;
 }
-

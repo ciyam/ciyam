@@ -1440,7 +1440,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !has_file( hash, false ) )
          {
             possibly_expected_error = true;
-            throw runtime_error( "file not found" );
+            throw runtime_error( "file '" + hash + "' not found" );
          }
 
          fetch_file( hash, socket );
@@ -1613,6 +1613,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = get_hash_tags( pat_or_hash );
          else
             response = list_file_tags( pat_or_hash );
+      }
+      else if( command == c_cmd_ciyam_session_file_crypt )
+      {
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_tag_or_hash ) );
+         string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_pubkey ) );
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_password ) );
+
+         if( !pubkey.empty( ) )
+            password = session_shared_decrypt( pubkey, password );
+
+         crypt_file( tag_or_hash, password );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );

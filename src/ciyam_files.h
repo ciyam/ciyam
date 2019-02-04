@@ -56,8 +56,8 @@ enum file_expansion
 std::string CIYAM_BASE_DECL_SPEC file_type_info( const std::string& tag_or_hash,
  file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0, bool add_size = false );
 
-std::string CIYAM_BASE_DECL_SPEC create_raw_file(
- const std::string& data, bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0 );
+std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
+ bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0, const char* p_hash = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
@@ -75,6 +75,8 @@ std::string CIYAM_BASE_DECL_SPEC list_file_tags( const std::string& pat, size_t 
 void CIYAM_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );
 
 std::string CIYAM_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const std::string& nonce );
+
+void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& tag_or_hash, const std::string& password );
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 

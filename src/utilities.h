@@ -264,7 +264,10 @@ enum dir_perms
 void create_dir( const std::string& path, bool* p_rc = 0, dir_perms perms = e_dir_perms_default, int um = STANDARD_UMASK );
 
 bool file_exists( const char* p_name, bool check_link_target = true );
-inline bool file_exists( const std::string& name, bool check_link_target = true ) { return file_exists( name.c_str( ), check_link_target ); }
+inline bool file_exists( const std::string& name, bool check_link_target = true )
+{
+   return file_exists( name.c_str( ), check_link_target );
+}
 
 bool file_remove( const char* p_name );
 inline bool file_remove( const std::string& name ) { return file_remove( name.c_str( ) ); }
@@ -274,9 +277,21 @@ inline bool file_remove( const std::wstring& name ) { return file_remove( name.c
 #  endif
 
 bool file_rename( const char* p_old_name, const char* p_new_name );
-inline bool file_rename( const std::string& old_name, const char* p_new_name ) { return file_rename( old_name.c_str( ), p_new_name ); }
-inline bool file_rename( const char* p_old_name, const std::string& new_name ) { return file_rename( p_old_name, new_name.c_str( ) ); }
-inline bool file_rename( const std::string& old_name, const std::string& new_name ) { return file_rename( old_name.c_str( ), new_name.c_str( ) ); }
+
+inline bool file_rename( const std::string& old_name, const char* p_new_name )
+{
+   return file_rename( old_name.c_str( ), p_new_name );
+}
+
+inline bool file_rename( const char* p_old_name, const std::string& new_name )
+{
+   return file_rename( p_old_name, new_name.c_str( ) );
+}
+
+inline bool file_rename( const std::string& old_name, const std::string& new_name )
+{
+   return file_rename( old_name.c_str( ), new_name.c_str( ) );
+}
 
 int64_t file_size( const char* p_name );
 inline int64_t file_size( const std::string& name ) { return file_size( name.c_str( ) ); }
@@ -292,12 +307,28 @@ inline void file_link( const std::string& src, const std::string& name ) { file_
 inline void file_linkw( const wchar_t* p_wsrc, const wchar_t* p_wname ) { file_link( "", "", p_wsrc, p_wname ); }
 
 void file_copy( const char* p_src, const char* p_dest, bool append = false );
-inline void file_copy( const std::string& src, const char* p_dest, bool append = false ) { file_copy( src.c_str( ), p_dest, append ); }
-inline void file_copy( const std::string& src, const std::string& dest, bool append = false ) { file_copy( src.c_str( ), dest.c_str( ), append ); }
+
+inline void file_copy( const std::string& src, const char* p_dest, bool append = false )
+{
+   file_copy( src.c_str( ), p_dest, append );
+}
+
+inline void file_copy( const std::string& src, const std::string& dest, bool append = false )
+{
+   file_copy( src.c_str( ), dest.c_str( ), append );
+}
 
 inline void file_append( const char* p_src, const char* p_dest ) { file_copy( p_src, p_dest, true ); }
-inline void file_append( const std::string& src, const char* p_dest ) { file_append( src.c_str( ), p_dest ); }
-inline void file_append( const std::string& src, const std::string& dest ) { file_append( src.c_str( ), dest.c_str( ) ); }
+
+inline void file_append( const std::string& src, const char* p_dest )
+{
+   file_append( src.c_str( ), p_dest );
+}
+
+inline void file_append( const std::string& src, const std::string& dest )
+{
+   file_append( src.c_str( ), dest.c_str( ) );
+}
 
 std::string valid_file_name( const std::string& str, bool* p_has_utf8_chars = 0 );
 
@@ -563,9 +594,20 @@ class boyer_moore
 
 bool wildcard_match( const char* p_expr, const char* p_data );
 
-inline bool wildcard_match( const char* p_expr, const std::string& data ) { return wildcard_match( p_expr, data.c_str( ) ); }
-inline bool wildcard_match( const std::string& expr, const char* p_data ) { return wildcard_match( expr.c_str( ), p_data ); }
-inline bool wildcard_match( const std::string& expr, const std::string& data ) { return wildcard_match( expr.c_str( ), data.c_str( ) ); }
+inline bool wildcard_match( const char* p_expr, const std::string& data )
+{
+   return wildcard_match( p_expr, data.c_str( ) );
+}
+
+inline bool wildcard_match( const std::string& expr, const char* p_data )
+{
+   return wildcard_match( expr.c_str( ), p_data );
+}
+
+inline bool wildcard_match( const std::string& expr, const std::string& data )
+{
+   return wildcard_match( expr.c_str( ), data.c_str( ) );
+}
 
 std::string& replace( std::string& s, const char* p_findstr, const char* p_replstr );
 
@@ -938,21 +980,25 @@ void setup_arguments( int argc, const char* argv[ ],
 
 std::string buffer_file( const char* p_file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 );
 
-inline std::string buffer_file( const std::string& file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
+inline std::string buffer_file(
+ const std::string& file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
 {
    return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos );
 }
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append = false );
+void write_file( const char* p_file_name,
+ unsigned char* p_data, size_t length, bool append = false, long start_pos = 0 );
 
-inline void write_file( const std::string& file_name, unsigned char* p_data, size_t length, bool append = false )
+inline void write_file( const std::string& file_name,
+ unsigned char* p_data, size_t length, bool append = false, long start_pos = 0 )
 {
-   write_file( file_name.c_str( ), p_data, length, append );
+   write_file( file_name.c_str( ), p_data, length, append, start_pos );
 }
 
-inline void write_file( const std::string& file_name, const std::string& file_buffer, bool append = false )
+inline void write_file( const std::string& file_name,
+ const std::string& file_buffer, bool append = false, long start_pos = 0 )
 {
-   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append );
+   write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append, start_pos );
 }
 
 void write_file_lines( const std::string& file_name, const std::vector< std::string >& lines );
@@ -1020,4 +1066,3 @@ void write_strings( const std::string& file_name, const string_container& string
 std::string extract_text_from_html( const std::string& html );
 
 #endif
-

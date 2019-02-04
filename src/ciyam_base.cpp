@@ -96,7 +96,9 @@ const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
 
-const int c_max_file_buffer_expansion = 10;
+// NOTE: If compression cannot shrink then the size can actually increase
+// so allow for three times the buffer size to ensure it never overflows.
+const int c_max_file_buffer_expansion = 3;
 
 const char* const c_ciyam_server = "ciyam_server";
 

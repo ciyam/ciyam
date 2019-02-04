@@ -534,10 +534,6 @@ void file_transfer( const string& name,
 
    string unexpected_data;
 
-   bool use_recv_buffer = ( p_buffer && buffer_size );
-   
-   bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
-
    if( d == e_ft_direction_send )
    {
       if( !file_exists( name ) )
@@ -546,6 +542,8 @@ void file_transfer( const string& name,
       ifstream inpf( name.c_str( ), ios::binary );
       if( !inpf )
          throw runtime_error( "file '" + name + "' could not be opened for input" );
+
+      bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
 
       size_t buf_size = max_line_size
        ? base64::decode_size( max_line_size + has_prefix_char ) : c_default_buf_size;
@@ -600,9 +598,11 @@ void file_transfer( const string& name,
    }
    else
    {
+      bool use_recv_buffer = ( p_buffer && buffer_size );
+
       if( use_recv_buffer && buffer_size < max_size )
          throw runtime_error( "buffer_size < max_size for file_transfer" );
-
+   
       ios::openmode oflags = ios::binary;
 
       if( d == e_ft_direction_recv_app )
@@ -639,7 +639,7 @@ void file_transfer( const string& name,
 
          string decoded( base64::decode( next ) );
 
-         if( is_first && p_prefix_char && *p_prefix_char )
+         if( is_first && p_prefix_char )
          {
             *p_prefix_char = decoded[ 0 ];
             decoded.erase( 0, 1 );
