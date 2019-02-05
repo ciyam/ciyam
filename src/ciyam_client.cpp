@@ -180,8 +180,6 @@ class ciyam_console_command_handler : public console_command_handler
    string append_prefix;
    string append_last_name;
 
-   map< string, string > append_parent;
-
    deque< string > additional_commands;
 
 #ifdef SSL_SUPPORT
@@ -489,7 +487,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   bool appending = false;
                   bool append_chunks = false;
-                  bool appending_multiple = false;
+                  bool appending_below = false;
                   bool delete_after_transfer = false;
 
                   string append_filename;
@@ -505,18 +503,18 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                         if( !is_additional_command( ) )
                         {
-                           append_parent.clear( );
                            append_prefix.erase( );
                            append_last_name.erase( );
                         }
 
-                        if( !append_filename.empty( ) && append_filename[ 0 ] == '*' )
+                        if( !append_filename.empty( )
+                         && append_filename[ append_filename.length( ) - 1 ] == '/' )
                         {
-                           appending_multiple = true;
-                           append_filename.erase( 0, 1 );
+                           appending_below = true;
+                           append_filename.erase( append_filename.length( ) - 1 );
                         }
 
-                        if( !appending_multiple )
+                        if( !appending_below )
                         {
                            if( append_prefix.empty( )
                             && !is_additional_command( ) && file_exists( append_filename ) )
@@ -524,7 +522,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                            else
                               filename = "~" + uuid( ).as_string( );
                         }
-                        else
+                        else if( !append_filename.empty( ) )
                         {
                            if( !file_exists( append_filename ) )
                               append_chunks = false;
@@ -561,7 +559,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   {
                      if( append_filename.empty( ) )
                         handle_command_response( "local file '" + filename + "' already exists", true );
-                     else if( !appending_multiple )
+                     else if( !appending_below )
                         handle_command_response( "local file '" + append_filename + "' already exists", true );
                      else
                         handle_command_response( "local path '" + append_filename + "' not found or not valid", true );
@@ -605,7 +603,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   {
                      delete_after_transfer = true;
 
-                     if( appending_multiple )
+                     if( append_filename.empty( ) )
+                        append_prefix = ".";
+                     else if( appending_below )
                         append_prefix = append_filename;
 
                      string all_chunks( buffer_file( filename ) );
@@ -619,8 +619,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         {
                            string next( chunks[ i ] );
                            string::size_type pos = next.find( ' ' );
-
-                           append_parent[ next.substr( pos + 1 ) ] = append_filename;
 
                            // NOTE: Ensure that the additional command will neither be
                            // included in console history nor sent to standard output.
@@ -639,19 +637,21 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         file_append( filename, append_filename );
                      else
                      {
-                        string append_parent_name( append_parent[ append_filename ] );
+                        // NOTE: It is assumed that a file chunk number is a final file extension.
+                        pos = append_filename.rfind( '.' );
 
-                        string prefixed_append_name( append_prefix + '/' + append_parent_name );
+                        string name_without_chunk_ext( append_filename.substr( 0, pos ) );
+                        string prefixed_append_name( append_prefix + '/' + name_without_chunk_ext );
 
-                        if( append_last_name != append_parent_name )
+                        if( append_last_name != name_without_chunk_ext )
                         {
                            file_remove( prefixed_append_name );
                            handle_command_response( prefixed_append_name );
                         }
 
-                        append_last_name = append_parent_name;
-                        create_directories( prefixed_append_name );
+                        append_last_name = name_without_chunk_ext;
 
+                        create_directories( prefixed_append_name );
                         file_append( filename, prefixed_append_name );
                      }
                   }

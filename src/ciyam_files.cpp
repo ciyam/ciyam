@@ -759,19 +759,24 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
       size_t offset = 1;
 
-      if( compress2( ( Bytef * )file_buffer.get_buffer( ),
-       &csize, ( Bytef * )&final_data[ offset ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
-         throw runtime_error( "invalid content in create_raw_file (bad compress or buffer too small)" );
+      int rc = compress2(
+       ( Bytef * )file_buffer.get_buffer( ),
+       &csize, ( Bytef * )&final_data[ offset ], size, 9 ); // i.e. 9 is for maximum compression
 
-      if( csize + offset < final_data.size( ) )
+      if( rc == Z_OK )
       {
-         final_data[ 0 ] |= c_file_type_val_compressed;
+         if( csize + offset < final_data.size( ) )
+         {
+            final_data[ 0 ] |= c_file_type_val_compressed;
 
-         final_data.erase( offset );
-         final_data += string( ( const char* )file_buffer.get_buffer( ), csize );
+            final_data.erase( offset );
+            final_data += string( ( const char* )file_buffer.get_buffer( ), csize );
 
-         is_compressed = true;
+            is_compressed = true;
+         }
       }
+      else if( rc != Z_BUF_ERROR )
+         throw runtime_error( "unexpected compression error in create_raw_file" );
    }
 #endif
 
@@ -1541,28 +1546,37 @@ void store_file( const string& hash, tcp_socket& socket,
 #ifndef ZLIB_SUPPORT
             file_copy( tmp_filename, filename );
 #else
-            if( is_encrypted || is_compressed )
-               file_copy( tmp_filename, filename );
-            else if( !is_compressed )
+            bool has_written = false;
+            unsigned long size = file_size( tmp_filename ) - 1;
+
+            // FUTURE: An extra file type flag should be added to instruct no compression
+            // as trying to compress already compressed data will waste significant time.
+            if( !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
             {
-               unsigned long size = file_size( tmp_filename ) - 1;
                unsigned long csize = file_buffer.get_size( );
 
-               if( size >= c_min_size_to_compress
-                && compress2( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
-                &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ) != Z_OK ) // i.e. 9 is for maximum compression
-                  throw runtime_error( "invalid content in store_file (bad compress or buffer too small)" );
+               int rc = compress2(
+                ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+                &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ); // i.e. 9 is for maximum compression
 
-               if( csize < size )
+               if( rc == Z_OK )
                {
-                  is_compressed = true;
-                  file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
+                  if( csize < size )
+                  {
+                     has_written = true;
+                     is_compressed = true;
 
-                  write_file( filename, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                     file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
+
+                     write_file( filename, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                  }
                }
-               else
-                  file_copy( tmp_filename, filename );
+               else if( rc != Z_BUF_ERROR )
+                  throw runtime_error( "unexpected compression error in store_file" );
             }
+
+            if( !has_written )
+               file_copy( tmp_filename, filename );
 #endif
          }
 

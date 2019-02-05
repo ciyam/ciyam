@@ -6,5 +6,5 @@
 @ifndef $2
 #NOTE: The script requires a list tag and a local directory to export the files below.
 @else
-.file_get $1 **$2
+.file_get $1 *$2/
 @endif

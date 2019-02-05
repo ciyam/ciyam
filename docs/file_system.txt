@@ -9,7 +9,7 @@ The way this file system operates is quite similar to how "git" operates under t
 familiar to those who have a thorough knowledge of that system. Each file is stored in a directory whose name
 is the first two characters of the hex ASCII string of the SHA256 hash of the file content (uncompressed) and
 whose filename is the remaining characters of the hash. In order to reduce the disk space footprint files are
-normally compressed when they are created (but this behaviour is optional).
+normally compressed when they are created (although this is optional).
 
 Because the name of the file is a secure hash of its content files cannot be edited (as a new version will of
 course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
@@ -70,7 +70,7 @@ the List file that was created before.
 
 > file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start
 
-Now we can see the same "file info" output we saw above with the following far more user friendly command:
+Now we can see the same "file info" output we saw above with the following more user friendly command:
 
 > file_info -recurse -d=2 start
 [list] 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a (71 B)
@@ -159,7 +159,62 @@ In order to fetch this copy from the file system use the following:
 
 It should be noted that the file content (which was originally copied from "ciyam_server.sio") will have been
 copied into a file called "xxx" in the current directory (to use a different filename add another argument to
-the "file_get" command).
+the command such as "file_get xxx x.sio").
+
+Because the file system imposes a maxiumum file size limit the "file_put" command (only when this command has
+been issued via "ciyam_client") can prefix the file name with a byte size followed by an asterisk as follows:
+
+> file_put 1K*test.jpg tst.jpg
+
+This will copy "test.jpg" into the file system as a number of "chunks" that are each no more than 1kB in size
+(uncompressed). It will also create a "list" file that references each of the chunks and the "tst.jpg" tag is
+added to this "list" (if the "tst.jpg" tag was omitted then list will be last file matching a "ts.*" prefix).
+
+The following command will output the content of the "tst.jpg" list file:
+
+> file_info -content tst.jpg
+[list] a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 (305 B)
+5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 test.jpg.00000
+9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e test.jpg.00001
+fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 test.jpg.00002
+983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af test.jpg.00003
+9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 test.jpg.00004
+fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 test.jpg.00005
+6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 test.jpg.00006
+
+It should be noted that the original "test.jpg" filename has been kept with each list item and a chunk number
+of five digits has been appended (so it might generally be better to use the original file name as the tag to
+avoid confusion but using it this way here shows clearly that the tag is is irrelvant for the file name which
+will be used when extracting and recombining the file chunks next).
+
+The following command (only when issued by "ciyam_client") extracts the original "test.jpg" file to "xxx.jpg"
+by appending each of the chunks identified in the list that had been tagged with "tst.jpg" previously:
+
+> file_get tst.jpg *xxx.jpg
+
+It should be noted that to keep the file's original name (such as "test.jpg") just "file_get tst.jpg *" could
+be used instead. Also if wanting to keep the original file's name but extract the file below another path the
+following could instead be used (assuming the directory "tmp" exists below the current directory):
+
+> file_get tst.jpg *tmp/
+
+File Encryption
+---------------
+
+Any file can be encrypted with a password using the "file_crypt" command. It should be noted that once a file
+has been encrypted no information other than its original content hash and size will be returned with the use
+of "file_info". If the file is a "list" then all list items are automatically also encrypted (and child lists
+will cascade resulting in the entire tree of files being encrypted).
+
+> file_crypt tst.jpg password
+
+> file_info -content tst.jpg
+[list] a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 (305 B) [***]
+
+To decrypt simply repeat the "file_crypt" command (with the matching "password"). It should be noted that any
+tags associated with an encrypted file will remain (only the file content itself is affected) and because the
+encryption used is a fast "stream cipher" the password would need to be quite large (such as more than twenty
+mixed upper/lower case letters, numbers and special characters) to be effective against brute force cracking.
 
 Deleting Files
 --------------
@@ -169,19 +224,19 @@ For the "xxx" tag created previously the file could be deleted using the "file_t
 > file_tag -unlink xxx
 
 But if any other tags are linked to the same file content then this command will not actually delete the file
-therefore to force file deletion the "file_kill" command would instead be used which requires the file's hash
-to be first determined from the tag using:
+therefore to force file deletion the "file_kill" command would instead be used as follows:
 
-> file_hash xxx
+> file_kill xxx
 655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
-
-Then delete the file itself using:
-
-> file_kill 655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
 
 It should be noted that any tags that were linked to this file will now have been removed but some care would
 be advised before deciding to use "file_kill" as this could effectively leave "list" content with now invalid
 entries.
+
+For the case of the "tst.jpg" list (which contains the "test.jpg" file chunks) the list as well as each child
+list item (and any further descendant branch lists if they were present) can be removed with the following:
+
+> file_kill -recurse tst.jpg
 
 File System Statistics
 ----------------------
@@ -198,7 +253,7 @@ There are two settings in "ciyam_server.sio" configuration file that are relevan
 are as follows (uncomment and change then restart "ciyam_server" for the new settings to take effect):
 
 # <files_area_item_max_num>10K
-# <files_area_item_max_size>1MB
+# <files_area_item_max_size>1M
 
 It is not recommended to do any changes to the "files" subdirectory directly but if this has occurred then it
 is possible to re-synchronise the application server with the following command:

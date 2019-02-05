@@ -38,7 +38,7 @@ using namespace std;
 namespace
 {
 
-const int c_default_buf_size = 65536;
+const int c_default_buf_size = 1024;
 
 }
 
@@ -533,6 +533,8 @@ void file_transfer( const string& name,
    bool max_size_exceeded = false;
 
    string unexpected_data;
+
+   s.set_no_delay( );
 
    if( d == e_ft_direction_send )
    {

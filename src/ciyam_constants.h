@@ -64,7 +64,7 @@ const size_t c_max_file_transfer_size = 1000000;
 const size_t c_file_transfer_line_timeout = 10000;
 const size_t c_file_transfer_initial_timeout = 60000;
 
-const size_t c_file_transfer_max_line_size = 100000;
+const size_t c_file_transfer_max_line_size = 1000;
 
 const int c_file_type_val_blob = 0x01;
 const int c_file_type_val_list = 0x02;

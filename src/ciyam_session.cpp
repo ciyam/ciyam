@@ -1583,9 +1583,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_kill )
       {
          string pat( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_pat ) );
-         string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_tag_or_hash ) );
          bool quiet( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_quiet ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_kill_recurse ) );
+
+         string hash( tag_or_hash );
+
+         if( !hash.empty( ) && has_tag( tag_or_hash ) )
+            hash = tag_file_hash( tag_or_hash );
 
          try
          {
@@ -1623,7 +1628,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !pubkey.empty( ) )
             password = session_shared_decrypt( pubkey, password );
 
-         crypt_file( tag_or_hash, password );
+         try
+         {
+            crypt_file( tag_or_hash, password );
+         }
+         catch( ... )
+         {
+            possibly_expected_error = true;
+            throw;
+         }
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );

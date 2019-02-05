@@ -75,8 +75,11 @@ at 0...
   [blob] 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 (8 B) [utf8]
 at 1...
 
-> file_kill -recurse 35dddd1f6a57c18adddca0b99478114fdef5a97cf5b5d0c2474dc777fe029473
+> file_kill -recurse root
 
+> ~mkdir test1
+
+> 
 > file_put 1K*test.jpg test
 
 > file_info -recurse -d=999 test
@@ -120,11 +123,69 @@ test.jpg.00006
 ~test.jpg.00006
  [blob] 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 (715 B)
 
+> file_crypt test abc
+
+> file_info -recurse -d=999 test
+[list] d73bec4715acbc7c18b68bfb176a001f29977ab8584bdd5c8a363e2a1ba607ea (307 B) [***]
+
+> file_info -content 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998
+[blob] 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 (826 B) [***]
+
+> file_info -content 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af
+[blob] 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af (1.0 kB) [***]
+
+> file_info -content 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270
+[blob] 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 (715 B) [***]
+
+> file_crypt test xxx
+Error: invalid password to decrypt file 'test'
+
+> file_crypt test abc
+
+> file_get test *test1/
+test1/~test.jpg
+
 > file_kill -recurse test
 
-> ~mkdir test1
+> file_put 1K*test1/~test.jpg test
 
 > 
+> file_info -recurse -d=999 test
+[list] 931cc6d8d19e267756e8e15f33cffb0ac5fc503cb70231a283a2744d2d04e599 (311 B)
+test1/~test.jpg.00000
+ [blob] 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 (826 B)
+test1/~test.jpg.00001
+ [blob] 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e (1.0 kB)
+test1/~test.jpg.00002
+ [blob] fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 (1.0 kB)
+test1/~test.jpg.00003
+ [blob] 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af (1.0 kB)
+test1/~test.jpg.00004
+ [blob] 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 (1.0 kB)
+test1/~test.jpg.00005
+ [blob] fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 (1.0 kB)
+test1/~test.jpg.00006
+ [blob] 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 (715 B)
+
+> file_info -recurse -d=999 test
+[list] 931cc6d8d19e267756e8e15f33cffb0ac5fc503cb70231a283a2744d2d04e599 (311 B)
+test1/~test.jpg.00000
+ [blob] 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 (826 B)
+test1/~test.jpg.00001
+ [blob] 9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e (1.0 kB)
+test1/~test.jpg.00002
+ [blob] fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 (1.0 kB)
+test1/~test.jpg.00003
+ [blob] 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af (1.0 kB)
+test1/~test.jpg.00004
+ [blob] 9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 (1.0 kB)
+test1/~test.jpg.00005
+ [blob] fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 (1.0 kB)
+test1/~test.jpg.00006
+ [blob] 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 (715 B)
+
+> file_kill -recurse test
+
 > ~mkdir test2
 
 > 
