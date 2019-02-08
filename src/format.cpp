@@ -53,6 +53,8 @@ enum metric_byte_scale
    e_metric_byte_scale_tera
 };
 
+const int c_default_format_precision = 1;
+
 const double c_kibibytes = 1024.0l;
 const double c_mebibytes = c_kibibytes * c_kibibytes;
 const double c_gibibytes = c_mebibytes * c_kibibytes;
@@ -63,7 +65,7 @@ const double c_megabytes = c_kilobytes * c_kilobytes;
 const double c_gigabytes = c_megabytes * c_kilobytes;
 const double c_terabytes = c_gigabytes * c_kilobytes;
 
-iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scaled_size )
+iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scaled_size, int round_to_decimals = -1 )
 {
    iec_byte_scale bs = e_iec_byte_scale_none;
    double divisor = 1.0, unscaled_size( num_bytes );
@@ -91,10 +93,17 @@ iec_byte_scale convert_bytes_to_iec_scaled_size( int64_t num_bytes, double& scal
 
    scaled_size = unscaled_size / divisor;
 
-   return bs;
+   if( round_to_decimals >= 0 )
+      scaled_size = round( scaled_size, round_to_decimals );
+
+   // NOTE: Due to rounding a second call might be necessary (to reduce 1000.0 to 1.0).
+   if( round_to_decimals < 0 || bs == e_iec_byte_scale_tebi || scaled_size < c_kibibytes )
+      return bs;
+   else
+      return convert_bytes_to_iec_scaled_size( scaled_size * divisor, scaled_size, round_to_decimals );
 }
 
-metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double& scaled_size )
+metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double& scaled_size, int round_to_decimals = -1 )
 {
    metric_byte_scale bs = e_metric_byte_scale_none;
    double divisor = 1.0, unscaled_size( num_bytes );
@@ -122,7 +131,14 @@ metric_byte_scale convert_bytes_to_metric_scaled_size( int64_t num_bytes, double
 
    scaled_size = unscaled_size / divisor;
 
-   return bs;
+   if( round_to_decimals >= 0 )
+      scaled_size = round( scaled_size, round_to_decimals );
+
+   // NOTE: Due to rounding a second call might be necessary (to reduce 1000.0 to 1.0).
+   if( round_to_decimals < 0 || bs == e_metric_byte_scale_tera || scaled_size < c_kilobytes )
+      return bs;
+   else
+      return convert_bytes_to_metric_scaled_size( scaled_size * divisor, scaled_size, round_to_decimals );
 }
 
 const bool convert( const double& d, int64_t& i64 )
@@ -181,14 +197,19 @@ string format_int( int64_t i, char separator, unsigned int grouping )
    return retval;
 }
 
-string format_bytes( int64_t size, bool use_iec )
+string format_bytes( int64_t size, bool use_iec, int decimal_precision )
 {
    ostringstream osstr;
 
    double ss;
 
-   iec_byte_scale ibs = !use_iec ? e_iec_byte_scale_none : convert_bytes_to_iec_scaled_size( size, ss );
-   metric_byte_scale mbs = use_iec ? e_metric_byte_scale_none : convert_bytes_to_metric_scaled_size( size, ss );
+   int precision = ( decimal_precision < 0 ) ? c_default_format_precision : decimal_precision;
+
+   iec_byte_scale ibs = !use_iec ? e_iec_byte_scale_none
+    : convert_bytes_to_iec_scaled_size( size, ss, precision );
+
+   metric_byte_scale mbs = use_iec ? e_metric_byte_scale_none
+    : convert_bytes_to_metric_scaled_size( size, ss, precision );
 
    string suffix( use_iec ? c_iec_byte_suffix : c_metric_byte_suffix );
 
@@ -199,7 +220,7 @@ string format_bytes( int64_t size, bool use_iec )
       int old_precision = osstr.precision( );
       ios::fmtflags old_flags = osstr.flags( );
 
-      osstr.precision( 1 );
+      osstr.precision( precision );
       osstr.setf( ios::fixed, ios::floatfield );
 
       osstr << ss << ' ' << sp << suffix;
@@ -502,4 +523,3 @@ int unformat_duration( const string& value )
 
    return rc;
 }
-

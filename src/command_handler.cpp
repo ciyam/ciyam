@@ -171,6 +171,8 @@ void command_handler::do_execute_command( const string& cmd_and_args )
 {
    command_and_args = cmd_and_args;
 
+   set_quiet_command( false );
+
    if( is_special_command( cmd_and_args ) )
       handle_special_command( cmd_and_args );
    else

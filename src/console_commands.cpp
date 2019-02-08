@@ -2327,8 +2327,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 {
    string str( cmd_and_args );
 
-   set_quiet_command( false );
-
    remove_trailing_cr_from_text_file_line( str );
 
    if( handling_startup_options )

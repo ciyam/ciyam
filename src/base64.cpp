@@ -40,15 +40,8 @@ char get_b64_char_value( char c )
 
 }
 
-size_t base64::encode_size( size_t length )
+void base64::encode( const unsigned char* p_dat, size_t length, char* p_enc, size_t* p_enc_len )
 {
-   return ( ( length + 2 ) / 3 ) * 4;
-}
-
-string base64::encode( const unsigned char* p_dat, size_t length )
-{
-   string str( ( ( length + 2 ) / 3 ) * 4, '\0' );
-
    char c;
    string::size_type i, o = 0;
    string::size_type len = length;
@@ -56,14 +49,14 @@ string base64::encode( const unsigned char* p_dat, size_t length )
    for( i = 0; i < len; ++i )
    {
       c = ( p_dat[ i ] >> 2 ) & 0x3f;
-      str[ o++ ] = g_b64_table[ c ];
+      p_enc[ o++ ] = g_b64_table[ c ];
 
       c = ( p_dat[ i ] << 4 ) & 0x3f;
 
       if( ++i < len )
          c |= ( p_dat[ i ] >> 4 ) & 0x0f;
 
-      str[ o++ ] = g_b64_table[ c ];
+      p_enc[ o++ ] = g_b64_table[ c ];
 
       if( i < len )
       {
@@ -71,24 +64,25 @@ string base64::encode( const unsigned char* p_dat, size_t length )
          if( ++i < len )
             c |= ( p_dat[ i ] >> 6 ) & 0x03;
 
-         str[ o++ ] = g_b64_table[ c ];
+         p_enc[ o++ ] = g_b64_table[ c ];
       }
       else
       {
          ++i;
-         str[ o++ ] = c_fillchar;
+         p_enc[ o++ ] = c_fillchar;
       }
 
       if( i < len )
       {
          c = p_dat[ i ] & 0x3f;
-         str[ o++ ] = g_b64_table[ c ];
+         p_enc[ o++ ] = g_b64_table[ c ];
       }
       else
-         str[ o++ ] = c_fillchar;
+         p_enc[ o++ ] = c_fillchar;
    }
 
-   return str;
+   if( p_enc_len )
+      *p_enc_len = o;
 }
 
 void base64::validate( const string& input, bool* p_rc )
@@ -128,14 +122,10 @@ void base64::validate( const string& input, bool* p_rc )
       throw runtime_error( "invalid base64 value: " + input );
 }
 
-size_t base64::decode_size( size_t length )
-{
-   return ( ( length / 4 ) * 3 ) - 2;
-}
-
 size_t base64::decode_size( const string& input )
 {
    string::size_type l = ( input.length( ) / 4 ) * 3;
+
    for( string::size_type i = input.length( ); i > 1; i-- )
    {
       if( input[ i - 1 ] == '=' )
@@ -147,9 +137,15 @@ size_t base64::decode_size( const string& input )
    return l;
 }
 
+size_t base64::decode_size( size_t length, bool minimum_possible )
+{
+   return ( ( length / 4 ) * 3 ) - ( minimum_possible ? 2 : 0 );
+}
+
 size_t base64::decode( const string& input, unsigned char* p_data, size_t length )
 {
    string::size_type l = decode_size( input );
+
    if( l > length )
       throw runtime_error( "buffer not big enough to decode base64 (given "
        + to_string( length ) + " bytes but need " + to_string( l ) + " bytes)" );
@@ -196,4 +192,3 @@ size_t base64::decode( const string& input, unsigned char* p_data, size_t length
 
    return l;
 }
-

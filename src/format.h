@@ -133,7 +133,7 @@ template< class T > std::ostream& operator <<( ffmt_setter const& fs, T const& t
 std::string format_int( int64_t i,
  char separator = ',', unsigned int grouping = 3 );
 
-std::string format_bytes( int64_t size, bool use_iec = false );
+std::string format_bytes( int64_t size, bool use_iec = false, int decimal_precision = -1 );
 
 int64_t unformat_bytes( const std::string& size_string,
  int64_t default_val = INT64_C( 0 ), bool use_iec_always = false );

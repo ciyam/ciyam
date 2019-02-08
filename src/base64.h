@@ -16,9 +16,17 @@
 class base64
 {
    public:
-   static size_t encode_size( size_t length );
+   inline static size_t encode_size( size_t length ) { return ( ( length + 2 ) / 3 ) * 4; }
 
-   static std::string encode( const unsigned char* p_dat, size_t length );
+   static void encode( const unsigned char* p_dat, size_t length, char* p_enc, size_t* p_enc_len = 0 );
+
+   inline static std::string encode( const unsigned char* p_dat, size_t length )
+   {
+      std::string str( encode_size( length ), '\0' );
+      encode( p_dat, length, ( char* )str.data( ) );
+
+      return str;
+   }
 
    inline static std::string encode( const std::string& input )
    {
@@ -27,16 +35,17 @@ class base64
 
    static void validate( const std::string& input, bool* p_rc = 0 );
 
-   static size_t decode_size( size_t length );
    static size_t decode_size( const std::string& input );
+   static size_t decode_size( size_t length, bool minimum_possible = false );
 
    static size_t decode( const std::string& input, unsigned char* p_data, size_t length );
 
    inline static std::string decode( const std::string& input )
    {
-      std::string s( decode_size( input ), '\0' );
-      decode( input, ( unsigned char* )s.c_str( ), s.length( ) );
-      return s;
+      std::string str( decode_size( input ), '\0' );
+      decode( input, ( unsigned char* )str.c_str( ), str.length( ) );
+
+      return str;
    }
 };
 
@@ -44,4 +53,3 @@ inline std::string hex_to_base64( const std::string& input ) { return base64::en
 inline std::string base64_to_hex( const std::string& input ) { return hex_encode( base64::decode( input ) ); }
 
 #endif
-

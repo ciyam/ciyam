@@ -376,6 +376,7 @@ int tcp_socket::send( const unsigned char* buf, int buflen, size_t timeout )
       okay = can_output( timeout );
 
    int n = 0;
+
    if( !okay )
       timed_out = true;
    else
@@ -392,6 +393,7 @@ int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout )
    while( rcvd != buflen )
    {
       n = recv( buf + rcvd, buflen - rcvd, timeout );
+
       if( n <= 0 )
          break;
 
@@ -409,6 +411,7 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
    while( sent != buflen )
    {
       n = send( buf + sent, buflen - sent, timeout );
+
       if( n <= 0 )
          break;
 
@@ -420,7 +423,24 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
 
 int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress* p_progress )
 {
-   int n = 0;
+
+   if( max_chars )
+   {
+      if( str.capacity( ) < max_chars )
+         str.resize( max_chars );
+
+      int len = read_line( &str[ 0 ], timeout, max_chars, p_progress );
+
+      str.erase( len );
+      return len;
+   }
+   else
+      return read_line( 0, timeout, max_chars, p_progress, &str );
+}
+
+int tcp_socket::read_line( char* p_data, size_t timeout, int max_chars, progress* p_progress, string* p_str )
+{
+   int n = 0, o = 0;
    unsigned char b, lb = '\0';
 
    blank_line = false;
@@ -442,8 +462,16 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress*
 
       if( lb != '\0' )
       {
-         if( !max_chars || str.size( ) < max_chars )
-            str += lb;
+         if( !max_chars || o < max_chars )
+         {
+            if( p_str )
+               *p_str += lb;
+
+            if( p_data )
+               *( p_data + o ) = lb;
+
+            o++;
+         }
          else
             throw runtime_error( "max. line length exceeded" );
       }
@@ -451,15 +479,21 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress*
       lb = b;
    }
 
-   if( p_progress && !str.empty( ) )
-      p_progress->output_progress( ">R> " + str );
+   if( p_progress && o )
+   {
+      if( p_str )
+         p_progress->output_progress( ">R> " + *p_str );
+      else
+         p_progress->output_progress( ">R> " + string( p_data, o ) );
+   }
 
    return n;
 }
 
 int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progress )
 {
-   int n;
+   int n = 0;
+
    bool truncate = false;
    bool terminated = false;
 
@@ -467,10 +501,10 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
 
    if( len >= 1 && str[ len - 1 ] == '\n' )
    {
-      if( len >= 2 && str[ len - 2 ] == '\r' )
-         terminated = true;
-      else
+      if( len < 2 || str[ len - 2 ] != '\r' )
          truncate = true;
+      else
+         terminated = true;
    }
 
    string s;
@@ -496,8 +530,21 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
       }
    }
 
-   if( p_data )
+   if( len && p_data )
+      n = write_line( len, p_data, timeout, p_progress );
+
+   return n;
+}
+
+int tcp_socket::write_line( int len, const char* p_data, size_t timeout, progress* p_progress )
+{
+   int n = 0;
+
+   if( len )
    {
+      if( len < 2 || !( p_data[ len - 2 ] == '\r' && p_data[ len - 1 ] == '\n' ) )
+         throw runtime_error( "write_line data must have CRLF termination" );
+
       if( p_progress )
       {
          string write_string( "<W< " );
@@ -505,7 +552,7 @@ int tcp_socket::write_line( const string& str, size_t timeout, progress* p_progr
          if( !get_delay( ) )
             write_string = string( "<W<!" );
 
-         p_progress->output_progress( write_string + str );
+         p_progress->output_progress( write_string + string( p_data, len - 2 ) );
       }
 
       n = send_n( ( const unsigned char* )p_data, len, timeout );
@@ -534,6 +581,11 @@ void file_transfer( const string& name,
 
    string unexpected_data;
 
+   string ack_message_str( p_ack_message );
+   string ack_message_line( ack_message_str + "\r\n" );
+
+   int ack_msg_line_len = ( int )ack_message_line.length( );
+
    s.set_no_delay( );
 
    if( d == e_ft_direction_send )
@@ -548,46 +600,54 @@ void file_transfer( const string& name,
       bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
 
       size_t buf_size = max_line_size
-       ? base64::decode_size( max_line_size + has_prefix_char ) : c_default_buf_size;
+       ? base64::decode_size( max_line_size + has_prefix_char, true ) : c_default_buf_size;
 
-      auto_ptr< char > ap_buf( new char[ buf_size ] );
+      auto_ptr< char > ap_buf1( new char[ buf_size + 1 ] );
+      auto_ptr< char > ap_buf2( new char[ buf_size * 2 ] );
 
+      string next;
       bool is_first = true;
 
       while( true )
       {
          size_t count = buf_size;
+         size_t offset = 0;
 
-         if( !inpf.read( ap_buf.get( ), buf_size ) )
+         if( is_first && has_prefix_char )
+         {
+            ++offset;
+            *( ap_buf1.get( ) ) = *p_prefix_char;
+         }
+
+         if( !inpf.read( ap_buf1.get( ) + offset, buf_size ) )
             count = inpf.gcount( );
 
          if( !count )
             break;
 
-         string next( string( ap_buf.get( ), count ) );
+         size_t enc_len = 0;
 
-         if( is_first && has_prefix_char )
-            next = ( char )*p_prefix_char + next;
+         base64::encode( ( const unsigned char* )ap_buf1.get( ), count + offset, ap_buf2.get( ), &enc_len );
 
-         next = base64::encode( next );
+         *( ap_buf2.get( ) + enc_len++ ) = '\r';
+         *( ap_buf2.get( ) + enc_len++ ) = '\n';
 
-         s.write_line( next, is_first ? initial_timeout : line_timeout, p_progress );
+         s.write_line( ( int )enc_len, ap_buf2.get( ), is_first ? initial_timeout : line_timeout, p_progress );
 
-         next.erase( );
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading send response for file transfer" );
 
-         if( next != string( p_ack_message ) )
+         if( next != ack_message_str )
          {
-            // NOTE: If "error" is found in the message then just throw it as is.
-            if( next.find( "error" ) != string::npos )
+            // NOTE: If "Error/error" is found in the message then just throw it as is.
+            if( next.find( "rror" ) != string::npos )
                throw runtime_error( next );
             else if( next.empty( ) )
                throw runtime_error( "unexpected empty data" );
             else
-               throw runtime_error( "was expecting '" + string( p_ack_message ) + "' but found '" + next + "'" );
+               throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
 
          if( inpf.eof( ) )
@@ -596,7 +656,7 @@ void file_transfer( const string& name,
          is_first = false;
       }
 
-      s.write_line( p_ack_message, line_timeout, p_progress );
+      s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
    }
    else
    {
@@ -614,21 +674,26 @@ void file_transfer( const string& name,
       if( !outf )
          throw runtime_error( "file '" + name + "' could not be opened for output" );
 
-      string next;
       size_t written = 0;
       bool is_first = true;
+
+      string next, decoded;
+
+      if( !max_line_size )
+         max_line_size = c_default_buf_size;
+
+      decoded.reserve( max_line_size );
 
       unsigned char* p_buf = p_buffer;
 
       while( true )
       {
-         next.erase( );
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading next line for file transfer" );
 
-         if( next.empty( ) || next == string( p_ack_message ) )
+         if( next.empty( ) || next == ack_message_str )
             break;
 
          // FUTURE: This should actually check if any non-base64 character is present.
@@ -639,32 +704,39 @@ void file_transfer( const string& name,
             break;
          }
 
-         string decoded( base64::decode( next ) );
+         decoded.resize( max_line_size );
+         size_t len = base64::decode( next, ( unsigned char* )&decoded[ 0 ], max_line_size );
+
+         decoded.erase( len );
+
+         size_t offset = 0;
 
          if( is_first && p_prefix_char )
          {
+            offset = 1;
             *p_prefix_char = decoded[ 0 ];
-            decoded.erase( 0, 1 );
          }
 
-         if( !outf.write( &decoded[ 0 ], decoded.length( ) ) )
-            throw runtime_error( "unexpected error writing to file '" + name + "'" );
+         size_t decoded_size = decoded.length( ) - offset;
 
-         written += decoded.length( );
-
-         if( written > max_size )
+         if( written + decoded_size > max_size )
          {
             max_size_exceeded = true;
             break;
          }
 
+         if( !outf.write( &decoded[ offset ], decoded_size ) )
+            throw runtime_error( "unexpected error writing to file '" + name + "'" );
+
+         written += decoded_size;
+
          if( use_recv_buffer )
          {
-            memcpy( p_buf, &decoded[ 0 ], decoded.size( ) );
-            p_buf += decoded.size( );
+            memcpy( p_buf, &decoded[ offset ], decoded_size );
+            p_buf += decoded_size;
          }
 
-         s.write_line( p_ack_message, line_timeout, p_progress );
+         s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
 
          is_first = false;
       }
@@ -686,4 +758,3 @@ void file_transfer( const string& name,
          throw runtime_error( "maximum file length exceeded" );
    }
 }
-
