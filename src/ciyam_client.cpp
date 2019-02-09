@@ -229,6 +229,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool was_chk_tag = false;
          bool was_chk_token = false;
          bool was_list_prefix = false;
+         bool was_no_compress = false;
          bool delete_after_put = false;
 
          string get_dest_file, put_source_file;
@@ -368,6 +369,12 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                if( chunk_size )
                {
+                  // NOTE: In order to maximumise the file transfer throughput
+                  // assume that the large files have already been compressed.
+                  prefix = string( c_file_type_str_blob_no_compress );
+
+                  was_no_compress = true;
+
                   chunk_name = file_name;
                   chunk_name += '.' + to_comparable_string( chunk, false, 5 );
 
@@ -581,7 +588,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                    c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
 #ifdef ZLIB_SUPPORT
-                  if( prefix & c_file_type_char_compressed )
+                  if( ( prefix & c_file_type_char_compressed ) && !( prefix & c_file_type_char_encrypted ) )
                   {
                      string data( buffer_file( filename ) );
                      string expanded_data( c_max_uncompressed_bytes, '\0' );
@@ -665,11 +672,15 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   unsigned char prefix( !put_source_file.empty( ) ? c_file_type_char_blob : '\0' );
 
-                  // NOTE: For a file that has been split into chunks the final file transfer is a list.
+                  // NOTE: For a file that has been split into chunks the final file transfer is a list
+                  // and each of the chunks are flagged so as not to even be attempted to be compressed.
                   if( prefix && was_list_prefix )
                      prefix = c_file_type_char_list;
+                  else if( prefix && was_no_compress )
+                     prefix = c_file_type_char_blob_no_compress;
 
                   was_list_prefix = false;
+                  was_no_compress = false;
 
                   file_transfer( filename, socket,
                    e_ft_direction_send, c_max_file_transfer_size,

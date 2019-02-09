@@ -79,7 +79,8 @@ const int c_file_type_val_extra_mime = 0x20;
 
 const int c_file_type_val_extra_mask = 0x30;
 
-// NOTE: The 0x40 and 0x80 bits are available for future usage.
+const int c_file_type_val_no_compress = 0x40;
+// NOTE: The 0x80 bit is available for future usage.
 
 const char c_file_type_char_blob = '\x01';
 const char c_file_type_char_list = '\x02';
@@ -89,10 +90,13 @@ const char c_file_type_char_core_list = '\x12';
 
 const char c_file_type_char_mime_blob = '\x21';
 
+const char c_file_type_char_encrypted = '\x04';
 const char c_file_type_char_compressed = '\x08';
 
 const char c_file_type_char_blob_compressed = '\x09';
 const char c_file_type_char_list_compressed = '\x0a';
+
+const char c_file_type_char_blob_no_compress = '\x41';
 
 const char c_file_type_char_core_blob_compressed = '\x19';
 const char c_file_type_char_core_list_compressed = '\x1a';
@@ -104,6 +108,8 @@ const char* const c_file_type_str_list = "\x02";
 
 const char* const c_file_type_str_core_blob = "\x11";
 const char* const c_file_type_str_core_list = "\x12";
+
+const char* const c_file_type_str_blob_no_compress = "\x41";
 
 const char* const c_file_type_core_block_object = "blk";
 const char* const c_file_type_core_rewind_object = "rwd";

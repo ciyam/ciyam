@@ -1313,7 +1313,9 @@ void crypt_file( const string& tag_or_hash, const string& password )
 #endif
 
       stringstream ss( file_data.substr( 1 ) );
-      crypt_stream( ss, password );
+
+      // NOTE: Use the file content hash as salt.
+      crypt_stream( ss, password + hash );
 
       string new_file_data( file_data.substr( 0, 1 ) );
 
@@ -1345,7 +1347,9 @@ void crypt_file( const string& tag_or_hash, const string& password )
    else
    {
       stringstream ss( file_data.substr( 1 ) );
-      crypt_stream( ss, password );
+
+      // NOTE: Use the file content hash as salt.
+      crypt_stream( ss, password + hash );
 
       file_data.erase( 1 );
       file_data += ss.str( );
@@ -1487,6 +1491,10 @@ void store_file( const string& hash, tcp_socket& socket,
 
       bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
+      bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+
+      if( is_compressed && is_no_compress )
+         throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
 
 #ifdef ZLIB_SUPPORT
       if( !is_encrypted && is_compressed )
@@ -1549,9 +1557,8 @@ void store_file( const string& hash, tcp_socket& socket,
             bool has_written = false;
             unsigned long size = file_size( tmp_filename ) - 1;
 
-            // FUTURE: An extra file type flag should be added to instruct no compression
-            // as trying to compress already compressed data will waste significant time.
-            if( !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
+            if( !is_no_compress
+             && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
             {
                unsigned long csize = file_buffer.get_size( );
 

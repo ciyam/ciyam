@@ -167,20 +167,21 @@ been issued via "ciyam_client") can prefix the file name with a byte size follow
 > file_put 1K*test.jpg tst.jpg
 
 This will copy "test.jpg" into the file system as a number of "chunks" that are each no more than 1kB in size
-(uncompressed). It will also create a "list" file that references each of the chunks and the "tst.jpg" tag is
-added to this "list" (if the "tst.jpg" tag was omitted then list will be last file matching a "ts.*" prefix).
+(which will be flagged to not be compressed). It will also create a "list" file that references each of these
+chunks and the "tst.jpg" tag is added to this "list" (if the "tst.jpg" tag was omitted then list will be last
+file matching a "ts.*" prefix).
 
 The following command will output the content of the "tst.jpg" list file:
 
 > file_info -content tst.jpg
-[list] a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 (305 B)
-5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998 test.jpg.00000
-9679d6aa0905bb0df03d3ca4726766b7212e4254262c5043293f72d4c15e0a9e test.jpg.00001
-fb564cbb916c9e42df96dd2832710d081fd609d6ee809d59f1638d0b1afdcc07 test.jpg.00002
-983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af test.jpg.00003
-9350259177a4fb1f38bdb72e44e7a37e2db9c9df6706f990304ceb0f31e31770 test.jpg.00004
-fa89d0353663b9d08f284c67a193a48a5e71e89ef2d32ce50913dd1c6e9dc145 test.jpg.00005
-6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270 test.jpg.00006
+[list] 0f2ea74eb8ff3b179716384dbfb4c9376458edb7747ba0dd850ef8bcc2954f87 (307 B)
+fa7fe19a948a3e07b0107ab581c09500be6b837e2e90f8eb7f2ba632354993cd test.jpg.00000
+629cb7f34aa4a0f60643a6a8deec5ba26fbc7af51da4bac6daa8a9a69b630e29 test.jpg.00001
+e858be066360a12b6ee02c7f51781b57e844b50a7ebf2513b392cd1e65fefa4e test.jpg.00002
+2b34aae56c8ffe3a74b815a6c6f49b9bf7cb049695021b021f4360749281698b test.jpg.00003
+0af58aa60a76fcea76d5918a1f37da511e881fffb2dcda3c00ce7c244c8a9510 test.jpg.00004
+ff9a4b6004c5f37083d4c2555a364d5e2b61375984516a64c171314834d414cf test.jpg.00005
+9c729f25c1dd59fd4ca5f140159c57d502248f171892697e05872dee655982b6 test.jpg.00006
 
 It should be noted that the original "test.jpg" filename has been kept with each list item and a chunk number
 of five digits has been appended (so it might generally be better to use the original file name as the tag to

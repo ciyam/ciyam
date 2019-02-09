@@ -22,9 +22,9 @@ file_put 1K*~test.jpg test
 file_info -recurse -d=999 test
 file_crypt test abc
 file_info -recurse -d=999 test
-file_info -content 5716bd02bd93ebad0d8c3453a2fead2bf1a01168c5efac7458ab0a9685d6b998
-file_info -content 983267b66ce6dbebf6a7dbb683d0739bd8ec91d446e9bda3de6683e4e4e821af
-file_info -content 6a49fa19c4fae714e0447336e022ee26a460c6024e99020d4d1bbff004bad270
+file_info -content fa7fe19a948a3e07b0107ab581c09500be6b837e2e90f8eb7f2ba632354993cd
+file_info -content 2b34aae56c8ffe3a74b815a6c6f49b9bf7cb049695021b021f4360749281698b
+file_info -content 9c729f25c1dd59fd4ca5f140159c57d502248f171892697e05872dee655982b6
 file_crypt test xxx
 file_crypt test abc
 file_get test *test1/
