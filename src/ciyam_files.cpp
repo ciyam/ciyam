@@ -1291,6 +1291,10 @@ void crypt_file( const string& tag_or_hash, const string& password )
 
    bool is_encrypted = ( flags & c_file_type_val_encrypted );
    bool is_compressed = ( flags & c_file_type_val_compressed );
+   bool is_no_encrypt = ( flags & c_file_type_val_no_encrypt );
+
+   if( is_no_encrypt )
+      throw runtime_error( "attempt to encrypt file flagged with 'no encrypt'" );
 
    if( !is_encrypted )
    {
@@ -1491,7 +1495,11 @@ void store_file( const string& hash, tcp_socket& socket,
 
       bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
+      bool is_no_encrypt = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_encrypt );
       bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+
+      if( is_encrypted && is_no_encrypt )
+         throw runtime_error( "file must not have both the 'encrypted' and 'no_encrypt' bit flags set" );
 
       if( is_compressed && is_no_compress )
          throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
