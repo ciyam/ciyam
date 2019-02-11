@@ -87,8 +87,8 @@ class tcp_socket
    virtual int recv( unsigned char* buf, int buflen, size_t timeout = 0 );
    virtual int send( const unsigned char* buf, int buflen, size_t timeout = 0 );
 
-   int recv_n( unsigned char* buf, int buflen, size_t timeout = 0 );
-   int send_n( const unsigned char* buf, int buflen, size_t timeout = 0 );
+   int recv_n( unsigned char* buf, int buflen, size_t timeout = 0, progress* p_progress = 0 );
+   int send_n( const unsigned char* buf, int buflen, size_t timeout = 0, progress* p_progress = 0 );
 
    int read_line( std::string& str, size_t timeout = 0, int max_chars = 0, progress* p_progress = 0 );
    int read_line( char* p_data, size_t timeout = 0, int max_chars = 0, progress* p_progress = 0, std::string* p_str = 0 );

@@ -38,7 +38,7 @@ using namespace std;
 namespace
 {
 
-const int c_default_buf_size = 1024;
+const int c_default_line_size = 1024;
 
 }
 
@@ -385,7 +385,7 @@ int tcp_socket::send( const unsigned char* buf, int buflen, size_t timeout )
    return n;
 }
 
-int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout )
+int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int rcvd = 0;
@@ -400,10 +400,13 @@ int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout )
       rcvd += n;
    }
 
+   if( p_progress && rcvd )
+      p_progress->output_progress( ">R> " + string( ( const char* )buf, rcvd ) );
+
    return rcvd;
 }
 
-int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
+int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int sent = 0;
@@ -418,6 +421,16 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
       sent += n;
    }
 
+   if( p_progress )
+   {
+      string write_string( "<W< " );
+
+      if( !get_delay( ) )
+         write_string = string( "<W<!" );
+
+      p_progress->output_progress( write_string + string( ( const char* )buf, sent ) );
+   }
+
    return sent;
 }
 
@@ -426,12 +439,11 @@ int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress*
 
    if( max_chars )
    {
-      if( str.capacity( ) < max_chars )
-         str.resize( max_chars );
-
+      str.resize( max_chars );
       int len = read_line( &str[ 0 ], timeout, max_chars, p_progress );
 
       str.erase( len );
+
       return len;
    }
    else
@@ -579,6 +591,9 @@ void file_transfer( const string& name,
    bool not_base64 = false;
    bool max_size_exceeded = false;
 
+   if( !max_line_size )
+      max_line_size = c_default_line_size;
+
    string unexpected_data;
 
    string ack_message_str( p_ack_message );
@@ -599,18 +614,17 @@ void file_transfer( const string& name,
 
       bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
 
-      size_t buf_size = max_line_size
-       ? base64::decode_size( max_line_size + has_prefix_char, true ) : c_default_buf_size;
+      size_t max_unencoded = base64::decode_size( max_line_size, true );
 
-      auto_ptr< char > ap_buf1( new char[ buf_size + 1 ] );
-      auto_ptr< char > ap_buf2( new char[ buf_size * 2 ] );
+      auto_ptr< char > ap_buf1( new char[ max_line_size ] );
+      auto_ptr< char > ap_buf2( new char[ max_line_size ] );
 
       string next;
       bool is_first = true;
 
       while( true )
       {
-         size_t count = buf_size;
+         size_t count = max_unencoded;
          size_t offset = 0;
 
          if( is_first && has_prefix_char )
@@ -619,20 +633,22 @@ void file_transfer( const string& name,
             *( ap_buf1.get( ) ) = *p_prefix_char;
          }
 
-         if( !inpf.read( ap_buf1.get( ) + offset, buf_size ) )
-            count = inpf.gcount( );
+         if( !inpf.read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
+            count = inpf.gcount( ) + offset;
 
          if( !count )
             break;
 
          size_t enc_len = 0;
 
-         base64::encode( ( const unsigned char* )ap_buf1.get( ), count + offset, ap_buf2.get( ), &enc_len );
+         base64::encode( ( const unsigned char* )ap_buf1.get( ), count, ap_buf2.get( ), &enc_len );
 
-         *( ap_buf2.get( ) + enc_len++ ) = '\r';
-         *( ap_buf2.get( ) + enc_len++ ) = '\n';
+         while( enc_len < max_line_size )
+            *( ap_buf2.get( ) + enc_len++ ) = '.';
 
-         s.write_line( ( int )enc_len, ap_buf2.get( ), is_first ? initial_timeout : line_timeout, p_progress );
+         if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size,
+          is_first ? initial_timeout : line_timeout, p_progress ) != max_line_size )
+            throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n" );
 
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
 
@@ -656,7 +672,13 @@ void file_transfer( const string& name,
          is_first = false;
       }
 
-      s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
+      string final_ack_message( p_ack_message );
+
+      // NOTE: Because the receive side is always reading exactly "max_line_size"
+      // characters this final "ack" needs to be padded.
+      final_ack_message += string( max_line_size - final_ack_message.length( ), '.' );
+
+      s.send_n( ( unsigned char* )&final_ack_message[ 0 ], max_line_size, line_timeout );
    }
    else
    {
@@ -679,19 +701,25 @@ void file_transfer( const string& name,
 
       string next, decoded;
 
-      if( !max_line_size )
-         max_line_size = c_default_buf_size;
-
-      decoded.reserve( max_line_size );
+      next.resize( max_line_size );
 
       unsigned char* p_buf = p_buffer;
 
       while( true )
       {
-         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
+         int received = s.recv_n( ( unsigned char* )&next[ 0 ],
+          max_line_size, is_first ? initial_timeout : line_timeout, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading next line for file transfer" );
+
+         if( received < max_line_size )
+            next.erase( received );
+
+         string::size_type pos = next.find( '.' );
+
+         if( pos != string::npos )
+            next.erase( pos );
 
          if( next.empty( ) || next == ack_message_str )
             break;
