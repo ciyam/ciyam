@@ -350,24 +350,16 @@
    <name>enum_archive_standard_size
    <values/>
     <value/>
-     <data>10000000
-     <name>enum_archive_standard_size_10_mb
-    </value>
-    <value/>
-     <data>100000000
-     <name>enum_archive_standard_size_100_mb
-    </value>
-    <value/>
-     <data>1000000000
-     <name>enum_archive_standard_size_1_gb
-    </value>
-    <value/>
      <data>10000000000
      <name>enum_archive_standard_size_10_gb
     </value>
     <value/>
      <data>100000000000
      <name>enum_archive_standard_size_100_gb
+    </value>
+    <value/>
+     <data>1000000000000
+     <name>enum_archive_standard_size_1_tb
     </value>
    </values>
   </enum>

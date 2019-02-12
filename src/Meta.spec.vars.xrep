@@ -16,7 +16,7 @@
 `{`$enum_app_text_rows`=`'5=5 10=10 15=15 20=20 25=25 30=30 40=40 50=50 100=100`'`}
 `{`$enum_app_text_trunc_limit`=`'10=10 15=15 20=20 25=25 30=30 40=40 50=50 75=75 100=100`'`}
 `{`$enum_app_type`=`'0=Blockchain 1=Traditional`'`}
-`{`$enum_archive_standard_size`=`'10000000=10_MB 100000000=100_MB 1000000000=1_GB 10000000000=10_GB 100000000000=100_GB`'`}
+`{`$enum_archive_standard_size`=`'10000000000=10_GB 100000000000=100_GB 1000000000000=1_TB`'`}
 `{`$enum_arg_type`=`'0=in 1=out`'`}
 `{`$enum_cascade_op`=`'0=restrict 1=unlink 2=destroy -1=not_applicable`'`}
 `{`$enum_class_extra`=`'0=none 1=ordered`'`}

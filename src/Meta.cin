@@ -98,7 +98,7 @@ user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,3
 user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
-user_defined_enum_add -id=950 archive_standard_size numeric 10000000=10\\_MB,100000000=100\\_MB,1000000000=1\\_GB,10000000000=10\\_GB,100000000000=100\\_GB
+user_defined_enum_add -id=950 archive_standard_size numeric 10000000000=10\\_GB,100000000000=100\\_GB,1000000000000=1\\_TB
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -881,10 +881,10 @@ class_add -id=139100 Global_Archive Global_Archives -x=global:arch
 field_add -id=139101 Global_Archive Name str100 opt -transient
 field_add -id=139102 Global_Archive Path str200 mand
 field_add -id=139103 Global_Archive Size_Avail numeric mand -def=0 -x=numeric_type=bytes
-field_add -id=139104 Global_Archive Size_Limit numeric mand -def=0 -x=numeric_type=bytes
+field_add -id=139104 Global_Archive Size_Limit numeric mand -def=10000000000 -x=numeric_type=bytes
 field_add -id=139105 Global_Archive Status_Info str10 opt
 field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
-field_add -id=139107 Global_Archive Standard_Size_Limit numeric mand -def=10000000 -e=archive_standard_size -transient
+field_add -id=139107 Global_Archive Standard_Size_Limit numeric mand -def=10000000000 -e=archive_standard_size -transient
 field_add -id=139108 Global_Archive Use_Custom_Size bool mand -def=0 -transient
 modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
 modifier_add -id=139320 Global_Archive Is_Using_Custom_Size Standard_Size_Limit:relegate

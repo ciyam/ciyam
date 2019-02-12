@@ -211,18 +211,16 @@ string g_default_Actions = string( );
 string g_default_Name = string( );
 string g_default_Path = string( );
 numeric g_default_Size_Avail = numeric( 0 );
-numeric g_default_Size_Limit = numeric( 0 );
-numeric g_default_Standard_Size_Limit = numeric( 10000000 );
+numeric g_default_Size_Limit = numeric( 10000000000 );
+numeric g_default_Standard_Size_Limit = numeric( 10000000000 );
 string g_default_Status_Info = string( );
 bool g_default_Use_Custom_Size = bool( 0 );
 
 set< numeric > g_archive_standard_size_enum;
 
-const numeric c_enum_archive_standard_size_10_MB( 10000000 );
-const numeric c_enum_archive_standard_size_100_MB( 100000000 );
-const numeric c_enum_archive_standard_size_1_GB( 1000000000 );
 const numeric c_enum_archive_standard_size_10_GB( 10000000000 );
 const numeric c_enum_archive_standard_size_100_GB( 100000000000 );
+const numeric c_enum_archive_standard_size_1_TB( 1000000000000 );
 
 string get_enum_string_archive_standard_size( numeric val )
 {
@@ -230,16 +228,12 @@ string get_enum_string_archive_standard_size( numeric val )
 
    if( to_string( val ) == "" )
       throw runtime_error( "unexpected empty enum value for archive_standard_size" );
-   else if( to_string( val ) == to_string( "10000000" ) )
-      string_name = "enum_archive_standard_size_10_MB";
-   else if( to_string( val ) == to_string( "100000000" ) )
-      string_name = "enum_archive_standard_size_100_MB";
-   else if( to_string( val ) == to_string( "1000000000" ) )
-      string_name = "enum_archive_standard_size_1_GB";
    else if( to_string( val ) == to_string( "10000000000" ) )
       string_name = "enum_archive_standard_size_10_GB";
    else if( to_string( val ) == to_string( "100000000000" ) )
       string_name = "enum_archive_standard_size_100_GB";
+   else if( to_string( val ) == to_string( "1000000000000" ) )
+      string_name = "enum_archive_standard_size_1_TB";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for archive_standard_size" );
 
@@ -2219,11 +2213,9 @@ void Meta_Global_Archive::static_get_text_search_fields( vector< string >& field
 
 void Meta_Global_Archive::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
-   pairs.push_back( make_pair( "enum_archive_standard_size_10000000", get_enum_string_archive_standard_size( 10000000 ) ) );
-   pairs.push_back( make_pair( "enum_archive_standard_size_100000000", get_enum_string_archive_standard_size( 100000000 ) ) );
-   pairs.push_back( make_pair( "enum_archive_standard_size_1000000000", get_enum_string_archive_standard_size( 1000000000 ) ) );
    pairs.push_back( make_pair( "enum_archive_standard_size_10000000000", get_enum_string_archive_standard_size( 10000000000 ) ) );
    pairs.push_back( make_pair( "enum_archive_standard_size_100000000000", get_enum_string_archive_standard_size( 100000000000 ) ) );
+   pairs.push_back( make_pair( "enum_archive_standard_size_1000000000000", get_enum_string_archive_standard_size( 1000000000000 ) ) );
 }
 
 void Meta_Global_Archive::static_get_sql_indexes( vector< string >& indexes )
@@ -2268,11 +2260,9 @@ void Meta_Global_Archive::static_class_init( const char* p_module_name )
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
 
-   g_archive_standard_size_enum.insert( 10000000 );
-   g_archive_standard_size_enum.insert( 100000000 );
-   g_archive_standard_size_enum.insert( 1000000000 );
    g_archive_standard_size_enum.insert( 10000000000 );
    g_archive_standard_size_enum.insert( 100000000000 );
+   g_archive_standard_size_enum.insert( 1000000000000 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

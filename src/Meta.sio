@@ -4760,7 +4760,7 @@
       <type>numeric
       <mandatory>true
       <extra>numeric_type=bytes
-      <default_value>0
+      <default_value>10000000000
       <indexes/>
       </indexes>
       <modifiers/>
@@ -4787,7 +4787,7 @@
       <mandatory>true
       <transient>true
       <enum_id>950
-      <default_value>10000000
+      <default_value>10000000000
       <indexes/>
       </indexes>
       <modifiers/>
@@ -38598,7 +38598,7 @@
     <id>950
     <name>archive_standard_size
     <type>numeric
-    <key_values>10000000=10\_MB,100000000=100\_MB,1000000000=1\_GB,10000000000=10\_GB,100000000000=100\_GB
+    <key_values>10000000000=10\_GB,100000000000=100\_GB,1000000000000=1\_TB
    </user_defined_enum>
    <user_defined_enum/>
     <id>570
