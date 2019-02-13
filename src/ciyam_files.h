@@ -62,7 +62,7 @@ std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
 std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
 
-void CIYAM_BASE_DECL_SPEC tag_del( const std::string& name, bool unlink = false );
+void CIYAM_BASE_DECL_SPEC tag_del( const std::string& name, bool unlink = false, bool auto_tag_with_time = true );
 void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );

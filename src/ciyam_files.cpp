@@ -926,7 +926,7 @@ string create_raw_file_with_extras( const string& data,
    return retval;
 }
 
-void tag_del( const string& name, bool unlink )
+void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 {
    guard g( g_mutex );
 
@@ -961,6 +961,8 @@ void tag_del( const string& name, bool unlink )
 
          if( unlink && !g_hash_tags.count( hash ) )
             delete_file( hash );
+         else if( auto_tag_with_time && !g_hash_tags.count( hash ) )
+            tag_file( current_timestamp_tag( ), hash );
       }
    }
    else
@@ -982,7 +984,7 @@ void tag_del( const string& name, bool unlink )
       }
 
       for( size_t i = 0; i < matching_tag_names.size( ); i++ )
-         tag_del( matching_tag_names[ i ], unlink );
+         tag_del( matching_tag_names[ i ], unlink, auto_tag_with_time );
    }
 }
 
@@ -1645,7 +1647,7 @@ void delete_file( const string& hash, bool even_if_tagged )
          split( tags, all_tags, '\n' );
 
          for( size_t i = 0; i < all_tags.size( ); i++ )
-            tag_del( all_tags[ i ] );
+            tag_del( all_tags[ i ], false, false );
       }
 
       int64_t existing_bytes = file_size( filename );
