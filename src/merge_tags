@@ -5,9 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: import_files [start path] [[tag prefix] [[sub-directory]]]
+ echo "Usage: merge_tags [tag name(s) and/or prefix] [[tag name]]"
 else
- echo "<<import_files.cin $1 $2 $3" >~import_files
- ./ciyam_client -echo -quiet -no_prompt -no_stderr <~import_files
- rm ~import_files
+ echo "<<merge_tags.cin $1 $2" >~merge_tags
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~merge_tags
+ rm ~merge_tags
 fi

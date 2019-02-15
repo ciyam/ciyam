@@ -6,12 +6,35 @@
 @ifndef $1
 #NOTE: The script requires a starting directory point to import from the branch below.
 @else
+TAG_PREFIX=$2
+SUB_DIRECTORY=$3
+;
+SUB_DIR_IS_LEAF=
+;
 START=@fullpath:$1
 @ifndef $ERROR
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+@ifndef $SUB_DIRECTORY
 PATHS=@paths:$START
+@else
+PATHS=@paths:$START/$SUB_DIRECTORY
+@ifndef $PATHS
+.session_variable @deque ""
+DIRS=@repstr:\//\n:$SUB_DIRECTORY
+@ifneq $SUB_DIRECTORY "$DIRS"
+SUB_DIR_IS_LEAF=1
+TAG_PREFIX=@substr:0,-1:$TAG_PREFIX
+.session_variable @deque "~$DIRS"
+.session_variable @deque back
+PATHS=$OUTPUT
+.session_variable @deque pop_back
+.session_variable @deque
+SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
+@endif
+@endif
+@endif
 .session_variable @set ""
 .session_variable @set "~$PATHS"
 ;
@@ -35,7 +58,11 @@ HAD_ANY_FILES=
 .session_variable @deque pop_front
 .session_variable @set @deque
 ;
+@ifndef $SUB_DIRECTORY
 FILES=@files:$START/$NEXT_PATH
+@else
+FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH
+@endif
 .session_variable @deque ""
 .session_variable @deque "~$FILES"
 ;
@@ -53,17 +80,29 @@ NEXT_FILE=$OUTPUT
 @skip
 @:NEXT_FILE
 @ifndef $HAD_ANY_FILES
+@ifndef $SUB_DIRECTORY
 #$1/$NEXT_PATH
+@else
+#$1/$SUB_DIRECTORY/$NEXT_PATH
+@endif
 @endif
 HAD_ANY_FILES=1
 .session_variable @deque pop_front
 ;
+@ifndef $SUB_DIRECTORY
 #$1/$NEXT_PATH/$NEXT_FILE
+@else
+#$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
+@endif
 ;
 ; NOTE: Each file is split into a set of 1M chunks and a
 ; the UUID variable is used to tag the "list" file which
 ; will be automatically created by "ciyam_client".
+@ifndef $SUB_DIRECTORY
 .file_put 1M*$1/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+@else
+.file_put 1M*$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+@endif
 ;
 ; NOTE: Get the file hash of the tagged "list" of chunks
 ; and append it to a "list" that will be effectively the
@@ -71,7 +110,11 @@ HAD_ANY_FILES=1
 .file_hash $UUID
 HASH=$OUTPUT
 >>~$UUID
+@ifndef $SUB_DIRECTORY
 #$HASH $NEXT_PATH/$NEXT_FILE
+@else
+#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
+@endif
 >>
 ;
 !!@:FILE_LOOP
@@ -79,10 +122,14 @@ HASH=$OUTPUT
 @:EXIT_FILE
 ;
 @ifdef $HAD_ANY_FILES
+@ifdef $SUB_DIR_IS_LEAF
+TAG_NAME=
+@else
 ; NOTE: Change '/' to '.' for the tag.
 TAG_NAME=@repstr:\//.:$NEXT_PATH
+@endif
 ;
-.file_put ?~$UUID $TAG_NAME
+.file_put ?~$UUID $TAG_PREFIX$TAG_NAME
 ~rm ~$UUID
 .file_tag -remove $UUID
 @endif

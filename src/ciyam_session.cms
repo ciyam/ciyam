@@ -4,7 +4,7 @@ file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]
 file_raw "create a new file with raw data" [<opt/-core/core>|<opt/-mime/mime>][<opt/-text/text>]<opt/blob>|<opt/list><val//data>[<val//tag>]
-file_tag "add/remove/unlink a tag for a file in the files area" <opt/-remove/remove>|<opt/-unlink/unlink>|<val//hash><val//name>
+file_tag "add/remove/unlink tag(s) for a file in the files area" <opt/-remove/remove>|<opt/-unlink/unlink>|<val//hash><list//names>
 file_hash "get the hash for one or more tagged files in the files area" <val//pat_or_tag>
 file_info "get information for one or more files in the files area" [<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>]}]<val//pat_or_hash>
 file_kill "remove one or more files from the files area" [<opt/-q/quiet>]<val/-p=/pat>|{[<opt/-recurse/recurse>]<val//tag_or_hash>}

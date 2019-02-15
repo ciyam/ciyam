@@ -1,0 +1,41 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: The script requires a tag which is also used as a tag list prefix for merging.
+@else
+;
+PREFIX=$1
+NEW_TAG=$2
+;
+@ifndef $NEW_TAG
+NEW_TAG=$PREFIX
+@endif
+;
+REPLACED=@repstr:,/*:$PREFIX
+;
+; NOTE: Assume if it has commas then PREFIX must be a "tag list" rather than a prefix.
+@ifneq $PREFIX $REPLACED
+LINES=@repstr:,/\n:$PREFIX
+PREFIX=
+@else
+OUTPUT=
+.file_tags $PREFIX*
+LINES=$OUTPUT
+@endif
+;
+@ifdef $LINES
+;
+TAGS=@repstr:\n/,:$LINES
+;
+@ifneq "$PREFIX" "$TAGS"
+.file_raw list $TAGS $NEW_TAG
+.file_tag -remove $TAGS
+.file_info -content $NEW_TAG
+#$OUTPUT
+@endif
+;
+@endif
+@endif

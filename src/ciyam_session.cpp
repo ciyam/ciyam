@@ -1471,6 +1471,30 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_data ) );
          string tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_raw_tag ) );
 
+         // NOTE: A list can be constructed with a comma separated list of existing tags.
+         if( is_list )
+         {
+            string::size_type pos = data.find( '\n' );
+            if( pos == string::npos )
+            {
+               string list_data;
+
+               vector< string > items;
+               split( data, items );
+
+               for( size_t i = 0; i < items.size( ); i++ )
+               {
+                  string next( items[ i ] );
+
+                  if( i > 0 )
+                     list_data += '\n';
+                  list_data += tag_file_hash( next ) + ' ' + next;
+               }
+
+               data = list_data;
+            }
+         }
+
          vector< pair< string, string > > extras;
 
          if( !is_core && !is_mime )
@@ -1533,12 +1557,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_remove ) );
          bool is_unlink( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_unlink ) );
          string hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_hash ) );
-         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_name ) );
+         string names( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tag_names ) );
 
-         if( is_remove || is_unlink )
-            tag_del( name, is_unlink );
-         else
-            tag_file( name, hash );
+         vector< string > tag_names;
+         split( names, tag_names );
+
+         for( size_t i = 0; i < tag_names.size( ); i++ )
+         {
+            string next( tag_names[ i ] );
+
+            if( is_remove || is_unlink )
+               tag_del( next, is_unlink );
+            else
+               tag_file( next, hash );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_info )
       {

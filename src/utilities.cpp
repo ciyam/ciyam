@@ -1554,9 +1554,39 @@ string join( const vector< string >& c, char sep, char esc, bool escape )
    return s;
 }
 
+string join( const set< string >& c, const string& sep )
+{
+   string s;
+   set< string >::const_iterator ci;
+
+   for( ci = c.begin( ); ci != c.end( ); ++ci )
+   {
+      if( !s.empty( ) )
+         s += sep;
+      s += *ci;
+   }
+
+   return s;
+}
+
+string join( const deque< string >& c, const string& sep )
+{
+   string s;
+
+   for( size_t i = 0; i < c.size( ); i++ )
+   {
+      if( i > 0 )
+         s += sep;
+      s += c[ i ];
+   }
+
+   return s;
+}
+
 string join( const vector< string >& c, const string& sep )
 {
    string s;
+
    for( size_t i = 0; i < c.size( ); i++ )
    {
       if( i > 0 )

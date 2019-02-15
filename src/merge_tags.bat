@@ -6,13 +6,13 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-echo ^<^<import_files.cin %1 %2 %3 >~import_files
-ciyam_client -echo -quiet -no_prompt -no_stderr < ~import_files
+echo ^<^<merge_tags.cin %1 %2 >~merge_tags
+ciyam_client -echo -quiet -no_prompt -no_stderr < ~merge_tags
 
-del ~import_files
+del ~merge_tags
 goto end
 
 :usage
-echo Usage: import_files [start path] [[tag prefix] [[sub-directory]]]
+echo Usage: merge_tags [tag name(s) and/or prefix] [[tag name]]
 
 :end

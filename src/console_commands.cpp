@@ -2586,6 +2586,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                               str.erase( );
 
+                              set< string > results;
+
                               while( ffsi.has_next( ) )
                               {
                                  string next( ffsi.get_name( ) );
@@ -2593,11 +2595,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  if( !should_be_included( next, includes, excludes ) )
                                     continue;
 
-                                 if( !str.empty( ) )
-                                    str += '\n';
-
-                                 str += next;
+                                 results.insert( next );
                               }
+
+                              str = join( results, "\n" );
                            }
                            else if( lhs == c_function_paths )
                            {
@@ -2625,6 +2626,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                               str.erase( );
 
+                              set< string > results;
                               size_t len = rhs.length( ) + 1;
 
                               while( dfsi.has_next( ) )
@@ -2637,10 +2639,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  if( !should_be_included( next_path, includes, excludes ) )
                                     continue;
 
-                                 if( !str.empty( ) )
-                                    str += '\n';
-                                 str += next_path.substr( len );
+                                 results.insert( next_path.substr( len ) );
                               }
+
+                              str = join( results, "\n" );
                            }
                            else if( lhs == c_function_aschex )
                               str = hex_encode( str.substr( pos + 1 ) );
@@ -2719,7 +2721,19 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                                  if( pos != string::npos )
                                  {
-                                    size_t len = atoi( str.substr( pos + 1 ).c_str( ) );
+                                    int len = atoi( str.substr( pos + 1 ).c_str( ) );
+
+                                    // NOTE: Use of negative values for "len" will treat the
+                                    // value as being that much less than the size of "rhs".
+                                    if( len < 0 )
+                                    {
+                                       len *= -1;
+
+                                       if( len >= rhs.size( ) )
+                                          len = 0;
+                                       else
+                                          len = rhs.size( ) - len;
+                                    }
 
                                     if( rhs.size( ) > rval + len )
                                        str = rhs.substr( rval, len );

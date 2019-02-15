@@ -35,6 +35,10 @@ privkey=%OUTPUT:3%
 #privkey is $privkey
 TEST=abcdefghi
 #$TEST
+X=@substr:0,-1:$TEST
+#$X
+X=@substr:0,-2:$TEST
+#$X
 X=%TEST:0>abc%
 #$X
 Y=%TEST:0<ghi%
