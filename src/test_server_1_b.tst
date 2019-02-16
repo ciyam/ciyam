@@ -75,6 +75,33 @@ at 0...
   [blob] 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 (8 B) [utf8]
 at 1...
 
+> file_tag fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
+
+> file_tag 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 test1
+
+> file_raw list test0,test1 testx
+167359887b16cabc3e8293fd11e2cb3a8a9f18145ef52847f5c704819f897033
+
+> file_info -content testx
+[list] 167359887b16cabc3e8293fd11e2cb3a8a9f18145ef52847f5c704819f897033 (106 B)
+fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
+055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 test1
+
+> file_tags test*
+test0
+test1
+testx
+
+> file_kill testx
+
+> file_tags test*
+test0
+test1
+
+> file_tag -remove test0,test1
+
+> file_tags test*
+
 > file_kill -recurse root
 
 > ~mkdir test1
@@ -123,6 +150,20 @@ test.jpg.00006
 ~test.jpg.00006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
 
+> file_crypt 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d abc
+
+> file_crypt cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 abc
+
+> file_crypt e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 abc
+
+> file_crypt 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 abc
+
+> file_crypt 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 abc
+
+> file_crypt 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 abc
+
+> file_crypt 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 abc
+
 > file_crypt test abc
 
 > file_info -recurse -d=999 test
@@ -137,10 +178,10 @@ test.jpg.00006
 > file_info -content 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7
 [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B) [***]
 
-> file_crypt test xxx
+> file_crypt -recurse test xxx
 Error: invalid password to decrypt file 'test'
 
-> file_crypt test abc
+> file_crypt -recurse test abc
 
 > file_get test *test1/
 test1/~test.jpg

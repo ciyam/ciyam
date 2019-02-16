@@ -76,7 +76,7 @@ void CIYAM_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::
 
 std::string CIYAM_BASE_DECL_SPEC hash_with_nonce( const std::string& hash, const std::string& nonce );
 
-void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& tag_or_hash, const std::string& password );
+void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& tag_or_hash, const std::string& password, bool recurse = false );
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 

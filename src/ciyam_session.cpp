@@ -1653,6 +1653,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
+         bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_recurse ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_tag_or_hash ) );
          string pubkey( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_pubkey ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_crypt_password ) );
@@ -1662,7 +1663,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          try
          {
-            crypt_file( tag_or_hash, password );
+            crypt_file( tag_or_hash, password, recurse );
          }
          catch( ... )
          {

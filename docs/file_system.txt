@@ -143,6 +143,11 @@ To remove file tags use the "file_tag" command with either the "-remove" or "-un
 used then the file itself will be deleted if no other tags are linked to it whereas the "-remove" option will
 only ever remove the tag and will never delete the file that it links to.
 
+It should be noted that the "file_tags" command can be given a comma separated list of tag names which allows
+multiple tags to be added or deleted/unlinked using the one command. Also when creating a "list" file via the
+"file_raw" command a comma separated list of tags can be used as a simpler method to construct the list items
+(assuming each list item file has already been tagged and that this is also the desired name for the item).
+
 Copying Files
 -------------
 
@@ -204,8 +209,8 @@ File Encryption
 
 Any file can be encrypted with a password using the "file_crypt" command. It should be noted that once a file
 has been encrypted no information other than its original content hash and size will be returned with the use
-of "file_info". If the file is a "list" then all list items are automatically also encrypted (and child lists
-will cascade resulting in the entire tree of files being encrypted).
+of "file_info". If the file is a "list" and the "-recurse" option is used then all of the list items are also
+encrypted (and child lists will cascade resulting in the entire tree of files being encrypted).
 
 > file_crypt tst.jpg password
 
@@ -285,7 +290,7 @@ has been created for storing files that are not currently being used. It should 
 the combination of an external path and information stored about the archive in the server's global ODS DB.
 
 Although disparities between the external file storage and ODS information can be easily fixed direct changes
-to the external storage areas are not recommended.
+to these external archive files are not recommended.
 
 Archive Maintenance
 -------------------

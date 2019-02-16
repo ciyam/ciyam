@@ -1270,7 +1270,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void crypt_file( const string& tag_or_hash, const string& password )
+void crypt_file( const string& tag_or_hash, const string& password, bool recurse )
 {
    string hash( tag_or_hash );
 
@@ -1331,7 +1331,7 @@ void crypt_file( const string& tag_or_hash, const string& password )
 
       write_file( filename, new_file_data );
 
-      if( file_type == c_file_type_val_list )
+      if( recurse && file_type == c_file_type_val_list )
       {
          string list_info( uncompressed_data.substr( 1 ) );
 
@@ -1345,7 +1345,7 @@ void crypt_file( const string& tag_or_hash, const string& password )
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password );
+               crypt_file( next.substr( 0, pos ), password, recurse );
             }
          }
       }
@@ -1391,7 +1391,7 @@ void crypt_file( const string& tag_or_hash, const string& password )
 
       write_file( filename, file_data );
 
-      if( file_type == c_file_type_val_list )
+      if( recurse && file_type == c_file_type_val_list )
       {
          string list_info( uncompressed_data.substr( 1 ) );
 
@@ -1405,7 +1405,7 @@ void crypt_file( const string& tag_or_hash, const string& password )
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password );
+               crypt_file( next.substr( 0, pos ), password, recurse );
             }
          }
       }
