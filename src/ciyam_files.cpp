@@ -503,11 +503,13 @@ int64_t file_bytes( const string& hash )
 }
 
 string file_type_info( const string& tag_or_hash,
- file_expansion expansion, int max_depth, int indent, bool add_size )
+ file_expansion expansion, int max_depth, int indent,
+ bool add_size, const char* p_prefix, bool allow_all_after )
 {
    guard g( g_mutex );
 
    string hash, filename;
+
    if( file_exists( string( c_files_directory ) + '/' + tag_or_hash ) )
    {
       hash = tag_file_hash( tag_or_hash );
@@ -534,7 +536,8 @@ string file_type_info( const string& tag_or_hash,
    // NOTE: If not going to output blob content then to make things faster
    // only read the first byte to get the file type information then later
    // re-read the whole file only if it is a "list".
-   if( max_depth == c_depth_to_omit_blob_content )
+   if( ( max_depth == c_depth_to_omit_blob_content )
+    || ( expansion == e_file_expansion_recursive_hashes ) )
       max_to_buffer = 1;
 
    string data( buffer_file( filename, max_to_buffer, &file_size ) );
@@ -551,11 +554,16 @@ string file_type_info( const string& tag_or_hash,
    if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in file_info" );
 
-   if( file_type == c_file_type_val_list && max_depth == c_depth_to_omit_blob_content )
+   if( max_to_buffer == 1 && file_type == c_file_type_val_list )
+   {
       data = buffer_file( filename );
 
-   if( !is_encrypted && !is_compressed
-    && ( file_type == c_file_type_val_list || max_depth != c_depth_to_omit_blob_content ) )
+      if( data.size( ) <= 1 )
+         throw runtime_error( "unexpected truncated file content for '" + tag_or_hash + "'" );
+   }
+
+   if( !is_encrypted && !is_compressed && ( file_type == c_file_type_val_list
+    || ( ( max_depth != c_depth_to_omit_blob_content ) && ( expansion != e_file_expansion_recursive_hashes ) ) ) )
    {
       sha256 test_hash( data );
 
@@ -606,20 +614,25 @@ string file_type_info( const string& tag_or_hash,
 
    if( is_encrypted || ( expansion == e_file_expansion_none ) )
    {
-      retval += " " + lower( hash );
-
-      if( add_size )
-         retval += " " + size_info;
-
-      if( is_encrypted && ( expansion != e_file_expansion_none ) )
-         retval += " [***]";
-
-      if( is_core && !is_encrypted )
+      if( expansion == e_file_expansion_recursive_hashes )
+         retval += lower( hash );
+      else
       {
-         string::size_type pos = final_data.find( ':' );
+         retval += " " + lower( hash );
 
-         if( pos != string::npos )
-            retval += " " + final_data.substr( 1, pos - 1 );
+         if( add_size )
+            retval += " " + size_info;
+
+         if( is_encrypted && ( expansion != e_file_expansion_none ) )
+            retval += " [***]";
+
+         if( is_core && !is_encrypted )
+         {
+            string::size_type pos = final_data.find( ':' );
+
+            if( pos != string::npos )
+               retval += " " + final_data.substr( 1, pos - 1 );
+         }
       }
    }
    else
@@ -673,10 +686,17 @@ string file_type_info( const string& tag_or_hash,
 
          for( size_t i = 0; i < list_items.size( ); i++ )
          {
-            string next_list_item( list_items[ i ] );
+            string next( list_items[ i ] );
+            string::size_type pos = next.find( ' ' );
+
+            string next_hash( next.substr( 0, pos ) );
+
+            string next_name;
+            if( pos != string::npos )
+               next_name = next.substr( pos + 1 );
 
             if( expansion == e_file_expansion_content )
-               retval += "\n" + string( indent, ' ' ) + next_list_item;
+               retval += "\n" + string( indent, ' ' ) + next;
             else if( max_depth && indent >= max_depth
              && expansion != e_file_expansion_recursive_hashes )
             {
@@ -685,12 +705,22 @@ string file_type_info( const string& tag_or_hash,
             }
             else
             {
-               string::size_type pos = next_list_item.find( ' ' );
+               if( !p_prefix || string( p_prefix ).find( next_name ) == 0 )
+               {
+                  if( !next_name.empty( ) && expansion != e_file_expansion_recursive_hashes )
+                     retval += "\n" + string( indent, ' ' ) + next_name;
 
-               if( pos != string::npos && expansion != e_file_expansion_recursive_hashes )
-                  retval += "\n" + string( indent, ' ' ) + next_list_item.substr( pos + 1 );
+                  bool allow_all = false;
 
-               retval += "\n" + file_type_info( next_list_item.substr( 0, pos ), expansion, max_depth, indent + 1, add_size );
+                  // NOTE: If instructed to "allow_all_after" then once an item's name is found to
+                  // be equal to or longer in length than the provided prefix then every following
+                  // item in the entire branch below this will be output.
+                  if( p_prefix && allow_all_after && next_name.length( ) >= strlen( p_prefix ) )
+                     allow_all = true;
+
+                  retval += "\n" + file_type_info( next_hash,
+                   expansion, max_depth, indent + 1, add_size, allow_all ? 0 : p_prefix );
+               }
             }
          }
       }

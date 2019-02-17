@@ -53,8 +53,9 @@ enum file_expansion
    e_file_expansion_recursive_hashes
 };
 
-std::string CIYAM_BASE_DECL_SPEC file_type_info( const std::string& tag_or_hash,
- file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0, bool add_size = false );
+std::string CIYAM_BASE_DECL_SPEC file_type_info(
+ const std::string& tag_or_hash, file_expansion expansion = e_file_expansion_none,
+ int max_depth = 0, int indent = 0, bool add_size = false, const char* p_prefix = 0, bool allow_all_after = true );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
  bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0, const char* p_hash = 0 );

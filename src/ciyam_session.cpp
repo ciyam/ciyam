@@ -1577,6 +1577,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool content( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_content ) );
          bool recurse( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_recurse ) );
          string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_depth ) );
+         string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_prefix ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_info_pat_or_hash ) );
 
          int depth_val = 0;
@@ -1609,7 +1610,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( i > 0 )
                response += '\n';
-            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val, 0, true );
+            response += file_type_info( tags_or_hashes[ i ],
+             expansion, depth_val, 0, true, ( prefix.empty( ) ? 0 : prefix.c_str( ) ) );
          }
       }
       else if( command == c_cmd_ciyam_session_file_kill )
