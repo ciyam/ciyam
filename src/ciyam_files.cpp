@@ -533,12 +533,17 @@ string file_type_info( const string& tag_or_hash,
    long file_size = 0;
    long max_to_buffer = 0;
 
+   string increment_special( get_special_var_name( e_special_var_increment ) );
+   string buffered_var_name( get_special_var_name( e_special_var_file_info_buffered ) );
+
    // NOTE: If not going to output blob content then to make things faster
    // only read the first byte to get the file type information then later
    // re-read the whole file only if it is a "list".
    if( ( max_depth == c_depth_to_omit_blob_content )
     || ( expansion == e_file_expansion_recursive_hashes ) )
       max_to_buffer = 1;
+   else if( !get_session_variable( buffered_var_name ).empty( ) )
+      set_session_variable( buffered_var_name, increment_special );
 
    string data( buffer_file( filename, max_to_buffer, &file_size ) );
    
@@ -560,6 +565,8 @@ string file_type_info( const string& tag_or_hash,
 
       if( data.size( ) <= 1 )
          throw runtime_error( "unexpected truncated file content for '" + tag_or_hash + "'" );
+      else if( !get_session_variable( buffered_var_name ).empty( ) )
+         set_session_variable( buffered_var_name, increment_special );
    }
 
    if( !is_encrypted && !is_compressed && ( file_type == c_file_type_val_list
