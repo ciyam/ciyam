@@ -510,6 +510,15 @@ string file_type_info( const string& tag_or_hash,
 
    string hash, filename;
 
+   int depth = max_depth;
+   bool output_last_only = false;
+
+   if( depth < 0 )
+   {
+      depth *= -1;
+      output_last_only = true;
+   }
+
    if( file_exists( string( c_files_directory ) + '/' + tag_or_hash ) )
    {
       hash = tag_file_hash( tag_or_hash );
@@ -539,7 +548,7 @@ string file_type_info( const string& tag_or_hash,
    // NOTE: If not going to output blob content then to make things faster
    // only read the first byte to get the file type information then later
    // re-read the whole file only if it is a "list".
-   if( ( max_depth == c_depth_to_omit_blob_content )
+   if( ( depth == c_depth_to_omit_blob_content )
     || ( expansion == e_file_expansion_recursive_hashes ) )
       max_to_buffer = 1;
    else if( !get_session_variable( buffered_var_name ).empty( ) )
@@ -559,7 +568,7 @@ string file_type_info( const string& tag_or_hash,
    if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
       throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in file_info" );
 
-   if( max_to_buffer == 1 && file_type == c_file_type_val_list )
+   if( !is_encrypted && max_to_buffer == 1 && file_type == c_file_type_val_list )
    {
       data = buffer_file( filename );
 
@@ -570,7 +579,7 @@ string file_type_info( const string& tag_or_hash,
    }
 
    if( !is_encrypted && !is_compressed && ( file_type == c_file_type_val_list
-    || ( ( max_depth != c_depth_to_omit_blob_content ) && ( expansion != e_file_expansion_recursive_hashes ) ) ) )
+    || ( ( depth != c_depth_to_omit_blob_content ) && ( expansion != e_file_expansion_recursive_hashes ) ) ) )
    {
       sha256 test_hash( data );
 
@@ -604,47 +613,28 @@ string file_type_info( const string& tag_or_hash,
    // without the use of additional function arguments (that default to keeping the format as is).
    if( expansion != e_file_expansion_recursive_hashes )
    {
-      retval += string( indent, ' ' );
+      if( !output_last_only || depth == indent + 1 )
+      {
+         if( !output_last_only )
+            retval += string( indent, ' ' );
 
-      retval += '[';
+         retval += '[';
 
-      if( is_core )
-         retval += "core-";
+         if( is_core )
+            retval += "core-";
 
-      if( file_type == c_file_type_val_blob )
-         retval += "blob]";
-      else if( file_type == c_file_type_val_list )
-         retval += "list]";
+         if( file_type == c_file_type_val_blob )
+            retval += "blob]";
+         else if( file_type == c_file_type_val_list )
+            retval += "list]";
+      }
    }
 
    string size_info( "(" + format_bytes( file_size ) + ")" );
 
    if( is_encrypted || ( expansion == e_file_expansion_none ) )
    {
-      if( expansion == e_file_expansion_recursive_hashes )
-         retval += lower( hash );
-      else
-      {
-         retval += " " + lower( hash );
-
-         if( add_size )
-            retval += " " + size_info;
-
-         if( is_encrypted && ( expansion != e_file_expansion_none ) )
-            retval += " [***]";
-
-         if( is_core && !is_encrypted )
-         {
-            string::size_type pos = final_data.find( ':' );
-
-            if( pos != string::npos )
-               retval += " " + final_data.substr( 1, pos - 1 );
-         }
-      }
-   }
-   else
-   {
-      if( file_type == c_file_type_val_blob )
+      if( !output_last_only || depth == indent + 1 )
       {
          if( expansion == e_file_expansion_recursive_hashes )
             retval += lower( hash );
@@ -655,21 +645,55 @@ string file_type_info( const string& tag_or_hash,
             if( add_size )
                retval += " " + size_info;
 
-            if( max_depth && indent >= max_depth )
-               retval += "\n" + string( indent, ' ' ) + "...";
-            else if( max_depth != c_depth_to_omit_blob_content )
-            {
-               string blob_info( final_data.substr( 1 ) );
+            if( is_encrypted && ( expansion != e_file_expansion_none ) )
+               retval += " [***]";
 
-               if( is_valid_utf8( blob_info ) )
+            if( is_core && !is_encrypted )
+            {
+               string::size_type pos = final_data.find( ':' );
+
+               if( pos != string::npos )
+                  retval += " " + final_data.substr( 1, pos - 1 );
+            }
+         }
+      }
+   }
+   else
+   {
+      if( file_type == c_file_type_val_blob )
+      {
+         if( !output_last_only || depth == indent + 1 )
+         {
+            if( expansion == e_file_expansion_recursive_hashes )
+               retval += lower( hash );
+            else
+            {
+               retval += " " + lower( hash );
+
+               if( add_size )
+                  retval += " " + size_info;
+
+               if( depth && indent >= depth )
                {
-                  retval += " [utf8]";
-                  retval += "\n" + utf8_replace( blob_info, "\r", "" );
+                  if( output_last_only )
+                     retval += "\n...";
+                  else
+                     retval += "\n" + string( indent, ' ' ) + "...";
                }
-               else
+               else if( depth != c_depth_to_omit_blob_content )
                {
-                  retval += " [base64]";
-                  retval += "\n" + base64::encode( blob_info );
+                  string blob_info( final_data.substr( 1 ) );
+
+                  if( is_valid_utf8( blob_info ) )
+                  {
+                     retval += " [utf8]";
+                     retval += "\n" + utf8_replace( blob_info, "\r", "" );
+                  }
+                  else
+                  {
+                     retval += " [base64]";
+                     retval += "\n" + base64::encode( blob_info );
+                  }
                }
             }
          }
@@ -681,14 +705,17 @@ string file_type_info( const string& tag_or_hash,
          vector< string > list_items;
          split( list_info, list_items, '\n' );
 
-         if( expansion == e_file_expansion_recursive_hashes )
-            retval += lower( hash );
-         else
+         if( !output_last_only || depth == indent + 1 )
          {
-            retval += " " + lower( hash );
+            if( expansion == e_file_expansion_recursive_hashes )
+               retval += lower( hash );
+            else
+            {
+               retval += " " + lower( hash );
 
-            if( add_size )
-               retval += " " + size_info;
+               if( add_size )
+                  retval += " " + size_info;
+            }
          }
 
          for( size_t i = 0; i < list_items.size( ); i++ )
@@ -703,19 +730,38 @@ string file_type_info( const string& tag_or_hash,
                next_name = next.substr( pos + 1 );
 
             if( expansion == e_file_expansion_content )
-               retval += "\n" + string( indent, ' ' ) + next;
-            else if( max_depth && indent >= max_depth
+            {
+               if( !output_last_only || depth == indent + 1 )
+               {
+                  if( output_last_only )
+                     retval += "\n" + next;
+                  else
+                     retval += "\n" + string( indent, ' ' ) + next;
+               }
+            }
+            else if( depth && indent >= depth
              && expansion != e_file_expansion_recursive_hashes )
             {
-               if( i == 0 )
-                  retval += "\n" + string( indent, ' ' ) + "...";
+               if( i == 0 && ( !output_last_only || depth == indent + 1 ) )
+               {
+                  if( output_last_only )
+                     retval += "\n...";
+                  else
+                     retval += "\n" + string( indent, ' ' ) + "...";
+               }
             }
             else
             {
                if( !p_prefix || string( p_prefix ).find( next_name ) == 0 )
                {
-                  if( !next_name.empty( ) && expansion != e_file_expansion_recursive_hashes )
-                     retval += "\n" + string( indent, ' ' ) + next_name;
+                  if( ( !output_last_only || depth == indent + 1 )
+                   && ( !next_name.empty( ) && expansion != e_file_expansion_recursive_hashes ) )
+                  {
+                     if( output_last_only )
+                        retval += "\n" + next_name;
+                     else
+                        retval += "\n" + string( indent, ' ' ) + next_name;
+                  }
 
                   bool allow_all = false;
 
@@ -725,8 +771,15 @@ string file_type_info( const string& tag_or_hash,
                   if( p_prefix && allow_all_after && next_name.length( ) >= strlen( p_prefix ) )
                      allow_all = true;
 
-                  retval += "\n" + file_type_info( next_hash,
-                   expansion, max_depth, indent + 1, add_size, allow_all ? 0 : p_prefix );
+                  string additional( file_type_info( next_hash,
+                   expansion, max_depth, indent + 1, add_size, allow_all ? 0 : p_prefix ) );
+
+                  if( !additional.empty( ) )
+                  {
+                     if( !retval.empty( ) )
+                        retval += "\n";
+                     retval += additional;
+                  }
                }
             }
          }

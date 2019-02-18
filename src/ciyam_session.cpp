@@ -1590,13 +1590,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             expansion = e_file_expansion_content;
          else if( recurse )
          {
-            if( depth_val >= 0 )
+            if( depth_val != 0 )
                expansion = e_file_expansion_recursive;
             else
-            {
-               depth_val = 0;
                expansion = e_file_expansion_recursive_hashes;
-            }
          }
 
          deque< string > tags_or_hashes;
@@ -1610,6 +1607,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( i > 0 )
                response += '\n';
+
             response += file_type_info( tags_or_hashes[ i ],
              expansion, depth_val, 0, true, ( prefix.empty( ) ? 0 : prefix.c_str( ) ) );
          }

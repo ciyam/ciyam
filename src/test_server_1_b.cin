@@ -10,6 +10,8 @@ file_info -content root
 file_info -recurse -d=1 root
 file_info -recurse -d=2 root
 file_info -recurse -d=0 root
+file_info -recurse -d=-1 root
+file_info -recurse -d=-2 root
 file_tag fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
 file_tag 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 test1
 file_raw list test0,test1 testx
