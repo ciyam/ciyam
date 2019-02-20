@@ -1761,29 +1761,26 @@ string buffer_file( const char* p_file_name, long max_bytes, long* p_size, long 
    if( p_size )
       *p_size = size;
 
-   if( start_pos > size )
-      size = 0;
-   else if( max_bytes )
-   {
-      if( size - start_pos > max_bytes )
-         size = max_bytes;
-      else
-         size -= start_pos;
-   }
+   if( max_bytes && ( size - start_pos > max_bytes ) )
+      size = max_bytes;
+   else
+      size -= start_pos;
 
-   string str( size, '\0' );
-
-   if( size )
+   if( size <= 0 )
+      return string( );
+   else
    {
+      string str( size, '\0' );
+
       fseek( fp, start_pos, SEEK_SET );
 
       if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
          throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
+
+      fclose( fp );
+
+      return str;
    }
-
-   fclose( fp );
-
-   return str;
 }
 
 void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, long start_pos )

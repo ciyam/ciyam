@@ -1601,7 +1601,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( pat_or_hash.find_first_of( "?*" ) == string::npos )
             tags_or_hashes.push_back( pat_or_hash );
          else
-            list_file_tags( pat_or_hash, 0, 0, 0, &tags_or_hashes );
+            list_file_tags( pat_or_hash, 0, 0, 0, 0, &tags_or_hashes );
 
          for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
          {
@@ -1645,11 +1645,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_tags )
       {
          string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat_or_hash ) );
+         string includes( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_includes ) );
+         string excludes( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_excludes ) );
 
          if( !pat_or_hash.empty( ) && pat_or_hash.find_first_of( "?*" ) == string::npos )
             response = get_hash_tags( pat_or_hash );
          else
-            response = list_file_tags( pat_or_hash );
+         {
+            if( includes.empty( ) )
+               response = list_file_tags( pat_or_hash );
+            else
+            {
+               vector< string > pats;
+               split( includes, pats );
+
+               for( size_t i = 0; i < pats.size( ); i++ )
+               {
+                  if( i > 0 )
+                     response += '\n';
+
+                  response += list_file_tags( pats[ i ], excludes.c_str( ) );
+               }
+            }
+         }
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {

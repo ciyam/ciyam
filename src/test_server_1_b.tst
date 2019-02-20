@@ -67,16 +67,16 @@ fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25
 
 > file_info -recurse -d=-1 root
 [list] 35dddd1f6a57c18adddca0b99478114fdef5a97cf5b5d0c2474dc777fe029473 (143 B)
-first
-second
+000000 c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1 first (29 B)
+000001 f0e0bbbf3321c7e483e3f7b4072e87791e1ec3cb74c3d4ac0db4faa765f12e32 second (16 B)
 
 > file_info -recurse -d=-2 root
 [list] c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1 (141 B)
-hello
-test
+000000 2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8 hello (13 B)
+000001 90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 test (16 B)
 [list] f0e0bbbf3321c7e483e3f7b4072e87791e1ec3cb74c3d4ac0db4faa765f12e32 (134 B)
-0
-1
+000000 fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 0 (8 B)
+000001 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 1 (8 B)
 
 > file_tag fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
 
@@ -94,6 +94,17 @@ fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
 test0
 test1
 testx
+
+> file_tags -i=te*0,te*1
+test0
+test1
+
+> file_tags -i=test* -x=*x
+test0
+test1
+
+> file_tags -i=test* -x=*0,*x
+test1
 
 > file_kill testx
 

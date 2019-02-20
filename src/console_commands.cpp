@@ -137,8 +137,10 @@ void split_all_extras( const string& all_extras, vector< string >& includes, vec
 
          if( !next.empty( ) )
          {
+            // NOTE: An include can begin with "\^" to
+            // not be confused as being an exclude.
             if( next[ 0 ] != '^' )
-               includes.push_back( next );
+               includes.push_back( unescaped( next ) );
             else
                excludes.push_back( next.substr( 1 ) );
          }

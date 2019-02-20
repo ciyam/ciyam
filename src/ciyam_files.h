@@ -43,7 +43,7 @@ bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name );
 
 bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
 
-int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash );
+int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash, bool blobs_for_lists = false );
 
 enum file_expansion
 {
@@ -70,7 +70,7 @@ std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC tag_file_hash( const std::string& name );
 
-std::string CIYAM_BASE_DECL_SPEC list_file_tags( const std::string& pat, size_t max_tags = 0,
+std::string CIYAM_BASE_DECL_SPEC list_file_tags( const std::string& pat, const char* p_excludes = 0, size_t max_tags = 0,
  int64_t max_bytes = 0, int64_t* p_min_bytes = 0, std::deque< std::string >* p_hashes = 0, bool include_multiples = true );
 
 void CIYAM_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );

@@ -56,6 +56,8 @@ const int c_status_info_pad_len = 10;
 
 const int c_min_size_to_compress = 33;
 
+const int c_num_digest_characters = c_sha256_digest_size * 2;
+
 const int c_depth_to_omit_blob_content = 999;
 
 const char* const c_timestamp_tag_prefix = "ts.";
@@ -493,13 +495,70 @@ bool has_file( const string& hash, bool check_is_hash )
    return file_exists( filename );
 }
 
-int64_t file_bytes( const string& hash )
+int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );
 
    string filename( construct_file_name_from_hash( hash ) );
 
-   return file_size( filename );
+   long file_size = 0;
+
+   string data( buffer_file( filename, 1, &file_size ) );
+
+   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+
+   bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
+   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
+
+   if( blobs_for_lists && file_type == c_file_type_val_list )
+      file_size = 0;
+
+   if( !is_encrypted && blobs_for_lists && file_type == c_file_type_val_list )
+   {
+      data = buffer_file( filename );
+
+      string increment_special( get_special_var_name( e_special_var_increment ) );
+      string buffered_var_name( get_special_var_name( e_special_var_file_info_buffered ) );
+
+      if( !get_session_variable( buffered_var_name ).empty( ) )
+         set_session_variable( buffered_var_name, increment_special );
+
+      string final_data( data );
+
+#ifdef ZLIB_SUPPORT
+      if( is_compressed && final_data.size( ) > 1 )
+      {
+         session_file_buffer_access file_buffer;
+
+         unsigned long size = final_data.size( ) - 1;
+         unsigned long usize = file_buffer.get_size( ) - size;
+
+         if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
+            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+
+         final_data.erase( 1 );
+         final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+
+         validate_hash_with_uncompressed_content( hash, ( unsigned char* )final_data.data( ), final_data.length( ) );
+      }
+#endif
+
+      if( final_data.size( ) > 1 )
+      {
+         vector< string > list_items;
+         split( final_data.substr( 1 ), list_items, '\n' );
+
+         for( size_t i = 0; i < list_items.size( ); i++ )
+         {
+            string next( list_items[ i ] );
+            string::size_type pos = next.find( ' ' );
+
+            file_size += file_bytes( next.substr( 0, pos ), true );
+         }
+      }
+   }
+
+   return file_size;
 }
 
 string file_type_info( const string& tag_or_hash,
@@ -528,12 +587,13 @@ string file_type_info( const string& tag_or_hash,
    {
       bool is_base64 = false;
 
-      if( tag_or_hash.length( ) != 64 )
+      if( tag_or_hash.length( ) != c_num_digest_characters )
           base64::validate( tag_or_hash, &is_base64 );
 
       hash = !is_base64 ? tag_or_hash : base64_to_hex( tag_or_hash );
 
-      filename = construct_file_name_from_hash( hash, false, false );
+      if( hash.length( ) == c_num_digest_characters )
+         filename = construct_file_name_from_hash( hash, false, false );
    }
 
    if( !file_exists( filename ) )
@@ -729,12 +789,18 @@ string file_type_info( const string& tag_or_hash,
             if( pos != string::npos )
                next_name = next.substr( pos + 1 );
 
+            string item_num( to_comparable_string( i, false, 6 ) ); 
+
+            string size;
+            if( output_last_only && depth == indent + 1 )
+               size = " (" + format_bytes( file_bytes( next_hash, true ) ) + ")";
+
             if( expansion == e_file_expansion_content )
             {
                if( !output_last_only || depth == indent + 1 )
                {
                   if( output_last_only )
-                     retval += "\n" + next;
+                     retval += "\n" + item_num + ' ' + next + size;
                   else
                      retval += "\n" + string( indent, ' ' ) + next;
                }
@@ -758,7 +824,7 @@ string file_type_info( const string& tag_or_hash,
                    && ( !next_name.empty( ) && expansion != e_file_expansion_recursive_hashes ) )
                   {
                      if( output_last_only )
-                        retval += "\n" + next_name;
+                        retval += "\n" + item_num + ' ' + next + size;
                      else
                         retval += "\n" + string( indent, ' ' ) + next_name;
                   }
@@ -1225,8 +1291,8 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string list_file_tags(
- const string& pat, size_t max_tags, int64_t max_bytes,
+string list_file_tags( const string& pat,
+ const char* p_excludes, size_t max_tags, int64_t max_bytes,
  int64_t* p_min_bytes, deque< string >* p_hashes, bool include_multiples )
 {
    guard g( g_mutex );
@@ -1236,6 +1302,12 @@ string list_file_tags(
    size_t num_tags = 0;
    int64_t min_bytes = 0;
    int64_t num_bytes = 0;
+
+   string all_excludes( p_excludes ? p_excludes : "" );
+   vector< string > excludes;
+
+   if( !all_excludes.empty( ) )
+      split( all_excludes, excludes );
 
    if( !pat.empty( ) )
    {
@@ -1248,6 +1320,20 @@ string list_file_tags(
       {
          if( wildcard_match( pat, i->first ) )
          {
+            bool is_excluded = false;
+
+            for( size_t j = 0; j < excludes.size( ); j++ )
+            {
+               if( wildcard_match( excludes[ j ], i->first ) )
+               {
+                  is_excluded = true;
+                  break;
+               }
+            }
+
+            if( is_excluded )
+               continue;
+
             // NOTE: Skip matching tags for files that have more than one tag.
             if( !include_multiples )
             {
@@ -2189,7 +2275,7 @@ string relegate_timestamped_files( const string& hash,
       string timestamp_expr( c_timestamp_tag_prefix );
       timestamp_expr += "*";
 
-      string all_tags( list_file_tags( timestamp_expr, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
+      string all_tags( list_file_tags( timestamp_expr, 0, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
 
       if( !all_tags.empty( ) )
       {

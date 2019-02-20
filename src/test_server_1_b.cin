@@ -17,6 +17,9 @@ file_tag 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 test1
 file_raw list test0,test1 testx
 file_info -content testx
 file_tags test*
+file_tags -i=te*0,te*1
+file_tags -i=test* -x=*x
+file_tags -i=test* -x=*0,*x
 file_kill testx
 file_tags test*
 file_tag -remove test0,test1
