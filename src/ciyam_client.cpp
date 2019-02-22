@@ -79,7 +79,11 @@ const size_t c_command_timeout = 60000;
 const size_t c_connect_timeout = 10000;
 const size_t c_greeting_timeout = 10000;
 
+#ifdef _WIN32
 const size_t c_max_length_for_output_env_var = 1000;
+#else
+const size_t c_max_length_for_output_env_var = 100000;
+#endif
 
 const unsigned long c_max_uncompressed_bytes = 1000000;
 
@@ -887,7 +891,12 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
                   if( !is_error && !is_message && response.length( ) <= c_max_length_for_output_env_var )
-                     set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
+                  {
+                     if( response.length( ) <= c_max_length_for_output_env_var )
+                        set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );
+                     else
+                        set_environment_variable( c_env_var_output, "*** reponse exceeded maximum allowed length ***" );
+                  }
 
                   // NOTE: Make sure that progress messages do not end the conversation.
                   if( is_message )

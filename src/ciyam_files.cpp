@@ -563,7 +563,7 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 
 string file_type_info( const string& tag_or_hash,
  file_expansion expansion, int max_depth, int indent,
- bool add_size, const char* p_prefix, bool allow_all_after )
+ bool add_size, const char* p_prefix, bool allow_all_after, bool output_total_blob_size )
 {
    guard g( g_mutex );
 
@@ -789,11 +789,10 @@ string file_type_info( const string& tag_or_hash,
             if( pos != string::npos )
                next_name = next.substr( pos + 1 );
 
-            string item_num( to_comparable_string( i, false, 6 ) ); 
+            string size, item_num( to_comparable_string( i, false, 6 ) ); 
 
-            string size;
             if( output_last_only && depth == indent + 1 )
-               size = " (" + format_bytes( file_bytes( next_hash, true ) ) + ")";
+               size = " (" + format_bytes( file_bytes( next_hash, output_total_blob_size ) ) + ")";
 
             if( expansion == e_file_expansion_content )
             {
@@ -835,10 +834,13 @@ string file_type_info( const string& tag_or_hash,
                   // be equal to or longer in length than the provided prefix then every following
                   // item in the entire branch below this will be output.
                   if( p_prefix && allow_all_after && next_name.length( ) >= strlen( p_prefix ) )
+                  {
                      allow_all = true;
+                     allow_all_after = false;
+                  }
 
-                  string additional( file_type_info( next_hash,
-                   expansion, max_depth, indent + 1, add_size, allow_all ? 0 : p_prefix ) );
+                  string additional( file_type_info( next_hash, expansion, max_depth, indent + 1,
+                   add_size, ( allow_all ? 0 : p_prefix ), allow_all_after, output_total_blob_size ) );
 
                   if( !additional.empty( ) )
                   {

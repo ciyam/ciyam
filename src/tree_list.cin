@@ -1,0 +1,27 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: The script requires the tag name of the "tree of lists" that is to be recursed.
+@else
+;
+TAG=$1
+DEPTH=$2
+PREFIX=$3
+;
+@ifndef $DEPTH
+DEPTH=2
+@endif
+;
+OUTPUT=
+@ifndef $PREFIX
+.file_info -recurse -d=$DEPTH $TAG
+@else
+.file_info -recurse -d=$DEPTH -p=$PREFIX $TAG
+@endif
+;
+#$OUTPUT
+;
+@endif

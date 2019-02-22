@@ -81,7 +81,7 @@ mutex g_mutex;
 
 const size_t c_request_timeout = 500;
 
-const int c_pdf_default_limit = 5000;
+const int c_pdf_default_limit = 10000;
 
 const size_t c_max_key_append_chars = 7;
 
@@ -1603,13 +1603,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             list_file_tags( pat_or_hash, 0, 0, 0, 0, &tags_or_hashes );
 
+         bool allow_all_after = false;
+
+         if( !prefix.empty( ) && prefix[ prefix.length( ) - 1 ] == '*' )
+         {
+            allow_all_after = true;
+            prefix.erase( prefix.length( ) - 1 );
+         }
+
+         bool output_total_blob_size = false;
+
+         if( !prefix.empty( ) && prefix[ 0 ] == '?' )
+         {
+            prefix.erase( 0, 1 );
+            output_total_blob_size = true;
+         }
+
          for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
          {
             if( i > 0 )
                response += '\n';
 
-            response += file_type_info( tags_or_hashes[ i ],
-             expansion, depth_val, 0, true, ( prefix.empty( ) ? 0 : prefix.c_str( ) ) );
+            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val,
+             0, true, ( prefix.empty( ) ? 0 : prefix.c_str( ) ), allow_all_after, output_total_blob_size );
          }
       }
       else if( command == c_cmd_ciyam_session_file_kill )
