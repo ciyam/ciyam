@@ -137,7 +137,9 @@ void validate_list( const string& data, bool* p_rc = 0 )
       string next_list_item( list_items[ i ] );
       string::size_type pos = next_list_item.find( ' ' );
 
-      if( !has_file( next_list_item.substr( 0, pos ) ) )
+      string next_hash( next_list_item.substr( 0, pos ) );
+
+      if( !has_file( next_hash ) && !has_file_been_archived( next_hash ) )
       {
          if( p_rc )
          {
@@ -145,7 +147,7 @@ void validate_list( const string& data, bool* p_rc = 0 )
             return;
          }
          else
-            throw runtime_error( "file '" + next_list_item.substr( 0, pos ) + "' does not exist" );
+            throw runtime_error( "list item file '" + next_list_item.substr( 0, pos ) + "' does not exist" );
       }
    }
 
@@ -596,7 +598,11 @@ string file_type_info( const string& tag_or_hash,
          filename = construct_file_name_from_hash( hash, false, false );
    }
 
+   if( !file_exists( filename ) && indent && has_file_been_archived( hash ) )
+      retrieve_file_from_archive( hash, current_timestamp_tag( ) );
+
    if( !file_exists( filename ) )
+      // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "file '" + tag_or_hash + "' was not found" );
 
    long file_size = 0;
@@ -862,7 +868,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    guard g( g_mutex );
 
    if( data.empty( ) )
-      throw runtime_error( "cannot create a raw file empty data" );
+      throw runtime_error( "cannot create a raw file with empty data" );
 
    bool file_extra_is_core = false;
 
@@ -2409,6 +2415,48 @@ string relegate_timestamped_files( const string& hash,
    return retval;
 }
 
+bool has_file_been_archived( const string& hash )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+   vector< string > paths;
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   string archive;
+   vector< string > archives;
+
+   if( !all_archives.empty( ) )
+   {
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      ods::bulk_read bulk_read( ciyam_ods_instance( ) );
+      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         archive = archives[ i ];
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( archive );
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         if( ods_fs.has_file( hash ) )
+         {
+            retval = true;
+            break;
+         }
+      }
+   }
+
+   return retval;
+}
+
 string retrieve_file_from_archive( const string& hash, const string& tag, size_t days_ahead )
 {
    guard g( g_mutex );
@@ -2454,6 +2502,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
                   string file_data( buffer_file( src_file ) );
 
                   string tag_for_file( tag );
+
                   if( tag_for_file.empty( ) )
                      tag_for_file = current_timestamp_tag( false, days_ahead );
 

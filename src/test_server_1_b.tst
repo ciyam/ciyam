@@ -374,6 +374,34 @@ ts.20170313080001
 
 > file_tags ts.*
 
+> file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ts.20170313080001
+test1
+
+> file_retrieve b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 ts.20170313080002
+test2
+
+> file_raw list ts.20170313080001,ts.20170313080002 tst
+d9a6301b0a1bfe36b3898dd78697616db6207004ddcb5dca903fb5b25f158f0c
+
+> file_relegate -n=2
+a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test1
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1
+
+> file_tags ts*
+tst
+
+> file_info -recurse -d=999 tst
+[list] d9a6301b0a1bfe36b3898dd78697616db6207004ddcb5dca903fb5b25f158f0c (114 B)
+ts.20170313080001
+ [blob] a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 (6.5 kB)
+ts.20170313080002
+ [blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.3 kB)
+
+> file_stats
+[3/10000]12.0 kB/10.0 GB:3 tag(s)
+
+> file_kill -p=ts*
+
 > file_archive -destroy test1
 (destroying file archive)
 

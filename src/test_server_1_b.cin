@@ -101,6 +101,14 @@ file_put ~test.jpg
 file_tags ts.*
 file_kill -p=ts.*
 file_tags ts.*
+file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ts.20170313080001
+file_retrieve b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 ts.20170313080002
+file_raw list ts.20170313080001,ts.20170313080002 tst
+file_relegate -n=2
+file_tags ts*
+file_info -recurse -d=999 tst
+file_stats
+file_kill -p=ts*
 file_archive -destroy test1
 file_archive -destroy test2
 file_archive -destroy test3

@@ -119,6 +119,8 @@ std::string CIYAM_BASE_DECL_SPEC list_file_archives( bool minimal = false,
 std::string CIYAM_BASE_DECL_SPEC relegate_timestamped_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 
+bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash );
+
 std::string CIYAM_BASE_DECL_SPEC retrieve_file_from_archive(
  const std::string& hash, const std::string& tag, size_t days_ahead = 0 );
 
