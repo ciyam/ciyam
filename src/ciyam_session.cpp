@@ -1658,29 +1658,54 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw;
          }
       }
+      else if( command == c_cmd_ciyam_session_file_list )
+      {
+         string add_tags( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_add_tags ) );
+         string del_items( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_del_items ) );
+         bool sort( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_sort ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_tag_or_hash ) );
+         string new_tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_new_tag ) );
+         string old_tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_old_tag ) );
+
+         response = create_from_list( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
+      }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
+         bool extract( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_extract ) );
+         string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_depth ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_tag_or_hash ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat_or_hash ) );
          string includes( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_includes ) );
          string excludes( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_excludes ) );
 
-         if( !pat_or_hash.empty( ) && pat_or_hash.find_first_of( "?*" ) == string::npos )
-            response = get_hash_tags( pat_or_hash );
+         if( extract )
+         {
+            int depth_val = 1;
+            if( !depth.empty( ) )
+               depth_val = atoi( depth.c_str( ) );
+
+            response = extract_tags_from_lists( tag_or_hash, depth_val );
+         }
          else
          {
-            if( includes.empty( ) )
-               response = list_file_tags( pat_or_hash );
+            if( !pat_or_hash.empty( ) && pat_or_hash.find_first_of( "?*" ) == string::npos )
+               response = get_hash_tags( pat_or_hash );
             else
             {
-               vector< string > pats;
-               split( includes, pats );
-
-               for( size_t i = 0; i < pats.size( ); i++ )
+               if( includes.empty( ) )
+                  response = list_file_tags( pat_or_hash );
+               else
                {
-                  if( i > 0 )
-                     response += '\n';
+                  vector< string > pats;
+                  split( includes, pats );
 
-                  response += list_file_tags( pats[ i ], excludes.c_str( ) );
+                  for( size_t i = 0; i < pats.size( ); i++ )
+                  {
+                     if( i > 0 )
+                        response += '\n';
+
+                     response += list_file_tags( pats[ i ], excludes.c_str( ) );
+                  }
                }
             }
          }

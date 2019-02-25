@@ -813,16 +813,28 @@ bool command_parser::impl::do_parse_command( node* p_node, size_t& argnum, bool 
 #ifdef DEBUG
       cout << "*** has matched: " << matched << endl;
 #endif
+      deque< node* > alt_branch_nodes;
+
       bool use_current_node = false;
       if( retval && p_node->p_match_node )
       {
          retval = do_parse_command( p_node->p_match_node, argnum, false, true );
 
-         // NOTE: Special case to handle {branch}|{branch} situations as they contain an empty
-         // right "alt" node that must be skipped in order to get to the other branch.
+         // NOTE: Special case to handle {branch}|{branch} situations where an empty
+         // right "alt" node needs to be skipped in order to get to the other branch.
          if( !retval && p_node->p_next_node && p_node->p_next_node->is_alt
           && p_node->p_next_node->p_match_node && p_node->p_next_node->expression.empty( ) )
          {
+            node* p_tmp_node = p_node->p_next_node->p_next_node;
+
+            // NOTE: There may be several "alt" branches so will
+            // need to remember each for next link checks later.
+            while( p_tmp_node )
+            {
+               alt_branch_nodes.push_back( p_tmp_node );
+               p_tmp_node = p_tmp_node->p_next_node;
+            }
+
             retval = true;
             use_current_node = true;
             p_node = p_node->p_next_node->p_match_node;
@@ -836,19 +848,19 @@ bool command_parser::impl::do_parse_command( node* p_node, size_t& argnum, bool 
 
          while( p_next_node )
          {
-            // NOTE: If didn't just complete a match branch and the next node expression is empty then unless
-            // the current node was matched it is assumed that this is an optional branch that must be skipped.
+            // NOTE: If did not just complete a match branch and the next node expression is empty then unless
+            // the current node was matched it's assumed that this is an optional branch that must be skipped.
             if( !matched && !p_node->p_match_node && p_next_node->expression.empty( ) )
                p_next_node = p_next_node->p_next_node;
 
-            // NOTE: Skip alternatives if the current node was matched or have just processed an optional branch.
+            // NOTE: Skip alternatives if the current node was matched or if just processed an optional branch.
             if( p_next_node && p_next_node->is_alt && ( matched || p_node->expression.empty( ) ) )
                p_next_node = p_next_node->p_next_node;
             else
                break;
          }
 
-         if( p_next_node )
+         while( p_next_node )
          {
 #ifdef DEBUG
             cout << "now checking next link..." << endl;
@@ -859,6 +871,12 @@ bool command_parser::impl::do_parse_command( node* p_node, size_t& argnum, bool 
                retval = true;
                argnum = old_argnum;
             }
+
+            if( retval || alt_branch_nodes.empty( ) )
+               break;
+
+            p_next_node = alt_branch_nodes.front( );
+            alt_branch_nodes.pop_front( );
          }
       }
       else if( !matched )

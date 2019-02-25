@@ -1090,6 +1090,146 @@ string create_raw_file_with_extras( const string& data,
    return retval;
 }
 
+string create_from_list( const string& add_tags, const string& del_items,
+ bool sort_items, const string& tag_or_hash, const string& new_tag, const string& old_tag )
+{
+   string hash( tag_or_hash );
+
+   if( has_tag( tag_or_hash ) )
+      hash = tag_file_hash( tag_or_hash );
+
+   if( !has_file( hash ) )
+      throw runtime_error( "file '" + tag_or_hash + "' not found" );
+
+   bool is_list = false;
+   string data( extract_file( hash, "", '\0', &is_list ) );
+
+   if( !is_list )
+      throw runtime_error( "file '" + tag_or_hash + "' is not a list" );
+
+   vector< string > tags_to_add;
+   vector< string > items_to_add;
+   vector< string > items_to_remove;
+
+   set< string > hashes_to_add;
+
+   if( !add_tags.empty( ) )
+   {
+      split( add_tags, tags_to_add );
+
+      for( size_t i = 0; i < tags_to_add.size( ); i++ )
+      {
+         string next_tag( tags_to_add[ i ] );
+
+         if( !has_tag( next_tag ) )
+            throw runtime_error( "file tag '" + next_tag + "' not found" );
+
+         string next_hash( tag_file_hash( next_tag ) );
+
+         items_to_add.push_back( next_hash + ' ' + next_tag );
+
+         if( hashes_to_add.count( next_hash ) )
+            throw runtime_error( "attempt to add '" + next_tag + "' more than once" );
+
+         hashes_to_add.insert( next_hash );
+      }
+   }
+
+   if( !del_items.empty( ) )
+      split( del_items, items_to_remove );
+
+   vector< string > items;
+
+   if( !data.empty( ) )
+      split( data, items, '\n' );
+
+   vector< string > new_items;
+
+   for( size_t i = 0; i < items.size( ); i++ )
+   {
+      string next( items[ i ] );
+
+      string::size_type pos = next.find( ' ' );
+
+      string next_hash( next.substr( 0, pos ) );
+      string next_name;
+
+      if( pos != string::npos )
+         next_name = next.substr( pos + 1 );
+
+      if( items_to_remove.empty( ) )
+      {
+         if( hashes_to_add.count( next_hash ) )
+            throw runtime_error( "invalid attempt to add existing list item '" + next_hash + "'" );
+
+         new_items.push_back( next );
+      }
+      else
+      {
+         for( size_t j = 0; j < items_to_remove.size( ); j++ )
+         {
+            string next_to_remove( items_to_remove[ j ] );
+
+            if( next_hash == hash )
+               throw runtime_error( "invalid attempt to add self to list" );
+
+            if( hashes_to_add.count( next_hash ) )
+               throw runtime_error( "invalid attempt to add existing list item '" + next_hash + "'" );
+
+            if( next_hash != next_to_remove && next_name != next_to_remove )
+               new_items.push_back( next );
+         }
+      }
+   }
+
+   for( size_t i = 0; i < items_to_add.size( ); i++ )
+      new_items.push_back( items_to_add[ i ] );
+
+   if( new_items.empty( ) )
+      throw runtime_error( "invalid empty list" );
+
+   data = string( c_file_type_str_list );
+
+   map< string, string > sorted_items;
+
+   for( size_t i = 0; i < new_items.size( ); i++ )
+   {
+      if( !sort_items )
+      {
+         if( i > 0 )
+            data += '\n';
+         data += new_items[ i ];
+      }
+      else
+      {
+         string new_item( new_items[ i ] );
+
+         string::size_type pos = new_item.find( ' ' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected missing item name in '" + new_item + "'" );
+
+         sorted_items[ new_item.substr( pos + 1 ) ] = new_item.substr( 0, pos );
+      }
+   }
+
+   if( sort_items )
+   {
+      for( map< string, string >::iterator i = sorted_items.begin( ); i != sorted_items.end( ); ++i )
+      {
+         if( i != sorted_items.begin( ) )
+            data += '\n';
+
+         data += ( i->second + ' ' + i->first );
+      }
+   }
+
+   if( !old_tag.empty( ) )
+      tag_file( old_tag, hash );
+
+   return create_raw_file( data, true, new_tag.c_str( ) );
+}
+
 void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 {
    guard g( g_mutex );
@@ -1294,6 +1434,82 @@ string tag_file_hash( const string& name )
          throw runtime_error( "tag '" + name + "' not found" );
 
       retval = i->second;
+   }
+
+   return retval;
+}
+
+string extract_tags_from_lists( const string& tag_or_hash, int depth, int level )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   string hash( tag_or_hash );
+
+   if( has_tag( tag_or_hash ) )
+      hash = tag_file_hash( tag_or_hash );
+
+   if( !has_file( hash ) )
+      throw runtime_error( "file '" + tag_or_hash + "' not found" );
+
+   if( depth == 0 )
+      throw runtime_error( "depth must not be equal to zero" );
+
+   bool max_depth_only = false;
+
+   int depth_val = depth;
+
+   if( depth_val < 0 )
+   {
+      depth_val *= -1;
+      max_depth_only = true;
+   }
+
+   bool is_list = false;
+   string data( extract_file( hash, "", '\0', &is_list ) );
+
+   if( !is_list && !level )
+      throw runtime_error( "file '" + tag_or_hash + "' is not a list" );
+
+   if( is_list && !data.empty( ) )
+   {
+      vector< string > list_items;
+      split( data, list_items, '\n' );
+
+      for( size_t i = 0; i < list_items.size( ); i++ )
+      {
+         string next_item( list_items[ i ] );
+
+         string::size_type pos = next_item.find( ' ' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected invalid list item format '" + next_item + "'" );
+
+         string next_hash( next_item.substr( 0, pos ) );
+         string next_name( next_item.substr( pos + 1 ) );
+
+         if( !max_depth_only || level + 1 == depth_val )
+         {
+            tag_file( next_name, next_hash );
+
+            if( !retval.empty( ) )
+               retval += '\n';
+            retval += next_name;
+         }
+
+         if( level + 1 < depth_val )
+         {
+            string extra( extract_tags_from_lists( next_hash, depth, level + 1 ) );
+
+            if( !extra.empty( ) )
+            {
+               if( !retval.empty( ) )
+                  retval += '\n';
+               retval += extra;
+            }
+         }
+      }
    }
 
    return retval;
@@ -1910,7 +2126,7 @@ bool temp_file_is_identical( const string& temp_name, const string& hash )
    return files_are_identical( temp_name, filename );
 }
 
-string extract_file( const string& hash, const string& dest_filename, unsigned char check_file_type_and_extra )
+string extract_file( const string& hash, const string& dest_filename, unsigned char check_file_type_and_extra, bool* p_is_list )
 {
    guard g( g_mutex );
 
@@ -1928,6 +2144,9 @@ string extract_file( const string& hash, const string& dest_filename, unsigned c
 
       unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
       unsigned char file_extra = ( data[ 0 ] & c_file_type_val_extra_mask );
+
+      if( p_is_list )
+         *p_is_list = ( file_type == c_file_type_val_list );
 
       bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
