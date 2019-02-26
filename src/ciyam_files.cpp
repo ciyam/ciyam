@@ -451,6 +451,8 @@ void term_files_area( )
 
 string current_timestamp_tag( bool truncated, size_t days_ahead )
 {
+   guard g( g_mutex );
+
    string retval( c_timestamp_tag_prefix );
 
    string dummy_timestamp( get_session_variable( get_special_var_name( e_special_var_dummy_timestamp ) ) );
@@ -469,7 +471,26 @@ string current_timestamp_tag( bool truncated, size_t days_ahead )
       if( truncated )
          retval += dt.as_string( e_time_format_hhmmssth, false );
       else
-         retval += dt.as_string( e_time_format_hhmmsstht, false ) + "00000000";
+      {
+         bool okay = false;
+
+         // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
+         for( int i = 0; i < 1000; i++ )
+         {
+            string next( dt.as_string( e_time_format_hhmmsstht, false ) + to_comparable_string( i, false, 8 ) );
+
+            if( !has_tag( retval + next ) )
+            {
+               okay = true;
+               retval += next;
+
+               break;
+            }
+         }
+
+         if( !okay )
+            throw runtime_error( "unable to create a unique current timestamp tag" );
+      }
    }
 
    return retval;

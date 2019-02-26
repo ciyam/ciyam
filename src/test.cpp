@@ -475,8 +475,10 @@ void perform_test_step( const test_step& s, const string& test_name )
          throw runtime_error( "unexpected system failure" );
    }
 
+   // NOTE: Wait for half a second to give
+   // async programs some time to start up.
    if( is_async )
-      msleep( 300 );
+      msleep( 500 );
 
    if( !test_output_file_name.empty( ) )
    {
@@ -948,4 +950,3 @@ int main( int argc, char* argv[ ] )
       return 1;
    }
 }
-
