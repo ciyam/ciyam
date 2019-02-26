@@ -119,4 +119,19 @@ file_archives
 ~rmdir test2
 #~rmdir test3
 ~rmdir test3
+file_put test1.jpg test1.jpg
+file_put test2.jpg test2.jpg
+file_raw list test1.jpg,test2.jpg test.1
+file_info -content test.1
+file_put test.jpg test.jpg
+file_list -a=test.jpg test.1 test.2
+file_info -content test.1
+file_info -content test.2
+file_list -sort test.2 test.3
+file_info -content test.1
+file_info -content test.2
+file_info -content test.3
+file_kill -recurse test.3
+file_tag -unlink test.1,test.2
+file_tags
 .quit

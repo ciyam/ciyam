@@ -60,8 +60,8 @@ const int c_num_digest_characters = c_sha256_digest_size * 2;
 
 const int c_depth_to_omit_blob_content = 999;
 
-const char* const c_timestamp_tag_prefix = "ts.";
 const char* const c_important_file_suffix = "!";
+const char* const c_time_stamp_tag_prefix = "ts.";
 
 const char* const c_file_archive_path = "path";
 const char* const c_file_archive_size_avail = "size_avail";
@@ -449,11 +449,11 @@ void term_files_area( )
    // FUTURE: Implementation to be added.
 }
 
-string current_timestamp_tag( bool truncated, size_t days_ahead )
+string current_time_stamp_tag( bool truncated, size_t days_ahead )
 {
    guard g( g_mutex );
 
-   string retval( c_timestamp_tag_prefix );
+   string retval( c_time_stamp_tag_prefix );
 
    string dummy_timestamp( get_session_variable( get_special_var_name( e_special_var_dummy_timestamp ) ) );
 
@@ -620,7 +620,7 @@ string file_type_info( const string& tag_or_hash,
    }
 
    if( !file_exists( filename ) && indent && has_file_been_archived( hash ) )
-      retrieve_file_from_archive( hash, current_timestamp_tag( ) );
+      retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
 
    if( !file_exists( filename ) )
       // FUTURE: This message should be handled as a server string message.
@@ -1007,7 +1007,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
     && tag_name != string( c_important_file_suffix ) )
       tag_file( tag_name, hash );
    else if( !was_existing && !file_extra_is_core )
-      tag_file( current_timestamp_tag( ) + tag_name, hash );
+      tag_file( current_time_stamp_tag( ) + tag_name, hash );
 
    return hash;
 }
@@ -1287,7 +1287,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
          if( unlink && !g_hash_tags.count( hash ) )
             delete_file( hash );
          else if( auto_tag_with_time && !g_hash_tags.count( hash ) )
-            tag_file( current_timestamp_tag( ), hash );
+            tag_file( current_time_stamp_tag( ), hash );
       }
    }
    else
@@ -1358,11 +1358,21 @@ void tag_file( const string& name, const string& hash )
          // NOTE: If a question mark as found at the end then the tag will become
          // instead a "current time stamp" tag.
          if( tag_name.length( ) && tag_name[ tag_name.length( ) - 1 ] == '?' )
-            tag_name = current_timestamp_tag( );
+            tag_name = current_time_stamp_tag( );
       }
 
       if( !tag_name.empty( ) )
       {
+         string all_tags( get_hash_tags( hash ) );
+
+         string ts_tag_to_remove;
+         vector< string > tags;
+
+         // NOTE: If the file has just a time stamp tag then this will be removed.
+         split( all_tags, tags, '\n' );
+         if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
+            ts_tag_to_remove = tags[ 0 ];
+
          string tag_filename( c_files_directory );
 
          tag_filename += "/" + tag_name;
@@ -1379,6 +1389,9 @@ void tag_file( const string& name, const string& hash )
 
          g_hash_tags.insert( make_pair( hash, tag_name ) );
          g_tag_hashes.insert( make_pair( tag_name, hash ) );
+
+         if( !ts_tag_to_remove.empty( ) )
+            tag_del( ts_tag_to_remove, false, false );
       }
    }
 }
@@ -1460,7 +1473,7 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string extract_tags_from_lists( const string& tag_or_hash, int depth, int level )
+string extract_tags_from_lists( const string& tag_or_hash, const string& prefix, int depth, int level )
 {
    guard g( g_mutex );
 
@@ -1510,6 +1523,13 @@ string extract_tags_from_lists( const string& tag_or_hash, int depth, int level 
          string next_hash( next_item.substr( 0, pos ) );
          string next_name( next_item.substr( pos + 1 ) );
 
+         string check_prefix( prefix );
+         if( check_prefix.length( ) > next_name.size( ) )
+            check_prefix.erase( next_name.size( ) );
+
+         if( !prefix.empty( ) && next_name.find( check_prefix ) != 0 )
+            continue;
+
          if( !max_depth_only || level + 1 == depth_val )
          {
             tag_file( next_name, next_hash );
@@ -1521,7 +1541,7 @@ string extract_tags_from_lists( const string& tag_or_hash, int depth, int level 
 
          if( level + 1 < depth_val )
          {
-            string extra( extract_tags_from_lists( next_hash, depth, level + 1 ) );
+            string extra( extract_tags_from_lists( next_hash, prefix, depth, level + 1 ) );
 
             if( !extra.empty( ) )
             {
@@ -1974,7 +1994,7 @@ void store_file( const string& hash, tcp_socket& socket,
          if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
          {
             // NOTE: First attempt to relegate an existing file in order to make room.
-            relegate_timestamped_files( "", "", 1, 0, true );
+            relegate_time_stamped_files( "", "", 1, 0, true );
 
             if( g_total_files >= get_files_area_item_max_num( ) )
                throw runtime_error( "maximum file area item limit has been reached" );
@@ -2046,7 +2066,7 @@ void store_file( const string& hash, tcp_socket& socket,
        && tag_name != string( c_important_file_suffix ) )
          tag_file( tag_name, hash );
       else if( !existing && !file_extra_is_core )
-         tag_file( current_timestamp_tag( ) + tag_name, hash );
+         tag_file( current_time_stamp_tag( ) + tag_name, hash );
    }
 }
 
@@ -2503,7 +2523,7 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-string relegate_timestamped_files( const string& hash,
+string relegate_time_stamped_files( const string& hash,
  const string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always )
 {
    guard g( g_mutex );
@@ -2520,7 +2540,7 @@ string relegate_timestamped_files( const string& hash,
       file_hashes.push_back( hash );
    else
    {
-      string timestamp_expr( c_timestamp_tag_prefix );
+      string timestamp_expr( c_time_stamp_tag_prefix );
       timestamp_expr += "*";
 
       string all_tags( list_file_tags( timestamp_expr, 0, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
@@ -2744,7 +2764,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
                   string tag_for_file( tag );
 
                   if( tag_for_file.empty( ) )
-                     tag_for_file = current_timestamp_tag( false, days_ahead );
+                     tag_for_file = current_time_stamp_tag( false, days_ahead );
 
                   create_raw_file( file_data, false, tag_for_file.c_str( ), 0, hash.c_str( ) );
 

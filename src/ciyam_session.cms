@@ -9,7 +9,7 @@ file_hash "get the hash for one or more tagged files in the files area" <val//pa
 file_info "get information for one or more files in the files area" [<opt/-content/content>|{<opt/-recurse/recurse>[<val/-d=1/depth>][<val/-p=/prefix>]}]<val//pat_or_hash>
 file_kill "remove one or more files from the files area" [<opt/-q/quiet>]<val/-p=/pat>|{[<opt/-recurse/recurse>]<val//tag_or_hash>}
 file_list "add or remove items to/from a list file in the files area" [<list/-a=/add_tags>][<list/-d=/del_items>][<opt/-sort/sort>]<val//tag_or_hash>[<val//new_tag>[<val//old_tag>]]
-file_tags "extract tags from a list tree or list files area tags for either multiple wildcard patterns or for a single wildcard pattern or file hash" [{<opt/-extract/extract>[<val/-d=1/depth>]<val//tag_or_hash>}|{<list/-i=/includes>[<list/-x=/excludes>]}|<val//pat_or_hash>]
+file_tags "extract tags from a list tree or list files area tags for either multiple wildcard patterns or for a single wildcard pattern or file hash" [{<opt/-extract/extract>[<val/-d=1/depth>][<val/-p=/prefix>]<val//tag_or_hash>}|{<list/-i=/includes>[<list/-x=/excludes>]}|<val//pat_or_hash>]
 file_crypt "encrypt/decrypt one or more files in the files area" [<opt/-recurse/recurse>]<val//tag_or_hash>[<val/-k=/pubkey>]<val//password>
 file_stats "get files area stats"
 file_resync "resync files area info"

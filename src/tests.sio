@@ -1067,7 +1067,7 @@
      <kill>~webdir_test
      <test_step/>
       <name>a
-      <exec>test_parser /test
+      <exec>test_parser -test
       <input>false
       <output>generate
      </test_step>
@@ -1079,7 +1079,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>test_parser /quiet < ~webdir_test
+      <exec>test_parser -quiet < ~webdir_test
       <input>false
       <output>generate
      </test_step>

@@ -37,7 +37,7 @@ void CIYAM_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untag
 
 void CIYAM_BASE_DECL_SPEC term_files_area( );
 
-std::string CIYAM_BASE_DECL_SPEC current_timestamp_tag( bool truncated = false, size_t days_ahead = 0 );
+std::string CIYAM_BASE_DECL_SPEC current_time_stamp_tag( bool truncated = false, size_t days_ahead = 0 );
 
 bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name );
 
@@ -73,7 +73,8 @@ std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC tag_file_hash( const std::string& name );
 
-std::string CIYAM_BASE_DECL_SPEC extract_tags_from_lists( const std::string& tag_or_hash, int depth = 1, int level = 0 );
+std::string CIYAM_BASE_DECL_SPEC extract_tags_from_lists(
+ const std::string& tag_or_hash, const std::string& prefix, int depth = 1, int level = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC list_file_tags( const std::string& pat, const char* p_excludes = 0, size_t max_tags = 0,
  int64_t max_bytes = 0, int64_t* p_min_bytes = 0, std::deque< std::string >* p_hashes = 0, bool include_multiples = true );
@@ -121,7 +122,7 @@ bool CIYAM_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );
 std::string CIYAM_BASE_DECL_SPEC list_file_archives( bool minimal = false,
  std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
 
-std::string CIYAM_BASE_DECL_SPEC relegate_timestamped_files( const std::string& hash,
+std::string CIYAM_BASE_DECL_SPEC relegate_time_stamped_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 
 bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash );

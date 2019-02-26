@@ -3336,9 +3336,9 @@ void verify_checkpoint_prune( const string& content, vector< pair< string, strin
       split( all_checkpoint_transactions, checkpoint_transactions, '\n' );
 
       // NOTE: All of the relevant checkpoint files will be re-tagged using the
-      // a special current timestamp tag so that they will be later archived or
+      // special "current time stamp" tag so that they can be later archived or
       // removed (to ensure each tag is unique a counter is being appended).
-      string replace_with_timestamp_tag( "*" + current_timestamp_tag( true ) );
+      string replace_with_timestamp_tag( "*" + current_time_stamp_tag( true ) );
 
       int timestamp_counter = 0;
 

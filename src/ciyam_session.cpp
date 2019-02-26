@@ -1673,6 +1673,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool extract( has_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_extract ) );
          string depth( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_depth ) );
+         string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_prefix ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_tag_or_hash ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_pat_or_hash ) );
          string includes( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_tags_includes ) );
@@ -1684,7 +1685,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !depth.empty( ) )
                depth_val = atoi( depth.c_str( ) );
 
-            response = extract_tags_from_lists( tag_or_hash, depth_val );
+            response = extract_tags_from_lists( tag_or_hash, prefix, depth_val );
          }
          else
          {
@@ -1804,7 +1805,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !size_limit.empty( ) )
                size = unformat_bytes( size_limit );
 
-            response = relegate_timestamped_files( hash, archive, num, size );
+            response = relegate_time_stamped_files( hash, archive, num, size );
          }
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )

@@ -702,6 +702,16 @@ command_tests[ ] =
    { "<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{<opt/e>}", "a b c d", false },
    { "<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{<opt/e>}", "b c d e", false },
    { "<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{<opt/e>}", "a b c d e", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-a", true },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-b", true },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-c", true },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-d", true },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-a -b", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-b -c", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-c -d", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-a -a", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-b -b", false },
+   { "{<opt/-a/a>}|{<opt/-b/b>}|{<opt/-c/c>}|<val//d>", "-c -c", false },
    { "<pat/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\\\\\.[A-Za-z]{2,4}$/>", "a@b", false },
    { "<pat/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\\\\\.[A-Za-z]{2,4}$/>", "a@b.", false },
    { "<pat/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\\\\\.[A-Za-z]{2,4}$/>", "a@b.c", false },
@@ -990,13 +1000,13 @@ int main( int argc, char* argv[ ] )
 
    try
    {
-      if( argc > 1 && string( argv[ 1 ] ) == "/quiet" )
+      if( argc > 1 && string( argv[ 1 ] ) == "-quiet" )
       {
          --argc;
          is_quiet = true;
       }
 
-      if( argc > 1 && string( argv[ 1 ] ) == "/test" )
+      if( argc > 1 && string( argv[ 1 ] ) == "-test" )
       {
          cout << "performing tests...\n\n";
 
@@ -1169,7 +1179,7 @@ int main( int argc, char* argv[ ] )
          }
       }
       else
-         cout << "usage: test_parser [/test]" << endl;
+         cout << "usage: test_parser [-test|-quiet]" << endl;
    }
    catch( exception& x )
    {
@@ -1180,4 +1190,3 @@ int main( int argc, char* argv[ ] )
       cerr << "error: unexpected exception caught" << endl;
    }
 }
-

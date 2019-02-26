@@ -422,4 +422,58 @@ ts.20170313080002
 > ~rmdir test3
 
 > 
+> file_put test1.jpg test1.jpg
+
+> file_put test2.jpg test2.jpg
+
+> file_raw list test1.jpg,test2.jpg test.1
+048bf68a8b49e8679a54154986a9a98bcced3687dbda5ce565531b39b5c21b33
+
+> file_info -content test.1
+[list] 048bf68a8b49e8679a54154986a9a98bcced3687dbda5ce565531b39b5c21b33 (116 B)
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+
+> file_put test.jpg test.jpg
+
+> file_list -a=test.jpg test.1 test.2
+326c9c4eb765fbebe5ecc274e25089319a0eee03c4dae4047dc84e18da46347a
+
+> file_info -content test.1
+[list] 048bf68a8b49e8679a54154986a9a98bcced3687dbda5ce565531b39b5c21b33 (116 B)
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+
+> file_info -content test.2
+[list] 326c9c4eb765fbebe5ecc274e25089319a0eee03c4dae4047dc84e18da46347a (153 B)
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test.jpg
+
+> file_list -sort test.2 test.3
+e1d98de36694951cd4c6d12e94787f99487065ab5ab68a159450102c7a3995ce
+
+> file_info -content test.1
+[list] 048bf68a8b49e8679a54154986a9a98bcced3687dbda5ce565531b39b5c21b33 (116 B)
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+
+> file_info -content test.2
+[list] 326c9c4eb765fbebe5ecc274e25089319a0eee03c4dae4047dc84e18da46347a (153 B)
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test.jpg
+
+> file_info -content test.3
+[list] e1d98de36694951cd4c6d12e94787f99487065ab5ab68a159450102c7a3995ce (153 B)
+a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test.jpg
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
+
+> file_kill -recurse test.3
+
+> file_tag -unlink test.1,test.2
+
+> file_tags
+
 > 
