@@ -1953,9 +1953,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool use_sha512( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_sha512 ) );
          bool hex_decode( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_hex_decode ) );
-         string data( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_data ) );
+         bool data_from_file( has_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_data_from_file ) );
+         string data_or_filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_crypto_hash_data_or_filename ) );
 
-         response = crypto_digest( data, use_sha512, hex_decode );
+         string data( data_or_filename );
+
+         if( data_from_file )
+            data = load_file( data, true );
+
+         if( data_from_file && data.empty( ) )
+            response = "(file not found)";
+         else
+            response = crypto_digest( data, use_sha512, hex_decode );
       }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {

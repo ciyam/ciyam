@@ -1115,24 +1115,36 @@ string create_from_list( const string& add_tags, const string& del_items,
  bool sort_items, const string& tag_or_hash, const string& new_tag, const string& old_tag )
 {
    string hash( tag_or_hash );
+   string data;
 
-   if( has_tag( tag_or_hash ) )
-      hash = tag_file_hash( tag_or_hash );
+   bool is_new_list = false;
 
-   if( !has_file( hash ) )
-      throw runtime_error( "file '" + tag_or_hash + "' not found" );
+   if( new_tag == "!" )
+      is_new_list = true;
+   else
+   {
 
-   bool is_list = false;
-   string data( extract_file( hash, "", '\0', &is_list ) );
+      if( has_tag( tag_or_hash ) )
+         hash = tag_file_hash( tag_or_hash );
 
-   if( !is_list )
-      throw runtime_error( "file '" + tag_or_hash + "' is not a list" );
+      if( !has_file( hash ) )
+         throw runtime_error( "file '" + tag_or_hash + "' not found" );
+
+      bool is_list = false;
+      data = extract_file( hash, "", '\0', &is_list );
+
+      if( !is_list )
+         throw runtime_error( "file '" + tag_or_hash + "' is not a list" );
+   }
 
    vector< string > tags_to_add;
    vector< string > items_to_add;
    vector< string > items_to_remove;
 
    set< string > hashes_to_add;
+
+   if( !del_items.empty( ) )
+      split( del_items, items_to_remove );
 
    if( !add_tags.empty( ) )
    {
@@ -1142,12 +1154,25 @@ string create_from_list( const string& add_tags, const string& del_items,
       {
          string next_tag( tags_to_add[ i ] );
 
+         // NOTE: An added item can take its name from a corresponding delete item by
+         // prefixing the tag name with a '?' character.
+         string old_tag;
+         if( !next_tag.empty( ) && next_tag[ 0 ] == '?' )
+         {
+            if( i >= items_to_remove.size( ) )
+               throw runtime_error( "invalid ? prefixed tag (not enough delete items" );
+
+            old_tag = items_to_remove[ i ];
+
+            next_tag.erase( 0, 1 );
+         }
+
          if( !has_tag( next_tag ) )
             throw runtime_error( "file tag '" + next_tag + "' not found" );
 
          string next_hash( tag_file_hash( next_tag ) );
 
-         items_to_add.push_back( next_hash + ' ' + next_tag );
+         items_to_add.push_back( next_hash + ' ' + ( old_tag.empty( ) ? next_tag : old_tag ) );
 
          if( hashes_to_add.count( next_hash ) )
             throw runtime_error( "attempt to add '" + next_tag + "' more than once" );
@@ -1155,9 +1180,6 @@ string create_from_list( const string& add_tags, const string& del_items,
          hashes_to_add.insert( next_hash );
       }
    }
-
-   if( !del_items.empty( ) )
-      split( del_items, items_to_remove );
 
    vector< string > items;
 
@@ -1193,9 +1215,6 @@ string create_from_list( const string& add_tags, const string& del_items,
 
             if( next_hash == hash )
                throw runtime_error( "invalid attempt to add self to list" );
-
-            if( hashes_to_add.count( next_hash ) )
-               throw runtime_error( "invalid attempt to add existing list item '" + next_hash + "'" );
 
             if( next_hash != next_to_remove && next_name != next_to_remove )
                new_items.push_back( next );
@@ -1248,7 +1267,7 @@ string create_from_list( const string& add_tags, const string& del_items,
    if( !old_tag.empty( ) )
       tag_file( old_tag, hash );
 
-   return create_raw_file( data, true, new_tag.c_str( ) );
+   return create_raw_file( data, true, is_new_list ? tag_or_hash.c_str( ) : new_tag.c_str( ) );
 }
 
 void tag_del( const string& name, bool unlink, bool auto_tag_with_time )

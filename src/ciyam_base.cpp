@@ -5728,6 +5728,15 @@ void set_session_variable( const string& name,
             }
             else if( val[ 0 ] == '~' )
                split( val.substr( 1 ), gtp_session->set_items, '\n' );
+            else if( val == "size" )
+            {
+               val = to_string( gtp_session->set_items.size( ) );
+
+               gtp_session->last_set_item = val;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
             else
             {
                if( gtp_session->set_items.count( val ) )
@@ -5991,6 +6000,15 @@ void set_session_variable( const string& name,
                   val.erase( );
                else
                   val = gtp_session->deque_items.back( );
+
+               gtp_session->last_deque_item = val;
+
+               if( p_set_special_temporary )
+                  *p_set_special_temporary = true;
+            }
+            else if( val == "size" )
+            {
+               val = to_string( gtp_session->deque_items.size( ) );
 
                gtp_session->last_deque_item = val;
 

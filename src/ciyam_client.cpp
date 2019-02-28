@@ -365,7 +365,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                if( !file_exists( put_source_file ) )
                {
-                  cerr << "Error: File '" << put_source_file << "' not found." << endl;
+                  string error_msg( "File '" + put_source_file + "' not found." );
+
+                  cerr << c_error_output_prefix << error_msg << endl;
+
+                  // NOTE: Will only set the error environment variable if hasn't already been set.
+                  if( get_environment_variable( c_env_var_error ).empty( ) )
+                     set_environment_variable( c_env_var_error, error_msg.c_str( ) );
+
+                  chunk_size = 0;
+
                   return string( );
                }
 
@@ -887,7 +896,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      handle_command_response( final_response, is_error );
 
                   // NOTE: Will only set the error environment variable if hasn't already been set.
-                  if( is_error && getenv( c_env_var_error ) == 0 )
+                  if( is_error && get_environment_variable( c_env_var_error ).empty( ) )
                      set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
                   if( !is_error && !is_message && response.length( ) <= c_max_length_for_output_env_var )
