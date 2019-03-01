@@ -6027,6 +6027,48 @@ void set_session_variable( const string& name,
                if( p_set_special_temporary )
                   *p_set_special_temporary = true;
             }
+            else if( pos != string::npos && val.substr( 0, pos ) == "remove" )
+            {
+               string search( val.substr( pos + 1 ) );
+
+               if( !gtp_session->deque_items.empty( ) )
+               {
+                  deque< string > new_deque_items;
+                  size_t num_items = gtp_session->deque_items.size( );
+
+                  for( size_t i = 0; i < num_items; i++ )
+                  {
+                     string next_item ( gtp_session->deque_items[ i ] );
+                     string::size_type pos = next_item.find( search );
+
+                     if( pos == string::npos )
+                        new_deque_items.push_back( next_item );
+                  }
+
+                  gtp_session->deque_items = new_deque_items;
+               }
+            }
+            else if( pos != string::npos && val.substr( 0, pos ) == "retain" )
+            {
+               string search( val.substr( pos + 1 ) );
+
+               if( !gtp_session->deque_items.empty( ) )
+               {
+                  deque< string > new_deque_items;
+                  size_t num_items = gtp_session->deque_items.size( );
+
+                  for( size_t i = 0; i < num_items; i++ )
+                  {
+                     string next_item ( gtp_session->deque_items[ i ] );
+                     string::size_type pos = next_item.find( search );
+
+                     if( pos != string::npos )
+                        new_deque_items.push_back( next_item );
+                  }
+
+                  gtp_session->deque_items = new_deque_items;
+               }
+            }
             else if( val == "reverse" )
             {
                if( !gtp_session->deque_items.empty( ) )
@@ -6042,9 +6084,9 @@ void set_session_variable( const string& name,
                if( !gtp_session->deque_items.empty( ) )
                   gtp_session->deque_items.pop_front( );
             }
-            else if( val.substr( 0, pos ) == "push_back" )
+            else if( pos != string::npos && val.substr( 0, pos ) == "push_back" )
                gtp_session->deque_items.push_back( val.substr( pos + 1 ) );
-            else if( val.substr( 0, pos ) == "push_front" )
+            else if( pos != string::npos && val.substr( 0, pos ) == "push_front" )
                gtp_session->deque_items.push_front( val.substr( pos + 1 ) );
          }
       }

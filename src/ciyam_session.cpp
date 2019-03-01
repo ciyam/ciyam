@@ -1475,7 +1475,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( is_list )
          {
             string::size_type pos = data.find( '\n' );
-            if( pos == string::npos )
+
+            if( pos == string::npos && data.find( ',' ) != string::npos )
             {
                string list_data;
 

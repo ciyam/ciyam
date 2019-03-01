@@ -805,6 +805,8 @@ string file_type_info( const string& tag_or_hash,
             }
          }
 
+         bool matched_any = false;
+
          for( size_t i = 0; i < list_items.size( ); i++ )
          {
             string next( list_items[ i ] );
@@ -844,8 +846,12 @@ string file_type_info( const string& tag_or_hash,
             }
             else
             {
+
                if( !p_prefix || string( p_prefix ).find( next_name ) == 0 )
                {
+                  if( p_prefix )
+                     matched_any = true;
+
                   if( ( !output_last_only || depth == indent + 1 )
                    && ( !next_name.empty( ) && expansion != e_file_expansion_recursive_hashes ) )
                   {
@@ -876,8 +882,16 @@ string file_type_info( const string& tag_or_hash,
                      retval += additional;
                   }
                }
+
             }
          }
+
+         // NOTE: Special case omits the header for the initial
+         // list if there were zero matching items found within.
+         if( p_prefix
+          && ( expansion != e_file_expansion_recursive_hashes )
+          && !matched_any && output_last_only && depth == indent + 1 )
+            retval.erase( );
       }
    }
 
