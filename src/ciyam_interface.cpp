@@ -1690,7 +1690,7 @@ void request_handler::process_request( )
                   path += "/" + session_id;
 
                   bool rc;
-                  create_dir( path, &rc );
+                  create_dir( path, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;

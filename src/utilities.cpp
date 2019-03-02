@@ -619,7 +619,7 @@ void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, co
       if( pos != string::npos )
          name = source.substr( pos + 1 );
       else
-         throw runtime_error( "cannot create a link in same directory with the same name" );
+         throw runtime_error( "cannot create a link in same directory with the same name '" + name + "'" );
    }
 #ifdef _WIN32
    // NOTE: Under Win32 create a "hard link" as "symbolic links" are only supported post Vista.
@@ -646,7 +646,8 @@ void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, co
       source = get_cwd( ) + "/" + source;
 
    if( symlink( source.c_str( ), name.c_str( ) ) != 0 )
-      throw runtime_error( "failed to create link (errno = " + to_string( errno ) + ")" );
+      throw runtime_error( "failed to create link '"
+       + name + "' to '" + source + "' (errno = " + to_string( errno ) + ")" );
 #endif
 }
 
