@@ -77,6 +77,7 @@ const int32_t c_version = 1;
 const char* const c_field_id_Active = "100102";
 const char* const c_field_id_Description = "100104";
 const char* const c_field_id_Email = "100105";
+const char* const c_field_id_New_Password = "100109";
 const char* const c_field_id_Password = "100103";
 const char* const c_field_id_Password_Hash = "100108";
 const char* const c_field_id_Permissions = "100106";
@@ -87,6 +88,7 @@ const char* const c_field_id_Workgroup = "300100";
 const char* const c_field_name_Active = "Active";
 const char* const c_field_name_Description = "Description";
 const char* const c_field_name_Email = "Email";
+const char* const c_field_name_New_Password = "New_Password";
 const char* const c_field_name_Password = "Password";
 const char* const c_field_name_Password_Hash = "Password_Hash";
 const char* const c_field_name_Permissions = "Permissions";
@@ -97,6 +99,7 @@ const char* const c_field_name_Workgroup = "Workgroup";
 const char* const c_field_display_name_Active = "field_user_active";
 const char* const c_field_display_name_Description = "field_user_description";
 const char* const c_field_display_name_Email = "field_user_email";
+const char* const c_field_display_name_New_Password = "field_user_new_password";
 const char* const c_field_display_name_Password = "field_user_password";
 const char* const c_field_display_name_Password_Hash = "field_user_password_hash";
 const char* const c_field_display_name_Permissions = "field_user_permissions";
@@ -104,7 +107,7 @@ const char* const c_field_display_name_User_Hash = "field_user_user_hash";
 const char* const c_field_display_name_User_Id = "field_user_user_id";
 const char* const c_field_display_name_Workgroup = "field_user_workgroup";
 
-const int c_num_fields = 9;
+const int c_num_fields = 10;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -116,6 +119,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "100106",
    "100107",
    "100108",
+   "100109",
    "300100"
 };
 
@@ -124,6 +128,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Active",
    "Description",
    "Email",
+   "New_Password",
    "Password",
    "Password_Hash",
    "Permissions",
@@ -140,15 +145,17 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_encrypted_fields = 1;
+const int c_num_encrypted_fields = 2;
 
 const char* const c_encrypted_sorted_field_ids[ ] =
 {
-   "100103"
+   "100103",
+   "100109"
 };
 
 const char* const c_encrypted_sorted_field_names[ ] =
 {
+   "New_Password",
    "Password"
 };
 
@@ -160,15 +167,17 @@ inline bool is_encrypted_field( const string& field )
     c_encrypted_sorted_field_names + c_num_encrypted_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 1;
+const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
-   "100108"
+   "100108",
+   "100109"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
+   "New_Password",
    "Password_Hash"
 };
 
@@ -181,6 +190,7 @@ inline bool is_transient_field( const string& field )
 }
 
 domain_string_max_size< 100 > g_Description_domain;
+domain_string_max_size< 200 > g_New_Password_domain;
 domain_string_max_size< 200 > g_Password_domain;
 domain_string_max_size< 30 > g_User_Id_domain;
 
@@ -230,6 +240,7 @@ inline validation_error_value_type
 bool g_default_Active = bool( 1 );
 string g_default_Description = string( );
 string g_default_Email = string( );
+string g_default_New_Password = string( );
 string g_default_Password = string( );
 string g_default_Password_Hash = string( );
 string g_default_Permissions = string( );
@@ -336,6 +347,12 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
          string_getter< string >( cmd_handler.p_Meta_User->Email( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_New_Password || field_name == c_field_name_New_Password )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_User->New_Password( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
       {
          handled = true;
@@ -403,6 +420,13 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
          handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Email, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_New_Password || field_name == c_field_name_New_Password )
+      {
+         handled = true;
+         func_string_setter< Meta_User, string >(
+          *cmd_handler.p_Meta_User, &Meta_User::New_Password, field_value );
       }
 
       if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
@@ -495,6 +519,9 @@ struct Meta_User::impl : public Meta_User_command_handler
 
    const string& impl_Email( ) const { return lazy_fetch( p_obj ), v_Email; }
    void impl_Email( const string& Email ) { sanity_check( Email ); v_Email = Email; }
+
+   const string& impl_New_Password( ) const { return lazy_fetch( p_obj ), v_New_Password; }
+   void impl_New_Password( const string& New_Password ) { sanity_check( New_Password ); v_New_Password = New_Password; }
 
    const string& impl_Password( ) const { return lazy_fetch( p_obj ), v_Password; }
    void impl_Password( const string& Password ) { sanity_check( Password ); v_Password = Password; }
@@ -604,6 +631,7 @@ struct Meta_User::impl : public Meta_User_command_handler
    bool v_Active;
    string v_Description;
    string v_Email;
+   string v_New_Password;
    string v_Password;
    string v_Password_Hash;
    string v_Permissions;
@@ -633,26 +661,30 @@ string Meta_User::impl::get_field_value( int field ) const
       break;
 
       case 3:
-      retval = to_string( impl_Password( ) );
+      retval = to_string( impl_New_Password( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Password_Hash( ) );
+      retval = to_string( impl_Password( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Permissions( ) );
+      retval = to_string( impl_Password_Hash( ) );
       break;
 
       case 6:
-      retval = to_string( impl_User_Hash( ) );
+      retval = to_string( impl_Permissions( ) );
       break;
 
       case 7:
-      retval = to_string( impl_User_Id( ) );
+      retval = to_string( impl_User_Hash( ) );
       break;
 
       case 8:
+      retval = to_string( impl_User_Id( ) );
+      break;
+
+      case 9:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -680,26 +712,30 @@ void Meta_User::impl::set_field_value( int field, const string& value )
       break;
 
       case 3:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Password, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_New_Password, value );
       break;
 
       case 4:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Password_Hash, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Password, value );
       break;
 
       case 5:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Permissions, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Password_Hash, value );
       break;
 
       case 6:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_User_Hash, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_Permissions, value );
       break;
 
       case 7:
-      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_User_Id, value );
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_User_Hash, value );
       break;
 
       case 8:
+      func_string_setter< Meta_User::impl, string >( *this, &Meta_User::impl::impl_User_Id, value );
+      break;
+
+      case 9:
       func_string_setter< Meta_User::impl, Meta_Workgroup >( *this, &Meta_User::impl::impl_Workgroup, value );
       break;
 
@@ -725,26 +761,30 @@ void Meta_User::impl::set_field_default( int field )
       break;
 
       case 3:
-      impl_Password( g_default_Password );
+      impl_New_Password( g_default_New_Password );
       break;
 
       case 4:
-      impl_Password_Hash( g_default_Password_Hash );
+      impl_Password( g_default_Password );
       break;
 
       case 5:
-      impl_Permissions( g_default_Permissions );
+      impl_Password_Hash( g_default_Password_Hash );
       break;
 
       case 6:
-      impl_User_Hash( g_default_User_Hash );
+      impl_Permissions( g_default_Permissions );
       break;
 
       case 7:
-      impl_User_Id( g_default_User_Id );
+      impl_User_Hash( g_default_User_Hash );
       break;
 
       case 8:
+      impl_User_Id( g_default_User_Id );
+      break;
+
+      case 9:
       impl_Workgroup( g_default_Workgroup );
       break;
 
@@ -772,26 +812,30 @@ bool Meta_User::impl::is_field_default( int field ) const
       break;
 
       case 3:
-      retval = ( v_Password == g_default_Password );
+      retval = ( v_New_Password == g_default_New_Password );
       break;
 
       case 4:
-      retval = ( v_Password_Hash == g_default_Password_Hash );
+      retval = ( v_Password == g_default_Password );
       break;
 
       case 5:
-      retval = ( v_Permissions == g_default_Permissions );
+      retval = ( v_Password_Hash == g_default_Password_Hash );
       break;
 
       case 6:
-      retval = ( v_User_Hash == g_default_User_Hash );
+      retval = ( v_Permissions == g_default_Permissions );
       break;
 
       case 7:
-      retval = ( v_User_Id == g_default_User_Id );
+      retval = ( v_User_Hash == g_default_User_Hash );
       break;
 
       case 8:
+      retval = ( v_User_Id == g_default_User_Id );
+      break;
+
+      case 9:
       retval = ( v_Workgroup == g_default_Workgroup );
       break;
 
@@ -882,6 +926,7 @@ void Meta_User::impl::clear( )
    v_Active = g_default_Active;
    v_Description = g_default_Description;
    v_Email = g_default_Email;
+   v_New_Password = g_default_New_Password;
    v_Password = g_default_Password;
    v_Password_Hash = g_default_Password_Hash;
    v_Permissions = g_default_Permissions;
@@ -937,6 +982,13 @@ void Meta_User::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
 
+   if( !is_null( v_New_Password )
+    && ( v_New_Password != g_default_New_Password
+    || !value_will_be_provided( c_field_name_New_Password ) )
+    && !g_New_Password_domain.is_valid( v_New_Password, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_New_Password,
+       get_module_string( c_field_display_name_New_Password ) + " " + error_message ) );
+
    if( !is_null( v_Password )
     && ( v_Password != g_default_Password
     || !value_will_be_provided( c_field_name_Password ) )
@@ -971,6 +1023,12 @@ void Meta_User::impl::validate_set_fields(
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
+
+   if( !is_null( v_New_Password )
+    && ( fields_set.count( c_field_id_New_Password ) || fields_set.count( c_field_name_New_Password ) )
+    && !g_New_Password_domain.is_valid( v_New_Password, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_New_Password,
+       get_module_string( c_field_display_name_New_Password ) + " " + error_message ) );
 
    if( !is_null( v_Password )
     && ( fields_set.count( c_field_id_Password ) || fields_set.count( c_field_name_Password ) )
@@ -1058,6 +1116,9 @@ void Meta_User::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
+   if( !is_null( get_obj( ).New_Password( ) ) )
+      get_obj( ).Password( get_obj( ).New_Password( ) );
+
    get_obj( ).Password_Hash( decrypt( get_obj( ).Password( ) ) );
    get_obj( ).User_Hash( hash_sha256( get_obj( ).User_Id( ) + get_obj( ).Password_Hash( ) ) );
    // [<finish for_store>]
@@ -1198,6 +1259,16 @@ const string& Meta_User::Email( ) const
 void Meta_User::Email( const string& Email )
 {
    p_impl->impl_Email( Email );
+}
+
+const string& Meta_User::New_Password( ) const
+{
+   return p_impl->impl_New_Password( );
+}
+
+void Meta_User::New_Password( const string& New_Password )
+{
+   p_impl->impl_New_Password( New_Password );
 }
 
 const string& Meta_User::Password( ) const
@@ -1466,6 +1537,16 @@ const char* Meta_User::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_New_Password )
+   {
+      p_id = c_field_id_New_Password;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Password )
    {
       p_id = c_field_id_Password;
@@ -1560,6 +1641,16 @@ const char* Meta_User::get_field_name(
    else if( id == c_field_id_Email )
    {
       p_name = c_field_name_Email;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_New_Password )
+   {
+      p_name = c_field_name_New_Password;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1676,6 +1767,11 @@ string Meta_User::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Email );
       get_module_string( c_field_display_name_Email, &next );
    }
+   else if( id_or_name == c_field_id_New_Password || id_or_name == c_field_name_New_Password )
+   {
+      name = string( c_field_display_name_New_Password );
+      get_module_string( c_field_display_name_New_Password, &next );
+   }
    else if( id_or_name == c_field_id_Password || id_or_name == c_field_name_Password )
    {
       name = string( c_field_display_name_Password );
@@ -1727,6 +1823,8 @@ string Meta_User::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Description );
    else if( id_or_name == c_field_id_Email || id_or_name == c_field_name_Email )
       display_name = get_module_string( c_field_display_name_Email );
+   else if( id_or_name == c_field_id_New_Password || id_or_name == c_field_name_New_Password )
+      display_name = get_module_string( c_field_display_name_New_Password );
    else if( id_or_name == c_field_id_Password || id_or_name == c_field_name_Password )
       display_name = get_module_string( c_field_display_name_Password );
    else if( id_or_name == c_field_id_Password_Hash || id_or_name == c_field_name_Password_Hash )
@@ -2055,6 +2153,7 @@ void Meta_User::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "100102", "Active", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "100104", "Description", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100105", "Email", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "100109", "New_Password", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100103", "Password", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100108", "Password_Hash", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "100106", "Permissions", "string", false, "", "" ) );
@@ -2107,26 +2206,30 @@ const char* Meta_User::static_get_field_id( field_id id )
       break;
 
       case 4:
-      p_id = "100103";
+      p_id = "100109";
       break;
 
       case 5:
-      p_id = "100108";
+      p_id = "100103";
       break;
 
       case 6:
-      p_id = "100106";
+      p_id = "100108";
       break;
 
       case 7:
-      p_id = "100107";
+      p_id = "100106";
       break;
 
       case 8:
-      p_id = "100101";
+      p_id = "100107";
       break;
 
       case 9:
+      p_id = "100101";
+      break;
+
+      case 10:
       p_id = "300100";
       break;
    }
@@ -2156,26 +2259,30 @@ const char* Meta_User::static_get_field_name( field_id id )
       break;
 
       case 4:
-      p_id = "Password";
+      p_id = "New_Password";
       break;
 
       case 5:
-      p_id = "Password_Hash";
+      p_id = "Password";
       break;
 
       case 6:
-      p_id = "Permissions";
+      p_id = "Password_Hash";
       break;
 
       case 7:
-      p_id = "User_Hash";
+      p_id = "Permissions";
       break;
 
       case 8:
-      p_id = "User_Id";
+      p_id = "User_Hash";
       break;
 
       case 9:
+      p_id = "User_Id";
+      break;
+
+      case 10:
       p_id = "Workgroup";
       break;
    }
@@ -2198,18 +2305,20 @@ int Meta_User::static_get_field_num( const string& field )
       rc += 2;
    else if( field == c_field_id_Email || field == c_field_name_Email )
       rc += 3;
-   else if( field == c_field_id_Password || field == c_field_name_Password )
+   else if( field == c_field_id_New_Password || field == c_field_name_New_Password )
       rc += 4;
-   else if( field == c_field_id_Password_Hash || field == c_field_name_Password_Hash )
+   else if( field == c_field_id_Password || field == c_field_name_Password )
       rc += 5;
-   else if( field == c_field_id_Permissions || field == c_field_name_Permissions )
+   else if( field == c_field_id_Password_Hash || field == c_field_name_Password_Hash )
       rc += 6;
-   else if( field == c_field_id_User_Hash || field == c_field_name_User_Hash )
+   else if( field == c_field_id_Permissions || field == c_field_name_Permissions )
       rc += 7;
-   else if( field == c_field_id_User_Id || field == c_field_name_User_Id )
+   else if( field == c_field_id_User_Hash || field == c_field_name_User_Hash )
       rc += 8;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_User_Id || field == c_field_name_User_Id )
       rc += 9;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 10;
 
    return rc - 1;
 }

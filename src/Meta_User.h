@@ -33,12 +33,13 @@ class META_USER_DECL_SPEC Meta_User : public class_base
       e_field_id_Active = 1,
       e_field_id_Description = 2,
       e_field_id_Email = 3,
-      e_field_id_Password = 4,
-      e_field_id_Password_Hash = 5,
-      e_field_id_Permissions = 6,
-      e_field_id_User_Hash = 7,
-      e_field_id_User_Id = 8,
-      e_field_id_Workgroup = 9
+      e_field_id_New_Password = 4,
+      e_field_id_Password = 5,
+      e_field_id_Password_Hash = 6,
+      e_field_id_Permissions = 7,
+      e_field_id_User_Hash = 8,
+      e_field_id_User_Id = 9,
+      e_field_id_Workgroup = 10
    };
 
    Meta_User( );
@@ -52,6 +53,9 @@ class META_USER_DECL_SPEC Meta_User : public class_base
 
    const std::string& Email( ) const;
    void Email( const std::string& Email );
+
+   const std::string& New_Password( ) const;
+   void New_Password( const std::string& New_Password );
 
    const std::string& Password( ) const;
    void Password( const std::string& Password );

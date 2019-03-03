@@ -7734,8 +7734,16 @@
      <name>field_user_password
      <field>100103
      <ftype>string
-     <extra>hpassword+encrypted+max_size=200
+     <extra>new_only+hpassword+encrypted+max_size=200
      <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_user_new_password
+     <field>100109
+     <ftype>string
+     <extra>non_new+admin_only+hpassword+encrypted+max_size=200
+     <mandatory>false
      <modifiers>
     </field>
     <field/>

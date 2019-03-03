@@ -25699,6 +25699,24 @@
       </specifications>
      </field>
      <field/>
+      <id>100109
+      <name>New_Password
+      <type>1025
+      <mandatory>false
+      <transient>true
+      <extra>hpassword+encrypted
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601020
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>100103
       <name>Password
       <type>1025
@@ -37921,7 +37939,8 @@
      <class_id>100100
      <field_info>100101
      <field_info>100102
-     <field_info>100103
+     <field_info>100103;new_only
+     <field_info>100109;non_new+admin_only
      <field_info>100104
      <field_info>100105
      <field_info>300100:101101;max_size=100

@@ -121,6 +121,7 @@ field_add -id=100105 User Email string opt -x=mailto
 field_add -id=100106 User Permissions string opt
 field_add -id=100107 User User_Hash string opt
 field_add -id=100108 User Password_Hash string opt -transient
+field_add -id=100109 User New_Password str200 opt -transient -x=hpassword+encrypted
 index_add -id=100201 User User_Hash unique
 index_add -id=100202 User User_Id unique
 index_add -id=100203 User Active,User_Id unique
@@ -2026,7 +2027,7 @@ specification_add -id=600897 {Package_Option}_Hide_Procedure modifier_field_valu
 specification_add -id=600999 user_info user_info "User User_Id Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
 specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
-specification_add -id=601020 {User}_view view "? admin User User_Id,Active,Password,Description,Email,{Workgroup}:Name"
+specification_add -id=601020 {User}_view view "? admin User User_Id,Active,Password;new_only,New_Password;non_new+admin_only,Description,Email,{Workgroup}:Name"
 specification_add -id=601100 {Workgroup}_list list "* admin Workgroup Name,Id"
 specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no_edit+non_new\
 ,Next_Type_Id;no_edit+non_new,Next_Enum_Id;no_edit+non_new,Next_Model_Id;no_edit+non_new,Next_Permission_Id;no_edit+non_new"
