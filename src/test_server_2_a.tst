@@ -48,6 +48,7 @@
 100102 Active bool normal
 100104 Description string normal
 100105 Email string normal
+100109 New_Password string normal
 100103 Password string normal
 100108 Password_Hash string normal
 100106 Permissions string normal
