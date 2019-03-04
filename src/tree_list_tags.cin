@@ -1,0 +1,70 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script needs a tree tag and optionally a branch type and branch expression.
+@else
+TTAG=$1
+TYPE=$2
+EXPR=$3
+;
+@ifndef $TYPE
+PREFIX=X
+@else
+@ifndef $EXPR
+PREFIX=X*:.$2
+@else
+PREFIX=X*:.$2:.$EXPR
+@endif
+@endif
+;
+TTYPE=T.
+DEPTH=2
+PREFIX=@substr:1:$PREFIX
+;
+@ifndef $PREFIX
+PREFIX=:$TTYPE**
+@else
+PREFIX=$TTYPE:$PREFIX
+.session_variable @deque ""
+LINES=@repstr:\:/\n:$PREFIX
+.session_variable @deque "~$LINES"
+.session_variable @deque size
+DEPTH=$OUTPUT
+@endif
+;
+OUTPUT=
+.file_info -recurse -d=-$DEPTH -p=$PREFIX $TTAG
+;
+@ifdef $OUTPUT
+.session_variable @deque ""
+.session_variable @deque "~$OUTPUT"
+@:LOOP
+@label NEXT
+;
+.session_variable @deque pop_front
+OUTPUT=
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+LINES=@repstr: /\n:$OUTPUT
+FULL_TAG=%LINES:3%
+PARTS=@repstr:./\n:$FULL_TAG
+NAME=%PARTS:2%
+#$NAME
+;
+@ifneq "$DEPTH" "2"
+.session_variable @deque pop_front
+@endif
+!!@:LOOP
+@:END_LOOP
+;
+@endif
+@endif

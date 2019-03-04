@@ -60,6 +60,8 @@ const int c_num_digest_characters = c_sha256_digest_size * 2;
 
 const int c_depth_to_omit_blob_content = 999;
 
+const char c_prefix_wildcard_separator = ':';
+
 const char* const c_important_file_suffix = "!";
 const char* const c_time_stamp_tag_prefix = "ts.";
 
@@ -629,6 +631,44 @@ string file_type_info( const string& tag_or_hash,
    long file_size = 0;
    long max_to_buffer = 0;
 
+   string prefix;
+   if( p_prefix )
+      prefix = string( p_prefix );
+
+   bool is_wildcard_prefix = false;
+
+   string::size_type pos = prefix.find( c_prefix_wildcard_separator );
+
+   // NOTE: If the prefix contains a ':' then if it's the first character it
+   // will remove it and treat the remaining as a wildcard prefix but if not
+   // the first character it instead handles the supplied as being an indent
+   // level separator for splitting up a wildcard expression into parts that
+   // are recombined only to the current indent depth. Thus for 'T.:*:.X:.Y'
+   // at indent level zero it would match 'T.' and at level one it would now
+   // match 'T.*' while at level two 'T.*.X' and for level three 'T.*.X.Y'.
+   if( pos != string::npos )
+   {
+      is_wildcard_prefix = true;
+
+      if( pos == 0 )
+         prefix.erase( 0, 1 );
+      else
+      {
+         vector< string > parts;
+         split( prefix, parts, c_prefix_wildcard_separator );
+
+         prefix.erase( );
+
+         for( size_t i = 0; i < parts.size( ); i++ )
+         {
+            prefix += parts[ i ];
+
+            if( i >= indent )
+               break;
+         }
+      }
+   }
+
    string increment_special( get_special_var_name( e_special_var_increment ) );
    string buffered_var_name( get_special_var_name( e_special_var_file_info_buffered ) );
 
@@ -846,8 +886,9 @@ string file_type_info( const string& tag_or_hash,
             }
             else
             {
-
-               if( !p_prefix || string( p_prefix ).find( next_name ) == 0 )
+               if( prefix.empty( )
+                || ( !is_wildcard_prefix && prefix.find( next_name ) == 0 )
+                || ( is_wildcard_prefix && wildcard_match( prefix, next_name ) ) )
                {
                   if( p_prefix )
                      matched_any = true;

@@ -3,25 +3,24 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-.session_variable num_def_args 0
+NUM_ARGS=0
 @ifdef $1
-.session_variable num_def_args @increment
+NUM_ARGS=@$NUM_ARGS+1
 @endif
 @ifdef $2
-.session_variable num_def_args @increment
+NUM_ARGS=@$NUM_ARGS+1
 @endif
 @ifdef $3
-.session_variable num_def_args @increment
+NUM_ARGS=@$NUM_ARGS+1
 @endif
 @ifdef $4
-.session_variable num_def_args @increment
+NUM_ARGS=@$NUM_ARGS+1
 @endif
 @ifdef $5
-.session_variable num_def_args @increment
+NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
-.session_variable num_def_args
-@ifneq "$OUTPUT" "5"
+@ifneq "$NUM_ARGS" "5"
 #NOTE: This script needs tree tag, branch type, branch below type, file and base path.
 @else
 ;

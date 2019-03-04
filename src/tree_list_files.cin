@@ -1,0 +1,89 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#NOTE: This script needs a tree tag and branch type with an optional branch expression.
+@else
+;
+TTAG=$1
+TYPE=$2
+EXPR=X$3
+;
+DEPTH=2
+WANT_SIZE=
+PREFIX=$TYPE.
+;
+EXPR=@substr:1:$EXPR
+@ifdef $EXPR
+FIRST=@substr:0,1:$EXPR
+@ifeq "$FIRST" "?"
+WANT_SIZE=1
+PREFIX=$FIRST$PREFIX
+EXPR=@substr:1:$EXPR
+@endif
+;
+@ifdef $EXPR
+PARTS=@repstr:\:/\n:$EXPR
+.session_variable @deque ""
+.session_variable @deque "~$PARTS"
+;
+@:LOOP
+@label NEXT
+OUTPUT=
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+@ifneq "$OUTPUT" "*"
+PREFIX=$PREFIX$OUTPUT
+@endif
+DEPTH=@$DEPTH+1
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+.file_info -recurse -d=-$DEPTH -p=$PREFIX* $TTAG
+.session_variable @deque "~$OUTPUT"
+.session_variable @deque pop_front
+@:LOOP
+@label NEXT
+OUTPUT=
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+LINES=@repstr: /\n:$OUTPUT
+NAME=%LINES:3%
+SIZE=%LINES:4%
+EXTRA=%LINES:5%
+@ifdef $EXTRA
+SIZE=$SIZE $EXTRA
+@endif
+@ifndef $WANT_SIZE
+#$NAME
+@else
+#$NAME $SIZE
+@endif
+.session_variable @deque pop_front
+!!@:LOOP
+@:END_LOOP
+;
+@endif
+@endif
+@endif
