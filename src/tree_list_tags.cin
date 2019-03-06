@@ -14,9 +14,9 @@ EXPR=$3
 PREFIX=X
 @else
 @ifndef $EXPR
-PREFIX=X*:.$2
+PREFIX=X*:.$TYPE
 @else
-PREFIX=X*:.$2:.$EXPR
+PREFIX=X*:.$TYPE:.$EXPR
 @endif
 @endif
 ;
@@ -35,17 +35,16 @@ LINES=@repstr:\:/\n:$PREFIX
 DEPTH=$OUTPUT
 @endif
 ;
-OUTPUT=
 .file_info -recurse -d=-$DEPTH -p=$PREFIX $TTAG
+LINES=$OUTPUT
 ;
-@ifdef $OUTPUT
+@ifdef $LINES
 .session_variable @deque ""
-.session_variable @deque "~$OUTPUT"
+.session_variable @deque "~$LINES"
 @:LOOP
 @label NEXT
 ;
 .session_variable @deque pop_front
-OUTPUT=
 .session_variable @deque front
 @ifndef $OUTPUT
 @label END_LOOP

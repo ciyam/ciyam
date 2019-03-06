@@ -1480,8 +1480,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                string list_data;
 
+               if( !data.empty( ) && data[ 0 ] == ',' )
+                  data.erase( 0, 1 );
+
                vector< string > items;
-               split( data, items );
+
+               if( !data.empty( ) )
+                  split( data, items );
+               else
+                  throw runtime_error( "unexpected empty tag list for raw file" );
 
                for( size_t i = 0; i < items.size( ); i++ )
                {

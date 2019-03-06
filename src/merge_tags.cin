@@ -21,7 +21,6 @@ REPLACED=@repstr:,/*:$PREFIX
 LINES=@repstr:,/\n:$PREFIX
 PREFIX=
 @else
-OUTPUT=
 .file_tags $PREFIX*
 LINES=$OUTPUT
 @endif
@@ -31,7 +30,7 @@ LINES=$OUTPUT
 TAGS=@repstr:\n/,:$LINES
 ;
 @ifneq "$PREFIX" "$TAGS"
-.file_raw list $TAGS $NEW_TAG
+.file_raw list ,$TAGS $NEW_TAG
 .file_tag -remove $TAGS
 .file_info -content $NEW_TAG
 #$OUTPUT

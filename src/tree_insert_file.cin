@@ -38,7 +38,6 @@ LINES=@repstr:./\n:$TYPE.$TREE
 .file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TREE.$FILE
 @ifndef $ERROR
 ;
-OUTPUT=
 .file_tags -i=$TTAG
 ;
 @ifndef $OUTPUT
@@ -52,7 +51,6 @@ LAST=$TYPE.$TREE
 @:LOOP
 @label NEXT
 .session_variable @deque pop_back
-OUTPUT=
 .session_variable @deque
 @ifndef $OUTPUT
 @label END_LOOP
@@ -78,11 +76,9 @@ LAST=$NEXT
 ;
 ; NOTE: Insert a new file (or replace file content) into an existing tree.
 ;
-OUTPUT=
 .session_variable @deque size
 .session_variable depth $OUTPUT
 .session_variable depth @increment
-OUTPUT=
 .session_variable depth
 DEPTH=$OUTPUT
 .file_info -recurse -d=-$DEPTH -p=$TYPE.$TREE* $TTAG
@@ -101,7 +97,6 @@ LAST=$TYPE.$TREE
 @:LOOP
 @label NEXT
 .session_variable @deque pop_back
-OUTPUT=
 .session_variable @deque
 @ifndef $OUTPUT
 @label END_LOOP
@@ -114,11 +109,9 @@ NEXT=@repstr:\n/.:$OUTPUT
 NEXT=$TYPE.
 @endif
 .session_variable depth @decrement
-OUTPUT=
 .session_variable depth
 DEPTH=$OUTPUT
 ;
-OUTPUT=
 .file_info -recurse -d=-$DEPTH -p=$NEXT* $TTAG
 @ifndef $OUTPUT
 .file_hash $LAST

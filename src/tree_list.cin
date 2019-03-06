@@ -15,7 +15,6 @@ PREFIX=$3
 DEPTH=2
 @endif
 ;
-OUTPUT=
 @ifndef $PREFIX
 .file_info -recurse -d=$DEPTH $TAG
 @else

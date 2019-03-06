@@ -21,7 +21,6 @@ FOUND=0
 LAST_NUM=0
 ;
 @:LOOP
-OUTPUT=
 .session_variable test
 @ifndef $OUTPUT
 @label DONE
@@ -29,7 +28,6 @@ OUTPUT=
 @skip
 ;
 NUM=@$NUM+1
-OUTPUT=
 ;
 LAST_NUM=@$START_NUM+$SEARCH_RANGE
 LAST_NUM=@$LAST_NUM-1

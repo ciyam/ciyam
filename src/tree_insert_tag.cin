@@ -32,7 +32,6 @@ TNAME=$5
 ;
 TTYPE=T
 ;
-OUTPUT=
 .file_tags -i=$TTAG
 @ifndef $OUTPUT
 #Error: Tree '$TTAG' does not exist.
@@ -48,7 +47,6 @@ DEPTH=$OUTPUT
 .file_info -recurse -d=-$DEPTH -p=$TYPE.$TREE* $TTAG
 .session_variable @deque "~$OUTPUT"
 .session_variable @deque "retain $FNAME ("
-OUTPUT=
 .session_variable @deque
 @ifdef $OUTPUT
 LINES=@repstr: /\n:$OUTPUT
@@ -66,7 +64,6 @@ DEPTH=$OUTPUT
 NEXT=@repstr:\n/.:$OUTPUT
 .file_tag $HASH $NEXT.$FNAME
 ;
-OUTPUT=
 .file_info -recurse -d=-$DEPTH -p=$NEXT* $TTAG
 @ifndef $OUTPUT
 .file_raw list "$HASH $NEXT.$FNAME" $NEXT
@@ -82,7 +79,6 @@ LAST=$NEXT
 @:LOOP
 @label NEXT
 .session_variable @deque pop_back
-OUTPUT=
 .session_variable @deque
 @ifndef $OUTPUT
 @label END_LOOP
@@ -101,7 +97,6 @@ NEXT=$NEXT.
 .session_variable depth
 DEPTH=$OUTPUT
 ;
-OUTPUT=
 .file_info -recurse -d=-$DEPTH -p=$NEXT* $TTAG
 @ifndef $OUTPUT
 .file_hash $LAST

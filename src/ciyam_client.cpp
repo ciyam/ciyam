@@ -727,6 +727,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
             string response;
 
+            bool is_first = true;
             bool had_not_found = false;
             bool is_in_progress = false;
 
@@ -749,6 +750,12 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   else
                      throw runtime_error( "server has terminated this connection" );
                }
+
+               // NOTE: If the reponse has no output then clear the OUTPUT environment variable.
+               if( is_first && response == string( c_response_okay ) )
+                  set_environment_variable( c_env_var_output, "" );
+
+               is_first = false;
 
                if( was_chk || was_pip || was_get_or_put )
                {

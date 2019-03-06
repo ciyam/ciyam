@@ -44,7 +44,6 @@ SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
 .session_variable @deque @set
 .session_variable @set ""
 ;
-OUTPUT=
 .session_variable @deque front
 NEXT_PATH=$OUTPUT
 ;
@@ -69,7 +68,6 @@ FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH
 @:FILE_LOOP
 @label NEXT_FILE
 ;
-OUTPUT=
 .session_variable @deque front
 NEXT_FILE=$OUTPUT
 ;

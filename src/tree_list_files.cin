@@ -20,14 +20,14 @@ TYPE=$2
 EXPR=X$3
 ;
 DEPTH=2
-WANT_SIZE=
+WANT_INFO=
 PREFIX=$TYPE.
 ;
 EXPR=@substr:1:$EXPR
 @ifdef $EXPR
 FIRST=@substr:0,1:$EXPR
 @ifeq "$FIRST" "?"
-WANT_SIZE=1
+WANT_INFO=1
 PREFIX=$FIRST$PREFIX
 EXPR=@substr:1:$EXPR
 @endif
@@ -39,7 +39,6 @@ PARTS=@repstr:\:/\n:$EXPR
 ;
 @:LOOP
 @label NEXT
-OUTPUT=
 .session_variable @deque front
 @ifndef $OUTPUT
 @label END_LOOP
@@ -57,10 +56,8 @@ DEPTH=@$DEPTH+1
 ;
 .file_info -recurse -d=-$DEPTH -p=$PREFIX* $TTAG
 .session_variable @deque "~$OUTPUT"
-.session_variable @deque pop_front
 @:LOOP
 @label NEXT
-OUTPUT=
 .session_variable @deque front
 @ifndef $OUTPUT
 @label END_LOOP
@@ -69,16 +66,21 @@ OUTPUT=
 ;
 @:NEXT
 LINES=@repstr: /\n:$OUTPUT
+INFO=%LINES:1%
+@ifneq "$INFO" "[list]"
+HASH=%LINES:2%
 NAME=%LINES:3%
 SIZE=%LINES:4%
+; NOTE: The size is expected to include a space so is split across two lines.
 EXTRA=%LINES:5%
 @ifdef $EXTRA
 SIZE=$SIZE $EXTRA
 @endif
-@ifndef $WANT_SIZE
+@ifndef $WANT_INFO
 #$NAME
 @else
-#$NAME $SIZE
+#$NAME $HASH $SIZE
+@endif
 @endif
 .session_variable @deque pop_front
 !!@:LOOP
