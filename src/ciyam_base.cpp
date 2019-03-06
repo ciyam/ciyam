@@ -4612,7 +4612,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          if( !outf )
             throw runtime_error( "unable to open '" + args_file + "' for output" );
 
-         outf << "<" << arguments << endl;
+         outf << "<<" << arguments << endl;
 
          outf.flush( );
          if( !outf.good( ) )

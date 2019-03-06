@@ -31,7 +31,7 @@
  <script/>
   <name>import_files
   <filename>*script*
-  <arguments>import_files.cin @path
+  <arguments>import_files.cin @path @tag_prefix @sub_directory
  </script>
  <script/>
   <name>add_blacklist

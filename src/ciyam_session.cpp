@@ -5485,9 +5485,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_runscript )
       {
          string script_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_runscript_script_name ) );
+         string arg_val_pairs( get_parm_val( parameters, c_cmd_parm_ciyam_session_runscript_arg_val_pairs ) );
 
          if( script_name.find_first_of( "?*" ) == string::npos )
+         {
+            if( !arg_val_pairs.empty( ) )
+            {
+               vector< string > pairs;
+
+               split( arg_val_pairs, pairs );
+
+               for( size_t i = 0; i < pairs.size( ); i++ )
+               {
+                  string next( pairs[ i ] );
+                  string::size_type pos = next.find( '=' );
+                  if( pos == string::npos )
+                     throw runtime_error( "invalid arg and value pair format '" + next + "'" );
+
+                  set_session_variable( next.substr( 0, pos ), next.substr( pos + 1 ) );
+               }
+            }
+
             run_script( script_name );
+         }
          else
          {
             ostringstream osstr;

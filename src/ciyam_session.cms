@@ -114,7 +114,7 @@ smtpinfo "retrieves the sendmail sender address"
 starttls "start TLS session"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 externals "display a list of known external services"
-runscript "run an external script or program" <val//script_name>
+runscript "run an external script or program" <val//script_name>[<list//arg_val_pairs>]
 timezones "display a list of known timezones"
 utc_now "get the current UTC time"
 utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>
