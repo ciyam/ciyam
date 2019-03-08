@@ -137,6 +137,7 @@ const char* const c_attribute_user_unique = "user_unique";
 const char* const c_attribute_embed_images = "embed_images";
 const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
+const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_storage_name = "storage_name";
 const char* const c_attribute_user_tz_name = "user_tz_name";
 const char* const c_attribute_module_prefix = "module_prefix";
@@ -463,6 +464,8 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       string encrypt_data = reader.read_opt_attribute( c_attribute_encrypt_data );
       if( !encrypt_data.empty( ) )
          info.encrypt_data = ( encrypt_data == c_true );
+
+      info.rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
 
       string checkbox_bools = reader.read_opt_attribute( c_attribute_checkbox_bools );
       if( !checkbox_bools.empty( ) )

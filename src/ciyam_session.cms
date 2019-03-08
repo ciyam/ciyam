@@ -77,6 +77,7 @@ session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_t
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_variable "get/set a session variable" <val//name_or_expr>[<oval//new_value>]
+session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
 storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_term "unlink from the currently linked storage"
@@ -111,7 +112,7 @@ passtotp "retrieve a TOTP password" <val//secret>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
 smtpinfo "retrieves the sendmail sender address"
-starttls "start TLS session"
+starttls|tls "start TLS session"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 externals "display a list of known external services"
 runscript "run an external script or program" <val//script_name>[<list//arg_val_pairs>]

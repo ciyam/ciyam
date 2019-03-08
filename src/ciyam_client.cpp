@@ -58,6 +58,8 @@ namespace
 const char* const c_app_title = "ciyam_client";
 const char* const c_app_version = "0.1";
 
+const char* const c_cmd_tls = "tls";
+
 const char* const c_cmd_exec = "exec";
 const char* const c_cmd_parm_exec_command = "command";
 const char* const c_cmd_parm_exec_arguments = "arguments";
@@ -65,9 +67,13 @@ const char* const c_cmd_parm_exec_arguments = "arguments";
 const char* const c_cmd_args_file = "args_file";
 const char* const c_cmd_parm_args_file_name = "name";
 
+const char* const c_cmd_rpc_unlock = "rpc_unlock";
+const char* const c_cmd_parm_rpc_unlock_password = "password";
+
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
+const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 
 const char* const c_list_file_ext = ".list";
 
@@ -113,8 +119,11 @@ int g_pid = get_pid( );
 
 bool g_had_error = false;
 
+bool g_use_tls = false;
+
 string g_exec_cmd;
 string g_args_file;
+string g_rpc_password;
 
 class ciyam_console_startup_functor : public command_functor
 {
@@ -126,7 +135,9 @@ class ciyam_console_startup_functor : public command_functor
 
    void operator ( )( const string& command, const parameter_info& parameters )
    {
-      if( command == c_cmd_exec )
+      if( command == c_cmd_tls )
+         g_use_tls = true;
+      else if( command == c_cmd_exec )
       {
          g_exec_cmd = get_parm_val( parameters, c_cmd_parm_exec_command );
 
@@ -137,6 +148,8 @@ class ciyam_console_startup_functor : public command_functor
       }
       else if( command == c_cmd_args_file )
          g_args_file = get_parm_val( parameters, c_cmd_parm_args_file_name );
+      else if( command == c_cmd_rpc_unlock )
+         g_rpc_password = get_parm_val( parameters, c_cmd_parm_rpc_unlock_password );
    }
 };
 
@@ -480,7 +493,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          socket.write_line( str );
 
 #ifdef SSL_SUPPORT
-         if( str == "starttls" && !socket.is_secure( ) )
+         if( ( str == "tls" || str == "starttls" ) && !socket.is_secure( ) )
             socket.ssl_connect( );
 #endif
          if( str == "bye" || str == "quit" )
@@ -995,11 +1008,17 @@ int main( int argc, char* argv[ ] )
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
+         cmd_handler.add_command( c_cmd_tls, 1,
+          "", "start TLS after connecting", new ciyam_console_startup_functor( cmd_handler ) );
+
          cmd_handler.add_command( c_cmd_exec, 1,
           "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_args_file, 1,
           "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_rpc_unlock, 1,
+          "<val//password>", "RPC access unlock password", new ciyam_console_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
       }
@@ -1072,6 +1091,20 @@ int main( int argc, char* argv[ ] )
             }
 
             console_command_processor processor( cmd_handler );
+
+            if( g_use_tls )
+               processor.execute_command( ".tls" );
+
+            if( g_rpc_password.empty( ) )
+               g_rpc_password = get_environment_variable( c_env_var_rpc_password );
+            if( !g_rpc_password.empty( ) )
+            {
+               if( g_rpc_password == "?" )
+                  g_rpc_password = get_password( "RPC Password: " );
+
+               processor.execute_command( ".session_rpc_unlock \"" + g_rpc_password + "\"" );
+               clear_key( g_rpc_password );
+            }
 
             if( !g_args_file.empty( ) )
                processor.execute_command( ".session_variable @args_file \"" + g_args_file + "\"" );

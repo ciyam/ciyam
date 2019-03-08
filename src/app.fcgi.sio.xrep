@@ -22,6 +22,7 @@
  <image_height>`{`$image_height`}
  <embed_images>`{`$embed_images`}
  <encrypt_data>`{`$encrypt_data`}
+ <rpc_password>`{`$rpc_password`}
  <checkbox_bools>`{`$checkbox_bools`}
  <filesize_limit>`{`$filesize_limit`}
  <storage_name>`{`$storage_name`}

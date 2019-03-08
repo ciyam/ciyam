@@ -106,6 +106,21 @@ inline std::string lower( const std::string& s )
 #     pragma option pop
 #  endif
 
+inline void clear_key( std::string& key )
+{
+   // NOTE: Overwrite each byte of a key to protect from potential swap file discovery.
+   for( std::string::size_type i = 0; i < key.length( ); i++ )
+      key[ i ] = '\0';
+}
+
+struct scoped_clear_key
+{
+   inline scoped_clear_key( std::string& key ) : key( key ) { }
+   inline ~scoped_clear_key( ) { clear_key( key ); }
+
+   std::string& key;
+};
+
 inline double round( double x, int n )
 {
    double p = std::pow( 10.0, n );

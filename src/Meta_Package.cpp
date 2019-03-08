@@ -1108,6 +1108,13 @@ void Meta_Package::impl::impl_Install( )
       string type_name( get_obj( ).Package_Type( ).Name( ) );
       string keys_filename( type_name + ".keys.lst" );
 
+      string standard_client_args( "-quiet -no_prompt" );
+
+      string rpc_password( get_rpc_password( ) );
+
+      if( !rpc_password.empty( ) )
+         standard_client_args += " -rpc_unlock=" + rpc_password;
+
       bool async = true;
 
       if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
@@ -1280,9 +1287,9 @@ void Meta_Package::impl::impl_Install( )
             throw runtime_error( "unable to open '" + script_filename + "' for output" );
 #ifdef _WIN32
          outs << "@echo off\n";
-         outs << "ciyam_client -quiet -no_prompt -no_stderr < ";
+         outs << "ciyam_client " << standard_client_args << " -no_stderr < ";
 #else
-         outs << "./ciyam_client -quiet -no_prompt -no_stderr < ";
+         outs << "./ciyam_client " << standard_client_args << " -no_stderr < ";
 #endif
          outs << commands_filename << " >>" << install_log << "\n";
          outs << "echo Finished Install..." << ">>" << install_log << "\n"; // FUTURE: Should be a module string...
@@ -1464,6 +1471,13 @@ void Meta_Package::impl::impl_Remove( )
       if( !skip )
          get_obj( ).op_update( );
 
+      string standard_client_args( "-quiet -no_prompt" );
+
+      string rpc_password( get_rpc_password( ) );
+
+      if( !rpc_password.empty( ) )
+         standard_client_args += " -rpc_unlock=" + rpc_password;
+
       string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
       if( exists_file( new_filename ) )
       {
@@ -1607,9 +1621,9 @@ void Meta_Package::impl::impl_Remove( )
                throw runtime_error( "unable to open '" + script_filename + "' for output" );
 #ifdef _WIN32
             outs << "@echo off\n";
-            outs << "ciyam_client -quiet -no_prompt < ";
+            outs << "ciyam_client " << standard_client_args << " < ";
 #else
-            outs << "./ciyam_client -quiet -no_prompt < ";
+            outs << "./ciyam_client " << standard_client_args << " < ";
 #endif
             outs << commands_filename << " >>" << install_log << "\n";
 #ifdef _WIN32

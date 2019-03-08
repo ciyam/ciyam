@@ -135,6 +135,7 @@ const char* const c_attribute_blockchains = "blockchains";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
+const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_default_storage = "default_storage";
 const char* const c_attribute_peer_ips_direct = "peer_ips_direct";
@@ -185,13 +186,6 @@ const char* const c_storable_file_name_web_root = "web_root";
 const char* const c_storable_folder_name_modules = "modules";
 
 const char* const c_temporary_special_variable_suffix = "_temporary";
-
-void clear_key( string& key )
-{
-   // NOTE: Overwrite each byte of the key to protect from potential swap file discovery.
-   for( string::size_type i = 0; i < key.length( ); i++ )
-      key[ i ] = '\0';
-}
 
 struct instance_info
 {
@@ -3239,6 +3233,7 @@ bool g_using_ssl = false;
 
 string g_gpg_password;
 string g_pem_password;
+string g_rpc_password;
 string g_sql_password;
 
 string g_default_storage;
@@ -3474,6 +3469,7 @@ void read_server_configuration( )
 
       g_gpg_password = reader.read_opt_attribute( c_attribute_gpg_password );
       g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
+      g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
@@ -4612,6 +4608,10 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          if( !outf )
             throw runtime_error( "unable to open '" + args_file + "' for output" );
 
+         string rpc_password( get_rpc_password( ) );
+         if( !rpc_password.empty( ) )
+            outf << ".session_rpc_unlock " << rpc_password << endl;
+
          outf << "<<" << arguments << endl;
 
          outf.flush( );
@@ -5313,6 +5313,12 @@ string get_pem_password( )
    return decrypt_data( g_pem_password );
 }
 
+string get_rpc_password( )
+{
+   guard g( g_mutex );
+   return decrypt_data( g_rpc_password );
+}
+
 string get_sql_password( )
 {
    guard g( g_mutex );
@@ -5341,6 +5347,12 @@ string get_encrypted_pem_password( )
 {
    guard g( g_mutex );
    return g_pem_password;
+}
+
+string get_encrypted_rpc_password( )
+{
+   guard g( g_mutex );
+   return g_rpc_password;
 }
 
 string get_encrypted_sql_password( )

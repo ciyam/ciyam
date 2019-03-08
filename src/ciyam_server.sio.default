@@ -14,6 +14,7 @@
 # <blockchains>12346=28025710166
 # <gpg_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <pem_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <rpc_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <sql_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <default_storage>test
 # <peer_ips_direct>127.0.0.1=28025710166

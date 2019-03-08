@@ -1198,8 +1198,10 @@ class socket_command_handler : public command_handler
 #endif
     :
     socket( socket ),
+    lock_expires( 0 ),
     restoring( false )
    {
+      locked = !get_rpc_password( ).empty( );
    }
 
 #ifdef SSL_SUPPORT
@@ -1210,7 +1212,25 @@ class socket_command_handler : public command_handler
 
    const string& get_next_command( ) { return next_command; }
 
+   bool is_locked( ) const { return locked; }
    bool is_restoring( ) const { return restoring; }
+
+   void lock( ) { locked = true; }
+   void unlock( ) { locked = false; }
+
+   void set_lock_expires( unsigned int seconds )
+   {
+      lock_expires = unix_timestamp( ) + seconds;
+   }
+
+   void check_lock_expiry( )
+   {
+      if( lock_expires && unix_timestamp( ) > lock_expires )
+      {
+         locked = true;
+         lock_expires = 0;
+      }
+   }
 
    map< string, string >& get_transformations( ) { return transformations; }
 
@@ -1253,7 +1273,10 @@ class socket_command_handler : public command_handler
    tcp_socket& socket;
 #endif
 
+   bool locked;
    bool restoring;
+
+   int64_t lock_expires;
 
    string next_command;
    string restore_error;
@@ -1401,6 +1424,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    try
    {
       ostringstream osstr;
+
+      socket_handler.check_lock_expiry( );
+
+      if( socket_handler.is_locked( )
+       && command != c_cmd_ciyam_session_quit
+       && command != c_cmd_ciyam_session_starttls
+       && command != c_cmd_ciyam_session_session_rpc_unlock )
+      {
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Session RPC access denied." );
+      }
 
       if( command == c_cmd_ciyam_session_version )
          response = c_protocol_version;
@@ -4355,6 +4389,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( needs_response )
             response = get_session_variable( name_or_expr );
       }
+      else if( command == c_cmd_ciyam_session_session_rpc_unlock )
+      {
+         string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_rpc_unlock_password ) );
+         string seconds( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_rpc_unlock_seconds ) );
+
+         if( password == get_rpc_password( ) )
+            socket_handler.unlock( );
+
+         unsigned int val;
+         if( !seconds.empty( ) )
+         {
+            val = atoi( seconds.c_str( ) );
+            socket_handler.set_lock_expires( val );
+         }
+      }
       else if( command == c_cmd_ciyam_session_storage_info )
       {
          response = "Name: " + storage_name( ) + '\n';
@@ -5667,7 +5716,7 @@ string socket_command_processor::get_cmd_and_args( )
          {
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "quit".
-            request = "quit";
+            request = c_cmd_ciyam_session_quit;
             break;
          }
 

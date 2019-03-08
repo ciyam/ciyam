@@ -472,6 +472,8 @@ struct storage_info
 
    std::string blockchain;
 
+   std::string rpc_password;
+
    std::string storage_name;
    std::string module_prefix;
 

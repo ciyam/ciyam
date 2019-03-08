@@ -300,11 +300,13 @@ void CIYAM_BASE_DECL_SPEC session_skip_is_constained( bool skip_fk_fetches );
 bool CIYAM_BASE_DECL_SPEC get_script_reconfig( );
 
 std::string CIYAM_BASE_DECL_SPEC get_pem_password( );
+std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_sql_password( );
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pop3_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
 

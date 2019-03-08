@@ -184,12 +184,6 @@ session_container g_sessions;
 
 map< string, string > g_uuid_for_ip_addr;
 
-void clear_key( string& key )
-{
-   for( size_t i = 0; i < key.length( ); i++ )
-      key[ i ] = '\0';
-}
-
 }
 
 string g_id;
@@ -1258,6 +1252,12 @@ void request_handler::process_request( )
                            throw runtime_error( "unable to starttls" );
                      }
 #endif
+
+                     if( !get_storage_info( ).rpc_password.empty( ) )
+                     {
+                        if( !simple_command( *p_session_info, "session_rpc_unlock " + get_storage_info( ).rpc_password ) )
+                           throw runtime_error( "unable to unlock RPC access" );
+                     }
 
                      string identity_info;
                      if( !simple_command( *p_session_info, "identity", &identity_info ) )
