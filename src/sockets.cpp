@@ -40,6 +40,8 @@ namespace
 
 const int c_default_line_size = 1024;
 
+const char* const c_base64_format = ".b64";
+
 }
 
 #ifdef _WIN32
@@ -608,6 +610,8 @@ void file_transfer( const string& name,
       if( !file_exists( name ) )
          throw runtime_error( "file not found" );
 
+      int64_t total_size = file_size( name );
+
       ifstream inpf( name.c_str( ), ios::binary );
       if( !inpf )
          throw runtime_error( "file '" + name + "' could not be opened for input" );
@@ -621,6 +625,18 @@ void file_transfer( const string& name,
 
       string next;
       bool is_first = true;
+
+      if( has_prefix_char )
+         total_size += 1;
+
+      size_t total_encoded = base64::encode_size( total_size );
+
+      string size_info( to_string( total_size ) + ':' );
+
+      if( total_encoded < max_line_size )
+         max_line_size = total_encoded;
+
+      size_info += to_string( max_line_size ) + string( c_base64_format );
 
       while( true )
       {
@@ -641,13 +657,30 @@ void file_transfer( const string& name,
 
          size_t enc_len = 0;
 
+         if( is_first )
+         {
+            s.write_line( size_info, initial_timeout, p_progress );
+
+            s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
+
+            if( next != ack_message_str )
+            {
+               // NOTE: If "Error/error" is found in the message then just throw it as is.
+               if( lower( next ).find( "error" ) != string::npos )
+                  throw runtime_error( next );
+               else if( next.empty( ) )
+                  throw runtime_error( "unexpected empty ack response" );
+               else
+                  throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
+            }
+         }
+
          base64::encode( ( const unsigned char* )ap_buf1.get( ), count, ap_buf2.get( ), &enc_len );
 
          while( enc_len < max_line_size )
             *( ap_buf2.get( ) + enc_len++ ) = '.';
 
-         if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size,
-          is_first ? initial_timeout : line_timeout, p_progress ) != max_line_size )
+         if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
             throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n" );
 
          s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
@@ -658,10 +691,10 @@ void file_transfer( const string& name,
          if( next != ack_message_str )
          {
             // NOTE: If "Error/error" is found in the message then just throw it as is.
-            if( next.find( "rror" ) != string::npos )
+            if( lower( next ).find( "error" ) != string::npos )
                throw runtime_error( next );
             else if( next.empty( ) )
-               throw runtime_error( "unexpected empty data" );
+               throw runtime_error( "unexpected empty ack response" );
             else
                throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
@@ -671,14 +704,6 @@ void file_transfer( const string& name,
 
          is_first = false;
       }
-
-      string final_ack_message( p_ack_message );
-
-      // NOTE: Because the receive side is always reading exactly "max_line_size"
-      // characters this final "ack" needs to be padded.
-      final_ack_message += string( max_line_size - final_ack_message.length( ), '.' );
-
-      s.send_n( ( unsigned char* )&final_ack_message[ 0 ], max_line_size, line_timeout );
    }
    else
    {
@@ -699,18 +724,53 @@ void file_transfer( const string& name,
       size_t written = 0;
       bool is_first = true;
 
-      string next, decoded;
+      int64_t total_size = 0;
 
-      next.resize( max_line_size );
+      string next, decoded;
 
       unsigned char* p_buf = p_buffer;
 
       while( true )
       {
-         int received = s.recv_n( ( unsigned char* )&next[ 0 ],
-          max_line_size, is_first ? initial_timeout : line_timeout, p_progress );
+         if( is_first )
+         {
+            s.read_line( next, initial_timeout, max_line_size, p_progress );
 
-         if( s.had_timeout( ) )
+            if( s.had_timeout( ) )
+               throw runtime_error( "timeout occurred reading headerline for file transfer" );
+
+            // FUTURE: A ".bin" format should be added to support binary file transfers.
+            string::size_type pos = next.find( ':' );
+            string::size_type fpos = next.find( c_base64_format );
+
+            if( pos == string::npos || fpos == string::npos || fpos < pos )
+            {
+               s.write_line( "error: invalid file transfer header line", line_timeout, p_progress );
+               throw runtime_error( "invalid file transfer header line for recv" );
+            }
+
+            next.erase( fpos );
+
+            total_size = from_string< int64_t >( next.substr( 0, pos ) );
+
+            size_t chunk_size = from_string< size_t >( next.substr( pos + 1 ) );
+
+            if( !total_size || !chunk_size
+             || ( chunk_size > max_line_size ) )
+            {
+               s.write_line( "error: invalid file transfer size info", line_timeout, p_progress );
+               throw runtime_error( "invalid file transfer size info for recv" );
+            }
+
+            max_line_size = chunk_size;
+            next.resize( max_line_size );
+
+            s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
+         }
+
+         int received = s.recv_n( ( unsigned char* )&next[ 0 ], max_line_size, line_timeout, p_progress );
+
+         if( !received || s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading next line for file transfer" );
 
          if( received < max_line_size )
@@ -721,11 +781,7 @@ void file_transfer( const string& name,
          if( pos != string::npos )
             next.erase( pos );
 
-         if( next.empty( ) || next == ack_message_str )
-            break;
-
-         // FUTURE: This should actually check if any non-base64 character is present.
-         if( next.find( ' ' ) != string::npos )
+         if( !base64::valid_characters( next ) )
          {
             not_base64 = true;
             unexpected_data = next;
@@ -742,6 +798,7 @@ void file_transfer( const string& name,
          if( is_first && p_prefix_char )
          {
             offset = 1;
+            --total_size;
             *p_prefix_char = decoded[ 0 ];
          }
 
@@ -767,6 +824,9 @@ void file_transfer( const string& name,
          s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
 
          is_first = false;
+
+         if( written >= total_size )
+            break;
       }
 
       outf.close( );

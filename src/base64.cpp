@@ -85,6 +85,24 @@ void base64::encode( const unsigned char* p_dat, size_t length, char* p_enc, siz
       *p_enc_len = o;
 }
 
+bool base64::valid_characters( const string& input )
+{
+   bool rc = true;
+
+   if( !input.length( ) || input.length( ) % 4 != 0 )
+      rc = false;
+   else
+   {
+      string::size_type pos = input.find_first_not_of( g_b64_table + c_fillchar );
+
+      if( pos != string::npos
+       && ( ( pos < input.size( ) - 2 ) || ( input[ pos ] != c_fillchar ) ) )
+         rc = false;
+   }
+
+   return rc;
+}
+
 void base64::validate( const string& input, bool* p_rc )
 {
    bool invalid = false;
