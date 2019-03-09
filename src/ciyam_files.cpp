@@ -626,7 +626,7 @@ string file_type_info( const string& tag_or_hash,
 
    if( !file_exists( filename ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "file '" + tag_or_hash + "' was not found" );
+      throw runtime_error( "File '" + tag_or_hash + "' was not found." );
 
    long file_size = 0;
    long max_to_buffer = 0;

@@ -35,7 +35,14 @@ LINES=@repstr:\:/\n:$PREFIX
 DEPTH=$OUTPUT
 @endif
 ;
+@label START
 .file_info -recurse -d=-$DEPTH -p=$PREFIX $TTAG
+@ifdef $ERROR
+@label FINISH
+@endif
+@skip
+;
+@:START
 LINES=$OUTPUT
 ;
 @ifdef $LINES
@@ -66,4 +73,6 @@ NAME=%PARTS:2%
 @:END_LOOP
 ;
 @endif
+;
+@:FINISH
 @endif
