@@ -502,6 +502,9 @@ bool has_tag( const string& name )
 {
    guard g( g_mutex );
 
+   if( name.empty( ) )
+      return false;
+
    string::size_type pos = name.rfind( '*' );
    map< string, string >::iterator i = ( pos == 0 ? g_tag_hashes.end( ) : g_tag_hashes.lower_bound( name.substr( 0, pos ) ) );
 
@@ -515,9 +518,14 @@ bool has_file( const string& hash, bool check_is_hash )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash, false, check_is_hash ) );
+   if( hash.empty( ) )
+      return false;
+   else
+   {
+      string filename( construct_file_name_from_hash( hash, false, check_is_hash ) );
 
-   return file_exists( filename );
+      return file_exists( filename );
+   }
 }
 
 int64_t file_bytes( const string& hash, bool blobs_for_lists )
@@ -1166,25 +1174,38 @@ string create_raw_file_with_extras( const string& data,
    return retval;
 }
 
-string create_from_list( const string& add_tags, const string& del_items,
+string create_list_file( const string& add_tags, const string& del_items,
  bool sort_items, const string& tag_or_hash, const string& new_tag, const string& old_tag )
 {
+   guard g( g_mutex );
+
    string hash( tag_or_hash );
    string data;
 
+   string use_new_tag( new_tag );
+
+   bool allow_new = false;
    bool is_new_list = false;
 
-   if( new_tag == "!" )
-      is_new_list = true;
-   else
+   if( !use_new_tag.empty( ) && use_new_tag[ 0 ] == '!' )
    {
+      allow_new = true;
+      use_new_tag.erase( 0, 1 );
+   }
 
-      if( has_tag( tag_or_hash ) )
-         hash = tag_file_hash( tag_or_hash );
+   if( has_tag( tag_or_hash ) )
+      hash = tag_file_hash( tag_or_hash );
 
-      if( !has_file( hash ) )
+   if( !has_file( hash, false ) )
+   {
+      if( allow_new )
+         is_new_list = true;
+      else
          throw runtime_error( "file '" + tag_or_hash + "' not found" );
+   }
 
+   if( !is_new_list )
+   {
       bool is_list = false;
       data = extract_file( hash, "", '\0', &is_list );
 
@@ -1208,6 +1229,16 @@ string create_from_list( const string& add_tags, const string& del_items,
       for( size_t i = 0; i < tags_to_add.size( ); i++ )
       {
          string next_tag( tags_to_add[ i ] );
+         string next_hash;
+
+         // NOTE: If the new item is not expected to actually be a tag then its hash
+         // needs to be provided before the item name.
+         string::size_type pos = next_tag.find( ' ' );
+         if( pos != string::npos )
+         {
+            next_hash = next_tag.substr( 0, pos );
+            next_tag.erase( 0, pos + 1 );
+         }
 
          // NOTE: An added item can take its name from a corresponding delete item by
          // prefixing the tag name with a '?' character.
@@ -1215,17 +1246,18 @@ string create_from_list( const string& add_tags, const string& del_items,
          if( !next_tag.empty( ) && next_tag[ 0 ] == '?' )
          {
             if( i >= items_to_remove.size( ) )
-               throw runtime_error( "invalid ? prefixed tag (not enough delete items" );
+               throw runtime_error( "invalid ? prefixed tag (not enough delete items)" );
 
             old_tag = items_to_remove[ i ];
 
             next_tag.erase( 0, 1 );
          }
 
-         if( !has_tag( next_tag ) )
+         if( next_hash.empty( ) && !has_tag( next_tag ) )
             throw runtime_error( "file tag '" + next_tag + "' not found" );
 
-         string next_hash( tag_file_hash( next_tag ) );
+         if( next_hash.empty( ) )
+            next_hash = tag_file_hash( next_tag );
 
          items_to_add.push_back( next_hash + ' ' + ( old_tag.empty( ) ? next_tag : old_tag ) );
 
@@ -1322,7 +1354,216 @@ string create_from_list( const string& add_tags, const string& del_items,
    if( !old_tag.empty( ) )
       tag_file( old_tag, hash );
 
-   return create_raw_file( data, true, is_new_list ? tag_or_hash.c_str( ) : new_tag.c_str( ) );
+   return create_raw_file( data, true, use_new_tag.c_str( ) );
+}
+
+string create_list_tree( const string& add_tags, const string& del_items,
+ bool sort_items, const string& tag_and_branches, const string& new_tag, const string& old_tag )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( !tag_and_branches.empty( ) )
+   {
+      bool use_parts = false;
+
+      size_t part = 0;
+      size_t length = tag_and_branches.length( );
+
+      if( tag_and_branches[ length - 1 ] == '*' )
+      {
+         --length;
+         use_parts = true;
+      }
+
+      if( length )
+      {
+         vector< string > branches;
+         split( tag_and_branches.substr( 0, length ), branches, ':' );
+
+         string hash, name;
+
+         vector< string > items;
+         deque< string > found_lists;
+
+         for( size_t i = 0; i < branches.size( ); i++ )
+         {
+            string next_branch( branches[ i ] );
+
+            name = next_branch;
+
+            if( i == 0 )
+            {
+               if( has_tag( next_branch ) )
+                  hash = tag_file_hash( next_branch );
+
+               if( hash.empty( ) )
+                  continue;
+               else
+               {
+                  bool is_list = false;
+                  string data( extract_file( hash, "", '\0', &is_list ) );
+
+                  if( !is_list )
+                     throw runtime_error( "file '" + next_branch + "' is not a list" );
+
+                  split( data, items, '\n' );
+
+                  found_lists.push_back( hash );
+               }
+            }
+            else if( hash.empty( ) )
+               continue;
+            else
+            {
+               hash.erase( );
+
+               for( size_t j = 0; j < items.size( ); j++ )
+               {
+                  string next_item( items[ j ] );
+                  string::size_type pos = next_item.find( ' ' );
+
+                  if( pos != string::npos
+                   && ( next_branch == next_item.substr( pos + 1 ) ) )
+                  {
+                     hash = next_item.substr( 0, pos );
+                     found_lists.push_back( hash );
+                     break;
+                  }
+               }
+
+               items.clear( );
+
+               if( hash.empty( ) )
+                  continue;
+               else
+               {
+                  bool is_list = false;
+                  string data( extract_file( hash, "", '\0', &is_list ) );
+
+                  if( !is_list )
+                     throw runtime_error( "file '" + next_branch + "' is not a list" );
+
+                  split( data, items, '\n' );
+               }
+            }
+         }
+
+         if( !use_parts )
+            branches.pop_back( );
+
+         if( hash.empty( ) )
+         {
+            if( use_parts )
+               name += "." + to_comparable_string( part, false, 5 );
+
+            hash = create_list_file( add_tags, del_items, sort_items, hash, "!", "" );
+         }
+         else
+         {
+            if( !use_parts )
+               hash = create_list_file( add_tags, del_items, sort_items, hash, "!", "" );
+            else
+            {
+               string last_item( items.back( ) );
+
+               string::size_type pos = last_item.find( ' ' );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected list item '" + last_item + "' found in create_list_tree" );
+
+               string item_hash( last_item.substr( 0, pos ) );
+               string item_name( last_item.substr( pos + 1 ) );
+
+               if( use_parts )
+                  part = from_string< size_t >( item_name.substr( branches.back( ).length( ) + 1 ) );
+
+               bool is_list = false;
+               string data( extract_file( item_hash, "", '\0', &is_list ) );
+
+               if( !is_list )
+                  throw runtime_error( "file '" + item_hash + "' is not a list" );
+
+               items.clear( );
+               split( data, items, '\n' );
+
+               vector< string > new_tags;
+               split( add_tags, new_tags );
+
+               vector< string > del_item_names;
+               split( del_items, del_item_names );
+
+               size_t num_to_be_added = new_tags.size( );
+
+               // NOTE: Check all the existing list items to see how much the list needs to increase in size.
+               for( size_t i = 0; i < items.size( ); i++ )
+               {
+                  string next( items[ i ] );
+
+                  string::size_type pos = next.find( ' ' );
+
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected next list item '" + next + "' found in create_list_tree" );
+
+                  string old_item( next.substr( pos + 1 ) );
+
+                  for( size_t j = 0; j < new_tags.size( ); j++ )
+                  {
+                     string new_item( new_tags[ j ] );
+
+                     if( !new_item.empty( ) && new_item[ 0 ] == '?' )
+                     {
+                        if( j >= del_item_names.size( ) )
+                           throw runtime_error( "invalid ? prefixed tag (not enough delete items)" );
+
+                        new_item = del_item_names[ j ];
+                     }
+
+                     if( new_item == old_item )
+                        --num_to_be_added;
+                  }
+               }
+
+               size_t new_data_size = data.size( ) + 1 + ( last_item.length( ) * num_to_be_added );
+
+               if( new_data_size > get_files_area_item_max_size( ) )
+               {
+                  item_name = branches.back( )
+                   + "." + to_comparable_string( ++part, false, 5 );
+
+                  hash = create_list_file( add_tags, del_items, sort_items, "", "!", "" );
+               }
+               else
+                  hash = create_list_file( add_tags, del_items, sort_items, item_hash, "!", "" );
+
+               name = item_name;
+            }
+         }
+
+         for( size_t i = branches.size( ); i > 0; i-- )
+         {
+            size_t offset = i - 1;
+
+            string new_item( hash + ' ' + name );
+            string list_hash;
+
+            if( i == found_lists.size( ) )
+            {
+               list_hash = found_lists[ offset ];
+               found_lists.pop_back( );
+            }
+
+            if( offset > 0 )
+               hash = create_list_file( new_item, name, sort_items, list_hash, "!", "" );
+            else
+               retval = create_list_file( new_item, name, sort_items, list_hash, new_tag, old_tag );
+
+            name = branches[ offset ];
+         }
+      }
+   }
+
+   return retval;
 }
 
 void tag_del( const string& name, bool unlink, bool auto_tag_with_time )

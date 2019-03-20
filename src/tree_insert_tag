@@ -7,7 +7,7 @@
 if [ $# -lt 5 ]; then
  echo "Usage: tree_insert_tag [tree tag] [branch type] [branch tags] [file name] [tag name]"
 else
- echo "<<tree_insert_tag.cin $1 $2 $3 $4 $5" >~tree_insert_tag
+ echo "<<tree_insert_tag.cin $1 $2 $3 $4 \"$5\"" >~tree_insert_tag
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_tag
  rm ~tree_insert_tag
 fi

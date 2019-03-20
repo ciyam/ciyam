@@ -141,6 +141,7 @@ enum special_var
    e_special_var_secondary_validation,
    e_special_var_skip_blockchain_lock,
    e_special_var_peer_is_synchronising,
+   e_special_var_log_raw_file_tag_prefix,
    e_special_var_total_child_field_in_parent
 };
 

@@ -21,117 +21,20 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "5"
-#NOTE: This script needs tree tag, branch type, branch below type, file and base path.
+#NOTE: This script needs tree tag, branch name, directory tree, file and base path.
 @else
 ;
 TTAG=$1
-TYPE=$2
+NAME=$2
 TREE=$3
 FILE=$4
 PATH=$5
 ;
+FTAG=F.
 DIRS=@repstr:./\/:$TREE
-LINES=@repstr:./\n:$TYPE.$TREE
-.session_variable @deque ""
-.session_variable @deque "~$LINES"
 ;
 .file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TREE.$FILE
-@ifndef $ERROR
-;
-.file_tags -i=$TTAG
-;
-@ifndef $OUTPUT
-;
-; NOTE: Insert a new file into a new tree.
-;
-.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE $TYPE.$TREE !
+.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE $TTAG:$FTAG:$FTAG$NAME !$TTAG
 .file_tag -remove $TREE.$FILE
-LAST=$TYPE.$TREE
 ;
-@:LOOP
-@label NEXT
-.session_variable @deque pop_back
-.session_variable @deque
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-@skip
-;
-@:NEXT
-NEXT=@repstr:\n/.:$OUTPUT
-@ifeq "$NEXT" "$TYPE"
-NEXT=$TYPE.
-@endif
-.file_list -a=$LAST $NEXT !
-.file_tag -remove $LAST
-;
-LAST=$NEXT
-!!@:LOOP
-@:END_LOOP
-;
-.file_list -a=$LAST $TTAG !
-.file_tag -remove $LAST
-;
-@else
-;
-; NOTE: Insert a new file (or replace file content) into an existing tree.
-;
-.session_variable @deque size
-.session_variable depth $OUTPUT
-.session_variable depth @increment
-.session_variable depth
-DEPTH=$OUTPUT
-.file_info -recurse -d=-$DEPTH -p=$TYPE.$TREE* $TTAG
-@ifndef $OUTPUT
-.file_hash $TREE.$FILE
-.file_raw list "$OUTPUT $DIRS/$FILE" $TYPE.$TREE
-@else
-LIST_HEADER=%OUTPUT:1%
-HEADER_PARTS=@repstr: /\n:$LIST_HEADER
-LIST_HASH=%HEADER_PARTS:2%
-.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE -sort $LIST_HASH $TYPE.$TREE
-@endif
-.file_tag -remove $TREE.$FILE
-LAST=$TYPE.$TREE
-;
-@:LOOP
-@label NEXT
-.session_variable @deque pop_back
-.session_variable @deque
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-@skip
-;
-@:NEXT
-NEXT=@repstr:\n/.:$OUTPUT
-@ifeq "$NEXT" "$TYPE"
-NEXT=$TYPE.
-@endif
-.session_variable depth @decrement
-.session_variable depth
-DEPTH=$OUTPUT
-;
-.file_info -recurse -d=-$DEPTH -p=$NEXT* $TTAG
-@ifndef $OUTPUT
-.file_hash $LAST
-.file_raw list "$OUTPUT $LAST" $NEXT
-@else
-LIST_HEADER=%OUTPUT:1%
-HEADER_PARTS=@repstr: /\n:$LIST_HEADER
-LIST_HASH=%HEADER_PARTS:2%
-.file_list -a=$LAST -d=$LAST -sort $LIST_HASH $NEXT
-@endif
-.file_tag -remove $LAST
-;
-LAST=$NEXT
-!!@:LOOP
-@:END_LOOP
-;
-.file_list -a=$LAST -d=$LAST -sort $TTAG $TTAG
-.file_tag -remove $LAST
-;
-@endif
-;
-@endif
 @endif

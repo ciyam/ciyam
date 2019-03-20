@@ -8,15 +8,14 @@ if '%1' == '' goto usage
 if '%2' == '' goto usage
 if '%3' == '' goto usage
 if '%4' == '' goto usage
-if '%5' == '' goto usage
 
-echo ^<^<tree_insert_file.cin %1 %2 %3 %4 %5 >~tree_insert_file
-ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_insert_file
+echo ^<^<tree_store_variable.cin %1 %2 %3 %4 %5 >~tree_store_variable
+ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_store_variable
 
-del ~tree_insert_file
+del ~tree_store_variable
 goto end
 
 :usage
-echo Usage: tree_insert_file [tree tag] [branch name] [directory tree] [file name] [base path]
+echo Usage: tree_store_variable [tree tag] [branch type] [branch tags] [variable name] [[variable data]]
 
 :end

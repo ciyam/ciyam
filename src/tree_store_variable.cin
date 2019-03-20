@@ -1,0 +1,92 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $4
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "4"
+#NOTE: This script requires a tree tag, branch type, branch below type and variable name.
+@else
+;
+TTAG=$1
+TYPE=$2
+TREE=$3
+VNAME=$4
+VDATA=$5
+;
+TTYPE=V
+;
+.file_tags -i=$TTAG
+@ifndef $OUTPUT
+#Error: Tree '$TTAG' does not exist.
+@else
+;
+.session_variable @deque ""
+LINES=@repstr:./\n:$TTYPE.$TYPE.$TREE.xxx
+.session_variable @deque "~$LINES"
+;
+@ifndef $VDATA
+.file_hash "$TTYPE.$TYPE.$TREE.$VNAME"
+@else
+.file_raw blob "$VDATA" "$TTYPE.$TYPE.$TREE.$VNAME"
+@endif
+HASH=$OUTPUT
+;
+@ifndef $ERROR
+LAST=$TTYPE.$TYPE.$TREE.$VNAME
+;
+@:LOOP
+@label NEXT
+.session_variable @deque pop_back
+.session_variable @deque
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+@skip
+;
+@:NEXT
+NEXT=@repstr:\n/.:$OUTPUT
+@ifeq "$NEXT" "$TTYPE"
+NEXT=$NEXT.
+@endif
+.session_variable @deque size
+DEPTH=$OUTPUT
+.file_info -recurse -d=-$DEPTH "-p=$NEXT*" $TTAG
+@ifndef $OUTPUT
+.file_hash "$LAST"
+.file_raw list "$OUTPUT $LAST" "$NEXT"
+@else
+LIST_ITEM=%OUTPUT:2%
+ITEM_PARTS=@repstr: /\n:$LIST_ITEM
+ITEM_HASH=%ITEM_PARTS:2%
+.file_list "-a=$LAST" "-d=$LAST" -sort $ITEM_HASH "$NEXT"
+@endif
+.file_tag -remove "$LAST"
+;
+LAST=$NEXT
+!!@:LOOP
+@:END_LOOP
+;
+.file_list "-a=$LAST" "-d=$LAST" -sort $TTAG $TTAG
+.file_tag -remove "$LAST"
+;
+@ifndef $VDATA
+.file_tag $HASH "$TTYPE.$TYPE.$TREE.$VNAME"
+@endif
+;
+@endif
+@endif
+@endif

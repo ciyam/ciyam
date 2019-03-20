@@ -61,10 +61,21 @@ LINES=$OUTPUT
 ;
 @:NEXT
 LINES=@repstr: /\n:$OUTPUT
-FULL_TAG=%LINES:3%
-PARTS=@repstr:./\n:$FULL_TAG
+.session_variable @deque
+DEQUE=$OUTPUT
+; NOTE: As a tag can contain spaces temporarily use the @deque
+; to just remove the first two columns (line number and hash).
+.session_variable @deque ""
+.session_variable @deque "~$LINES"
+.session_variable @deque pop_front
+.session_variable @deque pop_front
+.session_variable @deque
+NAME_AND_INFO=@repstr:\n/ :$OUTPUT
+PARTS=@repstr:./\n:$NAME_AND_INFO
 NAME=%PARTS:2%
 #$NAME
+.session_variable @deque ""
+.session_variable @deque "~$DEQUE"
 ;
 @ifneq "$DEPTH" "2"
 .session_variable @deque pop_front

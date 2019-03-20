@@ -42,6 +42,7 @@
 #endif
 #include "threads.h"
 #include "progress.h"
+#include "pointers.h"
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
@@ -1709,7 +1710,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string new_tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_new_tag ) );
          string old_tag( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_list_old_tag ) );
 
-         response = create_from_list( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
+         string::size_type pos = tag_or_hash.find( ':' );
+
+         if( pos == string::npos )
+            response = create_list_file( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
+         else
+            response = create_list_tree( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
       }
       else if( command == c_cmd_ciyam_session_file_tags )
       {
@@ -5054,11 +5060,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   if( is_new && !verified )
                   {
+                     vector< string > new_tx_log_lines;
+
+                     string log_raw_file_tag_prefix( get_raw_session_variable(
+                      get_special_var_name( e_special_var_log_raw_file_tag_prefix ) ) );
+
                      new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
 
+                     if( !log_raw_file_tag_prefix.empty( ) )
+                        new_tx_log_lines.push_back( c_storage_identity_tx_id + storage_identity( ) + "\n" );
+
                      for( size_t i = 0; i < module_tx_info.size( ); i++ )
+                     {
                         new_logf << module_tx_info[ i ] << '\n';
+
+                        if( !log_raw_file_tag_prefix.empty( ) )
+                           new_tx_log_lines.push_back( module_tx_info[ i ] + "\n" );
+                     }
+
+                     if( !log_raw_file_tag_prefix.empty( ) )
+                        append_transaction_log_lines_to_blob_files( log_raw_file_tag_prefix, new_tx_log_lines, true );
                   }
+
                   verified = true;
                   continue;
                }
@@ -5538,6 +5561,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( script_name.find_first_of( "?*" ) == string::npos )
          {
+            vector< ref_count_ptr< temporary_session_variable > > temporary_session_variables;
+
             if( !arg_val_pairs.empty( ) )
             {
                vector< string > pairs;
@@ -5551,7 +5576,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( pos == string::npos )
                      throw runtime_error( "invalid arg and value pair format '" + next + "'" );
 
-                  set_session_variable( next.substr( 0, pos ), next.substr( pos + 1 ) );
+                  temporary_session_variables.push_back(
+                   ref_count_ptr< temporary_session_variable >(
+                   new temporary_session_variable( next.substr( 0, pos ), next.substr( pos + 1 ) ) ) );
                }
             }
 

@@ -773,6 +773,9 @@ void CIYAM_BASE_DECL_SPEC transaction_log_command(
 
 void CIYAM_BASE_DECL_SPEC append_transaction_log_command( const std::string& log_command );
 
+void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files(
+ const std::string& log_blog_file_prefix, const std::vector< std::string >& log_lines, bool remove_existing_blobs = false );
+
 void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
  const std::string& application, const std::string& transaction_hash );
 

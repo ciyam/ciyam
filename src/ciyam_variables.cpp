@@ -135,6 +135,7 @@ const char* const c_special_variable_locally_minted_block = "@locally_minted_blo
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
+const char* const c_special_variable_log_raw_file_tag_prefix = "@log_raw_file_tag_prefix";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 mutex g_mutex;
@@ -535,6 +536,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_is_synchronising:
       s = string( c_special_variable_peer_is_synchronising );
+      break;
+
+      case e_special_var_log_raw_file_tag_prefix:
+      s = string( c_special_variable_log_raw_file_tag_prefix );
       break;
 
       case e_special_var_total_child_field_in_parent:

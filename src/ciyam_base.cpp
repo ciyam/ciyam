@@ -3145,8 +3145,8 @@ void append_undo_sql_statements( storage_handler& handler )
 void append_transaction_log_command( storage_handler& handler,
  bool log_even_when_locked = false, size_t load_module_id = 0, int32_t use_tx_id = 0 )
 {
-   if( ( log_even_when_locked || handler.get_alternative_log_file( )
-    || !handler.get_is_locked_for_admin( ) ) && !gtp_session->transaction_log_command.empty( ) )
+   if( !gtp_session->transaction_log_command.empty( )
+    && ( log_even_when_locked || handler.get_alternative_log_file( ) || !handler.get_is_locked_for_admin( ) ) )
    {
       string log_filename( handler.get_name( ) );
       log_filename += ".log";
@@ -3155,6 +3155,13 @@ void append_transaction_log_command( storage_handler& handler,
       if( !file_exists( log_filename ) )
          is_new = true;
 
+      string log_raw_file_tag_prefix( get_raw_session_variable(
+       get_special_var_name( e_special_var_log_raw_file_tag_prefix ) ) );
+
+      bool append_to_log_blog_files = !log_raw_file_tag_prefix.empty( );
+
+      vector< string > tx_log_lines;
+
       ofstream& log_file( handler.get_alternative_log_file( )
        ? *handler.get_alternative_log_file( ) : handler.get_log_file( ) );
 
@@ -3162,7 +3169,12 @@ void append_transaction_log_command( storage_handler& handler,
          log_file.open( log_filename.c_str( ), ios::out | ios::app );
 
       if( is_new )
-         log_file << "[0]" << handler.get_root( ).identity << '\n';
+      {
+         log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
+
+         if( append_to_log_blog_files )
+            tx_log_lines.push_back( c_storage_identity_tx_id + handler.get_root( ).identity + "\n" );
+      }
 
       int32_t tx_id;
 
@@ -3207,8 +3219,19 @@ void append_transaction_log_command( storage_handler& handler,
       vector< string > lines;
       raw_split( gtp_session->transaction_log_command, lines, '\n' );
 
+      string next_line;
       for( size_t i = 0; i < lines.size( ); i++ )
-         log_file << '[' << tx_id << ']' << lines[ i ] << '\n';
+      {
+         next_line = "[" + to_string( tx_id ) + "]" + lines[ i ] + "\n";
+
+         log_file << next_line;
+
+         if( append_to_log_blog_files )
+            tx_log_lines.push_back( next_line );
+      }
+
+      if( append_to_log_blog_files )
+         append_transaction_log_lines_to_blob_files( log_raw_file_tag_prefix, tx_log_lines );
 
       log_file.flush( );
       if( !log_file.good( ) )
@@ -10179,6 +10202,68 @@ void append_transaction_log_command( const string& log_command )
       if( !gtp_session->transaction_log_command.empty( ) )
          gtp_session->transaction_log_command += '\n';
       gtp_session->transaction_log_command += log_command;
+   }
+}
+
+void append_transaction_log_lines_to_blob_files(
+ const string& log_blog_file_prefix, const vector< string >& log_lines, bool remove_existing_blobs )
+{
+   guard g( g_mutex );
+
+   if( !log_blog_file_prefix.empty( ) && !log_lines.empty( ) )
+   {
+      string log_raw_file_tag;
+      string raw_file_data( c_file_type_str_blob );
+
+      size_t raw_file_chunk = 0;
+
+      string last_tag;
+      string all_tags( list_file_tags( log_blog_file_prefix + "*" ) );
+
+      if( !all_tags.empty( ) )
+      {
+         vector< string > tags;
+         split( all_tags, tags, '\n' );
+
+         if( remove_existing_blobs )
+         {
+            for( size_t i = 0; i < tags.size( ); i++ )
+               tag_del( tags[ i ] );
+         }
+         else
+         {
+            last_tag = tags.back( );
+
+            raw_file_data += extract_file( tag_file_hash( last_tag ), "" );
+
+            raw_file_chunk = from_string< size_t >( last_tag.substr( log_blog_file_prefix.length( ) ) );
+         }
+      }
+
+      log_raw_file_tag = log_blog_file_prefix + to_comparable_string( raw_file_chunk, false, 5 );
+
+      string next_line;
+      for( size_t i = 0; i < log_lines.size( ); i++ )
+      {
+         next_line = log_lines[ i ];
+
+         if( raw_file_data.size( ) + next_line.size( ) > g_files_area_item_max_size )
+         {
+            // NOTE: Don't re-create if existing file wasn't actually appended to.
+            if( i > 0 )
+               create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
+
+            ++raw_file_chunk;
+
+            raw_file_data.erase( 1 );
+            log_raw_file_tag = log_blog_file_prefix + to_comparable_string( raw_file_chunk, false, 5 );
+         }
+
+         raw_file_data += next_line;
+      }
+
+      if( raw_file_data.size( ) > 1 )
+         create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
    }
 }
 

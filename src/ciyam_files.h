@@ -63,8 +63,11 @@ std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
 std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC create_from_list( const std::string& add_tags, const std::string& del_items,
+std::string CIYAM_BASE_DECL_SPEC create_list_file( const std::string& add_tags, const std::string& del_items,
  bool sort_items, const std::string& tag_or_hash, const std::string& new_tag, const std::string& old_tag );
+
+std::string CIYAM_BASE_DECL_SPEC create_list_tree( const std::string& add_tags, const std::string& del_items,
+ bool sort_items, const std::string& tag_and_branches, const std::string& new_tag, const std::string& old_tag );
 
 void CIYAM_BASE_DECL_SPEC tag_del( const std::string& name, bool unlink = false, bool auto_tag_with_time = true );
 void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
