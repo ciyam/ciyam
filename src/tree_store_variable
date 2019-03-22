@@ -4,10 +4,10 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -lt 4 ]; then
- echo "Usage: tree_store_variable [tree tag] [branch type] [branch tags] [variable name] [[variable data]]"
+if [ $# -lt 3 ]; then
+ echo "Usage: tree_store_variable [tree tag] [tree branch] [variable name] [[variable data]]"
 else
- echo "<<tree_store_variable.cin $1 $2 $3 $4 \"$5\"" >~tree_store_variable
+ echo "<<tree_store_variable.cin $1 $2 $3 \"$4\"" >~tree_store_variable
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_store_variable
  rm ~tree_store_variable
 fi

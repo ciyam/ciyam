@@ -34,7 +34,7 @@ FTAG=F.
 DIRS=@repstr:./\/:$TREE
 ;
 .file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TREE.$FILE
-.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE $TTAG:$FTAG:$FTAG$NAME !$TTAG
+.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE -sort $TTAG:$FTAG:$NAME !$TTAG
 .file_tag -remove $TREE.$FILE
 ;
 @endif

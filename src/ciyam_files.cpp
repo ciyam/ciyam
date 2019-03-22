@@ -1382,7 +1382,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
          vector< string > branches;
          split( tag_and_branches.substr( 0, length ), branches, ':' );
 
-         string hash, name;
+         string hash, name, root;
 
          vector< string > items;
          deque< string > found_lists;
@@ -1396,7 +1396,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
             if( i == 0 )
             {
                if( has_tag( next_branch ) )
-                  hash = tag_file_hash( next_branch );
+                  hash = root = tag_file_hash( next_branch );
 
                if( hash.empty( ) )
                   continue;
@@ -1556,7 +1556,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
             if( offset > 0 )
                hash = create_list_file( new_item, name, sort_items, list_hash, "!", "" );
             else
-               retval = create_list_file( new_item, name, sort_items, list_hash, new_tag, old_tag );
+               retval = create_list_file( new_item, name, sort_items, root, new_tag, old_tag );
 
             name = branches[ offset ];
          }
