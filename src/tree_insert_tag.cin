@@ -21,14 +21,14 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "5"
-#NOTE: This script needs tree tag, branch type, branch below type, file and tag name.
+#NOTE: This script needs tree tag, branch type, branch tree, item name and tag name.
 @else
 ;
 TTAG=$1
 TYPE=$2
 TREE=$3
-FNAME=$4
-TNAME=$5
+ITEM=$4
+NAME=$5
 ;
 TTYPE=T
 ;
@@ -38,86 +38,21 @@ TTYPE=T
 @else
 ;
 .session_variable @deque ""
-LINES=@repstr:./\n:$TYPE.$TREE.xxx
+LINES=@repstr:\:/\n:$TYPE:$TREE:xxx
 .session_variable @deque "~$LINES"
 .session_variable @deque size
 DEPTH=$OUTPUT
 ;
 .session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=$TYPE.$TREE* $TTAG
+.file_info -recurse -d=-$DEPTH -p=$TYPE:$TREE $TTAG
 .session_variable @deque "~$OUTPUT"
-.session_variable @deque "retain $FNAME ("
+.session_variable @deque "retain $ITEM ("
 .session_variable @deque
 @ifdef $OUTPUT
 LINES=@repstr: /\n:$OUTPUT
 HASH=%LINES:2%
-;
-LINES=@repstr:./\n:$TTYPE.$TNAME.$TYPE.$TREE
-.session_variable @deque ""
-.session_variable @deque "~$LINES"
-.session_variable @deque size
-.session_variable depth $OUTPUT
-.session_variable depth @increment
-.session_variable depth
-DEPTH=$OUTPUT
-.session_variable @deque
-NEXT=@repstr:\n/.:$OUTPUT
-.file_tag $HASH "$NEXT.$FNAME"
-;
-.file_info -recurse -d=-$DEPTH "-p=$NEXT*" $TTAG
-@ifndef $OUTPUT
-.file_raw list "$HASH $NEXT.$FNAME" "$NEXT"
-@else
-LIST_HEADER=%OUTPUT:1%
-HEADER_PARTS=@repstr: /\n:$LIST_HEADER
-LIST_HASH=%HEADER_PARTS:2%
-.file_list "-a=$NEXT.$FNAME" "-d=$NEXT.$FNAME" -sort $LIST_HASH "$NEXT"
-@endif
-LAST=$NEXT
-.file_tag -remove "$NEXT.$FNAME"
-;
-@:LOOP
-@label NEXT
-.session_variable @deque pop_back
-.session_variable @deque
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-@skip
-;
-@:NEXT
-NEXT=@repstr:\n/.:$OUTPUT
-@ifeq "$NEXT" "$TTYPE"
-NEXT=$NEXT.
+.file_list "-a=$HASH ?" "-d=$ITEM" -sort $TTAG:$TTYPE:$NAME:$TYPE:$TREE !$TTAG
 @endif
 ;
-.session_variable @deque size
-.session_variable depth $OUTPUT
-.session_variable depth @increment
-.session_variable depth
-DEPTH=$OUTPUT
-;
-.file_info -recurse -d=-$DEPTH "-p=$NEXT*" $TTAG
-@ifndef $OUTPUT
-.file_hash "$LAST"
-.file_raw list "$OUTPUT $LAST" "$NEXT"
-@else
-LIST_HEADER=%OUTPUT:1%
-HEADER_PARTS=@repstr: /\n:$LIST_HEADER
-LIST_HASH=%HEADER_PARTS:2%
-.file_list "-a=$LAST" "-d=$LAST" -sort $LIST_HASH "$NEXT"
-@endif
-;
-.file_tag -remove "$LAST"
-LAST=$NEXT
-;
-!!@:LOOP
-;
-@:END_LOOP
-;
-.file_list "-a=$LAST" "-d=$LAST" -sort $TTAG $TTAG
-.file_tag -remove "$LAST"
-;
-@endif
 @endif
 @endif

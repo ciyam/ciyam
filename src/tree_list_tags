@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: tree_list_tags [tree tag] [[branch type] [[tag branch expression]]]"
+ echo "Usage: tree_list_tags [tree tag] [[branch type] [[branch tree expression]]]"
 else
  echo "<<tree_list_tags.cin $1 $2 $3" >~tree_list_tags
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_list_tags

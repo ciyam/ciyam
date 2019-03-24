@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 5 ]; then
- echo "Usage: tree_insert_tag [tree tag] [branch type] [branch tags] [file name] [tag name]"
+ echo "Usage: tree_insert_tag [tree tag] [branch type] [branch tree] [item name] [tag name]"
 else
  echo "<<tree_insert_tag.cin $1 $2 $3 $4 \"$5\"" >~tree_insert_tag
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_tag

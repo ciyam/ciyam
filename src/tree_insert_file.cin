@@ -30,7 +30,7 @@ TREE=$3
 FILE=$4
 PATH=$5
 ;
-FTAG=F.
+FTAG=F
 DIRS=@repstr:./\/:$TREE
 ;
 .file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TREE.$FILE

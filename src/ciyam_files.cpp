@@ -604,6 +604,28 @@ string file_type_info( const string& tag_or_hash,
 
    int depth = max_depth;
    bool output_last_only = false;
+   bool include_header_suffix = false;
+
+   string header_suffix;
+   string use_tag_or_hash( tag_or_hash );
+
+   if( !use_tag_or_hash.empty( ) )
+   {
+      string::size_type pos = use_tag_or_hash.find( '!' );
+
+      if( pos != string::npos )
+      {
+         include_header_suffix = true;
+
+         if( pos == 0 )
+            use_tag_or_hash.erase( 0, 1 );
+         else
+         {
+            header_suffix = use_tag_or_hash.substr( 0, pos );
+            use_tag_or_hash.erase( 0, pos + 1 );
+         }
+      }
+   }
 
    if( depth < 0 )
    {
@@ -611,19 +633,19 @@ string file_type_info( const string& tag_or_hash,
       output_last_only = true;
    }
 
-   if( file_exists( string( c_files_directory ) + '/' + tag_or_hash ) )
+   if( file_exists( string( c_files_directory ) + '/' + use_tag_or_hash ) )
    {
-      hash = tag_file_hash( tag_or_hash );
+      hash = tag_file_hash( use_tag_or_hash );
       filename = construct_file_name_from_hash( hash );
    }
    else
    {
       bool is_base64 = false;
 
-      if( tag_or_hash.length( ) != c_num_digest_characters )
-          base64::validate( tag_or_hash, &is_base64 );
+      if( use_tag_or_hash.length( ) != c_num_digest_characters )
+          base64::validate( use_tag_or_hash, &is_base64 );
 
-      hash = !is_base64 ? tag_or_hash : base64_to_hex( tag_or_hash );
+      hash = !is_base64 ? use_tag_or_hash : base64_to_hex( use_tag_or_hash );
 
       if( hash.length( ) == c_num_digest_characters )
          filename = construct_file_name_from_hash( hash, false, false );
@@ -651,9 +673,11 @@ string file_type_info( const string& tag_or_hash,
    // will remove it and treat the remaining as a wildcard prefix but if not
    // the first character it instead handles the supplied as being an indent
    // level separator for splitting up a wildcard expression into parts that
-   // are recombined only to the current indent depth. Thus for 'T.:*:.X:.Y'
-   // at indent level zero it would match 'T.' and at level one it would now
-   // match 'T.*' while at level two 'T.*.X' and for level three 'T.*.X.Y'.
+   // are applied as seperate wildcard expressions for each indent level. So
+   // if the prefix supplied is 'x:*y*:z*' then only the item 'x' is matched
+   // at indent level zero while at indent level one each item that contains
+   // a 'y' will be matched and then at indent level two only the items that
+   // start with a 'z' will be matched.
    if( pos != string::npos )
    {
       is_wildcard_prefix = true;
@@ -669,9 +693,12 @@ string file_type_info( const string& tag_or_hash,
 
          for( size_t i = 0; i < parts.size( ); i++ )
          {
-            prefix += parts[ i ];
-
-            if( i >= indent )
+            if( i == indent )
+            {
+               prefix = parts[ i ];
+               break;
+            }
+            else if( i > indent )
                break;
          }
       }
@@ -692,7 +719,7 @@ string file_type_info( const string& tag_or_hash,
    string data( buffer_file( filename, max_to_buffer, &file_size ) );
    
    if( data.empty( ) )
-      throw runtime_error( "unexpected empty file '" + tag_or_hash + "'" );
+      throw runtime_error( "unexpected empty file '" + use_tag_or_hash + "'" );
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
@@ -708,7 +735,7 @@ string file_type_info( const string& tag_or_hash,
       data = buffer_file( filename );
 
       if( data.size( ) <= 1 )
-         throw runtime_error( "unexpected truncated file content for '" + tag_or_hash + "'" );
+         throw runtime_error( "unexpected truncated file content for '" + use_tag_or_hash + "'" );
       else if( !get_session_variable( buffered_var_name ).empty( ) )
          set_session_variable( buffered_var_name, increment_special );
    }
@@ -719,7 +746,7 @@ string file_type_info( const string& tag_or_hash,
       sha256 test_hash( data );
 
       if( hash != test_hash.get_digest_as_string( ) )
-         throw runtime_error( "invalid content for '" + tag_or_hash + "' (hash does not match hashed data)" );
+         throw runtime_error( "invalid content for '" + use_tag_or_hash + "' (hash does not match hashed data)" );
    }
 
    string final_data( data );
@@ -733,7 +760,7 @@ string file_type_info( const string& tag_or_hash,
       unsigned long usize = file_buffer.get_size( ) - size;
 
       if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
-         throw runtime_error( "invalid content for '" + tag_or_hash + "' (bad compressed or uncompressed too large)" );
+         throw runtime_error( "invalid content for '" + use_tag_or_hash + "' (bad compressed or uncompressed too large)" );
 
       final_data.erase( 1 );
       final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
@@ -777,6 +804,9 @@ string file_type_info( const string& tag_or_hash,
          {
             retval += " " + lower( hash );
 
+            if( !header_suffix.empty( ) )
+               retval += " " + header_suffix;
+
             if( add_size )
                retval += " " + size_info;
 
@@ -804,6 +834,9 @@ string file_type_info( const string& tag_or_hash,
             else
             {
                retval += " " + lower( hash );
+
+               if( !header_suffix.empty( ) )
+                  retval += " " + header_suffix;
 
                if( add_size )
                   retval += " " + size_info;
@@ -848,6 +881,9 @@ string file_type_info( const string& tag_or_hash,
             {
                retval += " " + lower( hash );
 
+               if( !header_suffix.empty( ) )
+                  retval += " " + header_suffix;
+
                if( add_size )
                   retval += " " + size_info;
             }
@@ -866,7 +902,7 @@ string file_type_info( const string& tag_or_hash,
             if( pos != string::npos )
                next_name = next.substr( pos + 1 );
 
-            string size, item_num( to_comparable_string( i, false, 6 ) ); 
+            string size, item_num( to_comparable_string( i, false, 6 ) );
 
             if( output_last_only && depth == indent + 1 )
                size = " (" + format_bytes( file_bytes( next_hash, output_total_blob_size ) ) + ")";
@@ -921,7 +957,17 @@ string file_type_info( const string& tag_or_hash,
                      allow_all_after = false;
                   }
 
-                  string additional( file_type_info( next_hash, expansion, max_depth, indent + 1,
+                  string next_tag_or_hash( next_hash );
+
+                  if( include_header_suffix )
+                  {
+                     if( header_suffix.empty( ) )
+                        next_tag_or_hash = next_name + '!' + next_hash;
+                     else
+                        next_tag_or_hash = header_suffix + ':' + next_name + '!' + next_hash;
+                  }
+
+                  string additional( file_type_info( next_tag_or_hash, expansion, max_depth, indent + 1,
                    add_size, ( allow_all ? 0 : p_prefix ), allow_all_after, output_total_blob_size ) );
 
                   if( !additional.empty( ) )
@@ -1284,6 +1330,9 @@ string create_list_file( const string& add_tags, const string& del_items,
       string next_hash( next.substr( 0, pos ) );
       string next_name;
 
+      if( next_hash == hash )
+         throw runtime_error( "invalid attempt to add self to list" );
+
       if( pos != string::npos )
          next_name = next.substr( pos + 1 );
 
@@ -1299,9 +1348,6 @@ string create_list_file( const string& add_tags, const string& del_items,
          for( size_t j = 0; j < items_to_remove.size( ); j++ )
          {
             string next_to_remove( items_to_remove[ j ] );
-
-            if( next_hash == hash )
-               throw runtime_error( "invalid attempt to add self to list" );
 
             if( next_hash != next_to_remove && next_name != next_to_remove )
                new_items.push_back( next );
@@ -1539,6 +1585,9 @@ string create_list_tree( const string& add_tags, const string& del_items,
                name = item_name;
             }
          }
+
+         while( found_lists.size( ) > branches.size( ) )
+            found_lists.pop_back( );
 
          for( size_t i = branches.size( ); i > 0; i-- )
          {

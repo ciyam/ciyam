@@ -23,7 +23,7 @@ TREE=$2
 VNAME=$3
 VDATA=$4
 ;
-VTAG=V.
+VTAG=V
 TAGP=@repstr:\:/.:$TREE
 ;
 @ifndef $VDATA
