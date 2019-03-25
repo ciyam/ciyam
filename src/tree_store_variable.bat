@@ -15,6 +15,6 @@ del ~tree_store_variable
 goto end
 
 :usage
-echo Usage: tree_store_variable [tree tag] [tree branch] [variable name] [[variable data]]
+echo Usage: tree_store_variable [tree tag] [branch tree] [variable name] [[variable data]]
 
 :end

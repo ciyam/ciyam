@@ -12,18 +12,18 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#NOTE: This script needs a tree tag and branch type with an optional branch expression.
+#NOTE: This script needs a tree tag and branch type with an optional branch tree expression.
 @else
 ;
 TTAG=$1
 TYPE=$2
 EXPR=X$3
 ;
-DEPTH=2
 WANT_INFO=
-PREFIX=$TYPE.
+PREFIX=$TYPE
 ;
 EXPR=@substr:1:$EXPR
+;
 @ifdef $EXPR
 FIRST=@substr:0,1:$EXPR
 @ifeq "$FIRST" "?"
@@ -31,29 +31,16 @@ WANT_INFO=1
 PREFIX=$FIRST$PREFIX
 EXPR=@substr:1:$EXPR
 @endif
+@endif
 ;
-@ifdef $EXPR
-PARTS=@repstr:\:/\n:$EXPR
+PREFIX=$PREFIX:$EXPR
 .session_variable @deque ""
-.session_variable @deque "~$PARTS"
+LINES=@repstr:\:/\n:$PREFIX
+.session_variable @deque "~$LINES"
+.session_variable @deque size
+DEPTH=@$OUTPUT+1
 ;
-@:LOOP
-@label NEXT
-.session_variable @deque front
-@ifndef $OUTPUT
-@label END_LOOP
-@endif
-@skip
-;
-@:NEXT
-@ifneq "$OUTPUT" "*"
-PREFIX=$PREFIX$OUTPUT
-@endif
-DEPTH=@$DEPTH+1
-.session_variable @deque pop_front
-!!@:LOOP
-@:END_LOOP
-;
+.session_variable @deque ""
 .file_info -recurse -d=-$DEPTH -p=$PREFIX* $TTAG
 .session_variable @deque "~$OUTPUT"
 @:LOOP
@@ -86,6 +73,4 @@ SIZE=$SIZE $EXTRA
 !!@:LOOP
 @:END_LOOP
 ;
-@endif
-@endif
 @endif

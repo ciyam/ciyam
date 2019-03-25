@@ -19,22 +19,25 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $6
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "5"
-#NOTE: This script needs tree tag, branch name, directory tree, file and base path.
+@ifneq "$NUM_ARGS" "6"
+#NOTE: This script needs tree tag, branch type, branch tree, sub-directory path, file and base path.
 @else
 ;
 TTAG=$1
-NAME=$2
+TYPE=$2
 TREE=$3
-FILE=$4
-PATH=$5
+DIRS=$4
+FILE=$5
+PATH=$6
 ;
-FTAG=F
-DIRS=@repstr:./\/:$TREE
+TAGP=@repstr:\//.:$DIRS
 ;
-.file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TREE.$FILE
-.file_list -a=?$TREE.$FILE -d=$DIRS/$FILE -sort $TTAG:$FTAG:$NAME !$TTAG
-.file_tag -remove $TREE.$FILE
+.file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
+.file_list -a=?$TAGP.$FILE -d=$DIRS/$FILE -sort $TTAG:$TYPE:$TREE !$TTAG
+.file_tag -remove $TAGP.$FILE
 ;
 @endif

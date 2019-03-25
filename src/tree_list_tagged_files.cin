@@ -18,7 +18,7 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "4"
-#NOTE: This script needs a tree tag, branch type, tag list and file branch expression.
+#NOTE: This script needs a tree tag, branch type, tag list and branch tree expression.
 @else
 ;
 TTAG=$1
@@ -53,7 +53,7 @@ NUM_DIRS=$OUTPUT
 DEPTH=@$DEPTH+$OUTPUT
 @endif
 ;
-PREFIX=$PREFIX$TTYPE.
+PREFIX=$PREFIX$TTYPE
 SUFFIX=$TYPE:$EXPR
 ;
 LINES=@repstr:,/\n:$TAGS
@@ -75,7 +75,7 @@ NEXT_TAG=$OUTPUT
 .session_variable @deque
 DEQUE=$OUTPUT
 .session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:.$SUFFIX* $TTAG
+.file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:$SUFFIX* $TTAG
 .session_variable @deque "~$OUTPUT"
 ;
 @:INNER_LOOP
@@ -92,49 +92,17 @@ INFO=%LINES:1%
 @ifneq "$INFO" "[list]"
 HASH=%LINES:2%
 NAME=%LINES:3%
-NAME=@repstr:$TTYPE.$NEXT_TAG.$TYPE./:$NAME
 SIZE=%LINES:4%
 ; NOTE: The size is expected to include a space so is split across two lines.
 EXTRA=%LINES:5%
 @ifdef $EXTRA
 SIZE=$SIZE $EXTRA
 @endif
-.session_variable @deque
-INNER_DEQUE=$OUTPUT
-LINES=@repstr:./\n:$NAME
-.session_variable @deque ""
-.session_variable @deque "~$LINES"
-PATH=
-TMP_NUM=$NUM_DIRS
-@:NAME_LOOP
-@label NEXT_NAME
-.session_variable @deque front
-@ifndef $OUTPUT
-@label END_NAME_LOOP
-@endif
-@skip
-;
-@:NEXT_NAME
-NEXT_NAME=$OUTPUT
-@ifeq "$TMP_NUM" "0"
-.session_variable @deque size
-@ifeq "$OUTPUT" "1"
-PATH=$PATH$NEXT_NAME
-@else
-PATH=$PATH$NEXT_NAME.
-@endif
-@else
-PATH=$PATH$NEXT_NAME/
-TMP_NUM=@$TMP_NUM-1
-@endif
-.session_variable @deque pop_front
-!!@:NAME_LOOP
-@:END_NAME_LOOP
 ;
 @ifndef $WANT_INFO
-ITEM=$PATH
+ITEM=$NAME
 @else
-ITEM=$PATH $HASH $SIZE
+ITEM=$NAME $HASH $SIZE
 @endif
 ;
 @ifdef $FIRST

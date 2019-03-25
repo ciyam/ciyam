@@ -29,7 +29,16 @@ LINES=$OUTPUT
 ;
 TAGS=@repstr:\n/,:$LINES
 ;
+IS_NEW=
 @ifneq "$PREFIX" "$TAGS"
+IS_NEW=1
+@else
+@ifneq "$PREFIX" "$NEW_TAG"
+IS_NEW=1
+@endif
+@endif
+;
+@ifdef $IS_NEW
 .file_raw list ,$TAGS $NEW_TAG
 .file_tag -remove $TAGS
 .file_info -content $NEW_TAG

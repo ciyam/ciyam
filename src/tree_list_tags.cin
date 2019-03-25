@@ -53,6 +53,8 @@ LINES=$OUTPUT
 ;
 @ifeq "$DEPTH" "2"
 .session_variable @deque pop_front
+@else
+.session_variable @deque "retain [list]"
 @endif
 .session_variable @deque front
 @ifndef $OUTPUT
@@ -90,7 +92,6 @@ TAG_NAME=%OUTPUT:2%
 .session_variable @deque "~$DEQUE"
 ;
 @ifneq "$DEPTH" "2"
-.session_variable @deque pop_front
 .session_variable @deque pop_front
 @endif
 !!@:LOOP

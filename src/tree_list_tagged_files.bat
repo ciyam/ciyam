@@ -16,6 +16,6 @@ del ~tree_list_tagged_files
 goto end
 
 :usage
-echo Usage: tree_list_tagged_files [tree tag] [branch type] [tag list,] [file branch expression]
+echo Usage: tree_list_tagged_files [tree tag] [branch type] [tag list,] [branch tree expression]
 
 :end
