@@ -3155,10 +3155,33 @@ void append_transaction_log_command( storage_handler& handler,
       if( !file_exists( log_filename ) )
          is_new = true;
 
-      string log_raw_file_tag_prefix( get_raw_session_variable(
-       get_special_var_name( e_special_var_log_raw_file_tag_prefix ) ) );
+      bool append_to_log_blob_files = false;
 
-      bool append_to_log_blog_files = !log_raw_file_tag_prefix.empty( );
+      if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
+         append_to_log_blob_files = true;
+
+      string extra_info_name( get_special_var_name( e_special_var_extra_field_values ) );
+      string extra_field_values( get_session_variable( extra_info_name ) );
+
+      if( !extra_field_values.empty( ) )
+      {
+         string::size_type len = extra_info_name.length( );
+         string::size_type pos = gtp_session->transaction_log_command.find( extra_info_name );
+
+         if( extra_field_values == "!" )
+         {
+            ++len; // i.e. to erase the comma as well
+            extra_field_values.erase( );
+         }
+
+         if( pos != string::npos )
+         {
+            gtp_session->transaction_log_command.erase( pos, len );
+
+            if( !extra_field_values.empty( ) )
+               gtp_session->transaction_log_command.insert( pos, extra_field_values );
+         }
+      }
 
       vector< string > tx_log_lines;
 
@@ -3172,7 +3195,7 @@ void append_transaction_log_command( storage_handler& handler,
       {
          log_file << c_storage_identity_tx_id << handler.get_root( ).identity << '\n';
 
-         if( append_to_log_blog_files )
+         if( append_to_log_blob_files )
             tx_log_lines.push_back( c_storage_identity_tx_id + handler.get_root( ).identity + "\n" );
       }
 
@@ -3226,12 +3249,13 @@ void append_transaction_log_command( storage_handler& handler,
 
          log_file << next_line;
 
-         if( append_to_log_blog_files )
+         if( append_to_log_blob_files )
             tx_log_lines.push_back( next_line );
       }
 
-      if( append_to_log_blog_files )
-         append_transaction_log_lines_to_blob_files( log_raw_file_tag_prefix, tx_log_lines );
+      if( append_to_log_blob_files )
+         append_transaction_log_lines_to_blob_files(
+          handler.get_name( ) + ".log", tx_log_lines, handler.get_is_locked_for_admin( ) );
 
       log_file.flush( );
       if( !log_file.good( ) )
@@ -7114,6 +7138,17 @@ string storage_identity( )
    return gtp_session->p_storage_handler->get_root( ).identity;
 }
 
+void storage_identity( const string& new_identity )
+{
+   if( !storage_locked_for_admin( ) )
+      throw runtime_error( "cannot change identity unless locked for administration" );
+
+   ods_file_system ofs( *gtp_session->p_storage_handler->get_ods( ) );
+   ofs.store_as_text_file( c_storable_file_name_id, new_identity );
+
+   gtp_session->p_storage_handler->get_root( ).identity = new_identity;
+}
+
 string storage_blockchain( )
 {
    string s, identity( storage_identity( ) );
@@ -10205,20 +10240,51 @@ void append_transaction_log_command( const string& log_command )
    }
 }
 
-void append_transaction_log_lines_to_blob_files(
- const string& log_blog_file_prefix, const vector< string >& log_lines, bool remove_existing_blobs )
+void insert_log_blobs_into_tree( const string& log_blob_file_prefix )
 {
    guard g( g_mutex );
 
-   if( !log_blog_file_prefix.empty( ) && !log_lines.empty( ) )
+   if( !log_blob_file_prefix.empty( ) )
+   {
+      string separator( ":" );
+
+      string all_tags( list_file_tags( log_blob_file_prefix + ".*" ) );
+
+      if( !all_tags.empty( ) )
+      {
+         vector< string > tags;
+         split( all_tags, tags, '\n' );
+
+         for( size_t i = 0; i < tags.size( ); i++ )
+         {
+            string next_tag( tags[ i ] );
+
+            create_list_tree( next_tag, next_tag, true,
+             c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+
+            if( i != tags.size( ) - 1 )
+               tag_del( tags[ i ] );
+         }
+      }
+   }
+}
+
+void append_transaction_log_lines_to_blob_files(
+ const string& log_blob_file_prefix, const vector< string >& log_lines, bool is_restoring, bool remove_existing_blobs )
+{
+   guard g( g_mutex );
+
+   if( !log_blob_file_prefix.empty( ) && !log_lines.empty( ) )
    {
       string log_raw_file_tag;
       string raw_file_data( c_file_type_str_blob );
 
+      string separator( ":" );
       size_t raw_file_chunk = 0;
 
-      string last_tag;
-      string all_tags( list_file_tags( log_blog_file_prefix + "*" ) );
+      string last_tag, last_hash;
+
+      string all_tags( list_file_tags( log_blob_file_prefix + ".*" ) );
 
       if( !all_tags.empty( ) )
       {
@@ -10228,19 +10294,23 @@ void append_transaction_log_lines_to_blob_files(
          if( remove_existing_blobs )
          {
             for( size_t i = 0; i < tags.size( ); i++ )
-               tag_del( tags[ i ] );
+               tag_del( tags[ i ], true );
+
+            create_list_tree( "", log_blob_file_prefix, true,
+             c_ciyam_tag + separator + c_variables_branch, c_ciyam_tag, "" );
          }
          else
          {
             last_tag = tags.back( );
+            last_hash = tag_file_hash( last_tag );
 
-            raw_file_data += extract_file( tag_file_hash( last_tag ), "" );
+            raw_file_data += extract_file( last_hash, "" );
 
-            raw_file_chunk = from_string< size_t >( last_tag.substr( log_blog_file_prefix.length( ) ) );
+            raw_file_chunk = from_string< size_t >( last_tag.substr( log_blob_file_prefix.length( ) + 1 ) );
          }
       }
 
-      log_raw_file_tag = log_blog_file_prefix + to_comparable_string( raw_file_chunk, false, 5 );
+      log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 5 );
 
       string next_line;
       for( size_t i = 0; i < log_lines.size( ); i++ )
@@ -10251,19 +10321,41 @@ void append_transaction_log_lines_to_blob_files(
          {
             // NOTE: Don't re-create if existing file wasn't actually appended to.
             if( i > 0 )
+            {
                create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
+
+               if( is_restoring )
+               {
+                  if( !last_hash.empty( ) )
+                     delete_file( last_hash, true );
+               }
+               else
+                  create_list_tree( log_raw_file_tag, log_raw_file_tag, true,
+                   c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+            }
 
             ++raw_file_chunk;
 
             raw_file_data.erase( 1 );
-            log_raw_file_tag = log_blog_file_prefix + to_comparable_string( raw_file_chunk, false, 5 );
+            log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 5 );
          }
 
          raw_file_data += next_line;
       }
 
       if( raw_file_data.size( ) > 1 )
+      {
          create_raw_file( raw_file_data, true, log_raw_file_tag.c_str( ) );
+
+         if( is_restoring )
+         {
+            if( !last_hash.empty( ) )
+               delete_file( last_hash, true );
+         }
+         else
+            create_list_tree( log_raw_file_tag, log_raw_file_tag, true,
+             c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+      }
    }
 }
 

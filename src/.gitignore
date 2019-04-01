@@ -1,6 +1,11 @@
 # If present ignore a 'tmp' file or directory.
 tmp
 
+# Ignore some typical prototype scripts or programs.
+x
+x.cin
+x.cpp
+
 # Ignore dependency files.
 *.d
 *.dep

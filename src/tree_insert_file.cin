@@ -33,11 +33,17 @@ TREE=$3
 DIRS=$4
 FILE=$5
 PATH=$6
+PREF=$7
 ;
 TAGP=@repstr:\//.:$DIRS
+@ifdef $PREF
+TAGP=$PREF$TAGP
+@endif
 ;
 .file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
 .file_list -a=?$TAGP.$FILE -d=$DIRS/$FILE -sort $TTAG:$TYPE:$TREE !$TTAG
+@ifndef $PREF
 .file_tag -remove $TAGP.$FILE
+@endif
 ;
 @endif

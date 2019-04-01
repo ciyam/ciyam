@@ -189,18 +189,23 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
 
 bool perform_update( const string& module, const string& class_id,
  const string& key, const vector< pair< string, string > >& field_value_pairs,
- const session_info& sess_info, string* p_error_message )
+ const session_info& sess_info, string* p_error_message, string* p_fields_and_values_prefix )
 {
    bool okay = true;
 
-   string field_values;
+   string fields_and_values;
+
+   if( p_fields_and_values_prefix )
+      fields_and_values = *p_fields_and_values_prefix;
+
    for( size_t i = 0; i < field_value_pairs.size( ); i++ )
    {
-      if( i > 0 )
-         field_values += ',';
-      field_values += field_value_pairs[ i ].first;
-      field_values += "=";
-      field_values += escaped( field_value_pairs[ i ].second, ",\"" );
+      if( !fields_and_values.empty( ) )
+         fields_and_values += ',';
+
+      fields_and_values += field_value_pairs[ i ].first;
+      fields_and_values += "=";
+      fields_and_values += escaped( field_value_pairs[ i ].second, ",\"" );
    }
 
    string cmd( "pu " + get_uid_info( sess_info ) + " "
@@ -212,7 +217,7 @@ bool perform_update( const string& module, const string& class_id,
    if( !sess_info.tz_name.empty( ) )
       cmd += " -tz=" + sess_info.tz_name;
 
-   cmd += " " + key + " \"" + field_values + "\"";
+   cmd += " " + key + " \"" + fields_and_values + "\"";
 
    DEBUG_TRACE( cmd );
 

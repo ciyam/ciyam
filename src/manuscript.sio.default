@@ -34,6 +34,11 @@
   <arguments>import_files.cin @path @tag_prefix @sub_directory
  </script>
  <script/>
+  <name>tree_insert_file
+  <filename>*script*
+  <arguments>tree_insert_file.cin @tag @type @branch @sub_directory @name @path @tag_prefix
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash

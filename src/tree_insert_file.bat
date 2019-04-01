@@ -11,13 +11,13 @@ if '%4' == '' goto usage
 if '%5' == '' goto usage
 if '%6' == '' goto usage
 
-echo ^<^<tree_insert_file.cin %1 %2 %3 %4 %5 %6 >~tree_insert_file
+echo ^<^<tree_insert_file.cin %1 %2 %3 %4 %5 %6 %7 >~tree_insert_file
 ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_insert_file
 
 del ~tree_insert_file
 goto end
 
 :usage
-echo Usage: tree_insert_file [tree tag] [branch type] [branch tree] [sub-directory path] [file name] [base path]
+echo Usage: tree_insert_file [tree tag] [branch type] [branch tree] [sub-directory path] [file name] [base path] [[tag prefix]]
 
 :end

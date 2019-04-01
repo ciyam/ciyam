@@ -18,6 +18,11 @@ const char* const c_false = "false";
 
 const char* const c_dummy = "dummy";
 
+const char* const c_ciyam_tag = "ciyam";
+
+const char* const c_variables_branch = "V";
+const char* const c_web_files_branch = "W";
+
 const char* const c_meta_model_name = "Meta";
 
 const char* const c_meta_class_name_class = "Class";

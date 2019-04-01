@@ -2813,8 +2813,9 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_enum_item=$specification_\0_enum_item arg_value=$specification_\0_value arg_create_only=$specification_\0_create_only\
  arg_update_only=$specification_\0_update_only arg_fistexttype=$specification_\0_fistexttype`}\
 `,\
-`@eq`(`'\1`'`,`'file_attachment`'`)`&`?`$specification_\0_sfield`&`!`@eq`(`$specification_\0_sfield`,`'`'`)
-`{`#file_attachment.spec.xrep section=for_store arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
+`@eq`(`'\1`'`,`'file_attachment`'`)`&`(`(`!`@eq`(`$specification_\0_ofield`,`'`'`)`|`!`@eq`(`$specification_\0_sfield`,`'`'`)`)`)
+`{`#file_attachment.spec.xrep section=for_store arg_id=$specification_\0_id\
+ arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'file_content`'`)
 `{`#file_content.spec.xrep section=for_store class_name=$class_name module_name=$module_name\

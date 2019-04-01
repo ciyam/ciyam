@@ -115,18 +115,18 @@ string construct_file_name_from_hash( const string& hash,
          throw runtime_error( "unexpected hash '" + hash + "'" );
    }
 
-   string filename( c_files_directory );
+   string file_name( c_files_directory );
 
-   filename += '/';
-   filename += lower( hash.substr( 0, 2 ) );
+   file_name += '/';
+   file_name += lower( hash.substr( 0, 2 ) );
 
    if( create_directory )
-      create_directory_if_not_exists( filename );
+      create_directory_if_not_exists( file_name );
 
-   filename += '/';
-   filename += lower( hash.substr( 2 ) );
+   file_name += '/';
+   file_name += lower( hash.substr( 2 ) );
 
-   return filename;
+   return file_name;
 }
 
 void validate_list( const string& data, bool* p_rc = 0 )
@@ -157,10 +157,10 @@ void validate_list( const string& data, bool* p_rc = 0 )
       *p_rc = true;
 }
 
-void validate_hash_with_uncompressed_content( const string& hash, const string& filename )
+void validate_hash_with_uncompressed_content( const string& hash, const string& file_name )
 {
    sha256 test_hash;
-   test_hash.update( filename, true );
+   test_hash.update( file_name, true );
 
    if( hash != test_hash.get_digest_as_string( ) )
       throw runtime_error( "invalid content for '" + hash + "' (hash does not match hashed data)" );
@@ -204,7 +204,7 @@ string get_archive_status( const string& path )
    string retval( c_okay );
    string cwd( get_cwd( ) );
 
-   string tmp_filename( "~" + uuid( ).as_string( ) );
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
 
    try
    {
@@ -215,7 +215,7 @@ string get_archive_status( const string& path )
          retval = string( c_file_archive_status_bad_access );
       else
       {
-         ofstream outf( tmp_filename.c_str( ), ios::out );
+         ofstream outf( tmp_file_name.c_str( ), ios::out );
          if( !outf )
             retval = string( c_file_archive_status_status_bad_create );
          else
@@ -229,14 +229,14 @@ string get_archive_status( const string& path )
          }
       }
 
-      file_remove( tmp_filename );
+      file_remove( tmp_file_name );
       set_cwd( cwd );
 
       return retval;
    }
    catch( ... )
    {
-      file_remove( tmp_filename );
+      file_remove( tmp_file_name );
       set_cwd( cwd );
       throw;
    }
@@ -380,9 +380,9 @@ void init_files_area( vector< string >* p_untagged )
                if( is_first )
                {
                   string data( buffer_file( fs.get_full_name( ) ) );
-                  string filename( construct_file_name_from_hash( data, false, false ) );
+                  string file_name( construct_file_name_from_hash( data, false, false ) );
 
-                  if( !file_exists( "../" + filename ) )
+                  if( !file_exists( "../" + file_name ) )
                      file_remove( fs.get_full_name( ) );
 
                   g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
@@ -498,7 +498,7 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
    return retval;
 }
 
-bool has_tag( const string& name )
+bool has_tag( const string& name, file_type type )
 {
    guard g( g_mutex );
 
@@ -511,7 +511,31 @@ bool has_tag( const string& name )
    if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
       return false;
    else
-      return true;
+   {
+      if( type == e_file_type_any )
+         return true;
+      else
+      {
+         string hash( tag_file_hash( name ) );
+         string file_name( construct_file_name_from_hash( hash ) );
+
+         string data( buffer_file( file_name, 1 ) );
+         
+         if( data.empty( ) )
+            throw runtime_error( "unexpected empty file '" + name + "'" );
+
+         unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+
+         if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in has_tag" );
+
+         if( ( type == e_file_type_blob && file_type != c_file_type_val_blob )
+          || ( type == e_file_type_list && file_type != c_file_type_val_list ) )
+            return false;
+
+         return true;
+      }
+   }
 }
 
 bool has_file( const string& hash, bool check_is_hash )
@@ -522,9 +546,9 @@ bool has_file( const string& hash, bool check_is_hash )
       return false;
    else
    {
-      string filename( construct_file_name_from_hash( hash, false, check_is_hash ) );
+      string file_name( construct_file_name_from_hash( hash, false, check_is_hash ) );
 
-      return file_exists( filename );
+      return file_exists( file_name );
    }
 }
 
@@ -532,11 +556,11 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
    long file_size = 0;
 
-   string data( buffer_file( filename, 1, &file_size ) );
+   string data( buffer_file( file_name, 1, &file_size ) );
 
    unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
 
@@ -548,7 +572,7 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 
    if( !is_encrypted && blobs_for_lists && file_type == c_file_type_val_list )
    {
-      data = buffer_file( filename );
+      data = buffer_file( file_name );
 
       string increment_special( get_special_var_name( e_special_var_increment ) );
       string buffered_var_name( get_special_var_name( e_special_var_file_info_buffered ) );
@@ -600,7 +624,7 @@ string file_type_info( const string& tag_or_hash,
 {
    guard g( g_mutex );
 
-   string hash, filename;
+   string hash, file_name;
 
    int depth = max_depth;
    bool output_last_only = false;
@@ -636,7 +660,7 @@ string file_type_info( const string& tag_or_hash,
    if( file_exists( string( c_files_directory ) + '/' + use_tag_or_hash ) )
    {
       hash = tag_file_hash( use_tag_or_hash );
-      filename = construct_file_name_from_hash( hash );
+      file_name = construct_file_name_from_hash( hash );
    }
    else
    {
@@ -648,13 +672,13 @@ string file_type_info( const string& tag_or_hash,
       hash = !is_base64 ? use_tag_or_hash : base64_to_hex( use_tag_or_hash );
 
       if( hash.length( ) == c_num_digest_characters )
-         filename = construct_file_name_from_hash( hash, false, false );
+         file_name = construct_file_name_from_hash( hash, false, false );
    }
 
-   if( !file_exists( filename ) && indent && has_file_been_archived( hash ) )
+   if( !file_exists( file_name ) && indent && has_file_been_archived( hash ) )
       retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
 
-   if( !file_exists( filename ) )
+   if( !file_exists( file_name ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "File '" + tag_or_hash + "' was not found." );
 
@@ -716,7 +740,7 @@ string file_type_info( const string& tag_or_hash,
    else if( !get_session_variable( buffered_var_name ).empty( ) )
       set_session_variable( buffered_var_name, increment_special );
 
-   string data( buffer_file( filename, max_to_buffer, &file_size ) );
+   string data( buffer_file( file_name, max_to_buffer, &file_size ) );
    
    if( data.empty( ) )
       throw runtime_error( "unexpected empty file '" + use_tag_or_hash + "'" );
@@ -732,7 +756,7 @@ string file_type_info( const string& tag_or_hash,
 
    if( !is_encrypted && max_to_buffer == 1 && file_type == c_file_type_val_list )
    {
-      data = buffer_file( filename );
+      data = buffer_file( file_name );
 
       if( data.size( ) <= 1 )
          throw runtime_error( "unexpected truncated file content for '" + use_tag_or_hash + "'" );
@@ -1040,7 +1064,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    string hash( p_hash ? string( p_hash ) : sha256( final_data ).get_digest_as_string( ) );
 
-   string filename( construct_file_name_from_hash( hash, true ) );
+   string file_name( construct_file_name_from_hash( hash, true ) );
 
    if( file_type != c_file_type_val_blob )
       validate_list( final_data.substr( 1 ) );
@@ -1074,7 +1098,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    }
 #endif
 
-   bool was_existing( file_exists( filename ) );
+   bool was_existing( file_exists( file_name ) );
 
    if( !was_existing )
    {
@@ -1095,10 +1119,10 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       if( g_total_bytes + final_data.size( ) > max_bytes )
          throw runtime_error( "maximum file area size limit cannot be exceeded" );
 
-      ofstream outf( filename.c_str( ), ios::out | ios::binary );
+      ofstream outf( file_name.c_str( ), ios::out | ios::binary );
 
       if( !outf )
-         throw runtime_error( "unable to create output file '" + filename + "'" );
+         throw runtime_error( "unable to create output file '" + file_name + "'" );
 
       outf << final_data;
 
@@ -1623,11 +1647,11 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
    if( pos == string::npos )
    {
-      string tag_filename( c_files_directory );
+      string tag_file_name( c_files_directory );
 
-      tag_filename += "/" + name;
+      tag_file_name += "/" + name;
 
-      file_remove( tag_filename );
+      file_remove( tag_file_name );
 
       if( g_tag_hashes.count( name ) )
       {
@@ -1683,9 +1707,9 @@ void tag_file( const string& name, const string& hash )
 
    if( name != get_special_var_name( e_special_var_none ) )
    {
-      string filename( construct_file_name_from_hash( hash ) );
+      string file_name( construct_file_name_from_hash( hash ) );
 
-      if( !file_exists( filename ) )
+      if( !file_exists( file_name ) )
          throw runtime_error( hash + " was not found" );
 
       string tag_name;
@@ -1737,13 +1761,13 @@ void tag_file( const string& name, const string& hash )
          if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
             ts_tag_to_remove = tags[ 0 ];
 
-         string tag_filename( c_files_directory );
+         string tag_file_name( c_files_directory );
 
-         tag_filename += "/" + tag_name;
+         tag_file_name += "/" + tag_name;
 
-         ofstream outf( tag_filename.c_str( ) );
+         ofstream outf( tag_file_name.c_str( ) );
          if( !outf )
-            throw runtime_error( "unable to open file '" + tag_filename + "' for output" );
+            throw runtime_error( "unable to open file '" + tag_file_name + "' for output" );
 
          outf << hash;
 
@@ -2064,13 +2088,13 @@ void remove_file_tags( const string& hash, const string& pat )
 
 string hash_with_nonce( const string& hash, const string& nonce )
 {
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
    sha256 temp_hash;
 
    if( !nonce.empty( ) )
       temp_hash.update( nonce );
-   temp_hash.update( filename, true );
+   temp_hash.update( file_name, true );
 
    return temp_hash.get_digest_as_string( );
 }
@@ -2082,12 +2106,12 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
    if( has_tag( tag_or_hash ) )
       hash = tag_file_hash( tag_or_hash );
 
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
-   if( !file_exists( filename ) )
+   if( !file_exists( file_name ) )
       throw runtime_error( hash + " was not found" );
 
-   string file_data( buffer_file( filename ) );
+   string file_data( buffer_file( file_name ) );
 
    if( file_data.empty( ) )
       throw runtime_error( "unexpected empty file content for '" + hash + "'" );
@@ -2134,7 +2158,7 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
 
       new_file_data[ 0 ] |= c_file_type_val_encrypted;
 
-      write_file( filename, new_file_data );
+      write_file( file_name, new_file_data );
 
       if( recurse && file_type == c_file_type_val_list )
       {
@@ -2194,7 +2218,7 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
          validate_hash_with_uncompressed_content( hash,
           ( unsigned char* )file_data.data( ), file_data.length( ), bad_hash_error.c_str( ) );
 
-      write_file( filename, file_data );
+      write_file( file_name, file_data );
 
       if( recurse && file_type == c_file_type_val_list )
       {
@@ -2219,34 +2243,34 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
 
 void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 {
-   string tmp_filename( "~" + uuid( ).as_string( ) );
-   string filename( construct_file_name_from_hash( hash, false, false ) );
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string file_name( construct_file_name_from_hash( hash, false, false ) );
 
    try
    {
       // NOTE: As the file may end up being deleted whilst it is being
       // transferred it is copied to a temporary file which is instead
       // used for the transfer (and deleted afterwards).
-      if( !filename.empty( ) )
+      if( !file_name.empty( ) )
       {
          guard g( g_mutex );
 
-         if( !file_exists( filename ) )
+         if( !file_exists( file_name ) )
             throw runtime_error( "file '" + hash + "' was not found" );
 
-         file_copy( filename, tmp_filename );
+         file_copy( file_name, tmp_file_name );
       }
 
-      file_transfer( tmp_filename, socket,
+      file_transfer( tmp_file_name, socket,
        e_ft_direction_send, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_initial_timeout,
        c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 
-      file_remove( tmp_filename );
+      file_remove( tmp_file_name );
    }
    catch( ... )
    {
-      file_remove( tmp_filename );
+      file_remove( tmp_file_name );
 
       throw;
    }
@@ -2255,8 +2279,8 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 void store_file( const string& hash, tcp_socket& socket,
  const char* p_tag, progress* p_progress, bool allow_core_file, size_t max_bytes )
 {
-   string tmp_filename( "~" + uuid( ).as_string( ) );
-   string filename( construct_file_name_from_hash( hash, true ) );
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
+   string file_name( construct_file_name_from_hash( hash, true ) );
 
    bool existing = false;
    int64_t existing_bytes = 0;
@@ -2268,21 +2292,21 @@ void store_file( const string& hash, tcp_socket& socket,
    if( !max_bytes || max_bytes > get_files_area_item_max_size( ) )
       max_bytes = get_files_area_item_max_size( );
 
-   if( !filename.empty( ) )
+   if( !file_name.empty( ) )
    {
       guard g( g_mutex );
 
-      existing = file_exists( filename );
+      existing = file_exists( file_name );
 
       if( existing )
-         existing_bytes = file_size( filename );
+         existing_bytes = file_size( file_name );
    }
 
    try
    {
       session_file_buffer_access file_buffer;
 
-      file_transfer( tmp_filename, socket, e_ft_direction_recv, max_bytes,
+      file_transfer( tmp_file_name, socket, e_ft_direction_recv, max_bytes,
        c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress );
 
@@ -2314,7 +2338,7 @@ void store_file( const string& hash, tcp_socket& socket,
 #ifdef ZLIB_SUPPORT
       if( !is_encrypted && is_compressed )
       {
-         unsigned long size = file_size( tmp_filename ) - 1;
+         unsigned long size = file_size( tmp_file_name ) - 1;
          unsigned long usize = file_buffer.get_size( ) - size;
 
          if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
@@ -2346,7 +2370,7 @@ void store_file( const string& hash, tcp_socket& socket,
          throw runtime_error( "invalid 'list' file" );
 
       if( !is_encrypted && !is_compressed )
-         validate_hash_with_uncompressed_content( hash, tmp_filename );
+         validate_hash_with_uncompressed_content( hash, tmp_file_name );
 
       if( rc )
       {
@@ -2367,10 +2391,10 @@ void store_file( const string& hash, tcp_socket& socket,
          if( !is_in_blacklist )
          {
 #ifndef ZLIB_SUPPORT
-            file_copy( tmp_filename, filename );
+            file_copy( tmp_file_name, file_name );
 #else
             bool has_written = false;
-            unsigned long size = file_size( tmp_filename ) - 1;
+            unsigned long size = file_size( tmp_file_name ) - 1;
 
             if( !is_no_compress
              && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
@@ -2390,7 +2414,7 @@ void store_file( const string& hash, tcp_socket& socket,
 
                      file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
 
-                     write_file( filename, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                     write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
                   }
                }
                else if( rc != Z_BUF_ERROR )
@@ -2398,11 +2422,11 @@ void store_file( const string& hash, tcp_socket& socket,
             }
 
             if( !has_written )
-               file_copy( tmp_filename, filename );
+               file_copy( tmp_file_name, file_name );
 #endif
          }
 
-         file_remove( tmp_filename );
+         file_remove( tmp_file_name );
 
          if( !existing && !is_in_blacklist )
             ++g_total_files;
@@ -2410,13 +2434,13 @@ void store_file( const string& hash, tcp_socket& socket,
          if( !is_in_blacklist )
          {
             g_total_bytes -= existing_bytes;
-            g_total_bytes += file_size( filename );
+            g_total_bytes += file_size( file_name );
          }
       }
    }
    catch( ... )
    {
-      file_remove( tmp_filename );
+      file_remove( tmp_file_name );
       throw;
    }
 
@@ -2439,12 +2463,12 @@ void delete_file( const string& hash, bool even_if_tagged )
    guard g( g_mutex );
 
    string tags( get_hash_tags( hash ) );
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
    if( tags.empty( ) || even_if_tagged )
    {
-      if( !file_exists( filename ) )
-         throw runtime_error( "file '" + filename + "' not found" );
+      if( !file_exists( file_name ) )
+         throw runtime_error( "file '" + file_name + "' not found" );
 
       if( !tags.empty( ) )
       {
@@ -2455,9 +2479,9 @@ void delete_file( const string& hash, bool even_if_tagged )
             tag_del( all_tags[ i ], false, false );
       }
 
-      int64_t existing_bytes = file_size( filename );
+      int64_t existing_bytes = file_size( file_name );
 
-      file_remove( filename );
+      file_remove( file_name );
 
       --g_total_files;
       g_total_bytes -= existing_bytes;
@@ -2496,16 +2520,16 @@ void delete_files_for_tags( const string& pat )
    }
 }
 
-void copy_raw_file( const string& hash, const string& dest_filename )
+void copy_raw_file( const string& hash, const string& dest_file_name )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
-   if( !file_exists( filename ) )
-      throw runtime_error( "file '" + filename + "' not found" );
+   if( !file_exists( file_name ) )
+      throw runtime_error( "file '" + file_name + "' not found" );
 
-   file_copy( filename, dest_filename );
+   file_copy( file_name, dest_file_name );
 }
 
 void fetch_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
@@ -2526,18 +2550,18 @@ void store_temp_file( const string& name, tcp_socket& socket, progress* p_progre
 
 bool temp_file_is_identical( const string& temp_name, const string& hash )
 {
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
-   return files_are_identical( temp_name, filename );
+   return files_are_identical( temp_name, file_name );
 }
 
-string extract_file( const string& hash, const string& dest_filename, unsigned char check_file_type_and_extra, bool* p_is_list )
+string extract_file( const string& hash, const string& dest_file_name, unsigned char check_file_type_and_extra, bool* p_is_list )
 {
    guard g( g_mutex );
 
-   string filename( construct_file_name_from_hash( hash ) );
+   string file_name( construct_file_name_from_hash( hash ) );
 
-   string data( buffer_file( filename ) );
+   string data( buffer_file( file_name ) );
 
    if( !data.empty( ) )
    {
@@ -2557,7 +2581,7 @@ string extract_file( const string& hash, const string& dest_filename, unsigned c
 
       session_file_buffer_access file_buffer;
 
-      unsigned long size = file_size( filename ) - 1;
+      unsigned long size = file_size( file_name ) - 1;
 
       size_t offset = 1;
 
@@ -2577,8 +2601,8 @@ string extract_file( const string& hash, const string& dest_filename, unsigned c
       if( !is_compressed )
          memcpy( file_buffer.get_buffer( ), &data[ offset ], size );
 
-      if( !dest_filename.empty( ) )
-         write_file( dest_filename, file_buffer.get_buffer( ), size );
+      if( !dest_file_name.empty( ) )
+         write_file( dest_file_name, file_buffer.get_buffer( ), size );
 
       data = string( ( const char* )file_buffer.get_buffer( ), size );
    }
@@ -2594,7 +2618,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
       throw runtime_error( "unexpected negative size_limit provided to add_file_archive" );
 
    string cwd( get_cwd( ) );
-   string tmp_filename( "~" + uuid( ).as_string( ) );
+   string tmp_file_name( "~" + uuid( ).as_string( ) );
 
    if( path.empty( )
     || path[ path.length( ) - 1 ] == '\\' || path[ path.length( ) - 1 ] == '/' )

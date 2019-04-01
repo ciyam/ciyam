@@ -45,6 +45,7 @@ const char* const c_special_variable_grp = "@grp";
 const char* const c_special_variable_key = "@key";
 const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_set = "@set";
+const char* const c_special_variable_tag = "@tag";
 const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
@@ -58,8 +59,9 @@ const char* const c_special_variable_name = "@name";
 const char* const c_special_variable_none = "@none";
 const char* const c_special_variable_path = "@path";
 const char* const c_special_variable_peer = "@peer";
-const char* const c_special_variable_size = "@size";
 const char* const c_special_variable_port = "@port";
+const char* const c_special_variable_size = "@size";
+const char* const c_special_variable_type = "@type";
 const char* const c_special_variable_uuid = "@uuid";
 const char* const c_special_variable_algos = "@algos";
 const char* const c_special_variable_array = "@array";
@@ -71,6 +73,7 @@ const char* const c_special_variable_embed = "@embed";
 const char* const c_special_variable_print = "@print";
 const char* const c_special_variable_quiet = "@quiet";
 const char* const c_special_variable_title = "@title";
+const char* const c_special_variable_branch = "@branch";
 const char* const c_special_variable_cloned = "@cloned";
 const char* const c_special_variable_images = "@images";
 const char* const c_special_variable_module = "@module";
@@ -101,6 +104,7 @@ const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
 const char* const c_special_variable_file_names = "@file_names";
 const char* const c_special_variable_permission = "@permission";
+const char* const c_special_variable_tag_prefix = "@tag_prefix";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_application = "@application";
 const char* const c_special_variable_errors_only = "@errors_only";
@@ -114,6 +118,7 @@ const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_rewind_height = "@rewind_height";
+const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
@@ -128,6 +133,7 @@ const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
+const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
@@ -135,7 +141,6 @@ const char* const c_special_variable_locally_minted_block = "@locally_minted_blo
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
-const char* const c_special_variable_log_raw_file_tag_prefix = "@log_raw_file_tag_prefix";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 mutex g_mutex;
@@ -180,6 +185,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_set:
       s = string( c_special_variable_set );
+      break;
+
+      case e_special_var_tag:
+      s = string( c_special_variable_tag );
       break;
 
       case e_special_var_uid:
@@ -242,6 +251,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_size );
       break;
 
+      case e_special_var_type:
+      s = string( c_special_variable_type );
+      break;
+
       case e_special_var_uuid:
       s = string( c_special_variable_uuid );
       break;
@@ -284,6 +297,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_title:
       s = string( c_special_variable_title );
+      break;
+
+      case e_special_var_branch:
+      s = string( c_special_variable_branch );
       break;
 
       case e_special_var_cloned:
@@ -406,6 +423,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_permission );
       break;
 
+      case e_special_var_tag_prefix:
+      s = string( c_special_variable_tag_prefix );
+      break;
+
       case e_special_var_allow_async:
       s = string( c_special_variable_allow_async );
       break;
@@ -456,6 +477,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_rewind_height:
       s = string( c_special_variable_rewind_height );
+      break;
+
+      case e_special_var_sub_directory:
+      s = string( c_special_variable_sub_directory );
       break;
 
       case e_special_var_update_fields:
@@ -510,6 +535,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_check_script_error );
       break;
 
+      case e_special_var_extra_field_values:
+      s = string( c_special_variable_extra_field_values );
+      break;
+
       case e_special_var_file_info_buffered:
       s = string( c_special_variable_file_info_buffered );
       break;
@@ -536,10 +565,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_is_synchronising:
       s = string( c_special_variable_peer_is_synchronising );
-      break;
-
-      case e_special_var_log_raw_file_tag_prefix:
-      s = string( c_special_variable_log_raw_file_tag_prefix );
       break;
 
       case e_special_var_total_child_field_in_parent:

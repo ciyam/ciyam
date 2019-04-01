@@ -14,6 +14,7 @@
 #  endif
 
 #  include "ptypes.h"
+#  include "ciyam_common.h"
 
 #  ifdef CIYAM_BASE_IMPL
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_EXPORT
@@ -39,7 +40,7 @@ void CIYAM_BASE_DECL_SPEC term_files_area( );
 
 std::string CIYAM_BASE_DECL_SPEC current_time_stamp_tag( bool truncated = false, size_t days_ahead = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name );
+bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name, file_type type = e_file_type_any );
 
 bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
 
@@ -99,7 +100,7 @@ void CIYAM_BASE_DECL_SPEC delete_file_tree( const std::string& hash );
 
 void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat );
 
-void CIYAM_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_filename );
+void CIYAM_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_file_name );
 
 void CIYAM_BASE_DECL_SPEC fetch_temp_file(
  const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
@@ -110,7 +111,7 @@ void CIYAM_BASE_DECL_SPEC store_temp_file(
 bool CIYAM_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC extract_file( const std::string& hash,
- const std::string& dest_filename, unsigned char check_file_type_and_extra = '\0', bool* p_is_list = 0 );
+ const std::string& dest_file_name, unsigned char check_file_type_and_extra = '\0', bool* p_is_list = 0 );
 
 void CIYAM_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );

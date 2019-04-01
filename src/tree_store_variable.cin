@@ -34,7 +34,9 @@ TAGP=@repstr:\:/.:$TREE
 ;
 @ifndef $ERROR
 .file_list -a=?$TAGP.$VNAME -d=$TAGP.$VNAME -sort $TTAG:$VTAG:$TREE !$TTAG
+@ifdef $VDATA
 .file_tag -remove $TAGP.$VNAME
+@endif
 @endif
 ;
 @endif

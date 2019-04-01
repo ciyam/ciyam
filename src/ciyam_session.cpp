@@ -3177,8 +3177,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ver_info.erase( );
 
          set_dtm_if_now( dtm, next_command );
-
          set_last_session_cmd_and_hash( command, next_command );
+
+         string extra_field_values_prefix( get_special_var_name( e_special_var_extra_field_values ) + "," );
+
+         if( field_values.find( extra_field_values_prefix ) == 0 )
+         {
+            field_values.erase( 0, extra_field_values_prefix.length( ) );
+            set_session_variable( get_special_var_name( e_special_var_extra_field_values ), "!" );
+         }
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
@@ -4999,6 +5006,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             bool is_skipping_legacy = false;
             bool finished_skipping_legacy = false;
 
+            bool has_ciyam_list_file = has_files_area_tag( c_ciyam_tag, e_file_type_list );
+
             while( getline( inpf, next ) )
             {
                remove_trailing_cr_from_text_file_line( next, is_first );
@@ -5062,24 +5071,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      vector< string > new_tx_log_lines;
 
-                     string log_raw_file_tag_prefix( get_raw_session_variable(
-                      get_special_var_name( e_special_var_log_raw_file_tag_prefix ) ) );
+                     // NOTE: Restore the original identity.
+                     storage_identity( tran_info );
 
                      new_logf << c_storage_identity_tx_id << storage_identity( ) << '\n';
 
-                     if( !log_raw_file_tag_prefix.empty( ) )
+                     if( has_ciyam_list_file )
                         new_tx_log_lines.push_back( c_storage_identity_tx_id + storage_identity( ) + "\n" );
 
                      for( size_t i = 0; i < module_tx_info.size( ); i++ )
                      {
                         new_logf << module_tx_info[ i ] << '\n';
 
-                        if( !log_raw_file_tag_prefix.empty( ) )
+                        if( has_ciyam_list_file )
                            new_tx_log_lines.push_back( module_tx_info[ i ] + "\n" );
                      }
 
-                     if( !log_raw_file_tag_prefix.empty( ) )
-                        append_transaction_log_lines_to_blob_files( log_raw_file_tag_prefix, new_tx_log_lines, true );
+                     if( has_ciyam_list_file )
+                        append_transaction_log_lines_to_blob_files( name + ".log", new_tx_log_lines, true, true );
                   }
 
                   verified = true;
@@ -5187,6 +5196,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      set_transaction_id( new_tran_id );
                      handler.execute_command( tran_info );
+
+                     if( has_ciyam_list_file )
+                     {
+                        vector< string > log_lines;
+                        log_lines.push_back( "[" + to_string( new_tran_id ) + "]" + tran_info + "\n" );
+
+                        append_transaction_log_lines_to_blob_files( name + ".log", log_lines, true );
+                     }
                   }
 
                   if( is_new )
@@ -5217,6 +5234,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // NOTE: Ensure that reserved transaction id's cannot be used later.
             if( next_transaction_id( ) < c_tx_id_standard - 1 )
                set_transaction_id( c_tx_id_standard - 1 );
+
+            if( is_new && has_ciyam_list_file )
+               insert_log_blobs_into_tree( name + ".log" );
 
             storage_unlock_all_tables( );
 

@@ -423,7 +423,10 @@ bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
 void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
 
 std::string CIYAM_BASE_DECL_SPEC storage_name( );
+
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
+void CIYAM_BASE_DECL_SPEC storage_identity( const std::string& new_identity );
+
 std::string CIYAM_BASE_DECL_SPEC storage_blockchain( );
 std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 
@@ -773,8 +776,10 @@ void CIYAM_BASE_DECL_SPEC transaction_log_command(
 
 void CIYAM_BASE_DECL_SPEC append_transaction_log_command( const std::string& log_command );
 
-void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files(
- const std::string& log_blog_file_prefix, const std::vector< std::string >& log_lines, bool remove_existing_blobs = false );
+void CIYAM_BASE_DECL_SPEC insert_log_blobs_into_tree( const std::string& log_blob_file_prefix );
+
+void CIYAM_BASE_DECL_SPEC append_transaction_log_lines_to_blob_files( const std::string& log_blog_file_prefix,
+ const std::vector< std::string >& log_lines, bool is_restoring = false, bool remove_existing_blobs = false );
 
 void CIYAM_BASE_DECL_SPEC append_transaction_for_blockchain_application(
  const std::string& application, const std::string& transaction_hash );

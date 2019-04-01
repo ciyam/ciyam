@@ -6,21 +6,61 @@
 `}
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start file_attachment)] `{`$arg_id`}
-   if( get_obj( ).`{`$arg_field`}( ).empty( ) )
-      get_obj( ).`{`$arg_sfield`}( 0 );
-   else
+   if( !get_obj( ).`{`$arg_field`}( ).empty( ) )
    {
-      string filename = get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) );
+      string file( get_obj( ).`{`$arg_field`}( ) );
+      string path( get_obj( ).get_attached_file_path( ) );
 
       // NOTE: When files are being attached they do not have a file extension (so that if
       // the database update fails then the previous file would still be present even when
-      // it has the same name) so need to first look for a file with no extension.
-      string::size_type pos = filename.find_last_of( "." );
-      if( pos != string::npos && exists_file( filename.substr( 0, pos ) ) )
-         get_obj( ).`{`$arg_sfield`}( size_file( filename.substr( 0, pos ) ) );
-      else
-         get_obj( ).`{`$arg_sfield`}( size_file( filename ) );
+      // it has the same name) so need to first look for a file without the extension.
+      string::size_type pos = file.find( "." );
+      if( pos != string::npos && exists_file( file.substr( 0, pos ) ) )
+         file.erase( pos );
+`{`!`@eq`(`$arg_sfield`,`'`'`)
+      get_obj( ).`{`$arg_sfield`}( size_file( path + "/" + file ) );
+`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+      if( !is_create
+       && !storage_locked_for_admin( )
+       && has_files_area_tag( c_ciyam_tag, e_file_type_list )
+       && get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )
+      {
+         set_session_variable( get_special_var_name( e_special_var_tag ), c_ciyam_tag );
+         set_session_variable( get_special_var_name( e_special_var_type ), c_web_files_branch );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_branch ), get_obj( ).get_module_name( ) + "*" );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_sub_directory ),
+          get_obj( ).get_module_id( ) + "/" + get_obj( ).get_class_id( ) );
+
+         set_session_variable( get_special_var_name( e_special_var_name ), file );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_path ),
+          storage_web_root( true ) + "/" + string( c_files_directory ) );
+
+         set_session_variable( get_special_var_name( e_special_var_tag_prefix ), storage_name( ) + "." );
+
+         run_script( "tree_insert_file", false );
+
+         get_obj( ).`{`$arg_ofield`}( get_files_area_hash_for_tag( storage_name( )
+          + "." + get_obj( ).get_module_id( ) + "." + get_obj( ).get_class_id( ) + "." + file ) );
+
+         set_session_variable( get_special_var_name( e_special_var_extra_field_values ),
+          string( c_field_id_`{`$arg_ofield`} ) + "=" + get_obj( ).`{`$arg_ofield`}( ) );
+
+         remove_files_area_tag( storage_name( )
+          + "." + get_obj( ).get_module_id( ) + "." + get_obj( ).get_class_id( ) + "." + file );
+      }
+`}\
    }
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+   else
+      get_obj( ).`{`$arg_sfield`}( 0 );
+`}\
    // [(finish file_attachment)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_destroy`'`,`$section`)\

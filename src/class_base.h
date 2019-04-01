@@ -339,6 +339,7 @@ class CIYAM_BASE_DECL_SPEC class_base
    std::string get_parent_key( ) const;
 
    std::string get_attached_file_path( const std::string& file_name ) const;
+   inline std::string get_attached_file_path( ) const { return get_attached_file_path( "" ); }
 
    inline bool get_is_singular( ) const { return is_singular; }
 
@@ -1213,6 +1214,12 @@ std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
 
 std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
  const std::string& module_id, const std::string& class_id, const std::string& file_name );
+
+bool CIYAM_BASE_DECL_SPEC has_files_area_tag( const std::string& tag, file_type type = e_file_type_any );
+
+void CIYAM_BASE_DECL_SPEC remove_files_area_tag( const std::string& tag );
+
+std::string CIYAM_BASE_DECL_SPEC get_files_area_hash_for_tag( const std::string& tag );
 
 std::string CIYAM_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 

@@ -1158,8 +1158,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         }
                      }
 
+                     string fields_and_values_prefix;
+
+                     if( act != c_act_remove )
+                        fields_and_values_prefix = "@extra_field_values";
+
                      if( perform_update( view.module_id,
-                      view.cid, data, field_value_pairs, *p_session_info, &error_message ) )
+                      view.cid, data, field_value_pairs, *p_session_info, &error_message, &fields_and_values_prefix ) )
                      {
                         performed_file_attach_or_detach = true;
 

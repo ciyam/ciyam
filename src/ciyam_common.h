@@ -12,6 +12,13 @@ const int c_max_fields_per_index = 5;
 const int c_max_indexes_per_class = 100;
 const int c_max_string_length_limit = 5000000;
 
+enum file_type
+{
+   e_file_type_any,
+   e_file_type_blob,
+   e_file_type_list
+};
+
 enum primitive
 {
    e_primitive_string,
@@ -52,6 +59,7 @@ enum special_var
    e_special_var_key,
    e_special_var_sec,
    e_special_var_set,
+   e_special_var_tag,
    e_special_var_uid,
    e_special_var_arg1,
    e_special_var_arg2,
@@ -67,6 +75,7 @@ enum special_var
    e_special_var_peer,
    e_special_var_port,
    e_special_var_size,
+   e_special_var_type,
    e_special_var_uuid,
    e_special_var_algos,
    e_special_var_array,
@@ -78,6 +87,7 @@ enum special_var
    e_special_var_print,
    e_special_var_quiet,
    e_special_var_title,
+   e_special_var_branch,
    e_special_var_cloned,
    e_special_var_images,
    e_special_var_module,
@@ -108,6 +118,7 @@ enum special_var
    e_special_var_extra_info,
    e_special_var_file_names,
    e_special_var_permission,
+   e_special_var_tag_prefix,
    e_special_var_allow_async,
    e_special_var_application,
    e_special_var_errors_only,
@@ -121,6 +132,7 @@ enum special_var
    e_special_var_transaction,
    e_special_var_block_height,
    e_special_var_rewind_height,
+   e_special_var_sub_directory,
    e_special_var_update_fields,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
@@ -134,6 +146,7 @@ enum special_var
    e_special_var_package_type_path,
    e_special_var_attached_file_path,
    e_special_var_check_script_error,
+   e_special_var_extra_field_values,
    e_special_var_file_info_buffered,
    e_special_var_blockchain_head_hash,
    e_special_var_blockchain_info_hash,
@@ -141,7 +154,6 @@ enum special_var
    e_special_var_secondary_validation,
    e_special_var_skip_blockchain_lock,
    e_special_var_peer_is_synchronising,
-   e_special_var_log_raw_file_tag_prefix,
    e_special_var_total_child_field_in_parent
 };
 

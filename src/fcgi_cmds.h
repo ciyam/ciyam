@@ -25,7 +25,7 @@ bool simple_command( session_info& sess_info, const std::string& cmd, std::strin
 
 bool perform_update( const std::string& module, const std::string& class_id,
  const std::string& key, const std::vector< std::pair< std::string, std::string > >& field_value_pairs,
- const session_info& sess_info, std::string* p_error_message = 0 );
+ const session_info& sess_info, std::string* p_error_message = 0, std::string* p_fields_and_values_prefix = 0 );
 
 bool perform_update( const std::string& module,
  const std::string& class_id, const std::string& key, const std::string& field,

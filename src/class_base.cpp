@@ -1301,6 +1301,21 @@ string class_base::get_attached_file_path( const string& file_name ) const
    return path;
 }
 
+bool has_files_area_tag( const string& tag, file_type type )
+{
+   return has_tag( tag, type );
+}
+
+void remove_files_area_tag( const string& tag )
+{
+   tag_del( tag );
+}
+
+string get_files_area_hash_for_tag( const string& tag )
+{
+   return tag_file_hash( tag );
+}
+
 int class_base::get_graph_depth( ) const
 {
    int depth = 1;
