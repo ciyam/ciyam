@@ -1,0 +1,40 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#NOTE: This script requires a tree tag, branch tree and a variable name.
+@else
+;
+TTAG=$1
+TREE=$2
+VNAME=$3
+;
+DEPTH=3
+;
+.session_variable @deque ""
+LINES=@repstr:\:/\n:$TREE
+.session_variable @deque "~$LINES"
+.session_variable @deque size
+DEPTH=@$DEPTH+$OUTPUT
+;
+.session_variable @deque ""
+.file_info -recurse -d=-$DEPTH -p=V:$TREE:$VNAME $TTAG
+;
+@ifdef $OUTPUT
+#%OUTPUT:-1%
+@endif
+;
+@endif

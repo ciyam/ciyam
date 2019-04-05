@@ -1264,7 +1264,8 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          {
             // NOTE: If using quote like markers then allow the following:
             // %<var_name>:<line>% so that a single line in a "multi-line"
-            // environment variable can be extracted. It is also supported
+            // environment variable can be extracted (a negative value can
+            // be used to assign all but the one line) and it is supported
             // to use >PREFIX<SUFFIX after <line> where an optional PREFIX
             // and SUFFIX will limit the assignment to only the text which
             // appears after the PREFIX or before the SUFFIX (assuming the
@@ -1306,6 +1307,19 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
                if( line > 0 && line <= lines.size( ) )
                   env_var_value = lines[ line - 1 ];
+               else if( line < 0 )
+               {
+                  line *= -1;
+
+                  for( size_t i = 0; i < lines.size( ); i++ )
+                  {
+                     if( !env_var_value.empty( ) )
+                        env_var_value += '\n';
+
+                     if( line != i + 1 )
+                        env_var_value += lines[ i ];
+                  }
+               }
             }
 
             // NOTE: For the optional PREFIX the text from the start

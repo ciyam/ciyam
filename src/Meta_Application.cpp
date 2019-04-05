@@ -1850,7 +1850,6 @@ void Meta_Application::impl::impl_Generate( )
 
 #ifdef _WIN32
       outs << "@echo off\n";
-      outs << "call ciyam_init_cmd.bat\n";
       outs << "set WEBDIR=" << get_web_root( ) << "\n\n";
       outs << "if not exist \"" << web_dir_var << "/" << app_dir << "\" call setup.bat "
        << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n\n";

@@ -27,6 +27,8 @@
 #include "Meta_Application_Script.h"
 #include "Meta_Package.h"
 
+#include "numeric_helper.h"
+
 #include "ciyam_base.h"
 #include "ciyam_common.h"
 #include "class_domains.h"
@@ -66,34 +68,40 @@ const int32_t c_version = 1;
 const char* const c_field_id_Actions = "135105";
 const char* const c_field_id_Dependencies = "135107";
 const char* const c_field_id_File = "135103";
+const char* const c_field_id_Files_Area_List_Hash = "135111";
 const char* const c_field_id_Installed = "135106";
 const char* const c_field_id_Multi = "135102";
 const char* const c_field_id_Name = "135101";
 const char* const c_field_id_Plural = "135108";
 const char* const c_field_id_Single = "135109";
+const char* const c_field_id_Size = "135110";
 const char* const c_field_id_Version = "135104";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Dependencies = "Dependencies";
 const char* const c_field_name_File = "File";
+const char* const c_field_name_Files_Area_List_Hash = "Files_Area_List_Hash";
 const char* const c_field_name_Installed = "Installed";
 const char* const c_field_name_Multi = "Multi";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Plural = "Plural";
 const char* const c_field_name_Single = "Single";
+const char* const c_field_name_Size = "Size";
 const char* const c_field_name_Version = "Version";
 
 const char* const c_field_display_name_Actions = "field_package_type_actions";
 const char* const c_field_display_name_Dependencies = "field_package_type_dependencies";
 const char* const c_field_display_name_File = "field_package_type_file";
+const char* const c_field_display_name_Files_Area_List_Hash = "field_package_type_files_area_list_hash";
 const char* const c_field_display_name_Installed = "field_package_type_installed";
 const char* const c_field_display_name_Multi = "field_package_type_multi";
 const char* const c_field_display_name_Name = "field_package_type_name";
 const char* const c_field_display_name_Plural = "field_package_type_plural";
 const char* const c_field_display_name_Single = "field_package_type_single";
+const char* const c_field_display_name_Size = "field_package_type_size";
 const char* const c_field_display_name_Version = "field_package_type_version";
 
-const int c_num_fields = 9;
+const int c_num_fields = 11;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -105,7 +113,9 @@ const char* const c_all_sorted_field_ids[ ] =
    "135106",
    "135107",
    "135108",
-   "135109"
+   "135109",
+   "135110",
+   "135111"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -113,11 +123,13 @@ const char* const c_all_sorted_field_names[ ] =
    "Actions",
    "Dependencies",
    "File",
+   "Files_Area_List_Hash",
    "Installed",
    "Multi",
    "Name",
    "Plural",
    "Single",
+   "Size",
    "Version"
 };
 
@@ -141,6 +153,7 @@ const char* const c_procedure_id_Install = "135410";
 
 const uint64_t c_modifier_Is_Installed = UINT64_C( 0x100 );
 
+domain_string_max_size< 100 > g_Files_Area_List_Hash_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
@@ -197,11 +210,13 @@ inline validation_error_value_type
 string g_default_Actions = string( );
 string g_default_Dependencies = string( );
 string g_default_File = string( );
+string g_default_Files_Area_List_Hash = string( );
 bool g_default_Installed = bool( 0 );
 bool g_default_Multi = bool( 0 );
 string g_default_Name = string( "New_Package_Type" );
 string g_default_Plural = string( "New_Package_Type" );
 string g_default_Single = string( "New_Package_Type" );
+numeric g_default_Size = numeric( 0 );
 int g_default_Version = int( 0 );
 
 // [<start anonymous>]
@@ -303,6 +318,12 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
          string_getter< string >( cmd_handler.p_Meta_Package_Type->File( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Files_Area_List_Hash || field_name == c_field_name_Files_Area_List_Hash )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Package_Type->Files_Area_List_Hash( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
       {
          handled = true;
@@ -331,6 +352,12 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
       {
          handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Single( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Size || field_name == c_field_name_Size )
+      {
+         handled = true;
+         string_getter< numeric >( cmd_handler.p_Meta_Package_Type->Size( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
@@ -372,6 +399,13 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::File, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Files_Area_List_Hash || field_name == c_field_name_Files_Area_List_Hash )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Type, string >(
+          *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Files_Area_List_Hash, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
       {
          handled = true;
@@ -407,6 +441,13 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Single, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Size || field_name == c_field_name_Size )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Type, numeric >(
+          *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Size, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
       {
          handled = true;
@@ -428,6 +469,12 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Size || field_name == c_field_name_Size )
+      {
+         numeric Size( cmd_handler.p_Meta_Package_Type->Size( ) );
+         execute_command( Size, cmd_and_args, cmd_handler.retval );
+         cmd_handler.p_Meta_Package_Type->Size( Size );
+      }
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
@@ -467,6 +514,9 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    const string& impl_File( ) const { return lazy_fetch( p_obj ), v_File; }
    void impl_File( const string& File ) { sanity_check( File ); v_File = File; }
 
+   const string& impl_Files_Area_List_Hash( ) const { return lazy_fetch( p_obj ), v_Files_Area_List_Hash; }
+   void impl_Files_Area_List_Hash( const string& Files_Area_List_Hash ) { sanity_check( Files_Area_List_Hash ); v_Files_Area_List_Hash = Files_Area_List_Hash; }
+
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
 
@@ -481,6 +531,9 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
    const string& impl_Single( ) const { return lazy_fetch( p_obj ), v_Single; }
    void impl_Single( const string& Single ) { sanity_check( Single ); v_Single = Single; }
+
+   const numeric& impl_Size( ) const { return lazy_fetch( p_obj ), v_Size; }
+   void impl_Size( const numeric& Size ) { sanity_check( Size ); v_Size = Size; }
 
    int impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
    void impl_Version( int Version ) { v_Version = Version; }
@@ -594,11 +647,13 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    string v_Actions;
    string v_Dependencies;
    string v_File;
+   string v_Files_Area_List_Hash;
    bool v_Installed;
    bool v_Multi;
    string v_Name;
    string v_Plural;
    string v_Single;
+   numeric v_Size;
    int v_Version;
 
    mutable class_pointer< Meta_Application_Script > cp_child_Application_Script;
@@ -819,26 +874,34 @@ string Meta_Package_Type::impl::get_field_value( int field ) const
       break;
 
       case 3:
-      retval = to_string( impl_Installed( ) );
+      retval = to_string( impl_Files_Area_List_Hash( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Multi( ) );
+      retval = to_string( impl_Installed( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Multi( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Plural( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Single( ) );
+      retval = to_string( impl_Plural( ) );
       break;
 
       case 8:
+      retval = to_string( impl_Single( ) );
+      break;
+
+      case 9:
+      retval = to_string( impl_Size( ) );
+      break;
+
+      case 10:
       retval = to_string( impl_Version( ) );
       break;
 
@@ -866,26 +929,34 @@ void Meta_Package_Type::impl::set_field_value( int field, const string& value )
       break;
 
       case 3:
-      func_string_setter< Meta_Package_Type::impl, bool >( *this, &Meta_Package_Type::impl::impl_Installed, value );
+      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Files_Area_List_Hash, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Package_Type::impl, bool >( *this, &Meta_Package_Type::impl::impl_Multi, value );
+      func_string_setter< Meta_Package_Type::impl, bool >( *this, &Meta_Package_Type::impl::impl_Installed, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Name, value );
+      func_string_setter< Meta_Package_Type::impl, bool >( *this, &Meta_Package_Type::impl::impl_Multi, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Plural, value );
+      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Name, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Single, value );
+      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Plural, value );
       break;
 
       case 8:
+      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Single, value );
+      break;
+
+      case 9:
+      func_string_setter< Meta_Package_Type::impl, numeric >( *this, &Meta_Package_Type::impl::impl_Size, value );
+      break;
+
+      case 10:
       func_string_setter< Meta_Package_Type::impl, int >( *this, &Meta_Package_Type::impl::impl_Version, value );
       break;
 
@@ -911,26 +982,34 @@ void Meta_Package_Type::impl::set_field_default( int field )
       break;
 
       case 3:
-      impl_Installed( g_default_Installed );
+      impl_Files_Area_List_Hash( g_default_Files_Area_List_Hash );
       break;
 
       case 4:
-      impl_Multi( g_default_Multi );
+      impl_Installed( g_default_Installed );
       break;
 
       case 5:
-      impl_Name( g_default_Name );
+      impl_Multi( g_default_Multi );
       break;
 
       case 6:
-      impl_Plural( g_default_Plural );
+      impl_Name( g_default_Name );
       break;
 
       case 7:
-      impl_Single( g_default_Single );
+      impl_Plural( g_default_Plural );
       break;
 
       case 8:
+      impl_Single( g_default_Single );
+      break;
+
+      case 9:
+      impl_Size( g_default_Size );
+      break;
+
+      case 10:
       impl_Version( g_default_Version );
       break;
 
@@ -958,26 +1037,34 @@ bool Meta_Package_Type::impl::is_field_default( int field ) const
       break;
 
       case 3:
-      retval = ( v_Installed == g_default_Installed );
+      retval = ( v_Files_Area_List_Hash == g_default_Files_Area_List_Hash );
       break;
 
       case 4:
-      retval = ( v_Multi == g_default_Multi );
+      retval = ( v_Installed == g_default_Installed );
       break;
 
       case 5:
-      retval = ( v_Name == g_default_Name );
+      retval = ( v_Multi == g_default_Multi );
       break;
 
       case 6:
-      retval = ( v_Plural == g_default_Plural );
+      retval = ( v_Name == g_default_Name );
       break;
 
       case 7:
-      retval = ( v_Single == g_default_Single );
+      retval = ( v_Plural == g_default_Plural );
       break;
 
       case 8:
+      retval = ( v_Single == g_default_Single );
+      break;
+
+      case 9:
+      retval = ( v_Size == g_default_Size );
+      break;
+
+      case 10:
       retval = ( v_Version == g_default_Version );
       break;
 
@@ -1075,11 +1162,13 @@ void Meta_Package_Type::impl::clear( )
    v_Actions = g_default_Actions;
    v_Dependencies = g_default_Dependencies;
    v_File = g_default_File;
+   v_Files_Area_List_Hash = g_default_Files_Area_List_Hash;
    v_Installed = g_default_Installed;
    v_Multi = g_default_Multi;
    v_Name = g_default_Name;
    v_Plural = g_default_Plural;
    v_Single = g_default_Single;
+   v_Size = g_default_Size;
    v_Version = g_default_Version;
 }
 
@@ -1120,6 +1209,13 @@ void Meta_Package_Type::impl::validate(
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Single ) ) ) ) );
 
+   if( !is_null( v_Files_Area_List_Hash )
+    && ( v_Files_Area_List_Hash != g_default_Files_Area_List_Hash
+    || !value_will_be_provided( c_field_name_Files_Area_List_Hash ) )
+    && !g_Files_Area_List_Hash_domain.is_valid( v_Files_Area_List_Hash, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Files_Area_List_Hash,
+       get_module_string( c_field_display_name_Files_Area_List_Hash ) + " " + error_message ) );
+
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
@@ -1155,6 +1251,12 @@ void Meta_Package_Type::impl::validate_set_fields(
 
    string error_message;
    validate_formatter vf;
+
+   if( !is_null( v_Files_Area_List_Hash )
+    && ( fields_set.count( c_field_id_Files_Area_List_Hash ) || fields_set.count( c_field_name_Files_Area_List_Hash ) )
+    && !g_Files_Area_List_Hash_domain.is_valid( v_Files_Area_List_Hash, error_message = "" ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Files_Area_List_Hash,
+       get_module_string( c_field_display_name_Files_Area_List_Hash ) + " " + error_message ) );
 
    if( !is_null( v_Name )
     && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
@@ -1258,6 +1360,60 @@ void Meta_Package_Type::impl::for_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   // [(start file_attachment)] 600803
+   if( !get_obj( ).File( ).empty( ) )
+   {
+      string file( get_obj( ).File( ) );
+      string path( get_obj( ).get_attached_file_path( ) );
+
+      // NOTE: When files are being attached they do not have a file extension (so that if
+      // the database update fails then the previous file would still be present even when
+      // it has the same name) so need to first look for a file without the extension.
+      string::size_type pos = file.find( "." );
+      if( pos != string::npos && exists_file( file.substr( 0, pos ) ) )
+         file.erase( pos );
+
+      get_obj( ).Size( size_file( path + "/" + file ) );
+
+      if( !is_create
+       && !storage_locked_for_admin( )
+       && has_files_area_tag( c_ciyam_tag, e_file_type_list )
+       && get_obj( ).has_field_changed( c_field_id_File ) )
+      {
+         set_session_variable( get_special_var_name( e_special_var_tag ), c_ciyam_tag );
+         set_session_variable( get_special_var_name( e_special_var_type ), c_web_files_branch );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_branch ), get_obj( ).get_module_name( ) + "*" );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_sub_directory ),
+          get_obj( ).get_module_id( ) + "/" + get_obj( ).get_class_id( ) );
+
+         set_session_variable( get_special_var_name( e_special_var_name ), file );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_path ),
+          storage_web_root( true ) + "/" + string( c_files_directory ) );
+
+         set_session_variable( get_special_var_name( e_special_var_tag_prefix ), storage_name( ) + "." );
+
+         run_script( "tree_insert_file", false );
+
+         get_obj( ).Files_Area_List_Hash( get_files_area_hash_for_tag( storage_name( )
+          + "." + get_obj( ).get_module_id( ) + "." + get_obj( ).get_class_id( ) + "." + file ) );
+
+         set_session_variable( get_special_var_name( e_special_var_extra_field_values ),
+          string( c_field_id_Files_Area_List_Hash ) + "=" + get_obj( ).Files_Area_List_Hash( ) );
+
+         remove_files_area_tag( storage_name( )
+          + "." + get_obj( ).get_module_id( ) + "." + get_obj( ).get_class_id( ) + "." + file );
+      }
+   }
+   else
+      get_obj( ).Size( 0 );
+   // [(finish file_attachment)] 600803
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -1418,6 +1574,16 @@ void Meta_Package_Type::File( const string& File )
    p_impl->impl_File( File );
 }
 
+const string& Meta_Package_Type::Files_Area_List_Hash( ) const
+{
+   return p_impl->impl_Files_Area_List_Hash( );
+}
+
+void Meta_Package_Type::Files_Area_List_Hash( const string& Files_Area_List_Hash )
+{
+   p_impl->impl_Files_Area_List_Hash( Files_Area_List_Hash );
+}
+
 bool Meta_Package_Type::Installed( ) const
 {
    return p_impl->impl_Installed( );
@@ -1466,6 +1632,16 @@ const string& Meta_Package_Type::Single( ) const
 void Meta_Package_Type::Single( const string& Single )
 {
    p_impl->impl_Single( Single );
+}
+
+const numeric& Meta_Package_Type::Size( ) const
+{
+   return p_impl->impl_Size( );
+}
+
+void Meta_Package_Type::Size( const numeric& Size )
+{
+   p_impl->impl_Size( Size );
 }
 
 int Meta_Package_Type::Version( ) const
@@ -1704,6 +1880,16 @@ const char* Meta_Package_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Files_Area_List_Hash )
+   {
+      p_id = c_field_id_Files_Area_List_Hash;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Installed )
    {
       p_id = c_field_id_Installed;
@@ -1754,6 +1940,16 @@ const char* Meta_Package_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Size )
+   {
+      p_id = c_field_id_Size;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Version )
    {
       p_id = c_field_id_Version;
@@ -1798,6 +1994,16 @@ const char* Meta_Package_Type::get_field_name(
    else if( id == c_field_id_File )
    {
       p_name = c_field_name_File;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Files_Area_List_Hash )
+   {
+      p_name = c_field_name_Files_Area_List_Hash;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1854,6 +2060,16 @@ const char* Meta_Package_Type::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Size )
+   {
+      p_name = c_field_name_Size;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
    }
    else if( id == c_field_id_Version )
    {
@@ -1914,6 +2130,11 @@ string Meta_Package_Type::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_File );
       get_module_string( c_field_display_name_File, &next );
    }
+   else if( id_or_name == c_field_id_Files_Area_List_Hash || id_or_name == c_field_name_Files_Area_List_Hash )
+   {
+      name = string( c_field_display_name_Files_Area_List_Hash );
+      get_module_string( c_field_display_name_Files_Area_List_Hash, &next );
+   }
    else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
    {
       name = string( c_field_display_name_Installed );
@@ -1938,6 +2159,11 @@ string Meta_Package_Type::get_field_uom_symbol( const string& id_or_name ) const
    {
       name = string( c_field_display_name_Single );
       get_module_string( c_field_display_name_Single, &next );
+   }
+   else if( id_or_name == c_field_id_Size || id_or_name == c_field_name_Size )
+   {
+      name = string( c_field_display_name_Size );
+      get_module_string( c_field_display_name_Size, &next );
    }
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
    {
@@ -1965,6 +2191,8 @@ string Meta_Package_Type::get_field_display_name( const string& id_or_name ) con
       display_name = get_module_string( c_field_display_name_Dependencies );
    else if( id_or_name == c_field_id_File || id_or_name == c_field_name_File )
       display_name = get_module_string( c_field_display_name_File );
+   else if( id_or_name == c_field_id_Files_Area_List_Hash || id_or_name == c_field_name_Files_Area_List_Hash )
+      display_name = get_module_string( c_field_display_name_Files_Area_List_Hash );
    else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
       display_name = get_module_string( c_field_display_name_Installed );
    else if( id_or_name == c_field_id_Multi || id_or_name == c_field_name_Multi )
@@ -1975,6 +2203,8 @@ string Meta_Package_Type::get_field_display_name( const string& id_or_name ) con
       display_name = get_module_string( c_field_display_name_Plural );
    else if( id_or_name == c_field_id_Single || id_or_name == c_field_name_Single )
       display_name = get_module_string( c_field_display_name_Single );
+   else if( id_or_name == c_field_id_Size || id_or_name == c_field_name_Size )
+      display_name = get_module_string( c_field_display_name_Size );
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
       display_name = get_module_string( c_field_display_name_Version );
 
@@ -2214,11 +2444,13 @@ void Meta_Package_Type::get_sql_column_names(
    names.push_back( "C_Actions" );
    names.push_back( "C_Dependencies" );
    names.push_back( "C_File" );
+   names.push_back( "C_Files_Area_List_Hash" );
    names.push_back( "C_Installed" );
    names.push_back( "C_Multi" );
    names.push_back( "C_Name" );
    names.push_back( "C_Plural" );
    names.push_back( "C_Single" );
+   names.push_back( "C_Size" );
    names.push_back( "C_Version" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -2234,11 +2466,13 @@ void Meta_Package_Type::get_sql_column_values(
    values.push_back( sql_quote( to_string( Actions( ) ) ) );
    values.push_back( sql_quote( to_string( Dependencies( ) ) ) );
    values.push_back( sql_quote( to_string( File( ) ) ) );
+   values.push_back( sql_quote( to_string( Files_Area_List_Hash( ) ) ) );
    values.push_back( to_string( Installed( ) ) );
    values.push_back( to_string( Multi( ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Plural( ) ) ) );
    values.push_back( sql_quote( to_string( Single( ) ) ) );
+   values.push_back( to_string( Size( ) ) );
    values.push_back( to_string( Version( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -2339,11 +2573,13 @@ void Meta_Package_Type::static_get_field_info( field_info_container& all_field_i
    all_field_info.push_back( field_info( "135105", "Actions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "135107", "Dependencies", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "135103", "File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135111", "Files_Area_List_Hash", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "135106", "Installed", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "135102", "Multi", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "135101", "Name", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "135108", "Plural", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "135109", "Single", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135110", "Size", "numeric", false, "", "" ) );
    all_field_info.push_back( field_info( "135104", "Version", "int", false, "", "" ) );
 }
 
@@ -2389,26 +2625,34 @@ const char* Meta_Package_Type::static_get_field_id( field_id id )
       break;
 
       case 4:
-      p_id = "135106";
+      p_id = "135111";
       break;
 
       case 5:
-      p_id = "135102";
+      p_id = "135106";
       break;
 
       case 6:
-      p_id = "135101";
+      p_id = "135102";
       break;
 
       case 7:
-      p_id = "135108";
+      p_id = "135101";
       break;
 
       case 8:
-      p_id = "135109";
+      p_id = "135108";
       break;
 
       case 9:
+      p_id = "135109";
+      break;
+
+      case 10:
+      p_id = "135110";
+      break;
+
+      case 11:
       p_id = "135104";
       break;
    }
@@ -2438,26 +2682,34 @@ const char* Meta_Package_Type::static_get_field_name( field_id id )
       break;
 
       case 4:
-      p_id = "Installed";
+      p_id = "Files_Area_List_Hash";
       break;
 
       case 5:
-      p_id = "Multi";
+      p_id = "Installed";
       break;
 
       case 6:
-      p_id = "Name";
+      p_id = "Multi";
       break;
 
       case 7:
-      p_id = "Plural";
+      p_id = "Name";
       break;
 
       case 8:
-      p_id = "Single";
+      p_id = "Plural";
       break;
 
       case 9:
+      p_id = "Single";
+      break;
+
+      case 10:
+      p_id = "Size";
+      break;
+
+      case 11:
       p_id = "Version";
       break;
    }
@@ -2480,18 +2732,22 @@ int Meta_Package_Type::static_get_field_num( const string& field )
       rc += 2;
    else if( field == c_field_id_File || field == c_field_name_File )
       rc += 3;
-   else if( field == c_field_id_Installed || field == c_field_name_Installed )
+   else if( field == c_field_id_Files_Area_List_Hash || field == c_field_name_Files_Area_List_Hash )
       rc += 4;
-   else if( field == c_field_id_Multi || field == c_field_name_Multi )
+   else if( field == c_field_id_Installed || field == c_field_name_Installed )
       rc += 5;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Multi || field == c_field_name_Multi )
       rc += 6;
-   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 7;
-   else if( field == c_field_id_Single || field == c_field_name_Single )
+   else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 8;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Single || field == c_field_name_Single )
       rc += 9;
+   else if( field == c_field_id_Size || field == c_field_name_Size )
+      rc += 10;
+   else if( field == c_field_id_Version || field == c_field_name_Version )
+      rc += 11;
 
    return rc - 1;
 }
@@ -2522,11 +2778,13 @@ string Meta_Package_Type::static_get_sql_columns( )
     "C_Actions VARCHAR(200) NOT NULL,"
     "C_Dependencies TEXT NOT NULL,"
     "C_File VARCHAR(200) NOT NULL,"
+    "C_Files_Area_List_Hash VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
     "C_Multi INTEGER NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Plural VARCHAR(200) NOT NULL,"
     "C_Single VARCHAR(200) NOT NULL,"
+    "C_Size NUMERIC(28\\,8) NOT NULL,"
     "C_Version INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

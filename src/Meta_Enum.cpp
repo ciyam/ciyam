@@ -1037,6 +1037,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
       if( cp_source->child_Enum_Item( ).iterate_forwards( ) )
       {
          int child_num = 0;
+
          do
          {
             string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );

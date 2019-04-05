@@ -5350,11 +5350,19 @@ struct file_attachment_specification : specification
 
 void file_attachment_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
-   if( args.size( ) != 2 )
-      throw runtime_error( "unexpected number of args != 2 for 'file_attachment' specification" );
+   if( args.size( ) < 2 )
+      throw runtime_error( "unexpected number of args < 2 for 'file_attachment' specification" );
 
    string arg_class_name( args[ 0 ] );
    string arg_field_name( args[ 1 ] );
+
+   string arg_sfield_name;
+   if( args.size( ) > 2 )
+      arg_sfield_name = args[ 2 ];
+
+   string arg_ofield_name;
+   if( args.size( ) > 3 )
+      arg_ofield_name = args[ 3 ];
 
    vector< specification_data > all_spec_data;
    m.get_specification_data( arg_class_name, all_spec_data );
@@ -5370,8 +5378,34 @@ void file_attachment_specification::add( model& m, const vector< string >& args,
    if( field_id.empty( ) )
       throw runtime_error( "unknown field name '" + arg_field_name + "' for class '" + arg_class_name + "'" );
 
+   string sfield_id;
+
+   if( !arg_sfield_name.empty( ) )
+   {
+      sfield_id = get_field_id_for_name( m, arg_class_name, arg_sfield_name );
+
+      if( sfield_id.empty( ) )
+         throw runtime_error( "unknown field name '" + arg_sfield_name + "' for class '" + arg_class_name + "'" );
+   }
+
+   string ofield_id;
+
+   if( !arg_ofield_name.empty( ) )
+   {
+      ofield_id = get_field_id_for_name( m, arg_class_name, arg_ofield_name );
+
+      if( ofield_id.empty( ) )
+         throw runtime_error( "unknown field name '" + arg_ofield_name + "' for class '" + arg_class_name + "'" );
+   }
+
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
    details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
+
+   if( !sfield_id.empty( ) )
+      details.push_back( specification_detail( sfield_id, "sfield", e_model_element_type_field ) );
+
+   if( !ofield_id.empty( ) )
+      details.push_back( specification_detail( ofield_id, "ofield", e_model_element_type_field ) );
 }
 
 string file_attachment_specification::static_class_name( ) { return "file_attachment"; }

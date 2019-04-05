@@ -3115,6 +3115,10 @@
 `{`$specification_Package_Type_File_id`=`'600803`'`}
 `{`$specification_Package_Type_File_field`=`'File`'`}
 `{`$specification_Package_Type_File_field_id`=`'135103`'`}
+`{`$specification_Package_Type_File_sfield`=`'Size`'`}
+`{`$specification_Package_Type_File_sfield_id`=`'135110`'`}
+`{`$specification_Package_Type_File_ofield`=`'Files_Area_List_Hash`'`}
+`{`$specification_Package_Type_File_ofield_id`=`'135111`'`}
 `{`}
 `{`$specification_Package_Type_list_id`=`'603500`'`}
 `{`$specification_Package_Type_list_cid`=`'135100`'`}

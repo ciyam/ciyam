@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2019 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 3 ]; then
+ echo "Usage: tree_fetch_variable [tree tag] [branch tree] [variable name]"
+else
+ echo "<<tree_fetch_variable.cin $1 $2 $3" >~tree_fetch_variable
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_fetch_variable
+ rm ~tree_fetch_variable
+fi
