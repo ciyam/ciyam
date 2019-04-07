@@ -815,8 +815,6 @@ field_add -id=135106 Package_Type Installed bool mand -def=0
 field_add -id=135107 Package_Type Dependencies string opt -x=notes
 field_add -id=135108 Package_Type Plural identifier mand -def=New_Package_Type
 field_add -id=135109 Package_Type Single identifier mand -def=New_Package_Type
-field_add -id=135110 Package_Type Size numeric mand -def=0
-field_add -id=135111 Package_Type Files_Area_List_Hash str100 opt
 index_add -id=135201 Package_Type Name unique
 index_add -id=135202 Package_Type Installed,Name unique
 procedure_add -id=135410 Package_Type Install
@@ -1995,7 +1993,7 @@ specification_add -id=600701 {Module}_move_up_and_down move_up_and_down "Module 
 specification_add -id=600800 {Package_Type}_Install_if_non_null field_empty_action "Package_Type File Actions 135410"
 specification_add -id=600801 {Package_Type}_Installed_Actions_clear field_clear "Package_Type Actions Installed"
 specification_add -id=600802 {Package_Type}_Installed_protect state_protect "equal Package_Type Installed true -scope=edit"
-specification_add -id=600803 {Package_Type}_File file_attachment "Package_Type File Size Files_Area_List_Hash"
+specification_add -id=600803 {Package_Type}_File file_attachment "Package_Type File"
 specification_add -id=600804 {Package_Type}_Is_Installed modifier_field_value "Package_Type Is_Installed Installed true"
 specification_add -id=600850 {Package}_Name field_from_changed_fk "Package {Package_Type} Name:Single -new_only"
 specification_add -id=600851 {Package}_Plural field_from_changed_fk "Package {Package_Type} Plural -new_only"

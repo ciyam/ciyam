@@ -13486,22 +13486,6 @@
       </specifications>
      </field>
      <field/>
-      <id>135111
-      <name>Files_Area_List_Hash
-      <type>1020
-      <mandatory>false
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600803
-        <item>ofield
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>135106
       <name>Installed
       <type>bool
@@ -13619,23 +13603,6 @@
        <specification/>
         <id>603550
         <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>135110
-      <name>Size
-      <type>numeric
-      <mandatory>true
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600803
-        <item>sfield
        </specification>
       </specifications>
      </field>

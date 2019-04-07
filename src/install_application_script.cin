@@ -4,6 +4,9 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 .storage_init %1
+@ifdef %5
+.session_variable @package_install_extra %5
+@endif
 #Installing Application Script %3
 .pc admin @now 100 138100 %2 "%4"
 .quit

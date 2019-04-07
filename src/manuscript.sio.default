@@ -61,17 +61,17 @@
  <script/>
   <name>install_package
   <filename>*script*
-  <arguments>install_package.cin @storage @name
+  <arguments>install_package.cin @storage @name @package_install_extra
  </script>
  <script/>
   <name>install_application
   <filename>*script*
-  <arguments>install_application.cin @grp @uid @name @key @script
+  <arguments>install_application.cin @grp @uid @name @key @script @package_install_extra
  </script>
  <script/>
   <name>install_application_script
   <filename>*script*
-  <arguments>install_application_script.cin @storage @key @name @fields_and_values
+  <arguments>install_application_script.cin @storage @key @name @fields_and_values @package_install_extra
  </script>
 ### [<start generated>]
 ### [<finish generated>]

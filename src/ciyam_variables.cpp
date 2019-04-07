@@ -140,6 +140,7 @@ const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_ha
 const char* const c_special_variable_locally_minted_block = "@locally_minted_block";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
+const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
@@ -561,6 +562,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_skip_blockchain_lock:
       s = string( c_special_variable_skip_blockchain_lock );
+      break;
+
+      case e_special_var_package_install_extra:
+      s = string( c_special_variable_package_install_extra );
       break;
 
       case e_special_var_peer_is_synchronising:

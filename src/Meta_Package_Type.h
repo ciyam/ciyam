@@ -21,8 +21,6 @@
 class Meta_Application_Script;
 class Meta_Package;
 
-class numeric;
-
 class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 {
    friend class Meta_Application_Script;
@@ -37,14 +35,12 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
       e_field_id_Actions = 1,
       e_field_id_Dependencies = 2,
       e_field_id_File = 3,
-      e_field_id_Files_Area_List_Hash = 4,
-      e_field_id_Installed = 5,
-      e_field_id_Multi = 6,
-      e_field_id_Name = 7,
-      e_field_id_Plural = 8,
-      e_field_id_Single = 9,
-      e_field_id_Size = 10,
-      e_field_id_Version = 11
+      e_field_id_Installed = 4,
+      e_field_id_Multi = 5,
+      e_field_id_Name = 6,
+      e_field_id_Plural = 7,
+      e_field_id_Single = 8,
+      e_field_id_Version = 9
    };
 
    Meta_Package_Type( );
@@ -58,9 +54,6 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 
    const std::string& File( ) const;
    void File( const std::string& File );
-
-   const std::string& Files_Area_List_Hash( ) const;
-   void Files_Area_List_Hash( const std::string& Files_Area_List_Hash );
 
    bool Installed( ) const;
    void Installed( bool Installed );
@@ -76,9 +69,6 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 
    const std::string& Single( ) const;
    void Single( const std::string& Single );
-
-   const numeric& Size( ) const;
-   void Size( const numeric& Size );
 
    int Version( ) const;
    void Version( int Version );

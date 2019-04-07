@@ -7,5 +7,8 @@ CIYAM_GRP=%1
 CIYAM_UID=%2
 CIYAM_MODEL=%3
 CIYAM_APP_KEY=%4
+@ifdef %6
+.session_variable @package_install_extra %6
+@endif
 <%5.cin
 .quit

@@ -3253,9 +3253,13 @@ void append_transaction_log_command( storage_handler& handler,
             tx_log_lines.push_back( next_line );
       }
 
+      bool is_restoring = handler.get_is_locked_for_admin( );
+
+      if( !get_session_variable( get_special_var_name( e_special_var_package_install_extra ) ).empty( ) )
+         is_restoring = true;
+
       if( append_to_log_blob_files )
-         append_transaction_log_lines_to_blob_files(
-          handler.get_name( ) + ".log", tx_log_lines, handler.get_is_locked_for_admin( ) );
+         append_transaction_log_lines_to_blob_files( handler.get_name( ) + ".log", tx_log_lines, is_restoring );
 
       log_file.flush( );
       if( !log_file.good( ) )

@@ -1,0 +1,51 @@
+; Copyright (c) 2019 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.file_tags -i=ciyam
+@ifdef $OUTPUT
+.file_info ciyam
+@ifndef $ERROR
+;
+PARTS=@repstr: /\n:$OUTPUT
+FTYPE=%PARTS:1%
+;
+@ifeq "$FTYPE" "[list]"
+.file_put packages.lst Packages
+.file_list -a=Packages -d=Packages -sort ciyam:V:Meta !ciyam
+.file_tag -remove Packages
+;
+@ifdef $1
+.file_tags Meta.log.*
+@ifdef $OUTPUT
+LINES=$OUTPUT
+.session_variable @deque ""
+.session_variable @deque "~$LINES"
+;
+@:LOOP
+@label NEXT
+.session_variable @deque front
+@ifndef $OUTPUT
+@label END_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT=$OUTPUT
+;
+.file_list -a=$NEXT -d=$NEXT -sort ciyam:V:Meta.log !ciyam
+;
+.session_variable @deque pop_front
+;
+!!@:LOOP
+;
+@:END_LOOP
+@endif
+@endif
+;
+@endif
+;
+@endif
+@endif

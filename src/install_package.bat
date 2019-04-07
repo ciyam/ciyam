@@ -15,10 +15,14 @@ call update.bat packages.lst packages.lst.new
 
 construct @packages.lst ciyam_class.cpp.xrep
 
+if '%2' == '-skip_list_install' goto skip
+call install_packages_list.bat
+
+:skip
 goto end
 
 :usage
-echo Usage: install_package [name]
+echo Usage: install_package [name] [[-skip_list_install]]
 
 :end
 

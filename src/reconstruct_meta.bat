@@ -12,6 +12,7 @@ construct @packages.lst ciyam_class.cpp.xrep
 :skip
 call destroy_apps_and_models.bat %1
 call reinstall_packages.bat %1
+call install_packages_list.bat %1
 call install.bat Meta meta
 goto end
 

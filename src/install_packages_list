@@ -4,6 +4,6 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-echo "<<init_ciyam_tree.cin" >~init_ciyam_tree
-./ciyam_client -echo -quiet -no_prompt -no_stderr <~init_ciyam_tree
-rm ~init_ciyam_tree
+echo "<<install_packages_list.cin $1" >~install_packages_list
+./ciyam_client -echo -quiet -no_prompt -no_stderr <~install_packages_list
+rm ~install_packages_list

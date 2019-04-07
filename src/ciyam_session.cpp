@@ -5238,6 +5238,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( is_new && has_ciyam_list_file )
                insert_log_blobs_into_tree( name + ".log" );
 
+            if( has_ciyam_list_file )
+            {
+               vector< string > dummy_lines;
+               dummy_lines.push_back( "" );
+
+               append_transaction_log_lines_to_blob_files( name + ".log", dummy_lines, false, false );
+            }
+
             storage_unlock_all_tables( );
 
             session_skip_fk_fetches( false );

@@ -1,6 +1,7 @@
 storage_init Meta
 session_variable @allow_async false
 session_variable @package_type_path .
+session_variable @package_install_extra -skip_list_install
 `{`[`$packages`,\
 ~cp \$.package.bun.gz new.package.bun.gz
 pc admin 20120102 100 135100 \$ "135101=New_Package_Type"

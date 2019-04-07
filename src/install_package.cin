@@ -5,5 +5,8 @@
 ;
 .storage_init %1
 #Installing Package Type %2
+@ifdef %3
+.session_variable @package_install_extra %3
+@endif
 .perform_package_import admin @now Meta %2.specs.sio
 .quit

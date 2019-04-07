@@ -4,16 +4,23 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -ne 1 ]; then
- echo Usage: install_package [name]
+if [ $# -lt 1 ]; then
+ echo "Usage: install_package [name] [[-skip_list_install]]"
 else
  [ -f packages.lst ] ||
  {
   touch packages.lst
  }
+
  ./xrep @install_package.xrep name=$1 packages=@packages.lst >packages.lst.new
+
  if [ $? -eq 0 ]; then
   ./update packages.lst packages.lst.new
   ./construct @packages.lst ciyam_class.cpp.xrep
+
+  if [ ! "$2" = "-skip_list_install" ]; then
+   ./install_packages_list
+  fi
+
  fi
 fi
