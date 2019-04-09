@@ -84,7 +84,9 @@ const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 const char* const c_unix_timestamp = "unix";
 
 const char* const c_function_files = "files";
+const char* const c_function_lower = "lower";
 const char* const c_function_paths = "paths";
+const char* const c_function_upper = "upper";
 const char* const c_function_aschex = "aschex";
 const char* const c_function_hexasc = "hexasc";
 const char* const c_function_hexbig = "hexbig";
@@ -2602,6 +2604,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                               str = join( results, "\n" );
                            }
+                           else if( lhs == c_function_lower )
+                              str = lower( str.substr( pos + 1 ) );
                            else if( lhs == c_function_paths )
                            {
                               string rhs( str.substr( pos + 1 ) );
@@ -2646,6 +2650,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                               str = join( results, "\n" );
                            }
+                           else if( lhs == c_function_upper )
+                              str = upper( str.substr( pos + 1 ) );
                            else if( lhs == c_function_aschex )
                               str = hex_encode( str.substr( pos + 1 ) );
                            else if( lhs == c_function_hexasc )

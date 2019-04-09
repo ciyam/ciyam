@@ -1,0 +1,20 @@
+#!/bin/sh
+# Copyright (c) 2019 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 2 ]; then
+ echo "Usage: export_app_file [app dir] [list file hash] [[web root]]"
+else
+ if [ $# -gt 2 ]; then
+  export WEBDIR=$3
+ fi
+ if [ "$WEBDIR" = "" ]; then
+  echo "Error: Missing environment variable 'WEBDIR'."
+ else
+  echo "<<export_app_file.cin $1 $2 $WEBDIR" >~export_app_file
+  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~export_app_file
+  rm ~export_app_file
+ fi
+fi

@@ -4,6 +4,25 @@
    get_obj( ).`{`$arg_field`}( "" );
    // [(finish file_attachment)] `{`$arg_id`}
 `}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start file_attachment)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) )
+    && !is_null( get_obj( ).`{`$arg_ofield`}( ) ) )
+   {
+      string file( get_obj( ).`{`$arg_field`}( ) );
+      string path( get_obj( ).get_attached_file_path( ) );
+
+      if( !exists_file( path + "/" + file )
+       && has_files_area_file( get_obj( ).`{`$arg_ofield`}( ) ) )
+      {
+         set_session_variable( get_special_var_name( e_special_var_list_hash ), get_obj( ).`{`$arg_ofield`}( ) );
+         set_session_variable( get_special_var_name( e_special_var_app_directory ), lower( storage_name( ) ) );
+
+         run_script( "export_app_file", false );
+      }
+   }
+   // [(finish file_attachment)] `{`$arg_id`}
+`}
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start file_attachment)] `{`$arg_id`}
    if( !get_obj( ).`{`$arg_field`}( ).empty( ) )
@@ -15,7 +34,7 @@
       // the database update fails then the previous file would still be present even when
       // it has the same name) so need to first look for a file without the extension.
       string::size_type pos = file.find( "." );
-      if( pos != string::npos && exists_file( file.substr( 0, pos ) ) )
+      if( pos != string::npos && exists_file( path + "/" + file.substr( 0, pos ) ) )
          file.erase( pos );
 `{`!`@eq`(`$arg_sfield`,`'`'`)
       get_obj( ).`{`$arg_sfield`}( size_file( path + "/" + file ) );

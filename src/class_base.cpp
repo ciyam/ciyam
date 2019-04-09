@@ -1306,6 +1306,11 @@ bool has_files_area_tag( const string& tag, file_type type )
    return has_tag( tag, type );
 }
 
+bool has_files_area_file( const string& hash, bool include_archives )
+{
+   return has_file( hash ) || ( include_archives && has_file_been_archived( hash ) );
+}
+
 void remove_files_area_tag( const string& tag )
 {
    tag_del( tag );

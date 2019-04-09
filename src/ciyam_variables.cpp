@@ -99,6 +99,7 @@ const char* const c_special_variable_crypt_key = "@crypt_key";
 const char* const c_special_variable_decrement = "@decrement";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
+const char* const c_special_variable_list_hash = "@list_hash";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
@@ -117,6 +118,7 @@ const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
+const char* const c_special_variable_app_directory = "@app_directory";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
@@ -404,6 +406,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_increment );
       break;
 
+      case e_special_var_list_hash:
+      s = string( c_special_variable_list_hash );
+      break;
+
       case e_special_var_val_error:
       s = string( c_special_variable_val_error );
       break;
@@ -474,6 +480,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_block_height:
       s = string( c_special_variable_block_height );
+      break;
+
+      case e_special_var_app_directory:
+      s = string( c_special_variable_app_directory );
       break;
 
       case e_special_var_rewind_height:

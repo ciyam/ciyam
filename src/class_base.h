@@ -1217,6 +1217,8 @@ std::string CIYAM_BASE_DECL_SPEC get_attached_file_path(
 
 bool CIYAM_BASE_DECL_SPEC has_files_area_tag( const std::string& tag, file_type type = e_file_type_any );
 
+bool CIYAM_BASE_DECL_SPEC has_files_area_file( const std::string& hash, bool include_archives = true );
+
 void CIYAM_BASE_DECL_SPEC remove_files_area_tag( const std::string& tag );
 
 std::string CIYAM_BASE_DECL_SPEC get_files_area_hash_for_tag( const std::string& tag );
