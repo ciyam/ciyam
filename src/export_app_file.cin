@@ -37,7 +37,9 @@ WEBDIR=$PREFIX$WEBDIR
 ; NOTE: This ensures that all of the file parts are retrieved into the
 ; files area (just in case any of these had been previously archived).
 .file_info -content $LIST_HASH
+@ifndef $ERROR
 ;
 .file_get $LIST_HASH *$WEBDIR/$APPDIR/files/
+@endif
 @endif
 @endif
