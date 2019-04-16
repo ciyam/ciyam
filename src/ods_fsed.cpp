@@ -17,6 +17,7 @@
 #endif
 
 #include "ods.h"
+#include "progress.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 #include "ods_file_system.h"
@@ -205,6 +206,14 @@ class ods_fsed_startup_functor : public command_functor
 
 class ods_fsed_command_functor;
 
+struct ods_fsed_progress : progress
+{
+   void output_progress( const string& message )
+   {
+      cout << message << endl;
+   }
+};
+
 class ods_fsed_command_handler : public console_command_handler
 {
    friend class ods_fsed_command_functor;
@@ -231,8 +240,14 @@ void ods_fsed_command_handler::init( )
 
    ods::bulk_write bulk_write( *ap_ods );
 
-   if( !g_shared_write && !ap_ods->is_new( ) )
-      ap_ods->repair_if_corrupt( );
+   if( ap_ods->is_corrupt( ) )
+   {
+      if( g_shared_write )
+         throw runtime_error( "ODS DB is corrupt - re-start using exclusive write access in order to repair" );
+
+      ods_fsed_progress progress;
+      ap_ods->reconstruct_database( &progress );
+   }
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
 }

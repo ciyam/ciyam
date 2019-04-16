@@ -1316,6 +1316,51 @@ void append_ciyam_ods_transaction_log_files( )
    }
 }
 
+struct trace_progress : progress
+{
+   trace_progress( const string& name, bool also_to_cout = false )
+    :
+    name( name ),
+    dtm( date_time::local( ) ),
+    also_to_cout( also_to_cout )
+   {
+      string message( "Starting restore for ODS DB '" + name + "'..." );
+
+      if( also_to_cout )
+         cout << message << endl;
+
+      TRACE_LOG( TRACE_ANYTHING, message );
+   }
+
+   ~trace_progress( )
+   {
+      string message( "Finished restore for ODS DB '" + name + "'..." );
+
+      if( also_to_cout )
+         cout << message << endl;
+
+     TRACE_LOG( TRACE_ANYTHING, message );
+   }
+
+   void output_message( const string& message )
+   {
+      date_time now( date_time::local( ) );
+      uint64_t elapsed = seconds_between( dtm, now );
+
+      // NOTE: Avoid filling the log with a large number of progress messages.
+      if( elapsed >= 10 )
+      {
+         dtm = now;
+         TRACE_LOG( TRACE_ANYTHING, message );
+      }
+   }
+
+   string name;
+   date_time dtm;
+
+   bool also_to_cout;
+};
+
 void init_ciyam_ods( )
 {
    gap_ods.reset( new ods( c_ciyam_server,
@@ -1326,10 +1371,13 @@ void init_ciyam_ods( )
 
    bool was_just_created = false;
 
-   if( gap_ods->is_new( ) )
+   if( gap_ods->is_corrupt( ) )
+   {
+      trace_progress progress( c_ciyam_server, true );
+      gap_ods->reconstruct_database( &progress );
+   }
+   else if( gap_ods->is_new( ) )
       was_just_created = true;
-   else
-      gap_ods->repair_if_corrupt( );
 
    gap_ofs.reset( new ods_file_system( *gap_ods ) );
 
@@ -1486,8 +1534,11 @@ void perform_storage_op( storage_op op,
          ap_handler->obtain_bulk_write( );
 
          // NOTE: In case a server shutdown had occurred whilst an ODS transaction was still active.
-         if( !ap_ods->is_new( ) )
-            ap_ods->repair_if_corrupt( );
+         if( ap_ods->is_corrupt( ) )
+         {
+            trace_progress progress( name );
+            ap_ods->reconstruct_database( &progress );
+         }
 
          ods::instance( ap_ods.get( ) );
 

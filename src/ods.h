@@ -31,6 +31,8 @@
 
 const int64_t c_max_int_val = std::numeric_limits< int64_t >::max( );
 
+struct progress;
+
 class read_stream;
 class write_stream;
 
@@ -626,8 +628,8 @@ class ODS_DECL_SPEC ods
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
-   void repair_if_corrupt( );
-   void reconstruct_database( );
+   void repair_if_corrupt( progress* p_progress = 0 );
+   void reconstruct_database( progress* p_progress = 0 );
 
    void rewind_transactions( const std::string& label_or_txid );
 
@@ -760,8 +762,8 @@ class ODS_DECL_SPEC ods
    void append_log_entry_item( int64_t num, const ods_index_entry& index_entry,
     unsigned char flags, int64_t old_tx_id = 0, int64_t log_entry_offs = 0 );
 
-   void rollback_dead_transactions( );
-   void restore_from_transaction_log( bool force_reconstruct = false );
+   void rollback_dead_transactions( progress* p_progress = 0 );
+   void restore_from_transaction_log( bool force_reconstruct = false, progress* p_progress = 0 );
 
    ods& operator =( const ods& o );
    bool operator ==( const ods& o );

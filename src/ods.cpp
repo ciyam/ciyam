@@ -70,6 +70,7 @@
 #include "cache.h"
 #include "macros.h"
 #include "pointers.h"
+#include "progress.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 #include "read_write_stream.h"
@@ -2644,23 +2645,23 @@ string ods::get_file_names( const char* p_ext, char sep, bool add_tranlog_always
    return ods_file_names( p_impl->name, sep, add_tranlog_always || p_impl->using_tranlog );
 }
 
-void ods::repair_if_corrupt( )
+void ods::repair_if_corrupt( progress* p_progress )
 {
    if( p_impl->is_corrupt )
    {
       if( !p_impl->using_tranlog )
-         rollback_dead_transactions( );
+         rollback_dead_transactions( p_progress );
       else
-         restore_from_transaction_log( );
+         restore_from_transaction_log( false, p_progress );
    }
 }
 
-void ods::reconstruct_database( )
+void ods::reconstruct_database( progress* p_progress )
 {
    if( !p_impl->using_tranlog )
       THROW_ODS_ERROR( "cannot reconstruct database unless using a tranlog" );
    else
-      restore_from_transaction_log( true );
+      restore_from_transaction_log( true, p_progress );
 }
 
 void ods::rewind_transactions( const string& label_or_txid )
@@ -4935,7 +4936,7 @@ void ods::append_log_entry_item( int64_t num,
    fs.close( );
 }
 
-void ods::rollback_dead_transactions( )
+void ods::rollback_dead_transactions( progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -4961,8 +4962,13 @@ void ods::rollback_dead_transactions( )
 
    ods_index_entry index_entry;
 
-   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+   int64_t total = p_impl->rp_header_info->total_entries;
+
+   for( int64_t i = 0; i < total; i++ )
    {
+      if( i && p_progress && ( i % 1000 == 0 ) )
+         p_progress->output_progress( "processed " + to_string( i ) + "/" + to_string( total ) + " entries..." );
+
       read_index_entry( index_entry, i );
 
       if( index_entry.lock_flag == ods_index_entry::e_lock_none
@@ -5000,7 +5006,7 @@ void ods::rollback_dead_transactions( )
    *p_impl->rp_has_changed = false;
 }
 
-void ods::restore_from_transaction_log( bool force_reconstruct )
+void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -5108,6 +5114,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct )
       }
    }
 
+   int64_t entry_num = 0;
+
    bool had_any_entries = false;
    bool changed_free_list = false;
 
@@ -5135,6 +5143,11 @@ void ods::restore_from_transaction_log( bool force_reconstruct )
          while( true )
          {
             int64_t entry_offset = fs.tellg( );
+
+            if( entry_num && p_progress && ( entry_num % 1000 == 0 ) )
+               p_progress->output_progress( "processed " + to_string( entry_num ) + " log entries..." );
+
+            ++entry_num;
 
             log_entry tranlog_entry;
             tranlog_entry.read( fs );
@@ -5307,8 +5320,13 @@ void ods::restore_from_transaction_log( bool force_reconstruct )
          ods_index_entry index_entry;
          p_impl->rp_header_info->index_free_list = 0;
 
-         for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+         int64_t total = p_impl->rp_header_info->total_entries;
+
+         for( int64_t i = 0; i < total; i++ )
          {
+            if( i && p_progress && ( i % 1000 == 0 ) )
+               p_progress->output_progress( "processed " + to_string( i ) + "/" + to_string( total ) + " entries..." );
+
             read_index_entry( index_entry, i );
 
             if( index_entry.trans_flag == ods_index_entry::e_trans_free_list )
