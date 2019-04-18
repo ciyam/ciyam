@@ -79,6 +79,8 @@ const unsigned char c_space = 0x20;
 const unsigned char c_low_mask = 0x3f;
 const unsigned char c_high_mask = 0xc0;
 
+const int c_tail_buffer_size = 1024;
+
 #ifndef _WIN32
 const int c_open_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
 const int c_group_directory_perms = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
@@ -1915,6 +1917,72 @@ void buffer_file_lines( const string& file_name,
    if( !inpf.eof( ) )
       throw runtime_error(
        "unexpected error occurred whilst reading '" + file_name + "' for input in buffer_file_lines" );
+}
+
+void buffer_file_tail( const string& file_name,
+ deque< string >& lines, unsigned int num_lines, bool skip_blank_lines, bool strip_extra_crs )
+{
+   uint64_t total_size = file_size( file_name );
+
+   long start_pos = 0;
+
+   if( total_size > c_tail_buffer_size )
+      start_pos = total_size - c_tail_buffer_size;
+
+   string data;
+   bool finished_buffering = false;
+
+   long max_bytes = c_tail_buffer_size;
+
+   while( lines.size( ) < num_lines )
+   {
+      if( !finished_buffering )
+         data = buffer_file( file_name, max_bytes, 0, start_pos ) + data;
+
+      if( start_pos == 0 )
+         finished_buffering = true;
+
+      if( lines.empty( ) && !data.empty( ) )
+      {
+         // NOTE: Will always ignore a final trailing black line.
+         while( data.size( ) && data[ data.size( ) - 1 ] == '\n' )
+         {
+            data.erase( data.size( ) - 1 );
+
+            if( !skip_blank_lines )
+               break;
+         }
+      }
+
+      if( start_pos < c_tail_buffer_size )
+      {
+         max_bytes = start_pos;
+         start_pos = 0;
+      }
+      else if( start_pos )
+         start_pos -= c_tail_buffer_size;
+
+      string next( data );
+
+      string::size_type pos = data.rfind( '\n' );
+
+      if( pos == string::npos )
+         data.erase( );
+      else
+      {
+         next = data.substr( pos + 1 );
+         data.erase( pos );
+      }
+
+      if( strip_extra_crs )
+         remove_trailing_cr_from_text_file_line( next, start_pos == 0 );
+
+      if( !skip_blank_lines || !next.empty( ) )
+         lines.push_front( next );
+
+      if( pos == string::npos && start_pos == 0 )
+         break;
+   }
 }
 
 void buffer_file_items( const string& file_name,

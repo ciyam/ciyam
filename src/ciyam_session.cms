@@ -100,6 +100,7 @@ storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"
 system_mutexes "list system mutexes and their session lock ids"
+system_log_tail "view the tail of either the server or script log file" [<val/-n=10/lines>]<opt/script>|<opt/server>
 system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>]
 system_listeners "list system listeners"
 trace "get/set trace flags" [<val//flags>]

@@ -5416,6 +5416,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_system_log_tail )
+      {
+         bool is_script( has_parm_val( parameters, c_cmd_parm_ciyam_session_system_log_tail_script ) );
+         string num_lines( get_parm_val( parameters, c_cmd_parm_ciyam_session_system_log_tail_lines ) );
+
+         unsigned int num = 10;
+         if( !num_lines.empty( ) )
+            num = atoi( num_lines.c_str( ) );
+
+         deque< string > lines;
+         buffer_file_tail( is_script ? "ciyam_script.log" : "ciyam_server.log", lines, num );
+
+         for( size_t i = 0; i < lines.size( ); i++ )
+         {
+            if( i > 0 )
+               response += '\n';
+            response += lines[ i ];
+         }
+      }
       else if( command == c_cmd_ciyam_session_system_variable )
       {
          string name_or_expr( get_parm_val( parameters, c_cmd_parm_ciyam_session_system_variable_name_or_expr ) );
