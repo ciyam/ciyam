@@ -185,10 +185,10 @@ const char* const c_app_title = "ciyam_server";
 const char* const c_app_version = "0.1";
 
 const char* const c_cmd_chdir = "chdir";
-const char* const c_cmd_parm_chdir_directory = "directory";
+const char* const c_cmd_chdir_directory = "directory";
 
 const char* const c_cmd_trace = "trace";
-const char* const c_cmd_parm_trace_flags = "flags";
+const char* const c_cmd_trace_flags = "flags";
 
 const char* const c_cmd_quiet = "quiet";
 
@@ -311,13 +311,13 @@ class ciyam_server_startup_functor : public command_functor
    {
       if( command == c_cmd_chdir )
       {
-         string directory( get_parm_val( parameters, c_cmd_parm_chdir_directory ) );
+         string directory( get_parm_val( parameters, c_cmd_chdir_directory ) );
 
          set_cwd( directory );
       }
       else if( command == c_cmd_trace )
       {
-         string flags( get_parm_val( parameters, c_cmd_parm_trace_flags ) );
+         string flags( get_parm_val( parameters, c_cmd_trace_flags ) );
 
          istringstream isstr( flags );
          isstr >> hex >> g_flags;

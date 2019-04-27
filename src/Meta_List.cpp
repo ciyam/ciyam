@@ -907,7 +907,7 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
 {
    if( command == c_cmd_Meta_List_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_List_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_Meta_List_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_Meta_List->get_key( );
@@ -923,7 +923,7 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    }
    else if( command == c_cmd_Meta_List_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -1246,8 +1246,8 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    }
    else if( command == c_cmd_Meta_List_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_Meta_List_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -1624,8 +1624,8 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    }
    else if( command == c_cmd_Meta_List_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_List_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_Meta_List_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 
@@ -1658,7 +1658,7 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    }
    else if( command == c_cmd_Meta_List_Generate_PDF_List )
    {
-      int Variation_Num( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_List_Generate_PDF_List_Variation_Num ) );
+      int Variation_Num( get_parm_val_from_string< int >( parameters, c_cmd_Meta_List_Generate_PDF_List_Variation_Num ) );
       cmd_handler.p_Meta_List->Generate_PDF_List( Variation_Num );
 
       cmd_handler.retval.erase( );

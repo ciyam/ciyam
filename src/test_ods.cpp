@@ -409,7 +409,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       exit( 1 );
    else if( command == c_cmd_test_ods_list )
    {
-      bool sorted( has_parm_val( parameters, c_cmd_parm_test_ods_list_sorted ) );
+      bool sorted( has_parm_val( parameters, c_cmd_test_ods_list_sorted ) );
       o >> node;
 
       set< string > folders;
@@ -452,7 +452,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_in )
    {
-      string name_or_path( get_parm_val( parameters, c_cmd_parm_test_ods_in_name_or_path ) );
+      string name_or_path( get_parm_val( parameters, c_cmd_test_ods_in_name_or_path ) );
 
       bool found = false;
       bool had_error = false;
@@ -547,7 +547,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_add )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_test_ods_add_name ) );
+      string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
       if( name.find( '/' ) != string::npos )
          handler.issue_command_reponse( "cannot use '"
@@ -588,7 +588,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_del )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_test_ods_add_name ) );
+      string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
       bool found = false;
       ods::bulk_write bulk( o );
@@ -692,7 +692,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_import )
    {
-      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_import_file_name ) );
+      string file_name( get_parm_val( parameters, c_cmd_test_ods_import_file_name ) );
 
       ods::bulk_write bulk( o );
       o >> node;
@@ -722,8 +722,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_export )
    {
-      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_export_file_name ) );
-      string output_name( get_parm_val( parameters, c_cmd_parm_test_ods_export_output_name ) );
+      string file_name( get_parm_val( parameters, c_cmd_test_ods_export_file_name ) );
+      string output_name( get_parm_val( parameters, c_cmd_test_ods_export_output_name ) );
 
       if( output_name.empty( ) )
          output_name = file_name;
@@ -764,7 +764,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_trans )
    {
-      string label( get_parm_val( parameters, c_cmd_parm_test_ods_trans_label ) );
+      string label( get_parm_val( parameters, c_cmd_test_ods_trans_label ) );
 
       if( trans_level < c_max_trans_depth - 1 )
       {
@@ -813,7 +813,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       handler.issue_command_reponse( to_string( o.get_transaction_level( ) ) );
    else if( command == c_cmd_test_ods_rewind )
    {
-      string label_or_txid( get_parm_val( parameters, c_cmd_parm_test_ods_rewind_label_or_txid ) );
+      string label_or_txid( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_txid ) );
 
       if( g_shared_write )
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );

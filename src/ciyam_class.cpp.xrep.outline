@@ -599,7 +599,7 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
 {
    if( command == c_cmd_`{`$full_class_name`}_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_`{`$full_class_name`}_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_`{`$full_class_name`}->get_key( );
@@ -615,7 +615,7 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
    }
    else if( command == c_cmd_`{`$full_class_name`}_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -637,8 +637,8 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
    }
    else if( command == c_cmd_`{`$full_class_name`}_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -663,8 +663,8 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
    }
    else if( command == c_cmd_`{`$full_class_name`}_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_`{`$full_class_name`}_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 
@@ -693,7 +693,7 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
    else if( command == c_cmd_`{`$full_class_name`}_\$ )
    {
 `{`?`$\$_all_inputs`[`$\$_all_inputs`%,`,\
-      \\1 \\0( get_parm_val_from_string< \\1 >( parameters, c_cmd_parm_`{`$full_class_name`}_\$_\\0 ) );
+      \\1 \\0( get_parm_val_from_string< \\1 >( parameters, c_cmd_`{`$full_class_name`}_\$_\\0 ) );
 `]`}\
 `{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,\
       \\1 \\0;

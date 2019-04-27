@@ -104,41 +104,41 @@ void numeric_command_functor::operator ( )( const string& command, const paramet
       cmd_handler.retval = to_string( --*cmd_handler.p_numeric );
    else if( command == c_cmd_numeric_add )
    {
-      numeric n( get_parm_val( parameters, c_cmd_parm_numeric_add_num ).c_str( ) );
+      numeric n( get_parm_val( parameters, c_cmd_numeric_add_num ).c_str( ) );
 
       cmd_handler.retval = to_string( *cmd_handler.p_numeric += n );
    }
    else if( command == c_cmd_numeric_sub )
    {
-      numeric n( get_parm_val( parameters, c_cmd_parm_numeric_sub_num ).c_str( ) );
+      numeric n( get_parm_val( parameters, c_cmd_numeric_sub_num ).c_str( ) );
 
       cmd_handler.retval = to_string( *cmd_handler.p_numeric -= n );
    }
    else if( command == c_cmd_numeric_mul )
    {
-      numeric n( get_parm_val( parameters, c_cmd_parm_numeric_mul_num ).c_str( ) );
+      numeric n( get_parm_val( parameters, c_cmd_numeric_mul_num ).c_str( ) );
 
       cmd_handler.retval = to_string( *cmd_handler.p_numeric *= n );
    }
    else if( command == c_cmd_numeric_div )
    {
-      numeric n( get_parm_val( parameters, c_cmd_parm_numeric_div_num ).c_str( ) );
+      numeric n( get_parm_val( parameters, c_cmd_numeric_div_num ).c_str( ) );
 
       cmd_handler.retval = to_string( *cmd_handler.p_numeric /= n );
    }
    else if( command == c_cmd_numeric_round )
    {
       numeric::round_method m( numeric::e_round_method_normal );
-      if( has_parm_val( parameters, c_cmd_parm_numeric_round_up ) )
+      if( has_parm_val( parameters, c_cmd_numeric_round_up ) )
          m = numeric::e_round_method_up;
-      else if( has_parm_val( parameters, c_cmd_parm_numeric_round_down ) )
+      else if( has_parm_val( parameters, c_cmd_numeric_round_down ) )
          m = numeric::e_round_method_down;
-      else if( has_parm_val( parameters, c_cmd_parm_numeric_round_normal ) )
+      else if( has_parm_val( parameters, c_cmd_numeric_round_normal ) )
          m = numeric::e_round_method_normal;
-      else if( has_parm_val( parameters, c_cmd_parm_numeric_round_bankers ) )
+      else if( has_parm_val( parameters, c_cmd_numeric_round_bankers ) )
          m = numeric::e_round_method_bankers;
 
-      int n = atoi( get_parm_val( parameters, c_cmd_parm_numeric_round_decimals ).c_str( ) );
+      int n = atoi( get_parm_val( parameters, c_cmd_numeric_round_decimals ).c_str( ) );
       cmd_handler.retval = to_string( cmd_handler.p_numeric->round( n, m ) );
    }
 }

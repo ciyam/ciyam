@@ -103,7 +103,7 @@ system_mutexes "list system mutexes and their session lock ids"
 system_log_tail "view the tail of either the server or script log file" [<val/-n=10/lines>]<opt/script>|<opt/server>
 system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>]
 system_listeners "list system listeners"
-trace "get/set trace flags" [<val//flags>]
+trace "get/set trace flags" [<val//new_flags>]
 trace_flags "view available trace flags"
 decode "decode base64 to hex" <val//data>
 encode "encode hex to base64" <val//data>

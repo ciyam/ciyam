@@ -196,7 +196,7 @@ class command_parser::impl
    void output_usage( ostream& ostr ) const;
    void output_syntax( ostream& ostr ) const;
 
-   void get_parameter_names( vector< string >& parameters ) const;
+   void get_parameter_names( vector< string >& parameters, vector< string >* p_default_vals ) const;
 
    size_t get_error_pos( ) const { return error_pos; }
 
@@ -211,7 +211,7 @@ class command_parser::impl
    void do_output_usage( node* p_node, ostream& ostr, bool after_match = false ) const;
    void do_output_syntax( node* p_node, ostream& ostr ) const;
 
-   void do_get_parameter_names( node* p_node, vector< string >& parameters ) const;
+   void do_get_parameter_names( node* p_node, vector< string >& parameters, vector< string >* p_default_vals ) const;
 
    void parse_syntax_expression( node* p_node );
 
@@ -361,11 +361,11 @@ void command_parser::impl::output_syntax( ostream& ostr ) const
       do_output_syntax( p_node, ostr );
 }
 
-void command_parser::impl::get_parameter_names( vector< string >& parameters ) const
+void command_parser::impl::get_parameter_names( vector< string >& parameters, vector< string >* p_default_vals ) const
 {
    parameters.clear( );
    if( p_node )
-      do_get_parameter_names( p_node, parameters );
+      do_get_parameter_names( p_node, parameters, p_default_vals );
 }
 
 void command_parser::impl::do_clear( node* p_node )
@@ -1042,19 +1042,24 @@ void command_parser::impl::do_output_syntax( node* p_node, ostream& ostr ) const
       do_output_syntax( p_node->p_next_node, ostr );
 }
 
-void command_parser::impl::do_get_parameter_names( node* p_node, vector< string >& parameters ) const
+void command_parser::impl::do_get_parameter_names( node* p_node, vector< string >& parameters, vector< string >* p_default_vals ) const
 {
    for( vector< node* >::size_type i = 0; i < p_node->opt_branch_nodes.size( ); i++ )
-      do_get_parameter_names( p_node->opt_branch_nodes[ i ], parameters );
+      do_get_parameter_names( p_node->opt_branch_nodes[ i ], parameters, p_default_vals );
 
    if( !p_node->parameter.empty( ) )
+   {
       parameters.push_back( p_node->parameter );
 
+      if( p_default_vals )
+         p_default_vals->push_back( p_node->default_val );
+   }
+
    if( p_node->p_match_node )
-      do_get_parameter_names( p_node->p_match_node, parameters );
+      do_get_parameter_names( p_node->p_match_node, parameters, p_default_vals );
 
    if( p_node->p_next_node )
-      do_get_parameter_names( p_node->p_next_node, parameters );
+      do_get_parameter_names( p_node->p_next_node, parameters, p_default_vals );
 }
 
 void command_parser::impl::parse_syntax_expression( node* p_node )
@@ -1558,9 +1563,9 @@ void command_parser::output_syntax( ostream& ostr ) const
    p_impl->output_syntax( ostr );
 }
 
-void command_parser::get_parameter_names( std::vector< std::string >& parameters ) const
+void command_parser::get_parameter_names( vector< string >& parameters, vector< string >* p_default_vals ) const
 {
-   p_impl->get_parameter_names( parameters );
+   p_impl->get_parameter_names( parameters, p_default_vals );
 }
 
 size_t command_parser::get_error_pos( ) const

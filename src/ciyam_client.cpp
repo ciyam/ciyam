@@ -61,14 +61,14 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_tls = "tls";
 
 const char* const c_cmd_exec = "exec";
-const char* const c_cmd_parm_exec_command = "command";
-const char* const c_cmd_parm_exec_arguments = "arguments";
+const char* const c_cmd_exec_command = "command";
+const char* const c_cmd_exec_arguments = "arguments";
 
 const char* const c_cmd_args_file = "args_file";
-const char* const c_cmd_parm_args_file_name = "name";
+const char* const c_cmd_args_file_name = "name";
 
 const char* const c_cmd_rpc_unlock = "rpc_unlock";
-const char* const c_cmd_parm_rpc_unlock_password = "password";
+const char* const c_cmd_rpc_unlock_password = "password";
 
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
@@ -139,17 +139,17 @@ class ciyam_console_startup_functor : public command_functor
          g_use_tls = true;
       else if( command == c_cmd_exec )
       {
-         g_exec_cmd = get_parm_val( parameters, c_cmd_parm_exec_command );
+         g_exec_cmd = get_parm_val( parameters, c_cmd_exec_command );
 
-         string arguments( get_parm_val( parameters, c_cmd_parm_exec_arguments ) );
+         string arguments( get_parm_val( parameters, c_cmd_exec_arguments ) );
 
          if( !arguments.empty( ) )
             g_exec_cmd += " " + arguments;
       }
       else if( command == c_cmd_args_file )
-         g_args_file = get_parm_val( parameters, c_cmd_parm_args_file_name );
+         g_args_file = get_parm_val( parameters, c_cmd_args_file_name );
       else if( command == c_cmd_rpc_unlock )
-         g_rpc_password = get_parm_val( parameters, c_cmd_parm_rpc_unlock_password );
+         g_rpc_password = get_parm_val( parameters, c_cmd_rpc_unlock_password );
    }
 };
 

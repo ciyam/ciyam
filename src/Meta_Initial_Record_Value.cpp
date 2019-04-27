@@ -235,7 +235,7 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
 {
    if( command == c_cmd_Meta_Initial_Record_Value_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_Meta_Initial_Record_Value->get_key( );
@@ -251,7 +251,7 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
    }
    else if( command == c_cmd_Meta_Initial_Record_Value_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -280,8 +280,8 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
    }
    else if( command == c_cmd_Meta_Initial_Record_Value_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -315,8 +315,8 @@ void Meta_Initial_Record_Value_command_functor::operator ( )( const string& comm
    }
    else if( command == c_cmd_Meta_Initial_Record_Value_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_Value_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_Meta_Initial_Record_Value_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 

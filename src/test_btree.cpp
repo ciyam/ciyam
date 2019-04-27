@@ -504,12 +504,12 @@ void test_btree_command_functor::operator ( )( const string& command, const para
 {
    if( command == c_cmd_test_btree_add )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_add_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_add_item );
       iter = bt.insert( item );
    }
    else if( command == c_cmd_test_btree_find )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_find_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_find_item );
       iter = bt.find( item );
       if( iter == bt.end( ) )
          handler.issue_command_reponse( "*** item not found ***", true );
@@ -520,9 +520,9 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    {
       string expr;
       if( command == c_cmd_test_btree_match )
-         expr = get_parm_val( parameters, c_cmd_parm_test_btree_match_expr );
+         expr = get_parm_val( parameters, c_cmd_test_btree_match_expr );
       else
-         expr = get_parm_val( parameters, c_cmd_parm_test_btree_mcount_expr );
+         expr = get_parm_val( parameters, c_cmd_test_btree_mcount_expr );
 
       size_t pos = first_wildcard_character_pos( expr );
       item.val = expr.substr( 0, pos );
@@ -560,7 +560,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_lbound )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_lbound_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_lbound_item );
 
       iter = bt.lower_bound( item );
       if( iter == bt.end( ) )
@@ -570,7 +570,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_ubound )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_lbound_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_lbound_item );
       iter = bt.upper_bound( item );
       if( iter == bt.end( ) )
          handler.issue_command_reponse( "*** past the end ***", true );
@@ -579,9 +579,9 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_remove )
    {
-      if( has_parm_val( parameters, c_cmd_parm_test_btree_remove_item ) )
+      if( has_parm_val( parameters, c_cmd_test_btree_remove_item ) )
       {
-         item.val = get_parm_val( parameters, c_cmd_parm_test_btree_remove_item );
+         item.val = get_parm_val( parameters, c_cmd_test_btree_remove_item );
          if( !bt.erase( item ) )
             handler.issue_command_reponse( "*** no equal items found ***", true );
          else
@@ -597,7 +597,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_erange )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_erange_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_erange_item );
 
       pair< btree_type::iterator, btree_type::iterator > range;
 
@@ -610,12 +610,12 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_count )
    {
-      item.val = get_parm_val( parameters, c_cmd_parm_test_btree_count_item );
+      item.val = get_parm_val( parameters, c_cmd_test_btree_count_item );
       handler.issue_command_reponse( to_string( bt.count( item ) ) );
    }
    else if( command == c_cmd_test_btree_load )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_load_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_load_filename ) );
 
       ifstream inpf( filename.c_str( ), ios::in | ios::binary );
 
@@ -630,7 +630,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_save )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_save_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_save_filename ) );
 
       ofstream outf( filename.c_str( ), ios::out | ios::binary );
 
@@ -642,7 +642,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_import )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_import_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_import_filename ) );
 
       ifstream inpf( filename.c_str( ) );
 
@@ -665,7 +665,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_export )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_export_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_export_filename ) );
 
       ofstream outf( filename.c_str( ) );
 
@@ -683,7 +683,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_append )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_append_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_append_filename ) );
 
       ifstream inpf( filename.c_str( ) );
 
@@ -718,11 +718,11 @@ void test_btree_command_functor::operator ( )( const string& command, const para
       handler.issue_command_reponse( "number of items in container = " + to_string( bt.size( ) ) );
    else if( command == c_cmd_test_btree_goto )
    {
-      if( has_parm_val( parameters, c_cmd_parm_test_btree_goto_top ) )
+      if( has_parm_val( parameters, c_cmd_test_btree_goto_top ) )
          iter = bt.begin( );
-      else if( has_parm_val( parameters, c_cmd_parm_test_btree_goto_end ) )
+      else if( has_parm_val( parameters, c_cmd_test_btree_goto_end ) )
          iter = bt.end( );
-      else if( has_parm_val( parameters, c_cmd_parm_test_btree_goto_next ) )
+      else if( has_parm_val( parameters, c_cmd_test_btree_goto_next ) )
       {
          if( iter == bt.end( ) )
             handler.issue_command_reponse( "*** past the end ***", true );
@@ -746,7 +746,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_list )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_list_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_list_filename ) );
 
       if( iter == bt.end( ) )
          handler.issue_command_reponse( "*** past the end ***", true );
@@ -793,7 +793,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_rlist )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_rlist_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_rlist_filename ) );
 
       if( iter == bt.begin( ) )
          handler.issue_command_reponse( "*** at the top ***", true );
@@ -841,14 +841,14 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_limit )
    {
-      if( has_parm_val( parameters, c_cmd_parm_test_btree_limit_num ) )
-         list_iter_limit = atoi( get_parm_val( parameters, c_cmd_parm_test_btree_limit_num ).c_str( ) );
+      if( has_parm_val( parameters, c_cmd_test_btree_limit_num ) )
+         list_iter_limit = atoi( get_parm_val( parameters, c_cmd_test_btree_limit_num ).c_str( ) );
       else
          handler.issue_command_reponse( "limit for listing iteration = " + to_string( list_iter_limit ) );
    }
    else if( command == c_cmd_test_btree_dump )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_dump_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_dump_filename ) );
 
       if( filename.length( ) )
       {
@@ -865,7 +865,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_xml )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_xml_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_xml_filename ) );
 
       ofstream outf( filename.c_str( ) );
 
@@ -877,7 +877,7 @@ void test_btree_command_functor::operator ( )( const string& command, const para
    }
    else if( command == c_cmd_test_btree_mkdirs )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_test_btree_mkdirs_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_test_btree_mkdirs_filename ) );
 
       ofstream outf( filename.c_str( ) );
 

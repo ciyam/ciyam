@@ -114,35 +114,35 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          handler.issue_command_reponse( num.as_comparable_string( ) );
       else if( command == c_cmd_test_numeric_set )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_set_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_set_num ).c_str( ) );
 
          num = n;
          handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_add )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_add_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_add_num ).c_str( ) );
 
          num += n;
          handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_sub )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_sub_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_sub_num ).c_str( ) );
 
          num -= n;
          handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_mul )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_mul_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_mul_num ).c_str( ) );
 
          num *= n;
          handler.issue_command_reponse( to_string( num ) );
       }
       else if( command == c_cmd_test_numeric_div )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_div_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_div_num ).c_str( ) );
 
          num /= n;
          handler.issue_command_reponse( to_string( num ) );
@@ -151,35 +151,35 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          handler.issue_command_reponse( to_string( sqrt( num ) ) );
       else if( command == c_cmd_test_numeric_is_lt )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_lt_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_is_lt_num ).c_str( ) );
 
          bool is_true = num < n;
          handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_gt )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_gt_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_is_gt_num ).c_str( ) );
 
          bool is_true = num > n;
          handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_eq )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_eq_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_is_eq_num ).c_str( ) );
 
          bool is_true = num == n;
          handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_lteq )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_lteq_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_is_lteq_num ).c_str( ) );
 
          bool is_true = num <= n;
          handler.issue_command_reponse( is_true ? "true" : "false" );
       }
       else if( command == c_cmd_test_numeric_is_gteq )
       {
-         numeric n( get_parm_val( parameters, c_cmd_parm_test_numeric_is_gteq_num ).c_str( ) );
+         numeric n( get_parm_val( parameters, c_cmd_test_numeric_is_gteq_num ).c_str( ) );
 
          bool is_true = num >= n;
          handler.issue_command_reponse( is_true ? "true" : "false" );
@@ -191,18 +191,18 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
       else if( command == c_cmd_test_numeric_round )
       {
          numeric::round_method m( numeric::e_round_method_normal );
-         if( has_parm_val( parameters, c_cmd_parm_test_numeric_round_up ) )
+         if( has_parm_val( parameters, c_cmd_test_numeric_round_up ) )
             m = numeric::e_round_method_up;
-         else if( has_parm_val( parameters, c_cmd_parm_test_numeric_round_down ) )
+         else if( has_parm_val( parameters, c_cmd_test_numeric_round_down ) )
             m = numeric::e_round_method_down;
-         else if( has_parm_val( parameters, c_cmd_parm_test_numeric_round_normal ) )
+         else if( has_parm_val( parameters, c_cmd_test_numeric_round_normal ) )
             m = numeric::e_round_method_normal;
-         else if( has_parm_val( parameters, c_cmd_parm_test_numeric_round_bankers ) )
+         else if( has_parm_val( parameters, c_cmd_test_numeric_round_bankers ) )
             m = numeric::e_round_method_bankers;
 
-         bool simplify = has_parm_val( parameters, c_cmd_parm_test_numeric_round_simplify );
+         bool simplify = has_parm_val( parameters, c_cmd_test_numeric_round_simplify );
 
-         int n = atoi( get_parm_val( parameters, c_cmd_parm_test_numeric_round_decimals ).c_str( ) );
+         int n = atoi( get_parm_val( parameters, c_cmd_test_numeric_round_decimals ).c_str( ) );
          try
          {
             num.round( n, m, simplify );
@@ -287,7 +287,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          handler.issue_command_reponse( to_string( ( int )num.decimal_digits( ) ) );
       else if( command == c_cmd_test_numeric_format )
       {
-         string mask( get_parm_val( parameters, c_cmd_parm_test_numeric_format_mask ) );
+         string mask( get_parm_val( parameters, c_cmd_test_numeric_format_mask ) );
 
          handler.issue_command_reponse( format_numeric( num, mask ) );
       }

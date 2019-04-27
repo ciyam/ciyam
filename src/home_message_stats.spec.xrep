@@ -26,8 +26,8 @@
       // [(start home_message_stats)] `{`$arg_id`}
       else if( command == c_cmd_`{`$model_name`}_Home_Message )
       {
-         string user_info( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_info ) );
-         string user_perms( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_perms ) );
+         string user_info( get_parm_val( parameters, c_cmd_`{`$model_name`}_Home_Message_user_info ) );
+         string user_perms( get_parm_val( parameters, c_cmd_`{`$model_name`}_Home_Message_user_perms ) );
 
          set_uid( user_info );
 

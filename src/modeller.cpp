@@ -334,12 +334,12 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          handler.set_finished( );
       else if( command == c_cmd_modeller_class_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_class_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_class_add_class_name ) );
-         string plural_name( get_parm_val( parameters, c_cmd_parm_modeller_class_add_plural_name ) );
-         string fixed_key_val( get_parm_val( parameters, c_cmd_parm_modeller_class_add_fixed_key_val ) );
-         string extra( get_parm_val( parameters, c_cmd_parm_modeller_class_add_extra ) );
-         string base_class_name( get_parm_val( parameters, c_cmd_parm_modeller_class_add_base_class_name ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_class_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_class_add_class_name ) );
+         string plural_name( get_parm_val( parameters, c_cmd_modeller_class_add_plural_name ) );
+         string fixed_key_val( get_parm_val( parameters, c_cmd_modeller_class_add_fixed_key_val ) );
+         string extra( get_parm_val( parameters, c_cmd_modeller_class_add_extra ) );
+         string base_class_name( get_parm_val( parameters, c_cmd_modeller_class_add_base_class_name ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -352,30 +352,30 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_class_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_class_remove_class_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_class_remove_class_name ) );
 
          g_model.class_remove( class_name );
       }
       else if( command == c_cmd_modeller_class_rename )
       {
-         string old_name( get_parm_val( parameters, c_cmd_parm_modeller_class_rename_old_class_name ) );
-         string new_name( get_parm_val( parameters, c_cmd_parm_modeller_class_rename_new_class_name ) );
+         string old_name( get_parm_val( parameters, c_cmd_modeller_class_rename_old_class_name ) );
+         string new_name( get_parm_val( parameters, c_cmd_modeller_class_rename_new_class_name ) );
 
          g_model.class_rename( old_name, new_name );
       }
       else if( command == c_cmd_modeller_field_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_field_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_class_name ) );
-         string field_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_field_name ) );
-         string type_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_type_name ) );
-         bool is_mandatory( has_parm_val( parameters, c_cmd_parm_modeller_field_add_mand ) );
-         string enum_name( get_parm_val( parameters, c_cmd_parm_modeller_field_add_enum ) );
-         string enum_filter( get_parm_val( parameters, c_cmd_parm_modeller_field_add_enum_filter ) );
-         string extra( get_parm_val( parameters, c_cmd_parm_modeller_field_add_extra ) );
-         string default_value( get_parm_val( parameters, c_cmd_parm_modeller_field_add_default ) );
-         bool is_transient( has_parm_val( parameters, c_cmd_parm_modeller_field_add_transient ) );
-         bool for_text_search( has_parm_val( parameters, c_cmd_parm_modeller_field_add_text_search ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_field_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_field_add_class_name ) );
+         string field_name( get_parm_val( parameters, c_cmd_modeller_field_add_field_name ) );
+         string type_name( get_parm_val( parameters, c_cmd_modeller_field_add_type_name ) );
+         bool is_mandatory( has_parm_val( parameters, c_cmd_modeller_field_add_mand ) );
+         string enum_name( get_parm_val( parameters, c_cmd_modeller_field_add_enum ) );
+         string enum_filter( get_parm_val( parameters, c_cmd_modeller_field_add_enum_filter ) );
+         string extra( get_parm_val( parameters, c_cmd_modeller_field_add_extra ) );
+         string default_value( get_parm_val( parameters, c_cmd_modeller_field_add_default ) );
+         bool is_transient( has_parm_val( parameters, c_cmd_modeller_field_add_transient ) );
+         bool for_text_search( has_parm_val( parameters, c_cmd_modeller_field_add_text_search ) );
 
          if( !field_name.empty( ) && field_name[ field_name.length( ) - 1 ] == '_' )
             throw runtime_error( "cannot use trailing underscores in field names" );
@@ -408,31 +408,31 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_field_list )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_field_list_class_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_field_list_class_name ) );
 
          g_model.field_list( class_name, cout );
       }
       else if( command == c_cmd_modeller_field_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_field_remove_class_name ) );
-         string field_name( get_parm_val( parameters, c_cmd_parm_modeller_field_remove_field_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_field_remove_class_name ) );
+         string field_name( get_parm_val( parameters, c_cmd_modeller_field_remove_field_name ) );
 
          g_model.field_remove( class_name, field_name );
       }
       else if( command == c_cmd_modeller_field_rename )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_field_rename_class_name ) );
-         string old_field_name( get_parm_val( parameters, c_cmd_parm_modeller_field_rename_old_field_name ) );
-         string new_field_name( get_parm_val( parameters, c_cmd_parm_modeller_field_rename_new_field_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_field_rename_class_name ) );
+         string old_field_name( get_parm_val( parameters, c_cmd_modeller_field_rename_old_field_name ) );
+         string new_field_name( get_parm_val( parameters, c_cmd_modeller_field_rename_new_field_name ) );
 
          g_model.field_rename( class_name, old_field_name, new_field_name );
       }
       else if( command == c_cmd_modeller_index_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_index_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_index_add_class_name ) );
-         string field_list( get_parm_val( parameters, c_cmd_parm_modeller_index_add_field_list ) );
-         bool is_unique( has_parm_val( parameters, c_cmd_parm_modeller_index_add_unique ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_index_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_index_add_class_name ) );
+         string field_list( get_parm_val( parameters, c_cmd_modeller_index_add_field_list ) );
+         bool is_unique( has_parm_val( parameters, c_cmd_modeller_index_add_unique ) );
 
          vector< index_data > all_index_data;
          g_model.get_index_data( class_name, all_index_data );
@@ -454,23 +454,23 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_index_list )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_index_list_class_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_index_list_class_name ) );
 
          g_model.index_list( class_name, cout );
       }
       else if( command == c_cmd_modeller_index_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_index_remove_class_name ) );
-         string field_list( get_parm_val( parameters, c_cmd_parm_modeller_index_remove_field_list ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_index_remove_class_name ) );
+         string field_list( get_parm_val( parameters, c_cmd_modeller_index_remove_field_list ) );
 
          g_model.index_remove( class_name, field_list );
       }
       else if( command == c_cmd_modeller_modifier_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_modifier_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_add_class_name ) );
-         string modifier_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_add_modifier_name ) );
-         string field_info( get_parm_val( parameters, c_cmd_parm_modeller_modifier_add_field_info ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_modifier_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_modifier_add_class_name ) );
+         string modifier_name( get_parm_val( parameters, c_cmd_modeller_modifier_add_modifier_name ) );
+         string field_info( get_parm_val( parameters, c_cmd_modeller_modifier_add_field_info ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -479,30 +479,30 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_modifier_list )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_list_class_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_modifier_list_class_name ) );
 
          g_model.modifier_list( class_name, cout );
       }
       else if( command == c_cmd_modeller_modifier_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_remove_class_name ) );
-         string modifier_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_remove_modifier_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_modifier_remove_class_name ) );
+         string modifier_name( get_parm_val( parameters, c_cmd_modeller_modifier_remove_modifier_name ) );
 
          g_model.modifier_remove( class_name, modifier_name );
       }
       else if( command == c_cmd_modeller_modifier_rename )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_rename_class_name ) );
-         string old_modifier_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_rename_old_modifier_name ) );
-         string new_modifier_name( get_parm_val( parameters, c_cmd_parm_modeller_modifier_rename_new_modifier_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_modifier_rename_class_name ) );
+         string old_modifier_name( get_parm_val( parameters, c_cmd_modeller_modifier_rename_old_modifier_name ) );
+         string new_modifier_name( get_parm_val( parameters, c_cmd_modeller_modifier_rename_new_modifier_name ) );
 
          g_model.modifier_rename( class_name, old_modifier_name, new_modifier_name );
       }
       else if( command == c_cmd_modeller_procedure_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_procedure_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_add_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_add_procedure_name ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_procedure_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_add_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_add_procedure_name ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -511,33 +511,33 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_procedure_list )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_list_class_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_list_class_name ) );
 
          g_model.procedure_list( class_name, cout );
       }
       else if( command == c_cmd_modeller_procedure_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_remove_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_remove_procedure_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_remove_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_remove_procedure_name ) );
 
          g_model.procedure_remove( class_name, procedure_name );
       }
       else if( command == c_cmd_modeller_procedure_rename )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_rename_class_name ) );
-         string old_procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_rename_old_procedure_name ) );
-         string new_procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_rename_new_procedure_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_rename_class_name ) );
+         string old_procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_rename_old_procedure_name ) );
+         string new_procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_rename_new_procedure_name ) );
 
          g_model.procedure_rename( class_name, old_procedure_name, new_procedure_name );
       }
       else if( command == c_cmd_modeller_procedure_arg_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_id ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_procedure_name ) );
-         string arg_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_arg_name ) );
-         string arg_type( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_arg_type ) );
-         bool is_output( has_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_add_out ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_procedure_arg_add_id ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_add_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_add_procedure_name ) );
+         string arg_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_add_arg_name ) );
+         string arg_type( get_parm_val( parameters, c_cmd_modeller_procedure_arg_add_arg_type ) );
+         bool is_output( has_parm_val( parameters, c_cmd_modeller_procedure_arg_add_out ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -546,40 +546,40 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_procedure_arg_list )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_list_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_list_procedure_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_list_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_list_procedure_name ) );
 
          g_model.procedure_arg_list( class_name, procedure_name, cout );
       }
       else if( command == c_cmd_modeller_procedure_arg_remove )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_remove_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_remove_procedure_name ) );
-         string arg_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_remove_arg_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_remove_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_remove_procedure_name ) );
+         string arg_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_remove_arg_name ) );
 
          g_model.procedure_arg_remove( class_name, procedure_name, arg_name );
       }
       else if( command == c_cmd_modeller_procedure_arg_rename )
       {
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_rename_class_name ) );
-         string procedure_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_rename_procedure_name ) );
-         string old_arg_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_rename_old_arg_name ) );
-         string new_arg_name( get_parm_val( parameters, c_cmd_parm_modeller_procedure_arg_rename_new_arg_name ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_rename_class_name ) );
+         string procedure_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_rename_procedure_name ) );
+         string old_arg_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_rename_old_arg_name ) );
+         string new_arg_name( get_parm_val( parameters, c_cmd_modeller_procedure_arg_rename_new_arg_name ) );
 
          g_model.procedure_arg_rename( class_name, procedure_name, old_arg_name, new_arg_name );
       }
       else if( command == c_cmd_modeller_relationship_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_id ) );
-         string fid( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_fid ) );
-         string child_class_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_child_class_name ) );
-         string child_field_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_child_field_name ) );
-         string parent_class_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_parent_class_name ) );
-         bool is_mandatory( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_mand ) );
-         bool is_restrict( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_restrict ) );
-         bool is_unlink( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_unlink ) );
-         string extra( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_extra ) );
-         bool is_transient( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_transient ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_relationship_add_id ) );
+         string fid( get_parm_val( parameters, c_cmd_modeller_relationship_add_fid ) );
+         string child_class_name( get_parm_val( parameters, c_cmd_modeller_relationship_add_child_class_name ) );
+         string child_field_name( get_parm_val( parameters, c_cmd_modeller_relationship_add_child_field_name ) );
+         string parent_class_name( get_parm_val( parameters, c_cmd_modeller_relationship_add_parent_class_name ) );
+         bool is_mandatory( has_parm_val( parameters, c_cmd_modeller_relationship_add_mand ) );
+         bool is_restrict( has_parm_val( parameters, c_cmd_modeller_relationship_add_restrict ) );
+         bool is_unlink( has_parm_val( parameters, c_cmd_modeller_relationship_add_unlink ) );
+         string extra( get_parm_val( parameters, c_cmd_modeller_relationship_add_extra ) );
+         bool is_transient( has_parm_val( parameters, c_cmd_modeller_relationship_add_transient ) );
 
          cascade_operation cascade_op( e_cascade_operation_destroy );
          if( is_unlink )
@@ -603,36 +603,36 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       else if( command == c_cmd_modeller_relationship_list_parents )
       {
          string child_class_name(
-          get_parm_val( parameters, c_cmd_parm_modeller_relationship_list_parents_child_class_name ) );
+          get_parm_val( parameters, c_cmd_modeller_relationship_list_parents_child_class_name ) );
 
          g_model.relationship_list_parents( child_class_name, cout );
       }
       else if( command == c_cmd_modeller_relationship_list_children )
       {
          string parent_class_name(
-          get_parm_val( parameters, c_cmd_parm_modeller_relationship_list_children_parent_class_name ) );
+          get_parm_val( parameters, c_cmd_modeller_relationship_list_children_parent_class_name ) );
 
          g_model.relationship_list_children( parent_class_name, cout );
       }
       else if( command == c_cmd_modeller_relationship_remove )
       {
-         string relationship_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_remove_relationship_name ) );
+         string relationship_name( get_parm_val( parameters, c_cmd_modeller_relationship_remove_relationship_name ) );
 
          g_model.relationship_remove( relationship_name );
       }
       else if( command == c_cmd_modeller_relationship_rename )
       {
-         string old_relationship_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_rename_old_relationship_name ) );
-         string new_relationship_name( get_parm_val( parameters, c_cmd_parm_modeller_relationship_rename_new_relationship_name ) );
+         string old_relationship_name( get_parm_val( parameters, c_cmd_modeller_relationship_rename_old_relationship_name ) );
+         string new_relationship_name( get_parm_val( parameters, c_cmd_modeller_relationship_rename_new_relationship_name ) );
 
          g_model.relationship_rename( old_relationship_name, new_relationship_name );
       }
       else if( command == c_cmd_modeller_specification_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_specification_add_id ) );
-         string specification_name( get_parm_val( parameters, c_cmd_parm_modeller_specification_add_specification_name ) );
-         string specification_type( get_parm_val( parameters, c_cmd_parm_modeller_specification_add_specification_type ) );
-         string specification_args( get_parm_val( parameters, c_cmd_parm_modeller_specification_add_specification_args ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_specification_add_id ) );
+         string specification_name( get_parm_val( parameters, c_cmd_modeller_specification_add_specification_name ) );
+         string specification_type( get_parm_val( parameters, c_cmd_modeller_specification_add_specification_type ) );
+         string specification_args( get_parm_val( parameters, c_cmd_modeller_specification_add_specification_args ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -641,7 +641,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_specification_remove )
       {
-         string specification_name( get_parm_val( parameters, c_cmd_parm_modeller_specification_remove_specification_name ) );
+         string specification_name( get_parm_val( parameters, c_cmd_modeller_specification_remove_specification_name ) );
 
          g_model.specification_remove( specification_name );
       }
@@ -652,19 +652,19 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       else if( command == c_cmd_modeller_specification_rename )
       {
          string old_specification_name(
-          get_parm_val( parameters, c_cmd_parm_modeller_specification_rename_old_specification_name ) );
+          get_parm_val( parameters, c_cmd_modeller_specification_rename_old_specification_name ) );
 
          string new_specification_name(
-          get_parm_val( parameters, c_cmd_parm_modeller_specification_rename_new_specification_name ) );
+          get_parm_val( parameters, c_cmd_modeller_specification_rename_new_specification_name ) );
 
          g_model.specification_rename( old_specification_name, new_specification_name );
       }
       else if( command == c_cmd_modeller_user_defined_enum_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_add_id ) );
-         string ude_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_add_ude_name ) );
-         string type_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_add_type_name ) );
-         string key_values( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_add_key_values ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_add_id ) );
+         string ude_name( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_add_ude_name ) );
+         string type_name( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_add_type_name ) );
+         string key_values( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_add_key_values ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -680,23 +680,23 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_user_defined_enum_remove )
       {
-         string ude_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_remove_ude_name ) );
+         string ude_name( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_remove_ude_name ) );
 
          g_model.user_defined_enum_remove( ude_name );
       }
       else if( command == c_cmd_modeller_user_defined_enum_rename )
       {
-         string old_ude_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_rename_old_ude_name ) );
-         string new_ude_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_enum_rename_new_ude_name ) );
+         string old_ude_name( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_rename_old_ude_name ) );
+         string new_ude_name( get_parm_val( parameters, c_cmd_modeller_user_defined_enum_rename_new_ude_name ) );
 
          g_model.user_defined_enum_rename( old_ude_name, new_ude_name );
       }
       else if( command == c_cmd_modeller_user_defined_type_add )
       {
-         string id( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_add_id ) );
-         string udt_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_add_udt_name ) );
-         string type_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_add_type_name ) );
-         string type_domain_info( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_add_type_domain_info ) );
+         string id( get_parm_val( parameters, c_cmd_modeller_user_defined_type_add_id ) );
+         string udt_name( get_parm_val( parameters, c_cmd_modeller_user_defined_type_add_udt_name ) );
+         string type_name( get_parm_val( parameters, c_cmd_modeller_user_defined_type_add_type_name ) );
+         string type_domain_info( get_parm_val( parameters, c_cmd_modeller_user_defined_type_add_type_domain_info ) );
 
          if( id.empty( ) )
             id = unique_id( );
@@ -709,40 +709,40 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_user_defined_type_remove )
       {
-         string udt_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_remove_udt_name ) );
+         string udt_name( get_parm_val( parameters, c_cmd_modeller_user_defined_type_remove_udt_name ) );
 
          g_model.user_defined_type_remove( udt_name );
       }
       else if( command == c_cmd_modeller_user_defined_type_rename )
       {
-         string old_udt_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_rename_old_udt_name ) );
-         string new_udt_name( get_parm_val( parameters, c_cmd_parm_modeller_user_defined_type_rename_new_udt_name ) );
+         string old_udt_name( get_parm_val( parameters, c_cmd_modeller_user_defined_type_rename_old_udt_name ) );
+         string new_udt_name( get_parm_val( parameters, c_cmd_modeller_user_defined_type_rename_new_udt_name ) );
 
          g_model.user_defined_type_rename( old_udt_name, new_udt_name );
       }
       else if( command == c_cmd_modeller_model_info )
       {
-         bool has_new_id( has_parm_val( parameters, c_cmd_parm_modeller_model_info_new_id ) );
-         bool has_new_name( has_parm_val( parameters, c_cmd_parm_modeller_model_info_new_name ) );
-         bool has_new_perm( has_parm_val( parameters, c_cmd_parm_modeller_model_info_new_perm ) );
-         bool has_new_version( has_parm_val( parameters, c_cmd_parm_modeller_model_info_new_version ) );
-         bool has_new_created( has_parm_val( parameters, c_cmd_parm_modeller_model_info_new_created ) );
+         bool has_new_id( has_parm_val( parameters, c_cmd_modeller_model_info_new_id ) );
+         bool has_new_name( has_parm_val( parameters, c_cmd_modeller_model_info_new_name ) );
+         bool has_new_perm( has_parm_val( parameters, c_cmd_modeller_model_info_new_perm ) );
+         bool has_new_version( has_parm_val( parameters, c_cmd_modeller_model_info_new_version ) );
+         bool has_new_created( has_parm_val( parameters, c_cmd_modeller_model_info_new_created ) );
 
          if( has_new_id )
-            g_model.set_id( get_parm_val( parameters, c_cmd_parm_modeller_model_info_new_id ) );
+            g_model.set_id( get_parm_val( parameters, c_cmd_modeller_model_info_new_id ) );
 
          if( has_new_name )
-            g_model.set_name( get_parm_val( parameters, c_cmd_parm_modeller_model_info_new_name ) );
+            g_model.set_name( get_parm_val( parameters, c_cmd_modeller_model_info_new_name ) );
 
          if( has_new_perm )
-            g_model.set_perm( get_parm_val( parameters, c_cmd_parm_modeller_model_info_new_perm ) );
+            g_model.set_perm( get_parm_val( parameters, c_cmd_modeller_model_info_new_perm ) );
 
          if( has_new_version )
-            g_model.set_version( get_parm_val( parameters, c_cmd_parm_modeller_model_info_new_version ) );
+            g_model.set_version( get_parm_val( parameters, c_cmd_modeller_model_info_new_version ) );
 
          if( has_new_created )
             g_model.set_year_created(
-             atoi( get_parm_val( parameters, c_cmd_parm_modeller_model_info_new_created ).c_str( ) ) );
+             atoi( get_parm_val( parameters, c_cmd_modeller_model_info_new_created ).c_str( ) ) );
 
          cout
           << "id: " << g_model.get_id( ) << '\n'
@@ -758,7 +758,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_model_load )
       {
-         string file_name( get_parm_val( parameters, c_cmd_parm_modeller_model_load_name ) );
+         string file_name( get_parm_val( parameters, c_cmd_modeller_model_load_name ) );
 
          file_name += get_model_file_ext( );
 
@@ -777,8 +777,8 @@ void modeller_command_functor::operator ( )( const string& command, const parame
       }
       else if( command == c_cmd_modeller_generate )
       {
-         string command( get_parm_val( parameters, c_cmd_parm_modeller_generate_command ) );
-         string class_name( get_parm_val( parameters, c_cmd_parm_modeller_generate_class_name ) );
+         string command( get_parm_val( parameters, c_cmd_modeller_generate_command ) );
+         string class_name( get_parm_val( parameters, c_cmd_modeller_generate_class_name ) );
 
          g_model.check( );
 

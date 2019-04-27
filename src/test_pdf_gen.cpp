@@ -114,8 +114,8 @@ void test_pdf_gen_command_functor::operator ( )( const string& command, const pa
    {
       if( command == c_cmd_test_pdf_gen_set )
       {
-         string name( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_set_name ) );
-         string value( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_set_value ) );
+         string name( get_parm_val( parameters, c_cmd_test_pdf_gen_set_name ) );
+         string value( get_parm_val( parameters, c_cmd_test_pdf_gen_set_value ) );
 
          g_string_variables.insert( make_pair( name, value ) );
       }
@@ -136,16 +136,16 @@ void test_pdf_gen_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_test_pdf_gen_read_vars )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_read_vars_filename ) );
+         string filename( get_parm_val( parameters, c_cmd_test_pdf_gen_read_vars_filename ) );
 
          g_string_variables.clear( );
          read_strings( filename, g_string_variables );
       }
       else if( command == c_cmd_test_pdf_gen_grid )
       {
-         bool is_on( has_parm_val( parameters, c_cmd_parm_test_pdf_gen_grid_on ) );
-         bool is_off( has_parm_val( parameters, c_cmd_parm_test_pdf_gen_grid_off ) );
-         bool is_reverse( has_parm_val( parameters, c_cmd_parm_test_pdf_gen_grid_reverse ) );
+         bool is_on( has_parm_val( parameters, c_cmd_test_pdf_gen_grid_on ) );
+         bool is_off( has_parm_val( parameters, c_cmd_test_pdf_gen_grid_off ) );
+         bool is_reverse( has_parm_val( parameters, c_cmd_test_pdf_gen_grid_reverse ) );
 
          if( is_on )
             g_string_variables.insert( make_pair( c_grid_variable, is_reverse ? c_grid_reverse : c_grid_normal ) );
@@ -154,7 +154,7 @@ void test_pdf_gen_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_test_pdf_gen_header )
       {
-         string size( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_header_size ) );
+         string size( get_parm_val( parameters, c_cmd_test_pdf_gen_header_size ) );
 
          if( !size.empty( ) )
             g_string_variables[ c_header_size_variable ] = size;
@@ -169,7 +169,7 @@ void test_pdf_gen_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_test_pdf_gen_footer )
       {
-         string size( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_footer_size ) );
+         string size( get_parm_val( parameters, c_cmd_test_pdf_gen_footer_size ) );
 
          if( !size.empty( ) )
             g_string_variables[ c_footer_size_variable ] = size;
@@ -184,13 +184,13 @@ void test_pdf_gen_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_test_pdf_gen_format )
       {
-         string format_filename( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_format_filename ) );
+         string format_filename( get_parm_val( parameters, c_cmd_test_pdf_gen_format_filename ) );
 
          g_format_file = format_filename;
       }
       else if( command == c_cmd_test_pdf_gen_generate )
       {
-         string filename( get_parm_val( parameters, c_cmd_parm_test_pdf_gen_generate_filename ) );
+         string filename( get_parm_val( parameters, c_cmd_test_pdf_gen_generate_filename ) );
 
          generate_pdf_doc( g_format_file, filename, g_string_variables );
 

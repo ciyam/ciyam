@@ -1183,7 +1183,7 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
 {
    if( command == c_cmd_Meta_Specification_Type_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_Meta_Specification_Type_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->get_key( );
@@ -1199,7 +1199,7 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
    }
    else if( command == c_cmd_Meta_Specification_Type_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Type_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -1930,8 +1930,8 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
    }
    else if( command == c_cmd_Meta_Specification_Type_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Type_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_Meta_Specification_Type_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -2784,8 +2784,8 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
    }
    else if( command == c_cmd_Meta_Specification_Type_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Type_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_Meta_Specification_Type_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 
@@ -2802,15 +2802,15 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
    }
    else if( command == c_cmd_Meta_Specification_Type_Is_Valid_Field_Type )
    {
-      string Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Class ) );
-      string Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Parent_Class ) );
-      int Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Primitive ) );
-      int Procedure_Arg_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Primitive ) );
-      int Procedure_Arg_Type( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Type ) );
-      string Source_Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Source_Parent_Class ) );
-      int Source_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Source_Primitive ) );
-      int Test_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Test_Primitive ) );
-      string Test_Value( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Test_Value ) );
+      string Class( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Class ) );
+      string Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Parent_Class ) );
+      int Primitive( get_parm_val_from_string< int >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Primitive ) );
+      int Procedure_Arg_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Primitive ) );
+      int Procedure_Arg_Type( get_parm_val_from_string< int >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Type ) );
+      string Source_Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Source_Parent_Class ) );
+      int Source_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Source_Primitive ) );
+      int Test_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Test_Primitive ) );
+      string Test_Value( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Specification_Type_Is_Valid_Field_Type_Test_Value ) );
       string Error;
       cmd_handler.p_Meta_Specification_Type->Is_Valid_Field_Type( Class, Error, Parent_Class, Primitive, Procedure_Arg_Primitive, Procedure_Arg_Type, Source_Parent_Class, Source_Primitive, Test_Primitive, Test_Value );
 

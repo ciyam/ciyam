@@ -293,7 +293,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 {
    if( command == c_cmd_ods_fsed_cd )
    {
-      string folder( get_parm_val( parameters, c_cmd_parm_ods_fsed_cd_folder ) );
+      string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
 
       if( folder.empty( ) )
          handler.issue_command_reponse( ap_ofs->get_folder( ) );
@@ -310,9 +310,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_files )
    {
-      bool full( has_parm_val( parameters, c_cmd_parm_ods_fsed_files_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_parm_ods_fsed_files_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_parm_ods_fsed_files_expr ) );
+      bool full( has_parm_val( parameters, c_cmd_ods_fsed_files_full ) );
+      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_files_brief ) );
+      string expr( get_parm_val( parameters, c_cmd_ods_fsed_files_expr ) );
 
       ods_file_system::list_style style = ods_file_system::e_list_style_default;
 
@@ -325,16 +325,16 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_folders )
    {
-      bool full( has_parm_val( parameters, c_cmd_parm_ods_fsed_folders_full ) );
-      string expr( get_parm_val( parameters, c_cmd_parm_ods_fsed_folders_expr ) );
+      bool full( has_parm_val( parameters, c_cmd_ods_fsed_folders_full ) );
+      string expr( get_parm_val( parameters, c_cmd_ods_fsed_folders_expr ) );
 
       ap_ofs->list_folders( expr, *ods_fsed_handler.get_std_out( ), full );
    }
    else if( command == c_cmd_ods_fsed_objects )
    {
-      bool full( has_parm_val( parameters, c_cmd_parm_ods_fsed_objects_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_parm_ods_fsed_objects_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_parm_ods_fsed_objects_expr ) );
+      bool full( has_parm_val( parameters, c_cmd_ods_fsed_objects_full ) );
+      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_objects_brief ) );
+      string expr( get_parm_val( parameters, c_cmd_ods_fsed_objects_expr ) );
 
       ods_file_system::list_style style = ods_file_system::e_list_style_default;
 
@@ -347,9 +347,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_branch )
    {
-      bool full( has_parm_val( parameters, c_cmd_parm_ods_fsed_branch_full ) );
-      bool brief( has_parm_val( parameters, c_cmd_parm_ods_fsed_branch_brief ) );
-      string expr( get_parm_val( parameters, c_cmd_parm_ods_fsed_branch_expr ) );
+      bool full( has_parm_val( parameters, c_cmd_ods_fsed_branch_full ) );
+      bool brief( has_parm_val( parameters, c_cmd_ods_fsed_branch_brief ) );
+      string expr( get_parm_val( parameters, c_cmd_ods_fsed_branch_expr ) );
 
       ods_file_system::branch_style style = ods_file_system::e_branch_style_default;
 
@@ -358,14 +358,14 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       else if( full )
          style = ods_file_system::e_branch_style_extended;
 
-      if( has_parm_val( parameters, c_cmd_parm_ods_fsed_branch_folders ) )
+      if( has_parm_val( parameters, c_cmd_ods_fsed_branch_folders ) )
          ap_ofs->branch_folders( expr, *ods_fsed_handler.get_std_out( ), style );
       else
       {
          if( expr.empty( ) )
             expr = "*";
 
-         if( !has_parm_val( parameters, c_cmd_parm_ods_fsed_branch_objects ) )
+         if( !has_parm_val( parameters, c_cmd_ods_fsed_branch_objects ) )
             ap_ofs->branch_files( expr, *ods_fsed_handler.get_std_out( ), style );
          else
             ap_ofs->branch_objects( expr, *ods_fsed_handler.get_std_out( ), style );
@@ -373,17 +373,17 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_file_add )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_add_name ) );
-      bool use_cin( has_parm_val( parameters, c_cmd_parm_ods_fsed_file_add_cin ) );
-      string file_name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_add_file_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
+      bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_add_cin ) );
+      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
 
       ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0 );
    }
    else if( command == c_cmd_ods_fsed_file_get )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_get_name ) );
-      bool use_cout( has_parm_val( parameters, c_cmd_parm_ods_fsed_file_get_cout ) );
-      string file_name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_get_file_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_name ) );
+      bool use_cout( has_parm_val( parameters, c_cmd_ods_fsed_file_get_cout ) );
+      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_get_file_name ) );
 
       string original_folder( ap_ofs->determine_strip_and_change_folder( name, ods_fsed_handler.get_std_out( ) ) );
 
@@ -397,56 +397,56 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_file_link )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_link_name ) );
-      string source( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_link_source ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_link_name ) );
+      string source( get_parm_val( parameters, c_cmd_ods_fsed_file_link_source ) );
 
       ap_ofs->link_file( name, source, ods_fsed_handler.get_std_out( ) );
    }
    else if( command == c_cmd_ods_fsed_file_move )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_move_name ) );
-      string destination( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_move_destination ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_move_name ) );
+      string destination( get_parm_val( parameters, c_cmd_ods_fsed_file_move_destination ) );
 
       ap_ofs->move_file( name, destination, ods_fsed_handler.get_std_out( ) );
    }
    else if( command == c_cmd_ods_fsed_file_remove )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_remove_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_remove_name ) );
 
       ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ) );
    }
    else if( command == c_cmd_ods_fsed_file_replace )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_replace_name ) );
-      bool use_cin( has_parm_val( parameters, c_cmd_parm_ods_fsed_file_replace_cin ) );
-      string file_name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_replace_file_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_name ) );
+      bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_replace_cin ) );
+      string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
 
       ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0 );
    }
    else if( command == c_cmd_ods_fsed_folder_add )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_file_add_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_name ) );
 
       ap_ofs->add_folder( name, ods_fsed_handler.get_std_out( ) );
    }
    else if( command == c_cmd_ods_fsed_folder_move )
    {
-      bool overwrite( has_parm_val( parameters, c_cmd_parm_ods_fsed_folder_move_overwrite ) );
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_folder_move_name ) );
-      string destination( get_parm_val( parameters, c_cmd_parm_ods_fsed_folder_move_destination ) );
+      bool overwrite( has_parm_val( parameters, c_cmd_ods_fsed_folder_move_overwrite ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_name ) );
+      string destination( get_parm_val( parameters, c_cmd_ods_fsed_folder_move_destination ) );
 
       ap_ofs->move_folder( name, destination, overwrite, ods_fsed_handler.get_std_out( ) );
    }
    else if( command == c_cmd_ods_fsed_folder_remove )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_folder_remove_name ) );
-      bool recurse( has_parm_val( parameters, c_cmd_parm_ods_fsed_folder_remove_recurse ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_folder_remove_name ) );
+      bool recurse( has_parm_val( parameters, c_cmd_ods_fsed_folder_remove_recurse ) );
 
       ap_ofs->remove_folder( name, ods_fsed_handler.get_std_out( ), recurse );
    }
    else if( command == c_cmd_ods_fsed_export )
    {
-      string directory( get_parm_val( parameters, c_cmd_parm_ods_fsed_export_directory ) );
+      string directory( get_parm_val( parameters, c_cmd_ods_fsed_export_directory ) );
 
       string cwd( get_cwd( ) );
 
@@ -465,7 +465,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_import )
    {
-      string directory( get_parm_val( parameters, c_cmd_parm_ods_fsed_import_directory ) );
+      string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
 
       ods::transaction tx( *ap_ods );
 
@@ -475,13 +475,13 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_label )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_ods_fsed_label_name ) );
+      string name( get_parm_val( parameters, c_cmd_ods_fsed_label_name ) );
 
       ods::transaction label_tx( *ap_ods, name );
    }
    else if( command == c_cmd_ods_fsed_rewind )
    {
-      string label_or_txid( get_parm_val( parameters, c_cmd_parm_ods_fsed_rewind_label_or_txid ) );
+      string label_or_txid( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_txid ) );
 
       if( g_shared_write )
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
@@ -494,7 +494,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_dump )
    {
-      string filename( get_parm_val( parameters, c_cmd_parm_ods_fsed_dump_filename ) );
+      string filename( get_parm_val( parameters, c_cmd_ods_fsed_dump_filename ) );
 
       ap_ofs->dump_node_data( filename, ods_fsed_handler.get_std_out( ) );
    }

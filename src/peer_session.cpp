@@ -1145,8 +1145,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
       if( command == c_cmd_peer_session_chk )
       {
-         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_peer_session_chk_tag_or_hash ) );
-         string nonce( get_parm_val( parameters, c_cmd_parm_peer_session_chk_nonce ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_chk_tag_or_hash ) );
+         string nonce( get_parm_val( parameters, c_cmd_peer_session_chk_nonce ) );
 
          if( socket_handler.state( ) != e_peer_state_responder
           && socket_handler.state( ) != e_peer_state_waiting_for_get
@@ -1278,7 +1278,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_get )
       {
-         string tag_or_hash( get_parm_val( parameters, c_cmd_parm_peer_session_get_tag_or_hash ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_get_tag_or_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get )
             throw runtime_error( "invalid state for get" );
@@ -1319,7 +1319,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_put )
       {
-         string hash( get_parm_val( parameters, c_cmd_parm_peer_session_put_hash ) );
+         string hash( get_parm_val( parameters, c_cmd_peer_session_put_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_put )
             throw runtime_error( "invalid state for put" );
@@ -1435,7 +1435,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_pip )
       {
-         string addr( get_parm_val( parameters, c_cmd_parm_peer_session_pip_addr ) );
+         string addr( get_parm_val( parameters, c_cmd_peer_session_pip_addr ) );
 
          response = get_random_same_port_peer_ip_addr( c_local_ip_addr );
 

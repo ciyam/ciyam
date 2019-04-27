@@ -1139,7 +1139,7 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
 {
    if( command == c_cmd_Meta_List_Field_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_List_Field_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_Meta_List_Field_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_Meta_List_Field->get_key( );
@@ -1155,7 +1155,7 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
    }
    else if( command == c_cmd_Meta_List_Field_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_Field_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -1502,8 +1502,8 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
    }
    else if( command == c_cmd_Meta_List_Field_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_Field_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_Meta_List_Field_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -1908,8 +1908,8 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
    }
    else if( command == c_cmd_Meta_List_Field_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_List_Field_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_Meta_List_Field_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 
@@ -1966,16 +1966,16 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
    }
    else if( command == c_cmd_Meta_List_Field_Move_Down )
    {
-      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Field_Move_Down_Restrict_Fields ) );
-      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Field_Move_Down_Restrict_Values ) );
+      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_List_Field_Move_Down_Restrict_Fields ) );
+      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_List_Field_Move_Down_Restrict_Values ) );
       cmd_handler.p_Meta_List_Field->Move_Down( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
    }
    else if( command == c_cmd_Meta_List_Field_Move_Up )
    {
-      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Field_Move_Up_Restrict_Fields ) );
-      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Field_Move_Up_Restrict_Values ) );
+      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_Meta_List_Field_Move_Up_Restrict_Fields ) );
+      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_Meta_List_Field_Move_Up_Restrict_Values ) );
       cmd_handler.p_Meta_List_Field->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );

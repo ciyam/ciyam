@@ -36,7 +36,7 @@ class command_parser
    void output_usage( std::ostream& ostr ) const;
    void output_syntax( std::ostream& ostr ) const;
 
-   void get_parameter_names( std::vector< std::string >& parameters ) const;
+   void get_parameter_names( std::vector< std::string >& parameters, std::vector< std::string >* p_default_vals = 0 ) const;
 
    size_t get_error_pos( ) const;
 

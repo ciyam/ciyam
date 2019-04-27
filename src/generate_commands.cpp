@@ -34,9 +34,13 @@ const char* const c_error_prefix = "error:";
 const char* const c_default_input_file_extension = ".cms";
 const char* const c_default_output_file_extension = ".cmh";
 
+const char* const c_const_int_prefix = "const int c_cmd_";
+const char* const c_const_char_prefix = "const char* const c_cmd_";
+
 const char* const c_output_command_prefix = "const char* const c_cmd_";
-const char* const c_output_command_parameter_prefix = "const char* const c_cmd_parm_";
+
 const char* const c_output_command_syntax_suffix = "_syntax";
+const char* const c_output_command_default_suffix = "_default";
 
 const char* const c_output_command_definition = "command_definition";
 const char* const c_output_command_definition_suffix = "command_definitions[ ] =";
@@ -222,11 +226,42 @@ int main( int argc, char* argv[ ] )
             }
 
             vector< string > parameters;
-            p.get_parameter_names( parameters );
+            vector< string > default_vals;
+
+            p.get_parameter_names( parameters, &default_vals );
+
             for( vector< string >::size_type i = 0; i < parameters.size( ); i++ )
             {
-               outf << c_output_command_parameter_prefix << command_constant_prefix
+               outf << c_output_command_prefix << command_constant_prefix
                 << command << '_' << parameters[ i ] << " = \"" << parameters[ i ] << "\";\n";
+
+               if( !default_vals[ i ].empty( ) )
+               {
+                  string default_constant( default_vals[ i ] );
+
+                  bool is_number = true;
+
+                  for( size_t j = 0; j < default_constant.size( ); j++ )
+                  {
+                     if( default_constant[ j ] < '0' || default_constant[ j ] > '9' )
+                     {
+                        is_number = false;
+                        break;
+                     }
+                  }
+
+                  string const_prefix( c_const_int_prefix );
+
+                  if( !is_number )
+                  {
+                     const_prefix = string( c_const_char_prefix );
+                     default_constant = "\"" + default_constant + "\"";
+                  }
+
+                  outf << const_prefix << command_constant_prefix
+                   << command << '_' << parameters[ i ]
+                   << c_output_command_default_suffix << " = " << default_constant << ";\n";
+               }
             }
          }
       }

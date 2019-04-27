@@ -629,7 +629,7 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
 {
    if( command == c_cmd_Meta_Specification_Field_Action_key )
    {
-      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_key_fixed ) );
+      bool want_fixed( has_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_key_fixed ) );
 
       if( !want_fixed )
          cmd_handler.retval = cmd_handler.p_Meta_Specification_Field_Action->get_key( );
@@ -645,7 +645,7 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
    }
    else if( command == c_cmd_Meta_Specification_Field_Action_get )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_get_field_name ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_get_field_name ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -698,8 +698,8 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
    }
    else if( command == c_cmd_Meta_Specification_Field_Action_set )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_set_field_name ) );
-      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_set_field_value ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_set_field_value ) );
 
       bool handled = false;
       if( field_name.empty( ) )
@@ -761,8 +761,8 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
    }
    else if( command == c_cmd_Meta_Specification_Field_Action_cmd )
    {
-      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_cmd_field_name ) );
-      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_cmd_cmd_and_args ) );
+      string field_name( get_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_Meta_Specification_Field_Action_cmd_cmd_and_args ) );
 
       cmd_handler.retval.erase( );
 
@@ -777,7 +777,7 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
    }
    else if( command == c_cmd_Meta_Specification_Field_Action_Generate_All_Vars )
    {
-      string Parent_Prefix( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Field_Action_Generate_All_Vars_Parent_Prefix ) );
+      string Parent_Prefix( get_parm_val_from_string< string >( parameters, c_cmd_Meta_Specification_Field_Action_Generate_All_Vars_Parent_Prefix ) );
       string All_Vars;
       cmd_handler.p_Meta_Specification_Field_Action->Generate_All_Vars( All_Vars, Parent_Prefix );
 
