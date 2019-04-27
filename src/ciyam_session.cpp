@@ -1997,6 +1997,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = construct_new_transaction( blockchain, password, account, application, tx_data, false );
       }
+      else if( command == c_cmd_ciyam_session_crypto_addr )
+      {
+         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_extkey ) );
+         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_decrypt ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_uncompressed ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_secret ) );
+
+         string pub_key, priv_key;
+
+         if( decrypt )
+            secret = decrypt_data( secret );
+
+         response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, true, !uncompressed );
+
+         clear_key( pub_key );
+         clear_key( priv_key );
+      }
       else if( command == c_cmd_ciyam_session_crypto_hash )
       {
          bool use_sha512( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 ) );
@@ -2017,17 +2034,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
          string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_extkey ) );
+         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt ) );
          bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 ) );
-         string seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_seed ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_secret ) );
 
          string pub_key, priv_key;
 
-         if( seed.empty( ) )
-            response = create_address_key_pair( extkey, pub_key, priv_key, use_base64 );
+         if( secret.empty( ) )
+            response = create_address_key_pair( extkey, pub_key, priv_key, use_base64, !uncompressed );
          else
-            response = create_address_key_pair( extkey, pub_key, priv_key, seed, true, use_base64 );
+         {
+            if( decrypt )
+               secret = decrypt_data( secret );
+            response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, use_base64, !uncompressed );
+         }
 
          response += '\n' + pub_key + '\n' + priv_key;
+
+         clear_key( pub_key );
+         clear_key( priv_key );
       }
       else if( command == c_cmd_ciyam_session_crypto_seed )
       {
@@ -2047,9 +2073,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_length ) );
          bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 ) );
-         string seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_seed ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_secret ) );
 
-         response = generate_hash_chain( length, use_base64, seed.empty( ) ? 0 : seed.c_str( ) );
+         response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_crypto_verify )
       {
@@ -2063,8 +2089,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_crypto_pub_key )
       {
          string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_privkey ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_uncompressed ) );
 
-         response = crypto_public( privkey, false, false );
+         response = crypto_public( privkey, false, false, !uncompressed );
       }
       else if( command == c_cmd_ciyam_session_crypto_addr_hash )
       {
@@ -5508,9 +5535,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_salt ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_password ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_data ) );
 
-         response = encrypt_data( password, no_ssl, no_salt );
+         response = encrypt_data( data, no_ssl, no_salt );
       }
       else if( command == c_cmd_ciyam_session_password )
       {
@@ -5532,6 +5559,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_passtotp )
       {
          string secret( get_parm_val( parameters, c_cmd_ciyam_session_passtotp_secret ) );
+
+         // NOTE: A secret can be stored by encrypting it (i.e. "encrypt") and storing it as a "system variable"
+         // whose name is prefixed by "passtotp.". To identify that the secret has been thus stored use a '*' as
+         // the first character of "secret" followed by the suffix of the "passtotp.*" variable (so for the name
+         // "passtotp.test" you would use a secret "*test".
+         if( !secret.empty( ) && secret[ 0 ] == '*' )
+            secret = decrypt_data( get_system_variable( string( c_cmd_ciyam_session_passtotp ) + "." + secret.substr( 1 ) ) );
 
          response = get_totp( secret );
       }

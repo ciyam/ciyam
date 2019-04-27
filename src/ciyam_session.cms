@@ -26,13 +26,14 @@ peer_account_mint "start or stop minting or list minting peer accounts" <val//bl
 peer_persist_file "create/decrypt a peer repository file request/response" [<val/-dh=/dest_hash>][<val/-k=/pubkey>]<val//tag_or_hash><val//password>
 peer_transactions "create and process application tx scripts" <val//blockchain>
 peer_transaction_info "get new peer transaction information" <val//blockchain><val//password>[<val//account>]<val/-app=/application><val//tx_data>
+crypto_addr "output an address for a secret" <val//extkey>[<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>]<val//secret>
 crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<opt/-hex/hex_decode>][<opt/-file/data_from_file>]<oval//data_or_filename>
-crypto_keys "output an address and corresponding key pair" <val//extkey>[<opt/-b64/base64>][<val//seed>]
+crypto_keys "output an address and its corresponding key pair" <val//extkey>[<opt/-b64/base64>][<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>][<val//secret>]
 crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
 crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
-crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//seed>]
+crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//secret>]
 crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>
-crypto_pub_key "output a public key" <val//privkey>
+crypto_pub_key "output a public key" [<opt/-uncompressed/uncompressed>]<val//privkey>
 crypto_addr_hash "output an address hash" <val//address>
 crypto_p2sh_addr "output a P2SH address" <val//extkey><val//script>
 crypto_p2sh_redeem "outputs a P2SH redeem raw tx" <val//txid><val//index><val//script><val//address><val//amount><val//wif_privkey>[<list/-e=/extras>][<val//lock_time>]
@@ -107,7 +108,7 @@ trace "get/set trace flags" [<val//new_flags>]
 trace_flags "view available trace flags"
 decode "decode base64 to hex" <val//data>
 encode "encode hex to base64" <val//data>
-encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>
+encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<val//data>]
 password "retrieve an encrypted system password" <val//name>
 passtotp "retrieve a TOTP password" <val//secret>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]

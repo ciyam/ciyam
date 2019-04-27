@@ -4952,12 +4952,12 @@ string crypto_sign( const string& secret, const string& message, bool decode_hex
 #endif
 }
 
-string crypto_public( const string& privkey, bool is_wif, bool use_base64 )
+string crypto_public( const string& privkey, bool is_wif, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
    private_key priv( privkey, is_wif );
 
-   return priv.get_public( true, use_base64 );
+   return priv.get_public( compressed, use_base64 );
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_public" );
 #endif
@@ -5049,7 +5049,8 @@ string crypto_p2sh_address( const string& ext_key, const string& hex_script )
 #endif
 }
 
-string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key, bool use_base64 )
+string create_address_key_pair( const string& ext_key,
+ string& pub_key, string& priv_key, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
    private_key new_key;
@@ -5060,17 +5061,17 @@ string create_address_key_pair( const string& ext_key, string& pub_key, string& 
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
 
-   pub_key = new_key.get_public( true, use_base64 );
+   pub_key = new_key.get_public( compressed, use_base64 );
    priv_key = new_key.get_secret( use_base64 );
 
-   return new_key.get_address( true, info.override, info.addr_prefix );
+   return new_key.get_address( compressed, info.override, info.addr_prefix );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
 }
 
 string create_address_key_pair( const string& ext_key,
- string& pub_key, string& priv_key, const string& priv_info, bool is_seed, bool use_base64 )
+ string& pub_key, string& priv_key, const string& priv_info, bool is_secret, bool use_base64, bool compressed )
 {
 #ifdef SSL_SUPPORT
    auto_ptr< private_key > ap_new_key;
@@ -5078,20 +5079,28 @@ string create_address_key_pair( const string& ext_key,
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
-   bool compressed = true;
-
    crypto_info info;
    get_crypto_info( client_info.extra_info, info );
 
-   if( !is_seed )
+   if( !is_secret )
       ap_new_key.reset( new private_key( priv_info, true, &compressed ) );
    else
    {
-      sha256 hash( priv_info );
+      // NOTE: If prefixed with '!' then just assumes that the hash of the remainder of the string
+      // can be used as a valid "secret" (although there is tiny a chance that it will be invalid).
+      if( !priv_info.empty( ) && priv_info[ 0 ] == '!' )
+      {
+         sha256 hash( priv_info.substr( 1 ) );
+         ap_new_key.reset( new private_key( hash.get_digest_as_string( ) ) );
+      }
+      else
+      {
+         sha256 hash( priv_info );
 
-      // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-      // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-      ap_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
+         // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+         // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+         ap_new_key.reset( new private_key( "0" + hash.get_digest_as_string( ).substr( 1 ) ) );
+      }
    }
 
    pub_key = ap_new_key->get_public( compressed, use_base64 );

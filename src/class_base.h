@@ -1509,7 +1509,7 @@ std::string CIYAM_BASE_DECL_SPEC crypto_sign(
  const std::string& secret, const std::string& message, bool decode_hex_message = false );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_public(
- const std::string& privkey, bool is_wif = false, bool use_base64 = true );
+ const std::string& privkey, bool is_wif = false, bool use_base64 = true, bool compressed = true );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_secret( const std::string& privkey, bool is_wif = false );
 
@@ -1524,11 +1524,12 @@ std::string CIYAM_BASE_DECL_SPEC crypto_address_hash( const std::string& address
 std::string CIYAM_BASE_DECL_SPEC crypto_p2sh_address( const std::string& ext_key, const std::string& hex_script );
 
 std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
- const std::string& ext_key, std::string& pub_key, std::string& priv_key, bool use_base64 = false );
+ const std::string& ext_key,
+ std::string& pub_key, std::string& priv_key, bool use_base64 = false, bool compressed = true );
 
 std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key,
- const std::string& priv_info, bool is_seed = true, bool use_base64 = false );
+ const std::string& priv_info, bool is_secret = true, bool use_base64 = false, bool compressed = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_mnemonics_or_hex_seed( const std::string& mnemonics_or_hex_seed );
 

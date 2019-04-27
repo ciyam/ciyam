@@ -32,7 +32,7 @@ const int c_hash_buf_size = 32;
 
 struct hash_chain::impl
 {
-   impl( const string& name, bool is_new, unsigned int size, bool use_seed );
+   impl( const string& name, bool is_new, unsigned int size, bool use_secret );
 
    bool has_been_depleted( ) const;
 
@@ -44,17 +44,17 @@ struct hash_chain::impl
    uint32_t rounds;
 
    unsigned char buffer[ c_hash_buf_size ];
-   unsigned char seedbuf[ c_hash_buf_size ];
+   unsigned char secretbuf[ c_hash_buf_size ];
 };
 
-hash_chain::impl::impl( const string& name, bool is_new, unsigned int size, bool use_seed )
+hash_chain::impl::impl( const string& name, bool is_new, unsigned int size, bool use_secret )
  :
  name( name )
 {
    rounds = ( uint32_t )size;
 
    memset( buffer, 0, c_hash_buf_size );
-   memset( seedbuf, 0, c_hash_buf_size );
+   memset( secretbuf, 0, c_hash_buf_size );
 
    if( is_new )
    {
@@ -67,11 +67,11 @@ hash_chain::impl::impl( const string& name, bool is_new, unsigned int size, bool
          if( !outf )
             throw runtime_error( "unable to open '" + name + "' for output" );
 
-         string seed;
-         if( use_seed )
-            seed = uuid( ).as_string( );
+         string secret;
+         if( use_secret )
+            secret = uuid( ).as_string( );
 
-         sha256 hash( seed );
+         sha256 hash( secret );
          hash.copy_digest_to_buffer( buffer );
 
          if( !outf.write( ( const char* )&rounds, sizeof( uint32_t ) ) )
@@ -113,7 +113,7 @@ hash_chain::impl::impl( const string& name, bool is_new, unsigned int size, bool
    if( !inpf.read( ( char* )buffer, c_hash_buf_size ) )
       throw runtime_error( "unexpected error reading hash data from file '" + name + "'" );
 
-   memcpy( seedbuf, buffer, c_hash_buf_size );
+   memcpy( secretbuf, buffer, c_hash_buf_size );
 }
 
 bool hash_chain::impl::has_been_depleted( ) const
@@ -224,7 +224,7 @@ string hash_chain::impl::get_next_hashes_to_publish( const string& password, uns
    // considered a "better next hash" so by default is not being used (thus "check limit" is
    // defaulted to 1 in "check_and_update_if_good").
    sha256 hash( password );
-   hash.update( seedbuf, c_hash_buf_size );
+   hash.update( secretbuf, c_hash_buf_size );
 
    string retval;
    for( uint32_t i = 0; i < rounds; i++ )
@@ -248,7 +248,7 @@ string hash_chain::impl::get_next_hashes_to_publish( const string& password, uns
    if( !outf.write( ( const char* )&rounds, sizeof( uint32_t ) ) )
       throw runtime_error( "unexpected error writing rounds to file '" + name + "'" );
 
-   if( !outf.write( ( const char* )seedbuf, c_hash_buf_size ) )
+   if( !outf.write( ( const char* )secretbuf, c_hash_buf_size ) )
       throw runtime_error( "unexpected error writing hash data to file '" + name + "'" );
 
    outf.flush( );
@@ -259,9 +259,9 @@ string hash_chain::impl::get_next_hashes_to_publish( const string& password, uns
    return retval;
 }
 
-hash_chain::hash_chain( const string& name, bool is_new, unsigned int size, bool use_seed )
+hash_chain::hash_chain( const string& name, bool is_new, unsigned int size, bool use_secret )
 {
-   p_impl = new impl( name, is_new, size, use_seed );
+   p_impl = new impl( name, is_new, size, use_secret );
 }
 
 hash_chain::~hash_chain( )
@@ -299,18 +299,18 @@ bool check_if_valid_hash_pair( const string& current, const string& previous, bo
    return previous == ( base64 ? base64::encode( buffer, c_hash_buf_size ) : hex_encode( buffer, c_hash_buf_size ) );
 }
 
-string generate_hash_chain( size_t length, bool base64, const char* p_seed, char separator )
+string generate_hash_chain( size_t length, bool base64, const char* p_secret, char separator )
 {
    string retval;
    unsigned char buffer[ c_hash_buf_size ];
 
-   string seed;
-   if( p_seed )
-      seed = *p_seed;
+   string secret;
+   if( p_secret )
+      secret = *p_secret;
    else
-      seed = uuid( ).as_string( );
+      secret = uuid( ).as_string( );
 
-   sha256 hash( seed );
+   sha256 hash( secret );
    hash.copy_digest_to_buffer( buffer );
 
    for( size_t i = 0; i < length; i++ )
@@ -329,4 +329,3 @@ string generate_hash_chain( size_t length, bool base64, const char* p_seed, char
 
    return retval;
 }
-

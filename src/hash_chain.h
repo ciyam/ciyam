@@ -13,7 +13,7 @@
 class hash_chain
 {
    public:
-   hash_chain( const std::string& name, bool is_new, unsigned int size = 0, bool use_seed = true );
+   hash_chain( const std::string& name, bool is_new, unsigned int size = 0, bool use_secret = true );
    ~hash_chain( );
 
    bool has_been_depleted( ) const;
@@ -33,7 +33,6 @@ class hash_chain
 
 bool check_if_valid_hash_pair( const std::string& current, const std::string& previous, bool base64 = false );
 
-std::string generate_hash_chain( size_t length, bool base64 = false, const char* p_seed = 0, char separator = '\n' );
+std::string generate_hash_chain( size_t length, bool base64 = false, const char* p_secret = 0, char separator = '\n' );
 
 #endif
-
