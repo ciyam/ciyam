@@ -2,8 +2,9 @@ Object Data Storage
 -------------------
 
 One of the less obvious features of the CIYAM platform is the Object Database named ODS (Object Data Storage)
-as it currently isn't being used for much other than keeping track of the transaction id for an application's
-storage log and holding some basic information about the storage itself and its modules.
+as it currently isn't being used for much other than the "global" Meta entities (e.g. Global Archives) and as
+a way to permanently store "system" variables. It is also used for keeping track of the transaction id for an
+application's storage log and holding some basic information about the storage itself and its modules.
 
 It is envisioned that the ODS will be used for other useful things down the track as being in-process and not
 being a SQL DB it can be a much more efficient method of storing and retrieving information.
@@ -30,7 +31,7 @@ struct sammple
 
 In order to support persistence for "sample" the first thing we do is create a "storable" template class:
 
-typedef storable< sample, 0, storable_base > storable_identity;
+typedef storable< sample, 0, storable_base > storable_sample;
 
 The type of the first "storable" template type is the class we are wanting to make persistent while the third
 template type will always be "storable_base". The second template type is an integer which is used to specify
@@ -152,4 +153,3 @@ As the cache implementation uses an "unsigned int" (which can be 32 bit even on 
 objects currently storable is limited to approx 548 billion with a total data size of 16TB. Although it might
 be worthwhile changing the cache implementation to use a 64 bit integer down the track these limits currently
 are not expected to be an issue.
-

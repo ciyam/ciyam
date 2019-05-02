@@ -460,6 +460,8 @@ string check_for_proof_of_work(
       unsigned char* p_next = p_start;
       uint8_t wrap = c_sha256_digest_size - 1;
 
+      temp = 0;
+
       // NOTE: The purpose of this algorithm is to transform during copying such that
       // it shouldn't be possible to do the hashing without using the memory for this
       // transforming (if this algorithm can be implemented without requiring all the
@@ -474,12 +476,17 @@ string check_for_proof_of_work(
          ch += hash_buffer[ offset ];
 
          for( size_t j = 0; j < c_sha256_digest_size; j++ )
+         {
+            temp += ch;
+            temp *= ch;
+
             hash_buffer[ j ] ^= ( ch + j );
+         }
 
          // NOTE: Effectively choose a random byte within the total buffer range
          // to do a bit flip on (so random access to the entire memory range has
          // to be provided during this entire loop).
-         *( p_start + ( *p_next & c_work_buffer_pos_mask ) ) ^= 0xaa;
+         *( p_start + ( temp & c_work_buffer_pos_mask ) ) ^= 0xaa;
 
          p_next += c_sha256_digest_size;
          num_bytes += c_sha256_digest_size;
