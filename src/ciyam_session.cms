@@ -1,5 +1,5 @@
 version "display protocol version"
-identity "get/set identity information" [<val//info>]
+identity "get/set identity information" [<val/-k=/pubkey>][<val//info>][<val//encrypted>]
 file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]
@@ -108,6 +108,7 @@ trace "get/set trace flags" [<val//new_flags>]
 trace_flags "view available trace flags"
 decode "decode base64 to hex" <val//data>
 encode "encode hex to base64" <val//data>
+decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<val//data>]
 encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<val//data>]
 password "retrieve an encrypted system password" <val//name>
 passtotp "retrieve a TOTP password" <val//secret>

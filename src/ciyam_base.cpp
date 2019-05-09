@@ -4117,12 +4117,7 @@ void init_globals( )
 
    try
    {
-      if( !file_exists( c_server_sid_file ) )
-      {
-         g_sid = upper( uuid( ).as_string( ) );
-         write_file( c_server_sid_file, g_sid );
-      }
-      else
+      if( file_exists( c_server_sid_file ) )
          g_sid = buffer_file( c_server_sid_file );
 
       read_server_configuration( );
@@ -4330,42 +4325,64 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
    guard g( g_mutex );
 
-   if( !prepend_sid && !append_max_user_limit )
-      return g_reg_key;
-
    string s( g_reg_key );
 
-   if( prepend_sid )
+   if( prepend_sid || append_max_user_limit )
    {
-      // NOTE: Reload just in case it has been overwritten.
-      g_sid = buffer_file( c_server_sid_file );
+      if( prepend_sid )
+      {
+         string suffix( s );
 
-      string suffix( s );
+         if( !g_sid.empty( ) )
+            sid_hash( s );
+         else
+         {
+            string seed;
+            string mnemonics( get_mnemonics_or_hex_seed( seed ) );
 
-      sid_hash( s );
+            s = get_mnemonics_or_hex_seed( mnemonics );
+         }
 
-      if( !suffix.empty( ) )
-         s += "-" + suffix;
+         if( !suffix.empty( ) )
+            s += "-" + suffix;
+      }
+
+      if( append_max_user_limit )
+         s += ":" + to_string( g_max_user_limit );
    }
-
-   if( append_max_user_limit )
-      s += ":" + to_string( g_max_user_limit );
 
    return s;
 }
 
-void set_identity( const string& identity_info )
+void set_identity( const string& identity_info, const char* p_encrypted_sid )
 {
    guard g( g_mutex );
 
    string::size_type pos = identity_info.find( '-' );
+
    if( pos == string::npos )
       g_reg_key.erase( );
    else
       g_reg_key = identity_info.substr( pos + 1 );
 
    string s( identity_info.substr( 0, pos ) );
-   set_sid( s );
+
+   bool is_encrypted = false;
+
+   // NOTE: In case of previous decryption failure reload the encrypted identity.
+   if( s.length( ) < 32 && file_exists( c_server_sid_file ) )
+      g_sid = buffer_file( c_server_sid_file );
+   
+   if( g_sid.find( ':' ) != string::npos )
+      is_encrypted = true;
+
+   if( !is_encrypted || s.length( ) >= 32 )
+      set_sid( s );
+   else
+      g_sid = data_decrypt( g_sid, s );
+
+   if( p_encrypted_sid )
+      write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 }
 
 string get_checksum( const string& data, bool use_reg_key )

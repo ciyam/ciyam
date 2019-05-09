@@ -525,4 +525,3 @@ string check_for_proof_of_work(
    else
       return okay ? to_string( nonce ) : string( );
 }
-

@@ -1,0 +1,24 @@
+<div class="wrapper box-shadow">
+
+<div align="center">
+<div class="identity_form">
+<p>
+@@unlock_message
+</p>
+
+<form method="POST" name="unlock" id="unlock"
+ onsubmit="return dyn_load( this,
+  'cmd=identity&data=unlock&extra=' + escape( document.unlock.password.value ), false );">
+    <input type="password" name="password" tabindex="1"
+     id="password" size="35" maxlength="50" validate="reqd" />
+    <br/>
+    <br/>
+    <label for="submit" id="submit">
+       <input name="Submit" class="button" type="submit" id="submit" tabindex="2" value="@@continue" />
+    </label>
+</form>
+
+</div>
+</div>
+
+</div>

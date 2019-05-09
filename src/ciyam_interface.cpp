@@ -104,7 +104,10 @@ const int c_pid_timeout = 2500;
 const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 
+const char* const c_unlock = "unlock";
+
 const char* const c_id_file = "identity.txt";
+const char* const c_eid_file = "encrypted.txt";
 
 const char* const c_stop_file = "ciyam_interface.stop";
 
@@ -116,6 +119,7 @@ const char* const c_login_file = "login.htms";
 const char* const c_footer_file = "footer.htms";
 const char* const c_openup_file = "openup.htms";
 const char* const c_signup_file = "signup.htms";
+const char* const c_unlock_file = "unlock.htms";
 const char* const c_activate_file = "activate.htms";
 const char* const c_identity_file = "identity.htms";
 const char* const c_password_file = "password.htms";
@@ -151,6 +155,7 @@ const char* const c_account_type_0 = "@@account_type_0";
 const char* const c_account_type_1 = "@@account_type_1";
 const char* const c_account_type_2 = "@@account_type_2";
 const char* const c_account_type_3 = "@@account_type_3";
+const char* const c_unlock_message = "@@unlock_message";
 const char* const c_change_password = "@@change_password";
 const char* const c_verify_new_password = "@@verify_new_password";
 const char* const c_open_up_introduction = "@@open_up_introduction";
@@ -187,12 +192,16 @@ map< string, string > g_uuid_for_ip_addr;
 }
 
 string g_id;
-string g_tmp;
+string g_seed;
+string g_id_pwd;
+
+int g_unlock_fails = 0;
 
 string g_login_html;
 string g_footer_html;
 string g_openup_html;
 string g_signup_html;
+string g_unlock_html;
 string g_activate_html;
 string g_identity_html;
 string g_password_html;
@@ -716,6 +725,7 @@ void request_handler::process_request( )
    bool is_vertical = false;
    bool encrypt_data = false;
    bool temp_session = false;
+   bool display_error = true;
    bool force_refresh = false;
    bool created_session = false;
    bool using_anonymous = false;
@@ -960,7 +970,7 @@ void request_handler::process_request( )
       }
 
       bool is_sign_in = false;
-      bool needs_identity = false;
+      bool needs_identity = true;
 
       if( !is_kept
        && cmd != c_cmd_password && cmd != c_cmd_credentials
@@ -971,28 +981,18 @@ void request_handler::process_request( )
          using_anonymous = true;
       }
 
-      // NOTE: For Meta an explicit identity confirmation is required.
-      if( module_name == "Meta"
-       && ( cmd == c_cmd_identity || !file_exists( c_id_file ) ) )
+      if( cmd == c_cmd_identity )
       {
-         if( cmd == c_cmd_identity )
-         {
-            set_server_id( g_tmp );
+         g_seed = input_data[ c_param_data ];
+         g_id_pwd = input_data[ c_param_extra ];
 
-            ofstream outf( c_id_file );
-            outf << g_id;
-
-            if( !mod_info.allows_anonymous_access )
-               is_sign_in = true;
-         }
+         if( !mod_info.allows_anonymous_access )
+            is_sign_in = true;
          else
-            needs_identity = true;
-
-         cmd = c_cmd_home;
-
-         if( !needs_identity && !file_exists( c_id_file ) )
-            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
+            cmd = c_cmd_home;
       }
+      else if( g_id.empty( ) )
+         cmd = c_cmd_home;
 
       if( cmd == c_cmd_password || cmd == c_cmd_credentials )
       {
@@ -1097,6 +1097,7 @@ void request_handler::process_request( )
                // This allows users to keep URL links for anonymous sessions that will still be
                // valid when used at another time or from another machine.
                session_id = p_session_info->session_id = unique_id;
+
                p_session_info->hashval_prefix = sha1( g_id + g_id ).get_digest_as_string( );
                p_session_info->checksum_prefix = sha1( g_id + p_session_info->hashval_prefix ).get_digest_as_string( );
 
@@ -1175,6 +1176,7 @@ void request_handler::process_request( )
       {
          guard g( g_session_mutex );
 
+         bool was_unlock = false;
          bool has_output_form = false;
 
          if( !p_session_info->p_socket )
@@ -1207,6 +1209,7 @@ void request_handler::process_request( )
                if( p_session_info->p_socket->open( ) )
                {
                   ip_address address( c_default_ciyam_host, c_default_ciyam_port );
+
                   if( p_session_info->p_socket->connect( address, c_connect_timeout ) )
                   {
                      p_session_info->p_socket->set_no_delay( );
@@ -1260,8 +1263,62 @@ void request_handler::process_request( )
                      }
 
                      string identity_info;
-                     if( !simple_command( *p_session_info, "identity", &identity_info ) )
-                        throw runtime_error( "unable to determine identity information" );
+
+                     if( g_seed.empty( ) )
+                     {
+                        if( !simple_command( *p_session_info, "identity", &identity_info ) )
+                           throw runtime_error( "unable to determine identity information" );
+                     }
+                     else
+                     {
+                        if( g_seed == c_unlock )
+                        {
+#ifdef SSL_SUPPORT
+                           string pubkey;
+                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
+                              throw runtime_error( "unexpected failure to get @pubkey value" );
+
+                           public_key pub_key( pubkey );
+                           private_key priv_key;
+
+                           if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ), &identity_info ) )
+                              throw runtime_error( "unable to unlock encrypted identity information" );
+#else
+                           if( !simple_command( *p_session_info, "identity " + g_id_pwd, &identity_info ) )
+                              throw runtime_error( "unable to unlock encrypted identity information" );
+#endif
+                           was_unlock = true;
+                           clear_key( g_id_pwd );
+
+                           g_seed.erase( );
+                           g_id_pwd.erase( );
+
+                           msleep( 250 );
+                        }
+                        else
+                        {
+                           string encrypted( g_seed );
+                           encrypted = data_encrypt( encrypted, g_id_pwd );
+
+                           clear_key( g_id_pwd );
+
+                           g_id_pwd.erase( );
+
+                           if( !simple_command( *p_session_info, "identity " + encrypted, &identity_info ) )
+                              throw runtime_error( "unable to determine encrypted identity information" );
+
+                           string::size_type pos = identity_info.find_last_of( "-:" );
+                           if( pos == string::npos )
+                              throw runtime_error( "unexpected identity information '" + identity_info + "'" );
+
+                           ofstream outf( c_eid_file );
+                           outf << identity_info.substr( 0, pos );
+
+                           if( !simple_command( *p_session_info, "identity " + g_seed + " " + encrypted, &identity_info ) )
+                              throw runtime_error( "unable to set/update identity information" );
+                        }
+                     }
 
                      string::size_type pos = identity_info.find( ':' );
                      if( pos == string::npos )
@@ -1273,6 +1330,7 @@ void request_handler::process_request( )
                      {
                         string reg_key;
                         string::size_type npos = server_id.find( '-' );
+
                         if( npos != string::npos )
                         {
                            reg_key = server_id.substr( npos + 1, pos - npos );
@@ -1283,35 +1341,75 @@ void request_handler::process_request( )
                            throw runtime_error( GDS( c_display_system_is_under_maintenance ) );
                      }
 
-                     if( get_server_id( ) != server_id )
+                     if( get_server_id( ) == server_id )
                      {
-                        if( module_name != "Meta" )
-                        {
-                           set_server_id( server_id );
-                           g_id = get_id_from_server_id( );
+                        g_unlock_fails = 0;
+                        g_id = get_id_from_server_id( );
 
+                        if( !file_exists( c_id_file ) )
+                        {
                            ofstream outf( c_id_file );
                            outf << g_id;
+                        }
 
-                           // NOTE: As the original "g_id" value was potentially invalid any URL link or
-                           // attempt to login could well fail so force the page to refresh with the now
-                           // correct "g_id" value.
-                           if( cmd != c_cmd_open )
-                              extra_content_func += "refresh( false );\n";
+                        if( !file_exists( c_id_file ) )
+                           throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
+
+                     }
+                     else
+                     {
+                        if( was_unlock )
+                        {
+                           if( ++g_unlock_fails >= 3 )
+                           {
+                              g_unlock_fails = 0;
+                              file_remove( c_eid_file );
+                           }
+                        }
+
+                        string old_id( g_id );
+
+                        g_id = get_id_from_server_id( server_id.c_str( ) );
+
+                        // NOTE: If is the first time but the identity matches what had already
+                        // been saved previously then do not output the "system identity" form.
+                        if( old_id == g_id || !g_seed.empty( ) )
+                        {
+                           set_server_id( server_id );
+
+                           if( !g_seed.empty( ) )
+                           {
+                              ofstream outf( c_id_file );
+                              outf << g_id;
+
+                              clear_key( g_seed );
+                              g_seed.erase( );
+                           }
+
+                           if( !g_id.empty( ) && !file_exists( c_id_file ) )
+                              throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
+
+                           if( was_unlock )
+                              display_error = false;
                         }
                         else
                         {
-                           string old_id( g_id );
+                           bool needs_to_unlock = false;
 
-                           g_tmp = server_id;
-                           g_id = get_id_from_server_id( g_tmp.c_str( ) );
-
-                           // NOTE: If is the first time but the identity matches what had already been saved
-                           // then no need to display the confirmation form.
-                           if( old_id == g_id )
+                           if( file_exists( c_eid_file ) )
                            {
-                              clear_key( g_tmp );
-                              set_server_id( server_id );
+                              string encrypted_id( buffer_file( c_eid_file ) );
+
+                              if( g_unlock_fails || server_id == encrypted_id )
+                                 needs_to_unlock = true;
+                           }
+
+                           if( needs_to_unlock )
+                           {
+                              string unlock_html( g_unlock_html );
+
+                              output_form( module_name, extra_content,
+                               unlock_html, "", false, GDS( c_display_system_unlock ) );
                            }
                            else
                            {
@@ -1323,20 +1421,20 @@ void request_handler::process_request( )
                               str_replace( identity_html,
                                c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
-                              str_replace( identity_html, c_identity_fingerprint, g_id );
+                              str_replace( identity_html, c_identity_entropy, server_id );
 
+                              str_replace( identity_html, c_identity, GDS( c_display_identity ) );
                               str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
 
-                              str_replace( identity_html, c_identity_retry_message,
-                               string_message( GDS( c_display_click_here_to_retry ),
-                               make_pair( c_display_click_here_to_retry_parm_href,
-                               "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
+                              str_replace( identity_html, c_password, GDS( c_display_password ) );
+                              str_replace( identity_html, c_verify_password, GDS( c_display_verify_password ) );
 
                               output_form( module_name, extra_content,
                                identity_html, "", false, GDS( c_display_confirm_identity ) );
-
-                              has_output_form = true;
                            }
+
+                           g_id = old_id;
+                           has_output_form = true;
                         }
                      }
 
@@ -1380,6 +1478,9 @@ void request_handler::process_request( )
 
                      clear_key( server_id );
                      clear_key( identity_info );
+
+                     if( was_unlock )
+                        display_error = false;
                   }
                   else
                      throw runtime_error( GDS( c_display_application_server_unavailable ) );
@@ -1526,9 +1627,15 @@ void request_handler::process_request( )
                      }
 
                      if( !has_fetched )
+                     {
+                        // NOTE: Avoid displaying an error if the user information has yet to be provided.
+                        if( username.empty( ) && userhash.empty( ) )
+                           display_error = false;
+
                         fetch_user_record( id_for_login, module_id, module_name, mod_info,
                          *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
                          true, username, userhash, password, unique_id );
+                     }
 
                      if( !g_is_blockchain_application )
                         pwd_hash = p_session_info->user_pwd_hash;
@@ -2530,7 +2637,9 @@ void request_handler::process_request( )
       }
 
       ostringstream osstr;
-      osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
+
+      if( display_error )
+         osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
 
       bool is_logged_in = false;
       bool has_output_go_back = false;
@@ -2823,6 +2932,7 @@ int main( int argc, char* argv[ ] )
       g_footer_html = buffer_file( c_footer_file );
       g_openup_html = buffer_file( c_openup_file );
       g_signup_html = buffer_file( c_signup_file );
+      g_unlock_html = buffer_file( c_unlock_file );
       g_activate_html = buffer_file( c_activate_file );
       g_identity_html = buffer_file( c_identity_file );
       g_password_html = buffer_file( c_password_file );
@@ -2846,6 +2956,9 @@ int main( int argc, char* argv[ ] )
       str_replace( g_openup_html, c_account_type_2, GDS( c_display_account_type_2 ) );
       str_replace( g_openup_html, c_account_type_3, GDS( c_display_account_type_3 ) );
       str_replace( g_openup_html, c_open_up_introduction, GDS( c_display_open_up_openid_account_introduction ) );
+
+      str_replace( g_unlock_html, c_continue, GDS( c_display_continue ) );
+      str_replace( g_unlock_html, c_unlock_message, GDS( c_display_unlock_message ) );
 
       str_replace( g_signup_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_signup_html, c_account_type, GDS( c_display_account_type ) );

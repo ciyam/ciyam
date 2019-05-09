@@ -8,16 +8,42 @@
 <p>
 @@identity_introduction_2
 </p>
-<p><b>@@identity_fingerprint</b></p>
-   <form method="POST" name="identity" id="identity"
-    onsubmit="return dyn_load( this, 'cmd=identity', false );">
-       <label for="submit" id="submit">
-          <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@confirm_identity" />
-       </label>
-   </form>
-<p>
-@@identity_retry_message
-</p>
+
+<form method="POST" name="identity" id="identity"
+ onsubmit="return dyn_load( this, 'cmd=identity'
+  + '&data=' + document.identity.entropy.value + '&extra=' + escape( document.identity.password.value ), false );">
+<table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+   <td align="right">@@identity</td>
+   <td>
+      <input class="loginfields" type="text" name="entropy" tabindex="1" value="@@identity_entropy"
+       id="entropy" size="32" maxlength="32" validate="reqd" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr>
+   <td align="right">@@password</td>
+   <td>
+       <input class="loginfields" type="password" name="password" tabindex="2"
+       id="password" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr>
+   <td align="right">@@verify_password</td>
+   <td>
+      <input class="loginfields" type="password" name="valpassword" id="valpassword"
+       tabindex="3" size="35" maxlength="50" validate="reqd;verify:password" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr class="odd_data submit">
+   <td class="center"  colspan="2">
+      <input name="submit" class="button" id="submit" tabindex="4" value="@@confirm_identity" type="submit"/>
+   </td>
+</tr>
+</tbody>
+</table>
+</form>
+
 </div>
 </div>
 

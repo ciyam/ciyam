@@ -121,6 +121,38 @@ string quote( const string& s, char quote_char, char escape_char )
    return qs;
 }
 
+bool are_hex_nibbles( const char* p_str )
+{
+   bool retval = false;
+
+   while( p_str )
+   {
+      char ch = *p_str;
+
+      retval = true;
+
+      if( ch < '0' || ch > '9' )
+      {
+         if( ch != 'a' && ch != 'A'
+          && ch != 'b' && ch != 'B'
+          && ch != 'c' && ch != 'C'
+          && ch != 'd' && ch != 'D'
+          && ch != 'e' && ch != 'E'
+          && ch != 'f' && ch != 'F' )
+         {
+            retval = false;
+            break;
+         }
+      }
+
+      ++p_str;
+      if( *p_str == '\0' )
+         break;
+   }
+
+   return retval;
+}
+
 #ifndef _WIN32
 void uuidgen( unsigned char buf[ ] )
 {

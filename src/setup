@@ -63,9 +63,20 @@ else
   {
    cp ciyam_interface $WEBDIR/$2/ciyam_interface.fcgi
   }
+
+  if [ ! "$2" = "meta" ]; then
+   if [ -f $WEBDIR/meta/identity.txt ] && [ ! -f $WEBDIR/$2/identity.txt ]; then
+    cp $WEBDIR/meta/identity.txt $WEBDIR/$2
+   fi
+   if [ -f $WEBDIR/meta/encrypted.txt ] && [ ! -f $WEBDIR/$2/encrypted.txt ]; then
+    cp $WEBDIR/meta/encrypted.txt $WEBDIR/$2
+   fi
+  fi
+
   ./xrep @footer.htms.xrep >footer.htms
   cat setup_files.lst | xargs -I % cp % $WEBDIR/$2
   rm footer.htms
+
   chmod -R g+w $WEBDIR/$2/*
  fi
 fi

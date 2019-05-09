@@ -61,6 +61,11 @@ if not exist "%install_path%\upload.fcgi" copy upload.exe "%install_path%\upload
 if not exist "%install_path%\ciyam_interface.pem" copy ciyam_client.pem "%install_path%\ciyam_interface.pem" >nul
 if not exist "%install_path%\ciyam_interface.fcgi" copy ciyam_interface.exe "%install_path%\ciyam_interface.fcgi" >nul
 
+if "%2" == "meta" goto skip_identity
+if not exist "%install_path%\identity.txt" copy "%WEBDIR%\meta\identity.txt" "%install_path%" >nul
+if not exist "%install_path%\encrypted.txt" copy "%WEBDIR%\meta\encrypted.txt" "%install_path%" >nul
+
+:skip_identity
 xrep @footer.htms.xrep >footer.htms
 xrep @setup_files.bat.xrep files=@setup_files.lst >~setup.bat
 call ~setup.bat "%install_path%"

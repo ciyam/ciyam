@@ -127,6 +127,10 @@ inline double round( double x, int n )
    return std::floor( 0.5 + p * x ) / p;
 }
 
+bool are_hex_nibbles( const char* p_str );
+
+inline bool are_hex_nibbles( const std::string& s ) { return are_hex_nibbles( s.c_str( ) ); }
+
 inline unsigned char hex_nibble( unsigned char ch )
 {
    unsigned char retval = 0;
