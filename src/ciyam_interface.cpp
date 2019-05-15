@@ -124,6 +124,7 @@ const char* const c_activate_file = "activate.htms";
 const char* const c_identity_file = "identity.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
+const char* const c_no_identity_file = "no_identity.htms";
 const char* const c_authenticate_file = "authenticate.htms";
 const char* const c_login_password_file = "login_password.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
@@ -206,6 +207,7 @@ string g_activate_html;
 string g_identity_html;
 string g_password_html;
 string g_ssl_signup_html;
+string g_no_identity_html;
 string g_authenticate_html;
 
 string g_login_password_html;
@@ -1177,7 +1179,11 @@ void request_handler::process_request( )
          guard g( g_session_mutex );
 
          bool was_unlock = false;
+         bool is_meta_module = false;
          bool has_output_form = false;
+
+         if( module_name == "Meta" )
+            is_meta_module = true;
 
          if( !p_session_info->p_socket )
          {
@@ -1363,7 +1369,12 @@ void request_handler::process_request( )
                            if( ++g_unlock_fails >= 3 )
                            {
                               g_unlock_fails = 0;
-                              file_remove( c_eid_file );
+
+                              // NOTE: Only allow Meta to restore from seed.
+                              if( !is_meta_module )
+                                 msleep( 2500 );
+                              else
+                                 file_remove( c_eid_file );
                            }
                         }
 
@@ -1411,7 +1422,7 @@ void request_handler::process_request( )
                               output_form( module_name, extra_content,
                                unlock_html, "", false, GDS( c_display_system_unlock ) );
                            }
-                           else
+                           else if( is_meta_module )
                            {
                               string identity_html( g_identity_html );
 
@@ -1431,6 +1442,21 @@ void request_handler::process_request( )
 
                               output_form( module_name, extra_content,
                                identity_html, "", false, GDS( c_display_confirm_identity ) );
+                           }
+                           else
+                           {
+                              string no_identity_html( g_no_identity_html );
+
+                              str_replace( no_identity_html,
+                               c_identity_missing, GDS( c_display_identity_missing_message ) );
+
+                              str_replace( no_identity_html, c_identity_retry_message,
+                               string_message( GDS( c_display_click_here_to_retry ),
+                               make_pair( c_display_click_here_to_retry_parm_href,
+                               "<a href=\"javascript:refresh( )\">" ), "</a>" ) );
+
+                              output_form( module_name, extra_content,
+                               no_identity_html, "", false, GDS( c_display_identity_missing ) );
                            }
 
                            g_id = old_id;
@@ -2937,6 +2963,7 @@ int main( int argc, char* argv[ ] )
       g_identity_html = buffer_file( c_identity_file );
       g_password_html = buffer_file( c_password_file );
       g_ssl_signup_html = buffer_file( c_ssl_signup_file );
+      g_no_identity_html = buffer_file( c_no_identity_file );
       g_authenticate_html = buffer_file( c_authenticate_file );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );

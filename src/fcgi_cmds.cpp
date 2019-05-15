@@ -534,6 +534,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    string fetch_cmd( "perform_fetch " + module + " " + class_id );
 
    string user_info( get_uid_info( sess_info, false ) );
+
    if( !user_info.empty( ) )
       fetch_cmd += " \"-u=" + user_info + "\"";
 
@@ -643,6 +644,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    {
       string response;
       int timeout = c_initial_response_timeout;
+
       while( response.empty( ) || response[ 0 ] != '(' )
       {
          if( !response.empty( ) )

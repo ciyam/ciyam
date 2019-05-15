@@ -578,6 +578,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      item_value = data_decrypt( item_value, get_server_id( ) );
                   else
                      item_value = data_decrypt( item_value, p_session_info->user_pwd_hash );
+
+                  item_values[ field_num ] = item_value;
                }
 
                if( view.field_ids[ i ] == view.filename_field )
