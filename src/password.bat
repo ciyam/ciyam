@@ -13,5 +13,5 @@ goto run_script
 echo encrypt %1> ~password.cin
 
 :run_script
-ciyam_client -quiet -no_prompt <~password.cin
+ciyam_client -tls -quiet -no_prompt <~password.cin
 del ~password.cin
