@@ -376,6 +376,7 @@ struct module_info
    std::string user_tz_name_field_id;
    std::string user_has_auth_field_id;
    std::string user_pin_value_field_id;
+   std::string user_read_only_field_id;
    std::string user_gpg_install_proc_id;
 
    std::string user_select_perm;
@@ -559,6 +560,7 @@ struct session_info
    std::map< std::string, std::string > other_slevels;
 
    bool is_openid;
+   bool is_read_only;
 
    bool is_admin_user;
    bool is_persistent;

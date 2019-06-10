@@ -2118,6 +2118,9 @@ bool fetch_user_record(
    if( !mod_info.user_pin_value_field_id.empty( ) )
       field_list += "," + mod_info.user_pin_value_field_id;
 
+   if( !mod_info.user_read_only_field_id.empty( ) )
+      field_list += "," + mod_info.user_read_only_field_id;
+
    string key_info;
    if( userhash.empty( ) )
    {
@@ -2285,6 +2288,9 @@ bool fetch_user_record(
       if( last_pin_value != sess_info.user_pin_value )
          sess_info.last_user_pin_value = last_pin_value;
    }
+
+   if( !mod_info.user_read_only_field_id.empty( ) )
+      sess_info.is_read_only = from_string< bool >( user_data[ offset++ ] );
 
    return true;
 }

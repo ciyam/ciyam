@@ -571,7 +571,7 @@ void output_list_form( ostream& os,
 
    bool allow_new_record = true;
 
-   if( is_parent_edit || sess_info.user_id.empty( ) )
+   if( is_parent_edit || sess_info.is_read_only || sess_info.user_id.empty( ) )
       allow_list_actions = false;
 
    if( is_blockchain_application( ) && sess_info.user_id == c_guest_user_key )
@@ -592,6 +592,7 @@ void output_list_form( ostream& os,
 
    if( is_no_new
     || !allow_list_actions
+    || sess_info.is_read_only
     || sess_info.user_id.empty( )
     || ( is_admin_new && !sess_info.is_admin_user )
     || ( is_owner_new && is_child_list && !has_owner_parent )
@@ -2443,7 +2444,7 @@ void output_list_form( ostream& os,
    bool display_list_checks = false;
    bool display_row_numbers = false;
 
-   if( list_type != c_list_type_home && !sess_info.user_id.empty( ) )
+   if( list_type != c_list_type_home && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
    {
       if( !is_printable )
          display_list_checks = allow_list_actions;
@@ -3041,7 +3042,8 @@ void output_list_form( ostream& os,
             if( is_child_list )
                listarg = source.id;
 
-            if( !is_printable && allow_list_actions && !cell_data.empty( ) && !sess_info.user_id.empty( ) )
+            if( !is_printable && allow_list_actions
+             && !cell_data.empty( ) && !sess_info.is_read_only && !sess_info.user_id.empty( ) )
                output_actions( os, source, cmd, parent_key, sess_info, ident,
                 key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data,
                 "", session_id, user_select_key, listarg, using_session_cookie, use_url_checksum, has_hashval );

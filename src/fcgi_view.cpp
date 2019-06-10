@@ -622,7 +622,7 @@ bool output_view_form( ostream& os, const string& act,
    bool is_owner_edit = has_perm_extra( c_view_type_extra_owner_edit, view_extras, sess_info );
    bool is_admin_owner_edit = has_perm_extra( c_view_type_extra_admin_owner_edit, view_extras, sess_info );
 
-   if( sess_info.user_id.empty( ) )
+   if( sess_info.is_read_only || sess_info.user_id.empty( ) )
       is_no_edit = true;
 
    if( is_blockchain_application( ) && sess_info.user_id == c_guest_user_key )
@@ -799,7 +799,8 @@ bool output_view_form( ostream& os, const string& act,
          {
             is_editable = false;
 
-            if( !sess_info.user_id.empty( )
+            if( !sess_info.is_read_only
+             && !sess_info.user_id.empty( )
              && !source.actions_value.empty( )
              && ( !( source.state & c_state_unactionable )
              || view_extras.count( c_view_type_extra_ignore_unactionable ) )
