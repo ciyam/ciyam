@@ -7,6 +7,7 @@
 #ifndef TDATETIME_HELPER_H
 #  define TDATETIME_HELPER_H
 
+#  include "numeric.h"
 #  include "nullable.h"
 #  include "date_time_helper.h"
 #  include "read_write_stream.h"
@@ -21,6 +22,8 @@ class tdatetime : public nullable_date_time
    tdatetime( const date_time& dt ) : nullable_date_time( dt ) { }
 
    tdatetime( julian jdt ) : nullable_date_time( date_time( jdt ) ) { }
+
+   tdatetime( const numeric& n ) : nullable_date_time( date_time( n.as_int64_t( ) ) ) { }
 
    tdatetime( const std::string& s ) : nullable_date_time( s.empty( ) ? date_time( ) : date_time( s ) )
    {
@@ -204,4 +207,3 @@ inline write_stream& operator <<( write_stream& ws, const tdatetime& tdt )
 }
 
 #endif
-

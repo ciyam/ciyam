@@ -3711,6 +3711,7 @@ void field_clear_specification::add_specification_data( model& m, specification_
 
    spec_data.data_pairs.push_back( make_pair( c_data_for_store, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
+   spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
    spec_data.data_pairs.push_back( make_pair( "create_only", "" ) );
@@ -3915,6 +3916,7 @@ void field_clear_on_changed_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
 
    spec_data.data_pairs.push_back( make_pair( "sfisfk", "1" ) );
+   spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
 }

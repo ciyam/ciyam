@@ -32,21 +32,31 @@
    // [(start transient_field_from_op)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_check`,`'`'`)\
-   if( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$arg_not_pedit`,`'true`'`)
+`{`@eq`(`$arg_not_pedit`,`'true`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`$extra`=`'1`'`}\
+   if( `{`@eq`(`$extra`,`'1`'`)( `}get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" )`{`@eq`(`$extra`,`'1`'`) )`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )\
+`}`{`@eq`(`$arg_not_pedit`,`'true`'`)
     && ( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `,\
    if( ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) )`{`@eq`(`$arg_not_pedit`,`'true`'`)
+    || required_transients.count( "`{`$arg_field`}" ) )\
+`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )\
+`}`{`@eq`(`$arg_not_pedit`,`'true`'`)
     && ( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`}
     && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}`,\
    if( ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) )`{`@eq`(`$arg_not_pedit`,`'true`'`)
+    || required_transients.count( "`{`$arg_field`}" ) )\
+`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )\
+`}`{`@eq`(`$arg_not_pedit`,`'true`'`)
     && ( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`}
     && `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`}`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\

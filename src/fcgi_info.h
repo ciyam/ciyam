@@ -378,6 +378,7 @@ struct module_info
    std::string user_pin_value_field_id;
    std::string user_read_only_field_id;
    std::string user_gpg_install_proc_id;
+   std::string user_change_pwd_tm_field_id;
 
    std::string user_select_perm;
    std::string user_select_field;
@@ -564,6 +565,8 @@ struct session_info
 
    bool is_admin_user;
    bool is_persistent;
+
+   int64_t change_pwd_tm;
 
    int row_limit;
    int notes_rmin;

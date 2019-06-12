@@ -5,19 +5,23 @@
 `{`!`@eq`(`$arg_update_only`,`'`'`)`$create_or_update`=`'true`'`}\
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
-   if( `{`!`@eq`(`$create_or_update`,`'`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create && `}\
+   if( `{`!`@eq`(`$create_or_update`,`'`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} ) && `}\
 `{`@eq`(`$arg_is_neg`,`'true`'`)!`}get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) )
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );\
 `,\
-   if( `{`!`@eq`(`$create_or_update`,`'`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create && `}\
+   if( `{`!`@eq`(`$create_or_update`,`'`'`)`{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} ) && `}\
 get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_tfield`,`'`'`) && `{`@eq`(`$arg_is_neg`,`'true`'`)!`}get_obj( ).`{`$arg_tfield`}( )`} )
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );\
 `}`,\`{`!`@eq`(`$create_or_update`,`'`'`)\
-   if( `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create )
+   if( `{`!`@eq`(`$arg_update_only`,`'`'`)!`}is_create`{`!`@eq`(`$arg_modifier`,`'`'`) && ( state & c_modifier_`{`$arg_modifier`} )`} )
+      get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );\
+`,\
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+   if( state & c_modifier_`{`$arg_modifier`} )
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );\
 `,\
    get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );\
-`}`}
+`}`}`}
    // [(finish field_clear)] `{`$arg_id`}
 `}

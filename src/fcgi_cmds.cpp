@@ -2121,6 +2121,9 @@ bool fetch_user_record(
    if( !mod_info.user_read_only_field_id.empty( ) )
       field_list += "," + mod_info.user_read_only_field_id;
 
+   if( !mod_info.user_change_pwd_tm_field_id.empty( ) )
+      field_list += "," + mod_info.user_change_pwd_tm_field_id;
+
    string key_info;
    if( userhash.empty( ) )
    {
@@ -2291,6 +2294,9 @@ bool fetch_user_record(
 
    if( !mod_info.user_read_only_field_id.empty( ) )
       sess_info.is_read_only = from_string< bool >( user_data[ offset++ ] );
+
+   if( !mod_info.user_change_pwd_tm_field_id.empty( ) )
+      sess_info.change_pwd_tm = from_string< int64_t >( user_data[ offset++ ] );
 
    return true;
 }

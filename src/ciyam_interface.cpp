@@ -2106,8 +2106,16 @@ void request_handler::process_request( )
              && ( pin == p_session_info->user_pin_value || pin == p_session_info->last_user_pin_value ) )
                p_session_info->needs_pin = false;
 
-            if( p_session_info->needs_pin && cmd != c_cmd_quit )
-               cmd = c_cmd_home;
+            // NOTE: If not logging out and needs either a PIN or to change
+            // password then modify the command to handle either situation.
+            if( cmd != c_cmd_quit )
+            {
+               if( p_session_info->needs_pin )
+                  cmd = c_cmd_home;
+               else if( p_session_info->change_pwd_tm
+                && ( unix_timestamp( ) >= p_session_info->change_pwd_tm ) )
+                  cmd = c_cmd_pwd;
+            }
 
             // NOTE: If a new password hash is passed from the client after logging in then
             // encrypt and store it in the application server "files area" for later usage.

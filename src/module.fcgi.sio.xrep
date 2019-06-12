@@ -20,7 +20,8 @@
  <user_info>`{`(`?`$specification_user_info_id`)`{`$specification_user_info_cid`},`{`$specification_user_info_class`},\
 `{`$specification_user_info_uid`},`{`$specification_user_info_pwd`}`{`(`?`$specification_user_info_hash`),`{`$specification_user_info_hash`}`}\
 `{`(`?`$specification_user_info_name`),`{`$specification_user_info_name`}`}`{`(`?`$specification_user_info_email`);`{`$specification_user_info_email`}`}\
-`{`(`?`$specification_user_info_crypt_key`):`{`$specification_user_info_crypt_key`}`}`{`(`?`$specification_user_info_read_only`)!`{`$specification_user_info_read_only`}`}
+`{`(`?`$specification_user_info_crypt_key`):`{`$specification_user_info_crypt_key`}`}`{`(`?`$specification_user_info_read_only`)!`{`$specification_user_info_read_only`}`}\
+`{`(`?`$specification_user_info_change_pwd_tm`)@`{`$specification_user_info_change_pwd_tm`}`}
  <user_perm>`{`$specification_user_info_perm`}
  <user_extra>`{`(`?`$specification_user_info_extra1`&`!`@eq`(`$specification_user_info_extra1`,`'`'`)`)`$specification_user_info_extra1`}\
 `{`(`?`$specification_user_info_extra2`&`!`@eq`(`$specification_user_info_extra2`,`'`'`)`),`{`$specification_user_info_extra2`}`}

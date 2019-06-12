@@ -1946,8 +1946,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_op`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_op.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
  arg_tfistexttype=$specification_\0_tfistexttype arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_scfistexttype=$specification_\0_scfistexttype arg_op=$specification_\0_op\
@@ -2193,8 +2193,8 @@ void `{`$full_class_name`}::impl::post_init( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_op.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_tfield=$specification_\0_tfield\
  arg_tfistexttype=$specification_\0_tfistexttype arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_scfistexttype=$specification_\0_scfistexttype arg_op=$specification_\0_op\
@@ -2333,7 +2333,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_clear`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
@@ -2344,7 +2345,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_clear_on_changed`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_clear_on_changed.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_sfisfk=$specification_\0_sfisfk arg_field=$specification_\0_field\
+ arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_sfisfk=$specification_\0_sfisfk\
+ arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_not_dflt=$specification_\0_not_dflt arg_not_create=$specification_\0_not_create\
  arg_fistexttype=$specification_\0_fistexttype arg_set_to_default=$specification_\0_set_to_default`}\
@@ -2681,7 +2683,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_clear`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
  arg_create_only=$specification_\0_create_only arg_update_only=$specification_\0_update_only arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
@@ -2692,7 +2695,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_clear_on_changed`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_clear_on_changed.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_sfisfk=$specification_\0_sfisfk arg_field=$specification_\0_field\
+ arg_id=$specification_\0_id arg_sfield=$specification_\0_sfield arg_sfisfk=$specification_\0_sfisfk\
+ arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_not_dflt=$specification_\0_not_dflt arg_not_create=$specification_\0_not_create\
  arg_fistexttype=$specification_\0_fistexttype arg_set_to_default=$specification_\0_set_to_default`}\

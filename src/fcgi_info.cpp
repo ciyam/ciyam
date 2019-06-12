@@ -206,6 +206,7 @@ void module_info::clear( )
    user_pin_value_field_id.erase( );
    user_read_only_field_id.erase( );
    user_gpg_install_proc_id.erase( );
+   user_change_pwd_tm_field_id.erase( );
 
    user_select_perm.erase( );
    user_select_field.erase( );
@@ -347,6 +348,7 @@ session_info::session_info( storage_info& si )
  locked( false ),
  logged_in( false ),
  needs_pin( false ),
+ change_pwd_tm( 0 ),
  checksum_serial( 0 ),
  pwd_encrypted( true ),
  is_openid( false ),
@@ -581,7 +583,14 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       {
          string str( user_info );
 
-         string::size_type pos = str.find( '!' );
+         string::size_type pos = str.find( '@' );
+         if( pos != string::npos )
+         {
+            info.user_change_pwd_tm_field_id = str.substr( pos + 1 );
+            str.erase( pos );
+         }
+
+         pos = str.find( '!' );
          if( pos != string::npos )
          {
             info.user_read_only_field_id = str.substr( pos + 1 );
