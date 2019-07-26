@@ -307,8 +307,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                was_chk_tag = false;
             }
 
-            if( expr.search( data ) == string::npos
-             && str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
+            if( str.substr( 0, pos ) == "put" || str.substr( 0, pos ) == "file_put" )
             {
                str.erase( pos + 1 );
 
@@ -790,15 +789,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      if( response.substr( 0, pos ) == "get" )
                      {
+                        unsigned char prefix( c_file_type_char_blob );
+
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_send, c_max_file_transfer_size,
-                         c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                         socket, e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
+                         c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
                      }
                      else if( response.substr( 0, pos ) == "put" )
                      {
+                        unsigned char prefix( c_file_type_char_blob );
+
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_recv, c_max_file_transfer_size,
-                         c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                         socket, e_ft_direction_recv, c_max_file_transfer_size, c_response_okay_more,
+                         c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
                         // NOTE: If is first "chk" and *not found* is returned then it is next expected
                         // that a file will be be sent and then fetched to ensure that the peer is able
@@ -806,8 +809,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         if( was_chk_tag && !had_chk_command )
                         {
                            file_transfer( response.substr( pos + 1 ), socket,
-                            e_ft_direction_send, c_max_file_transfer_size,
-                            c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+                            e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
+                            c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
                         }
                      }
                      else if( response.substr( 0, pos ) == "chk" )
@@ -834,7 +837,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      }
                      else if( response.substr( 0, pos ) == "pip" )
                      {
-                        handle_command_response( response.substr( pos + 1 ) );
+                        handle_command_response( response );
 
                         socket.write_line( c_local_ip_addr );
 

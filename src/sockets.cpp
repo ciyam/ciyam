@@ -661,7 +661,7 @@ void file_transfer( const string& name,
          {
             s.write_line( size_info, initial_timeout, p_progress );
 
-            s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
+            s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
 
             if( next != ack_message_str )
             {
@@ -669,7 +669,7 @@ void file_transfer( const string& name,
                if( lower( next ).find( "error" ) != string::npos )
                   throw runtime_error( next );
                else if( next.empty( ) )
-                  throw runtime_error( "unexpected empty ack response" );
+                  throw runtime_error( "unexpected first empty ack response" );
                else
                   throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
             }
@@ -683,7 +683,7 @@ void file_transfer( const string& name,
          if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
             throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n" );
 
-         s.read_line( next, is_first ? initial_timeout : line_timeout, max_line_size, p_progress );
+         s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading send response for file transfer" );
@@ -694,7 +694,7 @@ void file_transfer( const string& name,
             if( lower( next ).find( "error" ) != string::npos )
                throw runtime_error( next );
             else if( next.empty( ) )
-               throw runtime_error( "unexpected empty ack response" );
+               throw runtime_error( "unexpected empty ack response for send" );
             else
                throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
