@@ -119,6 +119,7 @@ const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
 const char* const c_special_variable_block_height = "@block_height";
 const char* const c_special_variable_app_directory = "@app_directory";
+const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
@@ -484,6 +485,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_app_directory:
       s = string( c_special_variable_app_directory );
+      break;
+
+      case e_special_var_last_file_put:
+      s = string( c_special_variable_last_file_put );
       break;
 
       case e_special_var_rewind_height:

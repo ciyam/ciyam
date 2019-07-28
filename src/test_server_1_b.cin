@@ -52,6 +52,7 @@ file_get test *test1/
 file_kill -recurse test
 file_put 1K*test1/~test.jpg test
 ~rm test1/~test.jpg
+session_variable @last_file_put
 file_info -recurse -d=999 test
 file_info -recurse -d=999 test
 file_kill -recurse test
@@ -67,8 +68,10 @@ file_archives -status_update
 session_variable @dummy_timestamp 20170313080001
 file_put test1.jpg
 session_variable @dummy_timestamp 20170313080002
+session_variable @last_file_put
 file_put test2.jpg
 session_variable @dummy_timestamp 20170313080000
+session_variable @last_file_put
 file_put test.jpg
 file_tags ts.*
 file_relegate -n=1

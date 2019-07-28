@@ -205,6 +205,9 @@ test1/~test.jpg
 > file_put 1K*test1/~test.jpg test
 
 > 
+> session_variable @last_file_put
+58b5d2342a3eb5b8750cd1447f00ed376610d7e36774cabd26d95b177833a660
+
 > file_info -recurse -d=999 test
 [list] 58b5d2342a3eb5b8750cd1447f00ed376610d7e36774cabd26d95b177833a660 (313 B)
 test1/~test.jpg.00000
@@ -269,9 +272,15 @@ test3 [okay      ] (0 B/10.5 MB) test3
 
 > session_variable @dummy_timestamp 20170313080002
 
+> session_variable @last_file_put
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
+
 > file_put test2.jpg
 
 > session_variable @dummy_timestamp 20170313080000
+
+> session_variable @last_file_put
+efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f
 
 > file_put test.jpg
 

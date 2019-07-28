@@ -13,7 +13,7 @@ normally compressed when they are created (although this is optional).
 
 Because the name of the file is a secure hash of its content files cannot be edited (as a new version will of
 course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
-could ever hope to remember "tags" can be used for labelling and later locating files.
+could ever hope to remember "file tags" can be used for labelling and later locating files.
 
 To see the list and usage of all the file system commands issue the following command from "ciyam_client":
 
@@ -23,7 +23,9 @@ Fundamental File Types
 ----------------------
 
 The file system supports two fundamental file types which are Blob and List. The first byte of each file will
-identify the fundamental file type as well as holding some other flags that will be explained further on.
+identify the fundamental file type as well as holding some other bit flags that will be explained further on.
+It is important to note that the SHA256 hash includes this first byte (so do not expect the SHA256 hash of an
+external file to match that of a file copied into the files area using "file_put").
 
 The Blob file type is used to store any kind of arbitrary data (without any formal meta-data so that it isn't
 possible to actually know what kind of data it is that is being stored). The List file type provides a method
@@ -58,15 +60,14 @@ hello
 The above shows the List that had been created contains a single "list item" with the name "first" which then
 points to a Blob that contains the text "hello". Considering that any of the "list items" can also themselves
 be lists it should be clear that this is extremely flexible, however it is not clear from such an example how
-the hash for a particular List (or Blob if desired) could easily be found which brings us to the next feature
-of the file system.
+the hash for a particular List (or Blob if desired) can easily be found which is the purpose of "file tags".
 
 File Tags
 ---------
 
-File "tags" enable the linking of human readible file names to the file hashes in the file system. These tags
-function in much the same way as "branch tags" in "git" work. To illustrate how this is useful let's tag just
-the List file that was created before.
+The "file tags" enable linking of human readible file names to the file hashes in the file system. These tags
+function in much the same way as "branch tags" in git work (under the hood). To show how these are useful the
+following command tags the List file that was created before.
 
 > file_tag 029eaf5e442ca27b4d9dccba2cd5ace42e7f98ee33c6ab69d19ea55656f1f84a start
 
@@ -153,18 +154,22 @@ Copying Files
 
 A simple way to copy a file into the file system from the current directory is illustrated as follows:
 
-> file_put ciyam_server.sio xxx
+> file_put mnemonics.txt xxx
 
-This command will copy the "ciyam_server.sio" configuration file into the file system and create a tag for it
-with the name "xxx".
+This command copies the file "mnemonics.txt" into the file system along with creating a file tag "xxx" for it
+(which makes it easier to locate). If not wanting to use a file tag the hash can be determined from a session
+variable named "@last_file_put" as illustrated here:
+
+> session_variable @last_file_put
+09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f
 
 In order to fetch this copy from the file system use the following:
 
 > file_get xxx
 
-It should be noted that the file content (which was originally copied from "ciyam_server.sio") will have been
-copied into a file called "xxx" in the current directory (to use a different filename add another argument to
-the command such as "file_get xxx x.sio").
+It should be noted that the file content (originally sourced from "mnemonics.txt") will have been copied into
+a file called "xxx" in the current directory (to use a different filename add another argument to the command
+such as "file_get xxx copy_of_mnemonics.txt").
 
 Because the file system imposes a maxiumum file size limit the "file_put" command (only when this command has
 been issued via "ciyam_client") can prefix the file name with a byte size followed by an asterisk as follows:
@@ -173,20 +178,20 @@ been issued via "ciyam_client") can prefix the file name with a byte size follow
 
 This will copy "test.jpg" into the file system as a number of "chunks" that are each no more than 1kB in size
 (which will be flagged to not be compressed). It will also create a "list" file that references each of these
-chunks and the "tst.jpg" tag is added to this "list" (if the "tst.jpg" tag was omitted then list will be last
-file matching a "ts.*" prefix).
+chunks and the "tst.jpg" tag is added to this "list" (if the "tst.jpg" tag was omitted then hash of this list
+can be found in the session variable "@last_file_put").
 
 The following command will output the content of the "tst.jpg" list file:
 
 > file_info -content tst.jpg
-[list] 0f2ea74eb8ff3b179716384dbfb4c9376458edb7747ba0dd850ef8bcc2954f87 (307 B)
-fa7fe19a948a3e07b0107ab581c09500be6b837e2e90f8eb7f2ba632354993cd test.jpg.00000
-629cb7f34aa4a0f60643a6a8deec5ba26fbc7af51da4bac6daa8a9a69b630e29 test.jpg.00001
-e858be066360a12b6ee02c7f51781b57e844b50a7ebf2513b392cd1e65fefa4e test.jpg.00002
-2b34aae56c8ffe3a74b815a6c6f49b9bf7cb049695021b021f4360749281698b test.jpg.00003
-0af58aa60a76fcea76d5918a1f37da511e881fffb2dcda3c00ce7c244c8a9510 test.jpg.00004
-ff9a4b6004c5f37083d4c2555a364d5e2b61375984516a64c171314834d414cf test.jpg.00005
-9c729f25c1dd59fd4ca5f140159c57d502248f171892697e05872dee655982b6 test.jpg.00006
+[list] 61d29770a12587190eeafc6bc9e04e64a58837296597c5f4c24b508b87991d5f (307 B)
+8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d test.jpg.00000
+cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 test.jpg.00001
+e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 test.jpg.00002
+54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 test.jpg.00003
+579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 test.jpg.00004
+096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 test.jpg.00005
+15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 test.jpg.00006
 
 It should be noted that the original "test.jpg" filename has been kept with each list item and a chunk number
 of five digits has been appended (so it might generally be better to use the original file name as the tag to
@@ -233,7 +238,6 @@ But if any other tags are linked to the same file content then this command will
 therefore to force file deletion the "file_kill" command would instead be used as follows:
 
 > file_kill xxx
-655be670503d269cc190a75b96cfb6fde707b8036c7e2672289c3bfbf30ae669
 
 It should be noted that any tags that were linked to this file will now have been removed but some care would
 be advised before deciding to use "file_kill" as this could effectively leave "list" content with now invalid
@@ -338,7 +342,7 @@ Archiving Files
 Typically when a file is stored (that is not a "core file") it will be automatically tagged with a time stamp
 prefixed by "ts.". The following is a repeat of the earlier "file_put" but without providing a tag:
 
-file_put ciyam_server.sio
+file_put mnenomics.txt
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
@@ -367,7 +371,7 @@ multiple archived copies of the file).
 To manually change a file's time stamp tag to become an "important" file first use the "file_hash" command to
 retrieve the actual file identity and then issue a "file_tag" command such as follows:
 
-file_tag 7c2cff3b3cf3d9661d55ef770fe1173a54a7e8955c5d655834a602f6cfdae539 ts.2017032013404998700000000*!
+file_tag 09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f ts.2017032013404998700000000*!
 
 Assuming that an important file is retrieved and re-archived several times then if several archives exist the
 file should have been arhived in each of these. Thus removing the oldest archive will not prevent these files
@@ -383,9 +387,9 @@ the file might stay in the files area longer than other time stamp tagged files.
 the command a specific tag for the file being retrieved which will effectively keep the file from being later
 archived. The following command will retrieve the file archived previously giving it the permanent tag "xxx":
 
-file_retrieve 7c2cff3b3cf3d9661d55ef770fe1173a54a7e8955c5d655834a602f6cfdae539 xxx
+file_retrieve 09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f xxx
 
-If no tag is provided then the "ts.<time stamp>" tag will be automatically supplied for the file.
+If no tag is provided then a new "ts.<time stamp>" tag will be automatically supplied for the file.
 
 Permanently Deleting All File Copies
 ------------------------------------

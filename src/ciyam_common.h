@@ -133,6 +133,7 @@ enum special_var
    e_special_var_transaction,
    e_special_var_block_height,
    e_special_var_app_directory,
+   e_special_var_last_file_put,
    e_special_var_rewind_height,
    e_special_var_sub_directory,
    e_special_var_update_fields,
