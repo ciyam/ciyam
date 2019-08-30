@@ -140,6 +140,7 @@ enum special_var
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
    e_special_var_unix_timestamp,
+   e_special_var_ciyam_list_hash,
    e_special_var_dummy_timestamp,
    e_special_var_row_cache_limit,
    e_special_var_check_if_changed,

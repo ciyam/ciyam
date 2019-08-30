@@ -851,6 +851,16 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
                chain = account.substr( 0, pos );
                account.erase( 0, pos + 1 );
 
+               pos = account.find( '!' );
+
+               if( pos != string::npos )
+               {
+                  string encoded_list_hash( account.substr( pos + 1 ) );
+                  set_session_variable( get_special_var_name( e_special_var_ciyam_list_hash ), base64_to_hex( encoded_list_hash ) );
+
+                  account.erase( pos );
+               }
+
                chain_info_hash = get_chain_info( cinfo, chain );
             }
          }
@@ -3737,7 +3747,12 @@ string construct_new_block(
     + ":" + string( c_file_type_core_block_header_account_prefix ) + ( chain.empty( ) ? account_id : chain ) );
 
    if( !acct.empty( ) )
+   {
       data += "." + acct;
+
+      if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
+         data += "!" + hex_to_base64( tag_file_hash( c_ciyam_tag ) );
+   }
 
    data += "," + string( c_file_type_core_block_header_height_prefix ) + to_string( height );
 
