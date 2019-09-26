@@ -135,12 +135,25 @@ void read_calendar_events( ifstream& inpf, const udate& udm )
 
                   pos = occurs.find( '-' );
 
-                  if( occurs[ occurs.length( ) - 1 ] == '+' )
-                  {
-                     new_event.repeat = udm.get_year( ) - y;
-                     y = udm.get_year( );
+                  int max_repeats = 0;
+                  string::size_type rpos = occurs.find( '+' );
 
-                     occurs.erase( occurs.length( ) - 1 );
+                  if( rpos != string::npos )
+                  {
+                     if( rpos != occurs.length( ) - 1 )
+                        max_repeats = atoi( occurs.substr( rpos + 1 ).c_str( ) );
+
+                     new_event.repeat = udm.get_year( ) - y;
+
+                     if( !max_repeats || new_event.repeat <= max_repeats )
+                        y = udm.get_year( );
+                     else
+                     {
+                        new_event.repeat = max_repeats;
+                        y = udm.get_year( ) + max_repeats;
+                     }
+
+                     occurs.erase( rpos );
                   }
                }
 
