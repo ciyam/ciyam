@@ -2359,8 +2359,8 @@ void init_peer_sessions( int start_listeners )
 
       for( map< int, string >::iterator i = blockchains.begin( ); i != blockchains.end( ); ++i )
       {
-         peer_listener* p_peer_litener = new peer_listener( i->first, i->second );
-         p_peer_litener->start( );
+         peer_listener* p_peer_listener = new peer_listener( i->first, i->second );
+         p_peer_listener->start( );
       }
    }
 
