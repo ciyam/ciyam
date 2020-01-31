@@ -18,6 +18,7 @@
 `{`@eq`(`$op`,`'bitor`'`)`$op`=`'|`'`}\
 `{`@eq`(`$op`,`'bitsleft`'`)`$op`=`'<<`'`}\
 `{`@eq`(`$op`,`'bitsright`'`)`$op`=`'>>`'`}\
+`{`$extra`=`'`'`}\
 `{`$type`=`$arg_type`}\
 `{`@eq`(`$type`,`'second`'`)`$type`=`'seconds`'`}\
 `{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
