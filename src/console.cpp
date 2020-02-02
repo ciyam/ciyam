@@ -25,6 +25,7 @@
 #     error unsupported compiler platform...
 #  endif
 #endif
+#include <stdexcept>
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <iostream>
@@ -35,6 +36,7 @@
 #include "config.h"
 
 #ifdef __GNUG__
+#  define _write ::write
 #  ifdef RDLINE_SUPPORT
 extern "C"
 {
@@ -276,8 +278,11 @@ void put_line( const char* p_chars, size_t len )
 
    char ch = '\n';
 
-   ( void )write( outfd, p_chars, len );
-   ( void )write( outfd, &ch, 1 );
+   if( _write( outfd, p_chars, len ) == -1 )
+      throw runtime_error( "unexpected put_line write p_chars failure" );
+
+   if( _write( outfd, &ch, 1 ) == -1 )
+      throw runtime_error( "unexpected put_line write line feed failure" );
 
    if( outfd != STDOUT_FILENO )
       close( outfd );

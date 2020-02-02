@@ -2816,7 +2816,9 @@ bool process_group(
             string temp_file_name( "~" + uuid( ).as_string( ) );
 
             string cmd( "curl -s \"" + data + "\" >" + temp_file_name );
-            system( cmd.c_str( ) );
+
+            int rc = system( cmd.c_str( ) );
+            ( void )rc;
 
             data = buffer_file( temp_file_name );
             file_remove( temp_file_name );
@@ -3174,7 +3176,9 @@ bool process_group(
                         throw runtime_error( "no file type specified for URL image '" + data + "'" );
 
                      string cmd( "curl -s \"" + data + "\" >" + temp_file_name );
-                     system( cmd.c_str( ) );
+
+                     int rc = system( cmd.c_str( ) );
+                     ( void )rc;
 
                      auto_ptr< pdf_image > ap_image;
 

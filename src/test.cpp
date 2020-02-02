@@ -501,7 +501,9 @@ void perform_test_step( const test_step& s, const string& test_name )
                str += test_output_file_name;
                str += ' ';
                str += temp_output_file_name;
-               system( str.c_str( ) );
+
+               int rc = system( str.c_str( ) );
+               ( void )rc;
             }
          }
          else
@@ -617,7 +619,8 @@ int main( int argc, char* argv[ ] )
 #ifndef _WIN32
          init_script = "./" + init_script;
 #endif
-         system( init_script.c_str( ) );
+         int rc = system( init_script.c_str( ) );
+         ( void )rc;
       }
 
       ifstream inpf( test_set_file_name.c_str( ) );

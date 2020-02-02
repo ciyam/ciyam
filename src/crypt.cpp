@@ -289,7 +289,9 @@ int main( int argc, char* argv[ ] )
          if( ++first_arg < argc )
          {
             fs.close( );
-            system( argv[ first_arg ] );
+
+            int rc = system( argv[ first_arg ] );
+            ( void )rc;
 
             fs.open( file_name.c_str( ), ios::in | ios::out | ios::binary );
 

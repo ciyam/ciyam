@@ -124,7 +124,9 @@ int main( int argc, char* argv[ ] )
 #endif
 
       cmd += " " + target_filename + " " + new_filename;
-      system( cmd.c_str( ) );
+
+      int rc = system( cmd.c_str( ) );
+      ( void )rc;
    }
    catch( exception& x )
    {
