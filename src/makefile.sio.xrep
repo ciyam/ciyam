@@ -254,11 +254,11 @@
     <libfcgi>false
     <libharu>`{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)true`,false`}
     <libicnv>`{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)false`,true`}
-    <mysqldb>false
+    <mysqldb>true
     <zlibuse>false
     <dynamic>false
     <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
-    <link_libs>base
+    <link_libs>`{`(`?`$linux`)dl `}base
     <dlink_libs>
     <cpp_files/>
      <filename>ciyam_server.cpp

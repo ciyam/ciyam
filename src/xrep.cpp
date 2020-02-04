@@ -3654,6 +3654,12 @@ int main( int argc, char* argv[ ] )
 
       xi.set_variable( "uuid", uuid( ).as_string( ) );
 
+#ifndef _WIN32
+      xi.set_variable( "linux", c_true );
+#else
+      xi.set_variable( "windows", c_true );
+#endif
+
       for( int i = 1; i < argc; i++ )
       {
          string arg( argv[ i ] );
@@ -3766,4 +3772,3 @@ int main( int argc, char* argv[ ] )
 
    return rc;
 }
-
