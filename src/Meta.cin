@@ -1,5 +1,5 @@
 ; Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
-; Copyright (c) 2012-2020 CIYAM Developers
+; Copyright (c) 2012-2021 CIYAM Developers
 ;
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -111,7 +111,7 @@ user_defined_type_add -id=1045 label str30 "format label"
 user_defined_type_add -id=1050 identifier str30 "format identifier"
 user_defined_type_add -id=1051 mid_identifier str50 "format identifier"
 user_defined_type_add -id=1055 long_identifier str100 "format identifier"
-user_defined_type_add -id=1060 year_created int "range 2005 2020"
+user_defined_type_add -id=1060 year_created int "range 2005 2055"
 class_add -id=100100 User Users
 field_add -id=100101 User User_Id str30 mand -x=hpassword_salt
 field_add -id=100102 User Active bool mand -def=1

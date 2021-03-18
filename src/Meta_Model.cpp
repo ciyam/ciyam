@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2020 CIYAM Developers
+// Copyright (c) 2012-2021 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -292,7 +292,7 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Next_View_Id_domain;
 domain_string_max_size< 5 > g_Version_domain;
-domain_int_range< 2005, 2020 > g_Year_Created_domain;
+domain_int_range< 2005, 2055 > g_Year_Created_domain;
 
 string g_order_field_name;
 string g_owner_field_name;
