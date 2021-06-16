@@ -86,6 +86,11 @@ const int c_max_email_text_line = 8192;
 
 const size_t c_cascade_progress_seconds = 10;
 
+const char* const c_lamport_key_ext = ".key";
+const char* const c_lamport_pub_ext = ".pub";
+const char* const c_lamport_sig_ext = ".sig";
+const char* const c_lamport_src_ext = ".src";
+
 const char* const c_protocol_bitcoin = "bitcoin";
 const char* const c_protocol_blockchain = "blockchain";
 
@@ -5023,6 +5028,177 @@ void crypto_verify( const string& pubkey,
 #else
    throw runtime_error( "SSL support is needed in order to use crypto_verify" );
 #endif
+}
+
+string crypto_lamport( const string& filename,
+ const string& mnenomics_or_hex_seed, bool is_sign, bool is_verify )
+{
+   string retval;
+
+   string seed( mnenomics_or_hex_seed );
+
+   if( seed.empty( ) )
+      seed = get_mnemonics_or_hex_seed( seed );
+
+   string::size_type pos = seed.find_first_of( " ," );
+
+   if( pos != string::npos )
+      seed = get_mnemonics_or_hex_seed( seed );
+
+   if( !is_sign && !is_verify )
+   {
+      string key_file( filename + c_lamport_key_ext );
+      string pub_file( filename + c_lamport_pub_ext );
+
+      ofstream outf_key( key_file.c_str( ) );
+      ofstream outf_pub( pub_file.c_str( ) );
+
+      for( size_t i = 0; i < 256; i++ )
+      {
+         sha256 hash_a( to_comparable_string( i, false, 3 ) + "A" + seed );
+         sha256 hash_b( to_comparable_string( i, false, 3 ) + "B" + seed );
+
+         outf_key << hash_a.get_digest_as_string( ) << ' ' << hash_b.get_digest_as_string( ) << '\n';
+
+         unsigned char buf_a[ c_sha256_digest_size ];
+         hash_a.copy_digest_to_buffer( buf_a );
+
+         unsigned char buf_b[ c_sha256_digest_size ];
+         hash_b.copy_digest_to_buffer( buf_b );
+
+         hash_a.update( buf_a, c_sha256_digest_size );
+         hash_b.update( buf_b, c_sha256_digest_size );
+
+         outf_pub << hash_a.get_digest_as_string( ) << ' ' << hash_b.get_digest_as_string( ) << '\n';
+      }
+   }
+   else if( is_sign )
+   {
+      string key_file( filename + c_lamport_key_ext );
+      string sig_file( filename + c_lamport_sig_ext );
+      string src_file( filename + c_lamport_src_ext );
+
+      vector< string > key_pairs;
+      buffer_file_lines( key_file, key_pairs );
+
+      if( key_pairs.size( ) != 256 )
+         throw runtime_error( "unexpected key pairs != 256" );
+
+      sha256 hash;
+      hash.update( src_file, true );
+
+      ofstream outf( sig_file.c_str( ) );
+
+      string content_hash( hash.get_digest_as_string( ) );
+
+      size_t offset = 0;
+
+      for( size_t i = 0; i < content_hash.size( ); i++ )
+      {
+         char ch( content_hash[ i ] );
+         unsigned char nibble( hex_nibble( ch ) );
+
+         unsigned char bit = 0x01;
+
+         for( size_t j = 0; j < 4; j++ )
+         {
+            string next_pair( key_pairs[ offset++ ] );
+
+            vector< string > hashes;
+            split( next_pair, hashes, ' ' );
+
+            if( hashes.size( ) != 2 )
+               throw runtime_error( "unexpected key pair '" + next_pair + "'" );
+
+            if( hashes[ 0 ].size( ) != 64 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
+               throw runtime_error( "unexpected key pair '" + next_pair + "'" );
+
+            if( nibble & bit )
+               outf << hashes[ 1 ];
+            else
+               outf << hashes[ 0 ];
+
+            outf << '\n';
+
+            bit <<= 1;
+         }
+      }
+
+      retval = content_hash;
+   }
+   else
+   {
+      string pub_file( filename + c_lamport_pub_ext );
+      string sig_file( filename + c_lamport_sig_ext );
+
+      vector< string > pub_pairs;
+      buffer_file_lines( pub_file, pub_pairs );
+
+      if( pub_pairs.size( ) != 256 )
+         throw runtime_error( "unexpected pub pairs != 256" );
+
+      vector< string > sig_lines;
+      buffer_file_lines( sig_file, sig_lines );
+
+      if( sig_lines.size( ) != 256 )
+         throw runtime_error( "unexpected sig lines != 256" );
+
+      bitset< 256 > bits;
+
+      for( size_t i = 0; i < pub_pairs.size( ); i++ )
+      {
+         string next_pair( pub_pairs[ i ] );
+
+         vector< string > hashes;
+         split( next_pair, hashes, ' ' );
+
+         if( hashes.size( ) != 2 )
+            throw runtime_error( "unexpected pub pair '" + next_pair + "'" );
+
+         if( hashes[ 0 ].size( ) != 64 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
+            throw runtime_error( "unexpected pub pair '" + next_pair + "'" );
+
+         string sig_hash( sig_lines[ i ] );
+
+         unsigned char buf[ c_sha256_digest_size ];
+
+         hex_decode( sig_hash, buf, c_sha256_digest_size );
+
+         sha256 hash( buf, c_sha256_digest_size );
+         string hash_str( hash.get_digest_as_string( ) );
+
+         if( hash_str != hashes[ 0 ] && hash_str != hashes[ 1 ] )
+            throw runtime_error( "invalid sig hash '" + sig_hash + "' for pub pair '" + next_pair + "'" );
+
+         if( hash_str == hashes[ 1 ] )
+            bits[ i ] = 1;
+      }
+
+      unsigned char mul = 1;
+      unsigned char nibble = 0;
+
+      // NOTE: Return the validated signature content hash.
+      for( size_t i = 0; i < 256; i++ )
+      {
+         if( bits[ i ] )
+            nibble += mul;
+
+         mul *= 2;
+
+         if( ( i + 1 ) % 4 == 0 )
+         {
+            if( nibble < 10 )
+               retval += '0' + nibble;
+            else
+               retval += 'a' + ( nibble - 10 );
+
+            mul = 1;
+            nibble = 0;
+         }
+      }
+   }
+
+   return retval;
 }
 
 string crypto_address_hash( const string& address )

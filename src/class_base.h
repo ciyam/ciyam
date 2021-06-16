@@ -1519,6 +1519,9 @@ void CIYAM_BASE_DECL_SPEC crypto_verify(
 void CIYAM_BASE_DECL_SPEC crypto_verify( const std::string& pubkey,
  const std::string& message, const std::string& signature, bool decode_hex_message = false );
 
+std::string CIYAM_BASE_DECL_SPEC crypto_lamport( const std::string& filename,
+ const std::string& mnenomics_or_hex_seed, bool is_sign = false, bool is_verify = false );
+
 std::string CIYAM_BASE_DECL_SPEC crypto_address_hash( const std::string& address );
 
 std::string CIYAM_BASE_DECL_SPEC crypto_p2sh_address( const std::string& ext_key, const std::string& hex_script );

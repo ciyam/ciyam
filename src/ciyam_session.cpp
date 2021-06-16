@@ -2093,6 +2093,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          crypto_verify( pubkey, message, signature, hex_decode );
       }
+      else if( command == c_cmd_ciyam_session_crypto_lamport )
+      {
+         bool is_sign( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_sign ) );
+         bool is_verify( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify ) );
+         string filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_filename ) );
+         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
+
+         response = crypto_lamport( filename, mnenomics_or_hex_seed, is_sign, is_verify );
+      }
       else if( command == c_cmd_ciyam_session_crypto_pub_key )
       {
          string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_privkey ) );
