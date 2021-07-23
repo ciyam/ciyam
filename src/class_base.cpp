@@ -3400,6 +3400,45 @@ string encode_hex( const string& s )
    return hex_encode( s );
 }
 
+string decode_if_base64( const string& s )
+{
+   string retval( s );
+
+   bool is_hex = false;
+
+   if( retval[ 0 ] == '*' )
+   {
+      is_hex = true;
+      retval.erase( 0, 1 );
+   }
+
+   if( base64::valid_characters( retval ) )
+   {
+      retval = base64::decode( retval );
+
+      if( is_hex )
+         retval = encode_hex( retval );
+   }
+
+   return retval;
+}
+
+string encode_to_base64( const string& s )
+{
+   string prefix;
+   string str( s );
+
+   bool is_hex = are_hex_nibbles( str.c_str( ) );
+
+   if( is_hex )
+   {
+      prefix = "*";
+      str = decode_hex( str );
+   }
+
+   return prefix + base64::encode( str );
+}
+
 string check_with_regex( const string& r, const string& s, bool* p_rc )
 {
    string re( r );
@@ -4315,9 +4354,13 @@ void send_email_message(
    account.username = get_smtp_username( );
    account.password = get_smtp_password( );
 
-   string suffix( get_smtp_suffix( ) );
-   if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
-      account.username += "@" + suffix;
+   if( account.username.find( '@' ) == string::npos )
+   {
+      string suffix_or_domain( get_smtp_suffix_or_domain( ) );
+
+      if( !suffix_or_domain.empty( ) )
+         account.username += "@" + suffix_or_domain;
+   }
 
    vector< string > recipients;
 
@@ -4343,9 +4386,13 @@ void send_email_message(
    account.username = get_smtp_username( );
    account.password = get_smtp_password( );
 
-   string suffix( get_smtp_suffix( ) );
-   if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
-      account.username += "@" + suffix;
+   if( account.username.find( '@' ) == string::npos )
+   {
+      string suffix_or_domain( get_smtp_suffix_or_domain( ) );
+
+      if( !suffix_or_domain.empty( ) )
+         account.username += "@" + suffix_or_domain;
+   }
 
    send_email_message( account, recipients, subject, message,
     html_source, p_extra_headers, p_file_names, p_tz_name, p_image_names, p_image_path_prefix );
@@ -4627,9 +4674,13 @@ void fetch_email_messages( const string& file_name_prefix, bool skip_scripts )
       account.username = get_pop3_username( );
       account.password = get_pop3_password( );
 
-      string suffix( get_pop3_suffix( ) );
-      if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
-         account.username += "@" + suffix;
+      if( account.username.find( '@' ) == string::npos )
+      {
+         string suffix_or_domain( get_pop3_suffix_or_domain( ) );
+
+         if( !suffix_or_domain.empty( ) )
+            account.username += "@" + suffix_or_domain;
+      }
    }
 
    fetch_email_messages( account, &file_name_prefix, 0, skip_scripts );
@@ -4646,9 +4697,13 @@ void fetch_email_messages( vector< pair< bool, string > >& messages, bool skip_s
       account.username = get_pop3_username( );
       account.password = get_pop3_password( );
 
-      string suffix( get_pop3_suffix( ) );
-      if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
-         account.username += "@" + suffix;
+      if( account.username.find( '@' ) == string::npos )
+      {
+         string suffix_or_domain( get_pop3_suffix_or_domain( ) );
+
+         if( !suffix_or_domain.empty( ) )
+            account.username += "@" + suffix_or_domain;
+      }
    }
 
    fetch_email_messages( account, 0, &messages, skip_scripts );

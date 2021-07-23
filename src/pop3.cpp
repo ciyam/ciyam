@@ -401,6 +401,9 @@ void pop3::login( const string& user, const string& password )
       string response;
       ip_address address( p_impl->host.c_str( ), p_impl->port );
 
+      if( p_impl->p_progress )
+         p_impl->p_progress->output_progress( "host = " + p_impl->host + ", port = " + to_string( p_impl->port ) );
+
       if( p_impl->socket.connect( address ) )
       {
 #ifdef USE_NO_DELAY

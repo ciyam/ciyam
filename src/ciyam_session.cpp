@@ -5630,7 +5630,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_smtpinfo )
-         response = get_smtp_username( ) + "@" + get_smtp_suffix( );
+      {
+         response = get_smtp_username( );
+
+         if( response.find( '@' ) == string::npos )
+         {
+            string suffix_or_domain( get_smtp_suffix_or_domain( ) );
+
+            if( !suffix_or_domain.empty( ) )
+               response += "@" + suffix_or_domain;
+         }
+      }
       else if( command == c_cmd_ciyam_session_starttls )
       {
 #ifdef SSL_SUPPORT

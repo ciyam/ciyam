@@ -1268,6 +1268,9 @@ std::string CIYAM_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string
 std::string CIYAM_BASE_DECL_SPEC decode_hex( const std::string& s );
 std::string CIYAM_BASE_DECL_SPEC encode_hex( const std::string& s );
 
+std::string CIYAM_BASE_DECL_SPEC decode_if_base64( const std::string& s );
+std::string CIYAM_BASE_DECL_SPEC encode_to_base64( const std::string& x );
+
 std::string CIYAM_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC hash_sha1( const std::string& s );

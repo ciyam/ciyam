@@ -4571,6 +4571,16 @@ string get_pop3_security( )
    return g_pop3_security;
 }
 
+string get_pop3_suffix_or_domain( )
+{
+   string retval( get_pop3_suffix( ) );
+
+   if( retval.empty( ) )
+      retval = get_domain( );
+
+   return retval;
+}
+
 string get_smtp_server( )
 {
    return g_smtp_server;
@@ -4609,6 +4619,16 @@ int get_smtp_max_send_attempts( )
 int64_t get_smtp_max_attached_data( )
 {
    return g_smtp_max_attached_data;
+}
+
+string get_smtp_suffix_or_domain( )
+{
+   string retval( get_smtp_suffix( ) );
+
+   if( retval.empty( ) )
+      retval = get_domain( );
+
+   return retval;
 }
 
 string list_externals( )

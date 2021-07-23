@@ -184,6 +184,8 @@ std::string CIYAM_BASE_DECL_SPEC get_pop3_username( );
 std::string CIYAM_BASE_DECL_SPEC get_pop3_password( );
 std::string CIYAM_BASE_DECL_SPEC get_pop3_security( );
 
+std::string CIYAM_BASE_DECL_SPEC get_pop3_suffix_or_domain( );
+
 std::string CIYAM_BASE_DECL_SPEC get_smtp_server( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_sender( );
 std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix( );
@@ -193,6 +195,8 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
 
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
+
+std::string CIYAM_BASE_DECL_SPEC get_smtp_suffix_or_domain( );
 
 struct external_client
 {
