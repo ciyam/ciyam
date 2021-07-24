@@ -1454,12 +1454,16 @@ bool output_view_form( ostream& os, const string& act,
 
       string td_type( "td" );
 
+      bool is_visible = true;
+
       // NOTE: Hide rows that don't belong to the "active" tab (this only applies when editing)
       // as well as the "security level" field if the user has only the minimum security level.
       if( is_in_edit && ( ( skip_tab_num == source.field_tab_ids[ i ] )
        || ( extra_data.count( c_field_extra_security_level ) && hide_slevel )
        || ( source.field_tab_ids[ i ] && source.field_tab_ids[ i ] != vtab_num ) ) )
       {
+         is_visible = false;
+
          if( ++num_displayed % 2 == 1 )
             os << "<tr class=\"invisible\">\n";
          else
@@ -1930,9 +1934,19 @@ bool output_view_form( ostream& os, const string& act,
                   os << "</tr>\n";
 
                   if( ++num_displayed % 2 == 1 )
-                     os << "<tr class=\"list\">\n";
+                  {
+                     if( is_visible )
+                        os << "<tr class=\"list\">\n";
+                     else
+                        os << "<tr class=\"invisible\">\n";
+                  }
                   else
-                     os << "<tr class=\"list odd_data\">\n";
+                  {
+                     if( is_visible )
+                        os << "<tr class=\"list odd_data\">\n";
+                     else
+                        os << "<tr class=\"odd_invisible\">\n";
+                  }
 
                   os << "   <td class=\"list\">";
                   os << GDS( c_display_verify_password ) << "</td>\n";
