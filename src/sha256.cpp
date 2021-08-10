@@ -300,7 +300,7 @@ void sha256::update( const unsigned char* p_data, unsigned int length )
    }
 }
 
-void sha256::copy_digest_to_buffer( unsigned char* p_buffer )
+void sha256::copy_digest_to_buffer( unsigned char* p_buffer, unsigned int length )
 {
    if( !p_impl->final )
    {
@@ -308,7 +308,8 @@ void sha256::copy_digest_to_buffer( unsigned char* p_buffer )
       sha256_final( &p_impl->context, p_impl->digest );
    }
 
-   memcpy( p_buffer, p_impl->digest, c_sha256_digest_size );
+   // NOTE: Allows for copying just a number of the leading digest characters if desired.
+   memcpy( p_buffer, p_impl->digest, min( length, ( unsigned int )c_sha256_digest_size ) );
 }
 
 void sha256::get_digest_as_string( string& s )

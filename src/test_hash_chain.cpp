@@ -21,8 +21,6 @@
 
 using namespace std;
 
-const int c_buffer_size = 32;
-
 const int c_test_rounds = 100;
 
 const char* const c_test_hash_chain_internal = "~test_hash_chain_internal";
@@ -32,9 +30,9 @@ const char* const c_test_hash_chain_password = "password";
 
 int main( )
 {
-   unsigned char buffer[ c_buffer_size ];
+   unsigned char buffer[ c_sha256_digest_size ];
 
-   memset( buffer, 0, c_buffer_size );
+   memset( buffer, 0, c_sha256_digest_size );
 
    try
    {
@@ -48,7 +46,7 @@ int main( )
       seed_hash.copy_digest_to_buffer( buffer );
 
       sha256 hash( c_test_hash_chain_password );
-      hash.update( buffer, c_buffer_size );
+      hash.update( buffer, c_sha256_digest_size );
 
       string last, next;
       for( int i = 0; i < c_test_rounds; i++ )
@@ -127,6 +125,15 @@ int main( )
 
       cout << "\n10. check that the last hash matches what was manually calculated\n";
       cout << new_hash_value << '\n';
+
+      memset( buffer, 0, c_sha256_digest_size );
+
+      cout << "\n11. check that copying leading digest bytes works as expected\n";
+      for( unsigned int i = 0; i <= c_sha256_digest_size + 1; i++ )
+      {
+         hash.copy_digest_to_buffer( buffer, i );
+         cout << hex_encode( buffer, c_sha256_digest_size ) << '\n';
+      }
 
       file_remove( c_test_hash_chain_internal );
       file_remove( c_test_hash_chain_external );

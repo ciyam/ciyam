@@ -237,12 +237,13 @@ void sha512::update( const unsigned char* p_data, unsigned int length )
    }
 }
 
-void sha512::copy_digest_to_buffer( unsigned char* p_buffer )
+void sha512::copy_digest_to_buffer( unsigned char* p_buffer, unsigned int length )
 {
    if( !is_final )
       finalise( );
 
-   memcpy( p_buffer, m_digest, c_sha512_digest_size );
+   // NOTE: Allows for copying just a number of the leading digest characters if desired.
+   memcpy( p_buffer, m_digest, min( length, ( unsigned int )c_sha512_digest_size ) );
 }
 
 void sha512::get_digest_as_string( string& s )

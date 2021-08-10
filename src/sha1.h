@@ -26,7 +26,7 @@ class sha1
    void update( const std::string& str );
    void update( const unsigned char* p_data, unsigned int length );
 
-   void copy_digest_to_buffer( unsigned char* p_buffer );
+   void copy_digest_to_buffer( unsigned char* p_buffer, unsigned int length = c_sha1_digest_size );
 
    void get_digest_as_string( std::string& s );
    std::string get_digest_as_string( char separator = '\0' );
