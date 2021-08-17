@@ -233,6 +233,10 @@ template< typename T > void storable_node_manager< T >::rollback( )
    }
 }
 
+#  ifdef STORABLE_BTREE_USE_MAGIC
+const int32_t c_magic = 1234567890;
+#  endif
+
 // NOTE: This approach is necessary to force template instanciation to occur (at least with BCB).
 template< typename T, typename L > class storable_btree_base;
 template< typename T, typename L > int64_t size_of( const storable_btree_base< T, L >& bt );
@@ -282,15 +286,31 @@ template< typename T, typename L = std::less< T > > class storable_btree_base
    }
 };
 
-template< typename T, typename L > int64_t size_of( const storable_btree_base< T, L >& bt )
+template< typename T, typename L > int64_t size_of( const storable_btree_base< T, L >& s )
 {
    size_t total = ( sizeof( uint8_t ) * 2 ) + sizeof( typename storable_btree_base< T, L >::state_t );
+
+#  ifdef STORABLE_BTREE_USE_MAGIC
+   if( s.o.is_encrypted( ) )
+      total += sizeof( int32_t );
+#  endif
 
    return total;
 }
 
 template< typename T, typename L > read_stream& operator >>( read_stream& rs, storable_btree_base< T, L >& s )
 {
+#  ifdef STORABLE_BTREE_USE_MAGIC
+   if( s.o.is_encrypted( ) )
+   {
+      int32_t val;
+      rs >> val;
+
+      if( val != c_magic )
+         throw std::runtime_error( "invalid password" );
+   }
+#  endif
+
    uint8_t ver, items_per_node;
 
    rs >> ver >> items_per_node;
@@ -314,6 +334,11 @@ template< typename T, typename L > read_stream& operator >>( read_stream& rs, st
 template< typename T, typename L >
  write_stream& operator <<( write_stream& ws, const storable_btree_base< T, L >& s )
 {
+#  ifdef STORABLE_BTREE_USE_MAGIC
+   if( s.o.is_encrypted( ) )
+      ws << c_magic;
+#  endif
+
    uint8_t ver = storable_btree_base< T, L >::c_version;
    uint8_t items_per_node = s.get_node_manager( ).get_items_per_node( );
 

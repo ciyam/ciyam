@@ -24,6 +24,7 @@
 
 #define BTREE_IMPL
 #define CIYAM_BASE_IMPL
+#define STORABLE_BTREE_USE_MAGIC
 
 #include "ods_file_system.h"
 

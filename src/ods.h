@@ -590,8 +590,9 @@ class ODS_DECL_SPEC ods
 
    ods( const ods& o );
 
-   ods( const char* name, open_mode o_mode,
-    write_mode w_mode = e_write_mode_shared, bool using_tranlog = false, bool* p_not_found = 0 );
+   ods( const char* p_name,
+    open_mode o_mode, write_mode w_mode = e_write_mode_shared,
+    bool using_tranlog = false, bool* p_not_found = 0, const char* p_password = 0 );
 
    virtual ~ods( );
 
@@ -599,6 +600,8 @@ class ODS_DECL_SPEC ods
 
    bool is_new( ) const;
    bool is_corrupt( ) const;
+
+   bool is_encrypted( ) const;
 
    bool is_bulk_locked( ) const;
 
@@ -819,6 +822,8 @@ class ODS_DECL_SPEC ods
 
    trans_data_buffer trans_read_buffer;
    trans_data_buffer trans_write_buffer;
+   trans_data_buffer trans_read_key_buffer;
+   trans_data_buffer trans_write_key_buffer;
 
    mutable bool permit_copy;
 

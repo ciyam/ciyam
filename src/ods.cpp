@@ -69,10 +69,12 @@
 #include "ods.h"
 #include "cache.h"
 #include "macros.h"
+#include "sha256.h"
 #include "pointers.h"
 #include "progress.h"
 #include "utilities.h"
 #include "fs_iterator.h"
+#include "crypt_stream.h"
 #include "read_write_stream.h"
 
 //#define ODS_DEBUG
@@ -186,7 +188,10 @@ const int16_t c_minor_ver = 0;
 
 const int16_t c_version = ( c_major_ver << 8 ) | c_minor_ver;
 
-const int16_t c_version_major_mask = 0xff00;
+const int16_t c_version_mask = 0x7fff;
+const int16_t c_encrypted_flag = 0x8000;
+
+const int16_t c_version_major_mask = 0x7f00;
 const int16_t c_version_minor_mask = 0x00ff;
 
 const int64_t c_bit_1 = UINT64_C( 1 );
@@ -248,7 +253,7 @@ struct log_info
    {
       is.read( ( char* )&version, sizeof( version ) );
 
-      if( version != c_version )
+      if( ( version & c_version_mask ) != c_version )
          THROW_ODS_ERROR( "incompatible log_info version found" );
 
       is.read( ( char* )&sequence, sizeof( sequence ) );
@@ -576,6 +581,29 @@ struct log_entry_item
    int64_t data_size;
    int64_t index_entry_id;
 };
+
+void init_key_buffer( char* p_key_buf, size_t buf_len, int64_t num, const string& pwd_hash )
+{
+   stringstream ss( string( buf_len, '\0' ) );
+
+   // NOTE: Create a unique key pad for every buffer number.
+   sha256 hash( pwd_hash + to_string( num ) );
+
+   crypt_stream( ss, hash.get_digest_as_string( ) );
+
+   string key_pad( ss.str( ) );
+
+   for( size_t i = 0; i < buf_len; i++ )
+      *( p_key_buf + i ) = key_pad[ i ];
+
+   clear_key( key_pad );
+}
+
+void crypt_data_buffer( char* p_buf, const char* p_key_buf, size_t buf_len )
+{
+   for( size_t i = 0; i < buf_len; i++ )
+      *( p_buf + i ) ^= *( p_key_buf + i );
+}
 
 }
 
@@ -1983,6 +2011,7 @@ struct ods::impl
     :
     is_new( false ),
     is_corrupt( false ),
+    is_encrypted( false ),
     is_exclusive( false ),
     is_read_only( false ),
     is_restoring( false ),
@@ -1998,6 +2027,8 @@ struct ods::impl
 
    string name;
 
+   string pwd_hash;
+
    string data_file_name;
    string index_file_name;
    string header_file_name;
@@ -2009,6 +2040,7 @@ struct ods::impl
 
    bool is_new;
    bool is_corrupt;
+   bool is_encrypted;
    bool is_exclusive;
    bool is_read_only;
    bool is_restoring;
@@ -2031,6 +2063,8 @@ struct ods::impl
 
    ods_data_entry_buffer data_read_buffer;
    ods_data_entry_buffer data_write_buffer;
+   ods_data_entry_buffer data_read_key_buffer;
+   ods_data_entry_buffer data_write_key_buffer;
    ref_count_ptr< ods_data_cache_buffer > rp_ods_data_cache_buffer;
 
    ods_index_entry_buffer index_item_buffer;
@@ -2284,7 +2318,9 @@ ods::ods( const ods& o )
    permit_copy = true;
 }
 
-ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tranlog, bool* p_not_found )
+ods::ods( const char* p_name,
+ open_mode o_mode, write_mode w_mode,
+ bool using_tranlog, bool* p_not_found, const char* p_password )
  :
  okay( false ),
  is_in_read( false ),
@@ -2313,12 +2349,18 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    auto_ptr< impl > ap_impl( new impl );
    p_impl = ap_impl.get( );
 
-   p_impl->name = string( name );
+   p_impl->name = string( p_name );
 
-   p_impl->data_file_name = string( name ) + c_data_file_name_ext;
-   p_impl->index_file_name = string( name ) + c_index_file_name_ext;
-   p_impl->header_file_name = string( name ) + c_header_file_name_ext;
-   p_impl->tranlog_file_name = string( name ) + c_tranlog_file_name_ext;
+   p_impl->data_file_name = p_impl->name + c_data_file_name_ext;
+   p_impl->index_file_name = p_impl->name + c_index_file_name_ext;
+   p_impl->header_file_name = p_impl->name + c_header_file_name_ext;
+   p_impl->tranlog_file_name = p_impl->name + c_tranlog_file_name_ext;
+
+   if( p_password )
+   {
+      p_impl->is_encrypted = true;
+      p_impl->pwd_hash = sha256( p_password ).get_digest_as_string( );
+   }
 
 #ifdef __GNUG__
    p_impl->rp_lock = new flock;
@@ -2400,6 +2442,9 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
 
    log_info tranlog_info;
 
+   if( p_impl->is_encrypted )
+      tranlog_info.version |= c_encrypted_flag;
+
    if( p_impl->is_new )
    {
       if( file_exists( p_impl->tranlog_file_name ) )
@@ -2436,6 +2481,18 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    {
       p_impl->read_header_file_info( );
 
+      // NOTE: Ensure encryption password is only provided when required.
+      if( p_impl->rp_header_info->version & c_encrypted_flag )
+      {
+         if( !p_impl->is_read_only && !p_impl->is_encrypted )
+            THROW_ODS_ERROR( "encrypted database requires password to unlock" );
+      }
+      else
+      {
+         if( p_impl->is_encrypted )
+            THROW_ODS_ERROR( "password not applicable for unencrypted database" );
+      }
+
       // NOTE: File corruption can be determined if we have an exclusive write lock but
       // then find that one or more writers/transactions appear to be currently active.
       if( w_mode == e_write_mode_exclusive
@@ -2468,6 +2525,9 @@ ods::ods( const char* name, open_mode o_mode, write_mode w_mode, bool using_tran
    else
    {
       p_impl->rp_header_info->version = c_version;
+
+      if( p_impl->is_encrypted )
+         p_impl->rp_header_info->version |= c_encrypted_flag;
 
       if( using_tranlog )
       {
@@ -2568,6 +2628,11 @@ bool ods::is_new( ) const
 bool ods::is_corrupt( ) const
 {
    return p_impl->is_corrupt;
+}
+
+bool ods::is_encrypted( ) const
+{
+   return p_impl->is_encrypted;
 }
 
 bool ods::is_bulk_locked( ) const
@@ -3568,12 +3633,16 @@ void ods::dump_file_info( ostream& os )
    if( !okay )
       THROW_ODS_ERROR( "database instance in bad state" );
 
-   string corrupt;
+   string extra;
+
+   if( p_impl->rp_header_info->version & c_encrypted_flag )
+      extra += " (encrypted)";
+
    if( *p_impl->rp_bulk_level
     && ( p_impl->rp_header_info->num_trans || p_impl->rp_header_info->num_writers ) )
-      corrupt = " *** possibly corrupted file detected ***";
+      extra += " *** possibly corrupted file detected ***";
 
-   os << "Version: " << format_version( p_impl->rp_header_info->version ) << corrupt
+   os << "Version: " << format_version( p_impl->rp_header_info->version ) << extra
     << "\nNum Logs = " << p_impl->rp_header_info->num_logs
     << "\nNum Trans = " << p_impl->rp_header_info->num_trans
     << "\nNum Writers = " << p_impl->rp_header_info->num_writers
@@ -4136,7 +4205,7 @@ void ods::open_store( )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   if( p_impl->rp_header_info->version != c_version )
+   if( ( p_impl->rp_header_info->version & c_version_mask ) != c_version )
       THROW_ODS_ERROR( "incompatible database header version found" );
 
    if( p_impl->rp_header_info->data_transform_id != last_data_transformation )
@@ -4464,7 +4533,13 @@ void ods::transaction_commit( )
                      }
 
                      if( p_impl->using_tranlog )
+                     {
+                        if( p_impl->is_encrypted )
+                           crypt_data_buffer( p_impl->data_write_buffer.data,
+                            p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+
                         p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
+                     }
                   }
 
                   if( p_impl->using_tranlog )
@@ -4716,6 +4791,10 @@ void ods::data_and_index_write( bool flush )
 {
    if( data_write_buffer_num != -1 )
    {
+      if( p_impl->is_encrypted )
+         crypt_data_buffer( p_impl->data_write_buffer.data,
+          p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+
       p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
 
       p_impl->rp_ods_data_cache_buffer->unlock_region(
@@ -4723,6 +4802,9 @@ void ods::data_and_index_write( bool flush )
 
       data_write_buffer_num = -1;
       data_write_buffer_offs = 0;
+
+      if( p_impl->is_encrypted )
+         memset( p_impl->data_write_key_buffer.data, '\0', c_data_bytes_per_item );
    }
 
    if( flush )
@@ -5392,6 +5474,8 @@ ods& operator >>( ods& o, storable_base& s )
 
    o.data_read_buffer_num = -1;
 
+   memset( o.p_impl->data_read_key_buffer.data, '\0', c_data_bytes_per_item );
+
    bool can_read = false;
    bool has_locked = false;
 
@@ -5812,6 +5896,10 @@ ods& operator <<( ods& o, storable_base& s )
       {
          if( o.data_write_buffer_num != -1 )
          {
+            if( o.p_impl->is_encrypted )
+               crypt_data_buffer( o.p_impl->data_write_buffer.data,
+                o.p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+
             o.p_impl->rp_ods_data_cache_buffer->put( o.p_impl->data_write_buffer, o.data_write_buffer_num );
 
             o.p_impl->rp_ods_data_cache_buffer->unlock_region(
@@ -5819,6 +5907,9 @@ ods& operator <<( ods& o, storable_base& s )
 
             o.data_write_buffer_num = -1;
             o.data_write_buffer_offs = 0;
+
+            if( o.p_impl->is_encrypted )
+               memset( o.p_impl->data_write_key_buffer.data, '\0', c_data_bytes_per_item );
 
             if( o.p_impl->using_tranlog )
                o.append_log_entry_item( s.id.num, index_entry, flags, 0, o.p_impl->tranlog_offset );
@@ -5915,7 +6006,18 @@ void ods::set_read_data_pos( int64_t pos, bool force_get )
    data_read_buffer_offs = pos % c_data_bytes_per_item;
 
    if( force_get || data_read_buffer_num != current_data_buffer_num )
+   {
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
+
+      if( p_impl->is_encrypted )
+      {
+         init_key_buffer( p_impl->data_read_key_buffer.data,
+          c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+
+         crypt_data_buffer( p_impl->data_read_buffer.data,
+          p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
+      }
+   }
 }
 
 void ods::set_write_data_pos( int64_t pos )
@@ -5935,6 +6037,15 @@ void ods::set_write_data_pos( int64_t pos )
    {
       if( current_data_buffer_num != -1 )
       {
+         if( p_impl->is_encrypted )
+         {
+            init_key_buffer( p_impl->data_write_key_buffer.data,
+             c_data_bytes_per_item, current_data_buffer_num, p_impl->pwd_hash );
+
+            crypt_data_buffer( p_impl->data_write_buffer.data,
+             p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+         }
+
          p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, current_data_buffer_num );
 
          p_impl->rp_ods_data_cache_buffer->unlock_region(
@@ -5956,6 +6067,15 @@ void ods::set_write_data_pos( int64_t pos )
          THROW_ODS_ERROR( "unable to lock data region for set_write_data_pos" );
 
       p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
+
+      if( p_impl->is_encrypted )
+      {
+         init_key_buffer( p_impl->data_write_key_buffer.data,
+          c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash );
+
+         crypt_data_buffer( p_impl->data_write_buffer.data,
+          p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+      }
    }
 }
 
@@ -5974,7 +6094,18 @@ void ods::adjust_read_data_pos( int64_t adjust )
    data_read_buffer_offs = pos % c_data_bytes_per_item;
 
    if( data_read_buffer_num != current_data_buffer_num )
+   {
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
+
+      if( p_impl->is_encrypted )
+      {
+         init_key_buffer( p_impl->data_read_key_buffer.data,
+          c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+
+         crypt_data_buffer( p_impl->data_read_buffer.data,
+          p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
+      }
+   }
 }
 
 void ods::read_data_bytes( char* p_dest, int64_t len )
@@ -5992,6 +6123,15 @@ void ods::read_data_bytes( char* p_dest, int64_t len )
       {
          data_read_buffer_offs = 0;
          p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( ++data_read_buffer_num );
+
+         if( p_impl->is_encrypted )
+         {
+            init_key_buffer( p_impl->data_read_key_buffer.data,
+             c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
+
+            crypt_data_buffer( p_impl->data_read_buffer.data,
+             p_impl->data_read_key_buffer.data, c_data_bytes_per_item );
+         }
 
          if( p_dest )
             p_dest += chunk;
@@ -6018,6 +6158,10 @@ void ods::write_data_bytes( const char* p_src, int64_t len )
 
       if( len )
       {
+         if( p_impl->is_encrypted )
+            crypt_data_buffer( p_impl->data_write_buffer.data,
+             p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+
          p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
 
          p_impl->rp_ods_data_cache_buffer->unlock_region(
@@ -6041,6 +6185,15 @@ void ods::write_data_bytes( const char* p_src, int64_t len )
             THROW_ODS_ERROR( "unable to lock data region for write_data_bytes" );
 
          p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
+
+         if( p_impl->is_encrypted )
+         {
+            init_key_buffer( p_impl->data_write_key_buffer.data,
+             c_data_bytes_per_item, data_write_buffer_num, p_impl->pwd_hash );
+
+            crypt_data_buffer( p_impl->data_write_buffer.data,
+             p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
+         }
 
          if( p_src )
             p_src += chunk;

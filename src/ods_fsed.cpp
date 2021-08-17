@@ -17,6 +17,7 @@
 #endif
 
 #include "ods.h"
+#include "console.h"
 #include "progress.h"
 #include "utilities.h"
 #include "fs_iterator.h"
@@ -35,6 +36,7 @@ const char* const c_opt_exclusive = "-x";
 const char* const c_app_title = "ods_fsed";
 const char* const c_app_version = "0.1";
 
+const char* const c_cmd_password = "p";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 
@@ -42,6 +44,7 @@ int64_t g_oid = 0;
 
 string g_name( c_app_title );
 
+bool g_encrypted = false;
 bool g_shared_write = true;
 bool g_use_transaction_log = false;
 
@@ -197,7 +200,9 @@ class ods_fsed_startup_functor : public command_functor
 
    void operator ( )( const string& command, const parameter_info& /*parameters*/ )
    {
-      if( command == c_cmd_exclusive )
+      if( command == c_cmd_password )
+         g_encrypted = true;
+      else if( command == c_cmd_exclusive )
          g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
@@ -235,8 +240,20 @@ class ods_fsed_command_handler : public console_command_handler
 
 void ods_fsed_command_handler::init( )
 {
+   string password;
+   bool not_found = false;
+
+   if( g_encrypted )
+      password = get_password( "Password: " );
+
    ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
-    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
+    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
+    g_use_transaction_log, &not_found, password.empty( ) ? 0 : password.c_str( ) ) );
+
+   clear_key( password );
+
+   if( not_found )
+      throw runtime_error( "unexpected database not found" );
 
    ods::bulk_write bulk_write( *ap_ods );
 
@@ -535,6 +552,9 @@ int main( int argc, char* argv[ ] )
       // NOTE: Use block scope for startup command processor object...
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
+
+         cmd_handler.add_command( c_cmd_password, 1,
+          "", "use encryption password", new ods_fsed_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_exclusive, 1,
           "", "use exclusive write access", new ods_fsed_startup_functor( cmd_handler ) );

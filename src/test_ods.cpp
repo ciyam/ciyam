@@ -31,6 +31,7 @@
 
 #include "ods.h"
 #include "format.h"
+#include "console.h"
 #include "pointers.h"
 #include "utilities.h"
 #include "oid_pointer.h"
@@ -44,15 +45,20 @@ const char* const c_root_node_description = "root";
 
 #include "test_ods.cmh"
 
+const int32_t c_magic = 1234567890;
+
 const int c_max_path_size = 256;
 const int c_max_trans_depth = 100;
 
 const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
 
+const char* const c_cmd_password = "p";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 
+bool g_encrypted = false;
+bool g_needs_magic = false;
 bool g_shared_write = true;
 bool g_use_transaction_log = false;
 
@@ -217,11 +223,16 @@ class outline_base : public storable_base
 int64_t size_of( const outline_base& o )
 {
    int size_holder = sizeof( size_t );
+
 #ifdef USE_SIZE_PADDING
    // KLUDGE: In order for regression test output to match under both
    // 32 and 64 bit environments dummy padding is added under 32 bit.
    size_holder += sizeof( size_t );
 #endif
+
+   if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
+      size_holder += sizeof( int32_t );
+
 #ifdef USE_CHAR_BUF
    return sizeof( int64_t ) + o.description.length( )
     + sizeof( oid ) + size_holder + ( o.children.size( ) * sizeof( oid ) );
@@ -237,6 +248,20 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
    o.description.fill( );
 #endif
    o.children.erase( o.children.begin( ), o.children.end( ) );
+
+   // NOTE: If encrypted then use a "magic number" to ensure
+   // that the correct password has been used (as ODS itself
+   // does not attempt to verify if the password is correct).
+   if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
+   {
+      int32_t val;
+      rs >> val;
+
+      if( val != c_magic )
+         throw runtime_error( "invalid password" );
+
+      g_needs_magic = false;
+   }
 
    rs >> o.description;
    rs >> o.o_file;
@@ -254,6 +279,9 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
 
 write_stream& operator <<( write_stream& ws, const outline_base& o )
 {
+   if( g_encrypted && ( g_needs_magic || o.get_id( ) == 0 ) )
+      ws << c_magic;
+
    ws << o.description;
    ws << o.o_file;
 
@@ -312,7 +340,9 @@ class test_ods_startup_functor : public command_functor
 
    void operator ( )( const string& command, const parameter_info& /*parameters*/ )
    {
-      if( command == c_cmd_exclusive )
+      if( command == c_cmd_password )
+         g_encrypted = true;
+      else if( command == c_cmd_exclusive )
          g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
@@ -362,8 +392,23 @@ class test_ods_command_handler : public console_command_handler
 
 void test_ods_command_handler::init_ods( const char* p_file_name )
 {
+   string password;
+   bool not_found = false;
+
+   if( g_encrypted )
+      password = get_password( "Password: " );
+
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
-    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ), g_use_transaction_log ) );
+    ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
+    g_use_transaction_log, &not_found, password.empty( ) ? 0 : password.c_str( ) ) );
+
+   clear_key( password );
+
+   if( g_encrypted )
+      g_needs_magic = true;
+
+   if( not_found )
+      throw runtime_error( "unexpected database not found" );
 }
 
 class test_ods_command_functor : public command_functor
@@ -410,6 +455,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_test_ods_list )
    {
       bool sorted( has_parm_val( parameters, c_cmd_test_ods_list_sorted ) );
+
       o >> node;
 
       set< string > folders;
@@ -874,6 +920,9 @@ int main( int argc, char* argv[ ] )
       {
          startup_command_processor processor( cmd_handler, application_title, 0, argc, argv );
 
+         cmd_handler.add_command( c_cmd_password, 1,
+          "", "use encryption password", new test_ods_startup_functor( cmd_handler ) );
+
          cmd_handler.add_command( c_cmd_exclusive, 1,
           "", "use exclusive write access", new test_ods_startup_functor( cmd_handler ) );
 
@@ -882,6 +931,7 @@ int main( int argc, char* argv[ ] )
 
          processor.process_commands( );
 
+         cmd_handler.remove_command( c_cmd_password );
          cmd_handler.remove_command( c_cmd_exclusive );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
       }
