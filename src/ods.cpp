@@ -4447,6 +4447,9 @@ void ods::transaction_commit( )
          trans_read_data_buffer_num = -1;
          trans_read_data_buffer_offs = 0;
          had_interim_trans_data_write = false;
+
+         if( p_impl->is_encrypted )
+            memset( trans_read_buffer.data, '\0', c_trans_bytes_per_item );
       }
 
       bool had_any_ops = false;
@@ -4615,6 +4618,9 @@ void ods::transaction_rollback( )
       trans_read_data_buffer_num = -1;
       trans_read_data_buffer_offs = 0;
       had_interim_trans_data_write = false;
+
+      if( p_impl->is_encrypted )
+         memset( trans_read_buffer.data, '\0', c_trans_bytes_per_item );
    }
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -4753,6 +4759,9 @@ void ods::transaction_completed( bool keep_buffered )
       trans_read_ops_buffer_num = -1;
       trans_read_data_buffer_num = -1;
       trans_read_data_buffer_offs = 0;
+
+      if( p_impl->is_encrypted )
+         memset( trans_read_buffer.data, '\0', c_trans_bytes_per_item );
    }
 }
 
@@ -5534,6 +5543,9 @@ ods& operator >>( ods& o, storable_base& s )
                o.trans_read_data_buffer_num = -1;
                o.trans_read_data_buffer_offs = 0;
                o.had_interim_trans_data_write = false;
+
+               if( o.p_impl->is_encrypted )
+                  memset( o.trans_read_buffer.data, '\0', c_trans_bytes_per_item );
             }
 
             if( index_entry.trans_flag == ods_index_entry::e_trans_none
@@ -5937,11 +5949,18 @@ ods& operator <<( ods& o, storable_base& s )
 
       if( o.p_impl->trans_level && o.trans_write_data_buffer_num != -1 )
       {
+         if( o.p_impl->is_encrypted )
+            crypt_data_buffer( o.trans_write_buffer.data,
+             o.trans_write_key_buffer.data, c_trans_bytes_per_item );
+
          o.p_impl->p_ods_trans_data_cache_buffer->put( o.trans_write_buffer, o.trans_write_data_buffer_num );
 
          o.trans_write_data_buffer_num = -1;
          o.trans_write_data_buffer_offs = 0;
          o.had_interim_trans_data_write = true;
+
+         if( o.p_impl->is_encrypted )
+            memset( o.trans_write_buffer.data, '0', c_trans_bytes_per_item );
       }
    } // end of file lock section...
 
@@ -6359,7 +6378,18 @@ void ods::set_read_trans_data_pos( int64_t pos )
 #endif
 
    if( trans_read_data_buffer_num != current_trans_buffer_num )
+   {
       trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_read_data_buffer_num );
+
+      if( p_impl->is_encrypted )
+      {
+         init_key_buffer( trans_read_key_buffer.data,
+          c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash );
+
+         crypt_data_buffer( trans_read_buffer.data,
+          trans_read_key_buffer.data, c_trans_bytes_per_item );
+      }
+   }
 }
 
 void ods::set_write_trans_data_pos( int64_t pos )
@@ -6380,12 +6410,28 @@ void ods::set_write_trans_data_pos( int64_t pos )
    if( trans_write_data_buffer_num != current_trans_buffer_num )
    {
       if( current_trans_buffer_num != -1 )
+      {
+         if( p_impl->is_encrypted )
+            crypt_data_buffer( trans_write_buffer.data,
+             trans_write_key_buffer.data, c_trans_bytes_per_item );
+
          p_impl->p_ods_trans_data_cache_buffer->put( trans_write_buffer, current_trans_buffer_num );
+      }
+
+      if( p_impl->is_encrypted )
+         init_key_buffer( trans_write_key_buffer.data,
+          c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash );
 
       if( pos % c_trans_bytes_per_item == 0 )
          memset( ( char* )&trans_write_buffer, '\0', sizeof( trans_data_buffer ) );
       else
+      {
          trans_write_buffer = p_impl->p_ods_trans_data_cache_buffer->get( trans_write_data_buffer_num );
+
+         if( p_impl->is_encrypted )
+            crypt_data_buffer( trans_write_buffer.data,
+             trans_write_key_buffer.data, c_trans_bytes_per_item );
+      }
    }
 }
 
@@ -6411,7 +6457,16 @@ void ods::read_trans_data_bytes( char* p_dest, int64_t len )
       if( len )
       {
          trans_read_data_buffer_offs = 0;
-         trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( ++( trans_read_data_buffer_num ) );
+         trans_read_buffer = p_impl->p_ods_trans_data_cache_buffer->get( ++trans_read_data_buffer_num );
+
+         if( p_impl->is_encrypted )
+         {
+            init_key_buffer( trans_read_key_buffer.data,
+             c_trans_bytes_per_item, trans_read_data_buffer_num, p_impl->pwd_hash );
+
+            crypt_data_buffer( trans_read_buffer.data,
+             trans_read_key_buffer.data, c_trans_bytes_per_item );
+         }
 
          if( p_dest )
             p_dest += chunk;
@@ -6446,9 +6501,18 @@ void ods::write_trans_data_bytes( const char* p_src, int64_t len )
       if( len )
       {
          trans_write_data_buffer_offs = 0;
+
+         if( p_impl->is_encrypted )
+            crypt_data_buffer( trans_write_buffer.data,
+             trans_write_key_buffer.data, c_trans_bytes_per_item );
+
          p_impl->p_ods_trans_data_cache_buffer->put( trans_write_buffer, trans_write_data_buffer_num++ );
 
          memset( &trans_write_buffer, '\0', sizeof( trans_data_buffer ) );
+
+         if( p_impl->is_encrypted )
+            init_key_buffer( trans_write_key_buffer.data,
+             c_trans_bytes_per_item, trans_write_data_buffer_num, p_impl->pwd_hash );
 
          if( p_src )
             p_src += chunk;
