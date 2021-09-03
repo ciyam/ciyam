@@ -774,13 +774,13 @@ class ODS_DECL_SPEC ods
    void read( unsigned char* p_buf, int64_t len );
    void write( const unsigned char* p_buf, int64_t len );
 
-   void set_read_data_pos( int64_t pos, bool force_get = false );
-   void set_write_data_pos( int64_t pos );
+   void set_read_data_pos( int64_t pos, bool force_get = false, bool skip_decrypt = false );
+   void set_write_data_pos( int64_t pos, bool skip_decrypt = false, bool skip_encrypt = false );
 
    void adjust_read_data_pos( int64_t adjust );
 
-   void read_data_bytes( char* p_dest, int64_t len );
-   void write_data_bytes( const char* p_src, int64_t len );
+   void read_data_bytes( char* p_dest, int64_t len, bool skip_decrypt = false );
+   void write_data_bytes( const char* p_src, int64_t len, bool skip_decrypt = false, bool skip_encrypt = false );
 
    int64_t data_read_buffer_num;
    int64_t data_read_buffer_offs;

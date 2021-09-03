@@ -949,6 +949,8 @@ int main( int argc, char* argv[ ] )
       }
       else if( !g_shared_write )
          cmd_handler.get_ods( ).repair_if_corrupt( );
+      else if( cmd_handler.get_ods( ).is_corrupt( ) )
+         throw runtime_error( "need to use exclusive write access to repair corrupt DB" );
 
       cmd_handler.get_node( ).set_id( 0 );
       cmd_handler.get_ods( ) >> cmd_handler.get_node( );
