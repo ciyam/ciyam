@@ -1614,11 +1614,9 @@ void ods_file_system::perform_match(
    auto_ptr< ods::bulk_read > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
-   {
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-      o >> bt;
-   }
+   o >> bt;
 
    btree_type::iterator match_iter;
    btree_type::item_type match_item;

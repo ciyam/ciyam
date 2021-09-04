@@ -754,7 +754,7 @@ class ODS_DECL_SPEC ods
    void lock_header_file( );
    void unlock_header_file( );
 
-   void data_and_index_write( bool flush = true );
+   void data_and_index_write( bool flush = true, bool skip_encrypt = false );
 
    int64_t log_append_offset( );
 

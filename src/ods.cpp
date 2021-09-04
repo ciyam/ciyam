@@ -3037,7 +3037,11 @@ void ods::rewind_transactions( const string& label_or_txid )
          fs.seekg( 0, ios::beg );
          tranlog_info.write( fs );
 
-         data_and_index_write( );
+         set_read_data_pos( -1 );
+         data_and_index_write( true, is_encrypted );
+
+         p_impl->rp_ods_data_cache_buffer->clear( );
+         p_impl->rp_ods_index_cache_buffer->clear( );
 
          // NOTE: If no write has occurred then act as though
          // one has in order to ensure that the "num_writers"
@@ -3053,9 +3057,6 @@ void ods::rewind_transactions( const string& label_or_txid )
          *p_impl->rp_has_changed = false;
       }
    }
-
-   if( is_encrypted )
-      set_write_data_pos( -1, true, true );
 
    fs.close( );
 }
@@ -4819,11 +4820,11 @@ void ods::unlock_header_file( )
    DEBUG_LOG( ">>>>>>>>>> released header file lock <<<<<<<<<<" );
 }
 
-void ods::data_and_index_write( bool flush )
+void ods::data_and_index_write( bool flush, bool skip_encrypt )
 {
    if( data_write_buffer_num != -1 )
    {
-      if( p_impl->is_encrypted )
+      if( !skip_encrypt && p_impl->is_encrypted )
          crypt_data_buffer( p_impl->data_write_buffer.data,
           p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
 
@@ -6052,8 +6053,6 @@ void ods::set_read_data_pos( int64_t pos, bool force_get, bool skip_decrypt )
    DEBUG_LOG( osstr.str( ) );
 #endif
 
-   int64_t current_data_buffer_num = data_read_buffer_num;
-
    if( pos == -1 )
    {
       data_read_buffer_num = -1;
@@ -6061,6 +6060,8 @@ void ods::set_read_data_pos( int64_t pos, bool force_get, bool skip_decrypt )
    }
    else
    {
+      int64_t current_data_buffer_num = data_read_buffer_num;
+
       data_read_buffer_num = pos / c_data_bytes_per_item;
       data_read_buffer_offs = pos % c_data_bytes_per_item;
 
@@ -6088,6 +6089,7 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
     << ", data_write_buffer_num = " << data_write_buffer_num;
    DEBUG_LOG( osstr.str( ) );
 #endif
+
    int64_t current_data_buffer_num( data_write_buffer_num );
 
    if( pos == -1 )
