@@ -3057,6 +3057,11 @@ void ods::rewind_transactions( const string& label_or_txid )
          *p_impl->rp_has_changed = false;
       }
    }
+   else
+   {
+      fs.close( );
+      THROW_ODS_ERROR( "cannot rewind with an empty transaction log" );
+   }
 
    fs.close( );
 }
@@ -3863,6 +3868,10 @@ void ods::dump_transaction_log( ostream& os,
 
          if( !next_offs )
             next_offs = tranlog_info.append_offs;
+
+         // NOTE: If dumping all then also include empty txs.
+         if( !p_entry_ranges && ( fs.tellg( ) == next_offs ) )
+            os << osstr.str( );
 
          while( fs.tellg( ) < next_offs )
          {
@@ -5238,6 +5247,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    bool had_any_entries = false;
    bool changed_free_list = false;
+   bool had_progress_output = false;
 
    bool is_encrypted = p_impl->is_encrypted;
 
@@ -5267,7 +5277,10 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
             int64_t entry_offset = fs.tellg( );
 
             if( entry_num && p_progress && ( entry_num % 1000 == 0 ) )
-               p_progress->output_progress( "processed " + to_string( entry_num ) + " log entries..." );
+            {
+               had_progress_output = true;
+               p_progress->output_progress( "." );
+            }
 
             ++entry_num;
 
@@ -5324,6 +5337,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
 
                   int64_t tran_id = tx_id;
+                  int64_t total_data_chunks = 0;
 
                   if( !commit && tranlog_item.has_old_tran_id( ) )
                      tran_id = tranlog_item.tx_oid;
@@ -5364,6 +5378,12 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
                               fs.read( buffer, chunk );
                               write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
+
+                              if( p_progress && ( ( ++total_data_chunks % 100 ) == 0 ) )
+                              {
+                                 had_progress_output = true;
+                                 p_progress->output_progress( "." );
+                              }
                            }
 
                            if( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size )
@@ -5450,7 +5470,10 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
          for( int64_t i = 0; i < total; i++ )
          {
             if( i && p_progress && ( i % 1000 == 0 ) )
-               p_progress->output_progress( "processed " + to_string( i ) + "/" + to_string( total ) + " entries..." );
+            {
+               had_progress_output = true;
+               p_progress->output_progress( "." );
+            }
 
             read_index_entry( index_entry, i );
 
@@ -5471,6 +5494,9 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
             }
          }
       }
+
+      if( p_progress && had_progress_output )
+         p_progress->output_progress( "\n(please wait while caches are now flushed)" );
 
       data_and_index_write( );
 

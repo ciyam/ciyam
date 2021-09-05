@@ -72,6 +72,8 @@ int main( int argc, char* argv[ ] )
             all_entries = first_arg;
       }
 
+      bool is_all = false;
+
       bool has_data = file_exists( string( argv[ name_arg ] ) + ".dat" );
       bool has_index = file_exists( string( argv[ name_arg ] ) + ".idx" );
       bool has_header = file_exists( string( argv[ name_arg ] ) + ".hdr" );
@@ -99,17 +101,22 @@ int main( int argc, char* argv[ ] )
       {
          split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
 
-         // NOTE: After the range pairs have been condensed reconstruct "all_entries" from the result.
-         all_entries.erase( );
-         for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
+         if( all_entries == "*" || all_entries == "all" )
+            is_all = true;
+         else
          {
-            if( !all_entries.empty( ) )
-               all_entries += ',';
+            // NOTE: After the range pairs have been condensed reconstruct "all_entries" from the result.
+            all_entries.erase( );
+            for( map< int64_t, int64_t >::iterator i = entry_items.begin( ); i != entry_items.end( ); ++i )
+            {
+               if( !all_entries.empty( ) )
+                  all_entries += ',';
 
-            if( i->first == i->second )
-               all_entries += to_string( i->first );
-            else
-               all_entries += to_string( i->first ) + '-' + to_string( i->second );
+               if( i->first == i->second )
+                  all_entries += to_string( i->first );
+               else
+                  all_entries += to_string( i->first ) + '-' + to_string( i->second );
+            }
          }
       }
 
@@ -146,7 +153,7 @@ int main( int argc, char* argv[ ] )
          if( !all_entries.empty( ) && show_tranlog_entries )
          {
             cout << "\n** Transaction Log Info for: " << all_entries << endl;
-            o.dump_transaction_log( cout, false, &all_entries, true, true );
+            o.dump_transaction_log( cout, false, is_all ? 0 : &all_entries, true, true );
          }
       }
 

@@ -12,7 +12,7 @@ Total Size of Data = 428
 Data Transformation Id = 16
 Index Transformation Id = 39
 
-** Entry Info for: 0-13
+** Entry Info for: all
 num: 0000000000000000          pos: 0000000000000000          len: 0000000000000034
 txn: 0000000000000011          txo: 0000000000000000               flags: lk=0 tx=0
 

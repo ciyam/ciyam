@@ -215,7 +215,13 @@ struct ods_fsed_progress : progress
 {
    void output_progress( const string& message )
    {
-      cout << message << endl;
+      if( message == "." )
+      {
+         cout << message;
+         cout.flush( );
+      }
+      else
+         cout << message << endl;
    }
 };
 
