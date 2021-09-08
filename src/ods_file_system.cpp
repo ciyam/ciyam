@@ -540,7 +540,7 @@ void ods_file_system::branch_folders( const string& expr, ostream& os, branch_st
     : ( full ? e_file_size_output_type_num_bytes : e_file_size_output_type_scaled ), "|/" );
 }
 
-void ods_file_system::add_file( const string& name, const string& source, ostream* p_os, istream* p_is )
+void ods_file_system::add_file( const string& name, const string& source, ostream* p_os, istream* p_is, progress* p_progress )
 {
    string file_name( source );
 
@@ -567,7 +567,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       auto_ptr< ods::bulk_write > ap_bulk;
 
       if( !o.is_bulk_locked( ) )
-         ap_bulk.reset( new ods::bulk_write( o ) );
+         ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -617,7 +617,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
                if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
                   tmp_item.o_file.set_id( 0 );
                else
-                  tmp_item.get_file( new storable_file_extra( file_name ) ).store( );
+                  tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
             }
             else
             {
@@ -642,7 +642,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
                istringstream isstr( content );
 
-               tmp_item.get_file( new storable_file_extra( file_name, isstr, content.size( ) ) ).store( );
+               tmp_item.get_file( new storable_file_extra( file_name, isstr, content.size( ), p_progress ) ).store( );
             }
 
             bt.insert( tmp_item );
@@ -657,7 +657,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 }
 
 void ods_file_system::get_file( const string& name,
- const string& destination, ostream* p_os, bool output_to_stream )
+ const string& destination, ostream* p_os, bool output_to_stream, progress* p_progress )
 {
    string file_name( destination );
 
@@ -698,7 +698,7 @@ void ods_file_system::get_file( const string& name,
       tmp_item = *tmp_iter;
 
       scoped_ods_instance so( o );
-      *tmp_item.get_file( new storable_file_extra( file_name, output_to_stream ? p_os : 0 ) );
+      *tmp_item.get_file( new storable_file_extra( file_name, output_to_stream ? p_os : 0, p_progress ) );
    }
 }
 
@@ -998,7 +998,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
 }
 
 void ods_file_system::store_file( const string& name,
- const string& source, ostream* p_os, istream* p_is )
+ const string& source, ostream* p_os, istream* p_is, progress* p_progress )
 {
    btree_type& bt( p_impl->bt );
 
@@ -1008,9 +1008,9 @@ void ods_file_system::store_file( const string& name,
       ap_bulk.reset( new ods::bulk_write( o ) );
 
    if( !has_file( name ) )
-      add_file( name, source, p_os, p_is );
+      add_file( name, source, p_os, p_is, p_progress );
    else
-      replace_file( name, source, p_os, p_is );
+      replace_file( name, source, p_os, p_is, p_progress );
 }
 
 void ods_file_system::remove_file( const string& name, ostream* p_os )
@@ -1039,7 +1039,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os )
    }
 }
 
-void ods_file_system::replace_file( const string& name, const string& source, ostream* p_os, istream* p_is )
+void ods_file_system::replace_file( const string& name, const string& source, ostream* p_os, istream* p_is, progress* p_progress )
 {
    string file_name( source );
 
@@ -1116,7 +1116,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
             }
 
             tmp_item.get_file(
-             new storable_file_extra( file_name ) ).store( e_oid_pointer_opt_force_write_skip_read );
+             new storable_file_extra( file_name, 0, p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
          }
 
          // NOTE: If the OID has changed then need to replace the item.
@@ -1150,7 +1150,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
          istringstream isstr( content );
 
          tmp_item.get_file( new storable_file_extra(
-          file_name, isstr, content.size( ) ) ).store( e_oid_pointer_opt_force_write_skip_read );
+          file_name, isstr, content.size( ), p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
       }
 
       bt_tx.commit( );

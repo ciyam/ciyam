@@ -89,7 +89,7 @@ template< typename T > class cache_base
    virtual ~cache_base( );
 
    T get( unsigned num, bool retain = true );
-   void put( const T& data, unsigned num, bool retain = true );
+   void put( const T& data, unsigned num, bool retain = true, bool prevent_lazy_write = false );
 
    void flush( bool mark_as_most_recent = true );
 
@@ -473,7 +473,8 @@ template< typename T > T cache_base< T >::get( unsigned num, bool retain )
    return p_item->data;
 }
 
-template< typename T > void cache_base< T >::put( const T& data, unsigned num, bool retain )
+template< typename T > void cache_base< T >::put(
+ const T& data, unsigned num, bool retain, bool prevent_lazy_write )
 {
    guard lock( thread_lock );
 
@@ -498,7 +499,7 @@ template< typename T > void cache_base< T >::put( const T& data, unsigned num, b
    if( temp_write_num == num )
       temp_write_num = c_npos;
 
-   if( !was_retained || !allow_lazy_writes )
+   if( !was_retained || !allow_lazy_writes || prevent_lazy_write )
    {
       perform_store( ap_temp_item->data, num );
       if( index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )

@@ -129,18 +129,18 @@ const int c_header_lock_max_attempts = 100;
 const int c_header_lock_attempt_sleep_time = 25;
 
 const int c_data_bytes_per_item = 4096;
-const int c_data_max_cache_items = 500;
+const int c_data_max_cache_items = 1000;
 const int c_data_items_per_region = 10000;
 const int c_data_num_cache_regions = 10;
 
 const int c_index_items_per_item = 128;
-const int c_index_max_cache_items = 500;
+const int c_index_max_cache_items = 1000;
 const int c_index_items_per_region = 10000;
 const int c_index_num_cache_regions = 10;
 
-const int c_trans_op_max_cache_items = 500;
+const int c_trans_op_max_cache_items = 1000;
 const int c_trans_op_items_per_region = 10000;
-const int c_trans_data_max_cache_items = 500;
+const int c_trans_data_max_cache_items = 1000;
 const int c_trans_data_items_per_region = 10000;
 
 mutex g_ods_lock;
@@ -2021,7 +2021,6 @@ struct ods::impl
     is_new( false ),
     is_corrupt( false ),
     is_encrypted( false ),
-    is_exclusive( false ),
     is_read_only( false ),
     is_restoring( false ),
     force_padding( false ),
@@ -2050,7 +2049,6 @@ struct ods::impl
    bool is_new;
    bool is_corrupt;
    bool is_encrypted;
-   bool is_exclusive;
    bool is_read_only;
    bool is_restoring;
 
@@ -2251,9 +2249,11 @@ ods* ods::instance( ods* p_ods, bool force_assign )
 ods::ods( const ods& o )
  :
  okay( false ),
+ p_progress( 0 ),
  is_in_read( false ),
  is_in_write( false ),
  permit_copy( false ),
+ prevent_lazy_write( false ),
  data_read_buffer_num( -1 ),
  data_read_buffer_offs( 0 ),
  data_write_buffer_num( -1 ),
@@ -2332,9 +2332,11 @@ ods::ods( const char* p_name,
  bool using_tranlog, bool* p_not_found, const char* p_password )
  :
  okay( false ),
+ p_progress( 0 ),
  is_in_read( false ),
  is_in_write( false ),
  permit_copy( false ),
+ prevent_lazy_write( false ),
  data_read_buffer_num( -1 ),
  data_read_buffer_offs( 0 ),
  data_write_buffer_num( -1 ),
@@ -2398,8 +2400,6 @@ ods::ods( const char* p_name,
 
    if( w_mode == e_write_mode_none )
       p_impl->is_read_only = true;
-   else if( w_mode == e_write_mode_exclusive )
-      p_impl->is_exclusive = true;
 
    if( p_impl->is_read_only && o_mode == e_open_mode_create_if_not_exist )
       THROW_ODS_ERROR( "cannot create if not exists when opening database for read only access" );
@@ -2643,6 +2643,11 @@ bool ods::is_new( ) const
 bool ods::is_corrupt( ) const
 {
    return p_impl->is_corrupt;
+}
+
+bool ods::has_progress( ) const
+{
+   return p_progress;
 }
 
 bool ods::is_encrypted( ) const
@@ -4078,11 +4083,20 @@ ods::bulk_read::~bulk_read( )
    }
 }
 
-ods::bulk_write::bulk_write( ods& o )
+ods::bulk_write::bulk_write( ods& o, progress* p_progress )
  : bulk_base( o )
 {
    if( o.p_impl->is_read_only )
       THROW_ODS_ERROR( "attempt to obtain bulk write lock when database was opened for read only access" );
+
+   p_old_progress = o.p_progress;
+   was_preventing_lazy_write = o.prevent_lazy_write;
+
+   if( p_progress )
+   {
+      o.p_progress = p_progress;
+      o.prevent_lazy_write = true;
+   }
 
    int i;
    for( i = 0; i < c_bulk_write_max_attempts; i++ )
@@ -4136,6 +4150,9 @@ ods::bulk_write::~bulk_write( )
    if( o.is_okay( ) )
    {
       o.bulk_operation_finish( );
+
+      o.p_progress = p_old_progress;
+      o.prevent_lazy_write = was_preventing_lazy_write;
 
       if( !*o.p_impl->rp_bulk_level )
       {
@@ -4483,6 +4500,7 @@ void ods::transaction_commit( )
       }
 
       bool had_any_ops = false;
+      bool had_progress_output = false;
 
       auto_ptr< ods::bulk_write > ap_bulk_write;
       if( !*p_impl->rp_bulk_level )
@@ -4490,6 +4508,8 @@ void ods::transaction_commit( )
 
       int64_t commit_items = 0;
       int64_t append_offset = 0;
+
+      int64_t total_data_chunks = 0;
 
       if( p_impl->using_tranlog )
          append_offset = log_append_offset( );
@@ -4562,6 +4582,13 @@ void ods::transaction_commit( )
                            chunk = op.data.size - j;
 
                         read_trans_data_bytes( buffer, chunk );
+
+                        if( p_progress && ( ( ++total_data_chunks % 100 ) == 0 ) )
+                        {
+                           had_progress_output = true;
+                           p_progress->output_progress( "." );
+                        }
+
                         write_data_bytes( buffer, chunk );
                      }
 
@@ -4609,6 +4636,9 @@ void ods::transaction_commit( )
          ++p_impl->rp_header_info->data_transform_id;
          ++p_impl->rp_header_info->index_transform_id;
       }
+
+      if( p_progress && had_progress_output )
+         p_progress->output_progress( "" );
 
       data_and_index_write( false );
 
@@ -5160,7 +5190,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    fstream fs;
    log_info tranlog_info;
@@ -5496,9 +5526,9 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
       }
 
       if( p_progress && had_progress_output )
-         p_progress->output_progress( "\n(please wait while caches are now flushed)" );
+         p_progress->output_progress( "" );
 
-      data_and_index_write( );
+      data_and_index_write( false );
 
       p_impl->rp_header_info->num_trans = 0;
       p_impl->rp_header_info->num_writers = 0;
@@ -5556,6 +5586,7 @@ ods& operator >>( ods& o, storable_base& s )
          ods::header_file_lock header_file_lock( o );
 
          auto_ptr< ods::file_scope > ap_file_scope;
+
          if( !*o.p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( o ) );
 
@@ -5720,6 +5751,7 @@ ods& operator <<( ods& o, storable_base& s )
          ods::header_file_lock header_file_lock( o );
 
          auto_ptr< ods::file_scope > ap_file_scope;
+
          if( !*o.p_impl->rp_bulk_level )
             ap_file_scope.reset( new ods::file_scope( o ) );
 
@@ -5958,6 +5990,7 @@ ods& operator <<( ods& o, storable_base& s )
       ods::header_file_lock header_file_lock( o );
 
       auto_ptr< ods::file_scope > ap_file_scope;
+
       if( !*o.p_impl->rp_bulk_level )
          ap_file_scope.reset( new ods::file_scope( o ) );
 
@@ -6261,7 +6294,8 @@ void ods::write_data_bytes( const char* p_src, int64_t len, bool skip_decrypt, b
             crypt_data_buffer( p_impl->data_write_buffer.data,
              p_impl->data_write_key_buffer.data, c_data_bytes_per_item );
 
-         p_impl->rp_ods_data_cache_buffer->put( p_impl->data_write_buffer, data_write_buffer_num );
+         p_impl->rp_ods_data_cache_buffer->put(
+          p_impl->data_write_buffer, data_write_buffer_num, true, prevent_lazy_write );
 
          p_impl->rp_ods_data_cache_buffer->unlock_region(
           data_write_buffer_num * c_data_bytes_per_item, c_data_bytes_per_item );
@@ -6365,7 +6399,8 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int64_t num )
    if( index_item_buffer_num != current_index_buffer_num )
    {
       if( current_index_buffer_num != -1 )
-         p_impl->rp_ods_index_cache_buffer->put( p_impl->index_item_buffer, current_index_buffer_num );
+         p_impl->rp_ods_index_cache_buffer->put(
+          p_impl->index_item_buffer, current_index_buffer_num, true, prevent_lazy_write );
 
       p_impl->index_item_buffer = p_impl->rp_ods_index_cache_buffer->get( index_item_buffer_num );
    }

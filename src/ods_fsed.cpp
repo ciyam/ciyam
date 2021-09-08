@@ -261,8 +261,6 @@ void ods_fsed_command_handler::init( )
    if( not_found )
       throw runtime_error( "unexpected database not found" );
 
-   ods::bulk_write bulk_write( *ap_ods );
-
    if( ap_ods->is_corrupt( ) )
    {
       if( g_shared_write )
@@ -400,7 +398,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_add_cin ) );
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
 
-      ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0 );
+      ods_fsed_progress progress;
+
+      ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
    }
    else if( command == c_cmd_ods_fsed_file_get )
    {
@@ -412,7 +412,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
       if( !name.empty( ) )
       {
-         ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout );
+         ods_fsed_progress progress;
+
+         ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout, &progress );
 
          if( !original_folder.empty( ) )
             ap_ofs->set_folder( original_folder );
@@ -444,7 +446,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_replace_cin ) );
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
 
-      ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0 );
+      ods_fsed_progress progress;
+
+      ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
    }
    else if( command == c_cmd_ods_fsed_folder_add )
    {

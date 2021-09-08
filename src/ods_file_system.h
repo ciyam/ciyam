@@ -28,6 +28,8 @@
 
 class ods;
 
+struct progress;
+
 class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
 {
    public:
@@ -163,30 +165,33 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       branch_files_or_objects( os, current_folder, expr, style, true );
    }
 
-   void add_file(
-    const std::string& name, const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+   void add_file( const std::string& name, const std::string& source,
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
 
-   inline void add_file( const std::string& name, std::ostream* p_os = 0, std::istream* p_is = 0 )
+   inline void add_file( const std::string& name,
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      add_file( name, "", p_os, p_is );
+      add_file( name, "", p_os, p_is, p_progress );
    }
 
-   inline void add_file( const std::string& name, std::istream* p_is )
+   inline void add_file( const std::string& name, std::istream* p_is, progress* p_progress = 0 )
    {
-      add_file( name, "", 0, p_is );
+      add_file( name, "", 0, p_is, p_progress );
    }
 
    void get_file( const std::string& name,
-    const std::string& destination, std::ostream* p_os = 0, bool output_to_stream = false );
+    const std::string& destination, std::ostream* p_os = 0,
+    bool output_to_stream = false, progress* p_progress = 0 );
 
-   inline void get_file( const std::string& name, std::ostream* p_os = 0, bool output_to_stream = false )
+   inline void get_file( const std::string& name,
+    std::ostream* p_os = 0, bool output_to_stream = false, progress* p_progress = 0 )
    {
-      get_file( name, "", p_os, output_to_stream );
+      get_file( name, "", p_os, output_to_stream, p_progress );
    }
 
-   inline void get_file( const std::string& name, std::ostream& os )
+   inline void get_file( const std::string& name, std::ostream& os, progress* p_progress = 0 )
    {
-      get_file( name, "", &os, true );
+      get_file( name, "", &os, true, p_progress );
    }
 
    bool has_file( const std::string& name );
@@ -196,26 +201,28 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    void move_file( const std::string& name, const std::string& destination, std::ostream* p_os = 0 );
 
    void store_file( const std::string& name,
-    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
 
-   inline void store_file( const std::string& name, std::istream* p_is = 0 )
+   inline void store_file( const std::string& name, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      store_file( name, "", 0, p_is );
+      store_file( name, "", 0, p_is, p_progress );
    }
 
-   inline void store_file( const std::string& name, std::ostream* p_os, std::istream* p_is = 0 )
+   inline void store_file( const std::string& name,
+    std::ostream* p_os, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      store_file( name, "", p_os, p_is );
+      store_file( name, "", p_os, p_is, p_progress );
    }
 
    void remove_file( const std::string& name, std::ostream* p_os = 0 );
 
    void replace_file( const std::string& name,
-    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0 );
+    const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
 
-   inline void replace_file( const std::string& name, std::ostream* p_os = 0, std::istream* p_is = 0 )
+   inline void replace_file( const std::string& name,
+    std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 )
    {
-      replace_file( name, "", p_os, p_is );
+      replace_file( name, "", p_os, p_is, p_progress );
    }
 
    void store_as_text_file( const std::string& name, int32_t val );

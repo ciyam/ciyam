@@ -20,6 +20,7 @@
 #include "storable_file.h"
 
 #include "ods.h"
+#include "progress.h"
 #include "read_write_stream.h"
 
 using namespace std;
@@ -40,7 +41,10 @@ void storable_file::set_extra( storable_extra* p_extra )
       file_name = p_file_extra->file_name;
       p_istream = p_file_extra->p_istream;
       p_ostream = p_file_extra->p_ostream;
+
       file_size = p_file_extra->file_size;
+
+      p_progress = p_file_extra->p_progress;
    }
    else
    {
@@ -50,6 +54,8 @@ void storable_file::set_extra( storable_extra* p_extra )
       p_ostream = 0;
 
       file_size = 0;
+
+      p_progress = 0;
    }
 }
 
@@ -94,6 +100,9 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
          throw runtime_error( "unable to open '" + sf.file_name + "' for output" );
    }
 
+   int num_chunks = 0;
+   bool had_progress_output = false;
+
    unsigned char data[ c_buf_size ];
    while( size )
    {
@@ -109,10 +118,19 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
          sf.p_ostream->write( ( const char* )&data[ 0 ], bytes );
 
       size -= bytes;
+
+      if( sf.p_progress && ( ( ++num_chunks % 100 ) == 0 ) )
+      {
+         had_progress_output = true;
+         sf.p_progress->output_progress( "." );
+      }
    }
 
    if( !sf.p_ostream )
       ap_outf->close( );
+
+   if( sf.p_progress && had_progress_output )
+      sf.p_progress->output_progress( "" );
 
    return rs;
 }
@@ -130,6 +148,9 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       if( !( *ap_inpf ) )
          throw runtime_error( "unable to open '" + sf.file_name + "' for input" );
    }
+
+   int num_chunks = 0;
+   bool had_progress_output = false;
 
    unsigned char data[ c_buf_size ];
 
@@ -152,10 +173,22 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       ws.write( &data[ 0 ], bytes );
 
       size -= ( int64_t )bytes;
+
+      if( sf.p_progress && ( ( ++num_chunks % 100 ) == 0 ) )
+      {
+         had_progress_output = true;
+         sf.p_progress->output_progress( "." );
+      }
    }
 
    if( !sf.p_istream )
       ap_inpf->close( );
+
+   if( sf.p_progress && had_progress_output )
+   {
+      if( !sf.get_ods( )->has_progress( ) || !sf.get_ods( )->is_in_transaction( ) )
+         sf.p_progress->output_progress( "" );
+   }
 
    return ws;
 }

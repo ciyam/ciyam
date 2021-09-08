@@ -601,6 +601,8 @@ class ODS_DECL_SPEC ods
    bool is_new( ) const;
    bool is_corrupt( ) const;
 
+   bool has_progress( ) const;
+
    bool is_encrypted( ) const;
 
    bool is_bulk_locked( ) const;
@@ -694,8 +696,11 @@ class ODS_DECL_SPEC ods
 
    struct bulk_write : bulk_base
    {
-      bulk_write( ods& o );
+      bulk_write( ods& o, progress* p_progress = 0 );
       ~bulk_write( );
+
+      progress* p_old_progress;
+      bool was_preventing_lazy_write;
    };
 
    friend struct bulk_write;
@@ -780,7 +785,9 @@ class ODS_DECL_SPEC ods
    void adjust_read_data_pos( int64_t adjust );
 
    void read_data_bytes( char* p_dest, int64_t len, bool skip_decrypt = false );
-   void write_data_bytes( const char* p_src, int64_t len, bool skip_decrypt = false, bool skip_encrypt = false );
+
+   void write_data_bytes( const char* p_src, int64_t len,
+    bool skip_decrypt = false, bool skip_encrypt = false );
 
    int64_t data_read_buffer_num;
    int64_t data_read_buffer_offs;
@@ -789,6 +796,10 @@ class ODS_DECL_SPEC ods
 
    bool is_in_read;
    bool is_in_write;
+
+   progress* p_progress;
+
+   bool prevent_lazy_write;
 
    friend class ods_index_cache_buffer;
 
