@@ -21,6 +21,7 @@
 
 #include "ods.h"
 #include "progress.h"
+#include "date_time.h"
 #include "read_write_stream.h"
 
 using namespace std;
@@ -103,6 +104,8 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    int num_chunks = 0;
    bool had_progress_output = false;
 
+   date_time dtm( date_time::local( ) );
+
    unsigned char data[ c_buf_size ];
    while( size )
    {
@@ -119,10 +122,17 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
       size -= bytes;
 
-      if( sf.p_progress && ( ( ++num_chunks % 100 ) == 0 ) )
+      if( sf.p_progress )
       {
-         had_progress_output = true;
-         sf.p_progress->output_progress( "." );
+         date_time now( date_time::local( ) );
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+            had_progress_output = true;
+            sf.p_progress->output_progress( "." );
+         }
       }
    }
 
@@ -152,6 +162,8 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
    int num_chunks = 0;
    bool had_progress_output = false;
 
+   date_time dtm( date_time::local( ) );
+
    unsigned char data[ c_buf_size ];
 
    while( size )
@@ -174,10 +186,17 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
       size -= ( int64_t )bytes;
 
-      if( sf.p_progress && ( ( ++num_chunks % 100 ) == 0 ) )
+      if( sf.p_progress )
       {
-         had_progress_output = true;
-         sf.p_progress->output_progress( "." );
+         date_time now( date_time::local( ) );
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+            had_progress_output = true;
+            sf.p_progress->output_progress( "." );
+         }
       }
    }
 
@@ -186,6 +205,7 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
    if( sf.p_progress && had_progress_output )
    {
+      // NOTE: If in a transaction then progress will continue in the ODS commit.
       if( !sf.get_ods( )->has_progress( ) || !sf.get_ods( )->is_in_transaction( ) )
          sf.p_progress->output_progress( "" );
    }

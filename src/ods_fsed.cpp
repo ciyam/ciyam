@@ -514,7 +514,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
-         ap_ods->rewind_transactions( label_or_txid );
+         ods_fsed_progress progress;
+
+         ap_ods->rewind_transactions( label_or_txid, &progress );
 
          // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
          ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );

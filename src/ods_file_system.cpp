@@ -1051,7 +1051,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    auto_ptr< ods::bulk_write > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    o >> bt;
 

@@ -72,6 +72,7 @@
 #include "sha256.h"
 #include "pointers.h"
 #include "progress.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 #include "crypt_stream.h"
@@ -2749,7 +2750,7 @@ void ods::reconstruct_database( progress* p_progress )
       restore_from_transaction_log( true, p_progress );
 }
 
-void ods::rewind_transactions( const string& label_or_txid )
+void ods::rewind_transactions( const string& label_or_txid, progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -2865,7 +2866,15 @@ void ods::rewind_transactions( const string& label_or_txid )
       }
       else if( !entry_offsets.empty( ) )
       {
+         bool had_progress_output = false;
+
+         date_time dtm( date_time::local( ) );
+
          set< int64_t >::iterator si( entry_offsets.end( ) );
+
+         auto_ptr< ods::bulk_write > ap_bulk_write;
+         if( !*p_impl->rp_bulk_level )
+            ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
          while( true )
          {
@@ -2942,6 +2951,20 @@ void ods::rewind_transactions( const string& label_or_txid )
 
                            fs.read( buffer, chunk );
                            write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
+
+                           if( p_progress )
+                           {
+                              date_time now( date_time::local( ) );
+                              uint64_t elapsed = seconds_between( dtm, now );
+
+                              if( elapsed >= 1 )
+                              {
+                                 dtm = now;
+                                 had_progress_output = true;
+
+                                 p_progress->output_progress( "." );
+                              }
+                           }
                         }
 
                         write_entry = true;
@@ -3015,6 +3038,20 @@ void ods::rewind_transactions( const string& label_or_txid )
 
                write_index_entry( index_entry, freelist_additions.back( ).first );
 
+               if( p_progress )
+               {
+                  date_time now( date_time::local( ) );
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     dtm = now;
+                     had_progress_output = true;
+
+                     p_progress->output_progress( "." );
+                  }
+               }
+
                next_pos = freelist_additions.back( ).first + 1;
                freelist_additions.pop_back( );
             }
@@ -3060,6 +3097,9 @@ void ods::rewind_transactions( const string& label_or_txid )
          p_impl->write_header_file_info( true );
 
          *p_impl->rp_has_changed = false;
+
+         if( p_progress && had_progress_output )
+            p_progress->output_progress( "" );
       }
    }
    else
@@ -4509,7 +4549,7 @@ void ods::transaction_commit( )
       int64_t commit_items = 0;
       int64_t append_offset = 0;
 
-      int64_t total_data_chunks = 0;
+      date_time dtm( date_time::local( ) );
 
       if( p_impl->using_tranlog )
          append_offset = log_append_offset( );
@@ -4583,10 +4623,18 @@ void ods::transaction_commit( )
 
                         read_trans_data_bytes( buffer, chunk );
 
-                        if( p_progress && ( ( ++total_data_chunks % 100 ) == 0 ) )
+                        if( p_progress )
                         {
-                           had_progress_output = true;
-                           p_progress->output_progress( "." );
+                           date_time now( date_time::local( ) );
+                           uint64_t elapsed = seconds_between( dtm, now );
+
+                           if( elapsed >= 1 )
+                           {
+                              dtm = now;
+                              had_progress_output = true;
+
+                              p_progress->output_progress( "." );
+                           }
                         }
 
                         write_data_bytes( buffer, chunk );
@@ -5113,11 +5161,15 @@ void ods::rollback_dead_transactions( progress* p_progress )
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
 
+   bool had_progress_output = false;
+
+   date_time dtm( date_time::local( ) );
+
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !*p_impl->rp_bulk_level )
-      ap_bulk_write.reset( new ods::bulk_write( *this ) );
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
    ods_index_entry index_entry;
 
@@ -5125,8 +5177,19 @@ void ods::rollback_dead_transactions( progress* p_progress )
 
    for( int64_t i = 0; i < total; i++ )
    {
-      if( i && p_progress && ( i % 1000 == 0 ) )
-         p_progress->output_progress( "processed " + to_string( i ) + "/" + to_string( total ) + " entries..." );
+      if( p_progress )
+      {
+         date_time now( date_time::local( ) );
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+            had_progress_output = true;
+
+            p_progress->output_progress( "." );
+         }
+      }
 
       read_index_entry( index_entry, i );
 
@@ -5155,6 +5218,9 @@ void ods::rollback_dead_transactions( progress* p_progress )
    }
 
    data_and_index_write( );
+
+   if( p_progress && had_progress_output )
+      p_progress->output_progress( "" );
 
    p_impl->rp_header_info->num_trans = 0;
    p_impl->rp_header_info->num_writers = 0;
@@ -5185,6 +5251,8 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot restore from transaction log when bulk locked for dumping or reading" );
+
+   date_time dtm( date_time::local( ) );
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
 
@@ -5306,10 +5374,18 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
          {
             int64_t entry_offset = fs.tellg( );
 
-            if( entry_num && p_progress && ( entry_num % 1000 == 0 ) )
+            if( entry_num && p_progress )
             {
-               had_progress_output = true;
-               p_progress->output_progress( "." );
+               date_time now( date_time::local( ) );
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  dtm = now;
+                  had_progress_output = true;
+
+                  p_progress->output_progress( "." );
+               }
             }
 
             ++entry_num;
@@ -5367,7 +5443,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                      p_impl->rp_header_info->total_entries = tranlog_item.index_entry_id + 1;
 
                   int64_t tran_id = tx_id;
-                  int64_t total_data_chunks = 0;
 
                   if( !commit && tranlog_item.has_old_tran_id( ) )
                      tran_id = tranlog_item.tx_oid;
@@ -5409,10 +5484,18 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                               fs.read( buffer, chunk );
                               write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
 
-                              if( p_progress && ( ( ++total_data_chunks % 100 ) == 0 ) )
+                              if( p_progress )
                               {
-                                 had_progress_output = true;
-                                 p_progress->output_progress( "." );
+                                 date_time now( date_time::local( ) );
+                                 uint64_t elapsed = seconds_between( dtm, now );
+
+                                 if( elapsed >= 1 )
+                                 {
+                                    dtm = now;
+                                    had_progress_output = true;
+
+                                    p_progress->output_progress( "." );
+                                 }
                               }
                            }
 
@@ -5499,10 +5582,18 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
          for( int64_t i = 0; i < total; i++ )
          {
-            if( i && p_progress && ( i % 1000 == 0 ) )
+            if( p_progress )
             {
-               had_progress_output = true;
-               p_progress->output_progress( "." );
+               date_time now( date_time::local( ) );
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  dtm = now;
+                  had_progress_output = true;
+
+                  p_progress->output_progress( "." );
+               }
             }
 
             read_index_entry( index_entry, i );

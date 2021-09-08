@@ -636,7 +636,7 @@ class ODS_DECL_SPEC ods
    void repair_if_corrupt( progress* p_progress = 0 );
    void reconstruct_database( progress* p_progress = 0 );
 
-   void rewind_transactions( const std::string& label_or_txid );
+   void rewind_transactions( const std::string& label_or_txid, progress* p_progress = 0 );
 
    int64_t get_size( const oid& id );
 
