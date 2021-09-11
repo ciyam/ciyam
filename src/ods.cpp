@@ -215,6 +215,93 @@ string format_version( int16_t version )
    return osstr.str( );
 }
 
+class log_stream : public read_write_stream
+{
+   public:
+   log_stream( const char* p_file_name = 0, bool use_sync = true )
+    :
+    fd( 0 ),
+    pos( 0 )
+   {
+      if( p_file_name )
+         init( p_file_name, use_sync );
+   }
+
+   ~log_stream( )
+   {
+      term( );
+   }
+
+   void init( const char* p_file_name, bool use_sync = true )
+   {
+#ifdef __GNUG__
+      if( !use_sync )
+         fd = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+      else
+         fd = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
+#else
+      fd = _sopen( p_file_name, O_BINARY | _O_RDWR | _O_CREAT, SH_DENYWR, S_IREAD | S_IWRITE );
+#endif
+      if( fd <= 0 )
+         THROW_ODS_ERROR( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
+   }
+
+   void term( )
+   {
+#ifndef ODS_DEBUG
+      if( fd )
+      {
+         _close( fd );
+         fd = 0;
+      }
+#else
+      if( fd && _close( fd ) != 0 )
+      {
+         ostringstream osstr;
+         osstr << "_close failed for fd in term (errno = " << errno << ')';
+         DEBUG_LOG( osstr.str( ) );
+      }
+#endif
+   }
+
+   int64_t get_pos( ) const
+   {
+      return pos;
+   }
+
+   void set_pos( int64_t new_pos )
+   {
+      if( _lseek( fd, new_pos, SEEK_SET ) < 0 )
+         THROW_ODS_ERROR( "unexpected seek at " STRINGIZE( __LINE__ ) " failed" );
+
+      pos = new_pos;
+   }
+
+   void read( unsigned char* p_buf, size_t len, read_write_type type = e_read_write_type_none )
+   {
+      ( void )type;
+
+      if( _read( fd, ( void* )p_buf, len ) != len )
+         THROW_ODS_ERROR( "unexpected read at " STRINGIZE( __LINE__ ) " failed" );
+
+      pos += len;
+   }
+
+   void write( const unsigned char* p_buf, size_t len, read_write_type type = e_read_write_type_none )
+   {
+      ( void )type;
+
+      if( _write( fd, ( void* )p_buf, len ) != len )
+         THROW_ODS_ERROR( "unexpected write at " STRINGIZE( __LINE__ ) " failed" );
+
+      pos += len;
+   }
+
+   private:
+   int fd;
+   int64_t pos;
+};
+
 struct log_info
 {
    log_info( )
@@ -279,22 +366,34 @@ struct log_info
          THROW_ODS_ERROR( "unexpected bad log_info read" );
    }
 
-   void write( ostream& os ) const
+   void read( read_stream& rs )
    {
-      os.write( ( const char* )&version, sizeof( version ) );
-      os.write( ( const char* )&sequence, sizeof( sequence ) );
-      os.write( ( const char* )&val_hash, sizeof( val_hash ) );
-      os.write( ( const char* )&init_time, sizeof( init_time ) );
-      os.write( ( const char* )&entry_offs, sizeof( entry_offs ) );
-      os.write( ( const char* )&entry_time, sizeof( entry_time ) );
-      os.write( ( const char* )&append_offs, sizeof( append_offs ) );
-      os.write( ( const char* )&sequence_new_tm, sizeof( sequence_new_tm ) );
-      os.write( ( const char* )&sequence_old_tm, sizeof( sequence_old_tm ) );
+      rs.read( ( unsigned char* )&version, sizeof( version ) );
 
-      os.flush( );
+      if( ( version & c_version_mask ) != c_version )
+         THROW_ODS_ERROR( "incompatible log_info version found" );
 
-      if( !os.good( ) )
-         THROW_ODS_ERROR( "unexpected bad log_info write" );
+      rs.read( ( unsigned char* )&sequence, sizeof( sequence ) );
+      rs.read( ( unsigned char* )&val_hash, sizeof( val_hash ) );
+      rs.read( ( unsigned char* )&init_time, sizeof( init_time ) );
+      rs.read( ( unsigned char* )&entry_offs, sizeof( entry_offs ) );
+      rs.read( ( unsigned char* )&entry_time, sizeof( entry_time ) );
+      rs.read( ( unsigned char* )&append_offs, sizeof( append_offs ) );
+      rs.read( ( unsigned char* )&sequence_new_tm, sizeof( sequence_new_tm ) );
+      rs.read( ( unsigned char* )&sequence_old_tm, sizeof( sequence_old_tm ) );
+   }
+
+   void write( write_stream& ws ) const
+   {
+      ws.write( ( const unsigned char* )&version, sizeof( version ) );
+      ws.write( ( const unsigned char* )&sequence, sizeof( sequence ) );
+      ws.write( ( const unsigned char* )&val_hash, sizeof( val_hash ) );
+      ws.write( ( const unsigned char* )&init_time, sizeof( init_time ) );
+      ws.write( ( const unsigned char* )&entry_offs, sizeof( entry_offs ) );
+      ws.write( ( const unsigned char* )&entry_time, sizeof( entry_time ) );
+      ws.write( ( const unsigned char* )&append_offs, sizeof( append_offs ) );
+      ws.write( ( const unsigned char* )&sequence_new_tm, sizeof( sequence_new_tm ) );
+      ws.write( ( const unsigned char* )&sequence_old_tm, sizeof( sequence_old_tm ) );
    }
 
    int16_t version;
@@ -378,23 +477,32 @@ struct log_entry
          THROW_ODS_ERROR( "unexpected bad log_entry read" );
    }
 
-   void write( ostream& os ) const
+   void read( read_stream& rs )
    {
-      os.write( ( const char* )label, sizeof( label ) );
-      os.write( ( const char* )&tx_id, sizeof( tx_id ) );
-      os.write( ( const char* )&tx_time, sizeof( tx_time ) );
-      os.write( ( const char* )&commit_offs, sizeof( commit_offs ) );
-      os.write( ( const char* )&commit_items, sizeof( commit_items ) );
-      os.write( ( const char* )&next_entry_offs, sizeof( next_entry_offs ) );
-      os.write( ( const char* )&prior_entry_offs, sizeof( prior_entry_offs ) );
-      os.write( ( const char* )&total_data_bytes, sizeof( total_data_bytes ) );
-      os.write( ( const char* )&data_transform_id, sizeof( data_transform_id ) );
-      os.write( ( const char* )&index_transform_id, sizeof( index_transform_id ) );
+      rs.read( ( unsigned char* )label, sizeof( label ) );
+      rs.read( ( unsigned char* )&tx_id, sizeof( tx_id ) );
+      rs.read( ( unsigned char* )&tx_time, sizeof( tx_time ) );
+      rs.read( ( unsigned char* )&commit_offs, sizeof( commit_offs ) );
+      rs.read( ( unsigned char* )&commit_items, sizeof( commit_items ) );
+      rs.read( ( unsigned char* )&next_entry_offs, sizeof( next_entry_offs ) );
+      rs.read( ( unsigned char* )&prior_entry_offs, sizeof( prior_entry_offs ) );
+      rs.read( ( unsigned char* )&total_data_bytes, sizeof( total_data_bytes ) );
+      rs.read( ( unsigned char* )&data_transform_id, sizeof( data_transform_id ) );
+      rs.read( ( unsigned char* )&index_transform_id, sizeof( index_transform_id ) );
+   }
 
-      os.flush( );
-
-      if( !os.good( ) )
-         THROW_ODS_ERROR( "unexpected bad log_entry write" );
+   void write( write_stream& ws ) const
+   {
+      ws.write( ( const unsigned char* )label, sizeof( label ) );
+      ws.write( ( const unsigned char* )&tx_id, sizeof( tx_id ) );
+      ws.write( ( const unsigned char* )&tx_time, sizeof( tx_time ) );
+      ws.write( ( const unsigned char* )&commit_offs, sizeof( commit_offs ) );
+      ws.write( ( const unsigned char* )&commit_items, sizeof( commit_items ) );
+      ws.write( ( const unsigned char* )&next_entry_offs, sizeof( next_entry_offs ) );
+      ws.write( ( const unsigned char* )&prior_entry_offs, sizeof( prior_entry_offs ) );
+      ws.write( ( const unsigned char* )&total_data_bytes, sizeof( total_data_bytes ) );
+      ws.write( ( const unsigned char* )&data_transform_id, sizeof( data_transform_id ) );
+      ws.write( ( const unsigned char* )&index_transform_id, sizeof( index_transform_id ) );
    }
 
    char label[ c_max_tx_label_size + 1 ];
@@ -554,32 +662,50 @@ struct log_entry_item
          THROW_ODS_ERROR( "unexpected bad log_entry_item read" );
    }
 
-   void write( ostream& os ) const
+   void read( read_stream& rs )
    {
-      os.write( ( const char* )&flags, sizeof( flags ) );
+      rs.read( ( unsigned char* )&flags, sizeof( flags ) );
 
       if( has_tran_id( ) )
-         os.write( ( const char* )&tx_id, sizeof( tx_id ) );
+         rs.read( ( unsigned char* )&tx_id, sizeof( tx_id ) );
 
       if( has_old_tran_id( ) )
-         os.write( ( const char* )&tx_oid, sizeof( tx_oid ) );
+         rs.read( ( unsigned char* )&tx_oid, sizeof( tx_oid ) );
 
       if( has_pos_and_size( ) )
       {
-         os.write( ( const char* )&data_pos, sizeof( data_pos ) );
+         rs.read( ( unsigned char* )&data_pos, sizeof( data_pos ) );
 
          if( has_old_pos( ) )
-            os.write( ( const char* )&data_opos, sizeof( data_opos ) );
+            rs.read( ( unsigned char* )&data_opos, sizeof( data_opos ) );
 
-         os.write( ( const char* )&data_size, sizeof( data_size ) );
+         rs.read( ( unsigned char* )&data_size, sizeof( data_size ) );
       }
 
-      os.write( ( const char* )&index_entry_id, sizeof( index_entry_id ) );
+      rs.read( ( unsigned char* )&index_entry_id, sizeof( index_entry_id ) );
+   }
 
-      os.flush( );
+   void write( write_stream& ws ) const
+   {
+      ws.write( ( const unsigned char* )&flags, sizeof( flags ) );
 
-      if( !os.good( ) )
-         THROW_ODS_ERROR( "unexpected bad log_entry_item write" );
+      if( has_tran_id( ) )
+         ws.write( ( const unsigned char* )&tx_id, sizeof( tx_id ) );
+
+      if( has_old_tran_id( ) )
+         ws.write( ( const unsigned char* )&tx_oid, sizeof( tx_oid ) );
+
+      if( has_pos_and_size( ) )
+      {
+         ws.write( ( const unsigned char* )&data_pos, sizeof( data_pos ) );
+
+         if( has_old_pos( ) )
+            ws.write( ( const unsigned char* )&data_opos, sizeof( data_opos ) );
+
+         ws.write( ( const unsigned char* )&data_size, sizeof( data_size ) );
+      }
+
+      ws.write( ( const unsigned char* )&index_entry_id, sizeof( index_entry_id ) );
    }
 
    unsigned char flags;
@@ -998,7 +1124,7 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
       okay = true;
    else
    {
-      lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+      lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
 
       if( lock_handle > 0 )
       {
@@ -1024,7 +1150,7 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
    if( okay )
    {
       offset = 0;
-      handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+      handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
    }
 #endif
 
@@ -1201,7 +1327,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    ods_data_cache_buffer( ods& o,
     const string& fname, unsigned max_cache_items,
     unsigned items_per_region, unsigned regions_in_cache = 1,
-    bool use_placement_new = true, bool allow_lazy_writes = true )
+    bool use_placement_new = true, bool allow_lazy_writes = true, bool use_sync_file_writes = false )
     :
     cache_base< ods_data_entry_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
@@ -1209,7 +1335,8 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
     fname( fname ),
     read_data_handle( 0 ),
     write_data_handle( 0 ),
-    write_lock_handle( 0 )
+    write_lock_handle( 0 ),
+    use_sync_file_writes( use_sync_file_writes )
    {
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
@@ -1333,10 +1460,14 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    mutex data_lock;
 
    ods& o;
+
    string fname;
+
    int read_data_handle;
    int write_data_handle;
    int write_lock_handle;
+
+   bool use_sync_file_writes;
 
 #ifdef __GNUG__
    flock lock;
@@ -1356,7 +1487,10 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !read_data_handle )
       {
 #ifdef __GNUG__
-         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_data_handle = _sopen( fname.c_str( ), O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -1373,6 +1507,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 #endif
 
       int len = _read( read_data_handle, ( void* )p_data, sizeof( ods_data_entry_buffer ) );
+
       if( len != sizeof( ods_data_entry_buffer ) )
       {
 #ifdef __BORLANDC__
@@ -1402,7 +1537,10 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !write_data_handle )
       {
 #ifdef __GNUG__
-         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_data_handle = _sopen( fname.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -1433,9 +1571,9 @@ struct ods_index_entry_buffer
 class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 {
    public:
-   ods_index_cache_buffer( const string& file_name,
-    int lock_offset, unsigned max_cache_items, unsigned items_per_region,
-    unsigned regions_in_cache = 1, bool use_placement_new = true, bool allow_lazy_writes = true )
+   ods_index_cache_buffer( const string& file_name, int lock_offset,
+    unsigned max_cache_items, unsigned items_per_region, unsigned regions_in_cache = 1,
+    bool use_placement_new = true, bool allow_lazy_writes = true, bool use_sync_file_writes = false )
     :
     cache_base< ods_index_entry_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
@@ -1443,7 +1581,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
     lock_offset( lock_offset ),
     lock_index_handle( 0 ),
     read_index_handle( 0 ),
-    write_index_handle( 0 )
+    write_index_handle( 0 ),
+    use_sync_file_writes( use_sync_file_writes )
    {
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
@@ -1498,7 +1637,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_SYNC | O_DIRECT );
+         if( !use_sync_file_writes )
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_DIRECT );
+         else
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_SYNC | O_DIRECT );
 #else
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY, SH_DENYNO );
 #endif
@@ -1608,6 +1750,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    int read_index_handle;
    int write_index_handle;
 
+   bool use_sync_file_writes;
+
 #ifdef __GNUG__
    flock lock;
    char* p_data;
@@ -1626,7 +1770,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -1639,9 +1786,11 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
+#else
 #endif
 
       int len = _read( read_index_handle, ( void* )p_data, sizeof( ods_index_entry_buffer ) );
+
       if( len != sizeof( ods_index_entry_buffer ) )
       {
 #ifdef __BORLANDC__
@@ -1671,7 +1820,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !write_index_handle )
       {
 #ifdef __GNUG__
-         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -1697,16 +1849,19 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 {
    public:
-   ods_trans_op_cache_buffer( unsigned max_cache_items, unsigned items_per_region,
-    unsigned regions_in_cache = 1, bool use_placement_new = true, bool allow_lazy_writes = true )
+   ods_trans_op_cache_buffer( unsigned max_cache_items,
+    unsigned items_per_region, unsigned regions_in_cache = 1,
+    bool use_placement_new = true, bool allow_lazy_writes = true, bool use_sync_file_writes = false )
     :
     cache_base< trans_op_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
     tran_ops_handle( 0 ),
-    has_begun_trans( false )
+    has_begun_trans( false ),
+    use_sync_file_writes( use_sync_file_writes )
    {
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
+
       if( rc != 0 || !p_data )
          THROW_ODS_ERROR( "unexpected failure for posix_memalign" );
 #endif
@@ -1757,7 +1912,9 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 
    private:
    int tran_ops_handle;
+
    bool has_begun_trans;
+   bool use_sync_file_writes;
 
    string file_name;
    mutex trans_op_lock;
@@ -1849,13 +2006,15 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
 class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 {
    public:
-   ods_trans_data_cache_buffer( unsigned max_cache_items, unsigned items_per_region,
-    unsigned regions_in_cache = 1, bool use_placement_new = true, bool allow_lazy_writes = true )
+   ods_trans_data_cache_buffer( unsigned max_cache_items,
+    unsigned items_per_region, unsigned regions_in_cache = 1,
+    bool use_placement_new = true, bool allow_lazy_writes = true, bool use_sync_file_writes = false )
     :
     cache_base< trans_data_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
     tran_data_handle( 0 ),
-    has_begun_trans( false )
+    has_begun_trans( false ),
+    use_sync_file_writes( use_sync_file_writes )
    {
 #ifdef __GNUG__
       int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
@@ -1910,7 +2069,9 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
 
    private:
    int tran_data_handle;
+
    bool has_begun_trans;
+   bool use_sync_file_writes;
 
    string file_name;
    mutex trans_data_lock;
@@ -1963,7 +2124,10 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
             THROW_ODS_ERROR( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_data_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -2478,18 +2642,11 @@ ods::ods( const char* p_name,
       else if( using_tranlog )
       {
          // NOTE: If using a transaction log then create a default tranlog header.
-         ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
-
-         if( !outf )
-            THROW_ODS_ERROR( "unable to open database tranlog file for output" );
+         log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
          tranlog_info.init_time = tranlog_info.sequence_new_tm = now;
 
-         tranlog_info.write( outf );
-
-         outf.flush( );
-         if( !outf.good( ) )
-            THROW_ODS_ERROR( "unexpected bad tranlog flush at create" );
+         tranlog_info.write( logf );
       }
    }
 
@@ -2771,15 +2928,10 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rewind transactions when bulk locked for dumping or reading" );
 
-   fstream fs;
+   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+
    log_info tranlog_info;
-
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in rewind_transactions" );
-
-   tranlog_info.read( fs );
+   tranlog_info.read( logf );
 
    bool is_encrypted = p_impl->is_encrypted;
 
@@ -2796,10 +2948,10 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
 
       while( true )
       {
-         int64_t entry_offset = fs.tellg( );
+         int64_t entry_offset = logf.get_pos( );
 
          log_entry tranlog_entry;
-         tranlog_entry.read( fs );
+         tranlog_entry.read( logf );
 
          int64_t tx_id = tranlog_entry.tx_id;
          int64_t next_offs = tranlog_entry.next_entry_offs;
@@ -2817,7 +2969,7 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
             {
                if( entry_offset < largest_commit_offs )
                {
-                  fs.close( );
+                  logf.term( );
                   THROW_ODS_ERROR( "rewind point cannot be an overlapped transaction" );
                }
 
@@ -2851,17 +3003,17 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
          if( !next_offs )
             break;
 
-         fs.seekg( next_offs, ios::beg );
+         logf.set_pos( next_offs );
       }
 
       if( !first_entry_offset )
       {
-         fs.close( );
+         logf.term( );
          THROW_ODS_ERROR( "transaction id/label '" + label_or_txid + "' not found for database rewind" );
       }
       else if( !tranlog_info.entry_offs )
       {
-         fs.close( );
+         logf.term( );
          THROW_ODS_ERROR( "cannot rewind the very first database transaction" );
       }
       else if( !entry_offsets.empty( ) )
@@ -2879,12 +3031,12 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
          while( true )
          {
             --si;
-            fs.seekg( *si, ios::beg );
+            logf.set_pos( *si );
 
             log_entry tranlog_entry;
-            tranlog_entry.read( fs );
+            tranlog_entry.read( logf );
 
-            int64_t current_pos = fs.tellg( );
+            int64_t current_pos = logf.get_pos( );
 
             if( current_pos == append_offset )
                break;
@@ -2909,7 +3061,7 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
             while( true )
             {
                log_entry_item tranlog_item;
-               tranlog_item.read( fs );
+               tranlog_item.read( logf );
 
                if( tranlog_item.has_tran_id( ) )
                   tx_id = tranlog_item.tx_id;
@@ -2949,7 +3101,7 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
                            if( j + chunk > tranlog_item.data_size )
                               chunk = tranlog_item.data_size - j;
 
-                           fs.read( buffer, chunk );
+                           logf.read( ( unsigned char* )buffer, chunk );
                            write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
 
                            if( p_progress )
@@ -3007,9 +3159,9 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
                   skip_data = true;
 
                if( skip_data )
-                  fs.seekg( tranlog_item.data_size, ios::cur );
+                  logf.set_pos( logf.get_pos( ) + tranlog_item.data_size );
 
-               int64_t current_pos = fs.tellg( );
+               int64_t current_pos = logf.get_pos( );
 
                if( current_pos >= append_offset || entry_offsets.count( current_pos ) )
                   break;
@@ -3065,19 +3217,19 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
          // NOTE: Need to clear the "next_entry_offs" value for the new last entry.
          if( tranlog_info.entry_offs )
          {
-            fs.seekg( tranlog_info.entry_offs, ios::beg );
+            logf.set_pos( tranlog_info.entry_offs );
 
             log_entry tranlog_entry;
-            tranlog_entry.read( fs );
+            tranlog_entry.read( logf );
 
             tranlog_entry.next_entry_offs = 0;
-            fs.seekg( tranlog_info.entry_offs, ios::beg );
+            logf.set_pos( tranlog_info.entry_offs );
 
-            tranlog_entry.write( fs );
+            tranlog_entry.write( logf );
          }
 
-         fs.seekg( 0, ios::beg );
-         tranlog_info.write( fs );
+         logf.set_pos( 0 );
+         tranlog_info.write( logf );
 
          set_read_data_pos( -1 );
          data_and_index_write( true, is_encrypted );
@@ -3104,11 +3256,9 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
    }
    else
    {
-      fs.close( );
+      logf.term( );
       THROW_ODS_ERROR( "cannot rewind with an empty transaction log" );
    }
-
-   fs.close( );
 }
 
 int64_t ods::get_size( const oid& id )
@@ -3445,13 +3595,9 @@ void ods::move_free_data_to_end( )
    {
       log_entry_offs = append_log_entry( p_impl->rp_header_info->transaction_id++, &old_append_offs );
 
-      fstream fs;
-      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+      log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
-      if( !fs )
-         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
-
-      fs.seekg( old_append_offs, ios::beg );
+      logf.set_pos( old_append_offs );
 
       set_read_data_pos( 0 );
 
@@ -3487,7 +3633,7 @@ void ods::move_free_data_to_end( )
             tranlog_item.data_opos = next_pos;
             tranlog_item.data_size = next_size;
 
-            tranlog_item.write( fs );
+            tranlog_item.write( logf );
 
             for( int64_t j = 0; j < next_size; j += chunk )
             {
@@ -3495,10 +3641,7 @@ void ods::move_free_data_to_end( )
                   chunk = next_size - j;
 
                read_data_bytes( buffer, chunk );
-               fs.write( buffer, chunk );
-
-               if( !fs.good( ) )
-                  THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+               logf.write( ( unsigned char* )buffer, chunk );
             }
 
             read_pos = next_pos + next_size;
@@ -3509,23 +3652,17 @@ void ods::move_free_data_to_end( )
          new_pos += next_size;
       }
 
-      fs.flush( );
-      if( !fs.good( ) )
-         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+      int64_t offs = logf.get_pos( );
 
-      int64_t offs = fs.tellg( );
-
-      fs.seekg( 0, ios::beg );
+      logf.set_pos( 0 );
 
       log_info tranlog_info;
-      tranlog_info.read( fs );
+      tranlog_info.read( logf );
 
       tranlog_info.append_offs = offs;
 
-      fs.seekg( 0, ios::beg );
-      tranlog_info.write( fs );
-
-      fs.close( );
+      logf.set_pos( 0 );
+      tranlog_info.write( logf );
    }
 
    set_read_data_pos( 0 );
@@ -3577,24 +3714,18 @@ void ods::move_free_data_to_end( )
 
    if( log_entry_offs )
    {
-      fstream fs;
-      fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-      if( !fs )
-         THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in move_free_data_to_end" );
+      log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
       log_entry tranlog_entry;
 
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.read( fs );
+      logf.set_pos( log_entry_offs );
+      tranlog_entry.read( logf );
 
       tranlog_entry.commit_offs = old_append_offs;
       tranlog_entry.commit_items = num_moved;
 
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.write( fs );
-
-      fs.close( );
+      logf.set_pos( log_entry_offs );
+      tranlog_entry.write( logf );
 
       p_impl->rp_header_info->tranlog_offset = log_entry_offs;
    }
@@ -3672,10 +3803,7 @@ void ods::truncate_log( const char* p_ext )
    int64_t now = _time64( 0 );
 #endif
 
-   ofstream outf( p_impl->tranlog_file_name.c_str( ), ios::out | ios::binary );
-
-   if( !outf )
-      THROW_ODS_ERROR( "unable to open tranlog file for output" );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
    ++tranlog_info.sequence;
 
@@ -3686,11 +3814,7 @@ void ods::truncate_log( const char* p_ext )
    tranlog_info.sequence_old_tm = tranlog_info.sequence_new_tm;
    tranlog_info.sequence_new_tm = now;
 
-   tranlog_info.write( outf );
-
-   outf.flush( );
-   if( !outf.good( ) )
-      THROW_ODS_ERROR( "unexpected bad tranlog flush in truncate log" );
+   tranlog_info.write( logf );
 
    p_impl->rp_header_info->num_logs = tranlog_info.sequence;
 
@@ -4656,7 +4780,9 @@ void ods::transaction_commit( )
                   if( p_impl->using_tranlog )
                   {
                      ++commit_items;
-                     append_log_entry_item( op.data.id.get_num( ), index_entry, flags );
+
+                     append_log_entry_item( op.data.id.get_num( ),
+                      index_entry, flags, 0, 0, p_progress, &had_progress_output );
                   }
 
                   index_entry.data.tran_op = 0;
@@ -4944,7 +5070,7 @@ void ods::data_and_index_write( bool flush, bool skip_encrypt )
 int64_t ods::log_append_offset( )
 {
    fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::binary );
 
    if( !fs )
       THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_append_offset" );
@@ -4959,14 +5085,10 @@ int64_t ods::log_append_offset( )
 
 int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const char* p_label )
 {
-   fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry" );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
    log_info tranlog_info;
-   tranlog_info.read( fs );
+   tranlog_info.read( logf );
 
 #ifndef _WIN32
    int64_t tx_time = time( 0 );
@@ -4978,8 +5100,8 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
 
    if( tranlog_info.entry_offs )
    {
-      fs.seekg( tranlog_info.entry_offs, ios::beg );
-      tranlog_entry.read( fs );
+      logf.set_pos( tranlog_info.entry_offs );
+      tranlog_entry.read( logf );
 
       if( tx_id < tranlog_entry.tx_id )
          THROW_ODS_ERROR( "unexpected tx_id is less than that of the last transaction log entry" );
@@ -5008,19 +5130,20 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
    tranlog_info.entry_offs = tranlog_info.append_offs;
    tranlog_info.entry_time = tx_time;
 
-   fs.seekg( tranlog_info.append_offs, ios::beg );
-   tranlog_entry.write( fs );
+   logf.set_pos( tranlog_info.append_offs );
+   tranlog_entry.write( logf );
 
    if( tranlog_entry.prior_entry_offs )
    {
       log_entry prior_log_entry;
-      fs.seekg( tranlog_entry.prior_entry_offs, ios::beg );
 
-      prior_log_entry.read( fs );
+      logf.set_pos( tranlog_entry.prior_entry_offs );
+
+      prior_log_entry.read( logf );
       prior_log_entry.next_entry_offs = tranlog_info.append_offs;
 
-      fs.seekg( tranlog_entry.prior_entry_offs, ios::beg );
-      prior_log_entry.write( fs );
+      logf.set_pos( tranlog_entry.prior_entry_offs );
+      prior_log_entry.write( logf );
    }
 
    tranlog_info.append_offs += tranlog_entry.size_of( );
@@ -5028,47 +5151,38 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
    if( p_append_offset )
       *p_append_offset = tranlog_info.append_offs;
 
-   fs.seekg( 0, ios::beg );
-   tranlog_info.write( fs );
-
-   fs.close( );
+   logf.set_pos( 0 );
+   tranlog_info.write( logf );
 
    return tranlog_info.entry_offs;
 }
 
 void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items )
 {
-   fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
-
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in log_entry_commit" );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
    log_entry tranlog_entry;
 
-   fs.seekg( entry_offset, ios::beg );
-   tranlog_entry.read( fs );
+   logf.set_pos( entry_offset );
+   tranlog_entry.read( logf );
 
    tranlog_entry.commit_offs = commit_offs;
    tranlog_entry.commit_items = commit_items;
 
-   fs.seekg( entry_offset, ios::beg );
-   tranlog_entry.write( fs );
-
-   fs.close( );
+   logf.set_pos( entry_offset );
+   tranlog_entry.write( logf );
 }
 
 void ods::append_log_entry_item( int64_t num,
- const ods_index_entry& index_entry, unsigned char flags, int64_t old_tx_id, int64_t log_entry_offs )
+ const ods_index_entry& index_entry, unsigned char flags,
+ int64_t old_tx_id, int64_t log_entry_offs, progress* p_progress, bool* p_had_progress_output )
 {
-   fstream fs;
-   fs.open( p_impl->tranlog_file_name.c_str( ), ios::in | ios::out | ios::binary );
+   date_time dtm( date_time::local( ) );
 
-   if( !fs )
-      THROW_ODS_ERROR( "unable to open transaction log '" + p_impl->tranlog_file_name + "' in append_log_entry_item" );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
 
    log_info tranlog_info;
-   tranlog_info.read( fs );
+   tranlog_info.read( logf );
 
    log_entry_item tranlog_item;
 
@@ -5088,8 +5202,8 @@ void ods::append_log_entry_item( int64_t num,
       tranlog_item.data_size = index_entry.data.size;
    }
 
-   fs.seekg( tranlog_info.append_offs, ios::beg );
-   tranlog_item.write( fs );
+   logf.set_pos( tranlog_info.append_offs );
+   tranlog_item.write( logf );
 
    bool is_encrypted = p_impl->is_encrypted;
 
@@ -5106,41 +5220,49 @@ void ods::append_log_entry_item( int64_t num,
             chunk = index_entry.data.size - j;
 
          read_data_bytes( buffer, chunk, is_encrypted );
-         fs.write( buffer, chunk );
+         logf.write( ( unsigned char* )buffer, chunk );
 
-         if( !fs.good( ) )
-            THROW_ODS_ERROR( "unexpected bad tranlog data append" );
+         if( p_progress )
+         {
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               dtm = now;
+
+               if( p_had_progress_output )
+                  *p_had_progress_output = true;
+
+               p_progress->output_progress( "." );
+            }
+         }
       }
 
       if( is_encrypted )
          set_read_data_pos( -1 );
-
-      fs.flush( );
-      if( !fs.good( ) )
-         THROW_ODS_ERROR( "unexpected bad tranlog data append" );
    }
 
    int64_t old_append_offs = tranlog_info.append_offs;
-   tranlog_info.append_offs = fs.tellg( );
+
+   tranlog_info.append_offs = logf.get_pos( );
 
    if( log_entry_offs )
    {
       log_entry tranlog_entry;
 
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.read( fs );
+      logf.set_pos( log_entry_offs );
+      tranlog_entry.read( logf );
 
       tranlog_entry.commit_offs = old_append_offs;
       tranlog_entry.commit_items = 1;
 
-      fs.seekg( log_entry_offs, ios::beg );
-      tranlog_entry.write( fs );
+      logf.set_pos( log_entry_offs );
+      tranlog_entry.write( logf );
    }
 
-   fs.seekg( 0, ios::beg );
-   tranlog_info.write( fs );
-
-   fs.close( );
+   logf.set_pos( 0 );
+   tranlog_info.write( logf );
 }
 
 void ods::rollback_dead_transactions( progress* p_progress )

@@ -767,8 +767,8 @@ class ODS_DECL_SPEC ods
 
    void log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items );
 
-   void append_log_entry_item( int64_t num, const ods_index_entry& index_entry,
-    unsigned char flags, int64_t old_tx_id = 0, int64_t log_entry_offs = 0 );
+   void append_log_entry_item( int64_t num, const ods_index_entry& index_entry, unsigned char flags,
+    int64_t old_tx_id = 0, int64_t log_entry_offs = 0, progress* p_progress = 0, bool* p_had_progress_output = 0 );
 
    void rollback_dead_transactions( progress* p_progress = 0 );
    void restore_from_transaction_log( bool force_reconstruct = false, progress* p_progress = 0 );
