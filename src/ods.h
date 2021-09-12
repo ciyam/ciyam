@@ -782,7 +782,7 @@ class ODS_DECL_SPEC ods
    void set_read_data_pos( int64_t pos, bool force_get = false, bool skip_decrypt = false );
    void set_write_data_pos( int64_t pos, bool skip_decrypt = false, bool skip_encrypt = false );
 
-   void adjust_read_data_pos( int64_t adjust );
+   void adjust_read_data_pos( int64_t adjust, bool skip_decrypt = false );
 
    void read_data_bytes( char* p_dest, int64_t len, bool skip_decrypt = false );
 

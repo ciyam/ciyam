@@ -2341,6 +2341,7 @@ struct ods_index_entry_pos
    int64_t id;
    int64_t pos;
    int64_t size;
+   int64_t tran_id;
 
    bool operator <( const ods_index_entry_pos& lval ) const
    {
@@ -2935,6 +2936,10 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
 
    bool is_encrypted = p_impl->is_encrypted;
 
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !*p_impl->rp_bulk_level )
+      ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
+
    if( tranlog_info.append_offs > tranlog_info.size_of( ) )
    {
       set< int64_t > entry_offsets;
@@ -3023,10 +3028,6 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
          date_time dtm( date_time::local( ) );
 
          set< int64_t >::iterator si( entry_offsets.end( ) );
-
-         auto_ptr< ods::bulk_write > ap_bulk_write;
-         if( !*p_impl->rp_bulk_level )
-            ap_bulk_write.reset( new ods::bulk_write( *this, p_progress ) );
 
          while( true )
          {
@@ -3581,6 +3582,8 @@ void ods::move_free_data_to_end( )
          entry.id = i;
          entry.pos = index_entry.data.pos;
          entry.size = index_entry.data.size;
+         entry.tran_id = index_entry.data.tran_id;
+
          entries.insert( entry );
       }
    }
@@ -3599,7 +3602,9 @@ void ods::move_free_data_to_end( )
 
       logf.set_pos( old_append_offs );
 
-      set_read_data_pos( 0 );
+      bool is_encrypted = p_impl->is_encrypted;
+
+      set_read_data_pos( 0, is_encrypted, is_encrypted );
 
       int64_t new_pos = 0;
       int64_t read_pos = 0;
@@ -3609,11 +3614,12 @@ void ods::move_free_data_to_end( )
          int64_t next_id = ci->id;
          int64_t next_pos = ci->pos;
          int64_t next_size = ci->size;
+         int64_t next_tran_id = ci->tran_id;
 
          if( next_pos < read_pos )
             THROW_ODS_ERROR( "unexpected next_pos < read_pos at " STRINGIZE( __LINE__ ) );
 
-         adjust_read_data_pos( next_pos - read_pos );
+         adjust_read_data_pos( next_pos - read_pos, is_encrypted );
 
          if( next_pos != new_pos )
          {
@@ -3627,6 +3633,7 @@ void ods::move_free_data_to_end( )
             tranlog_item.flags = c_log_entry_item_op_store;
             tranlog_item.flags |= ( c_log_entry_item_type_non_transactional | c_log_entry_item_flag_has_old_pos );
 
+            tranlog_item.tx_oid = next_tran_id;
             tranlog_item.index_entry_id = next_id;
 
             tranlog_item.data_pos = new_pos;
@@ -3640,7 +3647,7 @@ void ods::move_free_data_to_end( )
                if( j + chunk > next_size )
                   chunk = next_size - j;
 
-               read_data_bytes( buffer, chunk );
+               read_data_bytes( buffer, chunk, is_encrypted );
                logf.write( ( unsigned char* )buffer, chunk );
             }
 
@@ -3665,7 +3672,7 @@ void ods::move_free_data_to_end( )
       tranlog_info.write( logf );
    }
 
-   set_read_data_pos( 0 );
+   set_read_data_pos( 0, true );
 
    int64_t new_pos = 0;
    int64_t read_pos = 0;
@@ -6424,7 +6431,7 @@ void ods::set_write_data_pos( int64_t pos, bool skip_decrypt, bool skip_encrypt 
    }
 }
 
-void ods::adjust_read_data_pos( int64_t adjust )
+void ods::adjust_read_data_pos( int64_t adjust, bool skip_decrypt )
 {
 #ifdef ODS_DEBUG
    ostringstream osstr;
@@ -6442,7 +6449,7 @@ void ods::adjust_read_data_pos( int64_t adjust )
    {
       p_impl->data_read_buffer = p_impl->rp_ods_data_cache_buffer->get( data_read_buffer_num );
 
-      if( p_impl->is_encrypted )
+      if( !skip_decrypt && p_impl->is_encrypted )
       {
          init_key_buffer( p_impl->data_read_key_buffer.data,
           c_data_bytes_per_item, data_read_buffer_num, p_impl->pwd_hash );
