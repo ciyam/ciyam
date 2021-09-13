@@ -9,7 +9,7 @@ Tranlog Offset = 0
 Transaction Id = 30008
 Index Free List = 1
 Total Size of Data = 28
-Data Transformation Id = 10008
+Data Transformation Id = 10007
 Index Transformation Id = 50010
 
 ** Freelist Info

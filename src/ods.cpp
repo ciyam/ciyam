@@ -3592,6 +3592,8 @@ void ods::move_free_data_to_end( )
    int64_t log_entry_offs = 0;
    int64_t old_append_offs = 0;
 
+   int64_t tran_id = p_impl->rp_header_info->transaction_id;
+
    set< ods_index_entry_pos >::const_iterator ci, end;
 
    if( p_impl->using_tranlog )
@@ -3708,7 +3710,11 @@ void ods::move_free_data_to_end( )
          read_index_entry( index_entry, next_id );
 
          index_entry.data.pos = new_pos;
+         index_entry.data.tran_id = tran_id;
+
          write_index_entry( index_entry, next_id );
+
+         ++p_impl->rp_header_info->index_transform_id;
 
          read_pos = next_pos + next_size;
       }
@@ -3737,8 +3743,8 @@ void ods::move_free_data_to_end( )
       p_impl->rp_header_info->tranlog_offset = log_entry_offs;
    }
 
-   ++p_impl->rp_header_info->data_transform_id;
-   ++p_impl->rp_header_info->index_transform_id;
+   if( num_moved )
+      ++p_impl->rp_header_info->data_transform_id;
 
    p_impl->rp_header_info->total_size_of_data = actual_size;
 
@@ -5550,7 +5556,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                   next_offs = tranlog_info.append_offs;
 
                bool had_any_data = false;
-
+ 
                while( fs.tellg( ) < next_offs )
                {
                   log_entry_item tranlog_item;
@@ -5586,6 +5592,7 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                       || ( !commit && !tranlog_item.is_post_op( ) ) )
                      {
                         int64_t dpos = 0;
+                        int64_t offs = 0;
 
                         if( commit || !tranlog_item.has_old_pos( ) )
                            dpos = tranlog_item.data_pos;
@@ -5611,6 +5618,28 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                                  chunk = tranlog_item.data_size - j;
 
                               fs.read( buffer, chunk );
+
+                              // NOTE: If an encrypted item was moved then it first needs to be decrypted
+                              // using the old number and offset and then encrypted with both new values.
+                              if( commit && is_encrypted && tranlog_item.has_old_pos( ) )
+                              {
+                                 init_key_buffer(
+                                  p_impl->data_write_key_buffer.data, c_data_bytes_per_item,
+                                  tranlog_item.data_opos / c_data_bytes_per_item, p_impl->pwd_hash );
+
+                                 offs = tranlog_item.data_opos % c_data_bytes_per_item;
+
+                                 crypt_data_buffer( buffer, p_impl->data_write_key_buffer.data + offs, chunk );
+
+                                 init_key_buffer(
+                                  p_impl->data_write_key_buffer.data, c_data_bytes_per_item,
+                                  tranlog_item.data_pos / c_data_bytes_per_item, p_impl->pwd_hash );
+
+                                 offs = tranlog_item.data_pos % c_data_bytes_per_item;
+
+                                 crypt_data_buffer( buffer, p_impl->data_write_key_buffer.data + offs, chunk );
+                              }
+
                               write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
 
                               if( p_progress )
@@ -5627,6 +5656,11 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                                  }
                               }
                            }
+
+                           if( commit && tranlog_item.has_old_pos( )
+                            && ( p_impl->rp_header_info->total_size_of_data
+                            == ( tranlog_item.data_opos + tranlog_item.data_size ) ) )
+                              p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
 
                            if( p_impl->rp_header_info->total_size_of_data < dpos + tranlog_item.data_size )
                               p_impl->rp_header_info->total_size_of_data = dpos + tranlog_item.data_size;
