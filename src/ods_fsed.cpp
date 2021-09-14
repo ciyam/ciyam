@@ -39,6 +39,7 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_password = "p";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
+const char* const c_cmd_use_in_regression_tests = "test";
 
 int64_t g_oid = 0;
 
@@ -47,6 +48,7 @@ string g_name( c_app_title );
 bool g_encrypted = false;
 bool g_shared_write = true;
 bool g_use_transaction_log = false;
+bool g_use_in_regression_tests = false;
 
 bool g_application_title_called = false;
 
@@ -206,6 +208,8 @@ class ods_fsed_startup_functor : public command_functor
          g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
+      else if( command == c_cmd_use_in_regression_tests )
+         g_use_in_regression_tests = true;
    }
 };
 
@@ -250,7 +254,12 @@ void ods_fsed_command_handler::init( )
    bool not_found = false;
 
    if( g_encrypted )
-      password = get_password( "Password: " );
+   {
+      if( g_use_in_regression_tests )
+         password = "test";
+      else
+         password = get_password( "Password: " );
+   }
 
    ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
     ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
@@ -579,10 +588,15 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new ods_fsed_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_use_in_regression_tests, 2,
+          "", "use this in regression tests", new ods_fsed_startup_functor( cmd_handler ) );
+
          processor.process_commands( );
 
+         cmd_handler.remove_command( c_cmd_password );
          cmd_handler.remove_command( c_cmd_exclusive );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
+         cmd_handler.remove_command( c_cmd_use_in_regression_tests );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

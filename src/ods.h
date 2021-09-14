@@ -648,14 +648,15 @@ class ODS_DECL_SPEC ods
 
    void truncate_log( const char* p_ext = 0 );
 
-   void dump_file_info( std::ostream& os );
+   void dump_file_info( std::ostream& os, bool omit_dtms = false ) const;
+
    void dump_free_list( std::ostream& os );
    void dump_index_entry( std::ostream& os, int64_t num );
    void dump_instance_data( std::ostream& os, int64_t num, bool only_pos_and_size );
 
-   void dump_transaction_log( std::ostream& os,
-    bool header_only = true, std::string* p_entry_ranges = 0,
-    bool skip_header = false, bool entries_are_condensed = false );
+   void dump_transaction_log(
+    std::ostream& os, bool omit_dtms = false, bool header_only = true,
+    std::string* p_entry_ranges = 0, bool skip_header = false, bool entries_are_condensed = false ) const;
 
    struct bulk_dump;
    struct bulk_read;

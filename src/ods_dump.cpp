@@ -30,13 +30,15 @@ int main( int argc, char* argv[ ] )
       if( argc < 2
        || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
       {
-         cout << "Usage: ods_dump [[-d|-t|-dt] <entries>] <database>" << endl;
+         cout << "Usage: ods_dump [[-d|-t|-tt|-dt|-dtt] <entries>] <database>" << endl;
          return 0;
       }
 
       int name_arg = 1;
 
       size_t next_pos;
+
+      bool omit_dtms = false;
 
       bool show_data = false;
       bool show_tranlog_entries = false;
@@ -50,11 +52,17 @@ int main( int argc, char* argv[ ] )
 
          string first_arg( argv[ 1 ] );
 
-         if( first_arg == "-d" || first_arg == "-t" || first_arg == "-dt" || first_arg == "-td" )
+         if( first_arg == "-d" || first_arg == "-t" || first_arg == "-tt" || first_arg == "-dt" || first_arg == "-dtt" )
          {
             if( argc == 4 )
             {
                name_arg++;
+
+               if( first_arg.find( "tt" ) != string::npos )
+               {
+                  omit_dtms = true;
+                  first_arg.erase( first_arg.length( ) - 1 );
+               }
 
                if( first_arg == "-d" )
                   show_data = true;
@@ -95,7 +103,7 @@ int main( int argc, char* argv[ ] )
       ods::bulk_dump bulk_dump( o );
 
       cout << "** File Info" << endl;
-      o.dump_file_info( cout );
+      o.dump_file_info( cout, omit_dtms );
 
       if( !all_entries.empty( ) && o.get_total_entries( ) )
       {
@@ -148,12 +156,12 @@ int main( int argc, char* argv[ ] )
       if( o.is_using_transaction_log( ) )
       {
          cout << "\n** Transaction Log Info" << endl;
-         o.dump_transaction_log( cout );
+         o.dump_transaction_log( cout, omit_dtms );
 
          if( !all_entries.empty( ) && show_tranlog_entries )
          {
             cout << "\n** Transaction Log Info for: " << all_entries << endl;
-            o.dump_transaction_log( cout, false, is_all ? 0 : &all_entries, true, true );
+            o.dump_transaction_log( cout, omit_dtms, false, is_all ? 0 : &all_entries, true, true );
          }
       }
 

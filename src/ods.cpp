@@ -318,7 +318,7 @@ struct log_info
    {
    }
 
-   void dump( ostream& os ) const
+   void dump( ostream& os, bool omit_dtms = false ) const
    {
       string extra;
 
@@ -331,12 +331,21 @@ struct log_info
       if( version & c_encrypted_flag )
          os << "val_hash = " << val_hash << '\n';
 
-      os << "init_time = " << init_time << '\n';
+      if( !omit_dtms )
+         os << "init_time = " << init_time << '\n';
+
       os << "entry_offs = " << entry_offs << '\n';
-      os << "entry_time = " << entry_time << '\n';
+
+      if( !omit_dtms )
+         os << "entry_time = " << entry_time << '\n';
+
       os << "append_offs = " << append_offs << '\n';
-      os << "sequence_new_tm = " << sequence_new_tm << '\n';
-      os << "sequence_old_tm = " << sequence_old_tm << endl;
+
+      if( !omit_dtms )
+      {
+         os << "sequence_new_tm = " << sequence_new_tm << '\n';
+         os << "sequence_old_tm = " << sequence_old_tm << endl;
+      }
    }
 
    int64_t size_of( ) const
@@ -431,7 +440,7 @@ struct log_entry
       memset( label, '\0', sizeof( label ) );
    }
 
-   void dump( ostream& os, int64_t offs = 0 ) const
+   void dump( ostream& os, int64_t offs = 0, bool omit_dtms = false ) const
    {
       if( label[ 0 ] )
          os << '[' << label << ']' << endl;
@@ -441,7 +450,9 @@ struct log_entry
           os << " (offs = " << offs << ")";
       os << endl;
 
-      os << "tx_time = " << tx_time << endl;
+      if( !omit_dtms )
+         os << "tx_time = " << tx_time << endl;
+
       os << "commit_offs = " << commit_offs << endl;
       os << "commit_items = " << commit_items << endl;
       os << "next_entry_offs = " << next_entry_offs << endl;
@@ -3834,7 +3845,7 @@ void ods::truncate_log( const char* p_ext )
    p_impl->force_write_header_file_info( );
 }
 
-void ods::dump_file_info( ostream& os )
+void ods::dump_file_info( ostream& os, bool omit_dtms ) const
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
@@ -3853,9 +3864,12 @@ void ods::dump_file_info( ostream& os )
    os << "Version: " << format_version( p_impl->rp_header_info->version ) << extra
     << "\nNum Logs = " << p_impl->rp_header_info->num_logs
     << "\nNum Trans = " << p_impl->rp_header_info->num_trans
-    << "\nNum Writers = " << p_impl->rp_header_info->num_writers
-    << "\nInit Tranlog = " << p_impl->rp_header_info->init_tranlog
-    << "\nTotal Entries = " << p_impl->rp_header_info->total_entries
+    << "\nNum Writers = " << p_impl->rp_header_info->num_writers;
+
+   if( !omit_dtms )
+      os << "\nInit Tranlog = " << p_impl->rp_header_info->init_tranlog;
+
+   os << "\nTotal Entries = " << p_impl->rp_header_info->total_entries
     << "\nTranlog Offset = " << p_impl->rp_header_info->tranlog_offset
     << "\nTransaction Id = " << p_impl->rp_header_info->transaction_id
     << "\nIndex Free List = " << ( p_impl->rp_header_info->index_free_list ?
@@ -3991,8 +4005,8 @@ void ods::dump_instance_data( ostream& os, int64_t num, bool only_pos_and_size )
    }
 }
 
-void ods::dump_transaction_log( ostream& os,
- bool header_only, string* p_entry_ranges, bool skip_header, bool entries_are_condensed )
+void ods::dump_transaction_log( ostream& os, bool omit_dtms,
+ bool header_only, string* p_entry_ranges, bool skip_header, bool entries_are_condensed ) const
 {
    guard lock_impl( *p_impl->rp_impl_lock );
 
@@ -4009,7 +4023,7 @@ void ods::dump_transaction_log( ostream& os,
    tranlog_info.read( fs );
 
    if( header_only || !skip_header )
-      tranlog_info.dump( os );
+      tranlog_info.dump( os, omit_dtms );
 
    if( !header_only && tranlog_info.entry_offs )
    {
@@ -4044,7 +4058,7 @@ void ods::dump_transaction_log( ostream& os,
          else
             osstr << '\n';
 
-         tranlog_entry.dump( osstr, offs );
+         tranlog_entry.dump( osstr, offs, omit_dtms );
 
          int64_t next_offs = tranlog_entry.next_entry_offs;
 
