@@ -1,0 +1,7 @@
+list
+trans yyy
+add ddd
+add eee
+commit
+compress
+exit

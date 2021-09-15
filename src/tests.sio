@@ -915,6 +915,133 @@
       <output>generate
      </test_step>
     </test>
+    <test/>
+     <name>5
+     <description>Test various DB operations using a transaction log.
+     <kill>test_ods.tlg
+     <kill>test_ods.tlg.1
+     <kill>test_ods.tlg.2
+     <kill>test_ods.dat
+     <kill>test_ods.idx
+     <kill>test_ods.hdr
+     <kill>test_ods.dat.lck
+     <kill>test_ods.idx.lck
+     <kill>test_ods.hdr.lck
+     <test_step/>
+      <name>a
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>l
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>m
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>n
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>o
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>p
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>q
+      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>r
+      <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>s
+      <exec>ods_dump -dtt all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
    </tests>
   </group>
   <group/>
