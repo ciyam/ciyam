@@ -2646,7 +2646,7 @@ ods::ods( const char* p_name,
          tranlog_info.read( inpf );
 
          if( tranlog_info.val_hash != *( ( int32_t* )( p_impl->pwd_hash.data( ) + c_sha256_digest_size / 2 ) ) )
-            throw runtime_error( "incorrect password" );
+            THROW_ODS_ERROR( "incorrect password" );
 
          using_tranlog = true;
          p_impl->is_corrupt = true;
@@ -3799,6 +3799,9 @@ void ods::truncate_log( const char* p_ext )
          THROW_ODS_ERROR( "unable to open tranlog file for input" );
 
       tranlog_info.read( tranlog_ifs );
+
+      if( !tranlog_info.entry_offs )
+         THROW_ODS_ERROR( "cannot truncate an emtpy transaction log" );
 
       string ext( p_ext ? p_ext : "" );
 
