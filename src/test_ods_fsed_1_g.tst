@@ -1,23 +1,15 @@
-
-/> cd
+cd
 /
-
-/> cd ghi
-
-/ghi> folder_add 111
-
-/ghi> folder_add 999
-
-/ghi> folder_add 555
-
-/ghi> branch objects
+cd ghi
+folder_add 111
+folder_add 999
+folder_add 555
+branch objects
 111/
 555/
 999/
-
-/ghi> cd /
-
-/> branch folders
+cd /
+branch folders
 abc
 abc/aaa
 abc/nnn
@@ -28,8 +20,7 @@ ghi/111
 ghi/555
 ghi/999
 xyz
-
-/> branch objects
+branch objects
 abc/
 abc/aaa/
 abc/nnn/
@@ -40,8 +31,7 @@ ghi/111/
 ghi/555/
 ghi/999/
 xyz/
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 20
@@ -69,5 +59,4 @@ Item #16, data = :abc/zzz, link = -1
 Item #17, data = :ghi/111, link = -1
 Item #18, data = :ghi/555, link = -1
 Item #19, data = :ghi/999, link = -1
-
-/> exit
+exit

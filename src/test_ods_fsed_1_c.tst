@@ -1,26 +1,18 @@
-
-/> cd
+cd
 /
-
-/> folder_add abc
-
-/> folder_add xyz
-
-/> branch objects
+folder_add abc
+folder_add xyz
+branch objects
 abc/
 xyz/
-
-/> folder_add ghi
-
-/> folder_add def
-
-/> branch objects
+folder_add ghi
+folder_add def
+branch objects
 abc/
 def/
 ghi/
 xyz/
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 8
@@ -36,5 +28,4 @@ Item #4, data = :/abc, link = -1
 Item #5, data = :/def, link = -1
 Item #6, data = :/ghi, link = -1
 Item #7, data = :/xyz, link = -1
-
-/> exit
+exit

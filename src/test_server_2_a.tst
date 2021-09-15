@@ -1,10 +1,7 @@
-
-> module_load Meta
-
-> module_list
+module_load Meta
+module_list
 100 Meta
-
-> module_class_list Meta
+module_class_list Meta
 100100 User 0
 101100 Workgroup 0
 102100 Type 0
@@ -43,8 +40,7 @@
 139100 Global_Archive 0
 140100 Global_Blacklist_Entry 0
 150100 Global_Repository_Entry 0
-
-> module_class_field_list Meta User
+module_class_field_list Meta User
 100102 Active bool normal
 100104 Description string normal
 100105 Email string normal
@@ -55,8 +51,7 @@
 100107 User_Hash string normal
 100101 User_Id string normal
 300100 Workgroup 101100:Meta_Workgroup normal
-
-> module_class_field_list Meta Workgroup
+module_class_field_list Meta Workgroup
 101102 Id string normal
 101101 Name string normal
 101104 Next_Enum_Id string normal
@@ -64,9 +59,5 @@
 101106 Next_Permission_Id string normal
 101105 Next_Type_Id string normal
 302835 Standard_Package 136100:Meta_Package normal
-
-> module_unload Meta
-
-> module_list
-
-> 
+module_unload Meta
+module_list

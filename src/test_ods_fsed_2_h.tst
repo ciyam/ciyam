@@ -1,35 +1,19 @@
-
-/> folder_add 111
-
-/> cd 111
-
-/111> folder_add 222
-
-/111> cd 222
-
-/111/222> folder_add 333
-
-/111/222> cd /
-
-/> file_move aaa 111
-
-/> file_move bbb 111
-
-/> file_move ccc 111
-
-/> file_move ddd 111/222
-
-/> file_move eee 111/222
-
-/> file_move fff 111/222
-
-/> file_move ggg 111/222/333
-
-/> file_move hhh 111/222/333
-
-/> file_move iii 111/222/333
-
-/> branch objects
+folder_add 111
+cd 111
+folder_add 222
+cd 222
+folder_add 333
+cd /
+file_move aaa 111
+file_move bbb 111
+file_move ccc 111
+file_move ddd 111/222
+file_move eee 111/222
+file_move fff 111/222
+file_move ggg 111/222/333
+file_move hhh 111/222/333
+file_move iii 111/222/333
+branch objects
 111/
 111/222/
 111/222/333/
@@ -45,8 +29,7 @@
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 27
@@ -81,5 +64,4 @@ Item #23, data = |111|222/fff, link = -1
 Item #24, data = |111|222|333/ggg, link = -1
 Item #25, data = |111|222|333/hhh, link = -1
 Item #26, data = |111|222|333/iii, link = -1
-
-/> exit
+exit

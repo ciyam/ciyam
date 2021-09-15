@@ -1,7 +1,5 @@
-
-/> file_replace xxx test2.jpg
-
-/> branch objects
+file_replace xxx test2.jpg
+branch objects
 aaa* (3.1 kB)
 bbb* (5.7 kB)
 ccc* (3.1 kB)
@@ -14,10 +12,8 @@ iii* (3.1 kB)
 xxx (3.1 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> file_replace yyy test2.jpg
-
-/> branch objects
+file_replace yyy test2.jpg
+branch objects
 aaa* (3.1 kB)
 bbb* (3.1 kB)
 ccc* (3.1 kB)
@@ -30,8 +26,7 @@ iii* (3.1 kB)
 xxx (3.1 kB)
 yyy (3.1 kB)
 zzz (3.1 kB)
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 21
@@ -60,5 +55,4 @@ Item #17, data = |/iii, link = -1
 Item #18, data = |/xxx, link = -1
 Item #19, data = |/yyy, link = -1
 Item #20, data = |/zzz, link = -1
-
-/> exit
+exit

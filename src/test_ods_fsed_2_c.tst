@@ -1,25 +1,17 @@
-
-/> file_link aaa zzz
-
-/> file_link bbb yyy
-
-/> file_link ccc xxx
-
-/> branch objects
+file_link aaa zzz
+file_link bbb yyy
+file_link ccc xxx
+branch objects
 aaa* (3.1 kB)
 bbb* (5.7 kB)
 ccc* (6.7 kB)
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> file_link ddd zzz
-
-/> file_link eee yyy
-
-/> file_link fff xxx
-
-/> branch objects
+file_link ddd zzz
+file_link eee yyy
+file_link fff xxx
+branch objects
 aaa* (3.1 kB)
 bbb* (5.7 kB)
 ccc* (6.7 kB)
@@ -29,14 +21,10 @@ fff* (6.7 kB)
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> file_link ggg zzz
-
-/> file_link hhh yyy
-
-/> file_link iii xxx
-
-/> branch objects
+file_link ggg zzz
+file_link hhh yyy
+file_link iii xxx
+branch objects
 aaa* (3.1 kB)
 bbb* (5.7 kB)
 ccc* (6.7 kB)
@@ -49,8 +37,7 @@ iii* (6.7 kB)
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 21
@@ -79,5 +66,4 @@ Item #17, data = |/iii, link = -1
 Item #18, data = |/xxx, link = -1
 Item #19, data = |/yyy, link = -1
 Item #20, data = |/zzz, link = -1
-
-/> exit
+exit

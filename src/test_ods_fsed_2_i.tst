@@ -1,15 +1,9 @@
-
-/> cd 111/222/333
-
-/111/222/333> file_remove ggg
-
-/111/222/333> cd /
-
-/> file_remove 111/222/ddd
-
-/> file_remove 111/aaa
-
-/> branch objects
+cd 111/222/333
+file_remove ggg
+cd /
+file_remove 111/222/ddd
+file_remove 111/aaa
+branch objects
 111/
 111/222/
 111/222/333/
@@ -22,8 +16,7 @@
 xxx (6.7 kB)
 yyy (5.7 kB)
 zzz (3.1 kB)
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 21
@@ -52,5 +45,4 @@ Item #17, data = |111|222/eee, link = -1
 Item #18, data = |111|222/fff, link = -1
 Item #19, data = |111|222|333/hhh, link = -1
 Item #20, data = |111|222|333/iii, link = -1
-
-/> exit
+exit

@@ -1,26 +1,18 @@
-
-/> cd
+cd
 /
-
-/> cd def
-
-/def> folder_move test_2 test_1
-
-/def> branch objects
+cd def
+folder_move test_2 test_1
+branch objects
 test_1/
 test_1/test_2/
 test_3/
-
-/def> folder_move test_3 test_1/test_2
-
-/def> branch objects
+folder_move test_3 test_1/test_2
+branch objects
 test_1/
 test_1/test_2/
 test_1/test_2/test_3/
-
-/def> cd /
-
-/> branch folders
+cd /
+branch folders
 abc
 abc/aaa
 abc/nnn
@@ -37,8 +29,7 @@ xyz
 xyz/test_A
 xyz/test_B
 xyz/test_C
-
-/> branch objects
+branch objects
 abc/
 abc/aaa/
 abc/nnn/
@@ -55,8 +46,7 @@ xyz/
 xyz/test_A/
 xyz/test_B/
 xyz/test_C/
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 32
@@ -96,5 +86,4 @@ Item #28, data = :ghi/999, link = -1
 Item #29, data = :xyz/test_A, link = -1
 Item #30, data = :xyz/test_B, link = -1
 Item #31, data = :xyz/test_C, link = -1
-
-/> exit
+exit

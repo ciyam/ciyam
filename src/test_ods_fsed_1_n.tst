@@ -1,17 +1,11 @@
-
-/> cd
+cd
 /
-
-/> cd abc
-
-/abc> folder_remove def
+cd abc
+folder_remove def
 *** cannot remove 'def' as it has one or more child folders ***
-
-/abc> folder_remove -r def
-
-/abc> cd /
-
-/> branch folders
+folder_remove -r def
+cd /
+branch folders
 abc
 abc/aaa
 abc/xyz
@@ -23,31 +17,23 @@ ghi/111
 ghi/555
 ghi/999
 zzz
-
-/> folder_remove abc
+folder_remove abc
 *** cannot remove 'abc' as it has one or more child folders ***
-
-/> folder_remove -r abc
-
-/> branch folders
+folder_remove -r abc
+branch folders
 ghi
 ghi/111
 ghi/555
 ghi/999
 zzz
-
-/> folder_remove ghi
+folder_remove ghi
 *** cannot remove 'ghi' as it has one or more child folders ***
-
-/> folder_remove -r ghi
-
-/> branch folders
+folder_remove -r ghi
+branch folders
 zzz
-
-/> branch objects
+branch objects
 zzz/
-
-/> dump
+dump
 Total index levels = 0
 Total number of nodes = 1
 Total number of items = 2
@@ -57,5 +43,4 @@ Dumping level #0
          lft_link = -1, rgt_link = -1
 Item #0, data = /zzz, link = -1
 Item #1, data = :/zzz, link = -1
-
-/> exit
+exit
