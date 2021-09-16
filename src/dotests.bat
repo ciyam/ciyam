@@ -6,11 +6,11 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto next
 
-test -q tests.sio test_%1
+test -q -d=../tests tests.sio test_%1
 goto end
 
 :next
-test -q tests.sio
+test -q -d=../tests tests.sio
 
 :end
 

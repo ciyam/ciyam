@@ -1,8 +1,0 @@
-module_load Meta
-module_list
-module_class_list Meta
-module_class_field_list Meta User
-module_class_field_list Meta Workgroup
-module_unload Meta
-module_list
-.quit

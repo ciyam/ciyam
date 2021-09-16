@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -eq 1 ]; then
- ./test -q tests.sio test_$1
+ ./test -q -d=../tests tests.sio test_$1
 else
- ./test -q tests.sio
+ ./test -q -d=../tests tests.sio
 fi

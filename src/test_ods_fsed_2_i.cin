@@ -1,8 +1,0 @@
-cd 111/222/333
-file_remove ggg
-cd /
-file_remove 111/222/ddd
-file_remove 111/aaa
-branch objects
-dump
-exit

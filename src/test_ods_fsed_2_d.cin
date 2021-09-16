@@ -1,6 +1,0 @@
-file_replace xxx test2.jpg
-branch objects
-file_replace yyy test2.jpg
-branch objects
-dump
-exit

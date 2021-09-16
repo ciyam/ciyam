@@ -1,9 +1,0 @@
-cd
-folder_add abc
-folder_add xyz
-branch objects
-folder_add ghi
-folder_add def
-branch objects
-dump
-exit

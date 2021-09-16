@@ -82,7 +82,7 @@ enum error_stop_point
 
 bool g_is_quiet = false;
 
-string g_tests_directory;
+string g_tests_directory = ".";
 
 size_t g_num_test_steps_captured = 0;
 size_t g_num_test_steps_attempted = 0;
@@ -132,6 +132,8 @@ const char* const c_null_device_name = "nul";
 #else
 const char* const c_null_device_name = "/dev/null";
 #endif
+
+const char* const c_tests_directory_var_name = "TESTS_DIR";
 
 const int c_buffer_size = 32768;
 
@@ -436,10 +438,9 @@ void perform_test_step( const test_step& s, const string& test_name )
    {
       command += " <";
 
-      if( !g_tests_directory.empty( ) )
-         command += g_tests_directory + '/';
-
+      command += g_tests_directory + '/';
       command += test_name + '_' + s.name;
+
       command += ".cin";
    }
 
@@ -452,11 +453,8 @@ void perform_test_step( const test_step& s, const string& test_name )
    {
       test_step_name = test_output_file_name = temp_output_file_name = test_name + '_' + s.name;
 
-      if( !g_tests_directory.empty( ) )
-      {
-         temp_output_file_name = g_tests_directory + '/' + temp_output_file_name;
-         test_output_file_name = g_tests_directory + '/' + test_output_file_name;
-      }
+      temp_output_file_name = g_tests_directory + '/' + temp_output_file_name;
+      test_output_file_name = g_tests_directory + '/' + test_output_file_name;
 
       temp_output_file_name += ".new";
       test_output_file_name += ".tst";
@@ -604,6 +602,8 @@ int main( int argc, char* argv[ ] )
 
       test_set_file_name = next_arg;
    }
+
+   set_environment_variable( c_tests_directory_var_name, g_tests_directory );
 
    while( ++first_arg < argc )
    {

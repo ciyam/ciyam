@@ -1,4 +1,0 @@
-append test_btree_4_a.txt
-build
-dump test_btree_4_a.new
-exit

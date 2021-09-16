@@ -1,9 +1,0 @@
-aaa
-bbb
-ccc
-ddd
-eee
-0
-aaa
-bbb
-ccc

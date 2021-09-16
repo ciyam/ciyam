@@ -420,7 +420,7 @@
    </tests>
   </group>
   <group/>
-   <name>xrep
+   <name>test_xrep
    <tests/>
     <test/>
      <name>1
@@ -672,55 +672,55 @@
      <description>Perform three-way merges between "rcs" diffs and "diff0.txt" base.
      <test_step/>
       <name>a
-      <exec>!diffp -q diff0.txt test_diff_1_a.tst test_diff_1_b.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_a.tst $TESTS_DIR/test_diff_1_b.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>!diffp -q diff0.txt test_diff_1_b.tst test_diff_1_c.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_b.tst $TESTS_DIR/test_diff_1_c.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>!diffp -q diff0.txt test_diff_1_c.tst test_diff_1_d.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_c.tst $TESTS_DIR/test_diff_1_d.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>!diffp -q diff0.txt test_diff_1_d.tst test_diff_1_e.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_d.tst $TESTS_DIR/test_diff_1_e.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>e
-      <exec>!diffp -q diff0.txt test_diff_1_e.tst test_diff_1_f.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_e.tst $TESTS_DIR/test_diff_1_f.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>f
-      <exec>!diffp -q diff0.txt test_diff_1_f.tst test_diff_1_g.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_f.tst $TESTS_DIR/test_diff_1_g.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>g
-      <exec>!diffp -q diff0.txt test_diff_1_g.tst test_diff_1_h.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_g.tst $TESTS_DIR/test_diff_1_h.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>h
-      <exec>!diffp -q diff0.txt test_diff_1_h.tst test_diff_1_i.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_h.tst $TESTS_DIR/test_diff_1_i.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>!diffp -q diff0.txt test_diff_1_i.tst test_diff_1_j.tst
+      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_i.tst $TESTS_DIR/test_diff_1_j.tst
       <input>false
       <output>generate
      </test_step>
@@ -730,13 +730,13 @@
      <description>Perform three-way merges between "rcs" diffs and "diff1.txt" base.
      <test_step/>
       <name>a
-      <exec>!diffp -q diff1.txt test_diff_2_a.tst test_diff_2_b.tst
+      <exec>!diffp -q diff1.txt $TESTS_DIR/test_diff_2_a.tst $TESTS_DIR/test_diff_2_b.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>!diffp -q diff1.txt test_diff_2_b.tst test_diff_2_c.tst
+      <exec>!diffp -q diff1.txt $TESTS_DIR/test_diff_2_b.tst $TESTS_DIR/test_diff_2_c.tst
       <input>false
       <output>generate
      </test_step>

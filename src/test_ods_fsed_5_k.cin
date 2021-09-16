@@ -1,5 +1,0 @@
-cd
-branch objects
-truncate
-folder_add aaa
-exit
