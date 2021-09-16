@@ -1,0 +1,8 @@
+trans xxx
+add aaa
+add bbb
+add ccc
+list
+commit
+list
+exit

@@ -1,0 +1,10 @@
+list
+export config.info.default test_ods_6_g.tmp
+~diff -q config.info.default test_ods_6_g.tmp
+~rm test_ods_6_g.tmp
+export mnemonics.txt test_ods_6_g.tmp
+~diff -q mnemonics.txt test_ods_6_g.tmp
+~rm test_ods_6_g.tmp
+rewind yyy
+list
+exit
