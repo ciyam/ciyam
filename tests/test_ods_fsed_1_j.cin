@@ -1,0 +1,10 @@
+cd
+folder_move ghi def/test_1
+branch folders
+folder_move xyz abc
+branch folders
+folder_move def abc
+branch folders
+branch objects
+dump
+exit

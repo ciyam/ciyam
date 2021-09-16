@@ -1,0 +1,11 @@
+cd
+cd abc
+folder_add aaa
+folder_add zzz
+folder_add nnn
+branch objects
+cd /
+branch folders
+branch objects
+dump
+exit

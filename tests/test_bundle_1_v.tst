@@ -1,0 +1,2 @@
+~temp.png
+~temp.jpg

@@ -1,0 +1,279 @@
+version
+session_list -min
+encrypt -no_ssl -no_salt for_testing_password
+a=X
+b=Y
+c=Z
+#$a
+#$a.
+#.$a
+#%a%
+#%a%.
+#.%a%
+#$a$b
+#$a$b.
+#.$a$b
+#$a.$b.
+#%a%%b%
+#.%a%%b%
+#%a%%b%.
+#%a%.%b%.
+#$a$b$c
+#$a$b$c.
+#.$a$b$c.
+#$a.$b.$c.
+#%a%%b%%c%
+#%a%%b%%c%.
+#.%a%%b%%c%.
+#%a%.%b%.%c%.
+crypto_keys XBT test
+addr=%OUTPUT:1%
+pubkey=%OUTPUT:2%
+privkey=%OUTPUT:3%
+#addr is: $addr
+#pubkey is $pubkey
+#privkey is $privkey
+TEST=abcdefghi
+#$TEST
+X=@substr:0,-1:$TEST
+#$X
+X=@substr:0,-2:$TEST
+#$X
+X=%TEST:0>abc%
+#$X
+Y=%TEST:0<ghi%
+#$Y
+Z=%TEST:0>abc<ghi%
+#$Z
+TEST=abc<def>ghi
+#$TEST
+X=%TEST:0><<>%
+#$X
+X=255
+HL=@hexlit:$X
+#$HL
+HB=@hexbig:$X
+#$HB
+Y=@substr:0,8:$HL
+#$Y
+Z=@substr:8:$HB
+#$Z
+Y=@$X*16
+#$Y
+Y=@$Y+20
+#$Y
+Y=@$Y-100
+#$Y
+Y=@$Y/4000
+#$Y
+@ifdef $Y
+#ifdef true
+@else
+#ifdef false
+@endif
+@ifndef $Y
+#ifndef true
+@else
+#ifndef false
+@endif
+Y=
+@ifdef $Y
+#ifdef true
+@else
+#ifdef false
+@endif
+@ifndef $Y
+#ifndef true
+@else
+#ifndef false
+@endif
+ASC=1234567890
+#$ASC
+HEX=@aschex:$ASC
+#$HEX
+ASC=@hexasc:$HEX
+#$ASC
+HASH=@sha256:$ASC
+#$HASH
+X=x
+Y=y
+@ifeq $X $Y
+#@ifeq $X $Y true
+@else
+#@ifeq $X $Y false
+@endif
+@ifneq $X $Y
+#@ifneq $X $Y true
+@else
+#@ifneq $X $Y false
+@endif
+X=$Y
+@ifeq $X $Y
+#@ifeq $X $Y true
+@else
+#@ifeq $X $Y false
+@endif
+@ifneq $X $Y
+#@ifneq $X $Y true
+@else
+#@ifneq $X $Y false
+@endif
+X=xxyyzz
+#$X
+X=@repstr:zz/xx:$X
+#$X
+X=ab/cd/ef
+#$X
+X=@repstr:\//\::$X
+#$X
+X=@repstr:\:/\/:$X
+#$X
+!-0
+!
+#a
+#b
+#c
+#d
+#e
+!
+!-1
+!
+!!-
+!
+!1
+!!
+!2
+!1#2
+#e
+!2#2
+!2#0
+#f
+#g
+!
+!-#3
+!
+!0
+#e
+#f
+#g
+!
+!-2#3
+!
+#h
+#i
+#j
+!
+!-3#0
+!
+!-0
+;
+@label L1
+TEST=aaa
+;
+@:LOOP
+#Looping with $TEST
+@skip
+;
+@:L1
+@label L2
+TEST=bbb
+!!@:LOOP
+;
+@:L2
+@label L3
+TEST=ccc
+!!@:LOOP
+;
+@:L3
+@label L4
+TEST=ddd
+!!@:LOOP
+;
+@:L4
+;
+X=XXX
+@:MAIN_LOOP
+Y=YYY
+;
+@ifeq "$X" "XX"
+Y=YYYY
+@endif
+;
+@ifeq "$X" "X"
+Y=YYYYY
+@endif
+;
+@label NEXT
+@ifndef $X
+@label END
+@endif
+;
+@label
+@skip
+@:NEXT
+#$X $Y
+X=@substr:1:$X
+;
+@:INNER_LOOP
+@label CONT
+@ifndef $Y
+@label DONE
+@endif
+;
+@label
+@skip
+@:CONT
+Y=@substr:1:$Y
+!!@:INNER_LOOP
+@:DONE
+;
+!!@:MAIN_LOOP
+@:END
+;
+session_variable @set aaa
+session_variable @set aaa
+session_variable @set bbb
+session_variable @set bbb
+session_variable @set ccc
+session_variable @set ccc
+session_variable @set aaa
+session_variable @set bbb
+session_variable @set ccc
+session_variable @set
+session_variable @deque @set
+session_variable @deque
+session_variable @deque @set
+session_variable @deque
+session_variable @deque "push_back yyy"
+session_variable @deque "push_front xxx"
+session_variable @deque
+session_variable @deque pop_back
+session_variable @deque pop_front
+session_variable @deque
+session_variable @deque "push_front eee"
+session_variable @deque "push_front ddd"
+session_variable @deque
+session_variable @set @deque
+session_variable @set
+;
+<test_args.cin XXX
+<test_args.cin XXX YYY
+<test_args.cin XXX YYY ZZZ
+<test_args.cin XXX "" ZZZ
+<test_args.cin "" "" ZZZ
+;
+utc_to_local AEST "2013-10-05 15:00"
+utc_to_local AEST+ "2013-10-05 15:00"
+utc_from_local AEST "2013-10-06 01:00"
+utc_to_local AEST "2013-10-06 16:00"
+utc_to_local AEST+ "2013-10-06 16:00"
+utc_from_local AEST "2013-10-07 03:00"
+utc_from_local AEDT "2013-10-07 03:00"
+utc_to_local AEST "2014-04-05 15:00"
+utc_to_local AEST+ "2014-04-05 15:00"
+utc_from_local AEST "2014-04-06 02:00"
+utc_from_local AEDT "2014-04-06 02:00"
+utc_to_local AEST "2014-04-05 16:00"
+utc_to_local AEST+ "2014-04-05 16:00"
+utc_from_local AEST "2014-04-06 02:00"
+.quit

@@ -1,0 +1,19 @@
+put 0-99 "item #%d"
+flush new
+clear
+get 0-99 $TESTS_DIR/test_cache_1_b.new
+clear
+get 0-4
+get 0-1
+get 6-8
+dump detailed $TESTS_DIR/test_cache_1_c.new
+put 5 "test for 5"
+put 8 "test for 8"
+get 0-9
+dump detailed $TESTS_DIR/test_cache_1_d.new
+get 10-20
+put 0-4 "changed #%d"
+throw store 10
+put 10-29 "stored #%d"
+get 0-99 $TESTS_DIR/test_cache_1_e.new
+exit

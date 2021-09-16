@@ -1,0 +1,6 @@
+file_add xxx test.jpg
+file_add yyy test1.jpg
+file_add zzz test2.jpg
+branch objects
+dump
+exit

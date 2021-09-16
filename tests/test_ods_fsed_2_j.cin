@@ -1,0 +1,6 @@
+file_remove xxx
+branch objects
+file_remove yyy
+branch objects
+dump
+exit

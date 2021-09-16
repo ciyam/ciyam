@@ -1,0 +1,38 @@
+module_load Meta
+object_create Meta User
+object_execute 1 set "Description \"Test Description\""
+object_validate 1
+object_execute 1 set "Password \"Test Password\""
+object_validate 1
+object_execute 1 set "User_Id \"Test User_Id\""
+object_validate 1
+object_execute 1 get Description
+object_execute 1 get User_Id
+object_execute 1 get Password
+object_variable 1 test1 "first value"
+object_variable 1 test2 "second value"
+object_variable 1 test1
+object_variable 1 test2
+object_create Meta Workgroup
+object_create Meta User
+object_create Meta Application
+object_create Meta Workgroup
+object_execute 4 set "Name \"Test App Name\""
+object_variable 4 test_var "One"
+object_execute 4 Test_Proc_1
+object_variable 4 test_var "Two"
+session_variable test_var "Here"
+object_execute 4 "Test_Proc_2 \"Is Over\""
+session_variable test_var "Found"
+object_execute 4 "Test_Proc_2 \"Is Soon\""
+session_list -min
+object_list
+object_destroy 1
+object_list
+object_destroy 2
+object_destroy 3
+object_destroy 4
+object_destroy 5
+object_list
+module_unload Meta
+.quit

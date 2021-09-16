@@ -1,0 +1,11 @@
+cd
+branch objects
+file_get xxx test_ods_fsed_4_e.tmp
+~diff -q config.info.default test_ods_fsed_4_e.tmp
+~rm test_ods_fsed_4_e.tmp
+file_get yyy test_ods_fsed_4_e.tmp
+~diff -q mnemonics.txt test_ods_fsed_4_e.tmp
+~rm test_ods_fsed_4_e.tmp
+compress
+branch objects
+exit

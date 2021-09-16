@@ -1,0 +1,7 @@
+list
+rewind xxx
+trans
+add xxx
+add yyy
+commit
+exit

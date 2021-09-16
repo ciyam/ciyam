@@ -1,0 +1,9 @@
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add bbb
+remove aaa
+dump $TESTS_DIR/test_btree_3_c.new
+exit

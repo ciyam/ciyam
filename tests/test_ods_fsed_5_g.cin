@@ -1,0 +1,8 @@
+cd
+branch objects
+rewind yyy
+file_get xxx test_ods_fsed_4_g.tmp
+~diff -q config.info.default test_ods_fsed_4_g.tmp
+~rm test_ods_fsed_4_g.tmp
+branch objects
+exit

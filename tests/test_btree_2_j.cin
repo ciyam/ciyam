@@ -1,0 +1,26 @@
+add a
+add b
+add c
+add d
+add a
+add b
+add c
+add d
+add a
+add b
+add c
+add d
+add a
+add b
+add c
+add d
+add a
+add b
+add c
+add d
+add a
+add b
+add c
+add d
+dump $TESTS_DIR/test_btree_2_j.new
+exit

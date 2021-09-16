@@ -1,0 +1,10 @@
+get 0-65534
+dump summary $TESTS_DIR/test_cache_3_b.new
+get 65535
+dump summary $TESTS_DIR/test_cache_3_c.new
+max items 1000
+dump summary $TESTS_DIR/test_cache_3_d.new
+max itemspr 10000
+dump summary $TESTS_DIR/test_cache_3_e.new
+max regions 0
+dump detailed $TESTS_DIR/test_cache_3_f.new

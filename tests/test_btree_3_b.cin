@@ -1,0 +1,14 @@
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+add aaa
+remove
+dump $TESTS_DIR/test_btree_3_b.new
+exit

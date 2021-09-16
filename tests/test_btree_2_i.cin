@@ -1,0 +1,17 @@
+add a
+add b
+add c
+add a
+add b
+add c
+add a
+add b
+add c
+add a
+add b
+add c
+add a
+add b
+add c
+dump $TESTS_DIR/test_btree_2_i.new
+exit
