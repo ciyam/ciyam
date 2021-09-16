@@ -1,0 +1,8 @@
+cd
+label yyy
+file_add yyy mnemonics.txt
+branch objects
+file_get yyy test_ods_fsed_4_c.tmp
+~diff -q mnemonics.txt test_ods_fsed_4_c.tmp
+~rm test_ods_fsed_4_c.tmp
+exit

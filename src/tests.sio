@@ -1496,6 +1496,127 @@
       <output>generate
      </test_step>
     </test>
+    <test/>
+     <name>5
+     <description>Test various encrypted DB operations using a transaction log.
+     <kill>ods_fsed.tlg
+     <kill>ods_fsed.tlg.1
+     <kill>ods_fsed.tlg.2
+     <kill>ods_fsed.dat
+     <kill>ods_fsed.idx
+     <kill>ods_fsed.hdr
+     <kill>ods_fsed.dat.lck
+     <kill>ods_fsed.idx.lck
+     <kill>ods_fsed.hdr.lck
+     <test_step/>
+      <name>a
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ods_dump -dtt all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>ods_dump -dtt all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>l
+      <exec>ods_dump -tt all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>m
+      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>n
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>o
+      <exec>ods_dump -tt all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>p
+      <exec>del ods_fsed.dat* ods_fsed.idx* ods_fsed.hdr*
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>q
+      <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>r
+      <exec>ods_dump -tt all ods_fsed
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
    </tests>
   </group>
   <group/>

@@ -82,12 +82,14 @@ enum error_stop_point
 
 bool g_is_quiet = false;
 
+string g_tests_directory;
+
 size_t g_num_test_steps_captured = 0;
 size_t g_num_test_steps_attempted = 0;
 size_t g_num_test_steps_succeeded = 0;
 size_t g_num_test_steps_mismatched = 0;
 
-error_stop_point g_error_stop( e_error_stop_point_step );
+error_stop_point g_error_stop = e_error_stop_point_step;
 
 vector< group > g_groups;
 
@@ -433,6 +435,10 @@ void perform_test_step( const test_step& s, const string& test_name )
    if( s.has_input )
    {
       command += " <";
+
+      if( !g_tests_directory.empty( ) )
+         command += g_tests_directory + '/';
+
       command += test_name + '_' + s.name;
       command += ".cin";
    }
@@ -445,6 +451,12 @@ void perform_test_step( const test_step& s, const string& test_name )
    if( s.output != e_output_type_none )
    {
       test_step_name = test_output_file_name = temp_output_file_name = test_name + '_' + s.name;
+
+      if( !g_tests_directory.empty( ) )
+      {
+         temp_output_file_name = g_tests_directory + '/' + temp_output_file_name;
+         test_output_file_name = g_tests_directory + '/' + test_output_file_name;
+      }
 
       temp_output_file_name += ".new";
       test_output_file_name += ".tst";
@@ -536,7 +548,7 @@ int main( int argc, char* argv[ ] )
    if( argc < 2
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
    {
-      cout << "usage: test [-q] [-e{none|step|test|group}] <test_set.sio> [<group_1[:test[;step]]> [<group_2[:test[;step]]> [...]]]" << endl;
+      cout << "usage: test [-q] [-d=<tests_dir>] [-e={none|step|test|group}] <tests_file.sio> [<group_1[:test[;step]]> [<group_2[:test[;step]]> [...]]]" << endl;
 
       return 0;
    }
@@ -548,13 +560,27 @@ int main( int argc, char* argv[ ] )
    if( argc >= 2 )
    {
       string next_arg( argv[ first_arg ] );
+
       while( next_arg.size( ) > 1 && next_arg[ 0 ] == '-' )
       {
          if( next_arg == string( "-q" ) )
             g_is_quiet = true;
+         else if( next_arg.substr( 0, 2 ) == string( "-d" ) )
+         {
+            next_arg.erase( 0, 2 );
+
+            if( next_arg.size( ) > 1 && next_arg[ 0 ] == '=' );
+               next_arg.erase( 0, 1 );
+
+            g_tests_directory = next_arg;
+         }
          else if( next_arg.substr( 0, 2 ) == string( "-e" ) )
          {
             next_arg.erase( 0, 2 );
+
+            if( next_arg.size( ) > 1 && next_arg[ 0 ] == '=' );
+               next_arg.erase( 0, 1 );
+
             if( next_arg == string( "none" ) )
                g_error_stop = e_error_stop_point_none;
             else if( next_arg == string( "step" ) )
