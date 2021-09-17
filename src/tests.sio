@@ -427,25 +427,25 @@
      <description>Perform basic xrep functionality tests.
      <test_step/>
       <name>a
-      <exec>xrep @xrep_1_a.xrep
+      <exec>xrep @$TESTS_DIR/xrep_1_a.xrep
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>xrep @xrep_1_a.xrep include=xrep_1_b.xrep
+      <exec>xrep @$TESTS_DIR/xrep_1_a.xrep include=$TESTS_DIR/xrep_1_b.xrep
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>xrep @xrep_1_c.xrep field=Field field_list=Source separator=, section=for_test
+      <exec>xrep @$TESTS_DIR/xrep_1_c.xrep field=Field field_list=Source separator=, section=for_test
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>xrep @xrep_1_c.xrep field=Field field_list=@xrep_1_d.lst separator=, section=for_test
+      <exec>xrep @$TESTS_DIR/xrep_1_c.xrep field=Field field_list=@$TESTS_DIR/xrep_1_d.lst separator=, section=for_test
       <input>false
       <output>generate
      </test_step>
