@@ -1,4 +1,4 @@
-append test_btree_4_e.txt
+append $TESTS_DIR/test_btree_4_e.txt
 build
 dump $TESTS_DIR/test_btree_4_e.new
 exit

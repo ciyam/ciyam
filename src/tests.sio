@@ -580,61 +580,61 @@
      <description>Perform "rcs" diff operations between variations of "diff0.txt".
      <test_step/>
       <name>a
-      <exec>diff -q -rcs diff0.txt diff0.0.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.0.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>diff -q -rcs diff0.txt diff0.1.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.1.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>diff -q -rcs diff0.txt diff0.2.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.2.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>diff -q -rcs diff0.txt diff0.3.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.3.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>e
-      <exec>diff -q -rcs diff0.txt diff0.4.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.4.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>f
-      <exec>diff -q -rcs diff0.txt diff0.5.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.5.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>g
-      <exec>diff -q -rcs diff0.txt diff0.6.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.6.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>h
-      <exec>diff -q -rcs diff0.txt diff0.7.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.7.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>diff -q -rcs diff0.txt diff0.8.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.8.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>j
-      <exec>diff -q -rcs diff0.txt diff0.9.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff0.txt $TESTS_DIR/diff0.9.txt
       <input>false
       <output>generate
      </test_step>
@@ -644,25 +644,25 @@
      <description>Perform "rcs" diff operations between variations of "diff1.txt".
      <test_step/>
       <name>a
-      <exec>diff -q -rcs diff1.txt diff1.0.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff1.txt $TESTS_DIR/diff1.0.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>diff -q -rcs diff1.txt diff1.1.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff1.txt $TESTS_DIR/diff1.1.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>diff -q -rcs diff1.txt diff1.2.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff1.txt $TESTS_DIR/diff1.2.txt
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>diff -q -rcs diff1.txt diff1.3.txt
+      <exec>diff -q -rcs $TESTS_DIR/diff1.txt $TESTS_DIR/diff1.3.txt
       <input>false
       <output>generate
      </test_step>
@@ -672,55 +672,55 @@
      <description>Perform three-way merges between "rcs" diffs and "diff0.txt" base.
      <test_step/>
       <name>a
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_a.tst $TESTS_DIR/test_diff_1_b.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_a.tst $TESTS_DIR/test_diff_1_b.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_b.tst $TESTS_DIR/test_diff_1_c.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_b.tst $TESTS_DIR/test_diff_1_c.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>c
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_c.tst $TESTS_DIR/test_diff_1_d.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_c.tst $TESTS_DIR/test_diff_1_d.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_d.tst $TESTS_DIR/test_diff_1_e.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_d.tst $TESTS_DIR/test_diff_1_e.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>e
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_e.tst $TESTS_DIR/test_diff_1_f.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_e.tst $TESTS_DIR/test_diff_1_f.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>f
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_f.tst $TESTS_DIR/test_diff_1_g.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_f.tst $TESTS_DIR/test_diff_1_g.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>g
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_g.tst $TESTS_DIR/test_diff_1_h.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_g.tst $TESTS_DIR/test_diff_1_h.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>h
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_h.tst $TESTS_DIR/test_diff_1_i.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_h.tst $TESTS_DIR/test_diff_1_i.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>i
-      <exec>!diffp -q diff0.txt $TESTS_DIR/test_diff_1_i.tst $TESTS_DIR/test_diff_1_j.tst
+      <exec>!diffp -q $TESTS_DIR/diff0.txt $TESTS_DIR/test_diff_1_i.tst $TESTS_DIR/test_diff_1_j.tst
       <input>false
       <output>generate
      </test_step>
@@ -730,13 +730,13 @@
      <description>Perform three-way merges between "rcs" diffs and "diff1.txt" base.
      <test_step/>
       <name>a
-      <exec>!diffp -q diff1.txt $TESTS_DIR/test_diff_2_a.tst $TESTS_DIR/test_diff_2_b.tst
+      <exec>!diffp -q $TESTS_DIR/diff1.txt $TESTS_DIR/test_diff_2_a.tst $TESTS_DIR/test_diff_2_b.tst
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>!diffp -q diff1.txt $TESTS_DIR/test_diff_2_b.tst $TESTS_DIR/test_diff_2_c.tst
+      <exec>!diffp -q $TESTS_DIR/diff1.txt $TESTS_DIR/test_diff_2_b.tst $TESTS_DIR/test_diff_2_c.tst
       <input>false
       <output>generate
      </test_step>
