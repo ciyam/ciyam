@@ -1342,7 +1342,7 @@ struct trace_progress : progress
      TRACE_LOG( TRACE_ANYTHING, message );
    }
 
-   void output_message( const string& message )
+   void output_message( const string& message, unsigned long num, unsigned long total )
    {
       date_time now( date_time::local( ) );
       uint64_t elapsed = seconds_between( dtm, now );
@@ -1350,8 +1350,18 @@ struct trace_progress : progress
       // NOTE: Avoid filling the log with a large number of progress messages.
       if( elapsed >= 10 )
       {
+         string extra;
+
+         if( num || total )
+         {
+            extra += to_string( num );
+
+            if( total )
+               extra += '/' + to_string( total );
+         }
+
          dtm = now;
-         TRACE_LOG( TRACE_ANYTHING, message );
+         TRACE_LOG( TRACE_ANYTHING, message + extra );
       }
    }
 

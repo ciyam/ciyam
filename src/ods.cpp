@@ -3546,7 +3546,7 @@ string ods::backup_database( const char* p_ext, char sep )
    return retval;
 }
 
-void ods::move_free_data_to_end( )
+void ods::move_free_data_to_end( progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -3573,13 +3573,35 @@ void ods::move_free_data_to_end( )
 
    ods_index_entry index_entry;
 
+   bool had_progress_output = false;
+
+   date_time dtm( date_time::local( ) );
+
+   int64_t total_entries = p_impl->rp_header_info->total_entries;
+   int64_t total_size_of_data = p_impl->rp_header_info->total_size_of_data;
+
    // FUTURE: This approach requires keeping in memory an "ods_index_entry_pos" item for every active
    // "index_entry" in the entire database. If a "deque" (rather than a "set") was used then it could
    // be limited to a maximum size with potentially multiple passes being performed across all of the
    // index entries that would then only insert items for those index entries whose "pos" is actually
    // greater than the last item from the previous pass.
-   for( int64_t i = 0; i < p_impl->rp_header_info->total_entries; i++ )
+   for( int64_t i = 0; i < total_entries; i++ )
    {
+      if( p_progress )
+      {
+         date_time now( date_time::local( ) );
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+            had_progress_output = true;
+
+            // FUTURE: This message should be handled in an external strings file.
+            p_progress->output_progress( "Scanning index items...", i, total_entries );
+         }
+      }
+
       read_index_entry( index_entry, i );
       if( index_entry.lock_flag != ods_index_entry::e_lock_none )
          THROW_ODS_ERROR( "cannot move free data to end when one or more entries have been locked" );
@@ -3662,6 +3684,21 @@ void ods::move_free_data_to_end( )
 
                read_data_bytes( buffer, chunk, is_encrypted );
                logf.write( ( unsigned char* )buffer, chunk );
+
+               if( p_progress )
+               {
+                  date_time now( date_time::local( ) );
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     dtm = now;
+                     had_progress_output = true;
+
+                     // FUTURE: This message should be handled in an external strings file.
+                     p_progress->output_progress( "Appending to tx log...", next_pos, total_size_of_data );
+                  }
+               }
             }
 
             read_pos = next_pos + next_size;
@@ -3716,6 +3753,21 @@ void ods::move_free_data_to_end( )
 
             read_data_bytes( buffer, chunk );
             write_data_bytes( buffer, chunk );
+
+            if( p_progress )
+            {
+               date_time now( date_time::local( ) );
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  dtm = now;
+                  had_progress_output = true;
+
+                  // FUTURE: This message should be handled in an external strings file.
+                  p_progress->output_progress( "Moving free data to end...", new_pos, total_size_of_data );
+               }
+            }
          }
 
          read_index_entry( index_entry, next_id );
@@ -3735,6 +3787,9 @@ void ods::move_free_data_to_end( )
       new_pos += next_size;
       actual_size += next_size;
    }
+
+   if( p_progress && had_progress_output )
+      p_progress->output_progress( "" );
 
    if( log_entry_offs )
    {

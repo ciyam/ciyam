@@ -644,7 +644,7 @@ class ODS_DECL_SPEC ods
 
    std::string backup_database( const char* p_ext = 0, char sep = ',' );
 
-   void move_free_data_to_end( );
+   void move_free_data_to_end( progress* p_progress = 0 );
 
    void truncate_log( const char* p_ext = 0 );
 

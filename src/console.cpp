@@ -34,6 +34,8 @@
 #include "console.h"
 
 #include "config.h"
+#include "numeric.h"
+#include "progress.h"
 
 #ifdef __GNUG__
 #  define _write ::write
@@ -287,5 +289,74 @@ void put_line( const char* p_chars, size_t len )
    if( outfd != STDOUT_FILENO )
       close( outfd );
 #endif
+}
+
+void console_progress::output_progress( const string& message, unsigned long num, unsigned long total )
+{
+   int new_length = 0;
+
+   if( message.length( ) != 1 )
+      new_length = message.length( );
+   else
+      new_length = output_length + 1;
+
+   cout << message;
+
+   string mask;
+   numeric val( num );
+
+   if( !total )
+      mask = "############";
+   else
+   {
+      val /= total;
+
+      val *= 100;
+
+      mask = "###";
+
+      if( !decimals )
+      {
+         if( val > 0 && val < 0.01 )
+            decimals = 3;
+         else if( val > 0 && val < 0.1 )
+            decimals = 2;
+         else if( val > 0 && val < 1 )
+            decimals = 1;
+      }
+
+      if( decimals )
+         mask += '.' + string( decimals, '0' );
+
+      val.round( decimals );
+   }
+
+   if( val || total )
+   {
+      string formatted( format_numeric( val, mask ) );
+
+      new_length += formatted.length( );
+
+      cout << formatted;
+
+      if( total )
+      {
+         cout << '%';
+         ++new_length;
+      }
+   }
+
+   if( !message.length( ) )
+      cout << '\r';
+
+   if( output_length > new_length )
+      cout << string( output_length - new_length, ' ' );
+
+   if( message.length( ) != 1 )
+      cout << '\r';
+
+   cout.flush( );
+
+   output_length = new_length;
 }
 

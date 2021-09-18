@@ -16,8 +16,6 @@ bbb/
 xxx (266 B)
 yyy (13.1 kB)
 compress
-moving free data to end...
-completed
 branch objects
 aaa/
 bbb/

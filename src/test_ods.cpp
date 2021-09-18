@@ -33,6 +33,8 @@
 #include "format.h"
 #include "console.h"
 #include "pointers.h"
+#include "progress.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "oid_pointer.h"
 #include "storable_file.h"
@@ -622,6 +624,11 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             name = name.substr( 0, pos );
          }
 
+         bool had_progress_output = false;
+
+         console_progress progress;
+         date_time dtm( date_time::local( ) );
+
          for( int i = 0; i < num; i++ )
          {
             temp_node.set_new( );
@@ -636,7 +643,21 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
             o << temp_node;
             node.add_child( temp_node );
+
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               dtm = now;
+               had_progress_output = true;
+
+               progress.output_progress( "Adding items...", i, num );
+            }
          }
+
+         if( had_progress_output )
+            progress.output_progress( "" );
 
          o << node;
       }
@@ -652,7 +673,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       int num = 1;
       size_t index = 0;
       bool is_multi = false;
+
       pos = name.find( '*' );
+
       if( pos != string::npos )
       {
          is_multi = true;
@@ -663,13 +686,21 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       size_t start = 0;
       long num_deleted = 0;
 
+      bool had_progress_output = false;
+
+      console_progress progress;
+      date_time dtm( date_time::local( ) );
+
       int val;
       string str;
+
       for( node.iter( ); node.more( ); node.next( ), ++index )
       {
          temp_node.set_id( node.child( ) );
+
          o >> temp_node;
          str = temp_node.get_description( );
+
          if( is_multi )
          {
             pos = str.find( '#' );
@@ -685,14 +716,28 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                {
                   found = true;
                   ++num_deleted;
+
                   if( !temp_node.get_file( ).get_id( ).is_new( ) )
                      o.destroy( temp_node.get_file( ).get_id( ) );
+
                   o.destroy( temp_node.get_id( ) );
+
+                  date_time now( date_time::local( ) );
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     dtm = now;
+                     had_progress_output = true;
+
+                     progress.output_progress( "Deleting items...", num_deleted, num );
+                  }
                }
                else if( num_deleted )
                {
                   node.del_children( start, num_deleted );
                   index -= num_deleted;
+
                   num_deleted = 0;
                   start = index + 1;
                }
@@ -701,6 +746,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             {
                node.del_children( start, num_deleted );
                index -= num_deleted;
+
                num_deleted = 0;
                start = index + 1;
             }
@@ -724,6 +770,17 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             o.destroy( temp_node.get_id( ) );
             o << node;
 
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               dtm = now;
+               had_progress_output = true;
+
+               progress.output_progress( "Deleting items...", num_deleted, num );
+            }
+
             break;
          }
       }
@@ -744,6 +801,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( !found )
             cout << "cannot find folder: " << name << endl;
       }
+
+      if( had_progress_output )
+         progress.output_progress( "" );
    }
    else if( command == c_cmd_test_ods_import )
    {
@@ -881,9 +941,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
-         handler.issue_command_reponse( "moving free data to end..." );
-         o.move_free_data_to_end( );
-         handler.issue_command_reponse( "completed" );
+         console_progress progress;
+
+         o.move_free_data_to_end( &progress );
       }
    }
    else if( command == c_cmd_test_ods_truncate )

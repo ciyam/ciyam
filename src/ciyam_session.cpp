@@ -1235,7 +1235,7 @@ class socket_command_handler : public command_handler
 
    map< string, string >& get_transformations( ) { return transformations; }
 
-   void output_progress( const string& message )
+   void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
    {
       progress* p_progress = 0;
       trace_progress progress( TRACE_SOCK_OPS );
@@ -1243,7 +1243,17 @@ class socket_command_handler : public command_handler
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
 
-      socket.write_line( string( c_response_message_prefix ) + message, c_request_timeout, p_progress );
+      string extra;
+
+      if( num || total )
+      {
+         extra += to_string( num );
+
+         if( total )
+            extra += '/' + to_string( total );
+      }
+
+      socket.write_line( string( c_response_message_prefix ) + message + extra, c_request_timeout, p_progress );
    }
 
    const string& get_restore_error( ) const { return restore_error; }

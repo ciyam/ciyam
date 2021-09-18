@@ -18,8 +18,6 @@ bbb
 ccc
 config.info.default (266 B)
 mnemonics.txt (13.1 kB)
-moving free data to end...
-completed
 aaa
 bbb
 ccc
@@ -35,8 +33,6 @@ mnemonics.txt (13.1 kB)
 ddd
 eee
 fff
-moving free data to end...
-completed
 aaa
 bbb
 ccc

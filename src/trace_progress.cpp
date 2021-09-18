@@ -9,14 +9,26 @@ struct trace_progress : progress
 {
    trace_progress( int flag ) : flag( flag ) { }
 
-   void output_progress( const string& message );
+   void output_progress( const string& message,
+    unsigned long num = 0, unsigned long total = 0 );
 
    int flag;
 };
 
-void trace_progress::output_progress( const string& message )
+void trace_progress::output_progress(
+ const string& message, unsigned long num, unsigned long total )
 {
+   string extra;
+
+   if( num || total )
+   {
+      extra += to_string( num );
+
+      if( total )
+         extra += '/' + to_string( total );
+   }
+
    if( get_trace_flags( ) & flag )
-      log_trace_message( flag, message );
+      log_trace_message( flag, message + extra );
 }
 

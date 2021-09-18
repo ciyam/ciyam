@@ -13,7 +13,24 @@
 
 struct progress
 {
-   virtual void output_progress( const std::string& /*message*/ ) { }
+   virtual void output_progress(
+    const std::string& message, unsigned long num = 0, unsigned long total = 0 )
+   {
+      ( void )num;
+      ( void )total;
+      ( void )message;
+   }
+};
+
+struct console_progress : progress
+{
+   console_progress( ) : decimals( 0 ), output_length( 0 ) { }
+
+   void output_progress(
+    const std::string& message, unsigned long num = 0, unsigned long total = 0 );
+
+   int decimals;
+   int output_length;
 };
 
 #endif

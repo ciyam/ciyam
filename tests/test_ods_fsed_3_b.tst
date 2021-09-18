@@ -9,8 +9,6 @@ file_get xxx test_ods_fsed_3_a.tmp
 file_get yyy test_ods_fsed_3_a.tmp
 file_remove yyy
 compress
-moving free data to end...
-completed
 branch objects
 aaa/
 bbb/

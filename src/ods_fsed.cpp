@@ -215,20 +215,6 @@ class ods_fsed_startup_functor : public command_functor
 
 class ods_fsed_command_functor;
 
-struct ods_fsed_progress : progress
-{
-   void output_progress( const string& message )
-   {
-      if( message == "." )
-      {
-         cout << message;
-         cout.flush( );
-      }
-      else
-         cout << message << endl;
-   }
-};
-
 class ods_fsed_command_handler : public console_command_handler
 {
    friend class ods_fsed_command_functor;
@@ -275,7 +261,7 @@ void ods_fsed_command_handler::init( )
       if( g_shared_write )
          throw runtime_error( "ODS DB is corrupt - re-start using exclusive write access in order to repair" );
 
-      ods_fsed_progress progress;
+      console_progress progress;
       ap_ods->reconstruct_database( &progress );
    }
 
@@ -407,7 +393,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_add_cin ) );
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
 
-      ods_fsed_progress progress;
+      console_progress progress;
 
       ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
    }
@@ -421,7 +407,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
       if( !name.empty( ) )
       {
-         ods_fsed_progress progress;
+         console_progress progress;
 
          ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout, &progress );
 
@@ -455,7 +441,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       bool use_cin( has_parm_val( parameters, c_cmd_ods_fsed_file_replace_cin ) );
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
 
-      ods_fsed_progress progress;
+      console_progress progress;
 
       ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
    }
@@ -523,7 +509,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
-         ods_fsed_progress progress;
+         console_progress progress;
 
          ap_ods->rewind_transactions( label_or_txid, &progress );
 
@@ -547,10 +533,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
-         handler.issue_command_reponse( "moving free data to end..." );
-         ap_ods->move_free_data_to_end( );
+         console_progress progress;
 
-         handler.issue_command_reponse( "completed" );
+         ap_ods->move_free_data_to_end( &progress );
       }
    }
    else if( command == c_cmd_ods_fsed_truncate )
