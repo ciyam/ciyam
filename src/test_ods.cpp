@@ -629,8 +629,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             name = name.substr( 0, pos );
          }
 
-         bool had_progress_output = false;
-
          console_progress progress;
          date_time dtm( date_time::local( ) );
 
@@ -655,14 +653,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             if( elapsed >= 1 )
             {
                dtm = now;
-               had_progress_output = true;
-
                progress.output_progress( "Adding items...", i, num );
             }
          }
-
-         if( had_progress_output )
-            progress.output_progress( "" );
 
          o << node;
       }
@@ -671,8 +664,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    {
       string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
+      console_progress progress;
+
       bool found = false;
-      ods::bulk_write bulk( o );
+      ods::bulk_write bulk( o, &progress );
       o >> node;
 
       int num = 1;
@@ -691,9 +686,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       size_t start = 0;
       long num_deleted = 0;
 
-      bool had_progress_output = false;
-
-      console_progress progress;
       date_time dtm( date_time::local( ) );
 
       int val;
@@ -734,9 +726,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                   if( elapsed >= 1 )
                   {
                      dtm = now;
-                     had_progress_output = true;
-
-                     progress.output_progress( "Deleting items...", num_deleted, num );
+                     progress.output_progress( "Deleting child items...", num_deleted, num );
                   }
                }
                else if( num_deleted )
@@ -779,14 +769,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             date_time now( date_time::local( ) );
             uint64_t elapsed = seconds_between( dtm, now );
 
-            if( elapsed >= 1 )
-            {
-               dtm = now;
-               had_progress_output = true;
-
-               progress.output_progress( "Deleting items...", num_deleted, num );
-            }
-
             break;
          }
       }
@@ -807,9 +789,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( !found )
             cout << "cannot find folder: " << name << endl;
       }
-
-      if( had_progress_output )
-         progress.output_progress( "" );
    }
    else if( command == c_cmd_test_ods_import )
    {

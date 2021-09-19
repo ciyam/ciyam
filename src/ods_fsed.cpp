@@ -433,7 +433,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    {
       string name( get_parm_val( parameters, c_cmd_ods_fsed_file_remove_name ) );
 
-      ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ) );
+      console_progress progress;
+
+      ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ), &progress );
    }
    else if( command == c_cmd_ods_fsed_file_replace )
    {

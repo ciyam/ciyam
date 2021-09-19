@@ -102,11 +102,11 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
    }
 
    int num_chunks = 0;
-   bool had_progress_output = false;
+
+   unsigned char data[ c_buf_size ];
 
    date_time dtm( date_time::local( ) );
 
-   unsigned char data[ c_buf_size ];
    while( size )
    {
       size_t bytes = c_buf_size;
@@ -130,7 +130,6 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
          if( elapsed >= 1 )
          {
             dtm = now;
-            had_progress_output = true;
             sf.p_progress->output_progress( "." );
          }
       }
@@ -138,9 +137,6 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
    if( !sf.p_ostream )
       ap_outf->close( );
-
-   if( sf.p_progress && had_progress_output )
-      sf.p_progress->output_progress( "" );
 
    return rs;
 }
@@ -160,11 +156,10 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
    }
 
    int num_chunks = 0;
-   bool had_progress_output = false;
-
-   date_time dtm( date_time::local( ) );
 
    unsigned char data[ c_buf_size ];
+
+   date_time dtm( date_time::local( ) );
 
    while( size )
    {
@@ -194,7 +189,6 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
          if( elapsed >= 1 )
          {
             dtm = now;
-            had_progress_output = true;
             sf.p_progress->output_progress( "." );
          }
       }
@@ -202,13 +196,6 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
    if( !sf.p_istream )
       ap_inpf->close( );
-
-   if( sf.p_progress && had_progress_output )
-   {
-      // NOTE: If in a transaction then progress will continue in the ODS commit.
-      if( !sf.get_ods( )->has_progress( ) || !sf.get_ods( )->is_in_transaction( ) )
-         sf.p_progress->output_progress( "" );
-   }
 
    return ws;
 }

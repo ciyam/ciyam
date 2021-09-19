@@ -1005,7 +1005,7 @@ void ods_file_system::store_file( const string& name,
    auto_ptr< ods::bulk_write > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    if( !has_file( name ) )
       add_file( name, source, p_os, p_is, p_progress );
@@ -1013,14 +1013,14 @@ void ods_file_system::store_file( const string& name,
       replace_file( name, source, p_os, p_is, p_progress );
 }
 
-void ods_file_system::remove_file( const string& name, ostream* p_os )
+void ods_file_system::remove_file( const string& name, ostream* p_os, progress* p_progress )
 {
    btree_type& bt( p_impl->bt );
 
    auto_ptr< ods::bulk_write > ap_bulk;
 
    if( !o.is_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_write( o ) );
+      ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
    o >> bt;
 

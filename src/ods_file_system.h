@@ -214,7 +214,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       store_file( name, "", p_os, p_is, p_progress );
    }
 
-   void remove_file( const std::string& name, std::ostream* p_os = 0 );
+   void remove_file( const std::string& name, std::ostream* p_os = 0, progress* p_progress = 0 );
 
    void replace_file( const std::string& name,
     const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
