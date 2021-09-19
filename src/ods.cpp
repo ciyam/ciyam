@@ -3034,8 +3034,6 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
       }
       else if( !entry_offsets.empty( ) )
       {
-         bool had_progress_output = false;
-
          date_time dtm( date_time::local( ) );
 
          set< int64_t >::iterator si( entry_offsets.end( ) );
@@ -3124,8 +3122,6 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
                               if( elapsed >= 1 )
                               {
                                  dtm = now;
-                                 had_progress_output = true;
-
                                  p_progress->output_progress( "." );
                               }
                            }
@@ -3210,8 +3206,6 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
                   if( elapsed >= 1 )
                   {
                      dtm = now;
-                     had_progress_output = true;
-
                      p_progress->output_progress( "." );
                   }
                }
@@ -3261,9 +3255,6 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
          p_impl->write_header_file_info( true );
 
          *p_impl->rp_has_changed = false;
-
-         if( p_progress && had_progress_output )
-            p_progress->output_progress( "" );
       }
    }
    else
@@ -3384,7 +3375,7 @@ void ods::destroy( const oid& id )
                      index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
 
                      if( !skip_log_entry && p_impl->using_tranlog )
-                        append_log_entry_item( id.get_num( ), index_entry, flags, old_tx_id );
+                        append_log_entry_item( id.get_num( ), index_entry, flags, old_tx_id, 0, p_progress );
 
                      index_entry.trans_flag = ods_index_entry::e_trans_delete;
                   }
@@ -3398,7 +3389,9 @@ void ods::destroy( const oid& id )
                      if( p_impl->using_tranlog )
                      {
                         p_impl->tranlog_offset = append_log_entry( p_impl->rp_header_info->transaction_id );
-                        append_log_entry_item( id.get_num( ), index_entry, flags, old_tx_id, p_impl->tranlog_offset );
+
+                        append_log_entry_item( id.get_num( ),
+                         index_entry, flags, old_tx_id, p_impl->tranlog_offset, p_progress );
 
                         if( !p_impl->rp_header_info->tranlog_offset )
                            p_impl->rp_header_info->tranlog_offset = p_impl->tranlog_offset;
@@ -3573,8 +3566,6 @@ void ods::move_free_data_to_end( progress* p_progress )
 
    ods_index_entry index_entry;
 
-   bool had_progress_output = false;
-
    date_time dtm( date_time::local( ) );
 
    int64_t total_entries = p_impl->rp_header_info->total_entries;
@@ -3595,7 +3586,6 @@ void ods::move_free_data_to_end( progress* p_progress )
          if( elapsed >= 1 )
          {
             dtm = now;
-            had_progress_output = true;
 
             // FUTURE: This message should be handled in an external strings file.
             p_progress->output_progress( "Scanning index items...", i, total_entries );
@@ -3693,7 +3683,6 @@ void ods::move_free_data_to_end( progress* p_progress )
                   if( elapsed >= 1 )
                   {
                      dtm = now;
-                     had_progress_output = true;
 
                      // FUTURE: This message should be handled in an external strings file.
                      p_progress->output_progress( "Appending to tx log...", next_pos, total_size_of_data );
@@ -3762,7 +3751,6 @@ void ods::move_free_data_to_end( progress* p_progress )
                if( elapsed >= 1 )
                {
                   dtm = now;
-                  had_progress_output = true;
 
                   // FUTURE: This message should be handled in an external strings file.
                   p_progress->output_progress( "Moving free data to end...", new_pos, total_size_of_data );
@@ -3787,9 +3775,6 @@ void ods::move_free_data_to_end( progress* p_progress )
       new_pos += next_size;
       actual_size += next_size;
    }
-
-   if( p_progress && had_progress_output )
-      p_progress->output_progress( "" );
 
    if( log_entry_offs )
    {
@@ -4749,9 +4734,9 @@ void ods::transaction_commit( )
       }
 
       bool had_any_ops = false;
-      bool had_progress_output = false;
 
       auto_ptr< ods::bulk_write > ap_bulk_write;
+
       if( !*p_impl->rp_bulk_level )
          ap_bulk_write.reset( new ods::bulk_write( *this ) );
 
@@ -4840,8 +4825,6 @@ void ods::transaction_commit( )
                            if( elapsed >= 1 )
                            {
                               dtm = now;
-                              had_progress_output = true;
-
                               p_progress->output_progress( "." );
                            }
                         }
@@ -4866,8 +4849,7 @@ void ods::transaction_commit( )
                   {
                      ++commit_items;
 
-                     append_log_entry_item( op.data.id.get_num( ),
-                      index_entry, flags, 0, 0, p_progress, &had_progress_output );
+                     append_log_entry_item( op.data.id.get_num( ), index_entry, flags, 0, 0, p_progress );
                   }
 
                   index_entry.data.tran_op = 0;
@@ -4895,9 +4877,6 @@ void ods::transaction_commit( )
          ++p_impl->rp_header_info->data_transform_id;
          ++p_impl->rp_header_info->index_transform_id;
       }
-
-      if( p_progress && had_progress_output )
-         p_progress->output_progress( "" );
 
       data_and_index_write( false );
 
@@ -5260,7 +5239,7 @@ void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t c
 
 void ods::append_log_entry_item( int64_t num,
  const ods_index_entry& index_entry, unsigned char flags,
- int64_t old_tx_id, int64_t log_entry_offs, progress* p_progress, bool* p_had_progress_output )
+ int64_t old_tx_id, int64_t log_entry_offs, progress* p_progress )
 {
    date_time dtm( date_time::local( ) );
 
@@ -5315,10 +5294,6 @@ void ods::append_log_entry_item( int64_t num,
             if( elapsed >= 1 )
             {
                dtm = now;
-
-               if( p_had_progress_output )
-                  *p_had_progress_output = true;
-
                p_progress->output_progress( "." );
             }
          }
@@ -5368,8 +5343,6 @@ void ods::rollback_dead_transactions( progress* p_progress )
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rollback dead transactions when bulk locked for dumping or reading" );
 
-   bool had_progress_output = false;
-
    date_time dtm( date_time::local( ) );
 
    temp_set_value< bool > temp_is_restoring( p_impl->is_restoring, true );
@@ -5392,8 +5365,6 @@ void ods::rollback_dead_transactions( progress* p_progress )
          if( elapsed >= 1 )
          {
             dtm = now;
-            had_progress_output = true;
-
             p_progress->output_progress( "." );
          }
       }
@@ -5425,9 +5396,6 @@ void ods::rollback_dead_transactions( progress* p_progress )
    }
 
    data_and_index_write( );
-
-   if( p_progress && had_progress_output )
-      p_progress->output_progress( "" );
 
    p_impl->rp_header_info->num_trans = 0;
    p_impl->rp_header_info->num_writers = 0;
@@ -5552,7 +5520,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
    bool had_any_entries = false;
    bool changed_free_list = false;
-   bool had_progress_output = false;
 
    bool is_encrypted = p_impl->is_encrypted;
 
@@ -5589,8 +5556,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                if( elapsed >= 1 )
                {
                   dtm = now;
-                  had_progress_output = true;
-
                   p_progress->output_progress( "." );
                }
             }
@@ -5722,8 +5687,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                                  if( elapsed >= 1 )
                                  {
                                     dtm = now;
-                                    had_progress_output = true;
-
                                     p_progress->output_progress( "." );
                                  }
                               }
@@ -5825,8 +5788,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                if( elapsed >= 1 )
                {
                   dtm = now;
-                  had_progress_output = true;
-
                   p_progress->output_progress( "." );
                }
             }
@@ -5850,9 +5811,6 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
             }
          }
       }
-
-      if( p_progress && had_progress_output )
-         p_progress->output_progress( "" );
 
       data_and_index_write( false );
 
@@ -6254,7 +6212,8 @@ ods& operator <<( ods& o, storable_base& s )
             }
 
             if( !skip_log_entry && o.p_impl->using_tranlog )
-               o.append_log_entry_item( s.id.num, !is_new_object ? old_index_entry : index_entry, flags, old_tx_id );
+               o.append_log_entry_item( s.id.num,
+                !is_new_object ? old_index_entry : index_entry, flags, old_tx_id, 0, o.p_progress );
 
             o.write_index_entry( index_entry, s.id.num );
 
@@ -6343,7 +6302,7 @@ ods& operator <<( ods& o, storable_base& s )
                memset( o.p_impl->data_write_key_buffer.data, '\0', c_data_bytes_per_item );
 
             if( o.p_impl->using_tranlog )
-               o.append_log_entry_item( s.id.num, index_entry, flags, 0, o.p_impl->tranlog_offset );
+               o.append_log_entry_item( s.id.num, index_entry, flags, 0, o.p_impl->tranlog_offset, o.p_progress );
 
             ++o.p_impl->rp_header_info->data_transform_id;
          }

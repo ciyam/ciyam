@@ -300,6 +300,9 @@ void console_progress::output_progress( const string& message, unsigned long num
    else
       new_length = output_length + 1;
 
+   if( message.length( ) != 1 )
+      cout << '\r';
+
    cout << message;
 
    string mask;
@@ -346,13 +349,10 @@ void console_progress::output_progress( const string& message, unsigned long num
       }
    }
 
-   if( !message.length( ) )
-      cout << '\r';
-
    if( output_length > new_length )
       cout << string( output_length - new_length, ' ' );
 
-   if( message.length( ) != 1 )
+   if( !message.length( ) )
       cout << '\r';
 
    cout.flush( );

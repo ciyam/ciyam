@@ -177,13 +177,16 @@ class outline_base : public storable_base
    {
       if( children.size( ) == children.capacity( ) )
          children.reserve( children.capacity( ) * 2 );
+
       children.push_back( child.get_id( ) );
    }
 
    void del_child( size_t index )
    {
       vector< oid >::iterator iter = children.begin( ) + index;
+
       children.erase( iter );
+
       if( index == count )
          count--;
    }
@@ -192,7 +195,9 @@ class outline_base : public storable_base
    {
       vector< oid >::iterator first = children.begin( ) + index;
       vector< oid >::iterator final = children.begin( ) + index + num;
+
       children.erase( first, final );
+
       if( count >= index && count < index + num )
          count = index - 1;
       else if( count >= index + num )
@@ -704,6 +709,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( is_multi )
          {
             pos = str.find( '#' );
+
             if( pos != string::npos )
             {
                val = atoi( str.substr( pos + 1 ).c_str( ) );
@@ -809,8 +815,14 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    {
       string file_name( get_parm_val( parameters, c_cmd_test_ods_import_file_name ) );
 
-      ods::bulk_write bulk( o );
+      console_progress progress;
+
+      ods::bulk_write bulk( o, &progress );
       o >> node;
+
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !o.is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( o ) );
 
 #ifndef _WIN32
       string::size_type pos = file_name.find_last_of( "/" );
@@ -828,12 +840,15 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       o << temp_node;
 
       scoped_ods_instance so( o );
-      temp_node.get_file( new storable_file_extra( file_name ) ).store( );
+      temp_node.get_file( new storable_file_extra( file_name, 0, &progress ) ).store( );
 
       o << temp_node;
 
       node.add_child( temp_node );
       o << node;
+
+      if( ap_ods_tx.get( ) )
+         ap_ods_tx->commit( );
    }
    else if( command == c_cmd_test_ods_export )
    {
@@ -842,6 +857,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
       if( output_name.empty( ) )
          output_name = file_name;
+
+      console_progress progress;
+
+      ods::bulk_read bulk( o );
 
       o >> node;
 
@@ -863,7 +882,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             {
                scoped_ods_instance so( o );
 
-               *temp_node.get_file( new storable_file_extra( output_name ) );
+               *temp_node.get_file( new storable_file_extra( output_name, 0, &progress ) );
 
                handler.issue_command_reponse( "saved " + output_name
                 + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );

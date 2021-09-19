@@ -26,6 +26,12 @@ struct console_progress : progress
 {
    console_progress( ) : decimals( 0 ), output_length( 0 ) { }
 
+   ~console_progress( )
+   {
+      if( output_length )
+         output_progress( "" );
+   }
+
    void output_progress(
     const std::string& message, unsigned long num = 0, unsigned long total = 0 );
 
