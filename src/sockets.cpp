@@ -42,6 +42,20 @@ const int c_default_line_size = 1024;
 
 const char* const c_base64_format = ".b64";
 
+struct scoped_empty_file_delete
+{
+   scoped_empty_file_delete( const string& file_name ) : file_name( file_name ) { }
+
+   ~scoped_empty_file_delete( )
+   {
+      if( !file_name.empty( )
+       && file_exists( file_name ) && file_size( file_name ) == 0 )
+         file_remove( file_name );
+   }
+
+   string file_name;
+};
+
 }
 
 #ifdef _WIN32
@@ -734,10 +748,16 @@ void file_transfer( const string& name,
       {
          if( is_first )
          {
+            scoped_empty_file_delete delete_empty_file( name );
+
             s.read_line( next, initial_timeout, max_line_size, p_progress );
 
             if( s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading headerline for file transfer" );
+
+            // NOTE: If "Error/error" is found in the message then just throw it as is.
+            if( lower( next ).find( "error" ) != string::npos )
+               throw runtime_error( next );
 
             // FUTURE: A ".bin" format should be added to support binary file transfers.
             string::size_type pos = next.find( ':' );
@@ -761,6 +781,9 @@ void file_transfer( const string& name,
                s.write_line( "error: invalid file transfer size info", line_timeout, p_progress );
                throw runtime_error( "invalid file transfer size info for recv" );
             }
+
+            // NOTE: Don't delete the file if made it this far.
+            delete_empty_file.file_name.erase( );
 
             max_line_size = chunk_size;
             next.resize( max_line_size );

@@ -503,6 +503,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          else
          {
             bool was_get_or_put = false;
+            bool ignore_exception = false;
 
             try
             {
@@ -589,14 +590,18 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( ( !appending && file_exists( filename ) )
                    || ( !append_chunks && !append_filename.empty( ) ) )
                   {
+                     string error_prefix( c_error_output_prefix );
+
                      if( append_filename.empty( ) )
-                        handle_command_response( "local file '" + filename + "' already exists", true );
+                        handle_command_response( error_prefix + "local file '" + filename + "' already exists", true );
                      else if( !appending_below )
-                        handle_command_response( "local file '" + append_filename + "' already exists", true );
+                        handle_command_response( error_prefix + "local file '" + append_filename + "' already exists", true );
                      else
-                        handle_command_response( "local path '" + append_filename + "' not found or not valid", true );
+                        handle_command_response( error_prefix + "local path '" + append_filename + "' not found or not valid", true );
 
                      append_filename.erase( );
+
+                     ignore_exception = true;
                      delete_after_transfer = true;
 
                      filename = "~" + uuid( ).as_string( );
@@ -722,17 +727,21 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             catch( exception& x )
             {
                str.erase( );
-               string s( x.what( ) );
 
-               size_t err_prefix_length( strlen( c_response_error_prefix ) );
-
-               if( s.length( ) > err_prefix_length
-                && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
+               if( !ignore_exception )
                {
-                  s = string( c_error_output_prefix ) + s.substr( err_prefix_length );
-               }
+                  string s( x.what( ) );
 
-               handle_command_response( s, true );
+                  size_t err_prefix_length( strlen( c_response_error_prefix ) );
+
+                  if( s.length( ) > err_prefix_length
+                   && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
+                  {
+                     s = string( c_error_output_prefix ) + s.substr( err_prefix_length );
+                  }
+
+                  handle_command_response( s, true );
+               }
 
                return str;
             }

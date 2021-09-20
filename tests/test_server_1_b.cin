@@ -29,6 +29,10 @@ file_kill -recurse root
 ~mkdir test1
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
+file_get test.xxx
+file_get test.xxx
+file_get modules.lst.default
+file_get modules.lst.default
 file_get test *~test.jpg
 file_kill -p=test
 file_put 1K*~test.jpg test
@@ -127,6 +131,7 @@ file_put test2.jpg test2.jpg
 file_raw list test1.jpg,test2.jpg test.1
 file_info -content test.1
 file_put test.jpg test.jpg
+file_list *
 file_list -a=test.jpg test.1 test.2
 file_info -content test.1
 file_info -content test.2

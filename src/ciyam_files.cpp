@@ -107,6 +107,9 @@ void create_directory_if_not_exists( const string& dir_name )
 string construct_file_name_from_hash( const string& hash,
  bool create_directory = false, bool check_hash_pattern = true )
 {
+   if( hash.length( ) < 3 )
+      return string( );
+
    if( check_hash_pattern )
    {
       regex expr( c_regex_hash_256 );

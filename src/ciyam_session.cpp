@@ -1730,7 +1730,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string::size_type pos = tag_or_hash.find( ':' );
 
          if( pos == string::npos )
+         {
+            string hash( tag_or_hash );
+
+            if( has_tag( tag_or_hash ) )
+               hash = tag_file_hash( tag_or_hash );
+
+            if( !has_file( hash, false ) )
+            {
+               possibly_expected_error = true;
+               throw runtime_error( "file '" + hash + "' not found" );
+            }
+
             response = create_list_file( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
+         }
          else
             response = create_list_tree( add_tags, del_items, sort, tag_or_hash, new_tag, old_tag );
       }
