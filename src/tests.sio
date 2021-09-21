@@ -797,13 +797,10 @@
     <test/>
      <name>1
      <description>Populate DB using nested transactions.
-     <kill>test_ods.tlg
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
-     <kill>test_ods.dat.lck
-     <kill>test_ods.idx.lck
-     <kill>test_ods.hdr.lck
+     <kill>test_ods.tlg
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -x -test
@@ -832,13 +829,10 @@
     <test/>
      <name>2
      <description>Test a couple of larger capacity transactions.
-     <kill>test_ods.tlg
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
-     <kill>test_ods.dat.lck
-     <kill>test_ods.idx.lck
-     <kill>test_ods.hdr.lck
+     <kill>test_ods.tlg
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -x -test
@@ -883,13 +877,10 @@
     <test/>
      <name>4
      <description>Test various operations with an encrypted DB.
-     <kill>test_ods.tlg
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
-     <kill>test_ods.dat.lck
-     <kill>test_ods.idx.lck
-     <kill>test_ods.hdr.lck
+     <kill>test_ods.tlg
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -p -x -test
@@ -918,15 +909,12 @@
     <test/>
      <name>5
      <description>Test various DB operations using a transaction log.
-     <kill>test_ods.tlg
-     <kill>test_ods.tlg.1
-     <kill>test_ods.tlg.2
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
-     <kill>test_ods.dat.lck
-     <kill>test_ods.idx.lck
-     <kill>test_ods.hdr.lck
+     <kill>test_ods.tlg
+     <kill>test_ods.tlg.1
+     <kill>test_ods.tlg.2
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -x -tlg -test
@@ -959,7 +947,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1025,7 +1013,7 @@
      </test_step>
      <test_step/>
       <name>q
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1045,15 +1033,12 @@
     <test/>
      <name>6
      <description>Test encrypted DB operations using a transaction log.
-     <kill>test_ods.tlg
-     <kill>test_ods.tlg.1
-     <kill>test_ods.tlg.2
      <kill>test_ods.dat
      <kill>test_ods.idx
      <kill>test_ods.hdr
-     <kill>test_ods.dat.lck
-     <kill>test_ods.idx.lck
-     <kill>test_ods.hdr.lck
+     <kill>test_ods.tlg
+     <kill>test_ods.tlg.1
+     <kill>test_ods.tlg.2
      <test_step/>
       <name>a
       <exec>test_ods -quiet -no_prompt -no_stderr -p -x -tlg -test
@@ -1068,7 +1053,7 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1086,7 +1071,7 @@
      </test_step>
      <test_step/>
       <name>f
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1104,7 +1089,7 @@
      </test_step>
      <test_step/>
       <name>i
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1122,7 +1107,7 @@
      </test_step>
      <test_step/>
       <name>l
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1140,7 +1125,7 @@
      </test_step>
      <test_step/>
       <name>o
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1158,7 +1143,7 @@
      </test_step>
      <test_step/>
       <name>r
-      <exec>del test_ods.dat* test_ods.idx* test_ods.hdr*
+      <exec>del test_ods.dat test_ods.idx test_ods.hdr
       <input>false
       <output>none
      </test_step>
@@ -1177,13 +1162,10 @@
     <test/>
      <name>1
      <description>Test an initially empty DB then add, move and remove some folders.
-     <kill>ods_fsed.tlg
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
-     <kill>ods_fsed.dat.lck
-     <kill>ods_fsed.idx.lck
-     <kill>ods_fsed.hdr.lck
+     <kill>ods_fsed.tlg
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -x -test
@@ -1272,13 +1254,10 @@
     <test/>
      <name>2
      <description>Test an initially empty DB then add, link, move, replace and remove some files.
-     <kill>ods_fsed.tlg
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
-     <kill>ods_fsed.dat.lck
-     <kill>ods_fsed.idx.lck
-     <kill>ods_fsed.hdr.lck
+     <kill>ods_fsed.tlg
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -x -test
@@ -1349,13 +1328,10 @@
     <test/>
      <name>3
      <description>Test various operations with an encrypted DB.
-     <kill>ods_fsed.tlg
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
-     <kill>ods_fsed.dat.lck
-     <kill>ods_fsed.idx.lck
-     <kill>ods_fsed.hdr.lck
+     <kill>ods_fsed.tlg
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -test
@@ -1378,15 +1354,12 @@
     <test/>
      <name>4
      <description>Test various DB operations using a transaction log.
-     <kill>ods_fsed.tlg
-     <kill>ods_fsed.tlg.1
-     <kill>ods_fsed.tlg.2
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
-     <kill>ods_fsed.dat.lck
-     <kill>ods_fsed.idx.lck
-     <kill>ods_fsed.hdr.lck
+     <kill>ods_fsed.tlg
+     <kill>ods_fsed.tlg.1
+     <kill>ods_fsed.tlg.2
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -x -tlg -test
@@ -1499,15 +1472,12 @@
     <test/>
      <name>5
      <description>Test various encrypted DB operations using a transaction log.
-     <kill>ods_fsed.tlg
-     <kill>ods_fsed.tlg.1
-     <kill>ods_fsed.tlg.2
      <kill>ods_fsed.dat
      <kill>ods_fsed.idx
      <kill>ods_fsed.hdr
-     <kill>ods_fsed.dat.lck
-     <kill>ods_fsed.idx.lck
-     <kill>ods_fsed.hdr.lck
+     <kill>ods_fsed.tlg
+     <kill>ods_fsed.tlg.1
+     <kill>ods_fsed.tlg.2
      <test_step/>
       <name>a
       <exec>ods_fsed -quiet -echo -no_prompt -no_stderr -p -x -tlg -test
@@ -1653,13 +1623,10 @@
     <test/>
      <name>1
      <description>Test version, license, encryption, console features, file system and system variables.
-     <kill>!ciyam_server.tlg
      <kill>!ciyam_server.dat
      <kill>!ciyam_server.idx
      <kill>!ciyam_server.hdr
-     <kill>!ciyam_server.dat.lck
-     <kill>!ciyam_server.idx.lck
-     <kill>!ciyam_server.hdr.lck
+     <kill>!ciyam_server.tlg
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet

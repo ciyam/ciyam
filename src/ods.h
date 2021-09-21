@@ -29,6 +29,8 @@
 #     define ODS_DECL_SPEC
 #  endif
 
+const int c_ods_page_size = 4096;
+
 const int64_t c_max_int_val = std::numeric_limits< int64_t >::max( );
 
 struct progress;
@@ -555,7 +557,7 @@ struct transaction_level_info
 class ods_index_cache_buffer;
 
 const int64_t c_trans_ops_per_item = 64;
-const int64_t c_trans_bytes_per_item = 4096;
+const int64_t c_trans_bytes_per_item = c_ods_page_size;
 
 struct trans_op_buffer
 {

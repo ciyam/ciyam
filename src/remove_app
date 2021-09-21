@@ -28,20 +28,11 @@ else
  if [ -f $1.dat ]; then
   rm $1.dat
  fi
- if [ -f $1.dat.lck ]; then
-  rm $1.dat.lck
- fi
  if [ -f $1.hdr ]; then
   rm $1.hdr
  fi
- if [ -f $1.hdr.lck ]; then
-  rm $1.hdr.lck
- fi
  if [ -f $1.idx ]; then
   rm $1.idx
- fi
- if [ -f $1.idx.lck ]; then
-  rm $1.idx.lck
  fi
 
  if [ -f $1.algos.lst ]; then

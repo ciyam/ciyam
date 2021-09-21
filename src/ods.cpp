@@ -129,7 +129,7 @@ const int c_data_lock_attempt_sleep_time = 5;
 const int c_header_lock_max_attempts = 100;
 const int c_header_lock_attempt_sleep_time = 25;
 
-const int c_data_bytes_per_item = 4096;
+const int c_data_bytes_per_item = c_ods_page_size;
 const int c_data_max_cache_items = 1000;
 const int c_data_items_per_region = 10000;
 const int c_data_num_cache_regions = 10;
@@ -1109,6 +1109,7 @@ class header_file
    int offset;
 
    int lock_handle;
+   string lock_file_name;
 
    bool is_exclusive;
 
@@ -1123,9 +1124,9 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
  handle( 0 ),
  offset( -1 ),
  lock_handle( 0 ),
+ lock_file_name( p_file_name ),
  is_exclusive( w_mode == ods::e_write_mode_exclusive )
 {
-   string lock_file_name( p_file_name );
    lock_file_name += c_lock_file_name_ext;
 
    bool okay = false;
@@ -1223,6 +1224,19 @@ header_file::~header_file( )
       else
          DEBUG_LOG( "closed header lock file" );
 #endif
+
+      // NOTE: If was using exclusive access then can now remove all lock files.
+      if( is_exclusive )
+      {
+         file_remove( lock_file_name );
+
+         size_t ext_len = strlen( c_header_file_name_ext ) + strlen( c_lock_file_name_ext );
+
+         string file_name( lock_file_name.substr( 0, lock_file_name.length( ) - ext_len ) );
+
+         file_remove( file_name + c_data_file_name_ext + c_lock_file_name_ext );
+         file_remove( file_name + c_index_file_name_ext + c_lock_file_name_ext );
+      }
    }
 
    if( handle > 0 )

@@ -26,13 +26,6 @@
 
 using namespace std;
 
-namespace
-{
-
-const int c_buf_size = 4096;
-
-}
-
 void storable_file::set_extra( storable_extra* p_extra )
 {
    storable_file_extra* p_file_extra = dynamic_cast< storable_file_extra* >( p_extra );
@@ -103,13 +96,13 @@ read_stream& operator >>( read_stream& rs, storable_file& sf )
 
    int num_chunks = 0;
 
-   unsigned char data[ c_buf_size ];
+   unsigned char data[ c_ods_page_size ];
 
    date_time dtm( date_time::local( ) );
 
    while( size )
    {
-      size_t bytes = c_buf_size;
+      size_t bytes = c_ods_page_size;
       if( size < bytes )
          bytes = size;
 
@@ -157,13 +150,13 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
    int num_chunks = 0;
 
-   unsigned char data[ c_buf_size ];
+   unsigned char data[ c_ods_page_size ];
 
    date_time dtm( date_time::local( ) );
 
    while( size )
    {
-      size_t bytes = c_buf_size;
+      size_t bytes = c_ods_page_size;
       if( size < bytes )
          bytes = size;
 

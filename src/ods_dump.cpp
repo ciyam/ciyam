@@ -82,9 +82,17 @@ int main( int argc, char* argv[ ] )
 
       bool is_all = false;
 
-      bool has_data = file_exists( string( argv[ name_arg ] ) + ".dat" );
-      bool has_index = file_exists( string( argv[ name_arg ] ) + ".idx" );
-      bool has_header = file_exists( string( argv[ name_arg ] ) + ".hdr" );
+      string file_names( ods_file_names( argv[ name_arg ], ',', false ) );
+
+      vector< string > names;
+      split( file_names, names );
+
+      if( names.size( ) != 3 )
+         throw runtime_error( "unexpected names.size( ) != 3" );
+
+      bool has_data = file_exists( names[ 0 ] );
+      bool has_index = file_exists( names[ 1 ] );
+      bool has_header = file_exists( names[ 2 ] );
 
       if( !has_data && !has_index && !has_header )
          throw runtime_error( "database '" + string( argv[ name_arg ] ) + "' was not found" );
