@@ -5086,7 +5086,7 @@ void crypto_verify( const string& pubkey,
 }
 
 string crypto_lamport( const string& filename,
- const string& mnenomics_or_hex_seed, bool is_sign, bool is_verify )
+ const string& mnenomics_or_hex_seed, bool is_sign, bool is_verify, const char* p_extra )
 {
    string retval;
 
@@ -5100,6 +5100,11 @@ string crypto_lamport( const string& filename,
    if( pos != string::npos )
       seed = get_mnemonics_or_hex_seed( seed );
 
+   string extra;
+
+   if( p_extra )
+      extra = string( p_extra );
+
    if( !is_sign && !is_verify )
    {
       string key_file( filename + c_lamport_key_ext );
@@ -5110,8 +5115,8 @@ string crypto_lamport( const string& filename,
 
       for( size_t i = 0; i < 256; i++ )
       {
-         sha256 hash_a( to_comparable_string( i, false, 3 ) + "A" + seed );
-         sha256 hash_b( to_comparable_string( i, false, 3 ) + "B" + seed );
+         sha256 hash_a( to_comparable_string( i, false, 3 ) + "A" + seed + extra );
+         sha256 hash_b( to_comparable_string( i, false, 3 ) + "B" + seed + extra );
 
          outf_key << hash_a.get_digest_as_string( ) << ' ' << hash_b.get_digest_as_string( ) << '\n';
 

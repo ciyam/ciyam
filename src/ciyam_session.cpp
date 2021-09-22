@@ -2122,8 +2122,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_verify( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify ) );
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_filename ) );
          string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
+         string additional_entropy_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_additional_entropy_text ) );
 
-         response = crypto_lamport( filename, mnenomics_or_hex_seed, is_sign, is_verify );
+         const char* p_extra = 0;
+
+         if( !additional_entropy_text.empty( ) )
+            p_extra = additional_entropy_text.c_str( );
+
+         response = crypto_lamport( filename, mnenomics_or_hex_seed, is_sign, is_verify, p_extra );
       }
       else if( command == c_cmd_ciyam_session_crypto_pub_key )
       {
