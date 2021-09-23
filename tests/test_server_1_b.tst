@@ -302,7 +302,7 @@ ts.20170313080001
 ts.20170313080002
  [blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.3 kB)
 file_stats
-[3/10000]12.0 kB/10.0 GB:3 tag(s)
+[3/100000]12.0 kB/100.0 GB:3 tag(s)
 file_kill -p=ts*
 file_archive -destroy test1
 (destroying file archive)

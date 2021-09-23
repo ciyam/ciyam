@@ -53,6 +53,7 @@ NEXT_PATH=$OUTPUT
 ;
 @skip
 @:NEXT_PATH
+IS_FIRST=
 HAD_ANY_FILES=
 .session_variable @deque pop_front
 .session_variable @set @deque
@@ -84,6 +85,12 @@ NEXT_FILE=$OUTPUT
 #$1/$SUB_DIRECTORY/$NEXT_PATH
 @endif
 @endif
+;
+@ifdef $HAD_ANY_FILES
+IS_FIRST=
+@else
+IS_FIRST=1
+@endif
 HAD_ANY_FILES=1
 .session_variable @deque pop_front
 ;
@@ -92,6 +99,13 @@ HAD_ANY_FILES=1
 @else
 #$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
 @endif
+;
+@ifdef $ERROR
+ERROR=
+@ifdef $IS_FIRST
+HAD_ANY_FILES=
+@endif
+@else
 ;
 ; NOTE: Each file is split into a set of 1M chunks and a
 ; the UUID variable is used to tag the "list" file which
@@ -114,6 +128,7 @@ HASH=$OUTPUT
 #$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
 @endif
 >>
+@endif
 ;
 !!@:FILE_LOOP
 ;
