@@ -184,17 +184,17 @@ can be found in the session variable "@last_file_put").
 The following command will output the content of the "tst.jpg" list file:
 
 > file_info -content tst.jpg
-[list] 61d29770a12587190eeafc6bc9e04e64a58837296597c5f4c24b508b87991d5f (307 B)
-8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d test.jpg.00000
-cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 test.jpg.00001
-e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 test.jpg.00002
-54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 test.jpg.00003
-579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 test.jpg.00004
-096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 test.jpg.00005
-15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 test.jpg.00006
+[list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
+8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d test.jpg.000000
+cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 test.jpg.000001
+e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 test.jpg.000002
+54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 test.jpg.000003
+579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 test.jpg.000004
+096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 test.jpg.000005
+15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 test.jpg.000006
 
 It should be noted that the original "test.jpg" filename has been kept with each list item and a chunk number
-of five digits has been appended (so it might generally be better to use the original file name as the tag to
+of six digits has been appended (so it might be a preferable idea to use the original file name as the tag to
 avoid confusion but using it this way here shows clearly that the tag is is irrelvant for the file name which
 will be used when extracting and recombining the file chunks next).
 
@@ -220,7 +220,7 @@ encrypted (and child lists will cascade resulting in the entire tree of files be
 > file_crypt tst.jpg password
 
 > file_info -content tst.jpg
-[list] a8b654db3c63bda794736bb419092ae239d3dca0b012df46ad0d390091d8bf05 (305 B) [***]
+[list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (305 B) [***]
 
 To decrypt simply repeat the "file_crypt" command (with the matching "password"). It should be noted that any
 tags associated with an encrypted file will remain (only the file content itself is affected) and because the

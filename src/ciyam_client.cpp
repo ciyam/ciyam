@@ -86,13 +86,13 @@ const size_t c_command_timeout = 60000;
 const size_t c_connect_timeout = 10000;
 const size_t c_greeting_timeout = 10000;
 
+const size_t c_default_max_file_size = 1000000;
+
 #ifdef _WIN32
 const size_t c_max_length_for_output_env_var = 1000;
 #else
 const size_t c_max_length_for_output_env_var = 100000;
 #endif
-
-const unsigned long c_max_uncompressed_bytes = 1000000;
 
 string application_title( app_info_request request )
 {
@@ -121,6 +121,8 @@ int g_pid = get_pid( );
 bool g_had_error = false;
 
 bool g_use_tls = false;
+
+size_t g_max_file_size = c_default_max_file_size;
 
 string g_exec_cmd;
 string g_args_file;
@@ -376,15 +378,27 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   }
                }
 
-               if( !file_exists( put_source_file ) )
-               {
-                  string error_msg( "File '" + put_source_file + "' not found." );
+               string put_file_error;
 
-                  cerr << c_error_output_prefix << error_msg << endl;
+               if( !file_exists( put_source_file ) )
+                  put_file_error = "File '" + put_source_file + "' not found.";
+               else if( chunk == 0 )
+               {
+                  int list_items_per_chunk = g_max_file_size / ( 65 + file_name.length( ) + 7 );
+                  int64_t total_file_size = ( list_items_per_chunk * g_max_file_size ) - g_max_file_size;
+
+                  if( file_size( put_source_file ) > total_file_size )
+                     put_file_error = "File '" + put_source_file
+                      + "' exceeds maximum file size (" + format_bytes( total_file_size ) + ").";
+               }
+
+               if( !put_file_error.empty( ) )
+               {
+                  cerr << c_error_output_prefix << put_file_error << endl;
 
                   // NOTE: Will only set the error environment variable if hasn't already been set.
                   if( get_environment_variable( c_env_var_error ).empty( ) )
-                     set_environment_variable( c_env_var_error, error_msg.c_str( ) );
+                     set_environment_variable( c_env_var_error, put_file_error.c_str( ) );
 
                   chunk_size = 0;
 
@@ -622,9 +636,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( ( prefix & c_file_type_char_compressed ) && !( prefix & c_file_type_char_encrypted ) )
                   {
                      string data( buffer_file( filename ) );
-                     string expanded_data( c_max_uncompressed_bytes, '\0' );
+                     string expanded_data( g_max_file_size, '\0' );
 
-                     unsigned long usize = c_max_uncompressed_bytes;
+                     size_t usize = g_max_file_size;
 
                      if( uncompress( ( Bytef* )&expanded_data[ 0 ], &usize, ( Bytef* )&data[ 0 ], data.size( ) ) != Z_OK )
                         throw runtime_error( "bad compressed file or buffer not big enough" );
@@ -1104,7 +1118,10 @@ int main( int argc, char* argv[ ] )
             }
 
             if( !ver_info.extra.empty( ) )
+            {
+               g_max_file_size = from_string< size_t >( ver_info.extra );
                set_environment_variable( c_env_var_max_file_size, ver_info.extra.c_str( ) );
+            }
 
             console_command_processor processor( cmd_handler );
 
