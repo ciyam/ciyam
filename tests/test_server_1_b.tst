@@ -93,20 +93,20 @@ file_kill -recurse root
 ~mkdir test1
 file_put 1K*test.jpg test
 file_info -recurse -d=999 test
-[list] 61d29770a12587190eeafc6bc9e04e64a58837296597c5f4c24b508b87991d5f (307 B)
-test.jpg.00000
+[list] 2d3c89f8f5301604234589e08a695e3ab0bdaa5f99ec21cf148b99d13020cb85 (307 B)
+test.jpg.000000
  [blob] 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d (1.0 kB)
-test.jpg.00001
+test.jpg.000001
  [blob] cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 (1.0 kB)
-test.jpg.00002
+test.jpg.000002
  [blob] e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 (1.0 kB)
-test.jpg.00003
+test.jpg.000003
  [blob] 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 (1.0 kB)
-test.jpg.00004
+test.jpg.000004
  [blob] 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 (1.0 kB)
-test.jpg.00005
+test.jpg.000005
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
-test.jpg.00006
+test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
 file_get test.xxx
 Error: file 'test.xxx' not found
@@ -120,20 +120,20 @@ file_get test *~test.jpg
 file_kill -p=test
 file_put 1K*~test.jpg test
 file_info -recurse -d=999 test
-[list] f92865d966649c2a0ace9ec7250701511b88a62fa241e509e676414a7d49dfa4 (308 B)
-~test.jpg.00000
+[list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
+~test.jpg.000000
  [blob] 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d (1.0 kB)
-~test.jpg.00001
+~test.jpg.000001
  [blob] cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 (1.0 kB)
-~test.jpg.00002
+~test.jpg.000002
  [blob] e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 (1.0 kB)
-~test.jpg.00003
+~test.jpg.000003
  [blob] 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 (1.0 kB)
-~test.jpg.00004
+~test.jpg.000004
  [blob] 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 (1.0 kB)
-~test.jpg.00005
+~test.jpg.000005
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
-~test.jpg.00006
+~test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
 file_crypt 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d abc
 file_crypt cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 abc
@@ -144,7 +144,7 @@ file_crypt 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 abc
 file_crypt 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 abc
 file_crypt test abc
 file_info -recurse -d=999 test
-[list] f92865d966649c2a0ace9ec7250701511b88a62fa241e509e676414a7d49dfa4 (308 B) [***]
+[list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B) [***]
 file_info -content 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d
 [blob] 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d (1.0 kB) [***]
 file_info -content 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5
@@ -159,38 +159,38 @@ test1/~test.jpg
 file_kill -recurse test
 file_put 1K*test1/~test.jpg test
 session_variable @last_file_put
-58b5d2342a3eb5b8750cd1447f00ed376610d7e36774cabd26d95b177833a660
+f674a700cc830e419574523d8388d6ed41e3c13351f80a17b9f9eb308b1410e0
 file_info -recurse -d=999 test
-[list] 58b5d2342a3eb5b8750cd1447f00ed376610d7e36774cabd26d95b177833a660 (313 B)
-test1/~test.jpg.00000
+[list] f674a700cc830e419574523d8388d6ed41e3c13351f80a17b9f9eb308b1410e0 (315 B)
+test1/~test.jpg.000000
  [blob] 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d (1.0 kB)
-test1/~test.jpg.00001
+test1/~test.jpg.000001
  [blob] cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 (1.0 kB)
-test1/~test.jpg.00002
+test1/~test.jpg.000002
  [blob] e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 (1.0 kB)
-test1/~test.jpg.00003
+test1/~test.jpg.000003
  [blob] 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 (1.0 kB)
-test1/~test.jpg.00004
+test1/~test.jpg.000004
  [blob] 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 (1.0 kB)
-test1/~test.jpg.00005
+test1/~test.jpg.000005
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
-test1/~test.jpg.00006
+test1/~test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
 file_info -recurse -d=999 test
-[list] 58b5d2342a3eb5b8750cd1447f00ed376610d7e36774cabd26d95b177833a660 (313 B)
-test1/~test.jpg.00000
+[list] f674a700cc830e419574523d8388d6ed41e3c13351f80a17b9f9eb308b1410e0 (315 B)
+test1/~test.jpg.000000
  [blob] 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d (1.0 kB)
-test1/~test.jpg.00001
+test1/~test.jpg.000001
  [blob] cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 (1.0 kB)
-test1/~test.jpg.00002
+test1/~test.jpg.000002
  [blob] e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 (1.0 kB)
-test1/~test.jpg.00003
+test1/~test.jpg.000003
  [blob] 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 (1.0 kB)
-test1/~test.jpg.00004
+test1/~test.jpg.000004
  [blob] 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 (1.0 kB)
-test1/~test.jpg.00005
+test1/~test.jpg.000005
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
-test1/~test.jpg.00006
+test1/~test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
 file_kill -recurse test
 ~mkdir test2

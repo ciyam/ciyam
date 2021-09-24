@@ -6003,7 +6003,9 @@ void ciyam_session::on_start( )
       cmd_handler.add_commands( 0,
        ciyam_session_command_functor_factory, ARRAY_PTR_AND_SIZE( ciyam_session_command_definitions ) );
 
-      ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_request_timeout );
+      ap_socket->write_line( string( c_protocol_version )
+       + ':' + to_string( get_files_area_item_max_size( ) )
+       + '\n' + string( c_response_okay ), c_request_timeout );
 
       init_session( cmd_handler );
 

@@ -1658,6 +1658,13 @@ string get_version_info( const string& s, version_info& ver_info )
       str.erase( pos );
    }
 
+   pos = str.find( ':' );
+   if( pos != string::npos )
+   {
+      ver_info.extra = str.substr( pos + 1 );
+      str.erase( pos );
+   }
+
    ver_info.ver = str;
 
    ver_info.major = 0;

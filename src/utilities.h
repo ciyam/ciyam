@@ -980,6 +980,7 @@ struct version_info
    int minor;
 
    std::string ver;
+   std::string extra;
 };
 
 std::string get_version_info( const std::string& s, version_info& ver_info );

@@ -74,6 +74,7 @@ const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
+const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
 const char* const c_list_file_ext = ".list";
 
@@ -401,7 +402,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   was_no_compress = true;
 
                   chunk_name = file_name;
-                  chunk_name += '.' + to_comparable_string( chunk, false, 5 );
+                  chunk_name += '.' + to_comparable_string( chunk, false, 6 );
 
                   string chunk_data;
 
@@ -1101,6 +1102,9 @@ int main( int argc, char* argv[ ] )
                throw runtime_error( "incompatible protocol version "
                 + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
             }
+
+            if( !ver_info.extra.empty( ) )
+               set_environment_variable( c_env_var_max_file_size, ver_info.extra.c_str( ) );
 
             console_command_processor processor( cmd_handler );
 

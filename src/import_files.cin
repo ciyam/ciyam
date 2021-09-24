@@ -9,6 +9,10 @@
 TAG_PREFIX=$2
 SUB_DIRECTORY=$3
 ;
+@ifndef $MAX_FILE_SIZE
+MAX_FILE_SIZE=1M
+@endif
+;
 SUB_DIR_IS_LEAF=
 ;
 START=@fullpath:$1
@@ -107,13 +111,13 @@ HAD_ANY_FILES=
 @endif
 @else
 ;
-; NOTE: Each file is split into a set of 1M chunks and a
+; NOTE: Each file is split into MAX_FILE_SIZE chunks and
 ; the UUID variable is used to tag the "list" file which
 ; will be automatically created by "ciyam_client".
 @ifndef $SUB_DIRECTORY
-.file_put 1M*$1/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+.file_put $MAX_FILE_SIZE*$1/$NEXT_PATH/$NEXT_FILE $START/?$UUID
 @else
-.file_put 1M*$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+.file_put $MAX_FILE_SIZE*$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
 @endif
 ;
 ; NOTE: Get the file hash of the tagged "list" of chunks

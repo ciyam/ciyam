@@ -1,4 +1,5 @@
 version
+#$MAX_FILE_SIZE
 session_list -min
 encrypt -no_ssl -no_salt for_testing_password
 a=X

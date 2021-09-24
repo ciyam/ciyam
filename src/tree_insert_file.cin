@@ -40,7 +40,11 @@ TAGP=@repstr:\//.:$DIRS
 TAGP=$PREF$TAGP
 @endif
 ;
-.file_put 1M*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
+@ifndef $MAX_FILE_SIZE
+MAX_FILE_SIZE=1M
+@endif
+;
+.file_put $MAX_FILE_SIZE*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
 .file_list -a=?$TAGP.$FILE -d=$DIRS/$FILE -sort $TTAG:$TYPE:$TREE !$TTAG
 @ifndef $PREF
 .file_tag -remove $TAGP.$FILE
