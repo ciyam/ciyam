@@ -1,11 +1,8 @@
-
-> storage_init ciyam
-
-> pf 100 106100 "106104 " 106101,106102,106104 -min
+storage_init ciyam
+pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Information,System_Information,M001C100
 User,User,M001C101
-
-> pf 100 107100 "107110 " 107101,107110 -min
+pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Vendor,M001C100F101
 Reference,M001C100F102
@@ -46,8 +43,7 @@ Must_Change_Password,M001C101F131
 No_Email,M001C101F132
 No_Email_Padding,M001C101F133
 Read_Access_Only,M001C101F134
-
-> pf 100 103100 "103104 " 103101,103104 -min
+pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
 Currency,E100
@@ -63,8 +59,7 @@ Minutes,E109
 Occurrence,E110
 Orientation,E111
 Change_Password_Seconds,E112
-
-> pf 100 102100 "102111 " 102101,102111 -min
+pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
 datetime,T001
@@ -123,5 +118,3 @@ std_money,T138
 std_money_amount,T139
 std_crypto,T140
 std_crypto_amount,T141
-
-> 
