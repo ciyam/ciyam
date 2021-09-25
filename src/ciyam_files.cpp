@@ -2102,7 +2102,8 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void crypt_file( const string& tag_or_hash, const string& password, bool recurse )
+void crypt_file( const string& tag_or_hash,
+ const string& password, bool recurse, progress* p_progress, date_time* p_dtm, long* p_total )
 {
    string hash( tag_or_hash );
 
@@ -2129,6 +2130,26 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
 
    if( is_no_encrypt )
       throw runtime_error( "attempt to encrypt file flagged with 'no encrypt'" );
+
+   if( p_total )
+      ++*p_total;
+
+   if( p_dtm && p_progress )
+   {
+      date_time now( date_time::local( ) );
+      uint64_t elapsed = seconds_between( *p_dtm, now );
+
+      if( elapsed >= 1 )
+      {
+         *p_dtm = now;
+
+         if( !p_total )
+            p_progress->output_progress( "." );
+         else
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Processed " + to_string( *p_total ) + " files..." );
+      }
+   }
 
    if( !is_encrypted )
    {
@@ -2177,7 +2198,7 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password, recurse );
+               crypt_file( next.substr( 0, pos ), password, recurse, p_progress, p_dtm, p_total );
             }
          }
       }
@@ -2237,7 +2258,7 @@ void crypt_file( const string& tag_or_hash, const string& password, bool recurse
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password, recurse );
+               crypt_file( next.substr( 0, pos ), password, recurse, p_progress, p_dtm, p_total );
             }
          }
       }

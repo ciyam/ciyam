@@ -1801,7 +1801,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          try
          {
-            crypt_file( tag_or_hash, password, recurse );
+            long total = 0;
+            date_time dtm( date_time::local( ) );
+
+            crypt_file( tag_or_hash, password, recurse, &handler, &dtm, &total );
          }
          catch( ... )
          {
