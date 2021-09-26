@@ -231,6 +231,12 @@ Y=@substr:1:$Y
 !!@:MAIN_LOOP
 @:END
 ;
+PATHS=@paths:..:^.git,^tmp,^files
+#$PATHS
+;
+FILES=@files::test*.jpg
+#$FILES
+;
 session_variable @set aaa
 session_variable @set aaa
 session_variable @set bbb

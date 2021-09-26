@@ -158,7 +158,17 @@ bool should_be_included( const string& name, const vector< string >& includes, c
    {
       for( size_t i = 0; i < excludes.size( ); i++ )
       {
-         if( name.find( excludes[ i ] ) != string::npos )
+         string next( excludes[ i ] );
+
+         if( next.find_first_of( "?*" ) != string::npos )
+         {
+            if( wildcard_match( next, name ) )
+            {
+               found = true;
+               break;
+            }
+         }
+         else if( name.find( next ) != string::npos )
          {
             found = true;
             break;
@@ -175,7 +185,17 @@ bool should_be_included( const string& name, const vector< string >& includes, c
    {
       for( size_t i = 0; i < includes.size( ); i++ )
       {
-         if( name.find( includes[ i ] ) != string::npos )
+         string next( includes[ i ] );
+
+         if( next.find_first_of( "?*" ) != string::npos )
+         {
+            if( wildcard_match( next, name ) )
+            {
+               found = true;
+               break;
+            }
+         }
+         else if( name.find( next ) != string::npos )
          {
             found = true;
             break;
@@ -2585,6 +2605,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                     split_all_extras( all_extras, includes, excludes );
                               }
 
+                              if( rhs.empty( ) )
+                                 rhs = "./";
+
                               file_filter ff;
                               fs_iterator ffsi( rhs, &ff );
 
@@ -2626,6 +2649,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  if( !all_extras.empty( ) )
                                     split_all_extras( all_extras, includes, excludes );
                               }
+
+                              if( rhs.empty( ) )
+                                 rhs = "./";
+
+                              if( !absolute_path( rhs, rhs ) )
+                                 throw runtime_error( "unable to determine absolute path for '" + rhs + "'" );
 
                               directory_filter df;
                               fs_iterator dfsi( rhs, &df );

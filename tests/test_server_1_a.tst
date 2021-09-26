@@ -159,6 +159,13 @@ CONT
 CONT
 DONE
 END
+docs
+src
+src/haru
+tests
+test.jpg
+test1.jpg
+test2.jpg
 session_variable @set aaa
 session_variable @set aaa
 aaa
