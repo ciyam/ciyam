@@ -1856,7 +1856,8 @@ string tag_file_hash( const string& name )
       map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
 
       if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
-         throw runtime_error( "tag '" + name + "' not found" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Tag '" + name + "' not found." );
 
       retval = i->second;
    }
@@ -1876,10 +1877,12 @@ string extract_tags_from_lists( const string& tag_or_hash, const string& prefix,
       hash = tag_file_hash( tag_or_hash );
 
    if( !has_file( hash ) )
-      throw runtime_error( "file '" + tag_or_hash + "' not found" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "File '" + tag_or_hash + "' not found." );
 
    if( depth == 0 )
-      throw runtime_error( "depth must not be equal to zero" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Depth must not be equal to zero." );
 
    bool max_depth_only = false;
 
@@ -1895,7 +1898,8 @@ string extract_tags_from_lists( const string& tag_or_hash, const string& prefix,
    string data( extract_file( hash, "", '\0', &is_list ) );
 
    if( !is_list && !level )
-      throw runtime_error( "file '" + tag_or_hash + "' is not a list" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "File '" + tag_or_hash + "' is not a list." );
 
    if( is_list && !data.empty( ) )
    {
@@ -2113,7 +2117,8 @@ void crypt_file( const string& tag_or_hash,
    string file_name( construct_file_name_from_hash( hash ) );
 
    if( !file_exists( file_name ) )
-      throw runtime_error( hash + " was not found" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( hash + " was not found." );
 
    string file_data( buffer_file( file_name ) );
 
@@ -2129,7 +2134,8 @@ void crypt_file( const string& tag_or_hash,
    bool is_no_encrypt = ( flags & c_file_type_val_no_encrypt );
 
    if( is_no_encrypt )
-      throw runtime_error( "attempt to encrypt file flagged with 'no encrypt'" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Attempt to encrypt file flagged with 'no encrypt'." );
 
    if( p_total )
       ++*p_total;
@@ -2217,7 +2223,8 @@ void crypt_file( const string& tag_or_hash,
 
       string uncompressed_data( file_data );
 
-      string bad_hash_error( "invalid password to decrypt file '" + tag_or_hash + "'" );
+      // FUTURE: This message should be handled as a server string message.
+      string bad_hash_error( "Invalid password to decrypt file '" + tag_or_hash + "'." );
 
 #ifdef ZLIB_SUPPORT
       if( is_compressed && file_data.size( ) > 1 )
@@ -2280,7 +2287,8 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
          guard g( g_mutex );
 
          if( !file_exists( file_name ) )
-            throw runtime_error( "file '" + hash + "' was not found" );
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "File '" + hash + "' was not found." );
 
          file_copy( file_name, tmp_file_name );
       }
@@ -2409,7 +2417,8 @@ void store_file( const string& hash, tcp_socket& socket,
             relegate_time_stamped_files( "", "", 1, 0, true );
 
             if( g_total_files >= get_files_area_item_max_num( ) )
-               throw runtime_error( "maximum file area item limit has been reached" );
+               // FUTURE: This message should be handled as a server string message.
+               throw runtime_error( "Maximum file area item limit has been reached." );
          }
 
          if( !is_in_blacklist )
@@ -2492,7 +2501,8 @@ void delete_file( const string& hash, bool even_if_tagged )
    if( tags.empty( ) || even_if_tagged )
    {
       if( !file_exists( file_name ) )
-         throw runtime_error( "file '" + file_name + "' not found" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "File '" + file_name + "' not found." );
 
       if( !tags.empty( ) )
       {
@@ -2551,7 +2561,8 @@ void copy_raw_file( const string& hash, const string& dest_file_name )
    string file_name( construct_file_name_from_hash( hash ) );
 
    if( !file_exists( file_name ) )
-      throw runtime_error( "file '" + file_name + "' not found" );
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "File '" + file_name + "' not found." );
 
    file_copy( file_name, dest_file_name );
 }
@@ -2647,17 +2658,17 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    if( path.empty( )
     || path[ path.length( ) - 1 ] == '\\' || path[ path.length( ) - 1 ] == '/' )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "invalid path '" + path + "' for add_file_archive" );
+      throw runtime_error( "Invalid path '" + path + "' for 'add_file_archive'." );
 
    if( path_already_used_in_archive( path ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "an archive with the path '" + path + "' already exists" );
+      throw runtime_error( "An archive with the path '" + path + "' already exists." );
 
    int64_t min_limit = get_files_area_item_max_size( ) * 10;
 
    if( size_limit < min_limit )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "archive minimum size must be at least " + to_string( min_limit ) + " bytes" );
+      throw runtime_error( "Archive minimum size must be at least " + to_string( min_limit ) + " bytes." );
 
    string status_info( get_archive_status( path ) );
 
@@ -2670,7 +2681,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    if( ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "archive '" + name + "' already exists" );
+      throw runtime_error( "Archive '" + name + "' already exists." );
 
    ods_fs.add_folder( name );
    ods_fs.set_folder( name );
@@ -2697,7 +2708,7 @@ void remove_file_archive( const string& name, bool destroy_files )
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "archive '" + name + "' not found" );
+      throw runtime_error( "Archive '" + name + "' not found." );
    else
    {
       ods::transaction ods_tx( ciyam_ods_instance( ) );
@@ -2748,7 +2759,7 @@ void repair_file_archive( const string& name )
 
    if( !ods_fs.has_folder( name ) )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "archive '" + name + "' not found" );
+      throw runtime_error( "Archive '" + name + "' not found." );
    else
    {
       ods::transaction ods_tx( ciyam_ods_instance( ) );
@@ -3188,7 +3199,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
 
       if( retval.empty( ) )
          // FUTURE: This message should be handled as a server string message.
-         throw runtime_error( "unable to retrieve file " + hash + " from archival" );
+         throw runtime_error( "Unable to retrieve file " + hash + " from archival." );
    }
 
    return retval;
@@ -3202,7 +3213,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    if( expr.search( hash ) == string::npos )
       // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "invalid file hash '" + hash + "'" );
+      throw runtime_error( "Invalid file hash '" + hash + "'." );
 
    vector< string > paths;
    vector< string > archives;

@@ -152,7 +152,7 @@ file_info -content 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b
 file_info -content 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7
 [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B) [***]
 file_crypt -recurse test xxx
-Error: invalid password to decrypt file 'test'
+Error: Invalid password to decrypt file 'test'.
 file_crypt -recurse test abc
 file_get test *test1/
 test1/~test.jpg
@@ -236,7 +236,7 @@ test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
 session_variable @dummy_timestamp 20170313080003
 file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
-Error: unable to retrieve file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 from archival
+Error: Unable to retrieve file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 from archival.
 file_archive -add test1 10MiB test1
 file_archives
 test1 [okay      ] (0 B/10.5 MB) test1

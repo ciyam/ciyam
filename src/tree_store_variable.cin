@@ -24,18 +24,17 @@ VNAME=$3
 VDATA=$4
 ;
 VTAG=V
-TAGP=@repstr:\:/.:$TREE
 ;
 @ifndef $VDATA
-.file_hash "$TAGP.$VNAME"
+.file_hash "$VNAME"
 @else
-.file_raw blob "$VDATA" "$TAGP.$VNAME"
+.file_raw blob "$VDATA" "$VNAME"
 @endif
 ;
 @ifndef $ERROR
-.file_list -a=?$TAGP.$VNAME -d=$TAGP.$VNAME -sort $TTAG:$VTAG:$TREE !$TTAG
+.file_list -a=?$VNAME -d=$VNAME -sort $TTAG:$VTAG:$TREE !$TTAG
 @ifdef $VDATA
-.file_tag -remove $TAGP.$VNAME
+.file_tag -remove $VNAME
 @endif
 @endif
 ;

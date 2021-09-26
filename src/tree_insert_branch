@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2021 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 2 ]; then
+ echo "Usage: tree_insert_branch [tree tag] [branch tag]"
+else
+ echo "<<tree_insert_branch.cin $1 $2" >~tree_insert_branch
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_insert_branch
+ rm ~tree_insert_branch
+fi
