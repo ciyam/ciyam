@@ -43,6 +43,7 @@
 #include "base64.h"
 #include "config.h"
 #include "format.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 
@@ -66,7 +67,6 @@ const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
 const int c_buffer_size = 65536;
-const int c_progress_lines = 250;
 
 // const int c_max_bytes_per_line = 57; // (for 76 characters)
 const int c_max_bytes_per_line = 96; // (for 128 characters)
@@ -464,6 +464,9 @@ void process_directory( const string& directory, const string& filespec_path,
 #endif
 
          int line = 0;
+         bool initial_progress = true;
+
+         date_time dtm( date_time::local( ) );
 
          while( size > 0 )
          {
@@ -474,12 +477,20 @@ void process_directory( const string& directory, const string& filespec_path,
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
 
-            if( !is_quieter && ++line % c_progress_lines == 0 )
+            date_time now( date_time::local( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( !is_quieter && elapsed >= 1 )
             {
-               if( line == c_progress_lines )
+               if( initial_progress )
                   cout << ' ';
+
                cout << '.';
                cout.flush( );
+
+               dtm = now;
+               initial_progress = false;
             }
 
             string encoded;
@@ -919,15 +930,20 @@ int main( int argc, char* argv[ ] )
             if( old_encoding != encoding )
                throw runtime_error( "*** cannot combine different bundle data encoding types ***" );
 
-            string next;
             int line = 0;
             int count = 0;
             int line_size = 0;
             int file_data_lines = 0;
+
             int64_t raw_file_size = 0;
+
+            bool initial_progress = true;
             bool skip_existing_file = false;
 
+            string next;
             string current_sub_path;
+
+            date_time dtm( date_time::local( ) );
 
             while( true )
             {
@@ -948,6 +964,7 @@ int main( int argc, char* argv[ ] )
                   else
                   {
                      int64_t chunk = 0;
+
                      while( raw_file_size > 0 )
                      {
                         char buffer[ c_buffer_size ];
@@ -971,13 +988,20 @@ int main( int argc, char* argv[ ] )
                         if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
                            throw runtime_error( "reading file input" );
 #endif
+                        date_time now( date_time::local( ) );
 
-                        if( !is_quieter && ++chunk % c_progress_lines == 0 )
+                        uint64_t elapsed = seconds_between( dtm, now );
+
+                        if( !is_quieter && elapsed >= 1 )
                         {
-                           if( line == c_progress_lines )
+                           if( initial_progress )
                               cout << ' ';
+
                            cout << '.';
                            cout.flush( );
+
+                           dtm = now;
+                           initial_progress = false;
                         }
 
 #ifndef ZLIB_SUPPORT
@@ -1043,12 +1067,20 @@ int main( int argc, char* argv[ ] )
 #endif
                   }
 
-                  if( ++count % c_progress_lines == 0 && !is_quieter && !skip_existing_file )
+                  date_time now( date_time::local( ) );
+
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( !is_quieter && !skip_existing_file && elapsed >= 1 )
                   {
-                     if( count == c_progress_lines )
+                     if( initial_progress )
                         cout << ' ';
+
                      cout << '.';
                      cout.flush( );
+
+                     dtm = now;
+                     initial_progress = false;
                   }
 
                   if( !is_quieter && !skip_existing_file && file_data_lines == 0 )

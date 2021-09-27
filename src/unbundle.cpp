@@ -51,6 +51,7 @@
 #include "config.h"
 #include "format.h"
 #include "console.h"
+#include "date_time.h"
 #include "utilities.h"
 
 #ifdef ZLIB_SUPPORT
@@ -73,7 +74,6 @@ const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
 const int c_buffer_size = 65536;
-const int c_progress_lines = 250;
 
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
@@ -446,11 +446,12 @@ int main( int argc, char* argv[ ] )
       bool finished = false;
       bool replace_all = false;
       bool replace_none = false;
+      bool initial_progress = true;
 
       encoding_type encoding;
       string top_level_directory;
 
-      int progress = c_progress_lines;
+      date_time dtm( date_time::local( ) );
 
       // NOTE: If any filespecs were provided then automatically prune empty directories.
       if( !filename_filters.empty( ) )
@@ -481,6 +482,7 @@ int main( int argc, char* argv[ ] )
             else
             {
                int64_t chunk = 0;
+
                while( raw_file_size > 0 )
                {
                   char buffer[ c_buffer_size ];
@@ -505,12 +507,20 @@ int main( int argc, char* argv[ ] )
                      throw runtime_error( "reading file input" );
 #endif
 
-                  if( !is_quieter && ++chunk % c_progress_lines == 0 )
+                  date_time now( date_time::local( ) );
+
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( !is_quieter && elapsed >= 1 )
                   {
-                     if( line == c_progress_lines )
+                     if( initial_progress )
                         cout << ' ';
+
                      cout << '.';
                      cout.flush( );
+
+                     dtm = now;
+                     initial_progress = false;
                   }
 
                   md5.update( ( unsigned char* )buffer, count );
@@ -560,14 +570,7 @@ int main( int argc, char* argv[ ] )
             --file_data_lines;
 
             if( count == 0 )
-            {
                line_size = unescaped( next ).size( );
-
-               if( line_size >= 1048576 ) // i.e. 1 MB
-                  progress = 2;
-               else
-                  progress = c_progress_lines;
-            }
 
             // NOTE: If skipping a file then there is no need to actually
             // read the data so by determining the line size of the first
@@ -586,12 +589,20 @@ int main( int argc, char* argv[ ] )
 #endif
             }
 
-            if( ++count % progress == 0 && !is_quieter && ap_ofstream.get( ) )
+            date_time now( date_time::local( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( !is_quieter && ap_ofstream.get( ) && elapsed >= 1 )
             {
-               if( count == progress )
+               if( initial_progress )
                   cout << ' ';
+
                cout << '.';
                cout.flush( );
+
+               dtm = now;
+               initial_progress = false;
             }
 
             if( !is_quieter && ap_ofstream.get( ) && file_data_lines == 0 )
@@ -809,9 +820,14 @@ int main( int argc, char* argv[ ] )
                if( !is_quieter )
                   cout << "extracting \"" << next_file << "\"";
 
+               initial_progress = true;
+
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
                if( !*ap_ofstream.get( ) )
                   throw runtime_error( "unable to open file '" + next_file + "' for output" );
+
+               if( !is_quieter && !raw_file_size && !file_data_lines )
+                  cout << endl;
             }
          }
          else if( type == c_type_directory )
