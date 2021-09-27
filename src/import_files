@@ -5,9 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: import_files [start path] [[tag prefix] [[sub-directory]]]
+ echo "Usage: import_files [start path] [[tag prefix] [[sub-directory] [[includes/excludes]]]]"
 else
- echo "<<import_files.cin $1 $2 $3" >~import_files
+ echo "<<import_files.cin $1 $2 $3 $4" >~import_files
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~import_files
  rm ~import_files
 fi

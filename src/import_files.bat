@@ -6,13 +6,13 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-echo ^<^<import_files.cin %1 %2 %3 >~import_files
+echo ^<^<import_files.cin %1 %2 %3 %4 >~import_files
 ciyam_client -echo -quiet -no_prompt -no_stderr < ~import_files
 
 del ~import_files
 goto end
 
 :usage
-echo Usage: import_files [start path] [[tag prefix] [[sub-directory]]]
+echo Usage: import_files [start path] [[tag prefix] [[sub-directory] [[includes/excludes]]]]
 
 :end

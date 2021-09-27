@@ -8,6 +8,12 @@
 @else
 TAG_PREFIX=$2
 SUB_DIRECTORY=$3
+FILES_EXPRESSION=$4
+;
+FILES_EXTRA=
+@ifdef $FILES_EXPRESSION
+FILES_EXTRA=:$FILES_EXPRESSION
+@endif
 ;
 @ifndef $MAX_FILE_SIZE
 MAX_FILE_SIZE=1M
@@ -63,9 +69,9 @@ HAD_ANY_FILES=
 .session_variable @set @deque
 ;
 @ifndef $SUB_DIRECTORY
-FILES=@files:$START/$NEXT_PATH
+FILES=@files:$START/$NEXT_PATH$FILES_EXTRA
 @else
-FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH
+FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH$FILES_EXTRA
 @endif
 .session_variable @deque ""
 .session_variable @deque "~$FILES"
