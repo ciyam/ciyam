@@ -77,7 +77,7 @@ void create_directories( const string& file_path, int perm, int mask )
    string::size_type pos = file_path.find_last_of( "/\\" );
 
    // NOTE: It is not recommended to use this function with relative paths.
-   if( pos != string::npos && !file_exists( file_path ) )
+   if( !file_path.empty( ) && !file_exists( file_path ) )
    {
       vector< string > sub_directories;
       string directories( file_path.substr( 0, pos ) );
@@ -87,8 +87,12 @@ void create_directories( const string& file_path, int perm, int mask )
       if( dpos != string::npos || directories[ 0 ] == '/' || directories[ 0 ] == '\\' )
       {
          pos = directories.find_first_of( "/\\" );
-         sub_directories.push_back( directories.substr( 0, pos + 1 ) );
-         directories.erase( 0, pos + 1 );
+
+         if( pos != string::npos )
+         {
+            sub_directories.push_back( directories.substr( 0, pos + 1 ) );
+            directories.erase( 0, pos + 1 );
+         }
       }
 #else
       if( directories[ 0 ] == '/' )
@@ -104,7 +108,9 @@ void create_directories( const string& file_path, int perm, int mask )
          if( pos == string::npos )
             break;
 
-         sub_directories.push_back( directories.substr( 0, pos ) );
+         if( pos != 0 )
+            sub_directories.push_back( directories.substr( 0, pos ) );
+
          directories.erase( 0, pos + 1 );
       }
 
@@ -113,20 +119,31 @@ void create_directories( const string& file_path, int perm, int mask )
 
       string cwd( get_cwd( ) );
 
+      bool rc = 0;
+      string next;
+
       for( size_t i = 0; i < sub_directories.size( ); i++ )
       {
-         bool rc;
-         set_cwd( sub_directories[ i ], &rc );
+         next = sub_directories[ i ];
+
+         set_cwd( next, &rc );
 
          if( !rc )
          {
-            create_dir( sub_directories[ i ], &rc, ( dir_perms )perm, ( mask < 0 ? STANDARD_UMASK : mask ) );
-            set_cwd( sub_directories[ i ] );
+            create_dir( next, &rc, ( dir_perms )perm, ( mask < 0 ? STANDARD_UMASK : mask ) );
+
+            if( !rc )
+               break;
+
+            set_cwd( next );
          }
       }
 
       // NOTE: Restore the original working directory.
       set_cwd( cwd );
+
+      if( !rc )
+         throw runtime_error( "unable to create directory '" + next + "' for '" + file_path + "'" );
    }
 }
 

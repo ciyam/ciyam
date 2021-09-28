@@ -369,7 +369,7 @@ void init_files_area( vector< string >* p_untagged )
       set_cwd( files_area_dir, &rc );
 
       if( !rc )
-         create_dir( files_area_dir, &rc );
+         create_directories( files_area_dir + "/" );
       else
       {
          directory_filter df;
