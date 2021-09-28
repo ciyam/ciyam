@@ -137,6 +137,7 @@ enum special_var
    e_special_var_rewind_height,
    e_special_var_sub_directory,
    e_special_var_update_fields,
+   e_special_var_files_area_dir,
    e_special_var_peer_initiator,
    e_special_var_peer_responder,
    e_special_var_unix_timestamp,

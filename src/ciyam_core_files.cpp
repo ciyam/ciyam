@@ -4282,11 +4282,13 @@ void perform_storage_rewind( const string& blockchain, uint64_t block_height )
       {
          extract_file( i->second, path );
 
-         string::size_type pos = path.find( c_files_directory );
+         string files_area_dir( get_files_area_dir( ) );
+
+         string::size_type pos = path.find( files_area_dir );
          if( pos == string::npos )
             throw runtime_error( "invalid path: " + path );
 
-         string remainder( path.substr( pos + strlen( c_files_directory ) ) );
+         string remainder( path.substr( pos + files_area_dir.length( ) ) );
 
          string tag( "c" + blockchain + ".f" + storage_name( ) + replace( remainder, "/", "." ) );
 

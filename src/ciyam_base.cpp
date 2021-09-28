@@ -1212,6 +1212,8 @@ string g_empty_string;
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
 
+string g_files_area_dir;
+
 size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
 size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 
@@ -1429,7 +1431,7 @@ void init_ciyam_ods( )
          string value;
          gap_ofs->fetch_from_text_file( variable_files[ i ], value );
 
-         set_system_variable( variable_files[ i ], value );
+         set_system_variable( variable_files[ i ], value, true );
       }
    }
 }
@@ -4534,6 +4536,23 @@ void register_blockchain( int port, const string& blockchain )
 bool get_using_ssl( )
 {
    return g_using_ssl;
+}
+
+string get_files_area_dir( )
+{
+   guard g( g_mutex );
+
+   return g_files_area_dir;
+}
+
+void set_files_area_dir( const string& files_area_dir )
+{
+   guard g( g_mutex );
+
+   if( !files_area_dir.empty( ) )
+      g_files_area_dir = files_area_dir;
+   else
+      g_files_area_dir = string( c_files_directory );
 }
 
 size_t get_files_area_item_max_num( )

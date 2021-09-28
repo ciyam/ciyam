@@ -118,7 +118,7 @@ string construct_file_name_from_hash( const string& hash,
          throw runtime_error( "unexpected hash '" + hash + "'" );
    }
 
-   string file_name( c_files_directory );
+   string file_name( get_files_area_dir( ) );
 
    file_name += '/';
    file_name += lower( hash.substr( 0, 2 ) );
@@ -355,13 +355,21 @@ void init_files_area( vector< string >* p_untagged )
 {
    string cwd( get_cwd( ) );
 
+   string files_area_dir( get_system_variable( get_special_var_name( e_special_var_files_area_dir ) ) );
+
+   set_files_area_dir( files_area_dir );
+
+   // NOTE: If no system variable then setting the directory to an empty string
+   // results in it being reset to the default directory (which is now fetched).
+   files_area_dir = get_files_area_dir( );
+
    try
    {
       bool rc;
-      set_cwd( c_files_directory, &rc );
+      set_cwd( files_area_dir, &rc );
 
       if( !rc )
-         create_dir( c_files_directory, &rc );
+         create_dir( files_area_dir, &rc );
       else
       {
          directory_filter df;
@@ -635,6 +643,7 @@ string file_type_info( const string& tag_or_hash,
 
    string header_suffix;
    string use_tag_or_hash( tag_or_hash );
+   string files_area_dir( get_files_area_dir( ) );
 
    if( !use_tag_or_hash.empty( ) )
    {
@@ -660,7 +669,7 @@ string file_type_info( const string& tag_or_hash,
       output_last_only = true;
    }
 
-   if( file_exists( string( c_files_directory ) + '/' + use_tag_or_hash ) )
+   if( file_exists( files_area_dir + '/' + use_tag_or_hash ) )
    {
       hash = tag_file_hash( use_tag_or_hash );
       file_name = construct_file_name_from_hash( hash );
@@ -1650,7 +1659,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
    if( pos == string::npos )
    {
-      string tag_file_name( c_files_directory );
+      string tag_file_name( get_files_area_dir( ) );
 
       tag_file_name += "/" + name;
 
@@ -1764,7 +1773,7 @@ void tag_file( const string& name, const string& hash )
          if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
             ts_tag_to_remove = tags[ 0 ];
 
-         string tag_file_name( c_files_directory );
+         string tag_file_name( get_files_area_dir( ) );
 
          tag_file_name += "/" + tag_name;
 

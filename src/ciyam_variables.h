@@ -34,7 +34,8 @@ struct CIYAM_BASE_DECL_SPEC system_variable_lock
 std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
 
-void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value );
+void CIYAM_BASE_DECL_SPEC set_system_variable(
+ const std::string& name, const std::string& value, bool is_init = false );
 
 bool CIYAM_BASE_DECL_SPEC set_system_variable(
  const std::string& name, const std::string& value, const std::string& current );

@@ -119,6 +119,14 @@ Error: local file 'modules.lst.default' already exists
 file_get test *~test.jpg
 file_kill -p=test
 file_put 1K*~test.jpg test
+file_stats
+[8/100000]7.0 kB/100.0 GB:8 tag(s)
+system_variable @files_area_dir test1
+file_stats
+[0/100000]0 B/100.0 GB:0 tag(s)
+system_variable @files_area_dir ""
+file_stats
+[8/100000]7.0 kB/100.0 GB:8 tag(s)
 file_info -recurse -d=999 test
 [list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
 ~test.jpg.000000

@@ -22,6 +22,7 @@
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "class_base.h"
+#include "ciyam_files.h"
 #include "ods_file_system.h"
 
 using namespace std;
@@ -123,6 +124,7 @@ const char* const c_special_variable_last_file_put = "@last_file_put";
 const char* const c_special_variable_rewind_height = "@rewind_height";
 const char* const c_special_variable_sub_directory = "@sub_directory";
 const char* const c_special_variable_update_fields = "@update_fields";
+const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
@@ -504,6 +506,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_update_fields );
       break;
 
+      case e_special_var_files_area_dir:
+      s = string( c_special_variable_files_area_dir );
+      break;
+
       case e_special_var_peer_initiator:
       s = string( c_special_variable_peer_initiator );
       break;
@@ -615,7 +621,7 @@ system_variable_lock::system_variable_lock( const string& name )
       {
          guard g( g_mutex );
 
-         if( set_system_variable( name, "<locked>", "" ) )
+         if( set_system_variable( name, "<locked>", string( "" ) ) )
          {
             acquired = true;
             break;
@@ -789,7 +795,7 @@ string get_system_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
-void set_system_variable( const string& name, const string& value )
+void set_system_variable( const string& name, const string& value, bool is_init )
 {
    guard g( g_mutex );
 
@@ -825,6 +831,14 @@ void set_system_variable( const string& name, const string& value )
    {
       if( g_variables.count( var_name ) )
          g_variables.erase( var_name );
+   }
+
+   if( var_name == string( c_special_variable_files_area_dir ) )
+   {
+      set_files_area_dir( val );
+
+      if( !is_init )
+         resync_files_area( );
    }
 
    if( persist )
@@ -867,6 +881,12 @@ bool set_system_variable( const string& name, const string& value, const string&
          if( g_variables.count( name ) )
             g_variables.erase( name );
       }
+   }
+
+   if( name == string( c_special_variable_files_area_dir ) )
+   {
+      set_files_area_dir( value );
+      resync_files_area( );
    }
 
    return retval;

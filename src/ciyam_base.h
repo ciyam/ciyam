@@ -172,6 +172,9 @@ void CIYAM_BASE_DECL_SPEC register_blockchain( int port, const std::string& bloc
 
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
+std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
+void CIYAM_BASE_DECL_SPEC set_files_area_dir( const std::string& files_area_dir );
+
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
 
