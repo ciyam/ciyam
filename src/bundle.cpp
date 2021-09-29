@@ -421,7 +421,12 @@ void process_directory( const string& directory, const string& filespec_path,
          md5.update( ( unsigned char* )perms.c_str( ), perms.length( ) );
          md5.update( ( unsigned char* )fname.c_str( ), fname.length( ) );
 
+         bool initial_progress = true;
+
+         date_time dtm( date_time::local( ) );
+
          int64_t size_left = size;
+
          while( size_left )
          {
             int next_len = c_buffer_size;
@@ -434,7 +439,27 @@ void process_directory( const string& directory, const string& filespec_path,
             md5.update( buffer, len );
 
             size_left -= next_len;
+
+            if( !is_quieter )
+            {
+               date_time now( date_time::local( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  if( initial_progress )
+                     cout << ' ';
+
+                  cout << '.';
+                  cout.flush( );
+
+                  dtm = now;
+                  initial_progress = false;
+               }
+            }
          }
+
          md5.finalize( );
          inpf.seekg( 0, ios::beg );
 
@@ -471,9 +496,6 @@ void process_directory( const string& directory, const string& filespec_path,
 #endif
 
          int line = 0;
-         bool initial_progress = true;
-
-         date_time dtm( date_time::local( ) );
 
          while( size > 0 )
          {
@@ -484,20 +506,23 @@ void process_directory( const string& directory, const string& filespec_path,
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
 
-            date_time now( date_time::local( ) );
-
-            uint64_t elapsed = seconds_between( dtm, now );
-
-            if( !is_quieter && elapsed >= 1 )
+            if( !is_quieter )
             {
-               if( initial_progress )
-                  cout << ' ';
+               date_time now( date_time::local( ) );
 
-               cout << '.';
-               cout.flush( );
+               uint64_t elapsed = seconds_between( dtm, now );
 
-               dtm = now;
-               initial_progress = false;
+               if( elapsed >= 1 )
+               {
+                  if( initial_progress )
+                     cout << ' ';
+
+                  cout << '.';
+                  cout.flush( );
+
+                  dtm = now;
+                  initial_progress = false;
+               }
             }
 
             string encoded;
@@ -1002,20 +1027,23 @@ int main( int argc, char* argv[ ] )
                         if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
                            throw runtime_error( "reading file input" );
 #endif
-                        date_time now( date_time::local( ) );
-
-                        uint64_t elapsed = seconds_between( dtm, now );
-
-                        if( !is_quieter && elapsed >= 1 )
+                        if( !is_quieter )
                         {
-                           if( initial_progress )
-                              cout << ' ';
+                           date_time now( date_time::local( ) );
 
-                           cout << '.';
-                           cout.flush( );
+                           uint64_t elapsed = seconds_between( dtm, now );
 
-                           dtm = now;
-                           initial_progress = false;
+                           if( elapsed >= 1 )
+                           {
+                              if( initial_progress )
+                                 cout << ' ';
+
+                              cout << '.';
+                              cout.flush( );
+
+                              dtm = now;
+                              initial_progress = false;
+                           }
                         }
 
 #ifndef ZLIB_SUPPORT
@@ -1081,20 +1109,23 @@ int main( int argc, char* argv[ ] )
 #endif
                   }
 
-                  date_time now( date_time::local( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  if( !is_quieter && !skip_existing_file && elapsed >= 1 )
+                  if( !is_quieter )
                   {
-                     if( initial_progress )
-                        cout << ' ';
+                     date_time now( date_time::local( ) );
 
-                     cout << '.';
-                     cout.flush( );
+                     uint64_t elapsed = seconds_between( dtm, now );
 
-                     dtm = now;
-                     initial_progress = false;
+                     if( !skip_existing_file && elapsed >= 1 )
+                     {
+                        if( initial_progress )
+                           cout << ' ';
+
+                        cout << '.';
+                        cout.flush( );
+
+                        dtm = now;
+                        initial_progress = false;
+                     }
                   }
 
                   if( !is_quieter && !skip_existing_file && file_data_lines == 0 )

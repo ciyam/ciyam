@@ -489,20 +489,23 @@ int main( int argc, char* argv[ ] )
 
                      raw_file_size -= count;
 
-                     date_time now( date_time::local( ) );
-
-                     uint64_t elapsed = seconds_between( dtm, now );
-
-                     if( !is_quieter && elapsed >= 1 )
+                     if( !is_quieter )
                      {
-                        if( initial_progress )
-                           cout << ' ';
+                        date_time now( date_time::local( ) );
 
-                        cout << '.';
-                        cout.flush( );
+                        uint64_t elapsed = seconds_between( dtm, now );
 
-                        dtm = now;
-                        initial_progress = false;
+                        if( elapsed >= 1 )
+                        {
+                           if( initial_progress )
+                              cout << ' ';
+
+                           cout << '.';
+                           cout.flush( );
+
+                           dtm = now;
+                           initial_progress = false;
+                        }
                      }
                   }
                }
@@ -540,20 +543,23 @@ int main( int argc, char* argv[ ] )
                      throw runtime_error( "reading file input" );
 #endif
 
-                  date_time now( date_time::local( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  if( !is_quieter && elapsed >= 1 )
+                  if( !is_quieter )
                   {
-                     if( initial_progress )
-                        cout << ' ';
+                     date_time now( date_time::local( ) );
 
-                     cout << '.';
-                     cout.flush( );
+                     uint64_t elapsed = seconds_between( dtm, now );
 
-                     dtm = now;
-                     initial_progress = false;
+                     if( elapsed >= 1 )
+                     {
+                        if( initial_progress )
+                           cout << ' ';
+
+                        cout << '.';
+                        cout.flush( );
+
+                        dtm = now;
+                        initial_progress = false;
+                     }
                   }
 
                   md5.update( ( unsigned char* )buffer, count );
@@ -622,20 +628,23 @@ int main( int argc, char* argv[ ] )
 #endif
             }
 
-            date_time now( date_time::local( ) );
-
-            uint64_t elapsed = seconds_between( dtm, now );
-
-            if( !is_quieter && ap_ofstream.get( ) && elapsed >= 1 )
+            if( !is_quieter )
             {
-               if( initial_progress )
-                  cout << ' ';
+               date_time now( date_time::local( ) );
 
-               cout << '.';
-               cout.flush( );
+               uint64_t elapsed = seconds_between( dtm, now );
 
-               dtm = now;
-               initial_progress = false;
+               if( ap_ofstream.get( ) && elapsed >= 1 )
+               {
+                  if( initial_progress )
+                     cout << ' ';
+
+                  cout << '.';
+                  cout.flush( );
+
+                  dtm = now;
+                  initial_progress = false;
+               }
             }
 
             if( !is_quieter && ap_ofstream.get( ) && file_data_lines == 0 )
