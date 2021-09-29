@@ -201,30 +201,31 @@ void check_file_header( ifstream& inpf, const string& filename, encoding_type& e
 }
 
 #ifndef ZLIB_SUPPORT
-void output_directory( set< string >& file_names, const string& path_name, int level, ofstream& outf )
+void output_directory( set< string >& file_names,
+ const string& path_name, const string& path_prefix, int level, ofstream& outf )
 #else
 void output_directory( set< string >& file_names,
- const string& path_name, int level, ofstream& outf, bool use_zlib, gzFile& gzf )
+ const string& path_name, const string& path_prefix, int level, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    string::size_type pos = path_name.find_last_of( '/' );
    if( level > 1 && pos != string::npos && !g_output_directories.count( path_name.substr( 0, pos ) ) )
    {
 #ifndef ZLIB_SUPPORT
-      output_directory( file_names, path_name.substr( 0, pos ), level - 1, outf );
+      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, outf );
 #else
-      output_directory( file_names, path_name.substr( 0, pos ), level - 1, outf, use_zlib, gzf );
+      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, outf, use_zlib, gzf );
 #endif
    }
 
    if( !file_names.count( path_name ) )
    {
-      string rel_path( "." );
-      string::size_type pos = path_name.find( '/' );
-      if( pos != string::npos )
-         rel_path += path_name.substr( pos );
+      string perms;
 
-      string perms = file_perms( rel_path );
+      if( path_prefix.empty( ) )
+         perms = file_perms( path_name );
+      else
+         perms = file_perms( path_prefix + '/' + path_name );
 
       MD5 md5;
       md5.update( ( unsigned char* )perms.c_str( ), perms.length( ) );
@@ -268,13 +269,19 @@ void process_directory( const string& directory, const string& filespec_path,
    directory_filter df;
    fs_iterator dfsi( filespec_path, &df );
 
+   string::size_type pos = filespec_path.find_last_of( '/' );
+
+   string path_prefix;
+
+   if( pos != string::npos )
+      path_prefix = filespec_path.substr( 0, pos );
+
    do
    {
       file_filter ff;
       fs_iterator ffsi( dfsi.get_path_name( ), &ff );
 
       string path_name( dfsi.get_path_name( ) );
-
 #ifdef _WIN32
       string::size_type pos;
       while( ( pos = path_name.find( '\\' ) ) != string::npos )
@@ -295,9 +302,9 @@ void process_directory( const string& directory, const string& filespec_path,
       {
          has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-         output_directory( file_names, path_name, dfsi.get_level( ), outf );
+         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf );
 #else
-         output_directory( file_names, path_name, dfsi.get_level( ), outf, use_zlib, gzf );
+         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf, use_zlib, gzf );
 #endif
       }
 
@@ -376,9 +383,9 @@ void process_directory( const string& directory, const string& filespec_path,
          {
             has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-            output_directory( file_names, path_name, dfsi.get_level( ), outf );
+            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf );
 #else
-            output_directory( file_names, path_name, dfsi.get_level( ), outf, use_zlib, gzf );
+            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf, use_zlib, gzf );
 #endif
          }
 
@@ -659,7 +666,7 @@ int main( int argc, char* argv[ ] )
 #endif
 
    if( !is_quiet )
-      cout << "bundle v0.1f\n";
+      cout << "bundle v0.1g\n";
 
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -883,11 +890,18 @@ int main( int argc, char* argv[ ] )
                if( all_exclude_filespecs.count( i->first ) )
                   p_filename_exclusions = &all_exclude_filespecs[ i->first ];
 
+               string next_directory( directory );
+
+               string::size_type pos = filespec_path.find_last_of( '/' );
+
+               if( pos != string::npos && pos != filespec_path.length( ) - 1 )
+                  next_directory = filespec_path.substr( pos + 1 );
+
 #ifndef ZLIB_SUPPORT
-               process_directory( directory, filespec_path, filename_filters, p_filename_exclusions,
+               process_directory( next_directory, filespec_path, filename_filters, p_filename_exclusions,
                 matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf );
 #else
-               process_directory( directory, filespec_path, filename_filters, p_filename_exclusions,
+               process_directory( next_directory, filespec_path, filename_filters, p_filename_exclusions,
                 matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf, use_zlib, gzf );
 #endif
                if( !is_quieter )
