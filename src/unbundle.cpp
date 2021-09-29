@@ -300,7 +300,7 @@ int main( int argc, char* argv[ ] )
    }
 
    if( !is_quiet )
-      cout << "unbundle v0.1f\n";
+      cout << "unbundle v0.1g\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -471,22 +471,55 @@ int main( int argc, char* argv[ ] )
             {
 #ifdef ZLIB_SUPPORT
                if( use_zlib )
-                  gzseek( gzf, raw_file_size, SEEK_CUR );
+               {
+                  int64_t chunk = 0;
+                  char buffer[ c_buffer_size ];
+
+                  while( raw_file_size > 0 )
+                  {
+                     int count = c_buffer_size;
+                     if( raw_file_size < c_buffer_size )
+                        count = raw_file_size;
+
+                     // NOTE: Although a gzseek would seem a lot easier
+                     // unfortunately the actual reading does not occur
+                     // so data is being read so progress can be shown.
+                     if( !gzread( gzf, buffer, count ) )
+                        throw runtime_error( "reading zlib input" );
+
+                     raw_file_size -= count;
+
+                     date_time now( date_time::local( ) );
+
+                     uint64_t elapsed = seconds_between( dtm, now );
+
+                     if( !is_quieter && elapsed >= 1 )
+                     {
+                        if( initial_progress )
+                           cout << ' ';
+
+                        cout << '.';
+                        cout.flush( );
+
+                        dtm = now;
+                        initial_progress = false;
+                     }
+                  }
+               }
                else
                   inpf.seekg( raw_file_size, ios::cur );
 #else
                inpf.seekg( raw_file_size, ios::cur );
 #endif
-               raw_file_size = 0;
+               cout << endl;
             }
             else
             {
                int64_t chunk = 0;
+               char buffer[ c_buffer_size ];
 
                while( raw_file_size > 0 )
                {
-                  char buffer[ c_buffer_size ];
-
                   int count = c_buffer_size;
                   if( raw_file_size < c_buffer_size )
                      count = raw_file_size;
@@ -813,7 +846,13 @@ int main( int argc, char* argv[ ] )
             else if( list_only )
             {
                ap_ofstream.reset( );
-               cout << next_file << endl;
+
+               cout << next_file;
+
+               if( !use_zlib || ( !raw_file_size && !file_data_lines ) )
+                  cout << endl;
+               else
+                  cout.flush( );
             }
             else
             {
