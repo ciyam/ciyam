@@ -147,4 +147,8 @@ file_info -content test.3
 file_kill -recurse test.3
 file_tag -unlink test.1,test.2
 file_tags
+file_put 10*test.jpg test
+file_stats
+file_kill -recurse test
+file_stats
 .quit

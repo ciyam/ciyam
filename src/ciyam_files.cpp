@@ -2500,7 +2500,7 @@ void store_file( const string& hash, tcp_socket& socket,
    }
 }
 
-void delete_file( const string& hash, bool even_if_tagged )
+void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
 {
    guard g( g_mutex );
 
@@ -2510,8 +2510,13 @@ void delete_file( const string& hash, bool even_if_tagged )
    if( tags.empty( ) || even_if_tagged )
    {
       if( !file_exists( file_name ) )
-         // FUTURE: This message should be handled as a server string message.
-         throw runtime_error( "File '" + file_name + "' not found." );
+      {
+         if( ignore_not_found )
+            return;
+         else
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "File '" + file_name + "' not found." );
+      }
 
       if( !tags.empty( ) )
       {
@@ -2539,7 +2544,7 @@ void delete_file_tree( const string& hash )
    split( all_hashes, hashes, '\n' );
 
    for( size_t i = 0; i < hashes.size( ); i++ )
-      delete_file( hashes[ i ] );
+      delete_file( hashes[ i ], true, true );
 }
 
 void delete_files_for_tags( const string& pat )

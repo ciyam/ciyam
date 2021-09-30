@@ -363,3 +363,9 @@ efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
 file_kill -recurse test.3
 file_tag -unlink test.1,test.2
 file_tags
+file_put 10*test.jpg test
+file_stats
+[742/100000]38.1 kB/100.0 GB:742 tag(s)
+file_kill -recurse test
+file_stats
+[0/100000]0 B/100.0 GB:0 tag(s)
