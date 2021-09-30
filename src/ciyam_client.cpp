@@ -440,18 +440,21 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   write_file( chunk_name, chunk_data );
 
-                  date_time now( date_time::local( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  if( elapsed >= 1 )
+                  if( !has_option_no_prompt( ) )
                   {
-                     cout << '.';
-                     cout.flush( );
+                     date_time now( date_time::local( ) );
 
-                     had_chunk_progress = true;
+                     uint64_t elapsed = seconds_between( dtm, now );
 
-                     dtm = now;
+                     if( elapsed >= 1 )
+                     {
+                        cout << '.';
+                        cout.flush( );
+
+                        had_chunk_progress = true;
+
+                        dtm = now;
+                     }
                   }
 
                   delete_after_put = true;
@@ -737,18 +740,21 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         file_append( filename, prefixed_append_name );
                      }
 
-                     date_time now( date_time::local( ) );
-
-                     uint64_t elapsed = seconds_between( dtm, now );
-
-                     if( elapsed >= 1 )
+                     if( !has_option_no_prompt( ) )
                      {
-                        cout << '.';
-                        cout.flush( );
+                        date_time now( date_time::local( ) );
 
-                        had_chunk_progress = true;
+                        uint64_t elapsed = seconds_between( dtm, now );
 
-                        dtm = now;
+                        if( elapsed >= 1 )
+                        {
+                           cout << '.';
+                           cout.flush( );
+
+                           had_chunk_progress = true;
+
+                           dtm = now;
+                        }
                      }
                   }
 

@@ -2295,6 +2295,11 @@ bool console_command_handler::has_option_quiet( ) const
    return has_option( c_cmd_quiet );
 }
 
+bool console_command_handler::has_option_no_prompt( ) const
+{
+   return has_option( c_cmd_no_prompt );
+}
+
 void console_command_handler::perform_after_command_changes( )
 {
    string::size_type max_size = 0;
