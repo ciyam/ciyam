@@ -29,6 +29,7 @@
 #include "sha256.h"
 #include "sockets.h"
 #include "console.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "file_utils.h"
 #ifdef SSL_SUPPORT
@@ -172,7 +173,8 @@ class ciyam_console_command_handler : public console_command_handler
     file_bytes( 0 ),
     chunk_size( 0 ),
     socket( socket ),
-    had_chk_command( false )
+    had_chk_command( false ),
+    had_chunk_progress( false )
    {
       set_custom_startup_options( 1, "[<port> or <host[(:|-)port]>]" );
    }
@@ -185,6 +187,8 @@ class ciyam_console_command_handler : public console_command_handler
    string host;
 
    int chunk;
+
+   date_time dtm;
 
    long file_pos;
    long file_bytes;
@@ -209,6 +213,7 @@ class ciyam_console_command_handler : public console_command_handler
 #endif
 
    bool had_chk_command;
+   bool had_chunk_progress;
 
    string get_additional_command( );
 
@@ -225,6 +230,11 @@ string ciyam_console_command_handler::get_additional_command( )
    {
       cmd = additional_commands.front( );
       additional_commands.pop_front( );
+   }
+   else if( had_chunk_progress )
+   {
+      cout << endl;
+      had_chunk_progress = false;
    }
 
    return cmd;
@@ -390,6 +400,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( file_size( put_source_file ) > total_file_size )
                      put_file_error = "File '" + put_source_file
                       + "' exceeds maximum file size (" + format_bytes( total_file_size ) + ").";
+
+                  dtm = date_time::local( );
+                  had_chunk_progress = false;
                }
 
                if( !put_file_error.empty( ) )
@@ -426,6 +439,20 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
 
                   write_file( chunk_name, chunk_data );
+
+                  date_time now( date_time::local( ) );
+
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     cout << '.';
+                     cout.flush( );
+
+                     had_chunk_progress = true;
+
+                     dtm = now;
+                  }
 
                   delete_after_put = true;
                   put_source_file = chunk_name;
@@ -553,6 +580,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         {
                            append_prefix.erase( );
                            append_last_name.erase( );
+
+                           dtm = date_time::local( );
+                           had_chunk_progress = false;
                         }
 
                         if( !append_filename.empty( )
@@ -705,6 +735,20 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                         create_directories( prefixed_append_name );
                         file_append( filename, prefixed_append_name );
+                     }
+
+                     date_time now( date_time::local( ) );
+
+                     uint64_t elapsed = seconds_between( dtm, now );
+
+                     if( elapsed >= 1 )
+                     {
+                        cout << '.';
+                        cout.flush( );
+
+                        had_chunk_progress = true;
+
+                        dtm = now;
                      }
                   }
 
