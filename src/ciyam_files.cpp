@@ -38,6 +38,7 @@
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "file_utils.h"
+#include "auto_script.h"
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 #include "ciyam_variables.h"
@@ -363,10 +364,15 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
    // results in it being reset to the default directory (which is now fetched).
    files_area_dir = get_files_area_dir( );
 
+   if( !files_area_dir.empty( ) && files_area_dir[ 0 ] != '/' )
+      files_area_dir = cwd + '/' + files_area_dir;
+
    try
    {
-      bool rc;
-      set_cwd( files_area_dir, &rc );
+      bool rc = true;
+
+      if( !p_progress )
+         set_cwd( files_area_dir, &rc );
 
       if( !rc )
          create_directories( files_area_dir + "/" );
@@ -375,7 +381,7 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
          date_time dtm( date_time::local( ) );
 
          directory_filter df;
-         fs_iterator dfsi( ".", &df );
+         fs_iterator dfsi( files_area_dir, &df );
 
          bool is_first = true;
          do
@@ -395,7 +401,7 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
                   string data( buffer_file( fs.get_full_name( ) ) );
                   string file_name( construct_file_name_from_hash( data, false, false ) );
 
-                  if( !file_exists( "../" + file_name ) )
+                  if( !file_exists( file_name ) )
                      file_remove( fs.get_full_name( ) );
 
                   g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
@@ -453,11 +459,13 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
          } while( dfsi.has_next( ) );
       }
 
-      set_cwd( cwd );
+      if( !p_progress )
+         set_cwd( cwd );
    }
    catch( ... )
    {
-      set_cwd( cwd );
+      if( !p_progress )
+         set_cwd( cwd );
       throw;
    }
 }
