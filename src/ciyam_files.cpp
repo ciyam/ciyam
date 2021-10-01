@@ -351,7 +351,7 @@ string get_file_stats( )
    return s;
 }
 
-void init_files_area( vector< string >* p_untagged )
+void init_files_area( vector< string >* p_untagged, progress* p_progress )
 {
    string cwd( get_cwd( ) );
 
@@ -372,6 +372,8 @@ void init_files_area( vector< string >* p_untagged )
          create_directories( files_area_dir + "/" );
       else
       {
+         date_time dtm( date_time::local( ) );
+
          directory_filter df;
          fs_iterator dfsi( ".", &df );
 
@@ -426,6 +428,21 @@ void init_files_area( vector< string >* p_untagged )
                      }
                   }
                }
+
+               if( p_progress )
+               {
+                  date_time now( date_time::local( ) );
+
+                  uint64_t elapsed = seconds_between( dtm, now );
+
+                  if( elapsed >= 1 )
+                  {
+                     // FUTURE: This message should be handled as a server string message.
+                     p_progress->output_progress( "Processed " + to_string( g_total_files ) + " files..." );
+
+                     dtm = now;
+                  }
+               }
             }
 
             is_first = false;
@@ -445,7 +462,7 @@ void init_files_area( vector< string >* p_untagged )
    }
 }
 
-void resync_files_area( vector< string >* p_untagged )
+void resync_files_area( vector< string >* p_untagged, progress* p_progress )
 {
    guard g( g_mutex );
 
@@ -454,7 +471,7 @@ void resync_files_area( vector< string >* p_untagged )
 
    g_total_bytes = g_total_files = 0;
 
-   init_files_area( p_untagged );
+   init_files_area( p_untagged, p_progress );
 }
 
 void term_files_area( )

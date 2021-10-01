@@ -1816,7 +1816,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = get_file_stats( );
       else if( command == c_cmd_ciyam_session_file_resync )
       {
-         resync_files_area( );
+         resync_files_area( 0, &handler );
          response = get_file_stats( );
       }
       else if( command == c_cmd_ciyam_session_file_archive )
@@ -5517,7 +5517,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
 
          if( has_new_val )
-            set_system_variable( name_or_expr, new_value );
+            set_system_variable( name_or_expr, new_value, false, &handler );
          else
             response = get_system_variable( name_or_expr );
       }

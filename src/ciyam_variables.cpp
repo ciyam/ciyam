@@ -795,7 +795,7 @@ string get_system_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
-void set_system_variable( const string& name, const string& value, bool is_init )
+void set_system_variable( const string& name, const string& value, bool is_init, progress* p_progress )
 {
    guard g( g_mutex );
 
@@ -838,7 +838,7 @@ void set_system_variable( const string& name, const string& value, bool is_init 
       set_files_area_dir( val );
 
       if( !is_init )
-         resync_files_area( );
+         resync_files_area( 0, p_progress );
    }
 
    if( persist )
@@ -855,7 +855,7 @@ void set_system_variable( const string& name, const string& value, bool is_init 
    }
 }
 
-bool set_system_variable( const string& name, const string& value, const string& current )
+bool set_system_variable( const string& name, const string& value, const string& current, progress* p_progress )
 {
    guard g( g_mutex );
 
@@ -886,7 +886,7 @@ bool set_system_variable( const string& name, const string& value, const string&
    if( name == string( c_special_variable_files_area_dir ) )
    {
       set_files_area_dir( value );
-      resync_files_area( );
+      resync_files_area( 0, p_progress );
    }
 
    return retval;

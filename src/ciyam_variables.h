@@ -21,6 +21,8 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+struct progress;
+
 std::string CIYAM_BASE_DECL_SPEC get_special_var_name( special_var var );
 
 struct CIYAM_BASE_DECL_SPEC system_variable_lock
@@ -35,10 +37,10 @@ std::string CIYAM_BASE_DECL_SPEC get_raw_system_variable( const std::string& nam
 std::string CIYAM_BASE_DECL_SPEC get_system_variable( const std::string& name_or_expr );
 
 void CIYAM_BASE_DECL_SPEC set_system_variable(
- const std::string& name, const std::string& value, bool is_init = false );
+ const std::string& name, const std::string& value, bool is_init = false, progress* p_progress = 0 );
 
 bool CIYAM_BASE_DECL_SPEC set_system_variable(
- const std::string& name, const std::string& value, const std::string& current );
+ const std::string& name, const std::string& value, const std::string& current, progress* p_progress = 0 );
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_variables( std::ostream& outs );
 
