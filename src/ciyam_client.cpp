@@ -172,7 +172,9 @@ class ciyam_console_command_handler : public console_command_handler
     file_pos( 0 ),
     file_bytes( 0 ),
     chunk_size( 0 ),
+    total_chunks( 0 ),
     socket( socket ),
+    had_message( false ),
     had_chk_command( false ),
     had_chunk_progress( false )
    {
@@ -186,14 +188,15 @@ class ciyam_console_command_handler : public console_command_handler
    int port;
    string host;
 
-   int chunk;
+   unsigned long chunk;
 
    date_time dtm;
 
    long file_pos;
    long file_bytes;
 
-   long chunk_size;
+   unsigned long chunk_size;
+   unsigned long total_chunks;
 
    string file_name;
    string file_extra;
@@ -204,6 +207,8 @@ class ciyam_console_command_handler : public console_command_handler
    string append_prefix;
    string append_last_name;
 
+   console_progress progress;
+
    deque< string > additional_commands;
 
 #ifdef SSL_SUPPORT
@@ -212,6 +217,7 @@ class ciyam_console_command_handler : public console_command_handler
    tcp_socket& socket;
 #endif
 
+   bool had_message;
    bool had_chk_command;
    bool had_chunk_progress;
 
@@ -233,7 +239,11 @@ string ciyam_console_command_handler::get_additional_command( )
    }
    else if( had_chunk_progress )
    {
-      cout << endl;
+      if( !is_stdout_console( ) )
+         cout << endl;
+      else
+         progress.output_progress( "" );
+
       had_chunk_progress = false;
    }
 
@@ -434,7 +444,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   string chunk_data;
 
                   if( chunk == 0 )
+                  {
                      chunk_data = buffer_file( file_name, chunk_size, &file_bytes );
+                     total_chunks = ( file_bytes / chunk_size );
+                  }
                   else
                      chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
 
@@ -448,12 +461,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      if( elapsed >= 1 )
                      {
-                        cout << '.';
-                        cout.flush( );
-
-                        had_chunk_progress = true;
+                        if( is_stdout_console( ) )
+                           progress.output_progress( "Transferring file...", chunk, total_chunks );
+                        else
+                        {
+                           cout << '.';
+                           cout.flush( );
+                        }
 
                         dtm = now;
+                        had_chunk_progress = true;
                      }
                   }
 
@@ -464,6 +481,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   {
                      file_bytes = 0;
                      chunk_size = 0;
+                     total_chunks = 0;
                   }
                   else
                   {
@@ -695,10 +713,14 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                      string all_chunks( buffer_file( filename ) );
 
+                     chunk = total_chunks = 0;
+
                      if( !all_chunks.empty( ) )
                      {
                         vector< string > chunks;
                         split( all_chunks, chunks, '\n' );
+
+                        total_chunks = chunks.size( );
 
                         for( size_t i = 0; i < chunks.size( ); i++ )
                         {
@@ -716,6 +738,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   // then assume it is actually the next chunk that needs to be appended.
                   else if( append_chunks )
                   {
+                     ++chunk;
+
                      delete_after_transfer = true;
 
                      if( append_prefix.empty( ) )
@@ -748,12 +772,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                         if( elapsed >= 1 )
                         {
-                           cout << '.';
-                           cout.flush( );
-
-                           had_chunk_progress = true;
+                           if( is_stdout_console( ) )
+                              progress.output_progress( "Transferring file...", chunk, total_chunks );
+                           else
+                           {
+                              cout << '.';
+                              cout.flush( );
+                           }
 
                            dtm = now;
+                           had_chunk_progress = true;
                         }
                      }
                   }
@@ -987,8 +1015,23 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( is_error )
                      final_response = string( c_error_output_prefix ) + final_response;
 
+                  if( !is_message && had_message )
+                  {
+                     had_message = false;
+
+                     if( is_stdout_console( ) )
+                        progress.output_progress( "" );
+                  }
+
                   if( is_message && !get_is_quiet_command( ) )
-                     handle_progress_message( final_response );
+                  {
+                     had_message = true;
+
+                     if( !is_stdout_console( ) )
+                        handle_progress_message( final_response );
+                     else
+                        progress.output_progress( final_response );
+                  }
                   else if( !is_message && ( is_error || !get_is_quiet_command( ) ) )
                      handle_command_response( final_response, is_error );
 
@@ -1014,10 +1057,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( had_not_found )
                      break;
                }
-#ifdef DEBUG
                else
+               {
+                  if( had_message )
+                  {
+                     had_message = false;
+
+                     if( is_stdout_console( ) )
+                        progress.output_progress( "" );
+                  }
+#ifdef DEBUG
                   cout << response;
 #endif
+               }
             }
 
             str.erase( );

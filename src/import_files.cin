@@ -42,6 +42,10 @@ PATHS=$OUTPUT
 .session_variable @deque pop_back
 .session_variable @deque
 SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
+@else
+SUB_DIR_IS_LEAF=1
+PATHS=$SUB_DIRECTORY
+SUB_DIRECTORY=
 @endif
 @endif
 @endif

@@ -104,6 +104,19 @@ string get_line_using_get_char( )
 
 }
 
+bool is_stdout_console( )
+{
+#ifdef __GNUG__
+   if( isatty( STDOUT_FILENO ) )
+      return true;
+#else
+   if( _isatty( _fileno( stdout ) ) )
+      return true;
+#endif
+
+   return false;
+}
+
 char get_char( const char* p_prompt, bool flush_input )
 {
    if( p_prompt && p_prompt[ 0 ] != 0 )

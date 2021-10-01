@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+bool is_stdout_console( );
+
 char get_char( const char* p_prompt = 0, bool flush_input = true );
 
 inline char get_char( const std::string& prompt, bool flush_input = true )
