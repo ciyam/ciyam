@@ -118,9 +118,9 @@ HAD_ANY_FILES=1
 ; the UUID variable is used to tag the "list" file which
 ; will be automatically created by "ciyam_client".
 @ifndef $SUB_DIRECTORY
-.file_put $MAX_FILE_SIZE*$1/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+.file_put $MAX_FILE_SIZE*$1//$NEXT_PATH/$NEXT_FILE $START/?$UUID
 @else
-.file_put $MAX_FILE_SIZE*$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
+.file_put $MAX_FILE_SIZE*$1//$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE $START/?$UUID
 @endif
 ;
 @ifdef $ERROR

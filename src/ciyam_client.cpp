@@ -336,6 +336,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                put_source_file = data;
 
+               size_t name_length_for_calc = 0;
+
+               size_t xpos = put_source_file.find( "//" );
+
+               if( xpos != string::npos )
+               {
+                  name_length_for_calc = put_source_file.length( ) - xpos - 2;
+                  replace( put_source_file, "//", "/" );
+               }
+
                if( !put_source_file.empty( ) )
                {
                   // NOTE: If the file name starts with a ? then it will be handled
@@ -404,8 +414,11 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   put_file_error = "File '" + put_source_file + "' not found.";
                else if( chunk == 0 )
                {
-                  int list_items_per_chunk = g_max_file_size / ( 65 + file_name.length( ) + 7 );
-                  int64_t total_file_size = ( list_items_per_chunk * g_max_file_size ) - g_max_file_size;
+                  if( !name_length_for_calc )
+                     name_length_for_calc = file_name.length( );
+
+                  int list_items_per_chunk = g_max_file_size / ( 65 + name_length_for_calc + 7 );
+                  int64_t total_file_size = ( list_items_per_chunk * g_max_file_size );
 
                   if( file_size( put_source_file ) > total_file_size )
                      put_file_error = "File '" + put_source_file
