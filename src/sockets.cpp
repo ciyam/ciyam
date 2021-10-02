@@ -621,14 +621,32 @@ void file_transfer( const string& name,
 
    if( d == e_ft_direction_send )
    {
-      if( !file_exists( name ) )
-         throw runtime_error( "file not found" );
+      ifstream inpf;
+      stringstream ss;
 
-      int64_t total_size = file_size( name );
+      int64_t total_size = 0;
+      istream* p_istream = 0;
 
-      ifstream inpf( name.c_str( ), ios::binary );
-      if( !inpf )
-         throw runtime_error( "file '" + name + "' could not be opened for input" );
+      if( p_buffer && buffer_size )
+      {
+         ss << string( ( const char* )p_buffer, buffer_size );
+
+         p_istream = &ss;
+         total_size = buffer_size;
+      }
+      else
+      {
+         if( !file_exists( name ) )
+            throw runtime_error( "file '" + name + "' not found" );
+
+         total_size = file_size( name );
+
+         inpf.open( name.c_str( ), ios::binary );
+         if( !inpf )
+            throw runtime_error( "file '" + name + "' could not be opened for input" );
+
+         p_istream = &inpf;
+      }
 
       bool has_prefix_char = ( p_prefix_char && *p_prefix_char );
 
@@ -663,8 +681,8 @@ void file_transfer( const string& name,
             *( ap_buf1.get( ) ) = *p_prefix_char;
          }
 
-         if( !inpf.read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
-            count = inpf.gcount( ) + offset;
+         if( !p_istream->read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
+            count = p_istream->gcount( ) + offset;
 
          if( !count )
             break;
@@ -713,7 +731,7 @@ void file_transfer( const string& name,
                throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
 
-         if( inpf.eof( ) )
+         if( p_istream->eof( ) )
             break;
 
          is_first = false;

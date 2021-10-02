@@ -272,7 +272,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool was_no_compress = false;
          bool delete_after_put = false;
 
-         string get_dest_file, put_source_file;
+         string chunk_data, get_dest_file, put_source_file;
 
          string::size_type pos = str.find( ' ' );
 
@@ -454,8 +454,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   chunk_name = file_name;
                   chunk_name += '.' + to_comparable_string( chunk, false, 6 );
 
-                  string chunk_data;
-
                   if( chunk == 0 )
                   {
                      chunk_data = buffer_file( file_name, chunk_size, &file_bytes );
@@ -463,8 +461,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   }
                   else
                      chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
-
-                  write_file( chunk_name, chunk_data );
 
                   if( !has_option_no_prompt( ) )
                   {
@@ -486,9 +482,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         had_chunk_progress = true;
                      }
                   }
-
-                  delete_after_put = true;
-                  put_source_file = chunk_name;
 
                   if( file_bytes <= chunk_size )
                   {
@@ -521,7 +514,11 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                }
 
                sha256 tmp_hash( prefix );
-               tmp_hash.update( put_source_file, true );
+
+               if( chunk_data.length( ) )
+                  tmp_hash.update( chunk_data );
+               else
+                  tmp_hash.update( put_source_file, true );
 
                string hash( tmp_hash.get_digest_as_string( ) );
 
@@ -818,10 +815,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   was_list_prefix = false;
                   was_no_compress = false;
 
+                  unsigned char* p_chunk = 0;
+                  unsigned int chunk_size = chunk_data.length( );
+
+                  if( chunk_data.length( ) )
+                     p_chunk = ( unsigned char* )chunk_data.data( );
+
                   file_transfer( filename, socket,
                    e_ft_direction_send, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_initial_timeout,
-                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
+                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size );
 
                   if( delete_after_put )
                   {
