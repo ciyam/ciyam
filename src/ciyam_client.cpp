@@ -462,7 +462,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   else
                      chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
 
-                  if( !has_option_no_prompt( ) )
+                  if( is_stdout_console( ) || !has_option_no_prompt( ) )
                   {
                      date_time now( date_time::local( ) );
 
@@ -471,7 +471,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      if( elapsed >= 1 )
                      {
                         if( is_stdout_console( ) )
-                           progress.output_progress( "Transferring file...", chunk, total_chunks );
+                           progress.output_progress( "Transferring file data...", chunk, total_chunks );
                         else
                         {
                            cout << '.';
@@ -774,7 +774,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         file_append( filename, prefixed_append_name );
                      }
 
-                     if( !has_option_no_prompt( ) )
+                     if( is_stdout_console( ) || !has_option_no_prompt( ) )
                      {
                         date_time now( date_time::local( ) );
 
@@ -783,7 +783,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         if( elapsed >= 1 )
                         {
                            if( is_stdout_console( ) )
-                              progress.output_progress( "Transferring file...", chunk, total_chunks );
+                              progress.output_progress( "Transferring file data...", chunk, total_chunks );
                            else
                            {
                               cout << '.';
