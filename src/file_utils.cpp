@@ -74,73 +74,52 @@ bool delete_files( const char* p_dir, bool recycle )
 
 void create_directories( const string& file_path, int perm, int mask )
 {
+#ifndef _WIN32
+   string::size_type pos = file_path.rfind( '/' );
+#else
    string::size_type pos = file_path.find_last_of( "/\\" );
+#endif
 
-   // NOTE: It is not recommended to use this function with relative paths.
    if( !file_path.empty( ) && !file_exists( file_path ) )
    {
-      vector< string > sub_directories;
-      string directories( file_path.substr( 0, pos ) );
+      vector< string > directories;
+      string dir_path( file_path.substr( 0, pos ) );
+
+      string next;
 
 #ifdef _WIN32
-      string::size_type dpos = directories.find( ':' );
-      if( dpos != string::npos || directories[ 0 ] == '/' || directories[ 0 ] == '\\' )
-      {
-         pos = directories.find_first_of( "/\\" );
+      replace( dir_path, '\\', '/' );
 
-         if( pos != string::npos )
-         {
-            sub_directories.push_back( directories.substr( 0, pos + 1 ) );
-            directories.erase( 0, pos + 1 );
-         }
-      }
-#else
-      if( directories[ 0 ] == '/' )
+      string::size_type dpos = dir_path.find( ':' );
+      if( dpos != string::npos )
       {
-         directories.erase( 0, 1 );
-         sub_directories.push_back( "/" );
+         next += dir_path.substr( 0, pos + 1 );
+         dir_path.erase( 0, pos + 1 );
       }
 #endif
 
-      while( true )
+      bool absolute = false;
+
+      if( !dir_path.empty( ) && dir_path[ 0 ] == '/' )
       {
-         pos = directories.find_first_of( "/\\" );
-         if( pos == string::npos )
-            break;
-
-         if( pos != 0 )
-            sub_directories.push_back( directories.substr( 0, pos ) );
-
-         directories.erase( 0, pos + 1 );
+         absolute = true;
+         dir_path.erase( 0, 1 );
       }
 
-      if( !directories.empty( ) )
-         sub_directories.push_back( directories );
+      split( dir_path, directories, '/' );
 
-      string cwd( get_cwd( ) );
+      if( !absolute )
+         next = get_cwd( );
 
-      bool rc = 0;
-      string next;
+      bool rc = true;
 
-      for( size_t i = 0; i < sub_directories.size( ); i++ )
+      for( size_t i = 0; i < directories.size( ); i++ )
       {
-         next = sub_directories[ i ];
+         next += '/' + directories[ i ];
 
-         set_cwd( next, &rc );
-
-         if( !rc )
-         {
+         if( !dir_exists( next ) )
             create_dir( next, &rc, ( dir_perms )perm, ( mask < 0 ? STANDARD_UMASK : mask ) );
-
-            if( !rc )
-               break;
-
-            set_cwd( next );
-         }
       }
-
-      // NOTE: Restore the original working directory.
-      set_cwd( cwd );
 
       if( !rc )
          throw runtime_error( "unable to create directory '" + next + "' for '" + file_path + "'" );

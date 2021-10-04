@@ -363,12 +363,41 @@ void create_dir( const string& path, bool* p_rc, dir_perms perms, int um )
          throw runtime_error( "unable to create '" + path + "' directory" );
       }
    }
+   else
+   {
+      if( p_rc )
+         *p_rc = true;
+   }
+
 #ifndef _WIN32
    umask( oum );
 #endif
+}
 
-   if( p_rc )
-      *p_rc = true;
+bool dir_exists( const char* p_name, bool check_link_target )
+{
+   bool rc = false;
+   struct stat statbuf;
+
+#ifdef _WIN32
+   ( void )check_link_target;
+
+   if( stat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
+      rc = true;
+#else
+   if( check_link_target )
+   {
+      if( stat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
+         rc = true;
+   }
+   else
+   {
+      if( lstat( p_name, &statbuf ) == 0 && S_ISDIR( statbuf.st_mode ) )
+         rc = true;
+   }
+#endif
+
+   return rc;
 }
 
 bool file_exists( const char* p_name, bool check_link_target )

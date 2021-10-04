@@ -90,7 +90,7 @@ bool is_non_persistent( const std::string& session_id );
 void add_non_persistent( const std::string& session_id );
 void remove_non_persistent( const std::string& session_id );
 
-void remove_session_temp_directory( const std::string& session_id, const char* p_prefix = 0 );
+void remove_session_temp_directory( const std::string& session_id );
 
 std::string double_escaped( const std::string& src, const std::string& chars );
 

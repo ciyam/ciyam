@@ -412,14 +412,11 @@ void remove_non_persistent( const string& session_id )
       g_non_persistent.erase( session_id );
 }
 
-void remove_session_temp_directory( const string& session_id, const char* p_prefix )
+void remove_session_temp_directory( const string& session_id )
 {
    string path( c_files_directory );
    path += "/" + string( c_tmp_directory );
    path += "/" + session_id;
-
-   if( p_prefix )
-      path = string( p_prefix ) + "/" + path;
 
    if( file_exists( path.c_str( ) ) )
       delete_directory_files( path, true );
@@ -954,47 +951,31 @@ void setup_directories( )
 {
    DEBUG_TRACE( "[setup directories]" );
 
-   string cwd( get_cwd( ) );
-
+   string files_dir( c_files_directory );
    string file_directory_note( GDS( c_display_module_file_directory_note ) );
 
    storage_info& sinfo( get_storage_info( ) );
 
-   set_cwd( sinfo.web_root );
+   if( !dir_exists( files_dir ) )
+      create_dir( files_dir, 0, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
-   bool rc;
-   set_cwd( c_files_directory, &rc );
+   string files_tmp_dir( files_dir + '/' + string( c_tmp_directory ) );
 
-   if( !rc )
-   {
-      create_dir( c_files_directory, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
-      set_cwd( c_files_directory );
-   }
+   if( !dir_exists( files_tmp_dir ) )
+      create_dir( files_tmp_dir, 0, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
    vector< string > dead_sessions;
 
-   set_cwd( c_tmp_directory, &rc );
+   // NOTE: If sessions had ended without cleaning up their temporary directories
+   // then these will be cleaned up.
+   directory_filter df;
+   fs_iterator dfsi( files_tmp_dir, &df );
 
-   if( !rc )
-   {
-      create_dir( c_tmp_directory, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
-      set_cwd( c_tmp_directory );
-   }
-   else
-   {
-      // NOTE: If sessions had ended without cleaning up their temporary directories
-      // then these will be cleaned up.
-      directory_filter df;
-      fs_iterator dfsi( ".", &df );
-
-      while( dfsi.has_next( ) )
-         dead_sessions.push_back( dfsi.get_name( ) );
-   }
-
-   set_cwd( ".." );
+   while( dfsi.has_next( ) )
+      dead_sessions.push_back( dfsi.get_name( ) );
 
    for( size_t x = 0; x < dead_sessions.size( ); x++ )
-      remove_session_temp_directory( dead_sessions[ x ], ".." );
+      remove_session_temp_directory( dead_sessions[ x ] );
 
    map< string, set< string > > module_file_class_ids;
 
@@ -1033,26 +1014,26 @@ void setup_directories( )
 
       string module_id( ( mici->second )->id );
 
-      bool rc;
-      set_cwd( module_id, &rc );
+      string module_dir( files_dir + '/' + module_id );
 
-      if( !rc )
-      {
-         create_dir( module_id, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
-         set_cwd( module_id );
-      }
+      if( !dir_exists( module_dir ) )
+         create_dir( module_dir, 0, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
 
-      if( !file_exists( "_note_.txt" ) )
+      string notes_file( module_dir + "/_note_.txt" );
+
+      if( !file_exists( notes_file ) )
       {
-         ofstream outf( "_note_.txt" );
+         ofstream outf( notes_file.c_str( ) );
          outf << file_directory_note;
       }
 
-      if( !file_exists( ".htaccess" ) )
+      string access_file( module_dir + "/.htaccess" );
+
+      if( !file_exists( access_file ) )
       {
          // NOTE: Empty code block for scope purposes.
          {
-            ofstream htaf( ".htaccess", ios::out | ios::binary );
+            ofstream htaf( access_file.c_str( ), ios::out | ios::binary );
 
             htaf << "<Files *>\n";
             htaf << " #Apache 2.4\n";
@@ -1072,19 +1053,12 @@ void setup_directories( )
       {
          string name( *si );
 
-         bool rc;
-         set_cwd( name, &rc );
+         string class_dir( module_dir + '/' + name );
 
-         if( rc )
-            set_cwd( ".." );
-         else
-            create_dir( name, &rc, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
+         if( !dir_exists( class_dir ) )
+            create_dir( class_dir, 0, ( dir_perms )c_web_files_dir_perm_val, WEB_FILES_UMASK );
       }
-
-      set_cwd( ".." );
    }
-
-   set_cwd( cwd );
 }
 
 bool has_permission( const string& perm, const session_info& sess_info )

@@ -90,19 +90,15 @@ int64_t g_total_bytes = 0;
 
 void create_directory_if_not_exists( const string& dir_name )
 {
-   string cwd( get_cwd( ) );
-
-   bool rc;
-   set_cwd( dir_name, &rc );
-
-   if( !rc )
+   if( !dir_exists( dir_name ) )
    {
+      bool rc;
+
       create_dir( dir_name, &rc );
+
       if( !rc )
          throw runtime_error( "unable to create directory '" + dir_name + "'" );
    }
-   else
-      set_cwd( cwd );
 }
 
 string construct_file_name_from_hash( const string& hash,
@@ -206,25 +202,22 @@ void validate_hash_with_uncompressed_content( const string& hash, unsigned char*
 string get_archive_status( const string& path )
 {
    string retval( c_okay );
-   string cwd( get_cwd( ) );
 
    string tmp_file_name( "~" + uuid( ).as_string( ) );
 
    try
    {
-      bool rc;
-      set_cwd( path, &rc );
-
-      if( !rc )
+      if( !dir_exists( path ) )
          retval = string( c_file_archive_status_bad_access );
       else
       {
          ofstream outf( tmp_file_name.c_str( ), ios::out );
+
          if( !outf )
             retval = string( c_file_archive_status_status_bad_create );
          else
          {
-            outf << "." << endl;
+            outf << ".";
 
             outf.flush( );
 
@@ -234,14 +227,12 @@ string get_archive_status( const string& path )
       }
 
       file_remove( tmp_file_name );
-      set_cwd( cwd );
 
       return retval;
    }
    catch( ... )
    {
       file_remove( tmp_file_name );
-      set_cwd( cwd );
       throw;
    }
 }
@@ -367,106 +358,91 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
    if( !files_area_dir.empty( ) && files_area_dir[ 0 ] != '/' )
       files_area_dir = cwd + '/' + files_area_dir;
 
-   try
+   bool rc = true;
+
+   if( !dir_exists( files_area_dir ) )
+      create_directories( files_area_dir + "/" );
+   else
    {
-      bool rc = true;
+      date_time dtm( date_time::local( ) );
 
-      if( !p_progress )
-         set_cwd( files_area_dir, &rc );
+      directory_filter df;
+      fs_iterator dfsi( files_area_dir, &df );
 
-      if( !rc )
-         create_directories( files_area_dir + "/" );
-      else
+      bool is_first = true;
+      do
       {
-         date_time dtm( date_time::local( ) );
+         size_t max_num = get_files_area_item_max_num( );
+         size_t max_size = get_files_area_item_max_size( );
 
-         directory_filter df;
-         fs_iterator dfsi( files_area_dir, &df );
+         file_filter ff;
+         fs_iterator fs( dfsi.get_path_name( ), &ff );
 
-         bool is_first = true;
-         do
+         vector< string > files_to_delete;
+
+         while( fs.has_next( ) )
          {
-            size_t max_num = get_files_area_item_max_num( );
-            size_t max_size = get_files_area_item_max_size( );
-
-            file_filter ff;
-            fs_iterator fs( dfsi.get_path_name( ), &ff );
-
-            vector< string > files_to_delete;
-
-            while( fs.has_next( ) )
+            if( is_first )
             {
-               if( is_first )
-               {
-                  string data( buffer_file( fs.get_full_name( ) ) );
-                  string file_name( construct_file_name_from_hash( data, false, false ) );
+               string data( buffer_file( fs.get_full_name( ) ) );
+               string file_name( construct_file_name_from_hash( data, false, false ) );
 
-                  if( !file_exists( file_name ) )
-                     file_remove( fs.get_full_name( ) );
+               if( !file_exists( file_name ) )
+                  file_remove( fs.get_full_name( ) );
 
-                  g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
-                  g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
-               }
+               g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
+               g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
+            }
+            else
+            {
+               string file_path( fs.get_full_name( ) );
+
+               if( file_size( file_path ) > max_size )
+                  files_to_delete.push_back( file_path );
+               else if( g_total_files >= max_num )
+                  files_to_delete.push_back( file_path );
                else
                {
-                  string file_path( fs.get_full_name( ) );
+                  ++g_total_files;
+                  g_total_bytes += file_size( file_path );
 
-                  if( file_size( file_path ) > max_size )
-                     files_to_delete.push_back( file_path );
-                  else if( g_total_files >= max_num )
-                     files_to_delete.push_back( file_path );
-                  else
+                  if( p_untagged )
                   {
-                     ++g_total_files;
-                     g_total_bytes += file_size( file_path );
-
-                     if( p_untagged )
+                     string::size_type pos = file_path.find_last_of( "/\\" );
+                     if( pos != string::npos && pos >= 2 )
                      {
-                        string::size_type pos = file_path.find_last_of( "/\\" );
-                        if( pos != string::npos && pos >= 2 )
-                        {
-                           string hash( file_path.substr( pos - 2, 2 ) );
-                           hash += file_path.substr( pos + 1 );
+                        string hash( file_path.substr( pos - 2, 2 ) );
+                        hash += file_path.substr( pos + 1 );
 
-                           if( !g_hash_tags.count( hash ) )
-                              p_untagged->push_back( hash );
-                        }
+                        if( !g_hash_tags.count( hash ) )
+                           p_untagged->push_back( hash );
                      }
-                  }
-               }
-
-               if( p_progress )
-               {
-                  date_time now( date_time::local( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  if( elapsed >= 1 )
-                  {
-                     // FUTURE: This message should be handled as a server string message.
-                     p_progress->output_progress( "Processed " + to_string( g_total_files ) + " files..." );
-
-                     dtm = now;
                   }
                }
             }
 
-            is_first = false;
+            if( p_progress )
+            {
+               date_time now( date_time::local( ) );
 
-            for( size_t i = 0; i < files_to_delete.size( ); i++ )
-               file_remove( files_to_delete[ i ] );
+               uint64_t elapsed = seconds_between( dtm, now );
 
-         } while( dfsi.has_next( ) );
-      }
+               if( elapsed >= 1 )
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  p_progress->output_progress( "Processed " + to_string( g_total_files ) + " files..." );
 
-      if( !p_progress )
-         set_cwd( cwd );
-   }
-   catch( ... )
-   {
-      if( !p_progress )
-         set_cwd( cwd );
-      throw;
+                  dtm = now;
+               }
+            }
+         }
+
+         is_first = false;
+
+         for( size_t i = 0; i < files_to_delete.size( ); i++ )
+            file_remove( files_to_delete[ i ] );
+
+      } while( dfsi.has_next( ) );
    }
 }
 
