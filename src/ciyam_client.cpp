@@ -336,6 +336,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                put_source_file = data;
 
+               // NOTE: If file is in the form "dir/./name" then get rid of the "./".
+               replace( put_source_file, "/./", "/" );
+
                size_t name_length_for_calc = 0;
 
                size_t xpos = put_source_file.find( "//" );

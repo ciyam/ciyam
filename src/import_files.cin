@@ -92,13 +92,6 @@ NEXT_FILE=$OUTPUT
 ;
 @skip
 @:NEXT_FILE
-@ifndef $HAD_ANY_FILES
-@ifndef $SUB_DIRECTORY
-#$1/$NEXT_PATH
-@else
-#$1/$SUB_DIRECTORY/$NEXT_PATH
-@endif
-@endif
 ;
 @ifdef $HAD_ANY_FILES
 IS_FIRST=
@@ -109,7 +102,11 @@ HAD_ANY_FILES=1
 .session_variable @deque pop_front
 ;
 @ifndef $SUB_DIRECTORY
+@ifeq "." "$NEXT_PATH"
+#$1/$NEXT_FILE
+@else
 #$1/$NEXT_PATH/$NEXT_FILE
+@endif
 @else
 #$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
 @endif
@@ -136,7 +133,11 @@ HAD_ANY_FILES=
 HASH=$OUTPUT
 >>~$UUID
 @ifndef $SUB_DIRECTORY
+@ifeq "." "$NEXT_PATH"
+#$HASH $NEXT_FILE
+@else
 #$HASH $NEXT_PATH/$NEXT_FILE
+@endif
 @else
 #$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
 @endif
