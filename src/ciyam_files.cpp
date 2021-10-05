@@ -370,11 +370,12 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
       fs_iterator dfsi( files_area_dir, &df );
 
       bool is_first = true;
+
+      size_t max_num = get_files_area_item_max_num( );
+      size_t max_size = get_files_area_item_max_size( );
+
       do
       {
-         size_t max_num = get_files_area_item_max_num( );
-         size_t max_size = get_files_area_item_max_size( );
-
          file_filter ff;
          fs_iterator fs( dfsi.get_path_name( ), &ff );
 
@@ -389,9 +390,11 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
 
                if( !file_exists( file_name ) )
                   file_remove( fs.get_full_name( ) );
-
-               g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
-               g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
+               else
+               {
+                  g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
+                  g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
+               }
             }
             else
             {
@@ -2348,125 +2351,130 @@ void store_file( const string& hash, tcp_socket& socket,
    {
       session_file_buffer_access file_buffer;
 
-      file_transfer( tmp_file_name, socket, e_ft_direction_recv, max_bytes,
-       c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress );
+      file_transfer( tmp_file_name,
+       socket, e_ft_direction_recv, max_bytes,
+       ( existing ? c_response_okay_skip : c_response_okay_more ),
+       c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
+       0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !existing ? 0 : c_response_okay_skip ) );
 
-      unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
-      unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
-
-      if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
-         throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
-
-      if( file_extra & c_file_type_val_extra_core )
+      if( !existing )
       {
-         if( allow_core_file )
-            file_extra_is_core = true;
-         else
-            throw runtime_error( "core file not allowed for this store_file" );
-      }
+         unsigned char file_type = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_mask );
+         unsigned char file_extra = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_extra_mask );
 
-      bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
-      bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
-      bool is_no_encrypt = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_encrypt );
-      bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+         if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
+            throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' for store_file" );
 
-      if( is_encrypted && is_no_encrypt )
-         throw runtime_error( "file must not have both the 'encrypted' and 'no_encrypt' bit flags set" );
+         if( file_extra & c_file_type_val_extra_core )
+         {
+            if( allow_core_file )
+               file_extra_is_core = true;
+            else
+               throw runtime_error( "core file not allowed for this store_file" );
+         }
 
-      if( is_compressed && is_no_compress )
-         throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
+         bool is_encrypted = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_encrypted );
+         bool is_compressed = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_compressed );
+         bool is_no_encrypt = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_encrypt );
+         bool is_no_compress = ( file_buffer.get_buffer( )[ 0 ] & c_file_type_val_no_compress );
+
+         if( is_encrypted && is_no_encrypt )
+            throw runtime_error( "file must not have both the 'encrypted' and 'no_encrypt' bit flags set" );
+
+         if( is_compressed && is_no_compress )
+            throw runtime_error( "file must not have both the 'compressed' and 'no_compress' bit flags set" );
 
 #ifdef ZLIB_SUPPORT
-      if( !is_encrypted && is_compressed )
-      {
-         unsigned long size = file_size( tmp_file_name ) - 1;
-         unsigned long usize = file_buffer.get_size( ) - size;
+         if( !is_encrypted && is_compressed )
+         {
+            unsigned long size = file_size( tmp_file_name ) - 1;
+            unsigned long usize = file_buffer.get_size( ) - size;
 
-         if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
-          &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
-            throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
+            if( uncompress( ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+             &usize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size ) != Z_OK )
+               throw runtime_error( "invalid content for '" + hash + "' (bad compressed or uncompressed too large)" );
 
-         if( usize + 1 > max_bytes )
-            throw runtime_error( "uncompressed file size exceeds maximum permitted file size" );
+            if( usize + 1 > max_bytes )
+               throw runtime_error( "uncompressed file size exceeds maximum permitted file size" );
 
-         file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
-         validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
+            file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ];
+            validate_hash_with_uncompressed_content( hash, &file_buffer.get_buffer( )[ size ], usize + 1 );
+
+            bool rc = true;
+
+            if( file_type != c_file_type_val_blob )
+               validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc );
+
+            if( !rc )
+               throw runtime_error( "invalid 'list' file" );
+         }
+#endif
 
          bool rc = true;
 
-         if( file_type != c_file_type_val_blob )
-            validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc );
+         if( !is_encrypted && !is_compressed && file_type != c_file_type_val_blob )
+            validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc );
 
          if( !rc )
             throw runtime_error( "invalid 'list' file" );
-      }
-#endif
 
-      bool rc = true;
+         if( !is_encrypted && !is_compressed )
+            validate_hash_with_uncompressed_content( hash, tmp_file_name );
 
-      if( !is_encrypted && !is_compressed && file_type != c_file_type_val_blob )
-         validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc );
-
-      if( !rc )
-         throw runtime_error( "invalid 'list' file" );
-
-      if( !is_encrypted && !is_compressed )
-         validate_hash_with_uncompressed_content( hash, tmp_file_name );
-
-      if( rc )
-      {
-         guard g( g_mutex );
-
-         if( !existing )
-            is_in_blacklist = file_has_been_blacklisted( hash );
-
-         if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
+         if( rc )
          {
-            // NOTE: First attempt to relegate an existing file in order to make room.
-            relegate_time_stamped_files( "", "", 1, 0, true );
+            guard g( g_mutex );
 
-            if( g_total_files >= get_files_area_item_max_num( ) )
-               // FUTURE: This message should be handled as a server string message.
-               throw runtime_error( "Maximum file area item limit has been reached." );
-         }
+            if( !existing )
+               is_in_blacklist = file_has_been_blacklisted( hash );
 
-         if( !is_in_blacklist )
-         {
-#ifndef ZLIB_SUPPORT
-            file_copy( tmp_file_name, file_name );
-#else
-            bool has_written = false;
-            unsigned long size = file_size( tmp_file_name ) - 1;
-
-            if( !is_no_compress
-             && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
+            if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
             {
-               unsigned long csize = file_buffer.get_size( );
+               // NOTE: First attempt to relegate an existing file in order to make room.
+               relegate_time_stamped_files( "", "", 1, 0, true );
 
-               int rc = compress2(
-                ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
-                &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ); // i.e. 9 is for maximum compression
-
-               if( rc == Z_OK )
-               {
-                  if( csize < size )
-                  {
-                     has_written = true;
-                     is_compressed = true;
-
-                     file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
-
-                     write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
-                  }
-               }
-               else if( rc != Z_BUF_ERROR )
-                  throw runtime_error( "unexpected compression error in store_file" );
+               if( g_total_files >= get_files_area_item_max_num( ) )
+                  // FUTURE: This message should be handled as a server string message.
+                  throw runtime_error( "Maximum file area item limit has been reached." );
             }
 
-            if( !has_written )
+            if( !existing && !is_in_blacklist )
+            {
+#ifndef ZLIB_SUPPORT
                file_copy( tmp_file_name, file_name );
+#else
+               bool has_written = false;
+               unsigned long size = file_size( tmp_file_name ) - 1;
+
+               if( !is_no_compress
+                && !is_encrypted && !is_compressed && size >= c_min_size_to_compress )
+               {
+                  unsigned long csize = file_buffer.get_size( );
+
+                  int rc = compress2(
+                   ( Bytef * )&file_buffer.get_buffer( )[ size + 1 ],
+                   &csize, ( Bytef * )&file_buffer.get_buffer( )[ 1 ], size, 9 ); // i.e. 9 is for maximum compression
+
+                  if( rc == Z_OK )
+                  {
+                     if( csize < size )
+                     {
+                        has_written = true;
+                        is_compressed = true;
+
+                        file_buffer.get_buffer( )[ size ] = file_buffer.get_buffer( )[ 0 ] | c_file_type_val_compressed;
+
+                        write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
+                     }
+                  }
+                  else if( rc != Z_BUF_ERROR )
+                     throw runtime_error( "unexpected compression error in store_file" );
+               }
+
+               if( !has_written )
+                  file_copy( tmp_file_name, file_name );
 #endif
+            }
          }
 
          file_remove( tmp_file_name );

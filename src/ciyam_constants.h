@@ -199,6 +199,8 @@ const char* const c_user_class_suffix = "_user_class";
 
 const char* const c_response_okay = "(okay)";
 const char* const c_response_okay_more = "(okay more)";
+const char* const c_response_okay_skip = "(okay skip)";
+
 const char* const c_response_not_found = "(not found)";
 
 const char* const c_response_error_prefix = "(error)";

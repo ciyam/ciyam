@@ -601,8 +601,9 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 
 void file_transfer( const string& name,
  tcp_socket& s, ft_direction d, size_t max_size,
- const char* p_ack_message, size_t initial_timeout, size_t line_timeout, size_t max_line_size,
- unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size, progress* p_progress )
+ const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
+ size_t max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer,
+ unsigned int buffer_size, progress* p_progress, const char* p_ack_skip_message )
 {
    bool not_base64 = false;
    bool max_size_exceeded = false;
@@ -614,6 +615,11 @@ void file_transfer( const string& name,
 
    string ack_message_str( p_ack_message );
    string ack_message_line( ack_message_str + "\r\n" );
+
+   string ack_message_skip;
+
+   if( p_ack_skip_message )
+      ack_message_skip = string( p_ack_skip_message );
 
    int ack_msg_line_len = ( int )ack_message_line.length( );
 
@@ -694,6 +700,10 @@ void file_transfer( const string& name,
             s.write_line( size_info, initial_timeout, p_progress );
 
             s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
+
+            // NOTE: If the receiver has already got the file then quietly end the transfer.
+            if( next == ack_message_skip )
+               break;
 
             if( next != ack_message_str )
             {
@@ -808,6 +818,10 @@ void file_transfer( const string& name,
 
             s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
          }
+
+         // NOTE: If the receiver has already got the file then quietly end the transfer.
+         if( ack_message_str == ack_message_skip )
+            break;
 
          int received = s.recv_n( ( unsigned char* )&next[ 0 ], max_line_size, line_timeout, p_progress );
 

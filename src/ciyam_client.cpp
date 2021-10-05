@@ -824,10 +824,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( chunk_data.length( ) )
                      p_chunk = ( unsigned char* )chunk_data.data( );
 
-                  file_transfer( filename, socket,
-                   e_ft_direction_send, c_max_file_transfer_size,
-                   c_response_okay_more, c_file_transfer_initial_timeout,
-                   c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size );
+                  file_transfer(
+                   filename, socket, e_ft_direction_send, c_max_file_transfer_size,
+                   c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+                   c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, 0, c_response_okay_skip );
 
                   if( delete_after_put )
                   {
