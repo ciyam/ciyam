@@ -2477,8 +2477,6 @@ void store_file( const string& hash, tcp_socket& socket,
             }
          }
 
-         file_remove( tmp_file_name );
-
          if( !existing && !is_in_blacklist )
             ++g_total_files;
 
@@ -2488,6 +2486,8 @@ void store_file( const string& hash, tcp_socket& socket,
             g_total_bytes += file_size( file_name );
          }
       }
+
+      file_remove( tmp_file_name );
    }
    catch( ... )
    {
