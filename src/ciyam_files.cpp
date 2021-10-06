@@ -343,7 +343,7 @@ string get_file_stats( )
    return s;
 }
 
-void init_files_area( vector< string >* p_untagged, progress* p_progress )
+void init_files_area( vector< string >* p_untagged, progress* p_progress, bool remove_invalid_tags )
 {
    string cwd( get_cwd( ) );
 
@@ -389,7 +389,15 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
                string file_name( construct_file_name_from_hash( data, false, false ) );
 
                if( !file_exists( file_name ) )
-                  file_remove( fs.get_full_name( ) );
+               {
+                  if( remove_invalid_tags )
+                     file_remove( fs.get_full_name( ) );
+                  else
+                  {
+                     // FUTURE: This message should be handled as a server string message.
+                     TRACE_LOG( TRACE_ANYTHING, "Skipping unexpected invalid tag file '" + fs.get_name( ) + "'." );
+                  }
+               }
                else
                {
                   g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
@@ -449,7 +457,7 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress )
    }
 }
 
-void resync_files_area( vector< string >* p_untagged, progress* p_progress )
+void resync_files_area( vector< string >* p_untagged, progress* p_progress, bool remove_invalid_tags )
 {
    guard g( g_mutex );
 
@@ -458,7 +466,7 @@ void resync_files_area( vector< string >* p_untagged, progress* p_progress )
 
    g_total_bytes = g_total_files = 0;
 
-   init_files_area( p_untagged, p_progress );
+   init_files_area( p_untagged, p_progress, remove_invalid_tags );
 }
 
 void term_files_area( )

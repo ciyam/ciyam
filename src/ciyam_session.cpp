@@ -1816,7 +1816,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = get_file_stats( );
       else if( command == c_cmd_ciyam_session_file_resync )
       {
-         resync_files_area( 0, &handler );
+         bool remove_invalid_tags( has_parm_val( parameters, c_cmd_ciyam_session_file_resync_remove_invalid_tags ) );
+
+         resync_files_area( 0, &handler, remove_invalid_tags );
+
          response = get_file_stats( );
       }
       else if( command == c_cmd_ciyam_session_file_archive )

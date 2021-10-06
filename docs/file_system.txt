@@ -271,6 +271,13 @@ is possible to re-synchronise the application server with the following command:
 > file_resync
 
 Note that this command's output mimics that of "file_stats" as a way to easily check if changes had occurred.
+It should also be noted that files that ought to be tags (but are either not tag files or are somehow invalid
+due to external changes made in the files area directory) will be listed in the application server log. These
+files can be automatically deleted by using the command option "-remove_invalid_tags").
+
+Although the files system directory is called "files" by default (and is located directly below the directory
+that is the application server's current working directory) it can be changed via the special system variable
+"@files_area_dir" (which will result in an automatic "file_resync" when set).
 
 Core Files
 ----------

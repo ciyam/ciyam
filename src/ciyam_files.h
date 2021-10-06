@@ -34,9 +34,11 @@ int64_t CIYAM_BASE_DECL_SPEC get_total_bytes( );
 
 std::string CIYAM_BASE_DECL_SPEC get_file_stats( );
 
-void CIYAM_BASE_DECL_SPEC init_files_area( std::vector< std::string >* p_untagged = 0, progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC init_files_area(
+ std::vector< std::string >* p_untagged = 0, progress* p_progress = 0, bool remove_invalid_tags = false );
 
-void CIYAM_BASE_DECL_SPEC resync_files_area( std::vector< std::string >* p_untagged = 0, progress* p_progress = 0 );
+void CIYAM_BASE_DECL_SPEC resync_files_area(
+ std::vector< std::string >* p_untagged = 0, progress* p_progress = 0, bool remove_invalid_tags = false );
 
 void CIYAM_BASE_DECL_SPEC term_files_area( );
 

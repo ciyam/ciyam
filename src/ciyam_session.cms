@@ -12,7 +12,7 @@ file_list "add or remove items to/from a list file in the files area" [<list/-a=
 file_tags "extract tags from a list tree or list files area tags for either multiple wildcard patterns or for a single wildcard pattern or file hash" [{<opt/-extract/extract>[<val/-d=1/depth>][<val/-p=/prefix>]<val//tag_or_hash>}|{<list/-i=/includes>[<list/-x=/excludes>]}|<val//pat_or_hash>]
 file_crypt "encrypt/decrypt one or more files in the files area" [<opt/-recurse/recurse>]<val//tag_or_hash>[<val/-k=/pubkey>]<val//password>
 file_stats "get files area stats"
-file_resync "resync files area info"
+file_resync "resync files area info" [<opt/-remove_invalid_tags/remove_invalid_tags>]
 file_archive "add/remove/repair/destroy a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove>|<opt/-repair/repair>|<opt/-destroy/destroy><val//name>
 file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|{<opt/-status_update/update_status>[<val//name>]}]
 file_relegate "relegate one or more files from the files area to the archives" <val/-n=/num_files>|<val/-s=/size_limit>|{[<opt/-destroy/destroy>|<opt/-blacklist/blacklist>]<val//hash>}[<val//archive>]
