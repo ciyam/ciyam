@@ -96,6 +96,7 @@ const char* const c_function_repstr = "repstr";
 const char* const c_function_sha256 = "sha256";
 const char* const c_function_substr = "substr";
 const char* const c_function_fullpath = "fullpath";
+const char* const c_function_password = "password";
 
 const char* const c_envcond_command_else = "else";
 const char* const c_envcond_command_ifeq = "ifeq";
@@ -2799,6 +2800,17 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  throw runtime_error( "invalid path '" + str.substr( pos + 1 ) + "'" );
 
                               str = abs_path;
+                           }
+                           else if( lhs == c_function_password )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( !rhs.empty( ) )
+                                 rhs += ' ';
+                              else
+                                 rhs = string( "Enter Password: " );
+
+                              str = get_password( rhs.c_str( ) );
                            }
                         }
                         else

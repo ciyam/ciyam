@@ -1,0 +1,41 @@
+; Copyright (c) 2021 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.utc_now
+@ifdef $1
+.utc_to_local $1 "$OUTPUT"
+@endif
+;
+TOTAL=0
+PREFIX=@substr:0,10:$OUTPUT
+PREFIX=@repstr:-/:$PREFIX
+;
+.file_tags -i=ts.* -x=ts.$PREFIX*
+.session_variable @deque "~$OUTPUT"
+;
+@label NEXT
+@:LOOP
+.session_variable @deque front
+;
+@ifndef $OUTPUT
+@label EXIT_LOOP
+@endif
+;
+@skip
+;
+@:NEXT
+ERROR=
+.file_kill $OUTPUT
+;
+@ifndef $ERROR
+TOTAL=$TOTAL+1
+@endif
+
+.session_variable @deque pop_front
+!!@:LOOP
+;
+#Removed $TOTAL files.
+;
+@:EXIT_LOOP

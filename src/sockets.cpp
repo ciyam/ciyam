@@ -613,6 +613,9 @@ void file_transfer( const string& name,
 
    string unexpected_data;
 
+   if( !p_ack_message )
+      throw runtime_error( "invalid null ack message in file_transfer" );
+
    string ack_message_str( p_ack_message );
    string ack_message_line( ack_message_str + "\r\n" );
 
@@ -702,7 +705,7 @@ void file_transfer( const string& name,
             s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
 
             // NOTE: If the receiver has already got the file then quietly end the transfer.
-            if( next == ack_message_skip )
+            if( !next.empty( ) && next == ack_message_skip )
                break;
 
             if( next != ack_message_str )

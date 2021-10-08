@@ -1663,7 +1663,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
    return retval;
 }
 
-void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
+void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool remove_tag_file )
 {
    guard g( g_mutex );
 
@@ -1675,7 +1675,8 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
       tag_file_name += "/" + name;
 
-      file_remove( tag_file_name );
+      if( remove_tag_file )
+         file_remove( tag_file_name );
 
       if( g_tag_hashes.count( name ) )
       {
@@ -1780,30 +1781,42 @@ void tag_file( const string& name, const string& hash )
          string ts_tag_to_remove;
          vector< string > tags;
 
+         bool remove_tag_file = true;
+
          // NOTE: If the file has just a time stamp tag then this will be removed.
          split( all_tags, tags, '\n' );
          if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
             ts_tag_to_remove = tags[ 0 ];
 
-         string tag_file_name( get_files_area_dir( ) );
+         string prefix( get_files_area_dir( ) );
 
-         tag_file_name += "/" + tag_name;
+         // NOTE: If an old time stamp tag is being replaced by a new one then instead
+         // of creating a new file and removing the old one just rename the old to new.
+         if( !ts_tag_to_remove.empty( ) && tag_name.find( c_time_stamp_tag_prefix ) == 0 )
+         {
+            remove_tag_file = false;
+            file_rename( prefix + '/' + ts_tag_to_remove, prefix + '/' + tag_name );
+         }
+         else
+         {
+            string tag_file_name( prefix + "/" + tag_name );
 
-         ofstream outf( tag_file_name.c_str( ) );
-         if( !outf )
-            throw runtime_error( "unable to open file '" + tag_file_name + "' for output" );
+            ofstream outf( tag_file_name.c_str( ) );
+            if( !outf )
+               throw runtime_error( "unable to open file '" + tag_file_name + "' for output" );
 
-         outf << hash;
+            outf << hash;
 
-         outf.flush( );
-         if( !outf.good( ) )
-            throw runtime_error( "unexpected bad output stream" );
+            outf.flush( );
+            if( !outf.good( ) )
+               throw runtime_error( "unexpected bad output stream" );
+         }
 
          g_hash_tags.insert( make_pair( hash, tag_name ) );
          g_tag_hashes.insert( make_pair( tag_name, hash ) );
 
          if( !ts_tag_to_remove.empty( ) )
-            tag_del( ts_tag_to_remove, false, false );
+            tag_del( ts_tag_to_remove, false, false, remove_tag_file );
       }
    }
 }
@@ -2512,7 +2525,7 @@ void store_file( const string& hash, tcp_socket& socket,
       if( !tag_name.empty( )
        && tag_name != string( c_important_file_suffix ) )
          tag_file( tag_name, hash );
-      else if( !existing && !file_extra_is_core )
+      else if( !file_extra_is_core )
          tag_file( current_time_stamp_tag( ) + tag_name, hash );
    }
 }
