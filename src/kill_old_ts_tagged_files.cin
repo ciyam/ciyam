@@ -18,7 +18,7 @@ OUTPUT=
 .session_variable @uuid
 UUID=$OUTPUT
 >~$UUID
-file_tags -i=ts.* -x=ts.$PREFIX*
+.file_tags -i=ts.* -x=ts.$PREFIX*
 >
 .session_variable @deque "@~$UUID"
 ;

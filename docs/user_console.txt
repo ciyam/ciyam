@@ -84,12 +84,14 @@ Prefixes are a single character (surround by single quotes) as follows:
 '@' - conditional command prefix (covered in the next section)
 '#' - echo whatever characters that follow
 ';' - ignore whatever characters that follow (i.e. a comment)
-'.' - use this as a prefix for any normal command to suppress command output (OUTPUT is still assigned)
+'.' - use this as a prefix for any normal command to suppress command output (OUTPUT is still assigned ***)
 ' ' - use this as a prefix for any normal command in order to not have the command line recorded in history
 '<' - use this prefix followed by a file name and optional arguments for executing an input script
 '>' - use this prefix followed by a file name to redirect command output to that file (use no name to stop)
 '~' - use this prefix to execute what follows as a "system" command (such as an external script or program)
 '*' - use this prefix for executing a FISSILE command (an interpreted functional programming language)
+
+*** NOTE: Redirected output is not affected by this (temporarily stop redirecting to actually suppress that).
 
 It should be noted that the '<' prefix can be doubled up (i.e. "<<") in order to place every script line read
 into history and the '>' prefix can be doubled up (i.e. ">>") in order to append command output to an already

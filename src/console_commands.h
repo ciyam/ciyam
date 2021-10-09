@@ -34,6 +34,8 @@ class console_command_handler : public command_handler
 
    bool has_option_no_prompt( ) const;
 
+   bool is_redirected_output( ) const;
+
    bool is_handling_startup_options( ) const { return handling_startup_options; }
 
    void set_prompt_prefix( const std::string& prefix ) { set_option_value( c_prompt_prefix_option, prefix ); }

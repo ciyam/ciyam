@@ -7,7 +7,7 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 if '%1' == '' goto usage
 
 echo ^<^<kill_old_ts_tagged_files.cin %1 %2 >~kill_old_ts_tagged_files
-ciyam_client -quiet -no_prompt -no_stderr < ~kill_old_ts_tagged_files
+ciyam_client -echo -quiet -no_prompt -no_stderr < ~kill_old_ts_tagged_files
 
 del ~kill_old_ts_tagged_files
 goto end
