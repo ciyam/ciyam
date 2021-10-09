@@ -188,6 +188,8 @@ class ciyam_console_command_handler : public console_command_handler
    int port;
    string host;
 
+   string chunk_data;
+
    unsigned long chunk;
 
    date_time dtm;
@@ -272,7 +274,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          bool was_no_compress = false;
          bool delete_after_put = false;
 
-         string chunk_data, get_dest_file, put_source_file;
+         string get_dest_file, put_source_file;
 
          string::size_type pos = str.find( ' ' );
 
@@ -459,11 +461,11 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   if( chunk == 0 )
                   {
-                     chunk_data = buffer_file( file_name, chunk_size, &file_bytes );
+                     buffer_file( chunk_data, file_name, chunk_size, &file_bytes );
                      total_chunks = ( file_bytes / chunk_size );
                   }
                   else
-                     chunk_data = buffer_file( file_name, chunk_size, 0, ( chunk * chunk_size ) );
+                     buffer_file( chunk_data, file_name, chunk_size, 0, ( chunk * chunk_size ) );
 
                   if( is_stdout_console( ) || !has_option_no_prompt( ) )
                   {
@@ -821,13 +823,16 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   unsigned char* p_chunk = 0;
                   unsigned int chunk_size = chunk_data.length( );
 
-                  if( chunk_data.length( ) )
+                  if( chunk_size )
                      p_chunk = ( unsigned char* )chunk_data.data( );
 
                   file_transfer(
                    filename, socket, e_ft_direction_send, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
                    c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, 0, c_response_okay_skip );
+
+                  if( chunk_size && !file_bytes )
+                     chunk_data.resize( 0 );
 
                   if( delete_after_put )
                   {
@@ -1058,7 +1063,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( is_error && get_environment_variable( c_env_var_error ).empty( ) )
                      set_environment_variable( c_env_var_error, response.substr( start ).c_str( ) );
 
-                  if( !is_error && !is_message && response.length( ) <= c_max_length_for_output_env_var )
+                  if( !is_error && !is_message )
                   {
                      if( response.length( ) <= c_max_length_for_output_env_var )
                         set_environment_variable( c_env_var_output, response.substr( start ).c_str( ) );

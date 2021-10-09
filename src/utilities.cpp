@@ -1827,7 +1827,7 @@ void setup_arguments( int argc, const char* argv[ ],
    }
 }
 
-string buffer_file( const char* p_file_name, long max_bytes, long* p_size, long start_pos )
+void buffer_file( string& buffer, const char* p_file_name, long max_bytes, long* p_size, long start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
@@ -1851,21 +1851,22 @@ string buffer_file( const char* p_file_name, long max_bytes, long* p_size, long 
    else
       size -= start_pos;
 
-   if( size <= 0 )
-      return string( );
-   else
+   if( size > 0 )
    {
-      string str( size, '\0' );
+      if( buffer.capacity( ) < size )
+         buffer.reserve( size );
+
+      buffer.resize( size );
 
       fseek( fp, start_pos, SEEK_SET );
 
-      if( fread( &str[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
+      if( fread( &buffer[ 0 ], 1, ( size_t )size, fp ) != ( size_t )size )
          throw runtime_error( "reading from input file '" + string( p_file_name ) + "'" );
-
-      fclose( fp );
-
-      return str;
    }
+   else
+      buffer.resize( 0 );
+
+   fclose( fp );
 }
 
 void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, long start_pos )

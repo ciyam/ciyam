@@ -12,13 +12,22 @@ TOTAL=0
 PREFIX=@substr:0,10:$OUTPUT
 PREFIX=@repstr:-/:$PREFIX
 ;
-.file_tags -i=ts.* -x=ts.$PREFIX*
-.session_variable @deque "~$OUTPUT"
+OUTPUT=
+.session_variable @deque ""
 ;
-@label NEXT
-@:LOOP
+.session_variable @uuid
+UUID=$OUTPUT
+>~$UUID
+file_tags -i=ts.* -x=ts.$PREFIX*
+>
+.session_variable @deque "@~$UUID"
+;
+@:KILL_LOOP
+;
+OUTPUT=
 .session_variable @deque front
 ;
+@label NEXT
 @ifndef $OUTPUT
 @label EXIT_LOOP
 @endif
@@ -30,12 +39,14 @@ ERROR=
 .file_kill $OUTPUT
 ;
 @ifndef $ERROR
-TOTAL=$TOTAL+1
+TOTAL=@$TOTAL+1
 @endif
 
 .session_variable @deque pop_front
-!!@:LOOP
-;
-#Removed $TOTAL files.
+!!@:KILL_LOOP
 ;
 @:EXIT_LOOP
+;
+#Removed $TOTAL file(s).
+;
+~rm ~$UUID
