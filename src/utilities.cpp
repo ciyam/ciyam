@@ -1827,7 +1827,7 @@ void setup_arguments( int argc, const char* argv[ ],
    }
 }
 
-void buffer_file( string& buffer, const char* p_file_name, long max_bytes, long* p_size, long start_pos )
+void buffer_file( string& buffer, const char* p_file_name, size_t max_bytes, size_t* p_size, size_t start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in buffer_file" );
@@ -1841,10 +1841,13 @@ void buffer_file( string& buffer, const char* p_file_name, long max_bytes, long*
       throw runtime_error( "unable to open file '" + string( p_file_name ) + "' for input in buffer_file" );
 
    fseek( fp, 0, SEEK_END );
-   long size = ftell( fp );
+   size_t size = ftell( fp );
 
    if( p_size )
       *p_size = size;
+
+   if( start_pos > size )
+      start_pos = size;
 
    if( max_bytes && ( size - start_pos > max_bytes ) )
       size = max_bytes;
@@ -1869,7 +1872,7 @@ void buffer_file( string& buffer, const char* p_file_name, long max_bytes, long*
    fclose( fp );
 }
 
-void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, long start_pos )
+void write_file( const char* p_file_name, unsigned char* p_data, size_t length, bool append, size_t start_pos )
 {
    if( !p_file_name )
       throw runtime_error( "unexpected null pointer for p_file_name in write_file" );

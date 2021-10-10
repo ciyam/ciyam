@@ -190,15 +190,15 @@ class ciyam_console_command_handler : public console_command_handler
 
    string chunk_data;
 
-   unsigned long chunk;
+   size_t chunk;
 
    date_time dtm;
 
-   long file_pos;
-   long file_bytes;
+   size_t file_pos;
+   size_t file_bytes;
 
-   unsigned long chunk_size;
-   unsigned long total_chunks;
+   size_t chunk_size;
+   size_t total_chunks;
 
    string file_name;
    string file_extra;

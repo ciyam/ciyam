@@ -1500,15 +1500,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_file_put_filename ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_put_tag ) );
 
+         bool is_new = false;
+
          // NOTE: Although "filename" is used to make the command usage easier to understand for
          // end users it is expected that the value provided will actually be the SHA256 hash of
          // the file content (including "prefix" which "ciyam_client" determines automatically).
-         store_file( filename, socket, ( tag.empty( ) ? 0 : tag.c_str( ) ), p_progress );
+         is_new = store_file( filename, socket, ( tag.empty( ) ? 0 : tag.c_str( ) ), p_progress );
 
          // NOTE: Although it seems a little odd to be checking this *after* the "store_file" it
          // otherwise would make a mess of the protocol (and the "store_file" just quietly fails
          // to store a blacklisted file).
-         if( file_has_been_blacklisted( filename ) )
+         if( is_new && file_has_been_blacklisted( filename ) )
             throw runtime_error( "file '" + filename + "' has been blacklisted" );
 
          set_session_variable( get_special_var_name( e_special_var_last_file_put ), filename );
@@ -5562,6 +5564,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          int flag = 1;
          ostringstream osstr;
+
          for( size_t i = 0; i < trace_flag_names.size( ); i++ )
          {
             osstr << hex << setw( 4 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';

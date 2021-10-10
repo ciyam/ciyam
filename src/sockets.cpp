@@ -627,7 +627,7 @@ void file_transfer( const string& name,
    int ack_msg_line_len = ( int )ack_message_line.length( );
 
    s.set_no_delay( );
-
+ 
    if( d == e_ft_direction_send )
    {
       ifstream inpf;
@@ -637,12 +637,7 @@ void file_transfer( const string& name,
       istream* p_istream = 0;
 
       if( p_buffer && buffer_size )
-      {
-         ss << string( ( const char* )p_buffer, buffer_size );
-
-         p_istream = &ss;
          total_size = buffer_size;
-      }
       else
       {
          if( !file_exists( name ) )
@@ -681,28 +676,14 @@ void file_transfer( const string& name,
 
       while( true )
       {
-         size_t count = max_unencoded;
-         size_t offset = 0;
-
-         if( is_first && has_prefix_char )
-         {
-            ++offset;
-            *( ap_buf1.get( ) ) = *p_prefix_char;
-         }
-
-         if( !p_istream->read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
-            count = p_istream->gcount( ) + offset;
-
-         if( !count )
-            break;
-
-         size_t enc_len = 0;
-
          if( is_first )
          {
             s.write_line( size_info, initial_timeout, p_progress );
 
-            s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
+            s.read_line( next, initial_timeout, ack_message_str.length( ), p_progress );
+
+            if( s.had_timeout( ) )
+               throw runtime_error( "timeout occurred reading send response for size_info in file transfer" );
 
             // NOTE: If the receiver has already got the file then quietly end the transfer.
             if( !next.empty( ) && next == ack_message_skip )
@@ -714,11 +695,36 @@ void file_transfer( const string& name,
                if( lower( next ).find( "error" ) != string::npos )
                   throw runtime_error( next );
                else if( next.empty( ) )
-                  throw runtime_error( "unexpected first empty ack response" );
+                  throw runtime_error( "unexpected first empty ack response in file transfer" );
                else
                   throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
             }
+
+            if( !p_istream )
+            {
+               p_istream = &ss;
+               ss << string( ( const char* )p_buffer, buffer_size );
+            }
          }
+
+         size_t count = max_unencoded;
+         size_t offset = 0;
+
+         if( is_first && has_prefix_char )
+         {
+            ++offset;
+            *( ap_buf1.get( ) ) = *p_prefix_char;
+         }
+
+         is_first = false;
+
+         if( !p_istream->read( ap_buf1.get( ) + offset, max_unencoded - offset ) )
+            count = p_istream->gcount( ) + offset;
+
+         if( !count )
+            break;
+
+         size_t enc_len = 0;
 
          base64::encode( ( const unsigned char* )ap_buf1.get( ), count, ap_buf2.get( ), &enc_len );
 
@@ -726,12 +732,12 @@ void file_transfer( const string& name,
             *( ap_buf2.get( ) + enc_len++ ) = '.';
 
          if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
-            throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n" );
+            throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n in file transfer" );
 
-         s.read_line( next, is_first ? initial_timeout : line_timeout, ack_message_str.length( ), p_progress );
+         s.read_line( next, line_timeout, ack_message_str.length( ), p_progress );
 
          if( s.had_timeout( ) )
-            throw runtime_error( "timeout occurred reading send response for file transfer" );
+            throw runtime_error( "timeout occurred reading send response for next line in file transfer" );
 
          if( next != ack_message_str )
          {
@@ -739,15 +745,13 @@ void file_transfer( const string& name,
             if( lower( next ).find( "error" ) != string::npos )
                throw runtime_error( next );
             else if( next.empty( ) )
-               throw runtime_error( "unexpected empty ack response for send" );
+               throw runtime_error( "unexpected empty ack response for send in file transfer" );
             else
                throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
 
          if( p_istream->eof( ) )
             break;
-
-         is_first = false;
       }
    }
    else
@@ -860,6 +864,8 @@ void file_transfer( const string& name,
             *p_prefix_char = decoded[ 0 ];
          }
 
+         is_first = false;
+
          size_t decoded_size = decoded.length( ) - offset;
 
          if( written + decoded_size > max_size )
@@ -880,8 +886,6 @@ void file_transfer( const string& name,
          }
 
          s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
-
-         is_first = false;
 
          if( written >= total_size )
             break;

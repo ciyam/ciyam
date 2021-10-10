@@ -1009,17 +1009,16 @@ void setup_arguments( int argc, const char* argv[ ],
  std::vector< std::string >& arguments, char esc = '\0', const char* p_specials = 0 );
 
 void buffer_file(
- std::string& buffer, const char* p_file_name,
- long max_bytes = 0, long* p_size = 0, long start_pos = 0 );
+ std::string& buffer, const char* p_file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 );
 
 inline void buffer_file( std::string& buffer,
- const std::string& file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
+ const std::string& file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
 {
    buffer_file( buffer, file_name.c_str( ), max_bytes, p_size, start_pos );
 }
 
 inline std::string buffer_file(
- const char* p_file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
+ const char* p_file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
 {
    std::string buffer;
 
@@ -1029,22 +1028,22 @@ inline std::string buffer_file(
 }
 
 inline std::string buffer_file(
- const std::string& file_name, long max_bytes = 0, long* p_size = 0, long start_pos = 0 )
+ const std::string& file_name, size_t max_bytes = 0, size_t* p_size = 0, size_t start_pos = 0 )
 {
    return buffer_file( file_name.c_str( ), max_bytes, p_size, start_pos );
 }
 
 void write_file( const char* p_file_name,
- unsigned char* p_data, size_t length, bool append = false, long start_pos = 0 );
+ unsigned char* p_data, size_t length, bool append = false, size_t start_pos = 0 );
 
 inline void write_file( const std::string& file_name,
- unsigned char* p_data, size_t length, bool append = false, long start_pos = 0 )
+ unsigned char* p_data, size_t length, bool append = false, size_t start_pos = 0 )
 {
    write_file( file_name.c_str( ), p_data, length, append, start_pos );
 }
 
 inline void write_file( const std::string& file_name,
- const std::string& file_buffer, bool append = false, long start_pos = 0 )
+ const std::string& file_buffer, bool append = false, size_t start_pos = 0 )
 {
    write_file( file_name.c_str( ), ( unsigned char* )file_buffer.data( ), file_buffer.length( ), append, start_pos );
 }

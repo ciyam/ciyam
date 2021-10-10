@@ -581,7 +581,7 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 
    string file_name( construct_file_name_from_hash( hash ) );
 
-   long file_size = 0;
+   size_t file_size = 0;
 
    string data( buffer_file( file_name, 1, &file_size ) );
 
@@ -706,8 +706,8 @@ string file_type_info( const string& tag_or_hash,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "File '" + tag_or_hash + "' was not found." );
 
-   long file_size = 0;
-   long max_to_buffer = 0;
+   size_t file_size = 0;
+   size_t max_to_buffer = 0;
 
    string prefix;
    if( p_prefix )
@@ -2337,12 +2337,11 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
    catch( ... )
    {
       file_remove( tmp_file_name );
-
       throw;
    }
 }
 
-void store_file( const string& hash, tcp_socket& socket,
+bool store_file( const string& hash, tcp_socket& socket,
  const char* p_tag, progress* p_progress, bool allow_core_file, size_t max_bytes )
 {
    string tmp_file_name( "~" + uuid( ).as_string( ) );
@@ -2528,6 +2527,8 @@ void store_file( const string& hash, tcp_socket& socket,
       else if( !file_extra_is_core )
          tag_file( current_time_stamp_tag( ) + tag_name, hash );
    }
+
+   return !existing;
 }
 
 void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found )
