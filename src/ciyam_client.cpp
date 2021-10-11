@@ -341,15 +341,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                // NOTE: If file is in the form "dir/./name" then get rid of the "./".
                replace( put_source_file, "/./", "/" );
 
-               size_t name_length_for_calc = 0;
-
                size_t xpos = put_source_file.find( "//" );
 
                if( xpos != string::npos )
-               {
-                  name_length_for_calc = put_source_file.length( ) - xpos - 2;
                   replace( put_source_file, "//", "/" );
-               }
 
                if( !put_source_file.empty( ) )
                {
@@ -386,8 +381,11 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                         if( extra.size( ) > 0 )
                            file_extra = extra.substr( 1 );
 
+                        if( xpos != string::npos )
+                           xpos -= pos;
+
                         extra.erase( );
-                        file_list_data.clear( );
+                        file_list_data.erase( );
 
                         chunk_size = unformat_bytes( put_source_file.substr( 0, pos ) );
                         put_source_file.erase( 0, pos + 1 );
@@ -402,8 +400,15 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                         pos = file_extra.find( '?' );
 
+                        // NOTE: If no explicit file strip prefix has been provided but "//" was
+                        // in the name provded then use the path before that as the strip prefix.
                         if( pos == string::npos )
+                        {
                            file_strip_prefix.erase( );
+
+                           if( xpos != string::npos )
+                              file_strip_prefix = file_name.substr( 0, xpos );
+                        }
                         else
                         {
                            file_strip_prefix = file_extra.substr( 0, pos );
@@ -419,8 +424,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   put_file_error = "File '" + put_source_file + "' not found.";
                else if( chunk == 0 )
                {
-                  if( !name_length_for_calc )
-                     name_length_for_calc = file_name.length( );
+                  size_t name_length_for_calc = file_name.length( ) - file_strip_prefix.length( );
 
                   // NOTE: Allows for the hash, a space, the name plus chunk extension and a LF.
                   int list_items_per_chunk = g_max_file_size / ( 65 + name_length_for_calc + 8 );
