@@ -77,7 +77,7 @@ std::string CIYAM_BASE_DECL_SPEC create_list_tree( const std::string& add_tags, 
 void CIYAM_BASE_DECL_SPEC tag_del( const std::string& name,
  bool unlink = false, bool auto_tag_with_time = true, bool remove_tag_file = true );
 
-void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash );
+void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash, bool skip_tag_del = false );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 

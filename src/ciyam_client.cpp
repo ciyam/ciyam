@@ -422,7 +422,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   if( !name_length_for_calc )
                      name_length_for_calc = file_name.length( );
 
-                  int list_items_per_chunk = g_max_file_size / ( 65 + name_length_for_calc + 7 );
+                  // NOTE: Allows for the hash, a space, the name plus chunk extension and a LF.
+                  int list_items_per_chunk = g_max_file_size / ( 65 + name_length_for_calc + 8 );
                   int64_t total_file_size = ( list_items_per_chunk * g_max_file_size );
 
                   if( file_size( put_source_file ) > total_file_size )

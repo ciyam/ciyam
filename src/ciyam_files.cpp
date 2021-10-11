@@ -491,7 +491,8 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
    {
       date_time dt( date_time::local( ) );
 
-      dt += ( days )days_ahead;
+      if( days_ahead )
+         dt += ( days )days_ahead;
 
       if( truncated )
          retval += dt.as_string( e_time_format_hhmmssth, false );
@@ -1163,8 +1164,8 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( !tag_name.empty( )
     && tag_name != string( c_important_file_suffix ) )
       tag_file( tag_name, hash );
-   else if( !was_existing && !file_extra_is_core )
-      tag_file( current_time_stamp_tag( ) + tag_name, hash );
+   else if( !file_extra_is_core )
+      tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
 
    return hash;
 }
@@ -1671,12 +1672,8 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool rem
 
    if( pos == string::npos )
    {
-      string tag_file_name( get_files_area_dir( ) );
-
-      tag_file_name += "/" + name;
-
       if( remove_tag_file )
-         file_remove( tag_file_name );
+         file_remove( get_files_area_dir( ) + '/' + name );
 
       if( g_tag_hashes.count( name ) )
       {
@@ -1700,7 +1697,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool rem
          if( unlink && !g_hash_tags.count( hash ) )
             delete_file( hash );
          else if( auto_tag_with_time && !g_hash_tags.count( hash ) )
-            tag_file( current_time_stamp_tag( ), hash );
+            tag_file( current_time_stamp_tag( ), hash, true );
       }
    }
    else
@@ -1726,7 +1723,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool rem
    }
 }
 
-void tag_file( const string& name, const string& hash )
+void tag_file( const string& name, const string& hash, bool skip_tag_del )
 {
    guard g( g_mutex );
 
@@ -1751,7 +1748,9 @@ void tag_file( const string& name, const string& hash )
          if( name != valid_file_name( name ) )
             throw runtime_error( "invalid file tag name '" + name + "'" );
 
-         tag_del( name );
+         if( !skip_tag_del )
+            tag_del( name );
+
          tag_name = name;
       }
       else
@@ -2525,7 +2524,7 @@ bool store_file( const string& hash, tcp_socket& socket,
        && tag_name != string( c_important_file_suffix ) )
          tag_file( tag_name, hash );
       else if( !file_extra_is_core )
-         tag_file( current_time_stamp_tag( ) + tag_name, hash );
+         tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
    }
 
    return !existing;
