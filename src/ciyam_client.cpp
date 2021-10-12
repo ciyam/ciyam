@@ -77,8 +77,6 @@ const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
-const char* const c_list_file_ext = ".list";
-
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
@@ -422,7 +420,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                if( !file_exists( put_source_file ) )
                   put_file_error = "File '" + put_source_file + "' not found.";
-               else if( chunk == 0 )
+               else if( chunk_size && chunk == 0 )
                {
                   size_t name_length_for_calc = file_name.length( ) - file_strip_prefix.length( );
 
@@ -511,19 +509,19 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                }
                else if( !file_name.empty( ) )
                {
+                  file_name.erase( );
+
                   was_list_prefix = true;
                   prefix = string( c_file_type_str_list );
-
-                  string list_name( file_name );
-                  list_name += string( c_list_file_ext );
-
-                  delete_after_put = true;
-                  put_source_file = list_name;
-
-                  file_name.erase( );
                }
 
                sha256 tmp_hash( prefix );
+
+               if( chunk_data.empty( ) && !file_list_data.empty( ) )
+               {
+                  chunk_data = file_list_data;
+                  file_list_data.erase( );
+               }
 
                if( chunk_data.length( ) )
                   tmp_hash.update( chunk_data );
@@ -546,11 +544,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   if( file_bytes == 0 )
                   {
-                     string list_name( file_name );
-                     list_name += string( c_list_file_ext );
-
-                     write_file( list_name, file_list_data );
-
                      if( !file_extra.empty( ) )
                         file_extra = " " + file_extra;
 
@@ -836,7 +829,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                    c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
                    c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, 0, c_response_okay_skip );
 
-                  if( chunk_size && !file_bytes )
+                  if( !file_bytes && !chunk_data.empty( ) )
                      chunk_data.resize( 0 );
 
                   if( delete_after_put )
