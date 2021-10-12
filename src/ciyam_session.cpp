@@ -1765,7 +1765,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !depth.empty( ) )
                depth_val = atoi( depth.c_str( ) );
 
-            response = extract_tags_from_lists( tag_or_hash, prefix, depth_val );
+            size_t total = 0;
+            date_time dtm( date_time::local( ) );
+
+            response = extract_tags_from_lists( tag_or_hash, prefix, depth_val, 0, &handler, &dtm, &total );
          }
          else
          {
@@ -1774,7 +1777,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
             {
                if( includes.empty( ) )
-                  response = list_file_tags( pat_or_hash );
+                  response = list_file_tags( pat_or_hash, 0, 0, 0, 0, 0, false, &handler );
                else
                {
                   vector< string > pats;
@@ -1785,7 +1788,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( i > 0 )
                         response += '\n';
 
-                     response += list_file_tags( pats[ i ], excludes.c_str( ) );
+                     response += list_file_tags( pats[ i ], excludes.c_str( ), 0, 0, 0, 0, false, &handler );
                   }
                }
             }
@@ -1803,7 +1806,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          try
          {
-            long total = 0;
+            size_t total = 0;
             date_time dtm( date_time::local( ) );
 
             crypt_file( tag_or_hash, password, recurse, &handler, &dtm, &total );

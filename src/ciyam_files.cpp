@@ -1164,7 +1164,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( !tag_name.empty( )
     && tag_name != string( c_important_file_suffix ) )
       tag_file( tag_name, hash );
-   else if( !file_extra_is_core )
+   else if( !was_existing && !file_extra_is_core )
       tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
 
    return hash;
@@ -1898,7 +1898,8 @@ string tag_file_hash( const string& name )
    return retval;
 }
 
-string extract_tags_from_lists( const string& tag_or_hash, const string& prefix, int depth, int level )
+string extract_tags_from_lists( const string& tag_or_hash,
+ const string& prefix, int depth, int level, progress* p_progress, date_time* p_dtm, size_t* p_total )
 {
    guard g( g_mutex );
 
@@ -1941,6 +1942,26 @@ string extract_tags_from_lists( const string& tag_or_hash, const string& prefix,
 
       for( size_t i = 0; i < list_items.size( ); i++ )
       {
+         if( p_total )
+            ++*p_total;
+
+         if( p_dtm && p_progress )
+         {
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( *p_dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               *p_dtm = now;
+
+               if( !p_total )
+                  p_progress->output_progress( "." );
+               else
+                  // FUTURE: This message should be handled as a server string message.
+                  p_progress->output_progress( "Processed " + to_string( *p_total ) + " items..." );
+            }
+         }
+
          string next_item( list_items[ i ] );
 
          string::size_type pos = next_item.find( ' ' );
@@ -1969,7 +1990,8 @@ string extract_tags_from_lists( const string& tag_or_hash, const string& prefix,
 
          if( level + 1 < depth_val )
          {
-            string extra( extract_tags_from_lists( next_hash, prefix, depth, level + 1 ) );
+            string extra( extract_tags_from_lists(
+             next_hash, prefix, depth, level + 1, p_progress, p_dtm, p_total ) );
 
             if( !extra.empty( ) )
             {
@@ -1984,17 +2006,20 @@ string extract_tags_from_lists( const string& tag_or_hash, const string& prefix,
    return retval;
 }
 
-string list_file_tags( const string& pat,
- const char* p_excludes, size_t max_tags, int64_t max_bytes,
- int64_t* p_min_bytes, deque< string >* p_hashes, bool include_multiples )
+string list_file_tags(
+ const string& pat, const char* p_excludes, size_t max_tags, int64_t max_bytes,
+ int64_t* p_min_bytes, deque< string >* p_hashes, bool include_multiples, progress* p_progress )
 {
    guard g( g_mutex );
 
    string retval;
 
+   size_t pcount = 0;
    size_t num_tags = 0;
    int64_t min_bytes = 0;
    int64_t num_bytes = 0;
+
+   date_time dtm( date_time::local( ) );
 
    string all_excludes( p_excludes ? p_excludes : "" );
    vector< string > excludes;
@@ -2011,6 +2036,20 @@ string list_file_tags( const string& pat,
 
       for( ; i != g_tag_hashes.end( ); ++i )
       {
+         ++pcount;
+
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
+         }
+
          if( wildcard_match( pat, i->first ) )
          {
             bool is_excluded = false;
@@ -2070,6 +2109,20 @@ string list_file_tags( const string& pat,
    {
       for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
       {
+         ++pcount;
+
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= 1 )
+         {
+            dtm = now;
+
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
+         }
+
          // NOTE: Skip matching tags for files that have more than one tag.
          if( !include_multiples )
          {
@@ -2140,7 +2193,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
 }
 
 void crypt_file( const string& tag_or_hash,
- const string& password, bool recurse, progress* p_progress, date_time* p_dtm, long* p_total )
+ const string& password, bool recurse, progress* p_progress, date_time* p_dtm, size_t* p_total )
 {
    string hash( tag_or_hash );
 
@@ -2523,7 +2576,7 @@ bool store_file( const string& hash, tcp_socket& socket,
       if( !tag_name.empty( )
        && tag_name != string( c_important_file_suffix ) )
          tag_file( tag_name, hash );
-      else if( !file_extra_is_core )
+      else if( !existing && !file_extra_is_core )
          tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
    }
 

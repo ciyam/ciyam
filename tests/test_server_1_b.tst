@@ -289,8 +289,8 @@ file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ~test.
 session_variable @dummy_timestamp 20170313080002
 file_put ~test.jpg
 file_tags ts.*
+ts.20170313080000
 ts.20170313080001
-ts.20170313080002
 file_kill -p=ts.*
 file_tags ts.*
 file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ts.20170313080001
