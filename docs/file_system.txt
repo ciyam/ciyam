@@ -368,21 +368,8 @@ file_relegate -n=1
 
 If more than one archive exists then the first archive (in order of the list of archives) that has sufficient
 space will be chosen. Normally if a file is found to have already been archived then it would just be removed
-but this can be overridden in a couple of ways. Firstly if the optional archive name argument was provided in
-the "file_relegate" then the file will be archived in the named archive even if found to already be stored in
-another existing archive. Secondly certain files can appear with "ts.*" tags that have a "!" character suffix
-which marks the file as being "important". Assuming more than one archive exists such important files will be
-archived in the next archive (in the name order of archives) that they aren't already archived in (supporting
-multiple archived copies of the file).
-
-To manually change a file's time stamp tag to become an "important" file first use the "file_hash" command to
-retrieve the actual file identity and then issue a "file_tag" command such as follows:
-
-file_tag 09bc435dd5710bc24064fbbaf1e1b4cffa1aad704a15a3c90fd6d98d64fcc89f ts.2017032013404998700000000*!
-
-Assuming that an important file is retrieved and re-archived several times then if several archives exist the
-file should have been arhived in each of these. Thus removing the oldest archive will not prevent these files
-from being later retrieved.
+but this can be overridden if the optional archive name argument was provided in the "file_relegate" then the
+file will be archived in the named archive (even if found to already be stored in another existing archive).
 
 Retrieving Archived Files
 -------------------------

@@ -34,11 +34,9 @@ int64_t CIYAM_BASE_DECL_SPEC get_total_bytes( );
 
 std::string CIYAM_BASE_DECL_SPEC get_file_stats( );
 
-void CIYAM_BASE_DECL_SPEC init_files_area(
- std::vector< std::string >* p_untagged = 0, progress* p_progress = 0, bool remove_invalid_tags = false );
+void CIYAM_BASE_DECL_SPEC init_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 
-void CIYAM_BASE_DECL_SPEC resync_files_area(
- std::vector< std::string >* p_untagged = 0, progress* p_progress = 0, bool remove_invalid_tags = false );
+void CIYAM_BASE_DECL_SPEC resync_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 
 void CIYAM_BASE_DECL_SPEC term_files_area( );
 
@@ -74,10 +72,11 @@ std::string CIYAM_BASE_DECL_SPEC create_list_file( const std::string& add_tags, 
 std::string CIYAM_BASE_DECL_SPEC create_list_tree( const std::string& add_tags, const std::string& del_items,
  bool sort_items, const std::string& tag_and_branches, const std::string& new_tag, const std::string& old_tag );
 
-void CIYAM_BASE_DECL_SPEC tag_del( const std::string& name,
- bool unlink = false, bool auto_tag_with_time = true, bool remove_tag_file = true );
+void CIYAM_BASE_DECL_SPEC tag_del(
+ const std::string& name, bool unlink = false, bool auto_tag_with_time = true );
 
-void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name, const std::string& hash, bool skip_tag_del = false );
+void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name,
+ const std::string& hash, bool skip_tag_del = false, bool is_external = false );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 

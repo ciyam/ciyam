@@ -1631,7 +1631,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( is_remove || is_unlink )
                tag_del( next, is_unlink );
             else
-               tag_file( next, hash );
+               tag_file( next, hash, false, true );
          }
       }
       else if( command == c_cmd_ciyam_session_file_info )
@@ -1823,7 +1823,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool remove_invalid_tags( has_parm_val( parameters, c_cmd_ciyam_session_file_resync_remove_invalid_tags ) );
 
-         resync_files_area( 0, &handler, remove_invalid_tags );
+         resync_files_area( &handler, remove_invalid_tags );
 
          response = get_file_stats( );
       }

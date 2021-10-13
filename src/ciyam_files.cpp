@@ -63,7 +63,6 @@ const int c_depth_to_omit_blob_content = 999;
 
 const char c_prefix_wildcard_separator = ':';
 
-const char* const c_important_file_suffix = "!";
 const char* const c_time_stamp_tag_prefix = "ts.";
 
 const char* const c_file_archive_path = "path";
@@ -87,6 +86,32 @@ multimap< string, string > g_hash_tags;
 
 size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
+
+string unique_time_stamp_tag( const string& prefix, const date_time& dt )
+{
+   string retval;
+
+   bool okay = false;
+
+   // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
+   for( int i = 0; i < 10000; i++ )
+   {
+      string next( dt.as_string( e_time_format_hhmmsstht, false ) + to_comparable_string( i, false, 8 ) );
+
+      if( !has_tag( prefix + next ) )
+      {
+         okay = true;
+         retval = next;
+
+         break;
+      }
+   }
+
+   if( !okay )
+      throw runtime_error( "unable to create a unique time-stamp tag" );
+
+   return retval;
+}
 
 void create_directory_if_not_exists( const string& dir_name )
 {
@@ -343,7 +368,7 @@ string get_file_stats( )
    return s;
 }
 
-void init_files_area( vector< string >* p_untagged, progress* p_progress, bool remove_invalid_tags )
+void init_files_area( progress* p_progress, bool remove_invalid_tags )
 {
    string cwd( get_cwd( ) );
 
@@ -373,6 +398,11 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress, bool r
 
       size_t max_num = get_files_area_item_max_num( );
       size_t max_size = get_files_area_item_max_size( );
+
+      date_time local( date_time::local( ) );
+      date_time standard( date_time::standard( ) );
+
+      int64_t secs_diff = seconds_between( standard, local );
 
       do
       {
@@ -417,17 +447,22 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress, bool r
                   ++g_total_files;
                   g_total_bytes += file_size( file_path );
 
-                  if( p_untagged )
-                  {
-                     string::size_type pos = file_path.find_last_of( "/\\" );
-                     if( pos != string::npos && pos >= 2 )
-                     {
-                        string hash( file_path.substr( pos - 2, 2 ) );
-                        hash += file_path.substr( pos + 1 );
+                  string hash( dfsi.get_name( ) + fs.get_name( ) );
 
-                        if( !g_hash_tags.count( hash ) )
-                           p_untagged->push_back( hash );
-                     }
+                  // NOTE: If the file has no persistent tags then add
+                  // a time-stamp tag for it.
+                  if( !g_hash_tags.count( hash ) )
+                  {
+                     date_time dt( last_modification_time( file_path ) );
+
+                     dt += ( seconds )secs_diff;
+
+                     string tag_name( c_time_stamp_tag_prefix );
+
+                     tag_name += unique_time_stamp_tag( tag_name, dt );
+
+                     g_hash_tags.insert( make_pair( hash, tag_name ) );
+                     g_tag_hashes.insert( make_pair( tag_name, hash ) );
                   }
                }
             }
@@ -457,7 +492,7 @@ void init_files_area( vector< string >* p_untagged, progress* p_progress, bool r
    }
 }
 
-void resync_files_area( vector< string >* p_untagged, progress* p_progress, bool remove_invalid_tags )
+void resync_files_area( progress* p_progress, bool remove_invalid_tags )
 {
    guard g( g_mutex );
 
@@ -466,7 +501,7 @@ void resync_files_area( vector< string >* p_untagged, progress* p_progress, bool
 
    g_total_bytes = g_total_files = 0;
 
-   init_files_area( p_untagged, p_progress, remove_invalid_tags );
+   init_files_area( p_progress, remove_invalid_tags );
 }
 
 void term_files_area( )
@@ -494,29 +529,10 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
       if( days_ahead )
          dt += ( days )days_ahead;
 
-      if( truncated )
-         retval += dt.as_string( e_time_format_hhmmssth, false );
+      if( !truncated )
+         retval += unique_time_stamp_tag( retval, dt );
       else
-      {
-         bool okay = false;
-
-         // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
-         for( int i = 0; i < 1000; i++ )
-         {
-            string next( dt.as_string( e_time_format_hhmmsstht, false ) + to_comparable_string( i, false, 8 ) );
-
-            if( !has_tag( retval + next ) )
-            {
-               okay = true;
-               retval += next;
-
-               break;
-            }
-         }
-
-         if( !okay )
-            throw runtime_error( "unable to create a unique current timestamp tag" );
-      }
+         retval += dt.as_string( e_time_format_hhmmssth, false );
    }
 
    return retval;
@@ -1161,11 +1177,10 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
    if( p_tag )
       tag_name = string( p_tag );
 
-   if( !tag_name.empty( )
-    && tag_name != string( c_important_file_suffix ) )
+   if( !tag_name.empty( ) )
       tag_file( tag_name, hash );
-   else if( !was_existing && !file_extra_is_core )
-      tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
+   else if( !file_extra_is_core )
+      tag_file( current_time_stamp_tag( ), hash, true );
 
    return hash;
 }
@@ -1664,7 +1679,7 @@ string create_list_tree( const string& add_tags, const string& del_items,
    return retval;
 }
 
-void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool remove_tag_file )
+void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 {
    guard g( g_mutex );
 
@@ -1672,7 +1687,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool rem
 
    if( pos == string::npos )
    {
-      if( remove_tag_file )
+      if( name.find( c_time_stamp_tag_prefix ) != 0 )
          file_remove( get_files_area_dir( ) + '/' + name );
 
       if( g_tag_hashes.count( name ) )
@@ -1723,16 +1738,20 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time, bool rem
    }
 }
 
-void tag_file( const string& name, const string& hash, bool skip_tag_del )
+void tag_file( const string& name, const string& hash, bool skip_tag_del, bool is_external )
 {
    guard g( g_mutex );
+
+   if( is_external && name.find( c_time_stamp_tag_prefix ) == 0 )
+      throw runtime_error( "invalid file time-stamp prefixed tag name '" + name + "'" );
 
    if( name != get_special_var_name( e_special_var_none ) )
    {
       string file_name( construct_file_name_from_hash( hash ) );
 
       if( !file_exists( file_name ) )
-         throw runtime_error( hash + " was not found" );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "File '" + hash + "' was not found." );
 
       string tag_name;
 
@@ -1746,7 +1765,8 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del )
       if( pos == string::npos )
       {
          if( name != valid_file_name( name ) )
-            throw runtime_error( "invalid file tag name '" + name + "'" );
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Invalid file tag name '" + name + "'." );
 
          if( !skip_tag_del )
             tag_del( name );
@@ -1768,7 +1788,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del )
             tag_name = name.substr( 0, pos - 1 );
 
          // NOTE: If a question mark as found at the end then the tag will become
-         // instead a "current time stamp" tag.
+         // instead a "current time-stamp" tag.
          if( tag_name.length( ) && tag_name[ tag_name.length( ) - 1 ] == '?' )
             tag_name = current_time_stamp_tag( );
       }
@@ -1780,21 +1800,27 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del )
          string ts_tag_to_remove;
          vector< string > tags;
 
-         bool remove_tag_file = true;
+         // NOTE: If the file has just a time-stamp tag then this will be removed.
+         if( !all_tags.empty( ) )
+         {
+            split( all_tags, tags, '\n' );
+            if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
+               ts_tag_to_remove = tags[ 0 ];
+         }
 
-         // NOTE: If the file has just a time stamp tag then this will be removed.
-         split( all_tags, tags, '\n' );
-         if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
-            ts_tag_to_remove = tags[ 0 ];
+         bool insert_tag = true;
 
          string prefix( get_files_area_dir( ) );
 
-         // NOTE: If an old time stamp tag is being replaced by a new one then instead
-         // of creating a new file and removing the old one just rename the old to new.
-         if( !ts_tag_to_remove.empty( ) && tag_name.find( c_time_stamp_tag_prefix ) == 0 )
+         // NOTE: If the tag name is time-stamp prefixed then it is assumed to be
+         // the current time and so the file is touched so it should have roughly
+         // the same tag when the files area is resynced/initialised.
+         if( tag_name.find( c_time_stamp_tag_prefix ) == 0 )
          {
-            remove_tag_file = false;
-            file_rename( prefix + '/' + ts_tag_to_remove, prefix + '/' + tag_name );
+            if( tags.size( ) && ts_tag_to_remove.empty( ) )
+               insert_tag = false;
+            else
+               file_touch( file_name );
          }
          else
          {
@@ -1811,11 +1837,16 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del )
                throw runtime_error( "unexpected bad output stream" );
          }
 
-         g_hash_tags.insert( make_pair( hash, tag_name ) );
-         g_tag_hashes.insert( make_pair( tag_name, hash ) );
+         // NOTE: Do not add a time-stamp prefixed tag if the
+         // file has any existing persistent tags.
+         if( insert_tag )
+         {
+            g_hash_tags.insert( make_pair( hash, tag_name ) );
+            g_tag_hashes.insert( make_pair( tag_name, hash ) );
+         }
 
          if( !ts_tag_to_remove.empty( ) )
-            tag_del( ts_tag_to_remove, false, false, remove_tag_file );
+            tag_del( ts_tag_to_remove, false, false );
       }
    }
 }
@@ -1868,19 +1899,6 @@ string tag_file_hash( const string& name )
          if( i != hashes.begin( ) )
             retval += '\n';
          retval += *i;
-      }
-   }
-   else if( name == "?" )
-   {
-      vector< string > untagged_hashes;
-
-      resync_files_area( &untagged_hashes );
-
-      for( size_t i = 0; i < untagged_hashes.size( ); i++ )
-      {
-         if( i > 0 )
-            retval += '\n';
-         retval += untagged_hashes[ i ];
       }
    }
    else
@@ -2573,11 +2591,10 @@ bool store_file( const string& hash, tcp_socket& socket,
       if( p_tag )
          tag_name = string( p_tag );
 
-      if( !tag_name.empty( )
-       && tag_name != string( c_important_file_suffix ) )
+      if( !tag_name.empty( ) )
          tag_file( tag_name, hash );
-      else if( !existing && !file_extra_is_core )
-         tag_file( current_time_stamp_tag( ) + tag_name, hash, true );
+      else if( !file_extra_is_core )
+         tag_file( current_time_stamp_tag( ), hash, true );
    }
 
    return !existing;
@@ -3051,7 +3068,6 @@ string relegate_time_stamped_files( const string& hash,
    string retval;
 
    vector< string > paths;
-   set< string > importants;
    deque< string > file_hashes;
 
    int64_t min_bytes = 0;
@@ -3072,12 +3088,6 @@ string relegate_time_stamped_files( const string& hash,
 
          if( tags.size( ) != file_hashes.size( ) )
             throw runtime_error( "unexpected tags.size( ) != file_hashes.size( )" );
-
-         for( size_t i = 0; i < tags.size( ); i++ )
-         {
-            if( tags[ i ].find( c_important_file_suffix ) != string::npos )
-               importants.insert( file_hashes[ i ] );
-         }
       }
    }
 
@@ -3118,21 +3128,11 @@ string relegate_time_stamped_files( const string& hash,
 
             if( has_archived_file( ods_fs, next_hash, &next_archive ) )
             {
-               // NOTE: If the file had been tagged as "important" then even if
-               // it was already archived it will be archived again (which will
-               // ensure that if such files are retrieved and later re-archived
-               // several times then multiple archived copies will exist).
-               if( i < archives.size( ) - 1 && importants.count( next_hash ) )
-                  break;
-
                delete_file( next_hash, true );
 
                if( !retval.empty( ) )
                   retval += '\n';
                retval = next_hash + ' ' + next_archive;
-
-               if( importants.count( next_hash ) )
-                  importants.erase( next_hash );
 
                file_hashes.pop_front( );
 
@@ -3168,9 +3168,6 @@ string relegate_time_stamped_files( const string& hash,
                if( !retval.empty( ) )
                   retval += '\n';
                retval += next_hash + ' ' + next_archive;
-
-               if( importants.count( next_hash ) )
-                  importants.erase( next_hash );
 
                file_hashes.pop_front( );
             }

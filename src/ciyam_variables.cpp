@@ -838,7 +838,7 @@ void set_system_variable( const string& name, const string& value, bool is_init,
       set_files_area_dir( val );
 
       if( !is_init )
-         resync_files_area( 0, p_progress );
+         resync_files_area( p_progress );
    }
 
    if( persist )
