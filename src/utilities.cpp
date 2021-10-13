@@ -23,6 +23,7 @@
 #  include <sys/stat.h>
 #  ifdef __GNUG__
 #     include <fcntl.h>
+#     include <utime.h>
 #     include <unistd.h>
 #     include <sys/stat.h>
 #     include <sys/time.h>
@@ -46,6 +47,7 @@
 #     include <rpc.h>
 #     include <psapi.h>
 #     include <windows.h>
+#     include <sys/utime.h>
 #  endif
 #endif
 
@@ -59,8 +61,10 @@ typedef int mode_t;
 #  define _close close
 #  define _chdir chdir
 #  define _mkdir mkdir
+#  define _utime utime
 #  define _getcwd getcwd
 #  define _putenv putenv
+#  define _utimbuf utimbuf
 #  define _MAX_PATH PATH_MAX
 #endif
 
@@ -398,6 +402,25 @@ bool dir_exists( const char* p_name, bool check_link_target )
 #endif
 
    return rc;
+}
+
+bool file_touch( const char* p_name, time_t* p_tm )
+{
+   struct _utimbuf* p_ut = 0;
+
+   if( p_tm )
+   {
+      struct _utimbuf ut;
+
+      ut.actime = *p_tm;
+      ut.modtime = *p_tm;
+
+      p_ut = &ut;
+   }
+
+   int rc = _utime( p_name, p_ut );
+
+   return rc == 0;
 }
 
 bool file_exists( const char* p_name, bool check_link_target )
