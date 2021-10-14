@@ -93,10 +93,12 @@ string unique_time_stamp_tag( const string& prefix, const date_time& dt )
 
    bool okay = false;
 
+   string formatted_time( dt.as_string( e_time_format_hhmmss, false ) );
+
    // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
    for( int i = 0; i < 10000; i++ )
    {
-      string next( dt.as_string( e_time_format_hhmmsstht, false ) + to_comparable_string( i, false, 8 ) );
+      string next( formatted_time + to_comparable_string( i, false, 6 ) );
 
       if( !has_tag( prefix + next ) )
       {
@@ -2605,6 +2607,8 @@ bool store_file( const string& hash, tcp_socket& socket,
 
    if( !is_in_blacklist )
    {
+      guard g( g_mutex );
+
       string tag_name;
       if( p_tag )
          tag_name = string( p_tag );
