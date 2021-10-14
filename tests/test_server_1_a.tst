@@ -34,6 +34,10 @@ crypto_keys XBT test
 addr is: 1Hri98tpTekszQQTBnKbBrMsecrjik4PX8
 pubkey is 02b0dbb9b8c580f2cc7b45aaf10d8353cea7880903e1f07ce996614260c55db4a1
 privkey is 0f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+PWD is: abc
+PWD now: 
+abcXXX
+XXX
 abcdefghi
 abcdefgh
 abcdefg

@@ -1316,6 +1316,8 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 {
    string::size_type pos = s.find( c );
 
+   vector< string > env_vars_to_overwrite;
+
    while( pos != string::npos )
    {
       if( s.size( ) > pos + 1 && s[ pos + 1 ] >= '0' && s[ pos + 1 ] <= '9' )
@@ -1326,10 +1328,17 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
       string::size_type npos = string::npos;
 
+      int skip = 1;
+
       if( as_quotes )
-         npos = s.find( c, pos + 1 );
+         npos = s.find( c, pos + skip );
       else
-         npos = s.find_first_not_of( c_env_var_characters, pos + 1 );
+      {
+         if( s[ pos + skip ] == '~' )
+            ++skip;
+
+         npos = s.find_first_not_of( c_env_var_characters, pos + skip );
+      }
 
       if( npos == string::npos )
       {
@@ -1339,9 +1348,15 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
             npos = s.length( );
       }
 
-      if( npos != pos + 1 )
+      if( npos != pos + skip )
       {
          string env_var_name( s.substr( pos + 1, npos - pos - 1 ) );
+
+         if( env_var_name[ 0 ] == '~' )
+         {
+            env_var_name.erase( 0, 1 );
+            env_vars_to_overwrite.push_back( env_var_name );
+         }
 
          int line = 0;
          string prefix, suffix;
@@ -1443,6 +1458,24 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          s.erase( pos, 1 );
 
       pos = s.find( c, npos );
+   }
+
+   // NOTE: If an environment variable is prefixed with '~' then
+   // its value will be overwritten with '*' characters (being a
+   // way to protect against accidental password discovery) then
+   // set to an empty string.
+   for( size_t i = 0; i < env_vars_to_overwrite.size( ); i++ )
+   {
+      string next( env_vars_to_overwrite[ i ] );
+      string value( get_environment_variable( next ) );
+
+      if( !value.empty( ) )
+      {
+         value = string( value.length( ), '*' );
+         set_environment_variable( next, value );
+
+         set_environment_variable( next, "" );
+      }
    }
 }
 

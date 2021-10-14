@@ -34,6 +34,12 @@ privkey=%OUTPUT:3%
 #addr is: $addr
 #pubkey is $pubkey
 #privkey is $privkey
+PWD=abc
+#PWD is: $~PWD
+#PWD now: $PWD
+PWD=abc
+#%~PWD%XXX
+#%PWD%XXX
 TEST=abcdefghi
 #$TEST
 X=@substr:0,-1:$TEST
