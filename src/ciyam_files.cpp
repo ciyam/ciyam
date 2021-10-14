@@ -2025,8 +2025,9 @@ string extract_tags_from_lists( const string& tag_or_hash,
 }
 
 string list_file_tags(
- const string& pat, const char* p_excludes, size_t max_tags, int64_t max_bytes,
- int64_t* p_min_bytes, deque< string >* p_hashes, bool include_multiples, progress* p_progress )
+ const string& pat, const char* p_excludes,
+ size_t max_tags, int64_t max_bytes, int64_t* p_min_bytes,
+ deque< string >* p_hashes, bool include_multiples, progress* p_progress )
 {
    guard g( g_mutex );
 
@@ -2041,6 +2042,9 @@ string list_file_tags(
 
    string all_excludes( p_excludes ? p_excludes : "" );
    vector< string > excludes;
+
+   if( pat.empty( ) )
+      excludes.push_back( string( c_time_stamp_tag_prefix ) + "*" );
 
    if( !all_excludes.empty( ) )
       split( all_excludes, excludes );
@@ -2141,6 +2145,17 @@ string list_file_tags(
             p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
          }
 
+         bool is_excluded = false;
+
+         for( size_t j = 0; j < excludes.size( ); j++ )
+         {
+            if( wildcard_match( excludes[ j ], i->first ) )
+            {
+               is_excluded = true;
+               break;
+            }
+         }
+
          // NOTE: Skip matching tags for files that have more than one tag.
          if( !include_multiples )
          {
@@ -2149,9 +2164,12 @@ string list_file_tags(
             if( j != g_hash_tags.end( ) && ++j != g_hash_tags.end( ) )
             {
                if( j->first == i->second )
-                  continue;
+                  is_excluded = true;
             }
          }
+
+         if( is_excluded )
+            continue;
 
          int64_t next_bytes = file_bytes( i->second );
 

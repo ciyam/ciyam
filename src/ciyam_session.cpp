@@ -1604,7 +1604,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
          {
             string all_tags( list_file_tags( pat_or_tag ) );
-            split( all_tags, tags, '\n' );
+
+            if( !all_tags.empty( ) )
+               split( all_tags, tags, '\n' );
          }
 
          for( size_t i = 0; i < tags.size( ); i++ )

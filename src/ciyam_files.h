@@ -86,8 +86,9 @@ std::string CIYAM_BASE_DECL_SPEC extract_tags_from_lists(
  const std::string& tag_or_hash, const std::string& prefix,
  int depth = 1, int level = 0, progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC list_file_tags( const std::string& pat,
- const char* p_excludes = 0, size_t max_tags = 0, int64_t max_bytes = 0, int64_t* p_min_bytes = 0,
+std::string CIYAM_BASE_DECL_SPEC list_file_tags(
+ const std::string& pat, const char* p_excludes = 0,
+ size_t max_tags = 0, int64_t max_bytes = 0, int64_t* p_min_bytes = 0,
  std::deque< std::string >* p_hashes = 0, bool include_multiples = true, progress* p_progress = 0 );
 
 void CIYAM_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );
