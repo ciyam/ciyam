@@ -319,15 +319,19 @@ void console_progress::output_progress( const string& message, unsigned long num
    cout << message;
 
    string mask;
+
    numeric val( num );
+   numeric pval( previous_num );
 
    if( !total )
       mask = "############";
    else
    {
       val /= total;
+      pval /= total;
 
       val *= 100;
+      pval *= 100;
 
       mask = "###";
 
@@ -341,10 +345,29 @@ void console_progress::output_progress( const string& message, unsigned long num
             decimals = 1;
       }
 
+      float adjust_add = 1.0;
+      float adjust_sub = 10.0;
+
+      for( int i = 0; i < decimals; i++ )
+      {
+         adjust_add /= 10.0;
+         adjust_sub /= 10.0;
+      }
+
       if( decimals )
          mask += '.' + string( decimals, '0' );
 
       val.round( decimals );
+      pval.round( decimals );
+
+      // NOTE: Adjust the number of decimals according to the progress rate.
+      if( num )
+      {
+         if( decimals < 3 && ( val < ( pval + adjust_add ) ) )
+            ++decimals;
+         else if( decimals > 0 && ( val > ( pval + adjust_sub ) ) )
+            --decimals;
+      }
    }
 
    if( val || total )
@@ -370,6 +393,7 @@ void console_progress::output_progress( const string& message, unsigned long num
 
    cout.flush( );
 
+   previous_num = num;
    output_length = new_length;
 }
 

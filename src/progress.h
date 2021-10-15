@@ -24,7 +24,7 @@ struct progress
 
 struct console_progress : progress
 {
-   console_progress( ) : decimals( 0 ), output_length( 0 ) { }
+   console_progress( ) : decimals( 0 ), output_length( 0 ), previous_num( 0 ) { }
 
    ~console_progress( )
    {
@@ -37,6 +37,8 @@ struct console_progress : progress
 
    int decimals;
    int output_length;
+
+   unsigned long previous_num;
 };
 
 #endif
