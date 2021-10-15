@@ -662,7 +662,8 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 
 string file_type_info( const string& tag_or_hash,
  file_expansion expansion, int max_depth, int indent,
- bool add_size, const char* p_prefix, bool allow_all_after, bool output_total_blob_size )
+ bool add_size, const char* p_prefix, bool allow_all_after,
+ bool output_total_blob_size, progress* p_progress, date_time* p_dtm, size_t* p_total )
 {
    guard g( g_mutex );
 
@@ -675,6 +676,27 @@ string file_type_info( const string& tag_or_hash,
    string header_suffix;
    string use_tag_or_hash( tag_or_hash );
    string files_area_dir( get_files_area_dir( ) );
+
+   if( p_dtm && p_progress )
+   {
+      date_time now( date_time::local( ) );
+
+      uint64_t elapsed = seconds_between( *p_dtm, now );
+
+      if( elapsed >= 1 )
+      {
+         if( !p_total )
+            p_progress->output_progress( "." );
+         else
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Processed " + to_string( *p_total ) + " items..." );
+
+         *p_dtm = now;
+      }
+   }
+
+   if( p_total )
+      ++*p_total;
 
    if( !use_tag_or_hash.empty( ) )
    {
@@ -1034,8 +1056,9 @@ string file_type_info( const string& tag_or_hash,
                         next_tag_or_hash = header_suffix + ':' + next_name + '!' + next_hash;
                   }
 
-                  string additional( file_type_info( next_tag_or_hash, expansion, max_depth, indent + 1,
-                   add_size, ( allow_all ? 0 : p_prefix ), allow_all_after, output_total_blob_size ) );
+                  string additional( file_type_info( next_tag_or_hash, expansion,
+                   max_depth, indent + 1, add_size, ( allow_all ? 0 : p_prefix ),
+                   allow_all_after, output_total_blob_size, p_progress, p_dtm, p_total ) );
 
                   if( !additional.empty( ) )
                   {
@@ -2027,9 +2050,9 @@ string extract_tags_from_lists( const string& tag_or_hash,
 }
 
 string list_file_tags(
- const string& pat, const char* p_excludes,
- size_t max_tags, int64_t max_bytes, int64_t* p_min_bytes,
- deque< string >* p_hashes, bool include_multiples, progress* p_progress )
+ const string& pat, const char* p_excludes, size_t max_tags,
+ int64_t max_bytes, int64_t* p_min_bytes, deque< string >* p_hashes,
+ bool include_multiples, progress* p_progress, date_time* p_dtm )
 {
    guard g( g_mutex );
 
@@ -2062,16 +2085,22 @@ string list_file_tags(
       {
          ++pcount;
 
-         date_time now( date_time::local( ) );
-
-         uint64_t elapsed = seconds_between( dtm, now );
-
-         if( elapsed >= 1 )
+         if( p_progress )
          {
-            dtm = now;
+            date_time now( date_time::local( ) );
 
-            // FUTURE: This message should be handled as a server string message.
-            p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
+            uint64_t elapsed = seconds_between( p_dtm ? *p_dtm : dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               if( !p_dtm )
+                  dtm = now;
+               else
+                  *p_dtm = now;
+
+               // FUTURE: This message should be handled as a server string message.
+               p_progress->output_progress( "Processed " + to_string( pcount ) + " tags..." );
+            }
          }
 
          if( wildcard_match( pat, i->first ) )
@@ -2658,22 +2687,31 @@ void delete_file( const string& hash, bool even_if_tagged, bool ignore_not_found
    }
 }
 
-void delete_file_tree( const string& hash )
+void delete_file_tree( const string& hash, progress* p_progress )
 {
-   string all_hashes( file_type_info( hash, e_file_expansion_recursive_hashes ) );
+   size_t total = 0;
+   date_time dtm( date_time::local( ) );
 
-   vector< string > hashes;
-   split( all_hashes, hashes, '\n' );
+   string all_hashes( file_type_info( hash,
+    e_file_expansion_recursive_hashes, 0, 0, false, 0, true, false, p_progress, &dtm, &total ) );
 
-   for( size_t i = 0; i < hashes.size( ); i++ )
-      delete_file( hashes[ i ], true, true );
+   if( !all_hashes.empty( ) )
+   {
+      vector< string > hashes;
+      split( all_hashes, hashes, '\n' );
+
+      for( size_t i = 0; i < hashes.size( ); i++ )
+         delete_file( hashes[ i ], true, true );
+   }
 }
 
-void delete_files_for_tags( const string& pat )
+void delete_files_for_tags( const string& pat, progress* p_progress )
 {
    guard g( g_mutex );
 
-   string tags( list_file_tags( pat ) );
+   date_time dtm( date_time::local( ) );
+
+   string tags( list_file_tags( pat, 0, 0, 0, 0, 0, false, p_progress, &dtm ) );
 
    if( !tags.empty( ) )
    {
@@ -2685,8 +2723,29 @@ void delete_files_for_tags( const string& pat )
       for( size_t i = 0; i < all_tags.size( ); i++ )
          hashes.insert( tag_file_hash( all_tags[ i ] ) );
 
+      size_t num = 0;
+
       for( set< string >::iterator i = hashes.begin( ); i != hashes.end( ); ++i )
+      {
+         ++num;
+
+         if( p_progress )
+         {
+            date_time now( date_time::local( ) );
+
+            uint64_t elapsed = seconds_between( dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               p_progress->output_progress( "Processed " + to_string( num ) + " files..." );
+
+               dtm = now;
+            }
+         }
+
          delete_file( *i );
+      }
    }
 }
 

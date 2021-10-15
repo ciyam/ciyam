@@ -1711,10 +1711,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !recurse )
                   delete_file( hash );
                else
-                  delete_file_tree( hash );
+                  delete_file_tree( hash, &handler );
             }
             else
-               delete_files_for_tags( pat );
+               delete_files_for_tags( pat, &handler );
          }
          catch( exception& )
          {

@@ -56,9 +56,12 @@ enum file_expansion
    e_file_expansion_recursive_hashes
 };
 
-std::string CIYAM_BASE_DECL_SPEC file_type_info( const std::string& tag_or_hash,
- file_expansion expansion = e_file_expansion_none, int max_depth = 0, int indent = 0,
- bool add_size = false, const char* p_prefix = 0, bool allow_all_after = true, bool output_total_blob_size = false );
+std::string CIYAM_BASE_DECL_SPEC file_type_info(
+ const std::string& tag_or_hash,
+ file_expansion expansion = e_file_expansion_none, int max_depth = 0,
+ int indent = 0, bool add_size = false, const char* p_prefix = 0,
+ bool allow_all_after = true, bool output_total_blob_size = false,
+ progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
  bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0, const char* p_hash = 0 );
@@ -89,7 +92,8 @@ std::string CIYAM_BASE_DECL_SPEC extract_tags_from_lists(
 std::string CIYAM_BASE_DECL_SPEC list_file_tags(
  const std::string& pat, const char* p_excludes = 0,
  size_t max_tags = 0, int64_t max_bytes = 0, int64_t* p_min_bytes = 0,
- std::deque< std::string >* p_hashes = 0, bool include_multiples = true, progress* p_progress = 0 );
+ std::deque< std::string >* p_hashes = 0, bool include_multiples = true,
+ progress* p_progress = 0, date_time* p_dtm = 0 );
 
 void CIYAM_BASE_DECL_SPEC remove_file_tags( const std::string& hash, const std::string& pat );
 
@@ -105,9 +109,9 @@ bool CIYAM_BASE_DECL_SPEC store_file( const std::string& hash, tcp_socket& socke
 
 void CIYAM_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true, bool ignore_not_found = false );
 
-void CIYAM_BASE_DECL_SPEC delete_file_tree( const std::string& hash );
+void CIYAM_BASE_DECL_SPEC delete_file_tree( const std::string& hash, progress* p_progress = 0 );
 
-void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat );
+void CIYAM_BASE_DECL_SPEC delete_files_for_tags( const std::string& pat, progress* p_progress = 0 );
 
 void CIYAM_BASE_DECL_SPEC copy_raw_file( const std::string& hash, const std::string& dest_file_name );
 
