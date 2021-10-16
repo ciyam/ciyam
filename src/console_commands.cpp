@@ -2414,6 +2414,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
       }
 
+      bool was_password = false;
       bool add_to_history = allow_history_addition;
 
       // NOTE: Any single space prefixed command will not be added to history.
@@ -2815,6 +2816,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                               else
                                  rhs = string( "Enter Password: " );
 
+                              was_password = true;
                               str = get_password( rhs.c_str( ) );
                            }
                         }
@@ -2861,7 +2863,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                str = osstr.str( );
             }
 
-            set_environment_variable( assign_env_var_name, str );
+            set_environment_variable( assign_env_var_name.c_str( ), str.c_str( ) );
+
+            if( was_password )
+               clear_key( str );
+
             str.erase( );
          }
          else
@@ -3403,6 +3409,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          if( command_history.size( ) > c_max_history )
             command_history.pop_front( );
       }
+
+      if( was_password )
+         clear_key( str_for_history );
    }
 
    return str;

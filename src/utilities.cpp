@@ -1453,6 +1453,8 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          s.insert( pos, env_var_value );
 
          npos = pos + env_var_value.size( );
+
+         clear_key( env_var_value );
       }
       else
          s.erase( pos, 1 );
@@ -1462,20 +1464,14 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
 
    // NOTE: If an environment variable is prefixed with '~' then
    // its value will be overwritten with '*' characters (being a
-   // way to protect against accidental password discovery) then
-   // set to an empty string.
+   // way to prevent password discovery via an environment dump).
    for( size_t i = 0; i < env_vars_to_overwrite.size( ); i++ )
    {
       string next( env_vars_to_overwrite[ i ] );
       string value( get_environment_variable( next ) );
 
       if( !value.empty( ) )
-      {
-         value = string( value.length( ), '*' );
-         set_environment_variable( next, value );
-
-         set_environment_variable( next, "" );
-      }
+         memset( getenv( next.c_str( ) ), '*', value.length( ) );
    }
 }
 
