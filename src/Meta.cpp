@@ -43,6 +43,8 @@ namespace
 
 #include "Meta.cmh"
 
+#include "ciyam_constants.h"
+
 }
 
 void obtain_module_details( const module_details*& p_info )
@@ -78,7 +80,7 @@ void module_Meta_command_functor::operator ( )( const string& command, const par
    }
    catch( exception& x )
    {
-      handler.issue_command_reponse( string( "(error) " ) + x.what( ), true );
+      handler.issue_command_reponse( string( c_response_error_prefix ) + x.what( ), true );
    }
 }
 

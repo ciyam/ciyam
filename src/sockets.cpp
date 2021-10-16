@@ -680,7 +680,7 @@ void file_transfer( const string& name,
          {
             s.write_line( size_info, initial_timeout, p_progress );
 
-            s.read_line( next, initial_timeout, ack_message_str.length( ), p_progress );
+            s.read_line( next, initial_timeout, c_default_line_size, p_progress );
 
             if( s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading send response for size_info in file transfer" );
@@ -734,7 +734,7 @@ void file_transfer( const string& name,
          if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
             throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n in file transfer" );
 
-         s.read_line( next, line_timeout, ack_message_str.length( ), p_progress );
+         s.read_line( next, line_timeout, c_default_line_size, p_progress );
 
          if( s.had_timeout( ) )
             throw runtime_error( "timeout occurred reading send response for next line in file transfer" );

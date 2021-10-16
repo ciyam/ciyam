@@ -243,6 +243,7 @@ PATHS=@paths:..:^.git,^tmp,^files
 FILES=@files::test*.jpg
 #$FILES
 ;
+session_variable test (okay)
 session_variable @set aaa
 session_variable @set aaa
 session_variable @set bbb

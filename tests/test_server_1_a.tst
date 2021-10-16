@@ -170,6 +170,8 @@ tests
 test.jpg
 test1.jpg
 test2.jpg
+session_variable test (okay)
+Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable @set aaa
 session_variable @set aaa
 aaa

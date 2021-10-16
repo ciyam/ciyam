@@ -174,6 +174,14 @@ void set_variable( size_t handle, const string& vname,
       instance_set_variable( handle, "", vname, value );
 }
 
+void check_not_possible_protocol_response( const string& value )
+{
+   string response( c_response_okay );
+
+   if( !value.empty( ) && value[ 0 ] == response[ 0 ] )
+      throw runtime_error( "invalid value '" + value + "' (could be confused with a protocol response)" );
+}
+
 void set_script_error_if_applicable( const string& error_message )
 {
    // NOTE: The "run_script" function contains a detailed note about this.
@@ -1500,6 +1508,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string filename( get_parm_val( parameters, c_cmd_ciyam_session_file_put_filename ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_put_tag ) );
 
+         check_not_possible_protocol_response( tag );
+
          bool is_new = false;
 
          // NOTE: Although "filename" is used to make the command usage easier to understand for
@@ -1524,6 +1534,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_list( has_parm_val( parameters, c_cmd_ciyam_session_file_raw_list ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_data ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_tag ) );
+
+         check_not_possible_protocol_response( tag );
 
          // NOTE: A list can be constructed with a comma separated list of existing tags.
          if( is_list )
@@ -1629,6 +1641,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          for( size_t i = 0; i < tag_names.size( ); i++ )
          {
             string next( tag_names[ i ] );
+
+            check_not_possible_protocol_response( next );
 
             if( is_remove || is_unlink )
                tag_del( next, is_unlink );
@@ -2336,9 +2350,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
 
          if( has_new_val )
+         {
+            check_not_possible_protocol_response( new_value );
             instance_set_variable( atoi( handle.c_str( ) ), context, name_or_expr, new_value );
+         }
          else
+         {
             response = instance_get_variable( atoi( handle.c_str( ) ), context, name_or_expr );
+            check_not_possible_protocol_response( response );
+         }
       }
       else if( command == c_cmd_ciyam_session_object_op_create )
       {
@@ -4482,10 +4502,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !has_new_val )
             needs_response = true;
          else
+         {
+            check_not_possible_protocol_response( new_value );
             set_session_variable( name_or_expr, new_value, &needs_response, &handler );
+         }
 
          if( needs_response )
+         {
             response = get_session_variable( name_or_expr );
+            check_not_possible_protocol_response( response );
+         }
       }
       else if( command == c_cmd_ciyam_session_session_rpc_unlock )
       {
@@ -5527,9 +5553,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
 
          if( has_new_val )
+         {
+            check_not_possible_protocol_response( new_value );
             set_system_variable( name_or_expr, new_value, false, &handler );
+         }
          else
+         {
             response = get_system_variable( name_or_expr );
+            check_not_possible_protocol_response( response );
+         }
       }
       else if( command == c_cmd_ciyam_session_system_listeners )
       {

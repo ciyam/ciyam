@@ -80,6 +80,8 @@ namespace
 
 #include "`{`$model_name`}.cmh"
 
+#include "ciyam_constants.h"
+
 }
 
 void obtain_module_details( const module_details*& p_info )
@@ -151,7 +153,7 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
    }
    catch( exception& x )
    {
-      handler.issue_command_reponse( string( "(error) " ) + x.what( ), true );
+      handler.issue_command_reponse( string( c_response_error_prefix ) + x.what( ), true );
    }
 }
 
