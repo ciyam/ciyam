@@ -27,8 +27,12 @@ inline std::string get_line( const std::string& prompt, bool use_cin = true )
    return get_line( prompt.c_str( ), use_cin );
 }
 
-std::string get_password( const char* p_prompt = 0 );
-inline std::string get_password( const std::string& prompt ) { return get_password( prompt.c_str( ) ); }
+std::string get_password( const char* p_prompt = 0, char* p_buf = 0, size_t buflen = 0 );
+
+inline std::string get_password( const std::string& prompt, char* p_buf = 0, size_t buflen = 0 )
+{
+   return get_password( prompt.c_str( ) );
+}
 
 void put_line( const char* p_chars, size_t len );
 

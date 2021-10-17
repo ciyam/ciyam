@@ -31,6 +31,8 @@ using namespace std;
 namespace
 {
 
+const size_t c_max_pwd_size = 128;
+
 const char* const c_opt_exclusive = "-x";
 
 const char* const c_app_title = "ods_fsed";
@@ -244,7 +246,16 @@ void ods_fsed_command_handler::init( )
       if( g_use_in_regression_tests )
          password = "test";
       else
-         password = get_password( "Password: " );
+      {
+         char buffer[ c_max_pwd_size ];
+
+         get_password( "Password: ", buffer, c_max_pwd_size );
+
+         password.resize( strlen( buffer ) + 1 );
+         strncpy( &password[ 0 ], buffer, password.length( ) );
+
+         memset( buffer, '\0', c_max_pwd_size );
+      }
    }
 
    ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,

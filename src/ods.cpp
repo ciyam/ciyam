@@ -2561,7 +2561,10 @@ ods::ods( const char* p_name,
    if( p_password )
    {
       p_impl->is_encrypted = true;
-      p_impl->pwd_hash = sha256( p_password ).get_digest_as_string( );
+      sha256 hash( ( const unsigned char* )p_password, strlen( p_password ) );
+
+      p_impl->pwd_hash.resize( c_sha256_digest_size );
+      hash.copy_digest_to_buffer( ( unsigned char* )p_impl->pwd_hash.data( ) );
    }
 
 #ifdef __GNUG__

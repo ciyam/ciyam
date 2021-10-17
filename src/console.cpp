@@ -52,6 +52,8 @@ using namespace std;
 namespace
 {
 
+const int c_max_pwd_len = 128;
+
 string get_line_using_get_char( )
 {
    string str;
@@ -218,21 +220,35 @@ string get_line( const char* p_prompt, bool use_cin )
 }
 
 #ifdef __GNUG__
-string get_password( const char* p_prompt )
+string get_password( const char* p_prompt, char* p_buf, size_t buflen )
 {
    string str;
+
    char* p = getpass( p_prompt );
-   str = string( p );
-   memset( p, '\0', str.size( ) );
+   size_t len = strlen( p );
+
+   if( p_buf && buflen )
+   {
+      if( len >= buflen )
+         throw runtime_error( "get_password buflen was exceeded" );
+
+      strncpy( p_buf, p, len );
+      p_buf[ len ] = '\0';
+   }
+   else
+      str = string( p );
+
+   memset( p, '\0', len );
+
    return str;
 }
 #endif
 
 #ifdef _WIN32
-string get_password( const char* p_prompt )
+string get_password( const char* p_prompt, char* p_buf, size_t buflen )
 {
    string str;
-   char buf[ 128 ] = "";
+   char buf[ c_max_pwd_len ] = "";
 
    if( p_prompt && p_prompt[ 0 ] != 0 )
    {
@@ -261,7 +277,17 @@ string get_password( const char* p_prompt )
 
    if( buf[ 0 ] != '\0' )
    {
-      str = string( buf );
+      if( p_buf && buflen )
+      {
+         if( pos >= buflen )
+            throw runtime_error( "get_password buflen was exceeded" );
+
+         strncpy( p_buf, buf, pos );
+         p_buf[ pos ] = '\0';
+      }
+      else
+         str = string( buf );
+
       memset( buf, '\0', str.size( ) );
    }
 

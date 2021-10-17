@@ -53,6 +53,8 @@ const int c_max_usage_width = 84;
 
 const int c_max_history = 1000;
 
+const size_t c_max_pwd_size = 128;
+
 const char c_startup_prefix = '-';
 
 const char* const c_help_command = "help";
@@ -2817,7 +2819,15 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                                  rhs = string( "Enter Password: " );
 
                               was_password = true;
-                              str = get_password( rhs.c_str( ) );
+
+                              char buffer[ c_max_pwd_size ];
+
+                              get_password( rhs.c_str( ), buffer, c_max_pwd_size );
+
+                              str.resize( strlen( buffer ) + 1 );
+                              strncpy( &str[ 0 ], buffer, str.length( ) );
+
+                              memset( buffer, '\0', c_max_pwd_size );
                            }
                         }
                         else
@@ -3395,23 +3405,25 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
       }
 
-      if( add_to_history && !str_for_history.empty( ) )
+      if( !str_for_history.empty( ) )
       {
+         if( add_to_history )
+         {
 #ifdef __GNUG__
 #  ifdef RDLINE_SUPPORT
-         if( isatty( STDIN_FILENO ) )
-            add_history( str_for_history.c_str( ) );
+            if( isatty( STDIN_FILENO ) )
+               add_history( str_for_history.c_str( ) );
 #  endif
 #endif
 
-         command_history.push_back( str_for_history );
+            command_history.push_back( str_for_history );
 
-         if( command_history.size( ) > c_max_history )
-            command_history.pop_front( );
+            if( command_history.size( ) > c_max_history )
+               command_history.pop_front( );
+         }
+         else if( was_password )
+            clear_key( str_for_history );
       }
-
-      if( was_password )
-         clear_key( str_for_history );
    }
 
    return str;

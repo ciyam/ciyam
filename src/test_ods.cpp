@@ -47,6 +47,8 @@ const char* const c_root_node_description = "root";
 
 #include "test_ods.cmh"
 
+const size_t c_max_pwd_size = 128;
+
 const int32_t c_magic = 1234567890;
 
 const int c_max_path_size = 256;
@@ -411,7 +413,16 @@ void test_ods_command_handler::init_ods( const char* p_file_name )
       if( g_use_in_regression_tests )
          password = "test";
       else
-         password = get_password( "Password: " );
+      {
+         char buffer[ c_max_pwd_size ];
+
+         get_password( "Password: ", buffer, c_max_pwd_size );
+
+         password.resize( strlen( buffer ) + 1 );
+         strncpy( &password[ 0 ], buffer, password.length( ) );
+
+         memset( buffer, '\0', c_max_pwd_size );
+      }
    }
 
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
