@@ -1395,12 +1395,14 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
          }
 
          string env_var_value;
-         char* p_env_var( getenv( env_var_name.c_str( ) ) );
+         char* p_env_var = getenv( env_var_name.c_str( ) );
 
          if( p_env_var )
          {
+            string tmp_str( p_env_var );
+
             if( line == 0 )
-               env_var_value = string( p_env_var );
+               env_var_value.swap( tmp_str );
             else
             {
                vector< string > lines;
@@ -1468,10 +1470,10 @@ void replace_environment_variables( string& s, char c, bool as_quotes, const cha
    for( size_t i = 0; i < env_vars_to_overwrite.size( ); i++ )
    {
       string next( env_vars_to_overwrite[ i ] );
-      string value( get_environment_variable( next ) );
+      char* p_env_var = getenv( next.c_str( ) );
 
-      if( !value.empty( ) )
-         memset( getenv( next.c_str( ) ), '*', value.length( ) );
+      if( p_env_var )
+         memset( p_env_var, '*', strlen( p_env_var ) );
    }
 }
 

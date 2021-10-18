@@ -234,10 +234,8 @@ string::size_type find_non_escaped_char( const string& s, char ch, string::size_
    return pos;
 }
 
-string replace_input_arg_values( const vector< string >& args, const string& input, char marker )
+void replace_input_arg_values( string& str, const vector< string >& args, char marker )
 {
-   string str( input );
-
    string::size_type pos = str.find( marker );
 
    while( pos != string::npos )
@@ -290,8 +288,6 @@ string replace_input_arg_values( const vector< string >& args, const string& inp
 
       pos = str.find( marker, pos + 1 );
    }
-
-   return str;
 }
 
 class startup_command_functor : public command_functor
@@ -2471,11 +2467,11 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          // console scripts can utilise either (or a combination) of these two environment variable
          // styles. The %<name>% has to be replaced before trying %* and %1..9 otherwise the second
          // % could confuse the replacement (if it is followed by a * or 1..9).
-         str = replace_environment_variables( str.c_str( ), c_environment_variable_marker_2 );
-         str = replace_input_arg_values( args, str, c_environment_variable_marker_2 );
+         replace_environment_variables( str, c_environment_variable_marker_2 );
+         replace_input_arg_values( str, args, c_environment_variable_marker_2 );
 
-         str = replace_input_arg_values( args, str, c_environment_variable_marker_1 );
-         str = replace_unquoted_environment_variables( str.c_str( ), c_environment_variable_marker_1 );
+         replace_input_arg_values( str, args, c_environment_variable_marker_1 );
+         replace_unquoted_environment_variables( str, c_environment_variable_marker_1 );
 
          // NOTE: For environment variable assignment support VAR=@<fname> to set the variable to the
          // contents of a file (if wanting to literally assign VAR to "@fname" use "@@fname" instead)
@@ -3421,8 +3417,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             if( command_history.size( ) > c_max_history )
                command_history.pop_front( );
          }
-         else if( was_password )
-            clear_key( str_for_history );
       }
    }
 

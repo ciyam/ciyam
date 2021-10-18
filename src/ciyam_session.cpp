@@ -2349,6 +2349,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_object_variable_new_value ) );
 
+         possibly_expected_error = true;
          if( has_new_val )
          {
             check_not_possible_protocol_response( new_value );
@@ -4499,6 +4500,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool needs_response = false;
 
+         possibly_expected_error = true;
+
          if( !has_new_val )
             needs_response = true;
          else
@@ -5551,6 +5554,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
          bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
          string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
+
+         possibly_expected_error = true;
 
          if( has_new_val )
          {

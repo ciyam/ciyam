@@ -571,6 +571,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 #endif
          if( str == "bye" || str == "quit" )
          {
+            clear_key( str );
+
             str.erase( );
             set_finished( );
          }
@@ -839,6 +841,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
             }
             catch( exception& x )
             {
+               clear_key( str );
                str.erase( );
 
                if( !ignore_exception )
@@ -1092,6 +1095,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                }
             }
 
+            clear_key( str );
             str.erase( );
          }
       }

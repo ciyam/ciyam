@@ -16,6 +16,8 @@
 
 using namespace std;
 
+const int c_string_reserve = 1024;
+
 command_processor::command_processor( command_handler& handler )
  :
  is_continuation( false )
@@ -27,6 +29,7 @@ command_processor::command_processor( command_handler& handler )
 void command_processor::process_commands( )
 {
    string cmd_and_args;
+   cmd_and_args.reserve( c_string_reserve );
 
    while( !handlers.empty( ) && is_still_processing( ) )
    {
