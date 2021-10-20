@@ -286,7 +286,7 @@ class Meta_Procedure_Arg_command_handler : public command_handler
 
    void set_Meta_Procedure_Arg( Meta_Procedure_Arg* p_new_Meta_Procedure_Arg ) { p_Meta_Procedure_Arg = p_new_Meta_Procedure_Arg; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

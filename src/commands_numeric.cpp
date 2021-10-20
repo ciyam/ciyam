@@ -63,8 +63,10 @@ class numeric_command_handler : public command_handler
 
    void set_numeric( numeric* p_new_numeric ) { p_numeric = p_new_numeric; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
+      ( void )cmd_and_args;
+
       if( command == "?" )
       {
          retval = "\n";

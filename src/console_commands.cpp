@@ -2356,9 +2356,9 @@ string console_command_handler::format_usage_output(
    return retval;
 }
 
-string console_command_handler::preprocess_command_and_args( const string& cmd_and_args )
+void console_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
 {
-   string str( cmd_and_args );
+   str = cmd_and_args;
 
    remove_trailing_cr_from_text_file_line( str );
 
@@ -2392,7 +2392,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
             msg = str.substr( 1 );
 
          if( !is_choice_input( msg ) )
-            str = msg + get_line( msg, false );
+            str = msg + get_line( msg.c_str( ), false );
          else
             str = get_input_from_choices( msg );
       }
@@ -2420,6 +2420,8 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       {
          str.erase( 0, 1 );
          add_to_history = false;
+
+         clear_key( str_for_history );
       }
       else
          last_command = str_for_history;
@@ -2428,7 +2430,12 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       string::size_type apos = string::npos;
 
       if( isalpha( str[ 0 ] ) )
-         apos = str.substr( 0, pos ).find( c_environment_variable_assign );
+      {
+         apos = str.find( c_environment_variable_assign );
+
+         if( apos > pos )
+            apos = string::npos;
+      }
 
       if( has_option( c_cmd_echo ) )
       {
@@ -3419,8 +3426,6 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
       }
    }
-
-   return str;
 }
 
 bool console_command_handler::is_special_command( const string& cmd_and_args )
@@ -3439,8 +3444,10 @@ void console_command_handler::handle_special_command( const string& cmd_and_args
        p_impl->last_fissile_output, p_impl->fissile_values, p_impl->use_special_fissile_character );
 }
 
-void console_command_handler::handle_unknown_command( const string& command )
+void console_command_handler::handle_unknown_command( const string& command, const string& cmd_and_args )
 {
+   ( void )cmd_and_args;
+
    if( handling_startup_options )
       throw runtime_error( "unknown option '" + command + "'" );
 
@@ -3478,7 +3485,7 @@ bool console_command_processor::is_still_processing( )
    return cin;
 }
 
-string console_command_processor::get_cmd_and_args( )
+void console_command_processor::get_cmd_and_args( string& cmd_and_args )
 {
    string prompt;
 
@@ -3491,7 +3498,7 @@ string console_command_processor::get_cmd_and_args( )
          prompt.insert( 1, prefix );
    }
 
-   return get_line( prompt.c_str( ) );
+   get_line( cmd_and_args, prompt.c_str( ) );
 }
 
 void console_command_processor::output_command_usage( const string& wildcard_match_expr ) const
@@ -3568,7 +3575,7 @@ startup_command_processor::~startup_command_processor( )
    handler.set_handling_startup_options( false );
 }
 
-string startup_command_processor::get_cmd_and_args( )
+void startup_command_processor::get_cmd_and_args( string& cmd_and_args )
 {
    string next( args.back( ) );
 
@@ -3577,7 +3584,8 @@ string startup_command_processor::get_cmd_and_args( )
       next[ pos ] = ' ';
 
    args.pop_back( );
-   return next;
+
+   cmd_and_args = next;
 }
 
 void startup_command_processor::output_command_usage( const string& wildcard_match_expr ) const

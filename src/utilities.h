@@ -106,19 +106,23 @@ inline std::string lower( const std::string& s )
 #     pragma option pop
 #  endif
 
-inline void clear_key( std::string& key )
+inline void clear_key( std::string& key, bool erase = false )
 {
    // NOTE: Overwrite each byte of a key to protect from potential swap file discovery.
    for( std::string::size_type i = 0; i < key.length( ); i++ )
       key[ i ] = '\0';
+
+   if( erase )
+      key.erase( );
 }
 
 struct scoped_clear_key
 {
-   inline scoped_clear_key( std::string& key ) : key( key ) { }
-   inline ~scoped_clear_key( ) { clear_key( key ); }
+   inline scoped_clear_key( std::string& key, bool erase = false ) : key( key ), erase( erase ) { }
+   inline ~scoped_clear_key( ) { clear_key( key, erase ); }
 
    std::string& key;
+   bool erase;
 };
 
 inline double round( double x, int n )

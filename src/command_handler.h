@@ -114,15 +114,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    friend class command_processor;
 
    public:
-   command_handler( )
-    :
-    finished( false ),
-    change_notify( true ),
-    quiet_command( false ),
-    additional_command( false ),
-    p_command_processor( 0 )
-   {
-   }
+   command_handler( );
 
    virtual ~command_handler( );
 
@@ -180,7 +172,6 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    bool additional_command;
 
    std::string command_prefix;
-   std::string command_and_args;
 
    command_processor* p_command_processor;
 
@@ -200,7 +191,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    virtual std::string format_usage_output( const std::string& command,
     char cmd_arg_separator, const std::string& usage, const std::string& description ) const;
 
-   virtual std::string preprocess_command_and_args( const std::string& cmd_and_args ) { return cmd_and_args; }
+   virtual void preprocess_command_and_args( std::string& str, const std::string& cmd_and_args ) { str = cmd_and_args; }
 
    virtual void postprocess_command_and_args( const std::string& /*cmd_and_args*/ ) { }
 
@@ -208,7 +199,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
 
    virtual void handle_special_command( const std::string& /*cmd_and_args*/ ) { }
 
-   virtual void handle_unknown_command( const std::string& command ) = 0;
+   virtual void handle_unknown_command( const std::string& command, const std::string& cmd_and_args ) = 0;
    virtual void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args ) = 0;
 
    virtual void handle_command_response( const std::string& response, bool is_special = false ) { }
@@ -218,7 +209,6 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
 
    void set_quiet_command( bool new_val ) { quiet_command = new_val; }
 
-   std::string get_cmd_and_args( ) const { return command_and_args; }
    size_t get_num_commands( ) const { return command_dispatchers.size( ); }
 
    const std::string& get_command_name( size_t num ) const { return command_items[ num ].dispatch_name; }

@@ -549,12 +549,12 @@ class \$_command_handler : public command_handler
 
    void set_\$( \$* p_new_\$ ) { p_\$ = p_new_\$; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
 `{`(`?`$parent_class`)\
       ( void )command;
 
-      retval = p_\$->`{`$parent_class`}::execute( get_cmd_and_args( ) );\
+      retval = p_\$->`{`$parent_class`}::execute( cmd_and_args );\
 `,\
       throw runtime_error( "unknown command '" + command + "'" );\
 `}

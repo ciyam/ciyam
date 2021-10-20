@@ -64,8 +64,10 @@ class date_time_command_handler : public command_handler
 
    void set_date_time( date_time* p_new_date_time ) { p_date_time = p_new_date_time; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
+      ( void )cmd_and_args;
+
       if( command == "?" )
       {
          retval = "\n";

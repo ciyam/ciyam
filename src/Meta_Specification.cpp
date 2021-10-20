@@ -853,7 +853,7 @@ class Meta_Specification_command_handler : public command_handler
 
    void set_Meta_Specification( Meta_Specification* p_new_Meta_Specification ) { p_Meta_Specification = p_new_Meta_Specification; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

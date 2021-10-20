@@ -54,10 +54,8 @@ namespace
 
 const int c_max_pwd_len = 128;
 
-string get_line_using_get_char( )
+void get_line_using_get_char( string& str )
 {
-   string str;
-
    while( true )
    {
       cout.flush( );
@@ -100,8 +98,6 @@ string get_line_using_get_char( )
          cout << ch;
       }
    }
-
-   return str;
 }
 
 }
@@ -176,10 +172,8 @@ char get_char( const char* p_prompt, bool flush_input )
 #endif
 }
 
-string get_line( const char* p_prompt, bool use_cin )
+void get_line( string& str, const char* p_prompt, bool use_cin )
 {
-   string str;
-
 #ifdef __GNUG__
    // NOTE: If standard input is not a terminal (such as is the case with redirected input)
    // then don't use "readline" (as it does not behave as one might expect it would).
@@ -189,7 +183,12 @@ string get_line( const char* p_prompt, bool use_cin )
       char* p = readline( p_prompt );
       if( p )
       {
-         str = string( p );
+         size_t len = strlen( p );
+
+         str.resize( len );
+         memcpy( &str[ 0 ], p, len );
+
+         memset( p, '\0', len );
          free( p );
       }
    }
@@ -202,10 +201,8 @@ string get_line( const char* p_prompt, bool use_cin )
       if( use_cin )
          getline( cin, str );
       else
-         str = get_line_using_get_char( );
+         get_line_using_get_char( str );
    }
-
-   return str;
 #else
    if( p_prompt && p_prompt[ 0 ] != 0 )
       cout << p_prompt;
@@ -213,9 +210,7 @@ string get_line( const char* p_prompt, bool use_cin )
    if( use_cin )
       getline( cin, str );
    else
-      str = get_line_using_get_char( );
-
-   return str;
+      get_line_using_get_char( );
 #endif
 }
 

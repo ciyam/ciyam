@@ -578,7 +578,7 @@ class Meta_Relationship_command_handler : public command_handler
 
    void set_Meta_Relationship( Meta_Relationship* p_new_Meta_Relationship ) { p_Meta_Relationship = p_new_Meta_Relationship; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

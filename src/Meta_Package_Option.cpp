@@ -622,7 +622,7 @@ class Meta_Package_Option_command_handler : public command_handler
 
    void set_Meta_Package_Option( Meta_Package_Option* p_new_Meta_Package_Option ) { p_Meta_Package_Option = p_new_Meta_Package_Option; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

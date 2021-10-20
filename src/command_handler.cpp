@@ -22,6 +22,18 @@
 
 using namespace std;
 
+const size_t c_string_reserve = 1024;
+
+command_handler::command_handler( )
+ :
+ finished( false ),
+ change_notify( true ),
+ quiet_command( false ),
+ additional_command( false ),
+ p_command_processor( 0 )
+{
+}
+
 command_handler::~command_handler( )
 {
    command_dispatcher_iterator i, end;
@@ -125,7 +137,7 @@ void command_handler::remove_command( const string& name )
 
    command_dispatcher_iterator i = command_dispatchers.find( dispatch_name );
    if( i == command_dispatchers.end( ) )
-      handle_unknown_command( name );
+      handle_unknown_command( name, name );
    else
    {
       for( vector< command_item >::size_type j = 0; j < command_items.size( ); j++ )
@@ -158,6 +170,8 @@ void command_handler::execute_command( const string& cmd_and_args )
    while( true )
    {
       do_execute_command( next_command );
+      clear_key( next_command );
+
       next_command = get_additional_command( );
 
       if( next_command.empty( ) )
@@ -169,20 +183,42 @@ void command_handler::execute_command( const string& cmd_and_args )
 
 void command_handler::do_execute_command( const string& cmd_and_args )
 {
-   command_and_args = cmd_and_args;
-
    set_quiet_command( false );
 
    if( is_special_command( cmd_and_args ) )
       handle_special_command( cmd_and_args );
    else
    {
-      string s = preprocess_command_and_args( cmd_and_args );
+      string s( c_string_reserve, '\0' );
+
+      preprocess_command_and_args( s, cmd_and_args );
 
       if( !s.empty( ) )
       {
          string::size_type pos = s.find( ' ' );
          string cmd( s.substr( 0, pos ) );
+
+         string marker, replacement;
+
+         string::size_type xpos = cmd.find( ':' );
+
+         // NOTE: Use of a marker allows a parameter value to be replaced with
+         // a prefix before the command itself (intended for sensitive values)
+         // thus "xxx:aaabbbccc:encrypt xxx" would become "encrypt aaabbbccc".
+         // Placing the sensitive value in the command prevents the value from
+         // ending up in temporary strings during the argument/command parsing.
+         if( xpos && xpos != string::npos )
+         {
+            marker = cmd.substr( 0, xpos );
+            cmd.erase( 0, xpos + 1 );
+
+            xpos = cmd.rfind( ':' );
+            if( xpos != string::npos )
+            {
+               replacement = cmd.substr( 0, xpos );
+               cmd.erase( 0, xpos + 1 );
+            }
+         }
 
          if( short_commands.count( cmd ) )
             cmd = short_commands[ cmd ];
@@ -190,7 +226,7 @@ void command_handler::do_execute_command( const string& cmd_and_args )
          command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
 
          if( ci == command_dispatchers.end( ) )
-            handle_unknown_command( cmd );
+            handle_unknown_command( cmd, cmd_and_args );
          else
          {
             vector< string > arguments;
@@ -202,7 +238,7 @@ void command_handler::do_execute_command( const string& cmd_and_args )
             {
                try
                {
-                  setup_arguments( s.substr( pos + 1 ).c_str( ), arguments );
+                  setup_arguments( &s[ pos + 1 ], arguments );
                }
                catch( exception& )
                {
@@ -215,15 +251,40 @@ void command_handler::do_execute_command( const string& cmd_and_args )
                // NOTE: Place an empty pair of strings at the start of the map to help the "get_parm_val" function.
                parameters.insert( make_pair( string( ), string( ) ) );
 
+               map< string, string >::iterator i;
+
+               if( !marker.empty( ) )
+               {
+                  for( i = parameters.begin( ); i != parameters.end( ); ++i )
+                  {
+                     if( i->second == marker )
+                        i->second = replacement;
+                  }
+               }
+
                string name( ci->second.name );
                string::size_type pos = name.find( '|' );
+
                ci->second.p_functor->operator( )( name.substr( 0, pos ), parameters );
+
+               if( !marker.empty( ) )
+               {
+                  for( i = parameters.begin( ); i != parameters.end( ); ++i )
+                     clear_key( i->second );
+               }
             }
             else
                handle_invalid_command( *ci->second.p_parser, s );
+
+            for( size_t i = 0; i < arguments.size( ); i++ )
+               clear_key( arguments[ i ] );
          }
 
          postprocess_command_and_args( s );
+
+         clear_key( s );
+         clear_key( cmd );
+         clear_key( replacement );
       }
    }
 }

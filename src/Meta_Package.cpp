@@ -288,7 +288,7 @@ class Meta_Package_command_handler : public command_handler
 
    void set_Meta_Package( Meta_Package* p_new_Meta_Package ) { p_Meta_Package = p_new_Meta_Package; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

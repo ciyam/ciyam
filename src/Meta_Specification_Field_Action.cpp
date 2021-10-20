@@ -585,11 +585,11 @@ class Meta_Specification_Field_Action_command_handler : public command_handler
 
    void set_Meta_Specification_Field_Action( Meta_Specification_Field_Action* p_new_Meta_Specification_Field_Action ) { p_Meta_Specification_Field_Action = p_new_Meta_Specification_Field_Action; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       ( void )command;
 
-      retval = p_Meta_Specification_Field_Action->Meta_Specification::execute( get_cmd_and_args( ) );
+      retval = p_Meta_Specification_Field_Action->Meta_Specification::execute( cmd_and_args );
    }
 
    void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )

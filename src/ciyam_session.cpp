@@ -1274,8 +1274,10 @@ class socket_command_handler : public command_handler
 
    void postprocess_command_and_args( const string& cmd_and_args );
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
+      ( void )cmd_and_args;
+
       socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'", c_request_timeout );
    }
 
@@ -5642,6 +5644,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string data( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_data ) );
 
          response = encrypt_data( data, no_ssl, no_salt );
+
+         clear_key( data );
       }
       else if( command == c_cmd_ciyam_session_password )
       {
@@ -5672,6 +5676,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             secret = decrypt_data( get_system_variable( string( c_cmd_ciyam_session_passtotp ) + "." + secret.substr( 1 ) ) );
 
          response = get_totp( secret );
+
+         clear_key( secret );
       }
       else if( command == c_cmd_ciyam_session_sendmail )
       {
@@ -5908,15 +5914,13 @@ class socket_command_processor : public command_processor
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
-   string get_cmd_and_args( );
+   void get_cmd_and_args( string& cmd_and_args );
 
    void output_command_usage( const string& wildcard_match_expr ) const;
 };
 
-string socket_command_processor::get_cmd_and_args( )
+void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 {
-   string request;
-
    if( is_first_command )
    {
       is_first_command = false;
@@ -5931,14 +5935,14 @@ string socket_command_processor::get_cmd_and_args( )
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
 
-      if( socket.read_line( request, c_request_timeout, 0, p_progress ) <= 0 )
+      if( socket.read_line( cmd_and_args, c_request_timeout, 0, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "quit".
-            request = c_cmd_ciyam_session_quit;
+            cmd_and_args = c_cmd_ciyam_session_quit;
             break;
          }
 
@@ -5958,9 +5962,8 @@ string socket_command_processor::get_cmd_and_args( )
    }
 
 #ifdef DEBUG
-   cout << "request = '" << request << "'" << endl;
+   cout << "cmd_and_args = '" << cmd_and_args << "'" << endl;
 #endif
-   return request;
 }
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const

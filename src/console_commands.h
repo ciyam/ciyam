@@ -84,7 +84,7 @@ class console_command_handler : public command_handler
    impl* p_impl;
 
    protected:
-   std::string preprocess_command_and_args( const std::string& cmd_and_args );
+   void preprocess_command_and_args( std::string& str, const std::string& cmd_and_args );
 
    std::ostream* get_std_err( ) const { return p_std_err; }
    std::ostream* get_std_out( ) const { return p_std_out; }
@@ -93,7 +93,7 @@ class console_command_handler : public command_handler
 
    void handle_special_command( const std::string& cmd_and_args );
 
-   void handle_unknown_command( const std::string& command );
+   void handle_unknown_command( const std::string& command, const std::string& cmd_and_args );
 
    void handle_invalid_command( const command_parser& parser, const std::string& cmd_and_args );
 
@@ -126,7 +126,7 @@ class console_command_processor : public command_processor
 
    bool is_still_processing( );
 
-   std::string get_cmd_and_args( );
+   void get_cmd_and_args( std::string& cmd_and_args );
 
    void output_command_usage( const std::string& wildcard_match_expr ) const;
 };
@@ -161,7 +161,8 @@ class startup_command_processor : public command_processor
    fp_get_app_info_string get_app_info_string_func;
 
    bool is_still_processing( ) { return !args.empty( ); }
-   std::string get_cmd_and_args( );
+
+   void get_cmd_and_args( std::string& cmd_and_args );
 
    void output_command_usage( const std::string& wildcard_match_expr ) const;
 

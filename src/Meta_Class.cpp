@@ -652,7 +652,7 @@ class Meta_Class_command_handler : public command_handler
 
    void set_Meta_Class( Meta_Class* p_new_Meta_Class ) { p_Meta_Class = p_new_Meta_Class; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

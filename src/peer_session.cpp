@@ -681,8 +681,10 @@ class socket_command_handler : public command_handler
 
    void postprocess_command_and_args( const string& cmd_and_args );
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
+      ( void )cmd_and_args;
+
       socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'", c_request_timeout );
       kill_session( );
    }
@@ -1589,15 +1591,13 @@ class socket_command_processor : public command_processor
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
-   string get_cmd_and_args( );
+   void get_cmd_and_args( string& cmd_and_args );
 
    void output_command_usage( const string& wildcard_match_expr ) const;
 };
 
-string socket_command_processor::get_cmd_and_args( )
+void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 {
-   string request;
-
    socket_command_handler& socket_handler = dynamic_cast< socket_command_handler& >( handler );
 
    string blockchain( socket_handler.get_blockchain( ) );
@@ -1668,13 +1668,13 @@ string socket_command_processor::get_cmd_and_args( )
             string response;
             if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
             {
-               request = "bye";
+               cmd_and_args = "bye";
                break;
             }
 
             if( response != string( c_response_okay ) )
             {
-               request = "bye";
+               cmd_and_args = "bye";
                break;
             }
 
@@ -1682,14 +1682,14 @@ string socket_command_processor::get_cmd_and_args( )
          }
       }
 
-      if( socket.read_line( request, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+      if( socket.read_line( cmd_and_args, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "bye".
-            request = "bye";
+            cmd_and_args = "bye";
             break;
          }
 
@@ -1704,24 +1704,22 @@ string socket_command_processor::get_cmd_and_args( )
          if( !is_local || !socket.had_timeout( ) )
          {
             // NOTE: Don't allow zombies to hang around unless they are local.
-            request = "bye";
+            cmd_and_args = "bye";
             break;
          }
       }
       else
       {
 #ifdef USE_THROTTLING
-         if( request != "bye" )
+         if( cmd_and_args != "bye" )
             msleep( c_request_throttle_sleep_time );
 #endif
-         if( request == c_response_okay || request == c_response_okay_more )
-            request = "bye";
+         if( cmd_and_args == c_response_okay || cmd_and_args == c_response_okay_more )
+            cmd_and_args = "bye";
 
          break;
       }
    }
-
-   return request;
 }
 
 void socket_command_processor::output_command_usage( const string& wildcard_match_expr ) const

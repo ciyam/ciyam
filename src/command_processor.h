@@ -32,7 +32,8 @@ class command_processor
 
    private:
    virtual bool is_still_processing( ) = 0;
-   virtual std::string get_cmd_and_args( ) = 0;
+
+   virtual void get_cmd_and_args( std::string& cmd_and_args ) = 0;
 
    virtual void finalise_command_processing( ) { }
 

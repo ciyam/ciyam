@@ -28,14 +28,19 @@ command_processor::command_processor( command_handler& handler )
 
 void command_processor::process_commands( )
 {
-   string cmd_and_args;
+   string next, cmd_and_args;
+
+   next.reserve( c_string_reserve );
    cmd_and_args.reserve( c_string_reserve );
 
    while( !handlers.empty( ) && is_still_processing( ) )
    {
       is_continuation = !cmd_and_args.empty( );
 
-      cmd_and_args += get_cmd_and_args( );
+      get_cmd_and_args( next );
+
+      cmd_and_args += next;
+      clear_key( next, true );
 
       if( !cmd_and_args.empty( ) )
       {
@@ -50,7 +55,8 @@ void command_processor::process_commands( )
          }
 
          execute_command( cmd_and_args );
-         cmd_and_args.erase( );
+
+         clear_key( cmd_and_args, true );
       }
 
       if( handlers.top( )->has_finished( ) )

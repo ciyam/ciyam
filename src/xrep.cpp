@@ -578,7 +578,7 @@ string xrep_info::get_variable( const string& identifier, bool opt )
       string prompt( "Input: " );
       if( has_variable( "ip" ) && !variables[ "ip" ].empty( ) )
          prompt = variables[ "ip" ];
-      retval = get_line( prompt );
+      retval = get_line( prompt.c_str( ) );
    }
    else if( variable == "p" )
    {

@@ -200,7 +200,7 @@ class Meta_Initial_Record_command_handler : public command_handler
 
    void set_Meta_Initial_Record( Meta_Initial_Record* p_new_Meta_Initial_Record ) { p_Meta_Initial_Record = p_new_Meta_Initial_Record; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

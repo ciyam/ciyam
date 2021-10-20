@@ -235,7 +235,7 @@ class Meta_Workgroup_command_handler : public command_handler
 
    void set_Meta_Workgroup( Meta_Workgroup* p_new_Meta_Workgroup ) { p_Meta_Workgroup = p_new_Meta_Workgroup; }
 
-   void handle_unknown_command( const string& command )
+   void handle_unknown_command( const string& command, const string& cmd_and_args )
    {
       throw runtime_error( "unknown command '" + command + "'" );
    }

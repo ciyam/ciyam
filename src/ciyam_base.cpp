@@ -85,6 +85,7 @@ const unsigned int c_default_max_peers = 100;
 // client interfaces and is not the max # of concurrent server sessions.
 const unsigned int c_default_max_user_limit = 1000;
 
+const size_t c_key_reserve_size = 128;
 const size_t c_default_cache_limit = 1000;
 
 const size_t c_iteration_row_cache_limit = 100;
@@ -4704,6 +4705,8 @@ string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_on
 {
    string key, retval;
 
+   key.reserve( c_key_reserve_size );
+
    // NOTE: If "no_salt" was specified then an empty key is used (so "no_salt" should
    // only ever be set "true" for the purpose of performing simple regression tests).
    if( !no_salt )
@@ -4725,6 +4728,8 @@ string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_on
 {
    string key, retval;
 
+   key.reserve( c_key_reserve_size );
+
    // NOTE: (see above)
    if( !no_salt )
    {
@@ -4744,6 +4749,8 @@ string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_on
 string totp_secret_key( const string& unique )
 {
    string key, retval;
+
+   key.reserve( c_key_reserve_size );
 
    string crypt_key( get_raw_session_variable( get_special_var_name( e_special_var_crypt_key ) ) );
 

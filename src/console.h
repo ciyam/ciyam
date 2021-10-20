@@ -20,11 +20,14 @@ inline char get_char( const std::string& prompt, bool flush_input = true )
    return get_char( prompt.c_str( ), flush_input );
 }
 
-std::string get_line( const char* p_prompt = 0, bool use_cin = true );
+void get_line( std::string& s, const char* p_prompt = 0, bool use_cin = true );
 
-inline std::string get_line( const std::string& prompt, bool use_cin = true )
+inline std::string get_line( const char* p_prompt = 0, bool use_cin = true )
 {
-   return get_line( prompt.c_str( ), use_cin );
+   std::string s;
+   get_line( s, p_prompt, use_cin );
+
+   return s;
 }
 
 std::string get_password( const char* p_prompt = 0, char* p_buf = 0, size_t buflen = 0 );

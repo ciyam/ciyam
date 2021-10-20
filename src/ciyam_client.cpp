@@ -223,7 +223,7 @@ class ciyam_console_command_handler : public console_command_handler
 
    string get_additional_command( );
 
-   string preprocess_command_and_args( const string& cmd_and_args );
+   void preprocess_command_and_args( string& str, const string& cmd_and_args );
 
    void process_custom_startup_option( size_t num, const string& option );
 };
@@ -250,17 +250,17 @@ string ciyam_console_command_handler::get_additional_command( )
    return cmd;
 }
 
-string ciyam_console_command_handler::preprocess_command_and_args( const string& cmd_and_args )
+void ciyam_console_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
 {
    if( is_handling_startup_options( ) )
-      return console_command_handler::preprocess_command_and_args( cmd_and_args );
+      return console_command_handler::preprocess_command_and_args( str, cmd_and_args );
 
-   string str( cmd_and_args );
+   str = cmd_and_args;
 
    if( !str.empty( ) )
    {
-      if( str[ 0 ] != '?' && str.substr( 0, str.find( ' ' ) ) != "help" )
-         str = console_command_handler::preprocess_command_and_args( str );
+      if( str[ 0 ] != '?' && str.find( "help" ) != 0 )
+         console_command_handler::preprocess_command_and_args( str, cmd_and_args );
 
       if( !str.empty( ) )
       {
@@ -446,7 +446,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   chunk_size = 0;
 
-                  return string( );
+                  return;
                }
 
                string chunk_name;
@@ -859,7 +859,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                   handle_command_response( s, true );
                }
 
-               return str;
+               return;
             }
 
             string response;
@@ -1100,8 +1100,6 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          }
       }
    }
-
-   return str;
 }
 
 void ciyam_console_command_handler::process_custom_startup_option( size_t num, const string& option )
