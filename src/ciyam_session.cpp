@@ -1270,7 +1270,7 @@ class socket_command_handler : public command_handler
    auto_ptr< restorable< bool > > set_restoring( ) { return auto_ptr< restorable< bool > >( new restorable< bool >( restoring, true ) ); }
 
    private:
-   string preprocess_command_and_args( const string& cmd_and_args );
+   void preprocess_command_and_args( string& str, const string& cmd_and_args );
 
    void postprocess_command_and_args( const string& cmd_and_args );
 
@@ -1305,18 +1305,18 @@ class socket_command_handler : public command_handler
    map< string, string > transformations;
 };
 
-string socket_command_handler::preprocess_command_and_args( const string& cmd_and_args )
+void socket_command_handler::preprocess_command_and_args( string& str, const string& cmd_and_args )
 {
-   string str( cmd_and_args );
+   str = cmd_and_args;
 
    if( !str.empty( ) )
    {
       TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
 
-      string::size_type pos = str.find( ' ' );
-
-      if( str[ 0 ] == '?' || str.substr( 0, pos ) == "help" )
+      if( str[ 0 ] == '?' || str.find( "help" ) == 0 )
       {
+         string::size_type pos = str.find( ' ' );
+
          string wildcard_match_expr;
          if( pos != string::npos )
             wildcard_match_expr = str.substr( pos + 1 );
@@ -1342,8 +1342,6 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
 
    if( !str.empty( ) )
       next_command = str;
-
-   return str;
 }
 
 void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
