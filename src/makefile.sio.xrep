@@ -418,7 +418,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>false
     <libicnv>false
@@ -531,7 +531,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>false
     <libicnv>false
@@ -553,7 +553,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>false
     <libicnv>false
@@ -640,7 +640,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>false
     <libicnv>false
@@ -706,7 +706,7 @@
     <gen_ext>
     <threads>false
     <sockets>false
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>`{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)true`,false`}
     <libicnv>`{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)false`,true`}

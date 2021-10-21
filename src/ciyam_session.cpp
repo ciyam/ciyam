@@ -5640,6 +5640,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_salt ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_data ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_pubkey ) );
+
+         if( !data.empty( ) && !pubkey.empty( ) )
+            data = session_shared_decrypt( pubkey, data );
 
          response = encrypt_data( data, no_ssl, no_salt );
 

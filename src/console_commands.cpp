@@ -32,6 +32,7 @@
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "crypto_keys.h"
 #include "fs_iterator.h"
 
 #ifdef __GNUG__
@@ -2464,9 +2465,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
       if( !str.empty( ) )
       {
          string assign_env_var_name;
+
          if( apos != string::npos )
          {
-            assign_env_var_name = str.substr( 0, apos );
+            // NOTE: Avoid creating a temporary string.
+            assign_env_var_name.resize( apos );
+            memcpy( &assign_env_var_name[ 0 ], &str[ 0 ], apos );
+
             str.erase( 0, apos + 1 );
          }
 
@@ -2581,8 +2586,13 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   pos = str.find_first_of( "+-*/:" );
 
                   int64_t val = 0;
+                  int64_t rval = 0;
 
-                  string lhs( str.substr( 0, pos ) );
+                  string lhs;
+
+                  // NOTE: Avoid creating a temporary string.
+                  lhs.resize( pos );
+                  memcpy( &lhs[ 0 ], &str[ 0 ], pos );
 
                   if( lhs == string( c_unix_timestamp ) )
                      val = unix_timestamp( );
@@ -2593,7 +2603,18 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                      bool was_transform = false;
 
-                     int64_t rval = from_string< int64_t >( str.substr( pos + 1 ) );
+                     for( size_t i = pos + 1; i < str.length( ); i++ )
+                     {
+                        char ch = str[ i ];
+
+                        if( ch >= '0' && ch <= '9' )
+                        {
+                           rval *= 10;
+                           rval += ( ch - '0' );
+                        }
+                        else
+                           break;
+                     }
 
                      if( !val )
                      {
@@ -2814,7 +2835,17 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            }
                            else if( lhs == c_function_password )
                            {
-                              string rhs( str.substr( pos + 1 ) );
+                              string rhs( &str[ pos + 1 ] );
+
+                              pos = rhs.find( ':' );
+
+                              string pubkey;
+
+                              if( pos != string::npos )
+                              {
+                                 pubkey = rhs.substr( pos + 1 );
+                                 rhs.erase( pos + 1 );
+                              }
 
                               if( !rhs.empty( ) )
                                  rhs += ' ';
@@ -2831,6 +2862,19 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               strncpy( &str[ 0 ], buffer, str.length( ) );
 
                               memset( buffer, '\0', c_max_pwd_size );
+
+                              if( !pubkey.empty( ) )
+                              {
+                                 public_key pub_key( pubkey );
+                                 private_key priv_key;
+
+                                 string data( priv_key.encrypt_message( pub_key, str ) );
+
+                                 data += ":" + priv_key.get_public( );
+
+                                 clear_key( str );
+                                 str = data;
+                              }
                            }
                         }
                         else
@@ -3216,7 +3260,10 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                str.erase( );
             }
             else if( str[ 0 ] == c_comment_command_prefix )
+            {
+               clear_key( str );
                str.erase( );
+            }
             else if( str[ 0 ] == c_envcond_command_prefix )
             {
                size_t pos = 0;
