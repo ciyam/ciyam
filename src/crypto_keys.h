@@ -74,11 +74,29 @@ class private_key : public public_key
    std::string get_wif_secret( bool compressed = true,
     bool use_override = false, address_prefix override = e_address_prefix_btc_wif_testnet ) const;
 
-   std::string decrypt_message( const public_key& pub,
-    const std::string& base64, const char* p_id = 0 ) const;
+   void decrypt_message( std::string& s,
+    const public_key& pub, const std::string& base64, const char* p_id = 0 ) const;
 
-   std::string encrypt_message( const public_key& pub,
+   inline std::string decrypt_message(
+    const public_key& pub, const std::string& base64, const char* p_id = 0 ) const
+   {
+      std::string s;
+      decrypt_message( s, pub, base64, p_id );
+
+      return s;
+   }
+
+   void encrypt_message( std::string& s, const public_key& pub,
     const std::string& message, const char* p_id = 0, bool add_salt = false ) const;
+
+   inline std::string encrypt_message( const public_key& pub,
+    const std::string& message, const char* p_id = 0, bool add_salt = false ) const
+   {
+      std::string s;
+      encrypt_message( s, pub, message, p_id, add_salt );
+
+      return s;
+   }
 
    std::string construct_shared( const public_key& pub ) const;
 

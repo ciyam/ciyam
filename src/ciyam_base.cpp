@@ -4701,9 +4701,9 @@ void verify_active_external_service( const string& ext_key )
        make_pair( c_str_parm_external_service_unavailable_symbol, ext_key ) ) );
 }
 
-string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
+void decrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
-   string key, retval;
+   string key;
 
    key.reserve( c_key_reserve_size );
 
@@ -4717,16 +4717,14 @@ string decrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_on
          key += string( c_salt_value );
    }
 
-   retval = data_decrypt( data, key, !no_ssl );
+   data_decrypt( s, data, key, !no_ssl );
 
    clear_key( key );
-
-   return retval;
 }
 
-string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_only )
+void encrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, bool hash_only )
 {
-   string key, retval;
+   string key;
 
    key.reserve( c_key_reserve_size );
 
@@ -4739,11 +4737,9 @@ string encrypt_data( const string& data, bool no_ssl, bool no_salt, bool hash_on
          key += string( c_salt_value );
    }
 
-   retval = data_encrypt( data, key, !no_ssl, !no_salt );
+   data_encrypt( s, data, key, !no_ssl, !no_salt );
 
    clear_key( key );
-
-   return retval;
 }
 
 string totp_secret_key( const string& unique )
@@ -7964,14 +7960,14 @@ bool uid_matches_session_mint_account( )
       return false;
 }
 
-string session_shared_decrypt( const string& pubkey, const string& message )
+void session_shared_decrypt( string& data, const string& pubkey, const string& message )
 {
    if( pubkey.empty( ) )
-      return message;
+      return;
 
 #ifdef SSL_SUPPORT
    public_key pub_key( pubkey );
-   return gtp_session->priv_key.decrypt_message( pub_key, message );
+   gtp_session->priv_key.decrypt_message( data, pub_key, message );
 #else
    throw runtime_error( "session_shared_decrypt requires SSL support" );
 #endif

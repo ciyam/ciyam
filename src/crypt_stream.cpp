@@ -120,10 +120,11 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 }
 
 #ifdef SSL_SUPPORT
-string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
+void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
 {
-   string output( s.length( ) + AES_BLOCK_SIZE, '\0' );
-   unsigned char* p_output = ( unsigned char* )output.data( );
+   o.resize( s.length( ) + AES_BLOCK_SIZE );
+
+   unsigned char* p_output = ( unsigned char* )o.data( );
 
    unsigned char* p_ckey;
    unsigned char* p_ivec;
@@ -194,9 +195,9 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
 
    EVP_CIPHER_CTX_cleanup( &ctx );
 
-   output.resize( output_offset + tlen );
+   memset( buffer, '\0', sizeof( buffer ) );
 
-   return output;
+   o.resize( output_offset + tlen );
 }
 #endif
 
@@ -218,18 +219,18 @@ string get_totp( const string& base32_encoded_secret, int freq )
    hmac_sha1( secret, message, hash );
 
    int offset = hash[ 19 ] & 0xf;
-   unsigned int truncatedHash = 0;
+   unsigned int truncated_hash = 0;
 
    for( int i = 0; i < 4; ++i )
    {
-      truncatedHash <<= 8;
-      truncatedHash |= hash[ offset + i ];
+      truncated_hash <<= 8;
+      truncated_hash |= hash[ offset + i ];
    }
 
-   truncatedHash &= 0x7fffffff;
-   truncatedHash %= 1000000;
+   truncated_hash &= 0x7fffffff;
+   truncated_hash %= 1000000;
 
-   totp = to_string( truncatedHash );
+   totp = to_string( truncated_hash );
    while( totp.length( ) < 6 )
       totp = '0' + totp;
 
@@ -241,11 +242,10 @@ string get_totp_secret( const string& user_unique, const string& system_unique )
    return base32::encode( sha256( user_unique + system_unique ).get_digest_as_string( ).substr( 0, 20 ) );
 }
 
-string data_decrypt( const string& dat, const string& key, bool use_ssl )
+void data_decrypt( string& s, const string& dat, const string& key, bool use_ssl )
 {
-   string s;
    if( dat.empty( ) )
-      return s;
+      return;
 
    string salt;
    string::size_type pos = dat.find( ':' );
@@ -291,20 +291,33 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
       use_MD5 = true;
 
    stringstream ss( base64::decode( dat.substr( pos ) ) );
+   ss.seekp( 0 );
 
 #ifndef SSL_SUPPORT
    use_ssl = false;
 #endif
 
-   string salted_key( key + salt );
+   string salted_key;
+   salted_key.reserve( c_sha256_digest_size + key.length( ) );
+
+   salted_key += key;
+   salted_key += salt;
 
    if( !salt.empty( ) )
    {
       sha256 hash;
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
-         hash.update( salted_key + key );
+         string tmp;
+         tmp.reserve( salted_key.length( ) + key.length( ) );
+
+         tmp += salted_key;
+         tmp += key;
+
+         hash.update( tmp );
          hash.get_digest_as_string( salted_key );
+
+         clear_key( tmp );
       }
    }
 
@@ -327,24 +340,26 @@ string data_decrypt( const string& dat, const string& key, bool use_ssl )
    if( use_ssl )
    {
       if( use_MD5 )
-         s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
+         aes_crypt( s, ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
       else
-         s = aes_crypt( ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_decrypt, use_256 );
+         aes_crypt( s, ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_decrypt, use_256 );
    }
 #endif
 
-   // NOTE: Overwrite each byte of the copied key to protect from potential swap file discovery.
-   for( size_t i = 0; i < salted_key.length( ); i++ )
-      salted_key[ i ] = '\0';
+   clear_key( salted_key );
 
-   return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
+   // NOTE: Remove any trailing padding from encryption.
+   pos = s.find( '\0' );
+   if( pos != string::npos )
+      s.resize( pos );
 }
 
-string data_encrypt( const string& dat, const string& key, bool use_ssl, bool add_salt )
+void data_encrypt( string& s, const string& dat, const string& key, bool use_ssl, bool add_salt )
 {
-   string s( dat );
+   s = dat;
+
    if( dat.empty( ) )
-      return s;
+      return;
 
 #ifndef SSL_SUPPORT
    use_ssl = false;
@@ -364,6 +379,8 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
       }
    }
 
+   size_t len = s.length( );
+
    stringstream ss( s );
    ss.seekp( 0 );
 
@@ -371,15 +388,27 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
    if( add_salt )
       salt += uuid( ).as_string( ) + ':';
 
-   string salted_key( key + salt );
+   string salted_key;
+   salted_key.reserve( c_sha256_digest_size + key.length( ) );
+
+   salted_key += key;
+   salted_key += salt;
 
    if( add_salt )
    {
       sha256 hash;
       for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
       {
-         hash.update( salted_key + key );
+         string tmp;
+         tmp.reserve( salted_key.length( ) + key.length( ) );
+
+         tmp += salted_key;
+         tmp += key;
+
+         hash.update( tmp );
          hash.get_digest_as_string( salted_key );
+
+         clear_key( tmp );
       }
    }
 
@@ -392,30 +421,36 @@ string data_encrypt( const string& dat, const string& key, bool use_ssl, bool ad
 #ifdef SSL_SUPPORT
    if( use_ssl )
    {
-      s = '#' + salt + base64::encode(
-       aes_crypt( ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_encrypt ) );
+      string tmp( len, '\0' );
+
+      aes_crypt( tmp, ss.str( ), salted_key.c_str( ), salted_key.length( ), e_crypt_op_encrypt );
+
+      s = '#' + salt + base64::encode( tmp );
+      clear_key( tmp );
    }
 #endif
 
-   // NOTE: Overwrite each byte of the copied key to protect from potential swap file discovery.
-   for( size_t i = 0; i < salted_key.length( ); i++ )
-      salted_key[ i ] = '\0';
+   ss.seekp( 0 );
+   ss << string( len, '\0' );
 
-   return s;
+   clear_key( salted_key );
 }
 
-string harden_key_with_salt( const string& key, const string& salt )
+void harden_key_with_salt( string& s, const string& key, const string& salt )
 {
    sha256 hash;
-   string salted_key( key + salt );
+
+   s.reserve( c_sha256_digest_size + key.length( ) );
+   s.resize( 0 );
+
+   s += key;
+   s += salt;
 
    for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
    {
-      hash.update( salted_key + key );
-      hash.get_digest_as_string( salted_key );
+      hash.update( s + key );
+      hash.get_digest_as_string( s );
    }
-
-   return salted_key;
 }
 
 string check_for_proof_of_work(

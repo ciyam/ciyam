@@ -221,11 +221,29 @@ void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, exte
 
 void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
 
-std::string CIYAM_BASE_DECL_SPEC decrypt_data(
+void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s,
  const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
-std::string CIYAM_BASE_DECL_SPEC encrypt_data(
+inline std::string CIYAM_BASE_DECL_SPEC decrypt_data(
+ const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false )
+{
+   std::string s;
+   decrypt_data( s, data, no_ssl, no_salt, hash_only );
+
+   return s;
+}
+
+void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s,
  const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
+
+inline std::string CIYAM_BASE_DECL_SPEC encrypt_data(
+ const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false )
+{
+   std::string s;
+   encrypt_data( s, data, no_ssl, no_salt, hash_only );
+
+   return s;
+}
 
 std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
 
@@ -498,7 +516,8 @@ void CIYAM_BASE_DECL_SPEC set_session_secret( const std::string& secret );
 void CIYAM_BASE_DECL_SPEC set_session_mint_account( const std::string& account );
 bool CIYAM_BASE_DECL_SPEC uid_matches_session_mint_account( );
 
-std::string CIYAM_BASE_DECL_SPEC session_shared_decrypt( const std::string& pubkey, const std::string& message );
+void CIYAM_BASE_DECL_SPEC session_shared_decrypt(
+ std::string& data, const std::string& pubkey, const std::string& message );
 
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 

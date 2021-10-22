@@ -705,12 +705,11 @@ string private_key::get_wif_secret( bool compressed, bool use_override, address_
    return base58_encode( buf, compressed ? c_num_secret_bytes + 6 : c_num_secret_bytes + 5 );
 }
 
-string private_key::decrypt_message( const public_key& pub, const string& base64, const char* p_id ) const
+void private_key::decrypt_message( string& s,
+ const public_key& pub, const string& base64, const char* p_id ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_shared_secret( buf, pub.p_impl->p_key );
-
-   string decoded( base64::decode( base64 ) );
 
    if( p_id )
    {
@@ -723,10 +722,10 @@ string private_key::decrypt_message( const public_key& pub, const string& base64
          buf[ i ] ^= buf2[ i ];
    }
 
-   return data_decrypt( base64, hex_encode( buf, c_num_secret_bytes ), true );
+   data_decrypt( s, base64, hex_encode( buf, c_num_secret_bytes ), true );
 }
 
-string private_key::encrypt_message(
+void private_key::encrypt_message( string& s,
  const public_key& pub, const string& message, const char* p_id, bool add_salt ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
@@ -743,7 +742,7 @@ string private_key::encrypt_message(
          buf[ i ] ^= buf2[ i ];
    }
 
-   return data_encrypt( message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
+   data_encrypt( s, message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
 }
 
 string private_key::construct_shared( const public_key& pub ) const

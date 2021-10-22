@@ -84,6 +84,9 @@ const size_t c_request_timeout = 500;
 
 const int c_pdf_default_limit = 10000;
 
+const size_t c_secret_reserve_size = 256;
+const size_t c_response_reserve_size = 1024;
+
 const size_t c_max_key_append_chars = 7;
 
 const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
@@ -1401,6 +1404,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    cout << "processing command: " << command << endl;
 #endif
    string response;
+
+   response.reserve( c_response_reserve_size );
+
    bool send_okay_response = true;
    bool possibly_expected_error = false;
 
@@ -1464,10 +1470,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_identity_encrypted ) );
 
          if( !info.empty( ) && !pubkey.empty( ) )
-            info = session_shared_decrypt( pubkey, info );
+         {
+            info.resize( c_secret_reserve_size );
+            session_shared_decrypt( info, pubkey, info );
+         }
 
          if( !info.empty( ) )
             set_identity( info, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
+
+         clear_key( info );
 
          response = get_identity( true, true );
       }
@@ -1818,7 +1829,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_password ) );
 
          if( !pubkey.empty( ) )
-            password = session_shared_decrypt( pubkey, password );
+         {
+            password.resize( c_secret_reserve_size );
+            session_shared_decrypt( password, pubkey, password );
+         }
 
          try
          {
@@ -1829,9 +1843,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
          catch( ... )
          {
+            clear_key( password );
             possibly_expected_error = true;
             throw;
          }
+
+         clear_key( password );
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );
@@ -1992,12 +2009,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_mint_password ) );
 
          if( !pubkey.empty( ) )
-            password = session_shared_decrypt( pubkey, password );
+         {
+            password.resize( c_secret_reserve_size );
+            session_shared_decrypt( password, pubkey, password );
+         }
 
          response = use_peer_account( blockchain, password, stop );
 
          if( !password.empty( ) )
             set_session_mint_account( stop ? string( ) : response );
+
+         clear_key( password );
       }
       else if( command == c_cmd_ciyam_session_peer_persist_file )
       {
@@ -2007,7 +2029,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_password ) );
 
          if( !pubkey.empty( ) )
-            password = session_shared_decrypt( pubkey, password );
+         {
+            password.resize( c_secret_reserve_size );
+            session_shared_decrypt( password, pubkey, password );
+         }
 
          string src_hash( tag_or_hash );
 
@@ -2018,6 +2043,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             decrypt_pulled_peer_file( dest_hash, src_hash, password );
          else
             response = create_peer_repository_entry_push_info( src_hash, password );
+
+         clear_key( password );
       }
       else if( command == c_cmd_ciyam_session_peer_transactions )
       {
@@ -5633,7 +5660,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_no_salt ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_decrypt_data ) );
 
-         response = decrypt_data( data, no_ssl, no_salt );
+         decrypt_data( response, data, no_ssl, no_salt );
+
+         clear_key( data );
       }
       else if( command == c_cmd_ciyam_session_encrypt )
       {
@@ -5643,9 +5672,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_pubkey ) );
 
          if( !data.empty( ) && !pubkey.empty( ) )
-            data = session_shared_decrypt( pubkey, data );
+         {
+            data.resize( c_secret_reserve_size );
+            session_shared_decrypt( data, pubkey, data );
+         }
 
-         response = encrypt_data( data, no_ssl, no_salt );
+         encrypt_data( response, data, no_ssl, no_salt );
 
          clear_key( data );
       }

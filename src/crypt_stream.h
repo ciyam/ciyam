@@ -29,20 +29,54 @@ enum crypt_op
    e_crypt_op_decrypt
 };
 
-std::string aes_crypt( const std::string& s,
+void aes_crypt( std::string& o, const std::string& s,
  const char* p_key, size_t key_length, crypt_op op, bool use_256 = true );
+
+inline std::string aes_crypt( const std::string& s,
+ const char* p_key, size_t key_length, crypt_op op, bool use_256 = true )
+{
+   std::string o;
+   aes_crypt( o, s, p_key, key_length, op, use_256 );
+
+   return o;
+}
 #  endif
 
 std::string get_totp( const std::string& base32_encoded_secret, int freq = 30 );
 
 std::string get_totp_secret( const std::string& user_unique, const std::string& system_unique );
 
-std::string data_decrypt( const std::string& dat, const std::string& key, bool use_ssl = true );
+void data_decrypt( std::string& s, const std::string& dat, const std::string& key, bool use_ssl = true );
 
-std::string data_encrypt( const std::string& dat,
+inline std::string data_decrypt( const std::string& dat, const std::string& key, bool use_ssl = true )
+{
+   std::string s;
+   data_decrypt( s, dat, key, use_ssl );
+
+   return s;
+}
+
+void data_encrypt( std::string& s, const std::string& dat,
  const std::string& key, bool use_ssl = true, bool add_salt = true );
 
-std::string harden_key_with_salt( const std::string& key, const std::string& salt );
+inline std::string data_encrypt( const std::string& dat,
+ const std::string& key, bool use_ssl = true, bool add_salt = true )
+{
+   std::string s;
+   data_encrypt( s, dat, key, use_ssl, add_salt );
+
+   return s;
+}
+
+void harden_key_with_salt( std::string& s, const std::string& key, const std::string& salt );
+
+inline std::string harden_key_with_salt( const std::string& key, const std::string& salt )
+{
+   std::string s;
+   harden_key_with_salt( s, key, salt );
+
+   return s;
+}
 
 enum nonce_difficulty
 {
