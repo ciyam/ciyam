@@ -1407,6 +1407,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    response.reserve( c_response_reserve_size );
 
+   bool clear_response = false;
    bool send_okay_response = true;
    bool possibly_expected_error = false;
 
@@ -1825,8 +1826,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_tag_or_hash ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_pubkey ) );
          string password( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_password ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_pubkey ) );
 
          if( !pubkey.empty( ) )
          {
@@ -5663,6 +5664,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          decrypt_data( response, data, no_ssl, no_salt );
 
          clear_key( data );
+         clear_response = true;
       }
       else if( command == c_cmd_ciyam_session_encrypt )
       {
@@ -5927,6 +5929,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    if( !socket_handler.is_restoring( ) )
       handler.issue_command_reponse( response, !send_okay_response );
+
+   if( clear_response )
+      clear_key( response );
 }
 
 class socket_command_processor : public command_processor

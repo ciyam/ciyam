@@ -1,0 +1,16 @@
+@ifeq "$1" ""
+#Usage: tree_crypt.cin <tag_or_hash> [<password>]
+@else
+@ifneq "$2" ""
+ARGS=$2
+@else
+.session_variable @pubkey
+EXT_PUBKEY=$OUTPUT
+DATA_AND_PUBKEY=@password:Enter Password:$EXT_PUBKEY
+ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
+@endif
+;
+@ifdef $ARGS
+ .file_crypt -recurse $1 $~ARGS
+@endif
+@endif

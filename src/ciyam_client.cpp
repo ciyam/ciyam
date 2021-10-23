@@ -1046,7 +1046,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         progress.output_progress( "" );
                   }
 
-                  if( is_message && !get_is_quiet_command( ) )
+                  if( is_message )
                   {
                      had_message = true;
 
