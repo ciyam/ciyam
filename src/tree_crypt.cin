@@ -11,6 +11,6 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 @endif
 ;
 @ifdef $ARGS
- .file_crypt -recurse $1 $~ARGS
+ .file_crypt -recurse -blobs_only $1 $~ARGS
 @endif
 @endif

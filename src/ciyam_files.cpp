@@ -2259,8 +2259,8 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void crypt_file( const string& tag_or_hash,
- const string& password, bool recurse, progress* p_progress, date_time* p_dtm, size_t* p_total )
+void crypt_file( const string& tag_or_hash, const string& password,
+ bool recurse, bool blobs_only, progress* p_progress, date_time* p_dtm, size_t* p_total )
 {
    string hash( tag_or_hash );
 
@@ -2330,18 +2330,21 @@ void crypt_file( const string& tag_or_hash,
       }
 #endif
 
-      stringstream ss( file_data.substr( 1 ) );
+      if( !blobs_only || ( file_type == c_file_type_val_blob ) )
+      {
+         stringstream ss( file_data.substr( 1 ) );
 
-      // NOTE: Use the file content hash as salt.
-      crypt_stream( ss, password + hash );
+         // NOTE: Use the file content hash as salt.
+         crypt_stream( ss, password + hash );
 
-      string new_file_data( file_data.substr( 0, 1 ) );
+         string new_file_data( file_data.substr( 0, 1 ) );
 
-      new_file_data += ss.str( );
+         new_file_data += ss.str( );
 
-      new_file_data[ 0 ] |= c_file_type_val_encrypted;
+         new_file_data[ 0 ] |= c_file_type_val_encrypted;
 
-      write_file( file_name, new_file_data );
+         write_file( file_name, new_file_data );
+      }
 
       if( recurse && file_type == c_file_type_val_list )
       {
@@ -2357,7 +2360,7 @@ void crypt_file( const string& tag_or_hash,
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password, recurse, p_progress, p_dtm, p_total );
+               crypt_file( next.substr( 0, pos ), password, recurse, blobs_only, p_progress, p_dtm, p_total );
             }
          }
       }
@@ -2418,7 +2421,7 @@ void crypt_file( const string& tag_or_hash,
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password, recurse, p_progress, p_dtm, p_total );
+               crypt_file( next.substr( 0, pos ), password, recurse, blobs_only, p_progress, p_dtm, p_total );
             }
          }
       }
