@@ -48,6 +48,7 @@ const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_set = "@set";
 const char* const c_special_variable_tag = "@tag";
 const char* const c_special_variable_uid = "@uid";
+const char* const c_special_variable_sid = "@sid";
 const char* const c_special_variable_arg1 = "@arg1";
 const char* const c_special_variable_arg2 = "@arg2";
 const char* const c_special_variable_cube = "@cube";
@@ -200,6 +201,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_uid:
       s = string( c_special_variable_uid );
+      break;
+
+      case e_special_var_sid:
+      s = string( c_special_variable_sid );
       break;
 
       case e_special_var_arg1:

@@ -3497,7 +3497,19 @@ void sid_hash( string& s )
 {
    guard g( g_mutex );
 
-   sha256 hash1( string( c_salt_value ) + get_sid( ) );
+   string tmp;
+   tmp.reserve( c_key_reserve_size );
+
+   size_t salt_len = strlen( c_salt_value );
+
+   tmp.resize( salt_len );
+   memcpy( &tmp[ 0 ], c_salt_value, salt_len );
+
+   tmp += get_sid( );
+
+   sha256 hash1( tmp );
+
+   clear_key( tmp );
 
    // NOTE: Fix the initial size so that no temporary string is used.
    s.resize( c_sha256_digest_size * 2 );
@@ -4334,11 +4346,13 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-string get_identity( bool prepend_sid, bool append_max_user_limit )
+void get_identity( string& s, bool prepend_sid, bool append_max_user_limit )
 {
    guard g( g_mutex );
 
-   string s( g_reg_key );
+   s.reserve( c_key_reserve_size );
+
+   s = g_reg_key;
 
    if( prepend_sid || append_max_user_limit )
    {
@@ -4363,8 +4377,6 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
       if( append_max_user_limit )
          s += ":" + to_string( g_max_user_limit );
    }
-
-   return s;
 }
 
 void set_identity( const string& identity_info, const char* p_encrypted_sid )

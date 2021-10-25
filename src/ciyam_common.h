@@ -61,6 +61,7 @@ enum special_var
    e_special_var_set,
    e_special_var_tag,
    e_special_var_uid,
+   e_special_var_sid,
    e_special_var_arg1,
    e_special_var_arg2,
    e_special_var_cube,

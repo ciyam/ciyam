@@ -1481,7 +1481,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          clear_key( info );
 
-         response = get_identity( true, true );
+         get_identity( response, true, true );
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
@@ -1835,6 +1835,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             password.resize( c_secret_reserve_size );
             session_shared_decrypt( password, pubkey, password );
          }
+
+         if( password == get_special_var_name( e_special_var_sid ) )
+            get_identity( password, true );
 
          try
          {
