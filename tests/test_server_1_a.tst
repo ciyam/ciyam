@@ -38,6 +38,8 @@ PWD is: abc
 PWD now: ***
 abcXXX
 ***XXX
+Meta
+Meta
 abcdefghi
 abcdefgh
 abcdefg

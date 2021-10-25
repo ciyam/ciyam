@@ -48,25 +48,18 @@ OUTPUT (the result of the last successfully executed session command which can o
 
 An environment variable can be assigned to the content of an external file in the following manner:
 
-> TEST=@modules.lst.default
+> TEST=@file:modules.lst.default
 
 and the value of an environment variable can be displayed using the '#' command (the console "echo" command):
 
 > #Now TEST is $TEST
 Now TEST is Meta
 
-Note that if you really wanted to assign the value "@x" to TEST (rather than the content of the file "x") you
-would need to double the @ character as follows:
+Another feature of the "@file" environment variable assignment function is that if the first character of the
+file name is "~" then what follows will be executed as a system command whose output (both stdout and stderr)
+will be assigned to the variable.
 
-> TEST=@@x
-
-> #$TEST
-@x
-
-Another feature of this sort of environment variable assignment is that the prefix "@~" will execute a system
-command and assign the variable to the value of its output (both stdout and stderr output are included).
-
-> TEST=@~wc -l config.info.default
+> TEST=@file:~wc -l config.info.default
 
 > #$TEST
 10 config.info.default

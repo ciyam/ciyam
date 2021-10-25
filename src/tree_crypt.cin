@@ -2,9 +2,7 @@
 #Usage: tree_crypt.cin <tag_or_hash> [<password>]
 @else
 @ifneq "$2" ""
-;NOTE: Prefix and remove in case @ is the first character.
-ARGS=X$2
-ARGS=@substr:1:$ARGS
+ARGS=$2
 @else
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT

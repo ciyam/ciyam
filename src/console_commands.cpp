@@ -86,6 +86,7 @@ const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 
 const char* const c_unix_timestamp = "unix";
 
+const char* const c_function_file = "file";
 const char* const c_function_files = "files";
 const char* const c_function_lower = "lower";
 const char* const c_function_paths = "paths";
@@ -2566,22 +2567,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
             {
                str.erase( 0, 1 );
 
-               if( file_exists( str ) )
-                  str = buffer_file_lines( str );
-               else if( !str.empty( ) && str[ 0 ] == '~' )
-               {
-                  string tmp_name( "~" + uuid( ).as_string( ) );
-                  str += " 2>&1 >" + tmp_name;
-
-                  int rc = system( str.substr( 1 ).c_str( ) );
-
-                  ( void )rc;
-
-                  str = buffer_file_lines( tmp_name );
-
-                  file_remove( tmp_name );
-               }
-               else if( !str.empty( ) )
+               if( !str.empty( ) )
                {
                   pos = str.find_first_of( "+-*/:" );
 
@@ -2590,9 +2576,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                   string lhs;
 
-                  // NOTE: Avoid creating a temporary string.
-                  lhs.resize( pos );
-                  memcpy( &lhs[ 0 ], &str[ 0 ], pos );
+                  if( pos != string::npos )
+                  {
+                     // NOTE: Avoid creating a temporary string.
+                     lhs.resize( pos );
+                     memcpy( &lhs[ 0 ], &str[ 0 ], pos );
+                  }
 
                   if( lhs == string( c_unix_timestamp ) )
                      val = unix_timestamp( );
@@ -2622,7 +2611,32 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                         {
                            was_transform = true;
 
-                           if( lhs == c_function_files )
+                           if( lhs == c_function_file )
+                           {
+                              string rhs( str.substr( pos + 1 ) );
+
+                              if( !rhs.empty( ) && rhs[ 0 ] == '~' )
+                              {
+                                 string tmp_name( "~" + uuid( ).as_string( ) );
+                                 rhs += " 2>&1 >" + tmp_name;
+
+                                 int rc = system( rhs.substr( 1 ).c_str( ) );
+
+                                 ( void )rc;
+
+                                 str = buffer_file_lines( tmp_name );
+
+                                 file_remove( tmp_name );
+                              }
+                              else
+                              {
+                                 if( !file_exists( rhs ) )
+                                    throw runtime_error( "file '" + rhs + "' not found" );
+
+                                 str = buffer_file_lines( rhs );
+                              }
+                           }
+                           else if( lhs == c_function_files )
                            {
                               string rhs( str.substr( pos + 1 ) );
 
