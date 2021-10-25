@@ -215,7 +215,8 @@ File Encryption
 Any file can be encrypted with a password using the "file_crypt" command. It should be noted that once a file
 has been encrypted no information other than its original content hash and size will be returned with the use
 of "file_info". If the file is a "list" and the "-recurse" option is used then all of the list items are also
-encrypted (and child lists will cascade resulting in the entire tree of files being encrypted).
+encrypted (and child lists will cascade resulting in the entire tree of files being encrypted). If wanting to
+only encrypt the blobs (i.e. leaf nodes) then use additional optional '-blobs_only' argument.
 
 > file_crypt tst.jpg password
 
@@ -353,7 +354,7 @@ file_put mnenomics.txt
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
-ts.2018123018404998700000000
+ts.20181230184049987000
 
 As the tag is based upon the current time when multiple such tags are found they will be output in order from
 oldest to most recently added. This is then used to determine which files to automatically archive (or simply
