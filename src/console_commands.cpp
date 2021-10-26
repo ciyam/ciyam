@@ -2563,6 +2563,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          //
          if( !assign_env_var_name.empty( ) )
          {
+            bool not_replaced = false;
+
             if( !str.empty( ) && str[ 0 ] == '@' )
             {
                str.erase( 0, 1 );
@@ -2921,7 +2923,15 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                   }
                   else if( val )
                      str = to_string( val );
+                  else
+                     not_replaced = true;
                }
+               else
+                  not_replaced = true;
+
+               // NOTE: If was not a known function or numeric op then put back the '@' prefix.
+               if( not_replaced )
+                  str.insert( str.begin( ), '@' );
             }
             else if( !str.empty( ) && str[ 0 ] == '*' )
             {

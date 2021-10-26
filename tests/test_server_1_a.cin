@@ -40,6 +40,8 @@ PWD=abc
 PWD=abc
 #%~PWD%XXX
 #%PWD%XXX
+TEST=@abc
+#$TEST
 TEST=@file:modules.lst.default
 #$TEST
 TEST=@file:~cat modules.lst.default

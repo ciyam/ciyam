@@ -38,6 +38,7 @@ PWD is: abc
 PWD now: ***
 abcXXX
 ***XXX
+@abc
 Meta
 Meta
 abcdefghi
