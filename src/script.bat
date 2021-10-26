@@ -10,13 +10,13 @@ set do_not_log=
 set log_on_error=
 
 if not '%1' == '-do_not_log' goto next1
-set do_not_log=1
 shift
+set do_not_log=1
 
 :next1
 if not '%1' == '-log_on_error' goto next2
-set log_on_error=1
 shift
+set log_on_error=1
 
 :next2
 if '%1' == '' goto usage
@@ -25,7 +25,7 @@ if '%2' == '' goto skip
 echo %date% %time% [%2]>>%1.log
 
 :skip
-ciyam_client -echo -quiet -no_prompt -no_stderr -args_file=%1 < %1 >>%1.log
+ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress -args_file=%1 < %1 >>%1.log
 
 if '%do_not_log%' == '1' goto skip3
 
@@ -44,4 +44,3 @@ exit
 :usage
 echo Usage: script [[-do_not_log^|-log_on_error]] [script and args file] [[script name]]
 endlocal
-

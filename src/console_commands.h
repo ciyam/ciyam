@@ -33,6 +33,7 @@ class console_command_handler : public command_handler
    bool has_option_quiet( ) const;
 
    bool has_option_no_prompt( ) const;
+   bool has_option_no_progress( ) const;
 
    bool is_redirected_output( ) const;
 

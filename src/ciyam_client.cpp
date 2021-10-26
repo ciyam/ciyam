@@ -470,7 +470,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   else
                      buffer_file( chunk_data, file_name, chunk_size, 0, ( chunk * chunk_size ) );
 
-                  if( is_stdout_console( ) || !has_option_no_prompt( ) )
+                  if( !has_option_no_progress( ) )
                   {
                      date_time now( date_time::local( ) );
 
@@ -777,7 +777,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         file_append( filename, prefixed_append_name );
                      }
 
-                     if( is_stdout_console( ) || !has_option_no_prompt( ) )
+                     if( !has_option_no_progress( ) )
                      {
                         date_time now( date_time::local( ) );
 
@@ -1050,10 +1050,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = true;
 
-                     if( !is_stdout_console( ) )
-                        handle_progress_message( final_response );
-                     else
-                        progress.output_progress( final_response );
+                     if( !has_option_no_progress( ) )
+                     {
+                        if( !is_stdout_console( ) )
+                           handle_progress_message( final_response );
+                        else
+                           progress.output_progress( final_response );
+                     }
                   }
                   else if( !is_message && ( is_error || !get_is_quiet_command( ) || is_redirected_output( ) ) )
                      handle_command_response( final_response, is_error );
@@ -1086,7 +1089,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = false;
 
-                     if( is_stdout_console( ) )
+                     if( is_stdout_console( ) && !has_option_no_progress( ) )
                         progress.output_progress( "" );
                   }
 #ifdef DEBUG

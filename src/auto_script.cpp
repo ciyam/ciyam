@@ -85,6 +85,7 @@ struct script_info
 
    mtime start_time;
    mtime finish_time;
+
    int cycle_seconds;
 
    udate start_date;
@@ -138,6 +139,7 @@ void read_script_info( )
          ifstream inpf( c_autoscript_file );
 
          sio_reader reader( inpf );
+
          while( reader.has_started_section( c_section_script ) )
          {
             script_info info;
@@ -166,10 +168,12 @@ void read_script_info( )
 
             info.start_date = udate::local( );
             string s( reader.read_opt_attribute( c_attribute_start ) );
+
             if( !s.empty( ) )
                info.start_date = udate( s );
 
             s = reader.read_opt_attribute( c_attribute_finish );
+
             if( !s.empty( ) )
                info.finish_date = udate( s );
 
@@ -302,6 +306,7 @@ bool scripts_file_has_changed( )
    bool changed = false;
 
    time_t t = 0;
+
    if( file_exists( c_autoscript_file ) )
       t = last_modification_time( c_autoscript_file );
 

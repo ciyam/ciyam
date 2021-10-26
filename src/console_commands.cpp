@@ -117,6 +117,7 @@ const char* const c_cmd_monitor = "monitor";
 const char* const c_cmd_no_pause = "no_pause";
 const char* const c_cmd_no_prompt = "no_prompt";
 const char* const c_cmd_no_stderr = "no_stderr";
+const char* const c_cmd_no_progress = "no_progress";
 
 command_definition startup_command_definitions[ ] =
 {
@@ -125,7 +126,8 @@ command_definition startup_command_definitions[ ] =
    { c_cmd_monitor, "", "switch on progress monitoring" },
    { c_cmd_no_pause, "", "switch off support for pausing" },
    { c_cmd_no_prompt, "", "switch off console command prompt" },
-   { c_cmd_no_stderr, "", "switch off outputting errors to stderr" }
+   { c_cmd_no_stderr, "", "switch off outputting errors to stderr" },
+   { c_cmd_no_progress, "", "switch off outputting progress messages" }
 };
 
 const char* const c_command_prompt = "\n> ";
@@ -317,6 +319,8 @@ void startup_command_functor::operator ( )( const string& command, const paramet
       handler.add_option( c_cmd_no_prompt );
    else if( command == c_cmd_no_stderr )
       handler.add_option( c_cmd_no_stderr );
+   else if( command == c_cmd_no_progress )
+      handler.add_option( c_cmd_no_progress );
 }
 
 command_functor* startup_command_functor_factory( const string& /*name*/, command_handler& handler )
@@ -2299,6 +2303,11 @@ bool console_command_handler::has_option_quiet( ) const
 bool console_command_handler::has_option_no_prompt( ) const
 {
    return has_option( c_cmd_no_prompt );
+}
+
+bool console_command_handler::has_option_no_progress( ) const
+{
+   return has_option( c_cmd_no_progress );
 }
 
 bool console_command_handler::is_redirected_output( ) const
