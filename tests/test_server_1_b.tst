@@ -238,7 +238,6 @@ test1 [okay      ] (6.5 kB/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
 file_archive -remove test1
-(removing file archive)
 file_archives
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
@@ -251,7 +250,6 @@ test1 [okay      ] (0 B/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
 file_archive -repair test1
-(repairing file archive)
 file_archives
 test1 [okay      ] (6.5 kB/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2
@@ -314,11 +312,8 @@ file_stats
 [3/100000]12.0 kB/100.0 GB:3 tag(s)
 file_kill -p=ts*
 file_archive -destroy test1
-(destroying file archive)
 file_archive -destroy test2
-(destroying file archive)
 file_archive -destroy test3
-(destroying file archive)
 file_archives
 ~rmdir test1
 ~rmdir test2

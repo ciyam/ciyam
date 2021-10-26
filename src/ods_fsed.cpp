@@ -273,7 +273,9 @@ void ods_fsed_command_handler::init( )
          throw runtime_error( "ODS DB is corrupt - re-start using exclusive write access in order to repair" );
 
       console_progress progress;
-      ap_ods->reconstruct_database( &progress );
+      console_progress* p_progress = has_option_no_progress( ) ? 0 : &progress;
+
+      ap_ods->reconstruct_database( p_progress );
    }
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
@@ -318,6 +320,8 @@ class ods_fsed_command_functor : public command_functor
 
 void ods_fsed_command_functor::operator ( )( const string& command, const parameter_info& parameters )
 {
+   console_command_handler& console_handler( dynamic_cast< console_command_handler& >( handler ) );
+
    if( command == c_cmd_ods_fsed_cd )
    {
       string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
@@ -405,8 +409,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_add_file_name ) );
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-      ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
+      ap_ofs->add_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, p_progress );
    }
    else if( command == c_cmd_ods_fsed_file_get )
    {
@@ -419,8 +424,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       if( !name.empty( ) )
       {
          console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout, &progress );
+         ap_ofs->get_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cout, p_progress );
 
          if( !original_folder.empty( ) )
             ap_ofs->set_folder( original_folder );
@@ -445,8 +451,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string name( get_parm_val( parameters, c_cmd_ods_fsed_file_remove_name ) );
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-      ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ), &progress );
+      ap_ofs->remove_file( name, ods_fsed_handler.get_std_out( ), p_progress );
    }
    else if( command == c_cmd_ods_fsed_file_replace )
    {
@@ -455,8 +462,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string file_name( get_parm_val( parameters, c_cmd_ods_fsed_file_replace_file_name ) );
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-      ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, &progress );
+      ap_ofs->replace_file( name, file_name, ods_fsed_handler.get_std_out( ), use_cin ? &cin : 0, p_progress );
    }
    else if( command == c_cmd_ods_fsed_folder_add )
    {
@@ -523,8 +531,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       else
       {
          console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ods->rewind_transactions( label_or_txid, &progress );
+         ap_ods->rewind_transactions( label_or_txid, p_progress );
 
          // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
          ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
@@ -547,8 +556,9 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       else
       {
          console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ods->move_free_data_to_end( &progress );
+         ap_ods->move_free_data_to_end( p_progress );
       }
    }
    else if( command == c_cmd_ods_fsed_truncate )

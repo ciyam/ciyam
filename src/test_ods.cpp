@@ -472,6 +472,8 @@ class test_ods_command_functor : public command_functor
 
 void test_ods_command_functor::operator ( )( const string& command, const parameter_info& parameters )
 {
+   console_command_handler& console_handler( dynamic_cast< console_command_handler& >( handler ) );
+
    string::size_type pos;
    outline temp_node;
 
@@ -641,6 +643,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          }
 
          console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
          date_time dtm( date_time::local( ) );
 
          for( int i = 0; i < num; i++ )
@@ -661,10 +665,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             date_time now( date_time::local( ) );
             uint64_t elapsed = seconds_between( dtm, now );
 
-            if( elapsed >= 1 )
+            if( p_progress && elapsed >= 1 )
             {
                dtm = now;
-               progress.output_progress( "Adding items...", i, num );
+               p_progress->output_progress( "Adding items...", i, num );
             }
          }
 
@@ -676,9 +680,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
       bool found = false;
-      ods::bulk_write bulk( o, &progress );
+      ods::bulk_write bulk( o, p_progress );
       o >> node;
 
       int num = 1;
@@ -734,10 +739,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                   date_time now( date_time::local( ) );
                   uint64_t elapsed = seconds_between( dtm, now );
 
-                  if( elapsed >= 1 )
+                  if( p_progress && elapsed >= 1 )
                   {
                      dtm = now;
-                     progress.output_progress( "Deleting child items...", num_deleted, num );
+                     p_progress->output_progress( "Deleting child items...", num_deleted, num );
                   }
                }
                else if( num_deleted )
@@ -806,8 +811,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       string file_name( get_parm_val( parameters, c_cmd_test_ods_import_file_name ) );
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-      ods::bulk_write bulk( o, &progress );
+      ods::bulk_write bulk( o, p_progress );
       o >> node;
 
       auto_ptr< ods::transaction > ap_ods_tx;
@@ -830,7 +836,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       o << temp_node;
 
       scoped_ods_instance so( o );
-      temp_node.get_file( new storable_file_extra( file_name, 0, &progress ) ).store( );
+      temp_node.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
 
       o << temp_node;
 
@@ -849,6 +855,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          output_name = file_name;
 
       console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
       ods::bulk_read bulk( o );
 
@@ -872,7 +879,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             {
                scoped_ods_instance so( o );
 
-               *temp_node.get_file( new storable_file_extra( output_name, 0, &progress ) );
+               *temp_node.get_file( new storable_file_extra( output_name, 0, p_progress ) );
 
                handler.issue_command_reponse( "saved " + output_name
                 + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
@@ -951,8 +958,9 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       else
       {
          console_progress progress;
+         console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         o.move_free_data_to_end( &progress );
+         o.move_free_data_to_end( p_progress );
       }
    }
    else if( command == c_cmd_test_ods_truncate )
