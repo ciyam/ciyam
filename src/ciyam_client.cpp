@@ -74,6 +74,7 @@ const char* const c_cmd_rpc_unlock_password = "password";
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
+const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
@@ -434,6 +435,20 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   dtm = date_time::local( );
                   had_chunk_progress = false;
+
+                  if( put_file_error.empty( ) && !has_option_no_progress( ) )
+                  {
+                     string file_name( get_environment_variable( c_env_var_file_name ) );
+
+                     if( !file_name.empty( ) )
+                     {
+                        cout << file_name;
+                        cout.flush( );
+
+                        had_chunk_progress = true;
+                        progress.output_prefix = file_name;
+                     }
+                  }
                }
 
                if( !put_file_error.empty( ) )
@@ -479,7 +494,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      if( elapsed >= 1 )
                      {
                         if( is_stdout_console( ) )
-                           progress.output_progress( "Transferring file data...", chunk, total_chunks );
+                           progress.output_progress( " ", chunk, total_chunks );
                         else
                         {
                            cout << '.';
@@ -617,6 +632,20 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                            dtm = date_time::local( );
                            had_chunk_progress = false;
+
+                           if( !has_option_no_progress( ) )
+                           {
+                              string file_name( get_environment_variable( c_env_var_file_name ) );
+
+                              if( !file_name.empty( ) )
+                              {
+                                 cout << file_name;
+                                 cout.flush( );
+
+                                 had_chunk_progress = true;
+                                 progress.output_prefix = file_name;
+                              }
+                           }
                         }
 
                         if( !append_filename.empty( )
@@ -786,7 +815,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         if( elapsed >= 1 )
                         {
                            if( is_stdout_console( ) )
-                              progress.output_progress( "Transferring file data...", chunk, total_chunks );
+                              progress.output_progress( " ", chunk, total_chunks );
                            else
                            {
                               cout << '.';

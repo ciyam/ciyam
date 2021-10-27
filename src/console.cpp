@@ -329,15 +329,20 @@ void console_progress::output_progress( const string& message, unsigned long num
 {
    int new_length = 0;
 
-   if( message.length( ) != 1 )
+   bool is_space = false;
+
+   if( message == string( " " ) )
+      is_space = true;
+
+   if( is_space || message.length( ) != 1 )
       new_length = message.length( );
    else
       new_length = output_length + 1;
 
-   if( message.length( ) != 1 )
+   if( is_space || message.length( ) != 1 )
       cout << '\r';
 
-   cout << message;
+   cout << output_prefix << message;
 
    string mask;
 
@@ -397,11 +402,23 @@ void console_progress::output_progress( const string& message, unsigned long num
 
       new_length += formatted.length( );
 
+      if( is_space )
+      {
+         cout << '(';
+         ++new_length;
+      }
+
       cout << formatted;
 
       if( total )
       {
          cout << '%';
+         ++new_length;
+      }
+
+      if( is_space )
+      {
+         cout << ')';
          ++new_length;
       }
    }
@@ -410,11 +427,17 @@ void console_progress::output_progress( const string& message, unsigned long num
       cout << string( output_length - new_length, ' ' );
 
    if( !message.length( ) )
-      cout << '\r';
+   {
+      if( output_prefix.empty( ) )
+         cout << '\r';
+      else
+         cout << '\n';
+
+      output_prefix.erase( );
+   }
 
    cout.flush( );
 
    previous_num = num;
    output_length = new_length;
 }
-

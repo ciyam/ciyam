@@ -44,6 +44,7 @@ TAGP=$PREF$TAGP
 MAX_FILE_SIZE=1M
 @endif
 ;
+FILE_NAME=$PATH/$DIRS/$FILE
 .file_put $MAX_FILE_SIZE*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
 .file_list -a=?$TAGP.$FILE -d=$DIRS/$FILE -sort $TTAG:$TYPE:$TREE !$TTAG
 @ifndef $PREF

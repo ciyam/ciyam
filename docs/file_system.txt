@@ -209,6 +209,15 @@ following could instead be used (assuming the directory "tmp" exists below the c
 
 > file_get tst.jpg *tmp/
 
+When very large files are transferred (or a large number of file chunks are processed) a "progress indicator"
+(depending upon whether using a console and startup options) will appear. This indicator can be prefixed with
+the value of the environment variable FILE_NAME. The following is an example of how this can be utilised:
+
+> FILE_NAME=xxx
+
+> file_put 1K*Meta.so $FILE_NAME
+xxx (66%)
+
 File Encryption
 ---------------
 

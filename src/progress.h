@@ -38,6 +38,8 @@ struct console_progress : progress
    int decimals;
    int output_length;
 
+   std::string output_prefix;
+
    unsigned long previous_num;
 };
 
