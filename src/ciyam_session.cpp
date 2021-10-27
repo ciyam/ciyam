@@ -1264,6 +1264,8 @@ class socket_command_handler : public command_handler
             extra += '/' + to_string( total );
       }
 
+      set_session_progress_output( message + extra );
+
       socket.write_line( string( c_response_message_prefix ) + message + extra, c_request_timeout, p_progress );
    }
 
@@ -1428,6 +1430,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    clear_perms( );
 
+   set_session_progress_output( "" );
    increment_session_commands_executed( );
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
@@ -4454,7 +4457,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal ) );
 
-         list_sessions( osstr, !minimal );
+         list_sessions( osstr, !minimal, !minimal );
          output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_session_kill )

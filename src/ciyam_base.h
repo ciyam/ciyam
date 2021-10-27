@@ -270,7 +270,7 @@ bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr )
 
 std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );
 
-void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true );
+void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true, bool include_progress = true );
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
 
@@ -294,6 +294,9 @@ void CIYAM_BASE_DECL_SPEC increment_peer_files_downloaded( int64_t bytes );
 void CIYAM_BASE_DECL_SPEC increment_session_commands_executed( );
 
 void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
+
+void CIYAM_BASE_DECL_SPEC set_session_progress_output( const std::string& progress_output );
+
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd_and_hash( const std::string& cmd, const std::string& parameter_info );
 
 void CIYAM_BASE_DECL_SPEC condemn_session(

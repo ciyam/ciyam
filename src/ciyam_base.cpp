@@ -325,6 +325,7 @@ struct session
    set< string > perms;
 
    string tmp_directory;
+   string progress_output;
 
    size_t sql_count;
    size_t cache_count;
@@ -5215,7 +5216,7 @@ string get_random_same_port_peer_ip_addr( const string& empty_value )
    return retval;
 }
 
-void list_sessions( ostream& os, bool inc_dtms )
+void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
 {
    guard g( g_mutex );
 
@@ -5281,6 +5282,9 @@ void list_sessions( ostream& os, bool inc_dtms )
 
          if( g_sessions[ i ]->is_captured )
             os << '*';
+
+         if( include_progress )
+            os << ' ' << g_sessions[ i ]->progress_output;
 
          os << '\n';
       }
@@ -5373,6 +5377,14 @@ void set_slowest_if_applicable( )
       if( elapsed > prev_secs )
          set_session_variable( get_special_var_name( e_special_var_slowest ), to_string( elapsed ) );
    }
+}
+
+void set_session_progress_output( const string& progress_output )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      gtp_session->progress_output = progress_output;
 }
 
 void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_info )
