@@ -19,8 +19,8 @@ Finally the xrep tool is used again with a compiler specific makefile template (
 makefile.mvc.xrep for MVC) and the previously created makefile.vars.xrep to generate the makefile that can be
 actually passed to make (or nmake).
 
-Dependency handing with MVC
----------------------------
+Dependency handling with MVC
+----------------------------
 
 The make tool (nmake) that comes with MVC does not automatically handle header file dependencies so to handle
 them a couple of extra tools (geninc and gendeps) are used.
