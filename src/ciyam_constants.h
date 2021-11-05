@@ -153,6 +153,12 @@ const char* const c_file_type_core_block_detail_account_msg_key_prefix = "mk=";
 const char* const c_file_type_core_block_detail_account_tx_hash_prefix = "th=";
 const char* const c_file_type_core_block_detail_account_tx_lock_prefix = "tl=";
 
+const char* const c_file_type_core_lamport_header_height_prefix = "h=";
+const char* const c_file_type_core_lamport_header_identity_prefix = "i=";
+
+const char* const c_file_type_core_lamport_detail_primary_pubkey_prefix = "p:";
+const char* const c_file_type_core_lamport_detail_secondary_pubkey_prefix = "s:";
+
 const char* const c_file_type_core_transaction_header_account_prefix = "a=";
 const char* const c_file_type_core_transaction_header_sequence_prefix = "s=";
 const char* const c_file_type_core_transaction_header_public_key_prefix = "pk=";

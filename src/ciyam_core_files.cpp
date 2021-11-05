@@ -605,6 +605,9 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
 pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
 
+void verify_lamport( const string& content,
+ bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
+
 void verify_transaction( const string& content, bool check_sigs,
  vector< pair< string, string > >* p_extras, transaction_info* p_transaction_info = 0 );
 
@@ -787,7 +790,9 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    guard g( g_mutex, "verify_block" );
 
    vector< string > lines;
-   split( content, lines, '\n', c_esc, false );
+
+   if( !content.empty( ) )
+      split( content, lines, '\n', c_esc, false );
 
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty block content" );
@@ -2293,6 +2298,128 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    return make_pair( block_height, total_weight );
 }
 
+void verify_lamport( const string& content,
+ bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info )
+{
+   guard g( g_mutex, "verify_lamport" );
+
+   vector< string > lines;
+
+   if( !content.empty( ) )
+      split( content, lines, '\n', c_esc, false );
+
+   if( lines.empty( ) )
+      throw runtime_error( "unexpected empty lamport content" );
+
+   string identity;
+
+   uint64_t lamport_height = 0;
+
+   string header( lines[ 0 ] );
+   if( header.empty( ) )
+      throw runtime_error( "unexpected empty lamport header" );
+   else
+   {
+      vector< string > attributes;
+      split( header, attributes );
+
+      if( attributes.empty( ) )
+         throw runtime_error( "unexpected empty lamport header attributes" );
+
+      bool has_height = false;
+      bool has_identity = false;
+
+      for( size_t i = 0; i < attributes.size( ); i++ )
+      {
+         string next_attribute( attributes[ i ] );
+         if( next_attribute.empty( ) )
+            throw runtime_error( "unexpected empty attribute in lamport header '" + header + "'" );
+
+         if( !has_height )
+         {
+            if( next_attribute.find( c_file_type_core_lamport_header_height_prefix ) != 0 )
+               throw runtime_error( "unexpected missing height attribute in lamport header '" + header + "'" );
+
+            string value( next_attribute.substr(
+             string( c_file_type_core_lamport_header_height_prefix ).length( ) ) );
+
+            regex expr( c_regex_integer );
+
+            if( ( value.length( ) > 1 && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
+               throw runtime_error( "invalid height value '" + value + "'" );
+
+            has_height = true;
+
+            lamport_height = from_string< uint64_t >( value );
+         }
+         else if( !has_identity )
+         {
+            if( next_attribute.find( c_file_type_core_lamport_header_identity_prefix ) != 0 )
+               throw runtime_error( "unexpected missing identity attribute in lamport header '" + header + "'" );
+
+            has_identity = true;
+
+            identity = next_attribute.substr(
+             string( c_file_type_core_lamport_header_identity_prefix ).length( ) );
+         }
+         else
+            throw runtime_error( "unexpected extraneous attribute in lamport header '" + header + "'" );
+      }
+   }
+
+   bool has_primary_pubkey = false;
+   bool has_secondary_pubkey = false;
+
+   for( size_t i = 1; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      if( next_line.size( ) < 3 )
+         throw runtime_error( "unexpected line < 3 '" + next_line + "' in verify_lamport" );
+
+      if( next_line.length( ) > c_max_core_line_size )
+         throw runtime_error( "unexpected line length exceeds "
+          + to_string( c_max_core_line_size ) + " in '" + next_line + "' in verify_lamport" );
+
+      string next_attribute( next_line );
+
+      if( !lamport_height )
+      {
+         if( !has_primary_pubkey )
+         {
+            size_t len = string( c_file_type_core_lamport_detail_primary_pubkey_prefix ).length( );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_primary_pubkey_prefix ) )
+               throw runtime_error( "invalid genesis lamport primary pubkey attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            has_primary_pubkey = true;
+         }
+         else if( !has_secondary_pubkey )
+         {
+            size_t len = string( c_file_type_core_lamport_detail_secondary_pubkey_prefix ).length( );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_secondary_pubkey_prefix ) )
+               throw runtime_error( "invalid genesis lamport secondary pubkey attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            has_secondary_pubkey = true;
+         }
+      }
+   }
+
+   if( !lamport_height )
+   {
+      if( !has_primary_pubkey )
+         throw runtime_error( "unexpected missing genesis lamport primary pubkey attribute" );
+
+      if( !has_secondary_pubkey )
+         throw runtime_error( "unexpected missing genesis lamport secondary pubkey attribute" );
+   }
+}
+
 void verify_rewind( const string& content, vector< pair< string, string > >* p_extras )
 {
    guard g( g_mutex, "verify_rewind" );
@@ -3504,10 +3631,20 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
          if( pos == string::npos )
             throw runtime_error( "invalid content '" + content + "' for core file" );
 
+         bool is_lamport = false;
+
+         if( content.find( ":h=" ) == pos )
+            is_lamport = true;
+
          string type( content.substr( 1, pos - 1 ) );
 
          if( type == string( c_file_type_core_block_object ) )
-            verify_block( content.substr( pos + 1 ), check_sigs, p_extras );
+         {
+            if( !is_lamport )
+               verify_block( content.substr( pos + 1 ), check_sigs, p_extras );
+            else
+               verify_lamport( content.substr( pos + 1 ), check_sigs, p_extras );
+         }
          else if( type == string( c_file_type_core_rewind_object ) )
             verify_rewind( content.substr( pos + 1 ), p_extras );
          else if( type == string( c_file_type_core_transaction_object ) )

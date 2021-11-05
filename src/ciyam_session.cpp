@@ -1617,7 +1617,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         response = create_raw_file_with_extras( is_core ? "" : data, extras, !is_text, tag.c_str( ) );
+         response = create_raw_file_with_extras(
+          is_core && !extras.empty( ) ? "" : data, extras, !is_text, tag.c_str( ) );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
