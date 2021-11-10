@@ -16,24 +16,18 @@ ENTROPY_HASH_P0=$OUTPUT
 ;d52e3ce42d753e8598b487bbd2d8671490004b862e654c51a03d81136ab53687
 ENTROPY_HASH_S0=$OUTPUT
 ;
+UTIME=1635400000
+;
 .crypto_lamport primary $ENTROPY_HASH_P0
 .crypto_lamport secondary $ENTROPY_HASH_S0
-;
-.crypto_hash -file primary.pub
-;a2dbceca5f51dcbe14cb6d629f38ffa50794534401649a8c6956ab6338400057
-IDENT=@substr:0,9:$OUTPUT
-;a2dbceca5
-;
-.crypto_hash -file secondary.pub
-;9f1a9b015aef29b339411e6c699118d74d7239d4d4b59c1f38d01e777c88afff
 ;
 .file_kill -q primary.key
 .file_kill -q secondary.key
 ;
 .file_put primary.key primary.key
-.file_put primary.pub bc.%IDENT%_P0.pub
+.file_put primary.pub bc.TEMP_P0.pub
 .file_put secondary.key secondary.key
-.file_put secondary.pub bc.%IDENT%_S0.pub
+.file_put secondary.pub bc.TEMP_S0.pub
 ;
 .file_crypt primary.key @sid
 .file_crypt secondary.key @sid
@@ -44,8 +38,28 @@ IDENT=@substr:0,9:$OUTPUT
 @endif
 ~rm primary.key secondary.key primary.pub secondary.pub
 ;
-#Creating genesis block for identity 'a2dbceca5'...
+.file_hash bc.TEMP_P0.pub
+PRIMARY_HASH=$OUTPUT
+IDENT=@substr:0,9:$PRIMARY_HASH
+.encode $PRIMARY_HASH
+PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-.file_raw -core blob blk:h=0,i=a2dbceca5\n\
-p:otvOyl9R3L4Uy21inzj/pQeUU0QBZJqMaVarYzhAAFc=\n\
-s:nxqbAVrvKbM5QR5saZEY101yOdTUtZwfONAed3yIr/8= bc.a2dbceca5
+.file_hash bc.TEMP_S0.pub
+SECONDARY_HASH=$OUTPUT
+;
+#Creating genesis block for identity '$IDENT'...
+;
+.file_tag -remove bc.TEMP_P0.pub
+.file_tag $PRIMARY_HASH bc.%IDENT%_P0.pub
+;
+.file_tag -remove bc.TEMP_S0.pub
+.file_tag $SECONDARY_HASH bc.%IDENT%_S0.pub
+;
+.file_hash bc.%IDENT%_S0.pub
+.encode $OUTPUT
+SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
+;
+.file_raw -core blob blk:h=0,i=$IDENT\n\
+p:$PRIMARY_PUBKEY_HASH_ENC\n\
+s:$SECONDARY_PUBKEY_HASH_ENC\n\
+u:$UTIME bc.$IDENT.0.blk

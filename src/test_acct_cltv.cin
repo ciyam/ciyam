@@ -43,7 +43,7 @@ LOCK=128
 *@hexmaxs=$@^x=$7_@^y=@?_@^z=_<^z,^y_!hexmaxs.loop_@^x
 @else
 #(via unix timestamp)
-UNIX=@unix
+UNIX=@unix:
 @ifndef $SECS
 SECS=5
 @endif

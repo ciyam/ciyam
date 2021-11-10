@@ -10,6 +10,8 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
+const size_t c_bc_identity_length = 9;
+
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
@@ -116,6 +118,7 @@ const char* const c_file_type_str_core_list = "\x12";
 
 const char* const c_file_type_str_blob_no_compress = "\x81";
 
+const char* const c_file_type_core_data_object = "dat";
 const char* const c_file_type_core_block_object = "blk";
 const char* const c_file_type_core_rewind_object = "rwd";
 const char* const c_file_type_core_account_object = "acc";
@@ -128,6 +131,13 @@ const char* const c_file_type_core_checkpoint_prune_object = "cpr";
 const char* const c_file_type_core_checkpoint_blocks_object = "cbk";
 const char* const c_file_type_core_transactions_info_object = "txi";
 const char* const c_file_type_core_checkpoint_transactions_object = "ctx";
+
+const char* const c_file_type_core_data_header_height_prefix = "h=";
+const char* const c_file_type_core_data_header_identity_prefix = "i=";
+
+const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";
+const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
+const char* const c_file_type_core_data_detail_unix_time_stamp_prefix = "u:";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_weight_prefix = "w=";
@@ -156,8 +166,12 @@ const char* const c_file_type_core_block_detail_account_tx_lock_prefix = "tl=";
 const char* const c_file_type_core_lamport_header_height_prefix = "h=";
 const char* const c_file_type_core_lamport_header_identity_prefix = "i=";
 
+const char* const c_file_type_core_lamport_detail_last_hash_prefix = "l:";
+const char* const c_file_type_core_lamport_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_lamport_detail_primary_pubkey_prefix = "p:";
 const char* const c_file_type_core_lamport_detail_secondary_pubkey_prefix = "s:";
+const char* const c_file_type_core_lamport_detail_signature_file_hash_prefix = "s:";
+const char* const c_file_type_core_lamport_detail_unix_block_time_stamp_prefix = "u:";
 
 const char* const c_file_type_core_transaction_header_account_prefix = "a=";
 const char* const c_file_type_core_transaction_header_sequence_prefix = "s=";

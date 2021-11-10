@@ -1809,7 +1809,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
             {
                if( includes.empty( ) )
-                  response = list_file_tags( pat_or_hash, 0, 0, 0, 0, 0, false, &handler );
+                  response = list_file_tags( pat_or_hash, 0, 0, 0, 0, 0, true, &handler );
                else
                {
                   vector< string > pats;
@@ -1820,7 +1820,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( i > 0 )
                         response += '\n';
 
-                     response += list_file_tags( pats[ i ], excludes.c_str( ), 0, 0, 0, 0, false, &handler );
+                     response += list_file_tags( pats[ i ], excludes.c_str( ), 0, 0, 0, 0, true, &handler );
                   }
                }
             }

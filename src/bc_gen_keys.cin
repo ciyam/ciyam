@@ -1,0 +1,45 @@
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+@ifeq "$3" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: bc_gen_keys.cin <seed> <ident> <height>
+@else
+SEED=$1
+IDENT=$2
+HEIGHT=$3
+;
+@ifeq "$HEIGHT" "0"
+#Error: Height must be greater than zero.
+@else
+;
+ENTROPY_PN=$SEED-$HEIGHT
+;
+.crypto_hash $ENTROPY_PN
+ENTROPY_HASH_PN=$OUTPUT
+;
+.crypto_lamport new_primary $ENTROPY_HASH_PN
+;
+.crypto_hash -file new_primary.pub
+;
+.file_kill -q new_primary.key
+;
+.file_put new_primary.key primary.key.n
+.file_crypt primary.key.n @sid
+;
+.file_put new_primary.pub bc.%IDENT%_P%HEIGHT%.pub
+;
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+~shred new_primary.key
+@endif
+~rm new_primary.key new_primary.pub
+@endif
+@endif

@@ -5134,9 +5134,14 @@ string crypto_lamport( const string& filename,
    }
    else if( is_sign )
    {
-      string key_file( filename + c_lamport_key_ext );
-      string sig_file( filename + c_lamport_sig_ext );
-      string src_file( filename + c_lamport_src_ext );
+      // NOTE: If filename is in the form of <name>:<hash> then rather
+      // than look for a ".src" file will simply use this value as the
+      // content hash.
+      string::size_type pos = filename.find( ':' );
+
+      string key_file( filename.substr( 0, pos ) + c_lamport_key_ext );
+      string sig_file( filename.substr( 0, pos ) + c_lamport_sig_ext );
+      string src_file( filename.substr( 0, pos ) + c_lamport_src_ext );
 
       vector< string > key_pairs;
       buffer_file_lines( key_file, key_pairs );
@@ -5144,14 +5149,26 @@ string crypto_lamport( const string& filename,
       if( key_pairs.size( ) != 256 )
          throw runtime_error( "unexpected key pairs != 256" );
 
-      sha256 hash;
-      hash.update( src_file, true );
+      string content_hash;
 
-      ofstream outf( sig_file.c_str( ) );
+      if( pos != string::npos )
+      {
+         content_hash = filename.substr( pos + 1 );
 
-      string content_hash( hash.get_digest_as_string( ) );
+         if( content_hash.length( ) != ( c_sha256_digest_size * 2 ) )
+            throw runtime_error( "invalid content hash '" + content_hash + "'" );
+      }
+      else
+      {
+         sha256 hash;
+         hash.update( src_file, true );
+
+         content_hash = hash.get_digest_as_string( );
+      }
 
       size_t offset = 0;
+
+      ofstream outf( sig_file.c_str( ) );
 
       for( size_t i = 0; i < content_hash.size( ); i++ )
       {
@@ -5188,17 +5205,49 @@ string crypto_lamport( const string& filename,
    }
    else
    {
-      string pub_file( filename + c_lamport_pub_ext );
-      string sig_file( filename + c_lamport_sig_ext );
+      // NOTE: If filename is in the form of <hash>:<hash> then rather
+      // than fetching from external files will instead expect content
+      // to exist in the "files area".
+      string::size_type pos = filename.find( ':' );
 
       vector< string > pub_pairs;
-      buffer_file_lines( pub_file, pub_pairs );
+      vector< string > sig_lines;
+
+      if( pos == string::npos )
+      {
+         string pub_file( filename + c_lamport_pub_ext );
+         string sig_file( filename + c_lamport_sig_ext );
+
+         buffer_file_lines( pub_file, pub_pairs );
+         buffer_file_lines( sig_file, sig_lines );
+      }
+      else
+      {
+         string pubkey_hash( filename.substr( 0, pos ) );
+         string signature_hash( filename.substr( pos + 1 ) );
+
+         if( pubkey_hash.length( ) != ( c_sha256_digest_size * 2 ) )
+            throw runtime_error( "invalid pubkey hash '" + pubkey_hash + "'" );
+
+         if( signature_hash.length( ) != ( c_sha256_digest_size * 2 ) )
+            throw runtime_error( "invalid signature hash '" + signature_hash + "'" );
+
+         string pubkey_lines( extract_file( pubkey_hash, "", c_file_type_char_blob ) );
+         string signature_lines( extract_file( signature_hash, "", c_file_type_char_blob ) );
+
+         split( pubkey_lines, pub_pairs, '\n' );
+
+         if( pub_pairs.size( ) && !pub_pairs[ pub_pairs.size( ) - 1 ].length( ) )
+            pub_pairs.pop_back( );
+
+         split( signature_lines, sig_lines, '\n' );
+
+         if( sig_lines.size( ) && !sig_lines[ sig_lines.size( ) - 1 ].length( ) )
+            sig_lines.pop_back( );
+      }
 
       if( pub_pairs.size( ) != 256 )
          throw runtime_error( "unexpected pub pairs != 256" );
-
-      vector< string > sig_lines;
-      buffer_file_lines( sig_file, sig_lines );
 
       if( sig_lines.size( ) != 256 )
          throw runtime_error( "unexpected sig lines != 256" );

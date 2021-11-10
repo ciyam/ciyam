@@ -2495,14 +2495,12 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          replace_input_arg_values( str, args, c_environment_variable_marker_1 );
          replace_unquoted_environment_variables( str, c_environment_variable_marker_1 );
 
-         // NOTE: For environment variable assignment support VAR=@<fname> to set the variable to the
-         // contents of a file (if wanting to literally assign VAR to "@fname" use "@@fname" instead)
-         // or even to the output of a system call using VAR=@~<cmd> (with both the stdout and stderr
-         // output being redirected to a temporary file). Another usage is VAR=@<expression> where an
-         // expression can be a special symbol (such as "unix" for unix timestamp) or a single simple
-         // math operation between two numbers (where the LHS can be a special symbol). The usage can
-         // be handy for working out the unix timestamp value one hour from the current time with the
-         // following:
+         // NOTE: For environment variable assignment VAR=@file:<fname> allows the variable to be set
+         // to the file's content or even to the output of a system call using VAR=@file:~<cmd> (with
+         // both the stdout and stderr output being redirected to a temporary file). Another usage is
+         // VAR=@<expression>[:+-*/] where the expression can be a special symbol (such as "unix" for
+         // unix timestamp) or a single simple math operation between two numbers. This is useful for
+         // working out the unix timestamp value one hour from the current time with the following:
          //
          // TIME=@unix+3600
          //
@@ -2565,7 +2563,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          //
          // Finally let's use the newly created FISSILE functions to reverse the endianness.
          //
-         // TIME=@unix
+         // TIME=@unix:
          // HEX_BIG_ENDIAN=@hexbig:$TIME
          // LAST_FOUR_BYTES=@substr:8:$HEX_BIG_ENDIAN
          // REV=*!reverse_hex?$LAST_FOUR_BYTES

@@ -1,0 +1,45 @@
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: bc_gen_data.cin <ident> <height> [<tree>]
+@else
+;
+IDENT=$1
+HEIGHT=$2
+;
+TREE=$3
+;
+@ifeq "$HEIGHT" "0"
+#Error: Height must be greater than zero.
+@else
+LAST=@$HEIGHT-1
+.file_hash bc.$IDENT.$LAST.blk
+@ifndef $ERROR
+.encode $OUTPUT
+LAST_HASH_ENC=$OUTPUT
+;
+@ifndef $TREE
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+l:$LAST_HASH_ENC bc.$IDENT.$HEIGHT.dat
+@else
+.file_hash $TREE
+@ifndef $ERROR
+.encode $OUTPUT
+TREE_HASH_ENC=$OUTPUT
+;
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+l:$LAST_HASH_ENC\n\
+t:$TREE_HASH_ENC bc.$IDENT.$HEIGHT.dat
+@endif
+;
+@endif
+@endif
+;
+@endif
+@endif

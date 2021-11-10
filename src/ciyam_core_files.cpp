@@ -176,6 +176,16 @@ struct transaction_info
    bool is_included_in_best_chain;
 };
 
+struct lamport_info
+{
+   lamport_info( ) : unix_time_stamp( 0 ) { }
+
+   string data_file_hash;
+   string public_key_hash;
+
+   uint64_t unix_time_stamp;
+};
+
 string base64_to_tag_name( const string& base64 )
 {
    return replaced( base64, "/", "$", "=", "-" );
@@ -605,8 +615,11 @@ string::size_type insert_account_into_transaction_log_line( const string& accoun
 pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
 
+void verify_data( const string& content,
+ vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
+
 void verify_lamport( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
+ bool check_sigs, vector< pair< string, string > >* p_extras, lamport_info* p_lamport_info = 0 );
 
 void verify_transaction( const string& content, bool check_sigs,
  vector< pair< string, string > >* p_extras, transaction_info* p_transaction_info = 0 );
@@ -2298,8 +2311,129 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
    return make_pair( block_height, total_weight );
 }
 
+void verify_data( const string& content,
+ vector< pair< string, string > >* p_extras, block_info* p_block_info )
+{
+   guard g( g_mutex, "verify_data" );
+
+   vector< string > lines;
+
+   if( !content.empty( ) )
+      split( content, lines, '\n', c_esc, false );
+
+   if( lines.empty( ) )
+      throw runtime_error( "unexpected empty data content" );
+
+   string identity, last_block_hash, tree_root_hash;
+
+   uint64_t data_height = 0;
+
+   string header( lines[ 0 ] );
+   if( header.empty( ) )
+      throw runtime_error( "unexpected empty data header" );
+   else
+   {
+      vector< string > attributes;
+      split( header, attributes );
+
+      if( attributes.empty( ) )
+         throw runtime_error( "unexpected empty data header attributes" );
+
+      bool has_height = false;
+      bool has_identity = false;
+
+      for( size_t i = 0; i < attributes.size( ); i++ )
+      {
+         string next_attribute( attributes[ i ] );
+         if( next_attribute.empty( ) )
+            throw runtime_error( "unexpected empty attribute in data header '" + header + "'" );
+
+         if( !has_height )
+         {
+            if( next_attribute.find( c_file_type_core_data_header_height_prefix ) != 0 )
+               throw runtime_error( "unexpected missing height attribute in data header '" + header + "'" );
+
+            string value( next_attribute.substr(
+             string( c_file_type_core_data_header_height_prefix ).length( ) ) );
+
+            regex expr( c_regex_integer );
+
+            if( ( value.length( ) > 1 && value[ 0 ] == '0' ) || expr.search( value ) != 0 )
+               throw runtime_error( "invalid height value '" + value + "'" );
+
+            has_height = true;
+
+            data_height = from_string< uint64_t >( value );
+         }
+         else if( !has_identity )
+         {
+            if( next_attribute.find( c_file_type_core_data_header_identity_prefix ) != 0 )
+               throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
+
+            has_identity = true;
+
+            identity = next_attribute.substr(
+             string( c_file_type_core_data_header_identity_prefix ).length( ) );
+         }
+         else
+            throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
+      }
+
+      if( !has_identity )
+         throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
+   }
+
+   for( size_t i = 1; i < lines.size( ); i++ )
+   {
+      string next_line( lines[ i ] );
+
+      if( next_line.size( ) < 3 )
+         throw runtime_error( "unexpected line < 3 '" + next_line + "' in verify_data" );
+
+      if( next_line.length( ) > c_max_core_line_size )
+         throw runtime_error( "unexpected line length exceeds "
+          + to_string( c_max_core_line_size ) + " in '" + next_line + "' in verify_data" );
+
+      string next_attribute( next_line );
+
+      if( last_block_hash.empty( ) )
+      {
+         size_t len = strlen( c_file_type_core_data_detail_last_hash_prefix );
+
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_last_hash_prefix ) )
+            throw runtime_error( "invalid data last block hash attribute '" + next_attribute + "'" );
+
+         next_attribute.erase( 0, len );
+
+         last_block_hash = hex_encode( base64::decode( next_attribute ) );
+
+         if( !has_file( last_block_hash ) )
+            throw runtime_error( "last block file '" + last_block_hash + "' not found" );
+      }
+      else if( tree_root_hash.empty( ) )
+      {
+         size_t len = strlen( c_file_type_core_data_detail_tree_root_hash_prefix );
+
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_tree_root_hash_prefix ) )
+            throw runtime_error( "invalid data tree root hash attribute '" + next_attribute + "'" );
+
+         next_attribute.erase( 0, len );
+
+         tree_root_hash = hex_encode( base64::decode( next_attribute ) );
+
+         if( !has_file( tree_root_hash ) )
+            throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
+      }
+      else
+         throw runtime_error( "unexpected extraneous data attribute '" + next_attribute + "'" );
+   }
+
+   if( last_block_hash.empty( ) )
+      throw runtime_error( "unexpected missing data last block hash attribute" );
+}
+
 void verify_lamport( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info )
+ bool check_sigs, vector< pair< string, string > >* p_extras, lamport_info* p_lamport_info )
 {
    guard g( g_mutex, "verify_lamport" );
 
@@ -2314,6 +2448,7 @@ void verify_lamport( const string& content,
    string identity;
 
    uint64_t lamport_height = 0;
+   uint64_t unix_time_stamp = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -2365,7 +2500,14 @@ void verify_lamport( const string& content,
          else
             throw runtime_error( "unexpected extraneous attribute in lamport header '" + header + "'" );
       }
+
+      if( identity.length( ) != c_bc_identity_length )
+         throw runtime_error( "unexpected missing or incorrect identity attribute in lamport header '" + header + "'" );
    }
+
+   lamport_info info;
+
+   string last_block_hash, public_key_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -2387,7 +2529,7 @@ void verify_lamport( const string& content,
       {
          if( !has_primary_pubkey )
          {
-            size_t len = string( c_file_type_core_lamport_detail_primary_pubkey_prefix ).length( );
+            size_t len = strlen( c_file_type_core_lamport_detail_primary_pubkey_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_primary_pubkey_prefix ) )
                throw runtime_error( "invalid genesis lamport primary pubkey attribute '" + next_attribute + "'" );
@@ -2395,10 +2537,13 @@ void verify_lamport( const string& content,
             next_attribute.erase( 0, len );
 
             has_primary_pubkey = true;
+
+            if( p_lamport_info )
+               p_lamport_info->public_key_hash = hex_encode( base64::decode( next_attribute ) );
          }
          else if( !has_secondary_pubkey )
          {
-            size_t len = string( c_file_type_core_lamport_detail_secondary_pubkey_prefix ).length( );
+            size_t len = strlen( c_file_type_core_lamport_detail_secondary_pubkey_prefix );
 
             if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_secondary_pubkey_prefix ) )
                throw runtime_error( "invalid genesis lamport secondary pubkey attribute '" + next_attribute + "'" );
@@ -2407,6 +2552,111 @@ void verify_lamport( const string& content,
 
             has_secondary_pubkey = true;
          }
+         else if( !unix_time_stamp )
+         {
+            size_t len = strlen( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix ) )
+               throw runtime_error( "invalid unix lamport time stamp attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            unix_time_stamp = from_string< uint64_t >( next_attribute );
+
+            if( p_lamport_info )
+               p_lamport_info->unix_time_stamp = unix_time_stamp;
+         }
+         else
+            throw runtime_error( "unexpected extraneous genesis lamport attribute '" + next_attribute + "'" );
+      }
+      else
+      {
+         if( last_block_hash.empty( ) )
+         {
+            size_t len = strlen( c_file_type_core_lamport_detail_last_hash_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_last_hash_prefix ) )
+               throw runtime_error( "invalid lamport last block hash attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            last_block_hash = hex_encode( base64::decode( next_attribute ) );
+
+            if( !has_file( last_block_hash ) )
+               throw runtime_error( "last block file '" + last_block_hash + "' not found" );
+
+            string last_block_tag( "bc." + identity + "." + to_string( lamport_height - 1 ) + ".blk" );
+
+            if( tag_file_hash( last_block_tag ) != last_block_hash )
+               throw runtime_error( "incorrect last block hash '" + last_block_hash + "'" );
+         }
+         else if( public_key_hash.empty( ) )
+         {
+            size_t len = strlen( c_file_type_core_lamport_detail_pubkey_hash_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_pubkey_hash_prefix ) )
+               throw runtime_error( "invalid data public key hash attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            public_key_hash = hex_encode( base64::decode( next_attribute ) );
+
+            if( !has_file( public_key_hash ) )
+               throw runtime_error( "public key file '" + public_key_hash + "' not found" );
+
+            if( p_lamport_info )
+               p_lamport_info->public_key_hash = public_key_hash;
+         }
+         else if( signature_file_hash.empty( ) )
+         {
+            size_t len = strlen( c_file_type_core_lamport_detail_signature_file_hash_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_signature_file_hash_prefix ) )
+               throw runtime_error( "invalid lamport signature file hash attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            signature_file_hash = hex_encode( base64::decode( next_attribute ) );
+
+            if( !has_file( signature_file_hash ) )
+               throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
+
+            if( check_sigs )
+            {
+               string last_block_info( extract_file( last_block_hash, "", c_file_type_char_core_blob ) );
+
+               string::size_type pos = last_block_info.find( ':' );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected invalid block info in validate_lamport" );
+
+               verify_lamport( last_block_info.substr( pos + 1 ), false, 0, &info );
+
+               string file_hash_info( info.public_key_hash + ':' + signature_file_hash );
+               string data_file_hash( crypto_lamport( file_hash_info, "", false, true ) );
+
+               if( p_lamport_info )
+                  p_lamport_info->data_file_hash = data_file_hash;
+            }
+         }
+         else if( !unix_time_stamp )
+         {
+            size_t len = strlen( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix ) )
+               throw runtime_error( "invalid unix lamport time stamp attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            unix_time_stamp = from_string< uint64_t >( next_attribute );
+
+            if( check_sigs && ( unix_time_stamp < info.unix_time_stamp ) )
+               throw runtime_error( "invalid unix lamport time stamp older than last" );
+
+            if( p_lamport_info )
+               p_lamport_info->unix_time_stamp = unix_time_stamp;
+         }
+         else
+            throw runtime_error( "unexpected extraneous lamport attribute '" + next_attribute + "'" );
       }
    }
 
@@ -2417,6 +2667,17 @@ void verify_lamport( const string& content,
 
       if( !has_secondary_pubkey )
          throw runtime_error( "unexpected missing genesis lamport secondary pubkey attribute" );
+   }
+   else
+   {
+      if( last_block_hash.empty( ) )
+         throw runtime_error( "unexpected missing lamport last block hash attribute" );
+
+      if( signature_file_hash.empty( ) )
+         throw runtime_error( "unexpected missing lamport signature file hash attribute" );
+
+      if( !unix_time_stamp )
+         throw runtime_error( "unexpected missing unix lamport time stamp attribute" );
    }
 }
 
@@ -3638,7 +3899,9 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
 
          string type( content.substr( 1, pos - 1 ) );
 
-         if( type == string( c_file_type_core_block_object ) )
+         if( type == string( c_file_type_core_data_object ) )
+            verify_data( content.substr( pos + 1 ), p_extras );
+         else if( type == string( c_file_type_core_block_object ) )
          {
             if( !is_lamport )
                verify_block( content.substr( pos + 1 ), check_sigs, p_extras );
