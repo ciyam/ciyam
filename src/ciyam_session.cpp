@@ -1475,7 +1475,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !info.empty( ) && !pubkey.empty( ) )
          {
-            info.resize( c_secret_reserve_size );
+            info.reserve( c_secret_reserve_size );
             session_shared_decrypt( info, pubkey, info );
          }
 
@@ -1836,7 +1836,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !pubkey.empty( ) )
          {
-            password.resize( c_secret_reserve_size );
+            password.reserve( c_secret_reserve_size );
             session_shared_decrypt( password, pubkey, password );
          }
 
@@ -2019,7 +2019,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !pubkey.empty( ) )
          {
-            password.resize( c_secret_reserve_size );
+            password.reserve( c_secret_reserve_size );
             session_shared_decrypt( password, pubkey, password );
          }
 
@@ -2039,7 +2039,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !pubkey.empty( ) )
          {
-            password.resize( c_secret_reserve_size );
+            password.reserve( c_secret_reserve_size );
             session_shared_decrypt( password, pubkey, password );
          }
 
@@ -5683,7 +5683,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !data.empty( ) && !pubkey.empty( ) )
          {
-            data.resize( c_secret_reserve_size );
+            data.reserve( c_secret_reserve_size );
             session_shared_decrypt( data, pubkey, data );
          }
 

@@ -4405,7 +4405,7 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
    if( !is_encrypted || s.length( ) >= 32 )
       set_sid( s );
    else
-      g_sid = data_decrypt( g_sid, s );
+      data_decrypt( g_sid, g_sid, s );
 
    if( p_encrypted_sid )
       write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );

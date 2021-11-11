@@ -729,6 +729,7 @@ void request_handler::process_request( )
    bool temp_session = false;
    bool display_error = true;
    bool force_refresh = false;
+   bool login_refresh = false;
    bool created_session = false;
    bool using_anonymous = false;
    bool finished_session = false;
@@ -989,7 +990,14 @@ void request_handler::process_request( )
          g_id_pwd = input_data[ c_param_extra ];
 
          if( !mod_info.allows_anonymous_access )
+         {
             is_sign_in = true;
+
+            // KLUDGE: When the initial identity is provided
+            // the first login will fail so force a refresh.
+            if( g_seed != c_unlock )
+               login_refresh = true;
+         }
          else
             cmd = c_cmd_home;
       }
@@ -1288,7 +1296,7 @@ void request_handler::process_request( )
                            private_key priv_key;
 
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd, 0, true ), &identity_info ) )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd ), &identity_info ) )
                               throw runtime_error( "unable to unlock encrypted identity information" );
 #else
                            if( !simple_command( *p_session_info, "identity " + g_id_pwd, &identity_info ) )
@@ -1305,7 +1313,7 @@ void request_handler::process_request( )
                         else
                         {
                            string encrypted( g_seed );
-                           encrypted = data_encrypt( encrypted, g_id_pwd );
+                           data_encrypt( encrypted, encrypted, g_id_pwd );
 
                            clear_key( g_id_pwd );
 
@@ -1321,8 +1329,21 @@ void request_handler::process_request( )
                            ofstream outf( c_eid_file );
                            outf << identity_info.substr( 0, pos );
 
+#ifdef SSL_SUPPORT
+                           string pubkey;
+                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
+                              throw runtime_error( "unexpected failure to get @pubkey value" );
+
+                           public_key pub_key( pubkey );
+                           private_key priv_key;
+
+                           if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
+                            + " " + priv_key.encrypt_message( pub_key, g_seed ) + " " + encrypted, &identity_info ) )
+                              throw runtime_error( "unable to set/update dentity information" );
+#else
                            if( !simple_command( *p_session_info, "identity " + g_seed + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
+#endif
                         }
                      }
 
@@ -2677,6 +2698,7 @@ void request_handler::process_request( )
 
       bool is_logged_in = false;
       bool has_output_go_back = false;
+
       if( !created_session && p_session_info && p_session_info->logged_in )
       {
          is_logged_in = true;
@@ -2699,6 +2721,16 @@ void request_handler::process_request( )
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_go_back ),
              make_pair( c_display_click_here_to_go_back_parm_href,
+             "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+         }
+         else if( login_refresh )
+         {
+            is_logged_in = true;
+            has_output_go_back = true;
+
+            osstr << "<p align=\"center\">"
+             << string_message( GDS( c_display_click_here_to_login ),
+             make_pair( c_display_click_here_to_login_parm_href,
              "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
          }
       }
