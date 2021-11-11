@@ -3494,7 +3494,7 @@ external_client_container g_external_client_info;
 
 #include "sid.enc"
 
-void sid_hash( string& s )
+void sid_hash( string& s, bool use_truncated = false )
 {
    guard g( g_mutex );
 
@@ -3517,9 +3517,14 @@ void sid_hash( string& s )
 
    hash1.get_digest_as_string( s );
 
-   sha1 hash2( s );
+   if( use_truncated )
+      s.resize( c_sha1_digest_size * 2 );
+   else
+   {
+      sha1 hash2( s );
 
-   hash2.get_digest_as_string( s );
+      hash2.get_digest_as_string( s );
+   }
 }
 
 struct script_info
@@ -4347,7 +4352,7 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool prepend_sid, bool append_max_user_limit )
+void get_identity( string& s, bool prepend_sid, bool append_max_user_limit, bool use_truncated )
 {
    guard g( g_mutex );
 
@@ -4362,7 +4367,7 @@ void get_identity( string& s, bool prepend_sid, bool append_max_user_limit )
          string suffix( s );
 
          if( !g_sid.empty( ) )
-            sid_hash( s );
+            sid_hash( s, use_truncated );
          else
          {
             string seed;

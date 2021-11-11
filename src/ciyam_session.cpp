@@ -1841,7 +1841,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( password == get_special_var_name( e_special_var_sid ) )
-            get_identity( password, true );
+            get_identity( password, true, false, true );
 
          try
          {

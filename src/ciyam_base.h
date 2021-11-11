@@ -139,7 +139,9 @@ std::string CIYAM_BASE_DECL_SPEC get_domain( );
 
 std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
-void CIYAM_BASE_DECL_SPEC get_identity( std::string& s, bool prepend_sid = false, bool append_max_user_limit = false );
+void CIYAM_BASE_DECL_SPEC get_identity( std::string& s,
+ bool prepend_sid = false, bool append_max_user_limit = false, bool use_truncated = false );
+
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& identity_info, const char* p_encrypted_sid = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use_reg_key = false );
