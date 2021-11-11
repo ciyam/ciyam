@@ -233,6 +233,10 @@ a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 test1
 file_tags ts.*
 ts.20170313080001
 ts.20170313080002
+file_info ts.20170313080001
+[blob] b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 (5.3 kB)
+file_info ts.20170313080002
+[blob] efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f (2.8 kB)
 file_archives
 test1 [okay      ] (6.5 kB/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2

@@ -722,11 +722,12 @@ string file_type_info( const string& tag_or_hash,
       output_last_only = true;
    }
 
-   if( file_exists( files_area_dir + '/' + use_tag_or_hash ) )
-   {
-      hash = tag_file_hash( use_tag_or_hash );
+   bool rc = false;
+
+   hash = tag_file_hash( use_tag_or_hash, &rc );
+
+   if( rc )
       file_name = construct_file_name_from_hash( hash );
-   }
    else
    {
       bool is_base64 = false;
@@ -1904,7 +1905,7 @@ string get_hash_tags( const string& hash )
    return retval;
 }
 
-string tag_file_hash( const string& name )
+string tag_file_hash( const string& name, bool* p_rc )
 {
    guard g( g_mutex );
 
@@ -1932,8 +1933,19 @@ string tag_file_hash( const string& name )
       map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
 
       if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
+      {
+         if( p_rc )
+         {
+            *p_rc = false;
+            return retval;
+         }
+
          // FUTURE: This message should be handled as a server string message.
          throw runtime_error( "Tag '" + name + "' not found." );
+      }
+
+      if( p_rc )
+         *p_rc = true;
 
       retval = i->second;
    }

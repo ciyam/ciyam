@@ -85,6 +85,8 @@ file_put test.jpg
 file_tags ts.*
 file_relegate -n=1
 file_tags ts.*
+file_info ts.20170313080001
+file_info ts.20170313080002
 file_archives
 file_archive -remove test1
 file_archives
