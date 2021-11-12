@@ -20,9 +20,7 @@ HEIGHT=$3
 #Error: Height must be greater than zero.
 @else
 ;
-ENTROPY_PN=$SEED-$HEIGHT
-;
-.crypto_hash $ENTROPY_PN
+.crypto_hash $SEED -s=-$HEIGHT
 ENTROPY_HASH_PN=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH_PN

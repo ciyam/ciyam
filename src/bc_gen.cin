@@ -1,19 +1,15 @@
-#Creating Lamport keys with demo passphrase...
+@ifeq "$1" ""
+#Usage: bc_gen.cin <seed>
+@else
+SEED=$1
 ;
-.crypto_seed "taxi act describe attitude focus ugly govern outer note isolate endless act"
-;de604cee0755a3d81944ea96aed12681
-ENTROPY_P0=%OUTPUT%-0
-ENTROPY_S0=%OUTPUT%!0
+UTIME=@unix:
 ;
-.crypto_hash $ENTROPY_P0
-;ad6da9c58db7187d14bb7cefa51ab9f7f755993189dee7639bab56175aef09bc
+.crypto_hash $SEED -s=-0
 ENTROPY_HASH_P0=$OUTPUT
 ;
-.crypto_hash $ENTROPY_S0
-;c11b618e3606eccc4c575b59097fdd5158b3cb6ff5cc7a5d9814b40725e3b7bc
+.crypto_hash $SEED -s=!0
 ENTROPY_HASH_S0=$OUTPUT
-;
-UTIME=1635400000
 ;
 .crypto_lamport primary $ENTROPY_HASH_P0
 .crypto_lamport secondary $ENTROPY_HASH_S0
@@ -60,3 +56,4 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 p:$PRIMARY_PUBKEY_HASH_ENC\n\
 s:$SECONDARY_PUBKEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.0.blk
+@endif

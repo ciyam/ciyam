@@ -2099,12 +2099,17 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string pub_key, priv_key;
 
+         priv_key.reserve( c_secret_reserve_size );
+
          if( decrypt )
+         {
+            secret.reserve( c_secret_reserve_size );
             secret = decrypt_data( secret );
+         }
 
          response = create_address_key_pair( extkey, pub_key, priv_key, secret, decrypt, true, !uncompressed );
 
-         clear_key( pub_key );
+         clear_key( secret );
          clear_key( priv_key );
       }
       else if( command == c_cmd_ciyam_session_crypto_hash )
@@ -2113,16 +2118,28 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode ) );
          bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
          string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
+         string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
 
-         string data( data_or_filename );
+         string data;
+         data.reserve( c_secret_reserve_size );
+
+         data = data_or_filename;
 
          if( data_from_file )
             data = load_file( data, true );
+         else if( data == get_special_var_name( e_special_var_sid ) )
+            get_identity( data, true, false, true );
 
          if( data_from_file && data.empty( ) )
             response = "(file not found)";
          else
+         {
+            data += data_suffix_text;
             response = crypto_digest( data, use_sha512, hex_decode );
+         }
+
+         if( !data_from_file )
+            clear_key( data );
       }
       else if( command == c_cmd_ciyam_session_crypto_keys )
       {
