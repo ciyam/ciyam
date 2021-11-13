@@ -176,6 +176,13 @@ struct transaction_info
    bool is_included_in_best_chain;
 };
 
+struct data_info
+{
+   data_info( ) : unix_time_stamp( 0 ) { }
+
+   uint64_t unix_time_stamp;
+};
+
 struct lamport_info
 {
    lamport_info( ) : unix_time_stamp( 0 ) { }
@@ -616,7 +623,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
 
 void verify_data( const string& content,
- vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
+ bool check_sigs, vector< pair< string, string > >* p_extras, data_info* p_data_info = 0 );
 
 void verify_lamport( const string& content,
  bool check_sigs, vector< pair< string, string > >* p_extras, lamport_info* p_lamport_info = 0 );
@@ -2312,7 +2319,7 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
 }
 
 void verify_data( const string& content,
- vector< pair< string, string > >* p_extras, block_info* p_block_info )
+ bool check_sigs, vector< pair< string, string > >* p_extras, data_info* p_data_info )
 {
    guard g( g_mutex, "verify_data" );
 
@@ -2324,9 +2331,10 @@ void verify_data( const string& content,
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty data content" );
 
-   string identity, last_block_hash, tree_root_hash;
+   string identity, last_data_hash, tree_root_hash;
 
    uint64_t data_height = 0;
+   uint64_t unix_time_stamp = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -2383,6 +2391,8 @@ void verify_data( const string& content,
          throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
    }
 
+   data_info info;
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -2396,40 +2406,82 @@ void verify_data( const string& content,
 
       string next_attribute( next_line );
 
-      if( last_block_hash.empty( ) )
+      bool found = false;
+
+      if( data_height > 1 && last_data_hash.empty( ) )
       {
          size_t len = strlen( c_file_type_core_data_detail_last_hash_prefix );
 
          if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_last_hash_prefix ) )
-            throw runtime_error( "invalid data last block hash attribute '" + next_attribute + "'" );
+            throw runtime_error( "invalid data last data hash attribute '" + next_attribute + "'" );
 
          next_attribute.erase( 0, len );
 
-         last_block_hash = hex_encode( base64::decode( next_attribute ) );
+         last_data_hash = hex_encode( base64::decode( next_attribute ) );
 
-         if( !has_file( last_block_hash ) )
-            throw runtime_error( "last block file '" + last_block_hash + "' not found" );
+         if( !has_file( last_data_hash ) )
+            throw runtime_error( "last data file '" + last_data_hash + "' not found" );
+
+         if( check_sigs )
+         {
+            string last_data_info( extract_file( last_data_hash, "", c_file_type_char_core_blob ) );
+
+            string::size_type pos = last_data_info.find( ':' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected invalid data info in validate_data" );
+
+            verify_data( last_data_info.substr( pos + 1 ), false, 0, &info );
+         }
+
+         found = true;
       }
-      else if( tree_root_hash.empty( ) )
+
+      if( !found && tree_root_hash.empty( ) )
       {
          size_t len = strlen( c_file_type_core_data_detail_tree_root_hash_prefix );
 
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_tree_root_hash_prefix ) )
-            throw runtime_error( "invalid data tree root hash attribute '" + next_attribute + "'" );
+         if( next_attribute.substr( 0, len ) == string( c_file_type_core_data_detail_tree_root_hash_prefix ) )
+         {
+            next_attribute.erase( 0, len );
+
+            tree_root_hash = hex_encode( base64::decode( next_attribute ) );
+
+            if( !has_file( tree_root_hash ) )
+               throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
+
+            found = true;
+         }
+      }
+
+      if( !found && !unix_time_stamp )
+      {
+         size_t len = strlen( c_file_type_core_data_detail_unix_time_stamp_prefix );
+
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_unix_time_stamp_prefix ) )
+            throw runtime_error( "invalid data unix time stamp attribute '" + next_attribute + "'" );
 
          next_attribute.erase( 0, len );
 
-         tree_root_hash = hex_encode( base64::decode( next_attribute ) );
+         unix_time_stamp = from_string< uint64_t >( next_attribute );
 
-         if( !has_file( tree_root_hash ) )
-            throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
+         if( p_data_info )
+            p_data_info->unix_time_stamp = unix_time_stamp;
+
+         if( check_sigs && ( data_height > 1 && unix_time_stamp <= info.unix_time_stamp ) )
+            throw runtime_error( "invalid unix data time stamp not more recent than last" );
+
+         found = true;
       }
-      else
+
+      if( !found )
          throw runtime_error( "unexpected extraneous data attribute '" + next_attribute + "'" );
    }
 
-   if( last_block_hash.empty( ) )
-      throw runtime_error( "unexpected missing data last block hash attribute" );
+   if( data_height > 1 && last_data_hash.empty( ) )
+      throw runtime_error( "unexpected missing data last data hash attribute" );
+
+   if( !unix_time_stamp )
+      throw runtime_error( "unexpected missing unix data time stamp attribute" );
 }
 
 void verify_lamport( const string& content,
@@ -2649,8 +2701,8 @@ void verify_lamport( const string& content,
 
             unix_time_stamp = from_string< uint64_t >( next_attribute );
 
-            if( check_sigs && ( unix_time_stamp < info.unix_time_stamp ) )
-               throw runtime_error( "invalid unix lamport time stamp older than last" );
+            if( check_sigs && ( unix_time_stamp <= info.unix_time_stamp ) )
+               throw runtime_error( "invalid unix lamport time stamp not more recent than last" );
 
             if( p_lamport_info )
                p_lamport_info->unix_time_stamp = unix_time_stamp;
@@ -3900,7 +3952,7 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
          string type( content.substr( 1, pos - 1 ) );
 
          if( type == string( c_file_type_core_data_object ) )
-            verify_data( content.substr( pos + 1 ), p_extras );
+            verify_data( content.substr( pos + 1 ), check_sigs, p_extras );
          else if( type == string( c_file_type_core_block_object ) )
          {
             if( !is_lamport )

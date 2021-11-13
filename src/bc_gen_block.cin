@@ -13,7 +13,17 @@ ERROR=1
 IDENT=$1
 HEIGHT=$2
 ;
+@ifneq "$IDENT" "da667b8c4"
 UTIME=@unix:
+@else
+HRS_01=3600
+HRS_24=@$HRS_01*24
+;
+HRS_HEIGHT=@$HRS_24*$HEIGHT
+;
+UTIME=@1635400000+$HRS_HEIGHT
+@endif
+;
 .session_variable @uuid
 UUID=$OUTPUT
 ;

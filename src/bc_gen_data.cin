@@ -15,18 +15,47 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
+@ifneq "$IDENT" "da667b8c4"
+UTIME=@unix:
+@else
+HRS_01=3600
+HRS_24=@$HRS_01*24
+;
+HRS_HEIGHT=@$HRS_24*$HEIGHT
+;
+UTIME=@1635400000+$HRS_HEIGHT
+@endif
+;
 @ifeq "$HEIGHT" "0"
 #Error: Height must be greater than zero.
 @else
+;
 LAST=@$HEIGHT-1
-.file_hash bc.$IDENT.$LAST.blk
+;
+@ifeq "$LAST" "0"
+@ifndef $TREE
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
+@else
+.file_hash $TREE
+@ifndef $ERROR
+.encode $OUTPUT
+TREE_HASH_ENC=$OUTPUT
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+t:$TREE_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
+@endif
+@endif
+@else
+.file_hash bc.$IDENT.$LAST.dat
 @ifndef $ERROR
 .encode $OUTPUT
 LAST_HASH_ENC=$OUTPUT
 ;
 @ifndef $TREE
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
-l:$LAST_HASH_ENC bc.$IDENT.$HEIGHT.dat
+l:$LAST_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
 @else
 .file_hash $TREE
 @ifndef $ERROR
@@ -35,11 +64,13 @@ TREE_HASH_ENC=$OUTPUT
 ;
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
 l:$LAST_HASH_ENC\n\
-t:$TREE_HASH_ENC bc.$IDENT.$HEIGHT.dat
+t:$TREE_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
+@endif
+@endif
+@endif
 @endif
 ;
 @endif
-@endif
 ;
-@endif
 @endif

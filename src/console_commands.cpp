@@ -3422,8 +3422,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                      if( !dummy_conditions.empty( ) )
                      {
-                        if( !dummy_conditions.back( ) )
-                           pop_cond = false;
+                        pop_cond = false;
                         dummy_conditions.pop_back( );
                      }
 
