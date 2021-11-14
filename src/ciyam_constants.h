@@ -136,6 +136,7 @@ const char* const c_file_type_core_data_header_height_prefix = "h=";
 const char* const c_file_type_core_data_header_identity_prefix = "i=";
 
 const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";
+const char* const c_file_type_core_data_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
 const char* const c_file_type_core_data_detail_unix_time_stamp_prefix = "u:";
 

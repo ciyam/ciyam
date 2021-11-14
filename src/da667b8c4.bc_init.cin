@@ -13,8 +13,6 @@ ENTROPY_HASH_P0=$OUTPUT
 ;c11b618e3606eccc4c575b59097fdd5158b3cb6ff5cc7a5d9814b40725e3b7bc
 ENTROPY_HASH_S0=$OUTPUT
 ;
-UTIME=1635400000
-;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
@@ -53,22 +51,21 @@ SECONDARY_PRIVKEY_HASH=$OUTPUT
 #Creating genesis block for identity '$IDENT'...
 ;
 .file_tag -remove bc.$UUID.p0.pub
-.file_tag $PRIMARY_PUBKEY_HASH bc.%IDENT%.p0.pub
+.file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.p0.pub
 ;
 .file_tag -remove bc.$UUID.p0.key
-.file_tag $PRIMARY_PRIVKEY_HASH bc.%IDENT%.p0.key
+.file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.p0.key
 ;
 .file_tag -remove bc.$UUID.s0.pub
-.file_tag $SECONDARY_PUBKEY_HASH bc.%IDENT%.s0.pub
+.file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.s0.pub
 ;
 .file_tag -remove bc.$UUID.s0.key
-.file_tag $SECONDARY_PRIVKEY_HASH bc.%IDENT%.s0.key
+.file_tag $SECONDARY_PRIVKEY_HASH bc.$IDENT.s0.key
 ;
-.file_hash bc.%IDENT%.s0.pub
+.file_hash bc.$IDENT.s0.pub
 .encode $OUTPUT
 SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC\n\
-s:$SECONDARY_PUBKEY_HASH_ENC\n\
-u:$UTIME bc.$IDENT.0.blk
+s:$SECONDARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk

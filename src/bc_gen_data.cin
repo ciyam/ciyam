@@ -32,9 +32,15 @@ UTIME=@1635400000+$HRS_HEIGHT
 ;
 LAST=@$HEIGHT-1
 ;
+.file_hash bc.$IDENT.p$HEIGHT.pub
+@ifndef $ERROR
+.encode $OUTPUT
+PUB_KEY_HASH_ENC=$OUTPUT
+;
 @ifeq "$LAST" "0"
 @ifndef $TREE
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @else
 .file_hash $TREE
@@ -42,6 +48,7 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 .encode $OUTPUT
 TREE_HASH_ENC=$OUTPUT
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @endif
@@ -55,6 +62,7 @@ LAST_HASH_ENC=$OUTPUT
 @ifndef $TREE
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
 l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @else
 .file_hash $TREE
@@ -64,8 +72,10 @@ TREE_HASH_ENC=$OUTPUT
 ;
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
 l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
+@endif
 @endif
 @endif
 @endif

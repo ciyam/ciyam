@@ -180,6 +180,7 @@ struct data_info
 {
    data_info( ) : unix_time_stamp( 0 ) { }
 
+   string public_key_hash;
    uint64_t unix_time_stamp;
 };
 
@@ -2331,7 +2332,7 @@ void verify_data( const string& content,
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty data content" );
 
-   string identity, last_data_hash, tree_root_hash;
+   string identity, last_data_hash, public_key_hash, tree_root_hash;
 
    uint64_t data_height = 0;
    uint64_t unix_time_stamp = 0;
@@ -2436,6 +2437,26 @@ void verify_data( const string& content,
          found = true;
       }
 
+      if( !found && public_key_hash.empty( ) )
+      {
+         size_t len = strlen( c_file_type_core_data_detail_pubkey_hash_prefix );
+
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_pubkey_hash_prefix ) )
+            throw runtime_error( "invalid data public key hash attribute '" + next_attribute + "'" );
+
+         next_attribute.erase( 0, len );
+
+         public_key_hash = hex_encode( base64::decode( next_attribute ) );
+
+         if( !has_file( public_key_hash ) )
+            throw runtime_error( "public key file '" + public_key_hash + "' not found" );
+
+         if( p_data_info )
+            p_data_info->public_key_hash = public_key_hash;
+
+         found = true;
+      }
+
       if( !found && tree_root_hash.empty( ) )
       {
          size_t len = strlen( c_file_type_core_data_detail_tree_root_hash_prefix );
@@ -2477,6 +2498,9 @@ void verify_data( const string& content,
          throw runtime_error( "unexpected extraneous data attribute '" + next_attribute + "'" );
    }
 
+   if( public_key_hash.empty( ) )
+      throw runtime_error( "unexpected missing public key hash attribute" );
+
    if( data_height > 1 && last_data_hash.empty( ) )
       throw runtime_error( "unexpected missing data last data hash attribute" );
 
@@ -2500,7 +2524,6 @@ void verify_lamport( const string& content,
    string identity;
 
    uint64_t lamport_height = 0;
-   uint64_t unix_time_stamp = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -2604,20 +2627,6 @@ void verify_lamport( const string& content,
 
             has_secondary_pubkey = true;
          }
-         else if( !unix_time_stamp )
-         {
-            size_t len = strlen( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix );
-
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix ) )
-               throw runtime_error( "invalid unix lamport time stamp attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            unix_time_stamp = from_string< uint64_t >( next_attribute );
-
-            if( p_lamport_info )
-               p_lamport_info->unix_time_stamp = unix_time_stamp;
-         }
          else
             throw runtime_error( "unexpected extraneous genesis lamport attribute '" + next_attribute + "'" );
       }
@@ -2688,24 +2697,22 @@ void verify_lamport( const string& content,
 
                if( p_lamport_info )
                   p_lamport_info->data_file_hash = data_file_hash;
+
+               if( !has_file( data_file_hash ) )
+                  throw runtime_error( "data file '" + data_file_hash + "' not found" );
+
+               string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
+
+               pos = data_file_info.find( ':' );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected invalid data info in validate_lamport" );
+
+               data_info data;
+               verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
+
+               if( public_key_hash != data.public_key_hash )
+                  throw runtime_error( "unexpected pub_key_hash does not match data info" );
             }
-         }
-         else if( !unix_time_stamp )
-         {
-            size_t len = strlen( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix );
-
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix ) )
-               throw runtime_error( "invalid unix lamport time stamp attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            unix_time_stamp = from_string< uint64_t >( next_attribute );
-
-            if( check_sigs && ( unix_time_stamp <= info.unix_time_stamp ) )
-               throw runtime_error( "invalid unix lamport time stamp not more recent than last" );
-
-            if( p_lamport_info )
-               p_lamport_info->unix_time_stamp = unix_time_stamp;
          }
          else
             throw runtime_error( "unexpected extraneous lamport attribute '" + next_attribute + "'" );
@@ -2727,9 +2734,6 @@ void verify_lamport( const string& content,
 
       if( signature_file_hash.empty( ) )
          throw runtime_error( "unexpected missing lamport signature file hash attribute" );
-
-      if( !unix_time_stamp )
-         throw runtime_error( "unexpected missing unix lamport time stamp attribute" );
    }
 }
 
