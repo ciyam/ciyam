@@ -39,10 +39,10 @@ LAST_HASH=$OUTPUT
 .encode $LAST_HASH
 LAST_HASH_ENC=$OUTPUT
 ;
-.file_hash bc.%IDENT%_P%LAST%.pub
+.file_hash bc.$IDENT.p$LAST.pub
 @ifndef $ERROR
 ;
-.file_hash bc.%IDENT%_P%HEIGHT%.pub
+.file_hash bc.$IDENT.p$HEIGHT.pub
 @ifndef $ERROR
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
@@ -54,11 +54,11 @@ DATA_HASH=$OUTPUT
 .encode $DATA_HASH
 DATA_HASH_ENC=$OUTPUT
 ;
-.file_crypt primary.key @sid
-.file_get primary.key ~$UUID.key
-.file_crypt primary.key @sid
+.file_crypt bc.$IDENT.p$LAST.key @sid
+.file_get bc.$IDENT.p$LAST.key ~$UUID.key
+.file_crypt bc.$IDENT.p$LAST.key @sid
 ;
-.file_get bc.%IDENT%_P%LAST%.pub ~$UUID.pub
+.file_get bc.$IDENT.p$LAST.pub ~$UUID.pub
 ;
 .crypto_lamport -sign ~$UUID:$DATA_HASH
 .file_put ~$UUID.sig bc.$IDENT.$LAST.sig
@@ -73,10 +73,7 @@ p:$PUB_KEY_HASH_ENC\n\
 s:$SIG_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
-.file_tag -unlink primary.key
-.file_hash primary.key.n
-.file_tag $OUTPUT primary.key
-.file_tag -remove primary.key.n
+.file_tag -unlink bc.$IDENT.p$LAST.key
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"

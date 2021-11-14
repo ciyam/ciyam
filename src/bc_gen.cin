@@ -5,6 +5,9 @@ SEED=$1
 ;
 UTIME=@unix:
 ;
+.session_variable @uuid
+UUID=$OUTPUT
+;
 .crypto_hash $SEED -s=-0
 ENTROPY_HASH_P0=$OUTPUT
 ;
@@ -14,16 +17,13 @@ ENTROPY_HASH_S0=$OUTPUT
 .crypto_lamport primary $ENTROPY_HASH_P0
 .crypto_lamport secondary $ENTROPY_HASH_S0
 ;
-.file_kill -q primary.key
-.file_kill -q secondary.key
+.file_put primary.key bc.$UUID.p0.key
+.file_put primary.pub bc.$UUID.p0.pub
+.file_put secondary.key bc.$UUID.s0.key
+.file_put secondary.pub bc.$UUID.s0.pub
 ;
-.file_put primary.key primary.key
-.file_put primary.pub bc.TEMP_P0.pub
-.file_put secondary.key secondary.key
-.file_put secondary.pub bc.TEMP_S0.pub
-;
-.file_crypt primary.key @sid
-.file_crypt secondary.key @sid
+.file_crypt bc.$UUID.p0.key @sid
+.file_crypt bc.$UUID.s0.key @sid
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
 ~shred primary.key
@@ -31,24 +31,36 @@ ENTROPY_HASH_S0=$OUTPUT
 @endif
 ~rm primary.key secondary.key primary.pub secondary.pub
 ;
-.file_hash bc.TEMP_P0.pub
-PRIMARY_HASH=$OUTPUT
-IDENT=@substr:0,9:$PRIMARY_HASH
-.encode $PRIMARY_HASH
+.file_hash bc.$UUID.p0.pub
+PRIMARY_PUBKEY_HASH=$OUTPUT
+IDENT=@substr:0,9:$PRIMARY_PUBKEY_HASH
+.encode $PRIMARY_PUBKEY_HASH
 PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-.file_hash bc.TEMP_S0.pub
-SECONDARY_HASH=$OUTPUT
+.file_hash bc.$UUID.p0.key
+PRIMARY_PRIVKEY_HASH=$OUTPUT
+;
+.file_hash bc.$UUID.s0.pub
+SECONDARY_PUBKEY_HASH=$OUTPUT
+;
+.file_hash bc.$UUID.s0.key
+SECONDARY_PRIVKEY_HASH=$OUTPUT
 ;
 #Creating genesis block for identity '$IDENT'...
 ;
-.file_tag -remove bc.TEMP_P0.pub
-.file_tag $PRIMARY_HASH bc.%IDENT%_P0.pub
+.file_tag -remove bc.$UUID.p0.pub
+.file_tag $PRIMARY_PUBKEY_HASH bc.%IDENT%.p0.pub
 ;
-.file_tag -remove bc.TEMP_S0.pub
-.file_tag $SECONDARY_HASH bc.%IDENT%_S0.pub
+.file_tag -remove bc.$UUID.p0.key
+.file_tag $PRIMARY_PRIVKEY_HASH bc.%IDENT%.p0.key
 ;
-.file_hash bc.%IDENT%_S0.pub
+.file_tag -remove bc.$UUID.s0.pub
+.file_tag $SECONDARY_PUBKEY_HASH bc.%IDENT%.s0.pub
+;
+.file_tag -remove bc.$UUID.s0.key
+.file_tag $SECONDARY_PRIVKEY_HASH bc.%IDENT%.s0.key
+;
+.file_hash bc.%IDENT%.s0.pub
 .encode $OUTPUT
 SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;

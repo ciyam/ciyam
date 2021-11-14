@@ -25,14 +25,10 @@ ENTROPY_HASH_PN=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH_PN
 ;
-.crypto_hash -file new_primary.pub
+.file_put new_primary.key bc.$IDENT.p$HEIGHT.key
+.file_crypt bc.$IDENT.p$HEIGHT.key @sid
 ;
-.file_kill -q new_primary.key
-;
-.file_put new_primary.key primary.key.n
-.file_crypt primary.key.n @sid
-;
-.file_put new_primary.pub bc.%IDENT%_P%HEIGHT%.pub
+.file_put new_primary.pub bc.$IDENT.p$HEIGHT.pub
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
