@@ -3,6 +3,8 @@
 @else
 SEED=$1
 ;
+UTIME=@unix:
+;
 .session_variable @uuid
 UUID=$OUTPUT
 ;
@@ -64,5 +66,6 @@ SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
 .file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC\n\
-s:$SECONDARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+s:$SECONDARY_PUBKEY_HASH_ENC\n\
+u:$UTIME bc.$IDENT.0.blk
 @endif
