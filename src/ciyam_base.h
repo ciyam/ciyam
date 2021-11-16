@@ -223,26 +223,26 @@ void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, exte
 
 void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext_key );
 
-void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s,
- const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
+void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data,
+ bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
 
-inline std::string CIYAM_BASE_DECL_SPEC decrypt_data(
- const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false )
+inline std::string CIYAM_BASE_DECL_SPEC decrypt_data( const std::string& data,
+ bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
 {
    std::string s;
-   decrypt_data( s, data, no_ssl, no_salt, hash_only );
+   decrypt_data( s, data, no_ssl, no_salt, hash_only, pwd_and_data );
 
    return s;
 }
 
-void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s,
- const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
+void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data,
+ bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
 
-inline std::string CIYAM_BASE_DECL_SPEC encrypt_data(
- const std::string& data, bool no_ssl = false, bool no_salt = false, bool hash_only = false )
+inline std::string CIYAM_BASE_DECL_SPEC encrypt_data( const std::string& data,
+ bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
 {
    std::string s;
-   encrypt_data( s, data, no_ssl, no_salt, hash_only );
+   encrypt_data( s, data, no_ssl, no_salt, hash_only, pwd_and_data );
 
    return s;
 }

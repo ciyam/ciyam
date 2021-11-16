@@ -1,3 +1,8 @@
+; Copyright (c) 2021 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
 @ifeq "$1" ""
 #Usage: bc_gen.cin <seed>
 @else

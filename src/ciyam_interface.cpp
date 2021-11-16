@@ -1403,6 +1403,19 @@ void request_handler::process_request( )
 
                         g_id = get_id_from_server_id( server_id.c_str( ) );
 
+                        string encrypted_id;
+
+                        if( file_exists( c_eid_file ) )
+                        {
+                           encrypted_id = buffer_file( c_eid_file );
+
+                           if( server_id != encrypted_id && !file_exists( c_id_file ) )
+                           {
+                              login_refresh = true;
+                              g_seed = string( c_unlock );
+                           }
+                        }
+
                         // NOTE: If is the first time but the identity matches what had already
                         // been saved previously then do not output the "system identity" form.
                         if( old_id == g_id || !g_seed.empty( ) )
@@ -1428,10 +1441,8 @@ void request_handler::process_request( )
                         {
                            bool needs_to_unlock = false;
 
-                           if( file_exists( c_eid_file ) )
+                           if( !encrypted_id.empty( ) )
                            {
-                              string encrypted_id( buffer_file( c_eid_file ) );
-
                               if( g_unlock_fails || server_id == encrypted_id )
                                  needs_to_unlock = true;
                            }
@@ -2697,12 +2708,12 @@ void request_handler::process_request( )
          osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
 
       bool is_logged_in = false;
-      bool has_output_go_back = false;
+      bool has_output_extra = false;
 
       if( !created_session && p_session_info && p_session_info->logged_in )
       {
          is_logged_in = true;
-         has_output_go_back = true;
+         has_output_extra = true;
 
          osstr << "<p class=\"text_with_back\">"
           << string_message( GDS( c_display_click_here_to_go_back ),
@@ -2716,7 +2727,7 @@ void request_handler::process_request( )
          if( force_refresh )
          {
             is_logged_in = true;
-            has_output_go_back = true;
+            has_output_extra = true;
 
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_go_back ),
@@ -2726,12 +2737,13 @@ void request_handler::process_request( )
          else if( login_refresh )
          {
             is_logged_in = true;
-            has_output_go_back = true;
+            has_output_extra = true;
 
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_login ),
              make_pair( c_display_click_here_to_login_parm_href,
-             "<a href=\"javascript:refresh( )\">" ), "</a>" ) << "</p>\n";
+             "<a href=\"" + get_module_page_name( module_ref, true )
+             + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) + "</p>\n";
          }
       }
 
@@ -2765,7 +2777,7 @@ void request_handler::process_request( )
 
          extra_content << osstr.str( );
 
-         if( !has_output_go_back )
+         if( !has_output_extra )
          {
             extra_content << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_retry ),

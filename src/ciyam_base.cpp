@@ -4410,7 +4410,15 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
    if( !is_encrypted || s.length( ) >= 32 )
       set_sid( s );
    else
+   {
+      string encrypted( g_sid );
+
       data_decrypt( g_sid, g_sid, s );
+
+      // NOTE: If invalid password then restore the encrypted value.
+      if( !are_hex_nibbles( g_sid ) )
+         g_sid = encrypted;
+   }
 
    if( p_encrypted_sid )
       write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
@@ -4719,15 +4727,34 @@ void verify_active_external_service( const string& ext_key )
        make_pair( c_str_parm_external_service_unavailable_symbol, ext_key ) ) );
 }
 
-void decrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, bool hash_only )
+void decrypt_data( string& s, const string& data,
+ bool no_ssl, bool no_salt, bool hash_only, bool pwd_and_data )
 {
    string key;
+   string str( data );
 
    key.reserve( c_key_reserve_size );
+
+   string::size_type pos = 0;
+
+   if( pwd_and_data )
+   {
+      pos = str.find( ' ' );
+
+      if( pos == string::npos )
+         pos = 0;
+      else
+      {
+         key.resize( pos );
+         memcpy( &key[ 0 ], &str[ 0 ], pos );
+
+         str.erase( 0, pos + 1 );
+      }
+   }
 
    // NOTE: If "no_salt" was specified then an empty key is used (so "no_salt" should
    // only ever be set "true" for the purpose of performing simple regression tests).
-   if( !no_salt )
+   if( !no_salt && ( pos == 0 ) )
    {
       sid_hash( key );
 
@@ -4735,19 +4762,39 @@ void decrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, boo
          key += string( c_salt_value );
    }
 
-   data_decrypt( s, data, key, !no_ssl );
+   data_decrypt( s, str, key, !no_ssl );
 
    clear_key( key );
+   clear_key( str );
 }
 
-void encrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, bool hash_only )
+void encrypt_data( string& s, const string& data,
+ bool no_ssl, bool no_salt, bool hash_only, bool pwd_and_data )
 {
    string key;
+   string str( data );
 
    key.reserve( c_key_reserve_size );
 
+   string::size_type pos = 0;
+
+   if( pwd_and_data )
+   {
+      pos = str.find( ' ' );
+
+      if( pos == string::npos )
+         pos = 0;
+      else
+      {
+         key.resize( pos );
+         memcpy( &key[ 0 ], &str[ 0 ], pos );
+
+         str.erase( 0, pos + 1 );
+      }
+   }
+
    // NOTE: (see above)
-   if( !no_salt )
+   if( !no_salt && ( pos == 0 ) )
    {
       sid_hash( key );
 
@@ -4755,9 +4802,10 @@ void encrypt_data( string& s, const string& data, bool no_ssl, bool no_salt, boo
          key += string( c_salt_value );
    }
 
-   data_encrypt( s, data, key, !no_ssl, !no_salt );
+   data_encrypt( s, str, key, !no_ssl, !no_salt );
 
    clear_key( key );
+   clear_key( str );
 }
 
 string totp_secret_key( const string& unique )

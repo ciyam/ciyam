@@ -1,0 +1,22 @@
+; Copyright (c) 2021 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.session_variable @pubkey
+EXT_PUBKEY=$OUTPUT
+;
+DATA_AND_PUBKEY=@password:Enter Password and Entropy:$EXT_PUBKEY
+ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
+.encrypt -pwd_data $ARGS
+ENCRYPTED=$OUTPUT
+;
+.identity $ENCRYPTED
+IDENT=@substr:0,40:$OUTPUT
+;
+.system_variable @os
+@ifneq "$OUTPUT" "Linux"
+~echo $IDENT > $WEBDIR/meta/encrypted.txt
+@else
+~echo -n $IDENT > $WEBDIR/meta/encrypted.txt
+@endif

@@ -5684,9 +5684,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_no_salt ) );
+         bool pwd_data( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_pwd_data ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_decrypt_data ) );
 
-         decrypt_data( response, data, no_ssl, no_salt );
+         decrypt_data( response, data, no_ssl, no_salt, false, pwd_data );
 
          clear_key( data );
          clear_response = true;
@@ -5695,6 +5696,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_salt ) );
+         bool pwd_data( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_pwd_data ) );
          string data( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_data ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_pubkey ) );
 
@@ -5704,7 +5706,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( data, pubkey, data );
          }
 
-         encrypt_data( response, data, no_ssl, no_salt );
+         encrypt_data( response, data, no_ssl, no_salt, false, pwd_data );
 
          clear_key( data );
       }
