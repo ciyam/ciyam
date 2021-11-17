@@ -4148,8 +4148,13 @@ void init_globals( )
 
    try
    {
+      g_sid.reserve( c_key_reserve_size );
+
       if( file_exists( c_server_sid_file ) )
-         g_sid = buffer_file( c_server_sid_file );
+      {
+         buffer_file( g_sid, c_server_sid_file );
+         set_sid( g_sid );
+      }
 
       read_server_configuration( );
 
@@ -4400,16 +4405,13 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
 
    bool is_encrypted = false;
 
-   // NOTE: In case of previous decryption failure reload the encrypted identity.
-   if( s.length( ) < 32 && file_exists( c_server_sid_file ) )
-      g_sid = buffer_file( c_server_sid_file );
-   
    if( g_sid.find( ':' ) != string::npos )
       is_encrypted = true;
 
-   if( !is_encrypted || s.length( ) >= 32 )
+   // NOTE: Encrypted identity passwords must be < 32 characters.
+   if( s.length( ) >= 32 )
       set_sid( s );
-   else
+   else if( is_encrypted )
    {
       string encrypted( g_sid );
 
@@ -4418,6 +4420,8 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
       // NOTE: If invalid password then restore the encrypted value.
       if( !are_hex_nibbles( g_sid ) )
          g_sid = encrypted;
+      else
+         set_sid( g_sid );
    }
 
    if( p_encrypted_sid )

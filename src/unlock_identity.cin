@@ -1,0 +1,19 @@
+; Copyright (c) 2021 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.identity
+IDENT=@substr:0,40:$OUTPUT
+DATA_AND_PUBKEY=@password:Enter Password to Unlock Identity:$EXT_PUBKEY
+ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
+;
+.identity $ARGS
+NEW_IDENT=@substr:0,40:$OUTPUT
+;
+@ifneq "$IDENT" "$NEW_IDENT"
+#Unlocked Identity: $NEW_IDENT
+@else
+#Unchanged Identity: $IDENT
+#(identity is not encrypted or already unlocked or password was incorrect)
+@endif

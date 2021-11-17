@@ -3,15 +3,27 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
+SID_FILE=@files::ciyam_server.sid,^.sav
+;
+@ifdef $SID_FILE
+.identity
+IDENT=@substr:0,40:$OUTPUT
+#Existing Identity: $IDENT
+@else
+;
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
+;
+.crypto_seed
+.crypto_seed "$OUTPUT"
+#$OUTPUT
 ;
 DATA_AND_PUBKEY=@password:Enter Password and Entropy:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -pwd_data $ARGS
 ENCRYPTED=$OUTPUT
 ;
-.identity $ENCRYPTED
+.identity $ENCRYPTED $ENCRYPTED
 IDENT=@substr:0,40:$OUTPUT
 ;
 .system_variable @os
@@ -19,4 +31,6 @@ IDENT=@substr:0,40:$OUTPUT
 ~echo $IDENT > $WEBDIR/meta/encrypted.txt
 @else
 ~echo -n $IDENT > $WEBDIR/meta/encrypted.txt
+@endif
+;
 @endif
