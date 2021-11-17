@@ -15,16 +15,18 @@ IDENT=@substr:0,40:$OUTPUT
 EXT_PUBKEY=$OUTPUT
 ;
 .crypto_seed
-.crypto_seed "$OUTPUT"
-#$OUTPUT
+MNEMONICS=$OUTPUT
+.crypto_seed "$MNEMONICS"
+#Possible Entropy: $OUTPUT ($MNEMONICS)
 ;
-DATA_AND_PUBKEY=@password:Enter Password and Entropy:$EXT_PUBKEY
+DATA_AND_PUBKEY=@password:Enter Password and optional Entropy:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
-.encrypt -pwd_data $ARGS
+.encrypt -pwd_and_data $ARGS
 ENCRYPTED=$OUTPUT
 ;
 .identity $ENCRYPTED $ENCRYPTED
 IDENT=@substr:0,40:$OUTPUT
+#Encrypted Identity: $ENCRYPTED
 ;
 .system_variable @os
 @ifneq "$OUTPUT" "Linux"

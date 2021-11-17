@@ -109,8 +109,8 @@ trace "get/set trace flags" [<val//new_flags>]
 trace_flags "view available trace flags"
 decode "decode base64 to hex" <val//data>
 encode "encode hex to base64" <val//data>
-decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_data/pwd_data>]<val//data>
-encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_data/pwd_data>]<val//data>[<val/-k=/pubkey>]
+decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
+encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 password "retrieve an encrypted system password" <val//name>
 passtotp "retrieve a TOTP password" <val//secret>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]

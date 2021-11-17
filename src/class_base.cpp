@@ -5093,12 +5093,12 @@ string crypto_lamport( const string& filename,
    string seed( mnenomics_or_hex_seed );
 
    if( seed.empty( ) )
-      seed = get_mnemonics_or_hex_seed( seed );
+      get_mnemonics_or_hex_seed( seed, seed );
 
    string::size_type pos = seed.find_first_of( " ," );
 
    if( pos != string::npos )
-      seed = get_mnemonics_or_hex_seed( seed );
+      get_mnemonics_or_hex_seed( seed, seed );
 
    string extra;
 
@@ -5397,11 +5397,9 @@ string create_address_key_pair( const string& ext_key,
 #endif
 }
 
-string get_mnemonics_or_hex_seed( const string& mnemonics_or_hex_seed )
+void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
 {
    guard g( g_mutex );
-
-   string retval;
 
    // NOTE: This implemtation only supports 12 mnemonics which are each
    // 11 bits long (the final nibble for the full 132 bits is the first
@@ -5496,7 +5494,7 @@ string get_mnemonics_or_hex_seed( const string& mnemonics_or_hex_seed )
          if( byte != first_nibble )
             throw runtime_error( "invalid checksum for seed mnemonics" );
 
-         retval = osstr.str( );
+         s = osstr.str( );
       }
    }
    else
@@ -5581,13 +5579,11 @@ string get_mnemonics_or_hex_seed( const string& mnemonics_or_hex_seed )
          }
 
          if( i > 0 )
-            retval += ' ';
+            s += ' ';
 
-         retval += g_mnemonics[ mnemonic ];
+         s += g_mnemonics[ mnemonic ];
       }
    }
-
-   return retval;
 }
 
 bool active_external_service( const string& ext_key )

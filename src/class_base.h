@@ -1537,7 +1537,15 @@ std::string CIYAM_BASE_DECL_SPEC create_address_key_pair(
  const std::string& ext_key, std::string& pub_key, std::string& priv_key,
  const std::string& priv_info, bool is_secret = true, bool use_base64 = false, bool compressed = true );
 
-std::string CIYAM_BASE_DECL_SPEC get_mnemonics_or_hex_seed( const std::string& mnemonics_or_hex_seed );
+void CIYAM_BASE_DECL_SPEC get_mnemonics_or_hex_seed( std::string& s, const std::string& mnemonics_or_hex_seed );
+
+inline std::string get_mnemonics_or_hex_seed( const std::string& mnemonics_or_hex_seed )
+{
+   std::string s;
+   get_mnemonics_or_hex_seed( s, mnemonics_or_hex_seed );
+
+   return s;
+}
 
 bool CIYAM_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 

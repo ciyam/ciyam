@@ -4376,9 +4376,14 @@ void get_identity( string& s, bool prepend_sid, bool append_max_user_limit, bool
          else
          {
             string seed;
-            string mnemonics( get_mnemonics_or_hex_seed( seed ) );
+            string mnemonics;
 
-            s = get_mnemonics_or_hex_seed( mnemonics );
+            mnemonics.reserve( c_key_reserve_size );
+
+            get_mnemonics_or_hex_seed( mnemonics, seed );
+            get_mnemonics_or_hex_seed( s, mnemonics );
+
+            clear_key( mnemonics );
          }
 
          if( !suffix.empty( ) )
@@ -4787,7 +4792,25 @@ void encrypt_data( string& s, const string& data,
       pos = str.find( ' ' );
 
       if( pos == string::npos )
-         pos = 0;
+      {
+         key = str;
+         str.erase( );
+
+         string seed;
+         string mnemonics;
+         string seed_as_hex;
+
+         mnemonics.reserve( c_key_reserve_size );
+         seed_as_hex.reserve( c_key_reserve_size );
+
+         get_mnemonics_or_hex_seed( mnemonics, seed );
+         get_mnemonics_or_hex_seed( seed_as_hex, mnemonics );
+
+         str += seed_as_hex;
+
+         clear_key( mnemonics );
+         clear_key( seed_as_hex );
+      }
       else
       {
          key.resize( pos );
@@ -4795,10 +4818,14 @@ void encrypt_data( string& s, const string& data,
 
          str.erase( 0, pos + 1 );
       }
+
+      // NOTE: Assume is mnemonics if has eleven spaces.
+      if( count( str.begin( ), str.end( ), ' ' ) == 11 )
+         get_mnemonics_or_hex_seed( str, str );
    }
 
    // NOTE: (see above)
-   if( !no_salt && ( pos == 0 ) )
+   if( !no_salt && !pwd_and_data )
    {
       sid_hash( key );
 
