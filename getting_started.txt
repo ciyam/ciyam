@@ -101,8 +101,8 @@ Password:
 
 Once you have modified the <sql_password> value in "ciyam_server.sio" (and removed the # comment marker) then
 you will need to stop and restart the application server (if using Windows then focus on the "cmd" window for
-"ciyam_server" and type "ctrl-c" to shut it down and if using Linux type "fg" to bring the "ciyam_server" job
-to the foreground and type "ctrl-c" to shut it down).
+"ciyam_server" and type "Ctrl-c" to shut it down and if using Linux type "fg" to bring the "ciyam_server" job
+to the foreground and type "Ctrl-c" to shut it down).
 
 *************************************************************************************************************
 

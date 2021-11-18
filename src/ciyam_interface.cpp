@@ -2739,6 +2739,8 @@ void request_handler::process_request( )
             is_logged_in = true;
             has_output_extra = true;
 
+            // NOTE: An automatic refresh will occur but output this
+            // just in case it fails due to browser compatibility.
             osstr << "<p align=\"center\">"
              << string_message( GDS( c_display_click_here_to_login ),
              make_pair( c_display_click_here_to_login_parm_href,
@@ -2790,7 +2792,14 @@ void request_handler::process_request( )
       }
 
       if( is_logged_in )
-         extra_content << "<input type=\"hidden\" value=\"loggedIn = true; had_act_error = true;\" id=\"extra_content_func\"/>\n";
+      {
+         extra_content << "<input type=\"hidden\" value=\"loggedIn = true;";
+
+         if( login_refresh )
+            extra_content << " refresh( false );\" id=\"extra_content_func\"/>\n";
+         else
+            extra_content << " had_act_error = true;\" id=\"extra_content_func\"/>\n";
+      }
       else
       {
          if( g_is_blockchain_application )
