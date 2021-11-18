@@ -1464,9 +1464,9 @@ void request_handler::process_request( )
                               str_replace( identity_html,
                                c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
-                              str_replace( identity_html, c_identity_entropy, server_id );
+                              str_replace( identity_html, c_identity_mnemonics, server_id );
 
-                              str_replace( identity_html, c_identity, GDS( c_display_identity ) );
+                              str_replace( identity_html, c_mnemonics, GDS( c_display_mnemonics ) );
                               str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
 
                               str_replace( identity_html, c_password, GDS( c_display_password ) );

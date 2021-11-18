@@ -1477,6 +1477,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             info.reserve( c_secret_reserve_size );
             session_shared_decrypt( info, pubkey, info );
+
+            if( count( info.begin( ), info.end( ), ' ' ) == 11 )
+               get_mnemonics_or_hex_seed( info, info );
          }
 
          if( !info.empty( ) )

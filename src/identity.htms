@@ -11,28 +11,27 @@
 
 <form method="POST" name="identity" id="identity"
  onsubmit="return dyn_load( this, 'cmd=identity'
-  + '&data=' + document.identity.entropy.value + '&extra=' + escape( document.identity.password.value ), false );">
+  + '&data=' + escape( document.identity.entropy.value ) + '&extra=' + escape( document.identity.password.value ), false );">
 <table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>
-   <td align="right">@@identity</td>
+   <td align="right">@@mnemonics</td>
    <td>
-      <input class="loginfields" type="text" name="entropy" tabindex="1" value="@@identity_entropy"
-       id="entropy" size="32" maxlength="32" validate="reqd" onkeypress="className = 'loginfields'"/>
+      <textarea class="loginfields" name="entropy" rows="2" cols="35" id="entropy" maxlength="120" validate="reqd">@@identity_mnemonics</textarea>
    </td>
 </tr>
 <tr>
    <td align="right">@@password</td>
    <td>
        <input class="loginfields" type="password" name="password" tabindex="2"
-       id="password" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
+       id="password" size="25" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
    </td>
 </tr>
 <tr>
    <td align="right">@@verify_password</td>
    <td>
       <input class="loginfields" type="password" name="valpassword" id="valpassword"
-       tabindex="3" size="35" maxlength="50" validate="reqd;verify:password" onkeypress="className = 'loginfields'"/>
+       tabindex="3" size="25" maxlength="50" validate="reqd;verify:password" onkeypress="className = 'loginfields'"/>
    </td>
 </tr>
 <tr class="odd_data submit">

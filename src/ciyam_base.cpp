@@ -4376,14 +4376,7 @@ void get_identity( string& s, bool prepend_sid, bool append_max_user_limit, bool
          else
          {
             string seed;
-            string mnemonics;
-
-            mnemonics.reserve( c_key_reserve_size );
-
-            get_mnemonics_or_hex_seed( mnemonics, seed );
-            get_mnemonics_or_hex_seed( s, mnemonics );
-
-            clear_key( mnemonics );
+            get_mnemonics_or_hex_seed( s, seed );
          }
 
          if( !suffix.empty( ) )
@@ -4421,6 +4414,9 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
       string encrypted( g_sid );
 
       data_decrypt( g_sid, g_sid, s );
+
+      if( count( g_sid.begin( ), g_sid.end( ), ' ' ) == 11 )
+         get_mnemonics_or_hex_seed( g_sid, g_sid );
 
       // NOTE: If invalid password then restore the encrypted value.
       if( !are_hex_nibbles( g_sid ) )
