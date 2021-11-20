@@ -78,6 +78,8 @@ p:$PUB_KEY_HASH_ENC\n\
 s:$SIG_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
+.file_tag $OUTPUT bc.$IDENT.zenith
+;
 .file_tag -unlink bc.$IDENT.p$LAST.key
 ;
 .system_variable @os

@@ -161,6 +161,7 @@ enum special_var
    e_special_var_skip_blockchain_lock,
    e_special_var_package_install_extra,
    e_special_var_peer_is_synchronising,
+   e_special_var_blockchain_zenith_hash,
    e_special_var_total_child_field_in_parent
 };
 

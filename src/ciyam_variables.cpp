@@ -149,6 +149,7 @@ const char* const c_special_variable_secondary_validation = "@secondary_validati
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
+const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 mutex g_mutex;
@@ -601,6 +602,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_is_synchronising:
       s = string( c_special_variable_peer_is_synchronising );
+      break;
+
+      case e_special_var_blockchain_zenith_hash:
+      s = string( c_special_variable_blockchain_zenith_hash );
       break;
 
       case e_special_var_total_child_field_in_parent:

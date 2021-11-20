@@ -68,6 +68,7 @@ const char c_reprocess_prefix = '*';
 const char c_repository_suffix = '!';
 
 const char* const c_hello = "hello";
+const char* const c_bc_prefix = "bc.";
 
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
@@ -1785,7 +1786,7 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
       blockchain.erase( pos );
    }
 
-   if( !blockchain.empty( ) && !has_tag( "c" + blockchain ) )
+   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) && !has_tag( "c" + blockchain ) )
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
    if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
@@ -1794,10 +1795,8 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
    if( port.empty( ) )
       port = to_string( get_blockchain_port( blockchain ) );
 
-   // FUTURE: For now a dummy PID is being written/read so that the standard
-   // general purpose client can be used to connect as a peer (for testing).
-   // Perhaps this could be some specific peer identity in the future to act
-   // as a way of locating specific peers without using fixed IP addresses.
+   // NOTE: A dummy PID is being written/read here so that the standard general
+   // purpose client can be used to connect as a peer (for interactive testing).
    string pid( "peer" );
 
    if( !responder )
@@ -1875,7 +1874,12 @@ void peer_session::on_start( )
          string hash_or_tag;
 
          if( !blockchain.empty( ) )
-            hash_or_tag = string( "c" + blockchain + ".head" );
+         {
+            if( blockchain.find( c_bc_prefix ) == 0 )
+               hash_or_tag = string( blockchain + ".zenith" );
+            else
+               hash_or_tag = string( "c" + blockchain + ".head" );
+         }
 
          if( hash_or_tag.empty( ) )
             get_hello_data( hash_or_tag );
@@ -1884,13 +1888,26 @@ void peer_session::on_start( )
 
          if( !blockchain.empty( ) )
          {
-            string blockchain_head_hash;
+            if( blockchain.find( c_bc_prefix ) == 0 )
+            {
+               string blockchain_zenith_hash;
 
-            if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-               okay = false;
+               if( ap_socket->read_line( blockchain_zenith_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+                  okay = false;
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_head_hash ), blockchain_head_hash );
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_zenith_hash ), blockchain_zenith_hash );
+            }
+            else
+            {
+               string blockchain_head_hash;
+
+               if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+                  okay = false;
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_head_hash ), blockchain_head_hash );
+            }
          }
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;

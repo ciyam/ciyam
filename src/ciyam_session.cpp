@@ -2046,6 +2046,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             session_shared_decrypt( password, pubkey, password );
          }
 
+         if( password == get_special_var_name( e_special_var_sid ) )
+            get_identity( password, true, false, true );
+
          string src_hash( tag_or_hash );
 
          if( has_tag( tag_or_hash ) )
