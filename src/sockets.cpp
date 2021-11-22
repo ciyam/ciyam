@@ -452,10 +452,10 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, pr
 
 int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress* p_progress )
 {
-
    if( max_chars )
    {
       str.resize( max_chars );
+
       int len = read_line( &str[ 0 ], timeout, max_chars, p_progress );
 
       str.erase( len );

@@ -76,11 +76,11 @@ void module_Meta_command_functor::operator ( )( const string& command, const par
       // [<start commands_impl>]
       // [<finish commands_impl>]
 
-      handler.issue_command_reponse( osstr.str( ) );
+      handler.issue_command_response( osstr.str( ) );
    }
    catch( exception& x )
    {
-      handler.issue_command_reponse( string( c_response_error_prefix ) + x.what( ), true );
+      handler.issue_command_response( string( c_response_error_prefix ) + x.what( ), true );
    }
 }
 

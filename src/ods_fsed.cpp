@@ -327,7 +327,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string folder( get_parm_val( parameters, c_cmd_ods_fsed_cd_folder ) );
 
       if( folder.empty( ) )
-         handler.issue_command_reponse( ap_ofs->get_folder( ) );
+         handler.issue_command_response( ap_ofs->get_folder( ) );
       else
       {
          folder = ap_ofs->determine_folder( folder, ods_fsed_handler.get_std_out( ) );
@@ -527,7 +527,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
       string label_or_txid( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_txid ) );
 
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
          console_progress progress;
@@ -552,7 +552,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_ods_fsed_compress )
    {
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
          console_progress progress;
@@ -564,7 +564,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_ods_fsed_truncate )
    {
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
          ap_ods->truncate_log( );
    }

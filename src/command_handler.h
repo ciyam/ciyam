@@ -143,7 +143,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
 
    void do_execute_command( const std::string& cmd_and_args );
 
-   void issue_command_reponse( const std::string& response, bool is_special = false )
+   void issue_command_response( const std::string& response, bool is_special = false )
    {
       handle_command_response( quiet_command ? std::string( ) : response, is_special );
    }

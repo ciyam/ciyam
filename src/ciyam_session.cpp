@@ -5970,7 +5970,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    }
 
    if( !socket_handler.is_restoring( ) )
-      handler.issue_command_reponse( response, !send_okay_response );
+      handler.issue_command_response( response, !send_okay_response );
 
    if( clear_response )
       clear_key( response );

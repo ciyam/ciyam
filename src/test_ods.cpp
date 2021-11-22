@@ -500,7 +500,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          if( temp_node.get_file( ).get_id( ).is_new( ) )
          {
             if( !sorted )
-               handler.issue_command_reponse( temp_node.get_description( ) );
+               handler.issue_command_response( temp_node.get_description( ) );
             else
                folders.insert( temp_node.get_description( ) );
          }
@@ -510,7 +510,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             name += " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ')';
 
             if( !sorted )
-               handler.issue_command_reponse( name );
+               handler.issue_command_response( name );
             else
                file_info.insert( name );
          }
@@ -519,10 +519,10 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       if( sorted )
       {
          for( set< string >::iterator i = folders.begin( ); i!= folders.end( ); ++i )
-            handler.issue_command_reponse( *i );
+            handler.issue_command_response( *i );
 
          for( set< string >::iterator i = file_info.begin( ); i!= file_info.end( ); ++i )
-            handler.issue_command_reponse( *i );
+            handler.issue_command_response( *i );
       }
    }
    else if( command == c_cmd_test_ods_in )
@@ -583,7 +583,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             {
                if( !next_child_node.get_file( ).get_id( ).is_new( ) )
                {
-                  handler.issue_command_reponse( "'" + error_name + "' is a file not a folder" );
+                  handler.issue_command_response( "'" + error_name + "' is a file not a folder" );
                   had_error = true;
                   break;
                }
@@ -604,7 +604,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       }
 
       if( !found && !had_error )
-         handler.issue_command_reponse( "could not find folder: " + error_name );
+         handler.issue_command_response( "could not find folder: " + error_name );
 
       if( !found || had_error )
       {
@@ -625,7 +625,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       string name( get_parm_val( parameters, c_cmd_test_ods_add_name ) );
 
       if( name.find( '/' ) != string::npos )
-         handler.issue_command_reponse( "cannot use '"
+         handler.issue_command_response( "cannot use '"
           + name + "' for a folder name (contains special characters)" );
       else
       {
@@ -770,7 +770,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             found = true;
             if( temp_node.has_children( ) )
             {
-               handler.issue_command_reponse( "cannot delete folder with children" );
+               handler.issue_command_response( "cannot delete folder with children" );
                break;
             }
 
@@ -796,7 +796,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          o << node;
 
          if( !found )
-            handler.issue_command_reponse( "no folders deleted for: " + name );
+            handler.issue_command_response( "no folders deleted for: " + name );
          else
             o << node;
       }
@@ -881,7 +881,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
 
                *temp_node.get_file( new storable_file_extra( output_name, 0, p_progress ) );
 
-               handler.issue_command_reponse( "saved " + output_name
+               handler.issue_command_response( "saved " + output_name
                 + " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ")" );
 
                found = true;
@@ -891,7 +891,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       }
 
       if( !found )
-         handler.issue_command_reponse( "file '" + file_name + "' not found" + error_extra );
+         handler.issue_command_response( "file '" + file_name + "' not found" + error_extra );
    }
    else if( command == c_cmd_test_ods_trans )
    {
@@ -902,27 +902,27 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          trans_stack_levels[ trans_level ] = oid_stack.size( );
          trans_buffer[ trans_level++ ] = new ods::transaction( o, label );
 
-         handler.issue_command_reponse( "begin transaction (level = " + to_string( trans_level ) + ")" );
+         handler.issue_command_response( "begin transaction (level = " + to_string( trans_level ) + ")" );
       }
       else
-         handler.issue_command_reponse( "cannot exceed max. transaction depth (" + to_string( c_max_trans_depth ) + ")" );
+         handler.issue_command_response( "cannot exceed max. transaction depth (" + to_string( c_max_trans_depth ) + ")" );
    }
    else if( command == c_cmd_test_ods_commit )
    {
       if( trans_level )
       {
-         handler.issue_command_reponse( "commit transaction (level = " + to_string( trans_level ) + ")" );
+         handler.issue_command_response( "commit transaction (level = " + to_string( trans_level ) + ")" );
          trans_buffer[ trans_level - 1 ]->commit( );
          delete trans_buffer[ --trans_level ];
       }
       else
-         handler.issue_command_reponse( "no transaction to commit" );
+         handler.issue_command_response( "no transaction to commit" );
    }
    else if( command == c_cmd_test_ods_rollback )
    {
       if( trans_level )
       {
-         handler.issue_command_reponse( "rollback transaction (level = " + to_string( trans_level ) + ")" );
+         handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
          while( oid_stack.size( ) > trans_stack_levels[ trans_level - 1 ] )
          {
             oid_stack.pop( );
@@ -931,30 +931,30 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          delete trans_buffer[ --trans_level ];
       }
       else
-         handler.issue_command_reponse( "no transaction to rollback" );
+         handler.issue_command_response( "no transaction to rollback" );
    }
    else if( command == c_cmd_test_ods_trans_id )
    {
       if( !o.get_transaction_level( ) )
-         handler.issue_command_reponse( "0" );
+         handler.issue_command_response( "0" );
       else
-         handler.issue_command_reponse( to_string( o.get_transaction_id( ) ) );
+         handler.issue_command_response( to_string( o.get_transaction_id( ) ) );
    }
    else if( command == c_cmd_test_ods_trans_level )
-      handler.issue_command_reponse( to_string( o.get_transaction_level( ) ) );
+      handler.issue_command_response( to_string( o.get_transaction_level( ) ) );
    else if( command == c_cmd_test_ods_rewind )
    {
       string label_or_txid( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_txid ) );
 
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
          o.rewind_transactions( label_or_txid );
    }
    else if( command == c_cmd_test_ods_compress )
    {
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
       {
          console_progress progress;
@@ -966,7 +966,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_test_ods_truncate )
    {
       if( g_shared_write )
-         handler.issue_command_reponse( "*** must be locked for exclusive write to perform this operation ***" );
+         handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
          o.truncate_log( );
    }
@@ -974,7 +974,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    {
       while( trans_level )
       {
-         handler.issue_command_reponse( "rollback transaction (level = " + to_string( trans_level ) + ")" );
+         handler.issue_command_response( "rollback transaction (level = " + to_string( trans_level ) + ")" );
          delete trans_buffer[ --trans_level ];
       }
       test_handler.set_finished( );

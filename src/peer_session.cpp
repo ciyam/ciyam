@@ -1183,14 +1183,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.state( ) = e_peer_state_invalid;
                   else
                   {
-                     handler.issue_command_reponse( response, true );
+                     handler.issue_command_response( response, true );
 
                      string file_tag( blockchain + ".0.blk" );
 
                      // NOTE: If the initial "chk tag" does not exist then it is being assumed
                      // that the initiator has the chain (and the responder does not) and thus
                      // the responder will begin by requesting the first block.
-                     handler.issue_command_reponse( "get " + file_tag );
+                     handler.issue_command_response( "get " + file_tag, false );
 
                      string temp_file_name( "~" + uuid( ).as_string( ) );
 
@@ -1230,7 +1230,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                }
                else
                {
-                  handler.issue_command_reponse( response, true );
+                  handler.issue_command_response( response, true );
 
                   // NOTE: For the initial file transfer just a dummy "hello" blob.
                   string data, hello_hash;
@@ -1241,7 +1241,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   if( !has_file( hello_hash ) )
                      create_raw_file( data, false, dummy_tag.c_str( ) );
 
-                  handler.issue_command_reponse( "put " + hello_hash, true );
+                  handler.issue_command_response( "put " + hello_hash, true );
 
                   socket.set_delay( );
                   fetch_file( hello_hash, socket, p_progress );
@@ -1321,7 +1321,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !was_initial_state && socket_handler.get_is_responder( ) )
          {
-            handler.issue_command_reponse( response, true );
+            handler.issue_command_response( response, true );
             response.erase( );
 
             socket_handler.issue_cmd_for_peer( );
@@ -1362,7 +1362,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_responder( ) )
          {
-            handler.issue_command_reponse( response, true );
+            handler.issue_command_response( response, true );
             response.erase( );
 
             socket_handler.issue_cmd_for_peer( );
@@ -1478,7 +1478,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_responder( ) )
          {
-            handler.issue_command_reponse( response, true );
+            handler.issue_command_response( response, true );
             response.erase( );
 
             socket_handler.issue_cmd_for_peer( );
@@ -1496,7 +1496,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.get_is_responder( ) )
          {
-            handler.issue_command_reponse( response, true );
+            handler.issue_command_response( response, true );
             response.erase( );
 
             socket_handler.issue_cmd_for_peer( );
@@ -1550,7 +1550,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       socket_handler.state( ) = e_peer_state_invalid;
    }
 
-   handler.issue_command_reponse( response, !send_okay_response );
+   handler.issue_command_response( response, !send_okay_response );
 
    if( !send_okay_response )
    {
@@ -1944,6 +1944,9 @@ void peer_session::on_start( )
 
                if( ap_socket->read_line( blockchain_zenith_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
+
+               if( blockchain_zenith_hash == string( c_response_not_found ) )
+                  blockchain_zenith_hash.erase( );
 
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_zenith_hash ), blockchain_zenith_hash );
