@@ -1200,19 +1200,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         response.erase( );
 
-                        sha256 hash;
-                        hash.update( temp_file_name, true );
+                        string data( buffer_file( temp_file_name ) );
 
-                        string digest( hash.get_digest_as_string( ) );
+                        string file_hash( create_raw_file( data, true, file_tag.c_str( ) ) );
 
-                        if( digest.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                        if( file_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                        {
+                           delete_file( hash, true );
                            socket_handler.state( ) = e_peer_state_invalid;
+                        }
                         else
                         {
-                           string data( buffer_file( temp_file_name ) );
-
-                           create_raw_file( data, true, file_tag.c_str( ) );
-
                            socket_handler.state( ) = e_peer_state_waiting_for_put;
                            socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
