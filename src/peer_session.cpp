@@ -611,7 +611,8 @@ class socket_command_handler : public command_handler
    {
       had_usage = false;
 
-      needs_blockchain_info = !blockchain.empty( );
+      needs_blockchain_info = ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) );
+
       is_responder = ( session_state == e_peer_state_responder );
 
       if( get_is_test_session( ) )
