@@ -1936,6 +1936,8 @@ void peer_session::on_start( )
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
 
+         cmd_handler.state( ) = e_peer_state_waiting_for_put;
+
          if( !blockchain.empty( ) )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
@@ -1946,7 +1948,10 @@ void peer_session::on_start( )
                   okay = false;
 
                if( blockchain_zenith_hash == string( c_response_not_found ) )
+               {
                   blockchain_zenith_hash.erase( );
+                  cmd_handler.state( ) = e_peer_state_waiting_for_get;
+               }
 
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_zenith_hash ), blockchain_zenith_hash );
@@ -1962,8 +1967,6 @@ void peer_session::on_start( )
                 get_special_var_name( e_special_var_blockchain_head_hash ), blockchain_head_hash );
             }
          }
-
-         cmd_handler.state( ) = e_peer_state_waiting_for_put;
       }
 
       if( okay )
