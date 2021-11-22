@@ -996,14 +996,17 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
 #endif
 
-         if( !blockchain.empty( ) && top_next_peer_file_hash_to_get( ).empty( ) )
+         if( !blockchain.empty( )
+          && ( blockchain.find( c_bc_prefix ) != 0 )
+          && top_next_peer_file_hash_to_get( ).empty( ) )
             set_needs_blockchain_info( true );
       }
       else
       {
          get_hello( );
 
-         if( !blockchain.empty( ) )
+         if( !blockchain.empty( )
+          && ( blockchain.find( c_bc_prefix ) != 0 ) )
             set_needs_blockchain_info( true );
       }
    }
@@ -1211,47 +1214,16 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         verify_core_file( block_content, false );
 
-                        file_remove( temp_file_name );
                         increment_peer_files_downloaded( block_data.length( ) );
 
-                        socket_handler.put_hello( );
-
-                        // NOTE: Next retrieve the genesis primary public key.
-                        file_tag = blockchain + ".p0.pub";
-                        handler.issue_command_response( "get " + file_tag, true );
-
-                        store_temp_file( temp_file_name, socket, p_progress );
-
-                        string primary_data( buffer_file( temp_file_name ) );
-
-                        primary_hash = create_raw_file( primary_data, true, file_tag.c_str( ) );
-
-                        if( primary_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                           throw runtime_error( "incorrect primary public key hash '" + primary_hash + "'" );
-
-                        file_remove( temp_file_name );
-                        increment_peer_files_downloaded( primary_data.length( ) );
-
-                        socket_handler.put_hello( );
-
-                        // NOTE: Next retrieve the genesis secondary public key.
-                        file_tag = blockchain + ".s0.pub";
-                        handler.issue_command_response( "get " + file_tag, true );
-
-                        store_temp_file( temp_file_name, socket, p_progress );
-
-                        string secondary_data( buffer_file( temp_file_name ) );
-
-                        secondary_hash = create_raw_file( secondary_data, true, file_tag.c_str( ) );
-
-                        file_remove( temp_file_name );
-                        increment_peer_files_downloaded( secondary_data.length( ) );
-
-                        // NOTE: Finally verify the block again (this time will check that the keys match).
-                        verify_core_file( block_content, true );
+                        // NOTE: Also need to retrieve the primary and secondary public keys.
+                        add_peer_file_hash_for_get( blockchain + ".p0.pub" );
+                        add_peer_file_hash_for_get( blockchain + ".s0.pub" );
 
                         socket_handler.state( ) = e_peer_state_waiting_for_put;
                         socket_handler.trust_level( ) = e_peer_trust_level_normal;
+
+                        file_remove( temp_file_name );
                      }
                      catch( ... )
                      {
@@ -1259,12 +1231,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         if( !block_hash.empty( ) )
                            delete_file( block_hash );
-
-                        if( !primary_hash.empty( ) )
-                           delete_file( primary_hash );
-
-                        if( !secondary_hash.empty( ) )
-                           delete_file( secondary_hash );
 
                         throw;
                      }
