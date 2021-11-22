@@ -1163,8 +1163,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          // with the blockchain tag prefix (otherwise a peer might be able to find files
          // that are not intended for their discovery).
          if( !blockchain.empty( )
-          && tag_or_hash.find( "c" + blockchain ) != 0
-          && tag_or_hash.length( ) != ( c_sha256_digest_size * 2 ) )
+          && ( tag_or_hash.find( blockchain ) != 0 )
+          && ( tag_or_hash.find( "c" + blockchain ) != 0 )
+          && ( tag_or_hash.length( ) != ( c_sha256_digest_size * 2 ) ) )
             throw runtime_error( "invalid non-blockchain prefixed tag" );
 
          bool has = has_file( hash, false );
@@ -1177,7 +1178,56 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             if( was_initial_state )
             {
                if( !blockchain.empty( ) )
-                  socket_handler.state( ) = e_peer_state_invalid;
+               {
+                  if( tag_or_hash.find( c_bc_prefix ) != 0 )
+                     socket_handler.state( ) = e_peer_state_invalid;
+                  else
+                  {
+                     handler.issue_command_reponse( response, true );
+
+                     string file_tag( blockchain + ".0.blk" );
+
+                     // NOTE: If the initial "chk tag" does not exist then it is being assumed
+                     // that the initiator has the chain (and the responder does not) and thus
+                     // the responder will begin by requesting the first block.
+                     handler.issue_command_reponse( "get " + file_tag );
+
+                     string temp_file_name( "~" + uuid( ).as_string( ) );
+
+                     try
+                     {
+                        store_temp_file( temp_file_name, socket, p_progress );
+
+                        response.erase( );
+
+                        sha256 hash;
+                        hash.update( temp_file_name, true );
+
+                        string digest( hash.get_digest_as_string( ) );
+
+                        if( digest.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                           socket_handler.state( ) = e_peer_state_invalid;
+                        else
+                        {
+                           string data( buffer_file( temp_file_name ) );
+
+                           create_raw_file( data, true, file_tag.c_str( ) );
+
+                           socket_handler.state( ) = e_peer_state_waiting_for_put;
+                           socket_handler.trust_level( ) = e_peer_trust_level_normal;
+
+                           increment_peer_files_downloaded( data.length( ) );
+                        }
+
+                        file_remove( temp_file_name );
+                     }
+                     catch( ... )
+                     {
+                        file_remove( temp_file_name );
+                        throw;
+                     }
+                  }
+               }
                else
                {
                   handler.issue_command_reponse( response, true );
