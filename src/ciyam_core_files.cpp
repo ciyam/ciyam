@@ -4406,6 +4406,11 @@ string construct_new_transaction( const string& blockchain, const string& passwo
    return data;
 }
 
+string construct_blob_for_block_content( const string& block_content )
+{
+   return string( c_file_type_str_core_blob ) + block_content;
+}
+
 string construct_blob_for_block_content( const string& block_content, const string& block_signature )
 {
    return string( c_file_type_str_core_blob ) + block_content

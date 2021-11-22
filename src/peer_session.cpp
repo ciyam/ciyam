@@ -1187,6 +1187,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      string file_tag( blockchain + ".0.blk" );
 
+                     string file_hash;
+
                      // NOTE: If the initial "chk tag" does not exist then it is being assumed
                      // that the initiator has the chain (and the responder does not) and thus
                      // the responder will begin by requesting the first block.
@@ -1202,26 +1204,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         string data( buffer_file( temp_file_name ) );
 
-                        string file_hash( create_raw_file( data, true, file_tag.c_str( ) ) );
+                        file_hash = create_raw_file( data, true, file_tag.c_str( ) );
 
-                        if( file_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                        {
-                           delete_file( hash, true );
-                           socket_handler.state( ) = e_peer_state_invalid;
-                        }
-                        else
-                        {
-                           socket_handler.state( ) = e_peer_state_waiting_for_put;
-                           socket_handler.trust_level( ) = e_peer_trust_level_normal;
+                        string block_content(
+                         construct_blob_for_block_content( extract_file( file_hash, "" ) ) );
 
-                           increment_peer_files_downloaded( data.length( ) );
-                        }
+                        verify_core_file( block_content, false );
+
+                        socket_handler.state( ) = e_peer_state_waiting_for_put;
+                        socket_handler.trust_level( ) = e_peer_trust_level_normal;
+
+                        increment_peer_files_downloaded( data.length( ) );
 
                         file_remove( temp_file_name );
                      }
                      catch( ... )
                      {
                         file_remove( temp_file_name );
+
+                        if( !file_hash.empty( ) )
+                           delete_file( file_hash );
+
                         throw;
                      }
                   }

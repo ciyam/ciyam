@@ -133,6 +133,8 @@ std::string CIYAM_BASE_DECL_SPEC construct_new_transaction(
  const std::string& transaction_log_lines, bool use_core_file_format = true,
  std::string* p_tx_hash = 0, const std::vector< std::string >* p_file_info = 0 );
 
+std::string CIYAM_BASE_DECL_SPEC construct_blob_for_block_content( const std::string& block_content );
+
 std::string CIYAM_BASE_DECL_SPEC construct_blob_for_block_content(
  const std::string& block_content, const std::string& block_signature );
 
