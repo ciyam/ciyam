@@ -1187,7 +1187,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      string file_tag( blockchain + ".0.blk" );
 
-                     string file_hash;
+                     string block_hash, primary_hash, secondary_hash;
 
                      // NOTE: If the initial "chk tag" does not exist then it is being assumed
                      // that the initiator has the chain (and the responder does not) and thus
@@ -1198,32 +1198,73 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      try
                      {
-                        store_temp_file( temp_file_name, socket, p_progress );
-
                         response.erase( );
 
-                        string data( buffer_file( temp_file_name ) );
+                        store_temp_file( temp_file_name, socket, p_progress );
 
-                        file_hash = create_raw_file( data, true, file_tag.c_str( ) );
+                        string block_data( buffer_file( temp_file_name ) );
+
+                        block_hash = create_raw_file( block_data, true, file_tag.c_str( ) );
 
                         string block_content(
-                         construct_blob_for_block_content( extract_file( file_hash, "" ) ) );
+                         construct_blob_for_block_content( extract_file( block_hash, "" ) ) );
 
                         verify_core_file( block_content, false );
 
-                        socket_handler.state( ) = e_peer_state_waiting_for_put;
-                        socket_handler.trust_level( ) = e_peer_trust_level_normal;
+                        file_remove( temp_file_name );
+                        increment_peer_files_downloaded( block_data.length( ) );
 
-                        increment_peer_files_downloaded( data.length( ) );
+                        socket_handler.put_hello( );
+
+                        // NOTE: Next retrieve the genesis primary public key.
+                        file_tag = blockchain + ".p0.pub";
+                        handler.issue_command_response( "get " + file_tag, true );
+
+                        store_temp_file( temp_file_name, socket, p_progress );
+
+                        string primary_data( buffer_file( temp_file_name ) );
+
+                        primary_hash = create_raw_file( primary_data, true, file_tag.c_str( ) );
+
+                        if( primary_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                           throw runtime_error( "incorrect primary public key hash '" + primary_hash + "'" );
 
                         file_remove( temp_file_name );
+                        increment_peer_files_downloaded( primary_data.length( ) );
+
+                        socket_handler.put_hello( );
+
+                        // NOTE: Next retrieve the genesis secondary public key.
+                        file_tag = blockchain + ".s0.pub";
+                        handler.issue_command_response( "get " + file_tag, true );
+
+                        store_temp_file( temp_file_name, socket, p_progress );
+
+                        string secondary_data( buffer_file( temp_file_name ) );
+
+                        secondary_hash = create_raw_file( secondary_data, true, file_tag.c_str( ) );
+
+                        file_remove( temp_file_name );
+                        increment_peer_files_downloaded( secondary_data.length( ) );
+
+                        // NOTE: Finally verify the block again (this time will check that the keys match).
+                        verify_core_file( block_content, true );
+
+                        socket_handler.state( ) = e_peer_state_waiting_for_put;
+                        socket_handler.trust_level( ) = e_peer_trust_level_normal;
                      }
                      catch( ... )
                      {
                         file_remove( temp_file_name );
 
-                        if( !file_hash.empty( ) )
-                           delete_file( file_hash );
+                        if( !block_hash.empty( ) )
+                           delete_file( block_hash );
+
+                        if( !primary_hash.empty( ) )
+                           delete_file( primary_hash );
+
+                        if( !secondary_hash.empty( ) )
+                           delete_file( secondary_hash );
 
                         throw;
                      }
