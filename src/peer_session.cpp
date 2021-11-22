@@ -1080,7 +1080,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
 
    if( !response.empty( ) )
    {
-      if( !is_special || is_responder )
+      if( !is_special )
          socket.set_delay( );
       else
          socket.set_no_delay( );
@@ -1190,7 +1190,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      // NOTE: If the initial "chk tag" does not exist then it is being assumed
                      // that the initiator has the chain (and the responder does not) and thus
                      // the responder will begin by requesting the first block.
-                     handler.issue_command_response( "get " + file_tag, false );
+                     handler.issue_command_response( "get " + file_tag, true );
 
                      string temp_file_name( "~" + uuid( ).as_string( ) );
 
