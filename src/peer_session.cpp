@@ -1195,7 +1195,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      // NOTE: If the initial "chk tag" does not exist then it is being assumed
                      // that the initiator has the chain (and the responder does not) and thus
-                     // the responder will begin by requesting the first block.
+                     // the responder will begin by requesting the genesis block.
                      handler.issue_command_response( "get " + file_tag, true );
 
                      string temp_file_name( "~" + uuid( ).as_string( ) );
@@ -1218,10 +1218,32 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         increment_peer_files_downloaded( block_data.length( ) );
 
                         // NOTE: Also need to retrieve the primary and secondary public keys.
-                        add_peer_file_hash_for_get( blockchain + ".p0.pub" );
-                        add_peer_file_hash_for_get( blockchain + ".s0.pub" );
+                        string primary_pubkey_hash( get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
-                        socket_handler.state( ) = e_peer_state_waiting_for_put;
+                        if( primary_pubkey_hash.empty( ) )
+                           throw runtime_error( "unexpected missing primary pubkey hash" );
+
+                        add_peer_file_hash_for_get( primary_pubkey_hash );
+
+                        string secondary_pubkey_hash( get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+                        if( secondary_pubkey_hash.empty( ) )
+                           throw runtime_error( "unexpected missing secondary pubkey hash" );
+
+                        add_peer_file_hash_for_get( secondary_pubkey_hash );
+
+                        // NOTE: As the initiator may request it create the dummy "hello" blob.
+                        string data, hello_hash;
+                        data = get_hello_data( hello_hash );
+
+                        string dummy_tag( get_special_var_name( e_special_var_none ) );
+
+                        if( !has_file( hello_hash ) )
+                           create_raw_file( data, false, dummy_tag.c_str( ) );
+
+                        socket_handler.state( ) = e_peer_state_waiting_for_get;
                         socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
                         file_remove( temp_file_name );

@@ -151,6 +151,8 @@ const char* const c_special_variable_package_install_extra = "@package_install_e
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
+const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
+const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
 
 mutex g_mutex;
 
@@ -610,6 +612,14 @@ string get_special_var_name( special_var var )
 
       case e_special_var_total_child_field_in_parent:
       s = string( c_special_variable_total_child_field_in_parent );
+      break;
+
+      case e_special_var_blockchain_primary_pubkey_hash:
+      s = string( c_special_variable_blockchain_primary_pubkey_hash );
+      break;
+
+      case e_special_var_blockchain_secondary_pubkey_hash:
+      s = string( c_special_variable_blockchain_secondary_pubkey_hash );
       break;
 
       default:

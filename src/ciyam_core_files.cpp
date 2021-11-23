@@ -2615,8 +2615,13 @@ void verify_lamport( const string& content,
 
             has_primary_pubkey = true;
 
+            string primary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
+
             if( p_lamport_info )
-               p_lamport_info->public_key_hash = hex_encode( base64::decode( next_attribute ) );
+               p_lamport_info->public_key_hash = primary_pubkey_hash;
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
          }
          else if( !has_secondary_pubkey )
          {
@@ -2628,6 +2633,11 @@ void verify_lamport( const string& content,
             next_attribute.erase( 0, len );
 
             has_secondary_pubkey = true;
+
+            string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
          }
          else if( !unix_time_stamp )
          {
