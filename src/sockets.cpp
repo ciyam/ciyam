@@ -40,6 +40,8 @@ namespace
 
 const int c_default_line_size = 1024;
 
+const int c_max_progress_output_bytes = 132;
+
 const char* const c_base64_format = ".b64";
 
 struct scoped_empty_file_delete
@@ -417,7 +419,14 @@ int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout, progress
    }
 
    if( p_progress && rcvd )
-      p_progress->output_progress( ">R> " + string( ( const char* )buf, rcvd ) );
+   {
+      string suffix;
+
+      if( rcvd > c_max_progress_output_bytes )
+         suffix = "[...]";
+
+      p_progress->output_progress( ">R> " + string( ( const char* )buf, min( rcvd, c_max_progress_output_bytes ) ) + suffix );
+   }
 
    return rcvd;
 }
@@ -439,12 +448,16 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, pr
 
    if( p_progress )
    {
+      string suffix;
       string write_string( "<W< " );
 
       if( !get_delay( ) )
          write_string = string( "<W<!" );
 
-      p_progress->output_progress( write_string + string( ( const char* )buf, sent ) );
+      if( sent > c_max_progress_output_bytes )
+         suffix = "[...]";
+
+      p_progress->output_progress( write_string + string( ( const char* )buf, min( sent, c_max_progress_output_bytes ) ) + suffix );
    }
 
    return sent;
