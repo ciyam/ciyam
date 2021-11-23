@@ -594,6 +594,25 @@ string get_file_hash_from_put_data( const string& encoded_pubkey, const string& 
 }
 #endif
 
+void tag_public_key_file( const string& blockchain, const string& hash, size_t height, bool is_primary = true )
+{
+   guard g( g_mutex );
+
+   string pubkey_tag( blockchain );
+
+   if( is_primary )
+      pubkey_tag += ".p";
+   else
+      pubkey_tag += ".s";
+
+   pubkey_tag += to_string( height );
+
+   pubkey_tag += ".pub";
+
+   if( !has_tag( pubkey_tag ) )
+      tag_file( pubkey_tag, hash );
+}
+
 class socket_command_handler : public command_handler
 {
    public:
@@ -606,6 +625,7 @@ class socket_command_handler : public command_handler
     socket( socket ),
     is_local( is_local ),
     blockchain( blockchain ),
+    blockchain_height( 0 ),
     session_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
    {
@@ -715,6 +735,8 @@ class socket_command_handler : public command_handler
 
    string blockchain;
    pair< string, string > blockchain_info;
+
+   size_t blockchain_height;
 
    string last_command;
    string next_command;
@@ -990,7 +1012,27 @@ void socket_command_handler::issue_cmd_for_peer( )
          get_file( next_hash );
          pop_next_peer_file_hash_to_get( );
 
-         if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
+         string primary_pubkey_hash( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
+         string secondary_pubkey_hash( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+         if( next_hash == primary_pubkey_hash )
+         {
+            tag_public_key_file( blockchain, primary_pubkey_hash, blockchain_height );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+         }
+         else if( next_hash == secondary_pubkey_hash )
+         {
+            tag_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height, false );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+         }
+         else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
             process_core_file( next_hash, blockchain );
 #ifdef SSL_SUPPORT
          else
@@ -1223,6 +1265,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         if( primary_pubkey_hash.empty( ) )
                            throw runtime_error( "unexpected missing primary pubkey hash" );
+
+                        if( primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                           throw runtime_error( "invalid primary public key hash '"
+                            + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
 
                         add_peer_file_hash_for_get( primary_pubkey_hash );
 
