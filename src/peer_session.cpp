@@ -351,46 +351,54 @@ void process_core_file( const string& hash, const string& blockchain, size_t blo
 
       if( is_block( core_type ) )
       {
-         if( pos != string::npos )
+         try
          {
-            try
+            vector< pair< string, string > > extras;
+
+            string block_content;
+
+            if( pos != string::npos )
+               block_content = construct_blob_for_block_content(
+                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) );
+            else
+               block_content = construct_blob_for_block_content( extract_file( hash, "" ) );
+
+            verify_core_file( block_content, true, &extras );
+
+            if( !extras.empty( ) )
+               create_raw_file_with_extras( "", extras );
+
+            string primary_pubkey_hash( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
+            if( !primary_pubkey_hash.empty( ) )
             {
-               vector< pair< string, string > > extras;
+               if( !blockchain_height
+                && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                  throw runtime_error( "invalid primary public key hash '"
+                   + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
 
-               string block_content( construct_blob_for_block_content(
-                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
+               add_peer_file_hash_for_get( primary_pubkey_hash );
 
-               verify_core_file( block_content, true, &extras );
+               string file_tag( blockchain + '.'
+                + to_string( blockchain_height ) + c_block_suffix );
 
-               if( !extras.empty( ) )
-                  create_raw_file_with_extras( "", extras );
+               tag_file( file_tag, hash );
+            }
 
-               string primary_pubkey_hash( get_session_variable(
-                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+            string secondary_pubkey_hash( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
-               if( !primary_pubkey_hash.empty( ) )
-               {
-                  if( !blockchain_height
-                   && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                     throw runtime_error( "invalid primary public key hash '"
-                      + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
+            if( !secondary_pubkey_hash.empty( ) )
+               add_peer_file_hash_for_get( secondary_pubkey_hash );
 
-                  add_peer_file_hash_for_get( primary_pubkey_hash );
-               }
-
-               string secondary_pubkey_hash( get_session_variable(
-                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
-
-               if( !secondary_pubkey_hash.empty( ) )
-                  add_peer_file_hash_for_get( secondary_pubkey_hash );
-
+            if( primary_pubkey_hash.empty( ) )
                process_txs( blockchain, "" );
-            }
-            catch( ... )
-            {
-               delete_file( hash.substr( 0, pos ), false );
-               throw;
-            }
+         }
+         catch( ... )
+         {
+            delete_file( hash.substr( 0, pos ), false );
+            throw;
          }
       }
       else if( is_transaction( core_type ) )
