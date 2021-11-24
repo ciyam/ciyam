@@ -69,6 +69,7 @@ const char c_repository_suffix = '!';
 
 const char* const c_hello = "hello";
 const char* const c_bc_prefix = "bc.";
+const char* const c_key_suffix = ".key";
 const char* const c_block_suffix = ".blk";
 const char* const c_zenith_suffix = ".zenith";
 
@@ -323,7 +324,7 @@ string store_new_block( const string& blockchain, const string& password_hash )
    return process_txs( blockchain, "" );
 }
 
-void process_core_file( const string& hash, const string& blockchain )
+void process_core_file( const string& hash, const string& blockchain, size_t blockchain_height = 0 )
 {
    guard g( g_mutex );
 
@@ -361,7 +362,27 @@ void process_core_file( const string& hash, const string& blockchain )
 
                verify_core_file( block_content, true, &extras );
 
-               create_raw_file_with_extras( "", extras );
+               if( !extras.empty( ) )
+                  create_raw_file_with_extras( "", extras );
+
+               string primary_pubkey_hash( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
+               if( !primary_pubkey_hash.empty( ) )
+               {
+                  if( !blockchain_height
+                   && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                     throw runtime_error( "invalid primary public key hash '"
+                      + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
+
+                  add_peer_file_hash_for_get( primary_pubkey_hash );
+               }
+
+               string secondary_pubkey_hash( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+               if( !secondary_pubkey_hash.empty( ) )
+                  add_peer_file_hash_for_get( secondary_pubkey_hash );
 
                process_txs( blockchain, "" );
             }
@@ -1044,7 +1065,7 @@ void socket_command_handler::issue_cmd_for_peer( )
              get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
          }
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
-            process_core_file( next_hash, blockchain );
+            process_core_file( next_hash, blockchain, blockchain_height );
 #ifdef SSL_SUPPORT
          else
             process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
@@ -1227,6 +1248,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
           && ( tag_or_hash.length( ) != ( c_sha256_digest_size * 2 ) ) )
             throw runtime_error( "invalid non-blockchain prefixed tag" );
 
+         if( tag_or_hash.find( c_key_suffix ) != string::npos )
+            throw runtime_error( "invalid suspiciouus tag '" + tag_or_hash + "'" );
+
          bool has = has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
@@ -1390,62 +1414,67 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( tag_or_hash.find( c_bc_prefix ) == 0 )
                   {
-                     vector< string > tags;
-                     split( all_tags, tags, '\n' );
+                     string genesis_block_tag( blockchain + ".0" + c_block_suffix );
 
-                     for( size_t i = 0; i < tags.size( ); i++ )
+                     if( tag_or_hash != genesis_block_tag )
                      {
-                        string next_tag( tags[ i ] );
+                        vector< string > tags;
+                        split( all_tags, tags, '\n' );
 
-                        string::size_type pos = next_tag.find( blockchain );
-                        string::size_type spos = next_tag.find( c_block_suffix );
-
-                        // NOTE: Determine the current blockchain height and check whether the primary (and
-                        // possibly secondary) public key files are present (and were correctly tagged).
-                        if( pos == 0 && spos != string::npos )
+                        for( size_t i = 0; i < tags.size( ); i++ )
                         {
-                           next_tag.erase( spos );
+                           string next_tag( tags[ i ] );
 
-                           blockchain_height = from_string< size_t >( next_tag.substr( blockchain.length( ) ) );
+                           string::size_type pos = next_tag.find( blockchain );
+                           string::size_type spos = next_tag.find( c_block_suffix );
 
-                           string block_content(
-                            construct_blob_for_block_content( extract_file( hash, "" ) ) );
-
-                           verify_core_file( block_content, false );
-
-                           string primary_pubkey_hash( get_session_variable(
-                            get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
-
-                           if( !primary_pubkey_hash.empty( ) )
+                           // NOTE: Determine the current blockchain height and check whether the primary (and
+                           // possibly secondary) public key files are present (and were correctly tagged).
+                           if( pos == 0 && spos != string::npos )
                            {
-                              if( !has_file( primary_pubkey_hash ) )
-                                 add_peer_file_hash_for_get( primary_pubkey_hash );
-                              else
+                              next_tag.erase( spos );
+
+                              blockchain_height = from_string< size_t >( next_tag.substr( blockchain.length( ) ) );
+
+                              string block_content(
+                               construct_blob_for_block_content( extract_file( hash, "" ) ) );
+
+                              verify_core_file( block_content, false );
+
+                              string primary_pubkey_hash( get_session_variable(
+                               get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
+                              if( !primary_pubkey_hash.empty( ) )
                               {
-                                 tag_new_public_key_file( blockchain, primary_pubkey_hash, blockchain_height );
+                                 if( !has_file( primary_pubkey_hash ) )
+                                    add_peer_file_hash_for_get( primary_pubkey_hash );
+                                 else
+                                 {
+                                    tag_new_public_key_file( blockchain, primary_pubkey_hash, blockchain_height );
 
-                                 set_session_variable(
-                                  get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+                                    set_session_variable(
+                                     get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+                                 }
                               }
-                           }
-     
-                           string secondary_pubkey_hash( get_session_variable(
-                            get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+        
+                              string secondary_pubkey_hash( get_session_variable(
+                               get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
-                           if( !secondary_pubkey_hash.empty( ) )
-                           {
-                              if( !has_file( secondary_pubkey_hash ) )
-                                 add_peer_file_hash_for_get( secondary_pubkey_hash );
-                              else
+                              if( !secondary_pubkey_hash.empty( ) )
                               {
-                                 tag_new_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height, false );
+                                 if( !has_file( secondary_pubkey_hash ) )
+                                    add_peer_file_hash_for_get( secondary_pubkey_hash );
+                                 else
+                                 {
+                                    tag_new_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height, false );
 
-                                 set_session_variable(
-                                  get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+                                    set_session_variable(
+                                     get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+                                 }
                               }
-                           }
 
-                           break;
+                              break;
+                           }
                         }
                      }
                   }
@@ -1463,7 +1492,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
 
-         if( has && !blockchain.empty( ) && tag_or_hash == "c" + blockchain + ".info" )
+         if( has && !blockchain.empty( ) && ( tag_or_hash == "c" + blockchain + ".info" ) )
          {
             if( !socket_handler.get_blockchain_info( ).second.empty( ) )
                file_remove( socket_handler.get_blockchain_info( ).second );
@@ -2078,10 +2107,22 @@ void peer_session::on_start( )
 
          string hash_or_tag;
 
+         bool has_genesis_block = false;
+
          if( !blockchain.empty( ) )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
-               hash_or_tag = string( blockchain + c_zenith_suffix );
+            {
+               string genesis_block_tag( blockchain + ".0" + c_block_suffix );
+
+               if( !has_tag( genesis_block_tag ) )
+                  hash_or_tag = genesis_block_tag;
+               else
+               {
+                  has_genesis_block = true;
+                  hash_or_tag = string( blockchain + c_zenith_suffix );
+               }
+            }
             else
                hash_or_tag = string( "c" + blockchain + ".head" );
          }
@@ -2097,19 +2138,35 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               string blockchain_zenith_hash;
-
-               if( ap_socket->read_line( blockchain_zenith_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-                  okay = false;
-
-               if( blockchain_zenith_hash == string( c_response_not_found ) )
+               if( !has_genesis_block )
                {
-                  blockchain_zenith_hash.erase( );
-                  cmd_handler.state( ) = e_peer_state_waiting_for_get;
-               }
+                  string genesis_block_hash;
 
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_zenith_hash ), blockchain_zenith_hash );
+                  if( ap_socket->read_line( genesis_block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+                     okay = false;
+
+                  if( genesis_block_hash == string( c_response_not_found ) )
+                     throw runtime_error( "blockchain '" + blockchain + "' not found" );
+
+                  if( !genesis_block_hash.empty( ) )
+                     add_peer_file_hash_for_get( genesis_block_hash );
+               }
+               else
+               {
+                  string blockchain_zenith_hash;
+
+                  if( ap_socket->read_line( blockchain_zenith_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+                     okay = false;
+
+                  if( blockchain_zenith_hash == string( c_response_not_found ) )
+                  {
+                     blockchain_zenith_hash.erase( );
+                     cmd_handler.state( ) = e_peer_state_waiting_for_get;
+                  }
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_zenith_hash ), blockchain_zenith_hash );
+               }
             }
             else
             {
