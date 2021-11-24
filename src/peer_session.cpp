@@ -611,8 +611,7 @@ void tag_new_public_key_file( const string& blockchain, const string& hash, size
 
    pubkey_tag += ".pub";
 
-   if( !has_tag( pubkey_tag ) )
-      tag_file( pubkey_tag, hash );
+   tag_file( pubkey_tag, hash );
 
    if( is_primary )
    {
@@ -1389,13 +1388,77 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   string all_tags( get_hash_tags( hash ) );
 
-                  set< string > tags;
-                  split( all_tags, tags, '\n' );
+                  if( tag_or_hash.find( c_bc_prefix ) == 0 )
+                  {
+                     vector< string > tags;
+                     split( all_tags, tags, '\n' );
 
-                  string tag( "c" + blockchain + ".head" );
+                     for( size_t i = 0; i < tags.size( ); i++ )
+                     {
+                        string next_tag( tags[ i ] );
 
-                  if( !tags.count( tag ) )
-                     throw runtime_error( "blockchain " + blockchain + " was not found" );
+                        string::size_type pos = next_tag.find( blockchain );
+                        string::size_type spos = next_tag.find( c_block_suffix );
+
+                        // NOTE: Determine the current blockchain height and check whether the primary (and
+                        // possibly secondary) public key files are present (and were correctly tagged).
+                        if( pos == 0 && spos != string::npos )
+                        {
+                           next_tag.erase( spos );
+
+                           blockchain_height = from_string< size_t >( next_tag.substr( blockchain.length( ) ) );
+
+                           string block_content(
+                            construct_blob_for_block_content( extract_file( hash, "" ) ) );
+
+                           verify_core_file( block_content, false );
+
+                           string primary_pubkey_hash( get_session_variable(
+                            get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
+                           if( !primary_pubkey_hash.empty( ) )
+                           {
+                              if( !has_file( primary_pubkey_hash ) )
+                                 add_peer_file_hash_for_get( primary_pubkey_hash );
+                              else
+                              {
+                                 tag_new_public_key_file( blockchain, primary_pubkey_hash, blockchain_height );
+
+                                 set_session_variable(
+                                  get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+                              }
+                           }
+     
+                           string secondary_pubkey_hash( get_session_variable(
+                            get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+                           if( !secondary_pubkey_hash.empty( ) )
+                           {
+                              if( !has_file( secondary_pubkey_hash ) )
+                                 add_peer_file_hash_for_get( secondary_pubkey_hash );
+                              else
+                              {
+                                 tag_new_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height, false );
+
+                                 set_session_variable(
+                                  get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+                              }
+                           }
+
+                           break;
+                        }
+                     }
+                  }
+                  else
+                  {
+                     set< string > tags;
+                     split( all_tags, tags, '\n' );
+
+                     string tag( "c" + blockchain + ".head" );
+
+                     if( !tags.count( tag ) )
+                        throw runtime_error( "blockchain " + blockchain + " was not found" );
+                  }
                }
             }
          }

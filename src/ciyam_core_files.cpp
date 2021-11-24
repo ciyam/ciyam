@@ -2688,11 +2688,14 @@ void verify_lamport( const string& content,
 
             public_key_hash = hex_encode( base64::decode( next_attribute ) );
 
-            if( !has_file( public_key_hash ) )
+            if( check_sigs && !has_file( public_key_hash ) )
                throw runtime_error( "public key file '" + public_key_hash + "' not found" );
 
             if( p_lamport_info )
                p_lamport_info->public_key_hash = public_key_hash;
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
          }
          else if( signature_file_hash.empty( ) )
          {
