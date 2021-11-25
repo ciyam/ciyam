@@ -162,8 +162,10 @@ enum special_var
    e_special_var_package_install_extra,
    e_special_var_peer_is_synchronising,
    e_special_var_blockchain_zenith_hash,
+   e_special_var_blockchain_data_file_hash,
    e_special_var_total_child_field_in_parent,
    e_special_var_blockchain_primary_pubkey_hash,
+   e_special_var_blockchain_signature_file_hash,
    e_special_var_blockchain_secondary_pubkey_hash
 };
 

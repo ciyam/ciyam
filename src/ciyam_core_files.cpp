@@ -2708,11 +2708,14 @@ void verify_lamport( const string& content,
 
             signature_file_hash = hex_encode( base64::decode( next_attribute ) );
 
-            if( !has_file( signature_file_hash ) )
-               throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
 
             if( check_sigs )
             {
+               if( !has_file( signature_file_hash ) )
+                  throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
+
                string last_block_info( extract_file( last_block_hash, "", c_file_type_char_core_blob ) );
 
                string::size_type pos = last_block_info.find( ':' );
@@ -2728,18 +2731,21 @@ void verify_lamport( const string& content,
                   p_lamport_info->data_file_hash = data_file_hash;
 
                if( !has_file( data_file_hash ) )
-                  throw runtime_error( "data file '" + data_file_hash + "' not found" );
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
+               else
+               {
+                  string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
 
-               string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
+                  pos = data_file_info.find( ':' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected invalid data info in validate_lamport" );
 
-               pos = data_file_info.find( ':' );
-               if( pos == string::npos )
-                  throw runtime_error( "unexpected invalid data info in validate_lamport" );
+                  verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
 
-               verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
-
-               if( public_key_hash != data.public_key_hash )
-                  throw runtime_error( "unexpected public_key_hash does not match data info" );
+                  if( public_key_hash != data.public_key_hash )
+                     throw runtime_error( "unexpected public_key_hash does not match data info" );
+               }
             }
          }
          else if( !unix_time_stamp )
