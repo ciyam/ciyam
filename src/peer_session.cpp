@@ -1458,7 +1458,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.state( ) = e_peer_state_invalid;
                   else
                   {
-                     if( nonce.empty( ) )
+                     socket_handler.state( ) = e_peer_state_waiting_for_get;
+                     socket_handler.trust_level( ) = e_peer_trust_level_normal;
+
+                     if( !nonce.empty( ) )
                         add_peer_file_hash_for_get( nonce );
                      else
                         throw runtime_error( "neither initiator nor responder has genesis block for '" + blockchain + "'" );
