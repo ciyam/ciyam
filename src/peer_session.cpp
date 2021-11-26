@@ -1452,6 +1452,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             if( was_initial_state )
             {
+               // NOTE: Create the dummy "hello" blob as it will be required.
+               string data, hello_hash;
+               data = get_hello_data( hello_hash );
+
+               string dummy_tag( get_special_var_name( e_special_var_none ) );
+
+               if( !has_file( hello_hash ) )
+                  create_raw_file( data, false, dummy_tag.c_str( ) );
+
                if( !blockchain.empty( ) )
                {
                   if( tag_or_hash.find( c_bc_prefix ) != 0 )
@@ -1470,15 +1479,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                else
                {
                   handler.issue_command_response( response, true );
-
-                  // NOTE: For the initial file transfer just a dummy "hello" blob.
-                  string data, hello_hash;
-                  data = get_hello_data( hello_hash );
-
-                  string dummy_tag( get_special_var_name( e_special_var_none ) );
-
-                  if( !has_file( hello_hash ) )
-                     create_raw_file( data, false, dummy_tag.c_str( ) );
 
                   handler.issue_command_response( "put " + hello_hash, true );
 
