@@ -1458,52 +1458,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.state( ) = e_peer_state_invalid;
                   else
                   {
-                     string zenith_block_tag( blockchain + c_zenith_suffix );
-
-                     if( has_tag( zenith_block_tag ) )
-                     {
-                        string zenith_block_hash( tag_file_hash( zenith_block_tag ) );
-
-                        if( get_block_height_from_tags( blockchain, zenith_block_hash, blockchain_height ) )
-                        {
-                           string next_block_tag( blockchain
-                            + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
-
-                           string next_block_hash;
-
-                           socket_handler.chk_file( next_block_tag, &next_block_hash );
-
-                           if( !next_block_hash.empty( ) )
-                              add_peer_file_hash_for_get( next_block_hash );
-                        }
-                        else
-                           throw runtime_error( "unable to determine blockchain height from zenith block tags" );
-                     }
-                     else
-                     {
-                        string genesis_block_tag( blockchain + ".0" + c_blk_suffix );
-
-                        string genesis_block_hash;
-
-                        if( has_tag( genesis_block_tag ) )
-                        {
-                           genesis_block_hash = tag_file_hash( genesis_block_tag );
-
-                           process_block_for_height( blockchain, genesis_block_hash, blockchain_height );
-                        }
-                        else
-                        {
-                           socket_handler.chk_file( genesis_block_tag, &genesis_block_hash );
-
-                           if( !genesis_block_hash.empty( ) )
-                              add_peer_file_hash_for_get( genesis_block_hash );
-                        }
-                     }
-
-                     socket_handler.state( ) = e_peer_state_waiting_for_get;
-                     socket_handler.trust_level( ) = e_peer_trust_level_normal;
-
-#ifdef TEMP_TEST_CODE
                      handler.issue_command_response( response, true );
 
                      string file_tag( blockchain + '.'
@@ -1579,7 +1533,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         throw;
                      }
-#endif
                   }
                }
                else
@@ -2304,38 +2257,10 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               string genesis_block_tag( blockchain + ".0" + c_blk_suffix );
+               hash_or_tag = blockchain + ".0" + string( c_blk_suffix );
 
-               if( !has_tag( genesis_block_tag ) )
-                  hash_or_tag = genesis_block_tag;
-               else
-               {
+               if( has_tag( hash_or_tag ) )
                   has_genesis_block = true;
-
-                  bool rc = 0;
-                  string zenith_block_hash( tag_file_hash( blockchain + c_zenith_suffix, &rc ) );
-
-                  // NOTE: If the genesis block is present but no zenith tag exists then presumably
-                  // the one of the public keys is missing (perhaps due to losing socket connection
-                  // before they were fetched).
-                  if( !rc )
-                  {
-                     string genesis_hash( tag_file_hash( genesis_block_tag ) );
-
-                     process_block_for_height( blockchain, genesis_hash, 0 );
-
-                     hash_or_tag = blockchain + string( ".1" ) + c_blk_suffix;
-                  }
-                  else
-                  {
-                     size_t blockchain_height = 0;
-
-                     if( get_block_height_from_tags( blockchain, zenith_block_hash, blockchain_height ) )
-                        hash_or_tag = blockchain + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix;
-                     else
-                        throw runtime_error( "unexpected failure to determine block height from zenith block tags" );
-                  }
-               }
             }
             else
                hash_or_tag = string( "c" + blockchain + ".head" );
@@ -2352,28 +2277,17 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               if( !has_genesis_block )
+               string genesis_block_hash;
+
+               if( ap_socket->read_line( genesis_block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+                  okay = false;
+               else if( !has_genesis_block )
                {
-                  string genesis_block_hash;
-
-                  if( ap_socket->read_line( genesis_block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-                     okay = false;
-
                   if( genesis_block_hash == string( c_response_not_found ) )
                      throw runtime_error( "blockchain '" + blockchain + "' not found" );
 
                   if( !genesis_block_hash.empty( ) )
                      add_peer_file_hash_for_get( genesis_block_hash );
-               }
-               else
-               {
-                  string next_block_hash;
-
-                  if( ap_socket->read_line( next_block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-                     okay = false;
-
-                  if( next_block_hash != string( c_response_not_found ) )
-                     add_peer_file_hash_for_get( next_block_hash );
                }
             }
             else
