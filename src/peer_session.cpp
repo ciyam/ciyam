@@ -1458,6 +1458,52 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      socket_handler.state( ) = e_peer_state_invalid;
                   else
                   {
+                     string zenith_block_tag( blockchain + c_zenith_suffix );
+
+                     if( has_tag( zenith_block_tag ) )
+                     {
+                        string zenith_block_hash( tag_file_hash( zenith_block_tag ) );
+
+                        if( get_block_height_from_tags( blockchain, zenith_block_hash, blockchain_height ) )
+                        {
+                           string next_block_tag( blockchain
+                            + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+
+                           string next_block_hash;
+
+                           socket_handler.chk_file( next_block_tag, &next_block_hash );
+
+                           if( !next_block_hash.empty( ) )
+                              add_peer_file_hash_for_get( next_block_hash );
+                        }
+                        else
+                           throw runtime_error( "unable to determine blockchain height from zenith block tags" );
+                     }
+                     else
+                     {
+                        string genesis_block_tag( blockchain + ".0" + c_blk_suffix );
+
+                        string genesis_block_hash;
+
+                        if( has_tag( genesis_block_tag ) )
+                        {
+                           genesis_block_hash = tag_file_hash( genesis_block_tag );
+
+                           process_block_for_height( blockchain, genesis_block_hash, blockchain_height );
+                        }
+                        else
+                        {
+                           socket_handler.chk_file( genesis_block_tag, &genesis_block_hash );
+
+                           if( !genesis_block_hash.empty( ) )
+                              add_peer_file_hash_for_get( genesis_block_hash );
+                        }
+                     }
+
+                     socket_handler.state( ) = e_peer_state_waiting_for_get;
+                     socket_handler.trust_level( ) = e_peer_trust_level_normal;
+
+#ifdef TEMP_TEST_CODE
                      handler.issue_command_response( response, true );
 
                      string file_tag( blockchain + '.'
@@ -1533,6 +1579,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                         throw;
                      }
+#endif
                   }
                }
                else
@@ -1650,7 +1697,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_get_tag_or_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get )
-            throw runtime_error( "invalid state for get" );
+         {
+            if( !socket_handler.get_is_responder( ) )
+               throw runtime_error( "invalid state for get (initiator)" );
+            else
+               throw runtime_error( "invalid state for get (responder)" );
+         }
 
          string hash( tag_or_hash );
 
@@ -1691,7 +1743,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          string hash( get_parm_val( parameters, c_cmd_peer_session_put_hash ) );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_put )
-            throw runtime_error( "invalid state for put" );
+         {
+            if( !socket_handler.get_is_responder( ) )
+               throw runtime_error( "invalid state for put (initiator)" );
+            else
+               throw runtime_error( "invalid state for put (responder)" );
+         }
 
          socket.set_delay( );
 
@@ -2317,8 +2374,6 @@ void peer_session::on_start( )
 
                   if( next_block_hash != string( c_response_not_found ) )
                      add_peer_file_hash_for_get( next_block_hash );
-                  else
-                     cmd_handler.state( ) = e_peer_state_waiting_for_get;
                }
             }
             else
