@@ -2726,7 +2726,7 @@ void delete_files_for_tags( const string& pat, progress* p_progress )
 
    date_time dtm( date_time::local( ) );
 
-   string tags( list_file_tags( pat, 0, 0, 0, 0, 0, false, p_progress, &dtm ) );
+   string tags( list_file_tags( pat, 0, 0, 0, 0, 0, true, p_progress, &dtm ) );
 
    if( !tags.empty( ) )
    {
