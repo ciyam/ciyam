@@ -1207,7 +1207,7 @@ void socket_command_handler::issue_cmd_for_peer( )
 
             has_issued_chk = true;
 
-            if( genesis_block_hash != string( c_response_not_found ) )
+            if( !genesis_block_hash.empty( ) )
                add_peer_file_hash_for_get( genesis_block_hash );
          }
       }
