@@ -1192,7 +1192,29 @@ void socket_command_handler::issue_cmd_for_peer( )
       }
    }
    else if( !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
-      chk_file( prior_put( ) );
+   {
+      bool has_issued_chk = false;
+
+      if( blockchain.find( c_bc_prefix ) == 0 )
+      {
+         string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
+
+         // NOTE: If the genesis block is not present then check if it now exists.
+         if( !has_tag( genesis_block_tag ) )
+         {
+            string genesis_block_hash;
+            chk_file( genesis_block_tag, &genesis_block_hash );
+
+            has_issued_chk = true;
+
+            if( genesis_block_hash != string( c_response_not_found ) )
+               add_peer_file_hash_for_get( genesis_block_hash );
+         }
+      }
+
+      if( !has_issued_chk )
+         chk_file( prior_put( ) );
+   }
    else if( want_to_do_op( e_op_pip ) )
       pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
    else if( get_last_issued_was_put( ) )
@@ -1472,8 +1494,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                      if( !nonce.empty( ) )
                         add_peer_file_hash_for_get( nonce );
-                     else
-                        throw runtime_error( "neither initiator nor responder has genesis block for '" + blockchain + "'" );
                   }
                }
                else
@@ -2219,13 +2239,10 @@ void peer_session::on_start( )
                   okay = false;
                else if( !has_genesis_block )
                {
-                  if( genesis_block_hash == string( c_response_not_found ) )
-                     throw runtime_error( "blockchain '" + blockchain + "' not found" );
-
-                  if( !genesis_block_hash.empty( ) )
+                  if( genesis_block_hash != string( c_response_not_found ) )
                      add_peer_file_hash_for_get( genesis_block_hash );
                }
-               else
+               else if( genesis_block_hash != string( c_response_not_found ) )
                   process_block_for_height( blockchain, genesis_block_hash, 0 );
             }
             else
