@@ -1540,10 +1540,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   if( tag_or_hash.find( c_bc_prefix ) == 0 )
                   {
-                     string genesis_block_tag( blockchain + ".0" + c_blk_suffix );
-
-                     if( tag_or_hash != genesis_block_tag
-                      && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+                     if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                         process_block_for_height( blockchain, hash, blockchain_height );
                   }
                   else
@@ -2228,6 +2225,8 @@ void peer_session::on_start( )
                   if( !genesis_block_hash.empty( ) )
                      add_peer_file_hash_for_get( genesis_block_hash );
                }
+               else
+                  process_block_for_height( blockchain, genesis_block_hash, 0 );
             }
             else
             {
