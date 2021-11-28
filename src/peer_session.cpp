@@ -670,9 +670,6 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_zenith_hash ), block_hash );
-
    }
    catch( ... )
    {
@@ -1224,23 +1221,13 @@ void socket_command_handler::issue_cmd_for_peer( )
             {
                string next_block_hash( tag_file_hash( next_block_tag ) );
 
-               if( next_block_hash == get_session_variable(
-                get_special_var_name( e_special_var_blockchain_zenith_hash ) ) )
+               // NOTE: Use "blockchain_height_pending" here to ensure that only
+               // one "process_block_for_height" call will occur for each block.
+               if( blockchain_height == blockchain_height_pending )
                {
-                  ++blockchain_height;
+                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
 
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_zenith_hash ), "" );
-               }
-               else
-               {
-                  // NOTE: Use "blockchain_height_pending" here to ensure that only
-                  // one "process_block_for_height" call will occur for each block.
-                  if( blockchain_height == blockchain_height_pending )
-                  {
-                     process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
-                     blockchain_height_pending = blockchain_height + 1;
-                  }
+                  blockchain_height_pending = blockchain_height + 1;
                }
             }
             else
@@ -1297,6 +1284,8 @@ void socket_command_handler::issue_cmd_for_peer( )
          if( next_hash == data_file_hash )
          {
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
+
+            blockchain_height = blockchain_height_pending;
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
