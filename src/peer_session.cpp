@@ -377,14 +377,17 @@ void process_core_file( const string& hash, const string& blockchain, size_t blo
             if( !extras.empty( ) )
                create_raw_file_with_extras( "", extras );
 
+            string block_height( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_height ) ) );
+
             string primary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
             if( !primary_pubkey_hash.empty( ) )
             {
-               if( !blockchain_height
+               if( block_height == "0"
                 && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                  throw runtime_error( "invalid primary public key hash '"
+                  throw runtime_error( "invalid genesis primary public key hash '"
                    + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
 
                add_peer_file_hash_for_get( primary_pubkey_hash );
@@ -394,6 +397,9 @@ void process_core_file( const string& hash, const string& blockchain, size_t blo
 
                tag_file( file_tag, hash );
             }
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_height ), "" );
 
             string secondary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );

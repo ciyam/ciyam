@@ -2562,6 +2562,9 @@ void verify_lamport( const string& content,
             has_height = true;
 
             lamport_height = from_string< uint64_t >( value );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_height ), value );
          }
          else if( !has_identity )
          {
