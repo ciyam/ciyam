@@ -727,9 +727,6 @@ void process_public_key_file( const string& blockchain, const string& hash, size
        blockchain + '.' + to_string( height ) + c_blk_suffix ) );
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_zenith_hash ), block_hash );
    }
 }
 
@@ -828,6 +825,7 @@ class socket_command_handler : public command_handler
     is_local( is_local ),
     blockchain( blockchain ),
     blockchain_height( 0 ),
+    blockchain_height_pending( 0 ),
     session_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
    {
@@ -941,6 +939,7 @@ class socket_command_handler : public command_handler
    pair< string, string > blockchain_info;
 
    size_t blockchain_height;
+   size_t blockchain_height_pending;
 
    string last_command;
    string next_command;
@@ -1209,6 +1208,46 @@ void socket_command_handler::issue_cmd_for_peer( )
 
             if( !genesis_block_hash.empty( ) )
                add_peer_file_hash_for_get( genesis_block_hash );
+         }
+         else
+         {
+            // NOTE: Check whether a new block has been created either locally or remotely.
+            string next_block_tag( blockchain
+             + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+
+            if( has_tag( next_block_tag ) )
+            {
+               string next_block_hash( tag_file_hash( next_block_tag ) );
+
+               if( next_block_hash == get_session_variable(
+                get_special_var_name( e_special_var_blockchain_zenith_hash ) ) )
+               {
+                  ++blockchain_height;
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_zenith_hash ), "" );
+               }
+               else
+               {
+                  // NOTE: Use "blockchain_height_pending" here to ensure that only
+                  // one "process_block_for_height" call will occur for each block.
+                  if( blockchain_height == blockchain_height_pending )
+                  {
+                     process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
+                     blockchain_height_pending = blockchain_height + 1;
+                  }
+               }
+            }
+            else
+            {
+               string next_block_hash;
+               chk_file( next_block_tag, &next_block_hash );
+
+               has_issued_chk = true;
+
+               if( !next_block_hash.empty( ) )
+                  add_peer_file_hash_for_get( next_block_hash );
+            }
          }
       }
 
