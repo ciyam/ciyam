@@ -2717,7 +2717,7 @@ void verify_lamport( const string& content,
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
 
-            if( check_sigs )
+            if( check_sigs || has_file( signature_file_hash ) )
             {
                if( !has_file( signature_file_hash ) )
                   throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
