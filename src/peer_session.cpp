@@ -758,7 +758,7 @@ void process_public_key_file( const string& blockchain, const string& hash, size
    }
 }
 
-void process_block_for_height( const string& blockchain, const string& hash, size_t height )
+void process_block_for_height( const string& blockchain, const string& hash, size_t height, bool clear_session_vars = true )
 {
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
@@ -801,6 +801,24 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          add_peer_file_hash_for_get( secondary_pubkey_hash );
       else
          process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
+   }
+
+   if( clear_session_vars )
+   {
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_height ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
    }
 }
 
@@ -991,10 +1009,8 @@ void socket_command_handler::get_hello( )
    string data, hello_hash;
    data = get_hello_data( hello_hash );
 
-   string dummy_tag( get_special_var_name( e_special_var_none ) );
-
    if( !has_file( hello_hash ) )
-      create_raw_file( data, false, dummy_tag.c_str( ) );
+      create_raw_file( data, false );
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
@@ -1035,10 +1051,8 @@ void socket_command_handler::put_hello( )
    string data, hello_hash;
    data = get_hello_data( hello_hash );
 
-   string dummy_tag( get_special_var_name( e_special_var_none ) );
-
    if( !has_file( hello_hash ) )
-      create_raw_file( data, false, dummy_tag.c_str( ) );
+      create_raw_file( data, false );
 
    socket.set_delay( );
    socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_progress );
@@ -1251,7 +1265,7 @@ void socket_command_handler::issue_cmd_for_peer( )
                // one "process_block_for_height" call will occur for each block.
                if( blockchain_height == blockchain_height_pending )
                {
-                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
+                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1, false );
 
                   blockchain_height_pending = blockchain_height + 1;
                }
@@ -1537,10 +1551,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                string data, hello_hash;
                data = get_hello_data( hello_hash );
 
-               string dummy_tag( get_special_var_name( e_special_var_none ) );
-
                if( !has_file( hello_hash ) )
-                  create_raw_file( data, false, dummy_tag.c_str( ) );
+                  create_raw_file( data, false );
 
                if( !blockchain.empty( ) )
                {

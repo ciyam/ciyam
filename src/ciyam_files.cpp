@@ -1771,7 +1771,9 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    if( is_external && name.find( c_time_stamp_tag_prefix ) == 0 )
       throw runtime_error( "invalid file time-stamp prefixed tag name '" + name + "'" );
 
-   if( name != get_special_var_name( e_special_var_none ) )
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty tag name found in tag_file" );
+   else
    {
       string file_name( construct_file_name_from_hash( hash ) );
 
