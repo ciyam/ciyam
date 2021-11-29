@@ -670,6 +670,14 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
    }
    catch( ... )
    {
@@ -698,6 +706,12 @@ void process_signature_file( const string& blockchain, const string& hash, size_
       signature_tag += c_sig_suffix;
 
       tag_file( signature_tag, hash );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
    }
    catch( ... )
    {
