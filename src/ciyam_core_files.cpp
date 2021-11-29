@@ -2733,10 +2733,10 @@ void verify_lamport( const string& content,
                if( p_lamport_info )
                   p_lamport_info->data_file_hash = data_file_hash;
 
-               if( !has_file( data_file_hash ) )
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
-               else
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
+
+               if( has_file( data_file_hash ) )
                {
                   string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
 
