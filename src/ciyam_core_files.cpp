@@ -2563,8 +2563,9 @@ void verify_lamport( const string& content,
 
             lamport_height = from_string< uint64_t >( value );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_height ), value );
+            if( !p_lamport_info )
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_height ), value );
          }
          else if( !has_identity )
          {
@@ -2622,9 +2623,9 @@ void verify_lamport( const string& content,
 
             if( p_lamport_info )
                p_lamport_info->public_key_hash = primary_pubkey_hash;
-
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
+            else
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
          }
          else if( !has_secondary_pubkey )
          {
@@ -2639,8 +2640,9 @@ void verify_lamport( const string& content,
 
             string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+            if( !p_lamport_info )
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
          }
          else if( !unix_time_stamp )
          {
@@ -2696,9 +2698,9 @@ void verify_lamport( const string& content,
 
             if( p_lamport_info )
                p_lamport_info->public_key_hash = public_key_hash;
-
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
+            else
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
          }
          else if( signature_file_hash.empty( ) )
          {
@@ -2711,8 +2713,9 @@ void verify_lamport( const string& content,
 
             signature_file_hash = hex_encode( base64::decode( next_attribute ) );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
+            if( !p_lamport_info )
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
 
             if( check_sigs )
             {
@@ -2732,9 +2735,9 @@ void verify_lamport( const string& content,
 
                if( p_lamport_info )
                   p_lamport_info->data_file_hash = data_file_hash;
-
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
+               else
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
 
                if( has_file( data_file_hash ) )
                {
