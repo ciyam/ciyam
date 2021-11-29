@@ -384,8 +384,8 @@ struct session
 
    map< string, string > variables;
 
-   deque< string > file_hashs_to_get;
-   deque< string > file_hashs_to_put;
+   deque< string > file_hashes_to_get;
+   deque< string > file_hashes_to_put;
 
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
@@ -5794,11 +5794,18 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    return num_sessions;
 }
 
-void add_peer_file_hash_for_get( const string& hash )
+void add_peer_file_hash_for_get( const string& hash, size_t num_get_delays )
 {
    guard g( g_mutex );
 
-   gtp_session->file_hashs_to_get.push_back( hash );
+   if( find( gtp_session->file_hashes_to_get.begin( ),
+    gtp_session->file_hashes_to_get.end( ), hash ) == gtp_session->file_hashes_to_get.end( ) )
+   {
+      for( size_t i = 0; i < num_get_delays; i++ )
+         gtp_session->file_hashes_to_get.push_back( get_special_var_name( e_special_var_none ) );
+
+      gtp_session->file_hashes_to_get.push_back( hash );
+   }
 }
 
 void store_repository_entry_record( const string& key,
@@ -5850,8 +5857,16 @@ string top_next_peer_file_hash_to_get( )
 
    string hash;
 
-   if( !gtp_session->file_hashs_to_get.empty( ) )
-      hash = gtp_session->file_hashs_to_get.front( );
+   if( !gtp_session->file_hashes_to_get.empty( ) )
+   {
+      hash = gtp_session->file_hashes_to_get.front( );
+
+      if( hash == get_special_var_name( e_special_var_none ) )
+      {
+         hash.erase( );
+         gtp_session->file_hashes_to_get.pop_front( );
+      }
+   }
 
    return hash;
 }
@@ -5860,15 +5875,15 @@ void pop_next_peer_file_hash_to_get( )
 {
    guard g( g_mutex );
 
-   if( !gtp_session->file_hashs_to_get.empty( ) )
-      gtp_session->file_hashs_to_get.pop_front( );
+   if( !gtp_session->file_hashes_to_get.empty( ) )
+      gtp_session->file_hashes_to_get.pop_front( );
 }
 
 void add_peer_file_hash_for_put( const string& hash )
 {
    guard g( g_mutex );
 
-   gtp_session->file_hashs_to_put.push_back( hash );
+   gtp_session->file_hashes_to_put.push_back( hash );
 }
 
 void add_peer_file_hash_for_put_for_all_peers( const string& hash,
@@ -5884,7 +5899,7 @@ void add_peer_file_hash_for_put_for_all_peers( const string& hash,
        && ( include_self || g_sessions[ i ] != gtp_session )
        && ( !p_blockchain || *p_blockchain == g_sessions[ i ]->blockchain )
        && ( !p_session_variable || g_sessions[ i ]->variables.count( *p_session_variable ) ) )
-         g_sessions[ i ]->file_hashs_to_put.push_back( hash );
+         g_sessions[ i ]->file_hashes_to_put.push_back( hash );
    }
 }
 
@@ -5894,8 +5909,8 @@ string top_next_peer_file_hash_to_put( )
 
    string hash;
 
-   if( !gtp_session->file_hashs_to_put.empty( ) )
-      hash = gtp_session->file_hashs_to_put.front( );
+   if( !gtp_session->file_hashes_to_put.empty( ) )
+      hash = gtp_session->file_hashes_to_put.front( );
 
    return hash;
 }
@@ -5904,8 +5919,8 @@ void pop_next_peer_file_hash_to_put( )
 {
    guard g( g_mutex );
 
-   if( !gtp_session->file_hashs_to_put.empty( ) )
-      gtp_session->file_hashs_to_put.pop_front( );
+   if( !gtp_session->file_hashes_to_put.empty( ) )
+      gtp_session->file_hashes_to_put.pop_front( );
 }
 
 bool any_peer_still_has_file_hash_to_put(
@@ -5919,9 +5934,9 @@ bool any_peer_still_has_file_hash_to_put(
        && g_sessions[ i ]->is_peer_session
        && ( !p_blockchain || *p_blockchain == g_sessions[ i ]->blockchain ) )
       {
-         for( size_t j = 0; j < g_sessions[ i ]->file_hashs_to_put.size( ); j++ )
+         for( size_t j = 0; j < g_sessions[ i ]->file_hashes_to_put.size( ); j++ )
          {
-            if( g_sessions[ i ]->file_hashs_to_put[ j ] == hash )
+            if( g_sessions[ i ]->file_hashes_to_put[ j ] == hash )
                return true;
          }
       }
