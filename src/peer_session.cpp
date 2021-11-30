@@ -787,9 +787,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             add_peer_file_hash_for_get( primary_pubkey_hash );
          else
          {
-            if( !clear_session_vars )
-               add_peer_file_hash_for_put( primary_pubkey_hash );
-            else
+            if( clear_session_vars )
                process_public_key_file( blockchain, primary_pubkey_hash, height );
          }
       }
@@ -803,9 +801,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             add_peer_file_hash_for_get( data_file_hash );
          else
          {
-            if( !clear_session_vars )
-               add_peer_file_hash_for_put( data_file_hash );
-            else
+            if( clear_session_vars )
                process_data_file( blockchain, data_file_hash, height );
          }
       }
@@ -819,9 +815,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             add_peer_file_hash_for_get( signature_file_hash );
          else
          {
-            if( !clear_session_vars )
-               add_peer_file_hash_for_put( signature_file_hash );
-            else
+            if( clear_session_vars )
                process_signature_file( blockchain, signature_file_hash, height );
          }
       }
@@ -836,8 +830,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          else
          {
             if( clear_session_vars )
-               add_peer_file_hash_for_put( secondary_pubkey_hash );
-            else
                process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
          }
       }
@@ -1319,10 +1311,7 @@ void socket_command_handler::issue_cmd_for_peer( )
 
                if( !next_block_hash.empty( ) && !has_file( next_block_hash ) )
                {
-                  // NOTE: As the other peer could be expected to be pushing the
-                  // .dat, .sig and possibly two .pub files first will just wait
-                  // for the fourth "get" to request the block.
-                  add_peer_file_hash_for_get( next_block_hash, 4 );
+                  add_peer_file_hash_for_get( next_block_hash );
                   blockchain_height_pending = blockchain_height + 1;
                }
             }
