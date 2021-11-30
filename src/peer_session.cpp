@@ -1291,12 +1291,11 @@ void socket_command_handler::issue_cmd_for_peer( )
 
             if( has_tag( next_block_tag ) )
             {
-               string next_block_hash( tag_file_hash( next_block_tag ) );
-
                // NOTE: Use "blockchain_height_pending" here to ensure that only
                // one "process_block_for_height" call will occur for each block.
                if( blockchain_height == blockchain_height_pending )
                {
+                  string next_block_hash( tag_file_hash( next_block_tag ) );
                   process_block_for_height( blockchain, next_block_hash, blockchain_height + 1, false );
 
                   blockchain_height_pending = blockchain_height + 1;
@@ -1375,6 +1374,12 @@ void socket_command_handler::issue_cmd_for_peer( )
          else if( next_hash == signature_file_hash )
          {
             process_signature_file( blockchain, signature_file_hash, blockchain_height_pending );
+
+            string data_file_hash( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
+
+            if( !data_file_hash.empty( ) && !has_file( data_file_hash ) )
+               add_peer_file_hash_for_get( data_file_hash );
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
