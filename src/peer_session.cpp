@@ -757,9 +757,16 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
    }
+
+   if( is_primary )
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+   else
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
 }
 
-void process_block_for_height( const string& blockchain, const string& hash, size_t height, bool clear_session_vars = true )
+void process_block_for_height( const string& blockchain, const string& hash, size_t height )
 {
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
@@ -786,24 +793,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !has_file( primary_pubkey_hash ) )
             add_peer_file_hash_for_get( primary_pubkey_hash );
          else
-         {
-            if( clear_session_vars )
-               process_public_key_file( blockchain, primary_pubkey_hash, height );
-         }
-      }
-
-      string data_file_hash( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
-
-      if( !data_file_hash.empty( ) )
-      {
-         if( !has_file( data_file_hash ) )
-            add_peer_file_hash_for_get( data_file_hash );
-         else
-         {
-            if( clear_session_vars )
-               process_data_file( blockchain, data_file_hash, height );
-         }
+            process_public_key_file( blockchain, primary_pubkey_hash, height );
       }
 
       string signature_file_hash( get_session_variable(
@@ -814,10 +804,7 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !has_file( signature_file_hash ) )
             add_peer_file_hash_for_get( signature_file_hash );
          else
-         {
-            if( clear_session_vars )
-               process_signature_file( blockchain, signature_file_hash, height );
-         }
+            process_signature_file( blockchain, signature_file_hash, height );
       }
 
       string secondary_pubkey_hash( get_session_variable(
@@ -828,29 +815,19 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !has_file( secondary_pubkey_hash ) )
             add_peer_file_hash_for_get( secondary_pubkey_hash );
          else
-         {
-            if( clear_session_vars )
-               process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
-         }
+            process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
       }
-   }
 
-   if( clear_session_vars )
-   {
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_height ), "" );
+      string data_file_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
 
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+      if( !data_file_hash.empty( ) )
+      {
+         if( !has_file( data_file_hash ) )
+            add_peer_file_hash_for_get( data_file_hash );
+         else
+            process_data_file( blockchain, data_file_hash, height );
+      }
    }
 }
 
@@ -1296,7 +1273,7 @@ void socket_command_handler::issue_cmd_for_peer( )
                if( blockchain_height == blockchain_height_pending )
                {
                   string next_block_hash( tag_file_hash( next_block_tag ) );
-                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1, false );
+                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
 
                   blockchain_height_pending = blockchain_height + 1;
                }
@@ -1365,12 +1342,7 @@ void socket_command_handler::issue_cmd_for_peer( )
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
          }
          else if( next_hash == primary_pubkey_hash )
-         {
             process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending );
-
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
-         }
          else if( next_hash == signature_file_hash )
          {
             process_signature_file( blockchain, signature_file_hash, blockchain_height_pending );
@@ -1385,12 +1357,7 @@ void socket_command_handler::issue_cmd_for_peer( )
              get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
          }
          else if( next_hash == secondary_pubkey_hash )
-         {
             process_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height_pending, false );
-
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
-         }
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
             process_core_file( next_hash, blockchain, blockchain_height );
 #ifdef SSL_SUPPORT
