@@ -1946,6 +1946,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    if( !send_okay_response || is_condemned_session( ) )
    {
+      socket_handler.state( ) = e_peer_state_invalid;
+
       if( !is_captured_session( ) )
          handler.set_finished( );
       else if( !is_condemned_session( ) )
@@ -1964,12 +1966,24 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             error = "peer has terminated this connection";
 
          socket.close( );
+
+         if( !is_captured_session( ) )
+            handler.set_finished( );
+         else if( !is_condemned_session( ) )
+            condemn_this_session( );
+
          throw runtime_error( error );
       }
 
       if( response != string( c_response_okay ) )
       {
          socket.close( );
+
+         if( !is_captured_session( ) )
+            handler.set_finished( );
+         else if( !is_condemned_session( ) )
+            condemn_this_session( );
+
          throw runtime_error( "unexpected non-okay response from peer" );
       }
 
