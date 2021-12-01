@@ -1944,7 +1944,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    handler.issue_command_response( response, !send_okay_response );
 
-   if( !send_okay_response )
+   if( !send_okay_response || is_condemned_session( ) )
    {
       if( !is_captured_session( ) )
          handler.set_finished( );
@@ -1952,8 +1952,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          condemn_this_session( );
    }
    else if( !socket_handler.get_is_responder( )
-    && !g_server_shutdown && !is_condemned_session( )
-    && socket_handler.state( ) == e_peer_state_waiting_for_get )
+    && !g_server_shutdown && ( socket_handler.state( ) == e_peer_state_waiting_for_get ) )
    {
       string response;
       if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
