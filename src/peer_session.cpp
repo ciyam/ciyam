@@ -132,9 +132,9 @@ bool has_max_peers( )
    return g_num_peers >= get_max_peers( );
 }
 
-inline void issue_error( const string& message )
+inline void issue_error( const string& message, bool possibly_expected = false )
 {
-   TRACE_LOG( TRACE_ANYTHING, string( "peer session error: " ) + message );
+   TRACE_LOG( ( possibly_expected ? TRACE_SESSIONS : TRACE_ANYTHING ), string( "peer session error: " ) + message );
 }
 
 inline void issue_warning( const string& message )
@@ -1524,7 +1524,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    string response;
 
    bool send_okay_response = true;
-   bool possibly_expected_error = false;
+   bool possibly_expected_error = ( socket_handler.state( ) >= e_peer_state_waiting_for_get );
 
 #ifdef SSL_SUPPORT
    ssl_socket& socket( socket_handler.get_socket( ) );
@@ -1925,7 +1925,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    }
    catch( exception& x )
    {
-      TRACE_LOG( ( possibly_expected_error ? TRACE_SESSIONS : TRACE_ANYTHING ), string( "peer session error: " ) + x.what( ) );
+      TRACE_LOG( ( possibly_expected_error ? TRACE_SESSIONS : 0 ), string( "peer session error: " ) + x.what( ) );
 
       send_okay_response = false;
       response = string( c_response_error_prefix ) + x.what( );
@@ -2400,7 +2400,7 @@ void peer_session::on_start( )
    }
    catch( exception& x )
    {
-      issue_error( x.what( ) );
+      issue_error( x.what( ), true );
 
       ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
