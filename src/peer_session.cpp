@@ -766,8 +766,10 @@ void process_public_key_file( const string& blockchain, const string& hash, size
        get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
 }
 
-void process_block_for_height( const string& blockchain, const string& hash, size_t height )
+bool process_block_for_height( const string& blockchain, const string& hash, size_t height )
 {
+   bool retval = false;
+
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
@@ -796,17 +798,6 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             process_public_key_file( blockchain, primary_pubkey_hash, height );
       }
 
-      string signature_file_hash( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
-
-      if( !signature_file_hash.empty( ) )
-      {
-         if( !has_file( signature_file_hash ) )
-            add_peer_file_hash_for_get( signature_file_hash );
-         else
-            process_signature_file( blockchain, signature_file_hash, height );
-      }
-
       string secondary_pubkey_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
@@ -818,6 +809,17 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
             process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
       }
 
+      string signature_file_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
+
+      if( !signature_file_hash.empty( ) )
+      {
+         if( !has_file( signature_file_hash ) )
+            add_peer_file_hash_for_get( signature_file_hash );
+         else
+            process_signature_file( blockchain, signature_file_hash, height );
+      }
+
       string data_file_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
 
@@ -826,9 +828,14 @@ void process_block_for_height( const string& blockchain, const string& hash, siz
          if( !has_file( data_file_hash ) )
             add_peer_file_hash_for_get( data_file_hash );
          else
+         {
+            retval = true;
             process_data_file( blockchain, data_file_hash, height );
+         }
       }
    }
+
+   return retval;
 }
 
 bool get_block_height_from_tags( const string& blockchain, const string& hash, size_t& block_height )
@@ -1270,12 +1277,16 @@ void socket_command_handler::issue_cmd_for_peer( )
             {
                // NOTE: Use "blockchain_height_pending" here to ensure that only
                // one "process_block_for_height" call will occur for each block.
+               // If all of the block related files were found locally then must
+               // simply increase the height.
                if( blockchain_height == blockchain_height_pending )
                {
                   string next_block_hash( tag_file_hash( next_block_tag ) );
-                  process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
 
-                  blockchain_height_pending = blockchain_height + 1;
+                  if( process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 ) )
+                     blockchain_height = ++blockchain_height_pending;
+                  else
+                     blockchain_height_pending = blockchain_height + 1;
                }
             }
             else
@@ -1337,7 +1348,8 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
 
             blockchain_height = blockchain_height_pending;
-
+//idk
+TEMP_TRACE( "blockchain_height now = " + to_string( blockchain_height ) );
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
          }
