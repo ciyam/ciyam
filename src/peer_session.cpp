@@ -1949,7 +1949,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       socket_handler.state( ) = e_peer_state_invalid;
 
       if( !is_captured_session( ) )
+      {
+         if( is_condemned_session( ) && socket_handler.get_is_responder( ) )
+            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+
          handler.set_finished( );
+      }
       else if( !is_condemned_session( ) )
          condemn_this_session( );
    }

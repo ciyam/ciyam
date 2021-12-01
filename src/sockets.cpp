@@ -42,6 +42,7 @@ const int c_default_line_size = 1024;
 
 const int c_max_progress_output_bytes = 132;
 
+const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
 
 struct scoped_empty_file_delete
@@ -698,8 +699,8 @@ void file_transfer( const string& name,
             if( s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading send response for size_info in file transfer" );
 
-            // NOTE: If the receiver has already got the file then quietly end the transfer.
-            if( !next.empty( ) && next == ack_message_skip )
+            // NOTE: If the receiver has already got the file (or a peer session has been stopped) then quietly end the transfer.
+            if( !next.empty( ) && ( next == c_bye || next == ack_message_skip ) )
                break;
 
             if( next != ack_message_str )
@@ -807,6 +808,10 @@ void file_transfer( const string& name,
             if( lower( next ).find( "error" ) != string::npos )
                throw runtime_error( next );
 
+            // NOTE: This can occur in the case where a peer session has been stopped.
+            if( next == c_bye )
+               break;
+
             // FUTURE: A ".bin" format should be added to support binary file transfers.
             string::size_type pos = next.find( ':' );
             string::size_type fpos = next.find( c_base64_format );
@@ -839,8 +844,8 @@ void file_transfer( const string& name,
             s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
          }
 
-         // NOTE: If the receiver has already got the file then quietly end the transfer.
-         if( ack_message_str == ack_message_skip )
+         // NOTE: If the receiver has already got the file (or a peer session has been stopped) then quietly end the transfer.
+         if( ( ack_message_str == c_bye ) || ( ack_message_str == ack_message_skip ) )
             break;
 
          int received = s.recv_n( ( unsigned char* )&next[ 0 ], max_line_size, line_timeout, p_progress );
