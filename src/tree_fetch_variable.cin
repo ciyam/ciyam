@@ -31,7 +31,7 @@ LINES=@repstr:\:/\n:$TREE
 DEPTH=@$DEPTH+$OUTPUT
 ;
 .session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=V:$TREE:$VNAME $TTAG
+.file_info -recurse -d=-$DEPTH -p=Variables:$TREE:$VNAME $TTAG
 ;
 @ifdef $OUTPUT
 #%OUTPUT:-1%

@@ -13,7 +13,7 @@ FTYPE=%PARTS:1%
 ;
 @ifeq "$FTYPE" "[list]"
 .file_put packages.lst Packages
-.file_list -a=Packages -d=Packages -sort ciyam:V:Meta !ciyam
+.file_list -a=Packages -d=Packages -sort ciyam:Variables:Meta !ciyam
 .file_tag -remove Packages
 ;
 @ifdef $1
@@ -35,7 +35,7 @@ LINES=$OUTPUT
 @:NEXT
 NEXT=$OUTPUT
 ;
-.file_list -a=$NEXT -d=$NEXT -sort ciyam:V:Meta.log !ciyam
+.file_list -a=$NEXT -d=$NEXT -sort ciyam:Variables:Meta.log !ciyam
 ;
 .session_variable @deque pop_front
 ;

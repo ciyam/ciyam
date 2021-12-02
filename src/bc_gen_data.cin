@@ -35,6 +35,14 @@ UTIME=@1635400000+$HRS_HEIGHT
 #Error: Height must be greater than zero.
 @else
 ;
+@ifndef $TREE
+.file_tags -i=ciyam
+@ifdef $OUTPUT
+TREE=ciyam
+@else
+@endif
+@endif
+;
 LAST=@$HEIGHT-1
 ;
 .file_hash bc.$IDENT.p$HEIGHT.pub

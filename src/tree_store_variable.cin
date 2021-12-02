@@ -23,7 +23,7 @@ TREE=$2
 VNAME=$3
 VDATA=$4
 ;
-VTAG=V
+VTAG=Variables
 ;
 @ifndef $VDATA
 .file_hash "$VNAME"
