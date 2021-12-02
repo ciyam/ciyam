@@ -1041,9 +1041,6 @@ void socket_command_handler::get_hello( )
          throw runtime_error( "invalid get_hello" );
       }
 
-      // NOTE: If doesn't have any file to get then sleep a bit.
-      msleep( c_peer_sleep_time );
-
       increment_peer_files_downloaded( file_bytes( hello_hash ) );
 
       file_remove( temp_file_name );
@@ -1349,8 +1346,7 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
 
             blockchain_height = blockchain_height_pending;
-//idk
-TEMP_TRACE( "blockchain_height now = " + to_string( blockchain_height ) );
+
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
          }

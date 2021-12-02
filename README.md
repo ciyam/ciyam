@@ -12,6 +12,9 @@ WEBDIR | Web Document Root path**    | /srv/www/htdocs
 both the Apache2 user (wwwrun) and the user account being used for development can create, update, append and
 delete files in and below the path (for a development only environment it is easiest to just `chmod a+rwx`).
 
+An optional MARKER environment variable can be used as a way of preventing accidental source code commits due
+to some temporary tracing code (as it is used in the pre-commit hook script's call to 'check_source').
+
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
 If wanting to perform a debug build for Windows use the environment variable CPPDBG.

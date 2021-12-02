@@ -8,7 +8,7 @@ git diff --cached --name-status | while read st file; do
  fi
  if [ -f ./src/check_source ] || [ -f ./src/check_source.exe ]; then
   if [ "${file##*.}" = "h" ] || [ "${file##*.}" = "cpp" ]; then
-   ./src/check_source -q $file
+   ./src/check_source -q -m$MARKER $file
    if [ $? -ne 0 ]; then
     exit 1
    fi
