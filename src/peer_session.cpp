@@ -83,12 +83,10 @@ const int c_min_block_wait_passes = 8;
 
 const size_t c_max_put_size = 128;
 
-const size_t c_request_timeout = 60000;
-const size_t c_greeting_timeout = 10000;
+const size_t c_peer_sleep_time = 5000;
 
-const size_t c_pid_timeout = 1000;
-const size_t c_connect_timeout = 2500;
-const size_t c_recconect_timeout = 1000;
+const size_t c_initial_timeout = 60000;
+const size_t c_request_timeout = 20000;
 
 #ifdef USE_THROTTLING
 const size_t c_request_throttle_sleep_time = 250;
@@ -1042,6 +1040,9 @@ void socket_command_handler::get_hello( )
          file_remove( temp_file_name );
          throw runtime_error( "invalid get_hello" );
       }
+
+      // NOTE: If doesn't have any file to get then sleep a bit.
+      msleep( c_peer_sleep_time );
 
       increment_peer_files_downloaded( file_bytes( hello_hash ) );
 
@@ -2241,7 +2242,7 @@ peer_session::peer_session( bool responder, auto_ptr< tcp_socket >& ap_socket, c
    if( !responder )
    {
       this->ap_socket->set_no_delay( );
-      this->ap_socket->write_line( pid, c_pid_timeout );
+      this->ap_socket->write_line( pid, c_request_timeout );
    }
    else
       this->ap_socket->read_line( pid, c_request_timeout );
@@ -2267,11 +2268,11 @@ void peer_session::on_start( )
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
       if( responder )
-         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_greeting_timeout );
+         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_request_timeout );
       else
       {
          string greeting;
-         if( ap_socket->read_line( greeting, c_greeting_timeout ) <= 0 )
+         if( ap_socket->read_line( greeting, c_request_timeout ) <= 0 )
          {
             string error;
             if( ap_socket->had_timeout( ) )
@@ -2514,7 +2515,7 @@ void peer_listener::on_start( )
                      {
                         ip_address address( peer_ip_addr.c_str( ), peer_port );
 
-                        if( ap_socket->connect( address, c_recconect_timeout ) )
+                        if( ap_socket->connect( address, c_initial_timeout ) )
                         {
                            peer_session* p_session = construct_session(
                             false, ap_socket, peer_ip_addr + "=" + blockchain + ":" + to_string( peer_port ) );
@@ -2753,7 +2754,7 @@ void create_peer_initiator( int port, const string& ip_addr, const string& block
       else if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
          throw runtime_error( "ip address " + ip_addr + " is not permitted" );
 
-      if( ap_socket->connect( address, c_connect_timeout ) )
+      if( ap_socket->connect( address, c_initial_timeout ) )
       {
          peer_session* p_session = construct_session( false, ap_socket, address.get_addr_string( )
           + "=" + ( !blockchain.empty( ) ? blockchain : get_blockchain_for_port( port ) ) + ":" + to_string( port ) );

@@ -68,8 +68,8 @@ const char* const c_application_script_prefix = "app_script:";
 
 const size_t c_max_file_transfer_size = 1000000;
 
-const size_t c_file_transfer_line_timeout = 10000;
-const size_t c_file_transfer_initial_timeout = 60000;
+const size_t c_file_transfer_line_timeout = 5000;
+const size_t c_file_transfer_initial_timeout = 20000;
 
 const size_t c_file_transfer_max_line_size = 100000;
 
