@@ -1112,7 +1112,14 @@ void socket_command_handler::get_file( const string& hash )
       split( all_list_items, list_items, '\n' );
 
       for( size_t i = 0; i < list_items.size( ); i++ )
-         add_peer_file_hash_for_get( list_items[ i ] );
+      {
+         string next_item( list_items[ i ] );
+
+         string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+
+         if( !has_file( next_hash ) )
+            add_peer_file_hash_for_get( next_hash );
+      }
    }
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
