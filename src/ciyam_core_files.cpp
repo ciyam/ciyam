@@ -2470,7 +2470,7 @@ void verify_data( const string& content,
             if( check_sigs && !has_file( tree_root_hash ) )
                throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
 
-            if( !p_data_info )
+            if( p_data_info )
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
 

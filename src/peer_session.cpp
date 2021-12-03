@@ -1101,7 +1101,7 @@ void socket_command_handler::get_file( const string& hash )
    socket.write_line( string( c_cmd_peer_session_get )
     + " " + hash.substr( 0, pos ), c_request_timeout, p_progress );
 
-   store_file( hash.substr( 0, pos ), socket, 0, p_progress );
+   store_file( hash.substr( 0, pos ), socket, 0, p_progress, true, 0, true );
 
    // NOTE: If the file is a list then also need to get all of its items.
    if( is_list_file( hash.substr( 0, pos ) ) )
@@ -1117,7 +1117,7 @@ void socket_command_handler::get_file( const string& hash )
 
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
-         if( !has_file( next_hash ) )
+         if( !next_item.empty( ) && !has_file( next_hash ) )
             add_peer_file_hash_for_get( next_hash );
       }
    }

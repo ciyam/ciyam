@@ -156,7 +156,7 @@ string construct_file_name_from_hash( const string& hash,
    return file_name;
 }
 
-void validate_list( const string& data, bool* p_rc = 0 )
+void validate_list( const string& data, bool* p_rc = 0, bool allow_missing_items = false )
 {
    vector< string > list_items;
    split( data, list_items, '\n' );
@@ -168,7 +168,21 @@ void validate_list( const string& data, bool* p_rc = 0 )
 
       string next_hash( next_list_item.substr( 0, pos ) );
 
-      if( !has_file( next_hash ) && !has_file_been_archived( next_hash ) )
+      if( allow_missing_items )
+      {
+         if( !are_hex_nibbles( next_hash )
+          || ( next_hash.size( ) != ( c_sha256_digest_size * 2 ) ) )
+         {
+            if( p_rc )
+            {
+               *p_rc = false;
+               return;
+            }
+            else
+               throw runtime_error( "list item file '" + next_list_item.substr( 0, pos ) + "' is invalid" );
+         }
+      }
+      else if( !has_file( next_hash ) && !has_file_been_archived( next_hash ) )
       {
          if( p_rc )
          {
@@ -2490,8 +2504,9 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
    }
 }
 
-bool store_file( const string& hash, tcp_socket& socket,
- const char* p_tag, progress* p_progress, bool allow_core_file, size_t max_bytes )
+bool store_file( const string& hash,
+ tcp_socket& socket, const char* p_tag, progress* p_progress,
+ bool allow_core_file, size_t max_bytes, bool allow_missing_items )
 {
    string tmp_file_name( "~" + uuid( ).as_string( ) );
    string file_name( construct_file_name_from_hash( hash, true ) );
@@ -2572,7 +2587,7 @@ bool store_file( const string& hash, tcp_socket& socket,
             bool rc = true;
 
             if( file_type != c_file_type_val_blob )
-               validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc );
+               validate_list( ( const char* )&file_buffer.get_buffer( )[ size + 1 ], &rc, allow_missing_items );
 
             if( !rc )
                throw runtime_error( "invalid 'list' file" );
@@ -2582,7 +2597,7 @@ bool store_file( const string& hash, tcp_socket& socket,
          bool rc = true;
 
          if( !is_encrypted && !is_compressed && file_type != c_file_type_val_blob )
-            validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc );
+            validate_list( ( const char* )&file_buffer.get_buffer( )[ 1 ], &rc, allow_missing_items );
 
          if( !rc )
             throw runtime_error( "invalid 'list' file" );
