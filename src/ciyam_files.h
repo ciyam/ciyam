@@ -46,6 +46,8 @@ bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name, file_type type = e_f
 
 bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
 
+bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash );
+
 int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash, bool blobs_for_lists = false );
 
 enum file_expansion

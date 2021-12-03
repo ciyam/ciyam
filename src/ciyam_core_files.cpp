@@ -2467,8 +2467,12 @@ void verify_data( const string& content,
 
             tree_root_hash = hex_encode( base64::decode( next_attribute ) );
 
-            if( !has_file( tree_root_hash ) )
+            if( check_sigs && !has_file( tree_root_hash ) )
                throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
+
+            if( !p_data_info )
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
 
             found = true;
          }
@@ -4692,7 +4696,7 @@ string create_peer_repository_entry_pull_info( const string& hash )
    return retval;
 }
 
-string create_peer_repository_entry_push_info( const string& file_hash, const string& password )
+string create_peer_repository_entry_push_info( const string& file_hash, const string& password, string* p_pub_key )
 {
    string retval;
 
@@ -4708,6 +4712,9 @@ string create_peer_repository_entry_push_info( const string& file_hash, const st
    // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
    // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
    private_key priv_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) );
+
+   if( p_pub_key )
+      *p_pub_key = priv_key.get_public( true, true );
 
    file_data += c_file_repository_public_key_line_prefix;
    file_data += priv_key.get_public( true, true );

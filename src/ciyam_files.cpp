@@ -594,6 +594,19 @@ bool has_file( const string& hash, bool check_is_hash )
    }
 }
 
+bool is_list_file( const string& hash )
+{
+   guard g( g_mutex );
+
+   string file_name( construct_file_name_from_hash( hash ) );
+
+   string data( buffer_file( file_name, 1 ) );
+
+   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+
+   return ( file_type == c_file_type_val_list );
+}
+
 int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );

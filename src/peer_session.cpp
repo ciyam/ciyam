@@ -657,7 +657,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       string block_content(
        construct_blob_for_block_content( extract_file( block_hash, "" ) ) );
 
-      verify_core_file( block_content, true );
+      verify_core_file( block_content, false );
 
       string data_tag( blockchain + '.' );
 
@@ -669,11 +669,20 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
+      string tree_root_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+      if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
+         add_peer_file_hash_for_get( tree_root_hash );
+
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_height ), "" );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
@@ -1093,6 +1102,18 @@ void socket_command_handler::get_file( const string& hash )
     + " " + hash.substr( 0, pos ), c_request_timeout, p_progress );
 
    store_file( hash.substr( 0, pos ), socket, 0, p_progress );
+
+   // NOTE: If the file is a list then also need to get all of its items.
+   if( is_list_file( hash.substr( 0, pos ) ) )
+   {
+      string all_list_items( extract_file( hash.substr( 0, pos ), "" ) );
+
+      vector< string > list_items;
+      split( all_list_items, list_items, '\n' );
+
+      for( size_t i = 0; i < list_items.size( ); i++ )
+         add_peer_file_hash_for_get( list_items[ i ] );
+   }
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
 }
