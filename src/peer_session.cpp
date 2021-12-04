@@ -644,6 +644,29 @@ string get_file_hash_from_put_data( const string& encoded_pubkey, const string& 
 }
 #endif
 
+void process_list_items( const string& hash, bool recurse = false )
+{
+   string all_list_items( extract_file( hash, "" ) );
+
+   vector< string > list_items;
+   split( all_list_items, list_items, '\n' );
+
+   for( size_t i = 0; i < list_items.size( ); i++ )
+   {
+      string next_item( list_items[ i ] );
+
+      if( !next_item.empty( ) )
+      {
+         string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+
+         if( !has_file( next_hash ) )
+            add_peer_file_hash_for_get( next_hash );
+         else if( recurse && is_list_file( next_hash ) )
+            process_list_items( next_hash, recurse );
+      }
+   }
+}
+
 void process_data_file( const string& blockchain, const string& hash, size_t height )
 {
    guard g( g_mutex );
@@ -672,8 +695,13 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
-      if( !tree_root_hash.empty( ) && !has_file( tree_root_hash ) )
-         add_peer_file_hash_for_get( tree_root_hash );
+      if( !tree_root_hash.empty( ) )
+      {
+         if( !has_file( tree_root_hash ) )
+            add_peer_file_hash_for_get( tree_root_hash );
+         else
+            process_list_items( tree_root_hash, true );
+      }
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_height ), "" );
@@ -1105,22 +1133,7 @@ void socket_command_handler::get_file( const string& hash )
 
    // NOTE: If the file is a list then also need to get all of its items.
    if( is_list_file( hash.substr( 0, pos ) ) )
-   {
-      string all_list_items( extract_file( hash.substr( 0, pos ), "" ) );
-
-      vector< string > list_items;
-      split( all_list_items, list_items, '\n' );
-
-      for( size_t i = 0; i < list_items.size( ); i++ )
-      {
-         string next_item( list_items[ i ] );
-
-         string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
-
-         if( !next_item.empty( ) && !has_file( next_hash ) )
-            add_peer_file_hash_for_get( next_hash );
-      }
-   }
+      process_list_items( hash.substr( 0, pos ) );
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
 }
