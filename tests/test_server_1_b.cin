@@ -56,7 +56,18 @@ file_info -content 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b
 file_info -content 54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5
 file_info -content 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7
 file_crypt -recurse test xxx
+file_crypt -recrypt -recurse test xxx
+file_crypt -recrypt -recurse -blobs_only test xxx
 file_crypt -recurse test abc
+file_crypt -recurse -blobs_only test abc
+file_info -content test
+file_crypt -recrypt -recurse -blobs_only test xxx
+file_crypt -recrypt -recurse -blobs_only test xxx
+file_crypt -recurse -blobs_only test abc
+file_info -content test
+file_crypt test abc
+file_crypt -recrypt test abc
+file_info -content test
 file_get test *test1/
 file_kill -recurse test
 file_put 1K*test1/~test.jpg test

@@ -1831,6 +1831,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
+         bool recrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recrypt ) );
          bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse ) );
          bool blobs_only( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_tag_or_hash ) );
@@ -1851,7 +1852,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             size_t total = 0;
             date_time dtm( date_time::local( ) );
 
-            crypt_file( tag_or_hash, password, recurse, blobs_only, &handler, &dtm, &total );
+            crypt_file( tag_or_hash, password, recurse, blobs_only, &handler, &dtm, &total, recrypt );
          }
          catch( ... )
          {

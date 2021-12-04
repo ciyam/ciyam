@@ -161,7 +161,44 @@ file_info -content 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812aded
 [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B) [***]
 file_crypt -recurse test xxx
 Error: Invalid password to decrypt file 'test'.
+file_crypt -recrypt -recurse test xxx
+Error: Attempt to recrypt recursively when not 'blobs only'.
+file_crypt -recrypt -recurse -blobs_only test xxx
+Error: Invalid recrypt attempted on encrypted list file 'test'
 file_crypt -recurse test abc
+file_crypt -recurse -blobs_only test abc
+file_info -content test
+[list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
+8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d ~test.jpg.000000
+cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 ~test.jpg.000001
+e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.000002
+54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 ~test.jpg.000003
+579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 ~test.jpg.000004
+096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
+15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
+file_crypt -recrypt -recurse -blobs_only test xxx
+file_crypt -recrypt -recurse -blobs_only test xxx
+file_crypt -recurse -blobs_only test abc
+file_info -content test
+[list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
+8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d ~test.jpg.000000
+cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 ~test.jpg.000001
+e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.000002
+54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 ~test.jpg.000003
+579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 ~test.jpg.000004
+096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
+15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
+file_crypt test abc
+file_crypt -recrypt test abc
+file_info -content test
+[list] cabb71470df889b67d18bf7eaf562e2519168d7235d3aa1ed9a126ec3299e6dc (309 B)
+8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d ~test.jpg.000000
+cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 ~test.jpg.000001
+e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.000002
+54749b4da930e6db6938a0f6393f5fa1c4dba0a148e9c23da10bed11c081b6f5 ~test.jpg.000003
+579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 ~test.jpg.000004
+096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
+15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
 file_get test *test1/
 test1/~test.jpg
 file_kill -recurse test
