@@ -67,6 +67,7 @@ file_crypt -recurse -blobs_only test abc
 file_info -content test
 file_crypt test abc
 file_crypt -recrypt test abc
+file_crypt test abc
 file_info -content test
 file_get test *test1/
 file_kill -recurse test

@@ -2460,6 +2460,12 @@ void crypt_file( const string& tag_or_hash, const string& password,
          if( !is_compressed )
             validate_hash_with_uncompressed_content( hash,
              ( unsigned char* )file_data.data( ), file_data.length( ), bad_hash_error.c_str( ) );
+
+         if( recrypt )
+         {
+            recrypt = false;
+            throw runtime_error( "unexpected recrypt has decrypted (same password as when encrypted?)" );
+         }
       }
       catch( ... )
       {
