@@ -43,6 +43,7 @@
 #include "crypt_stream.h"
 #include "ciyam_variables.h"
 #include "ods_file_system.h"
+#include "ciyam_core_files.h"
 
 #ifdef ZLIB_SUPPORT
 #  include <zlib.h>
@@ -2301,7 +2302,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
 }
 
 void crypt_file( const string& tag_or_hash, const string& password,
- bool recurse, bool blobs_only, progress* p_progress, date_time* p_dtm, size_t* p_total, bool recrypt )
+ bool recurse, crypt_target target, progress* p_progress, date_time* p_dtm, size_t* p_total, bool recrypt )
 {
    string hash( tag_or_hash );
 
@@ -2331,7 +2332,7 @@ void crypt_file( const string& tag_or_hash, const string& password,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to encrypt file flagged with 'no encrypt'." );
 
-   if( recrypt && recurse && !blobs_only )
+   if( recrypt && recurse && ( target == e_crypt_target_all ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
 
@@ -2375,7 +2376,7 @@ void crypt_file( const string& tag_or_hash, const string& password,
       }
 #endif
 
-      if( !blobs_only || ( file_type == c_file_type_val_blob ) )
+      if( ( target == e_crypt_target_all ) || ( file_type == c_file_type_val_blob ) )
       {
          if( recrypt )
             // FUTURE: This message should be handled as a server string message.
@@ -2395,6 +2396,17 @@ void crypt_file( const string& tag_or_hash, const string& password,
          write_file( file_name, new_file_data );
       }
 
+      if( ( file_type == c_file_type_val_blob )
+       && ( target == e_crypt_target_blobs_only_repo ) )
+      {
+         string dummy, pub_key;
+
+         string repo_hash( create_peer_repository_entry_push_info( hash, password, &pub_key ) );
+
+         if( !fetch_repository_entry_record( hash, dummy, dummy, dummy, false ) )
+            store_repository_entry_record( hash, repo_hash, pub_key, pub_key );
+      }
+
       if( recurse && file_type == c_file_type_val_list )
       {
          string list_info( uncompressed_data.substr( 1 ) );
@@ -2410,7 +2422,7 @@ void crypt_file( const string& tag_or_hash, const string& password,
                string::size_type pos = next.find( ' ' );
 
                crypt_file( next.substr( 0, pos ), password,
-                recurse, blobs_only, p_progress, p_dtm, p_total, recrypt );
+                recurse, target, p_progress, p_dtm, p_total, recrypt );
             }
          }
       }
@@ -2493,7 +2505,7 @@ void crypt_file( const string& tag_or_hash, const string& password,
                string::size_type pos = next.find( ' ' );
 
                crypt_file( next.substr( 0, pos ), password,
-                recurse, blobs_only, p_progress, p_dtm, p_total, recrypt );
+                recurse, target, p_progress, p_dtm, p_total, recrypt );
             }
          }
       }

@@ -659,10 +659,25 @@ void process_list_items( const string& hash, bool recurse = false )
       {
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
+         string local_hash, local_public_key, master_public_key;
+
          if( !has_file( next_hash ) )
-            add_peer_file_hash_for_get( next_hash );
+         {
+            if( !fetch_repository_entry_record( next_hash,
+             local_hash, local_public_key, master_public_key, false ) )
+               add_peer_file_hash_for_get( next_hash );
+         }
          else if( recurse && is_list_file( next_hash ) )
             process_list_items( next_hash, recurse );
+         else if( recurse )
+         {
+            if( fetch_repository_entry_record( next_hash,
+             local_hash, local_public_key, master_public_key, false ) )
+            {
+               if( local_public_key == master_public_key )
+                  add_peer_file_hash_for_put( local_hash );
+            }
+         }
       }
    }
 }

@@ -4714,7 +4714,7 @@ string create_peer_repository_entry_push_info( const string& file_hash, const st
    private_key priv_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) );
 
    if( p_pub_key )
-      *p_pub_key = priv_key.get_public( true, true );
+      *p_pub_key = priv_key.get_public( );
 
    file_data += c_file_repository_public_key_line_prefix;
    file_data += priv_key.get_public( true, true );
