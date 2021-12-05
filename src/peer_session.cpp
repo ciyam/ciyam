@@ -596,14 +596,22 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
       auto_ptr< private_key > ap_priv_key;
 
       if( !use_dummy_private_key )
-         ap_priv_key.reset( new private_key );
+      {
+         string password;
+         get_identity( password, true, false, true );
+
+         // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+         // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+         ap_priv_key.reset( new private_key( "0"
+          + sha256( src_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
+      }
       else
          ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
 
       stringstream ss( file_data );
       crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
-      file_data = string( c_file_type_str_blob ) + ss.str( );
+      file_data = string( c_file_type_str_blob_encrypted ) + ss.str( );
 
       delete_file( src_hash );
 

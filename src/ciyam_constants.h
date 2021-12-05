@@ -116,6 +116,7 @@ const char* const c_file_type_str_list = "\x02";
 const char* const c_file_type_str_core_blob = "\x11";
 const char* const c_file_type_str_core_list = "\x12";
 
+const char* const c_file_type_str_blob_encrypted = "\x05";
 const char* const c_file_type_str_blob_no_compress = "\x81";
 
 const char* const c_file_type_core_data_object = "dat";

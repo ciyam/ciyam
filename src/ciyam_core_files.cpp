@@ -4773,7 +4773,7 @@ void decrypt_pulled_peer_file( const string& dest_hash, const string& src_hash, 
          stringstream ss( file_data );
          crypt_stream( ss, priv_key.construct_shared( pub_key ) );
 
-         string hash( create_raw_file( string( c_file_type_str_blob ) + ss.str( ) ) );
+         string hash( create_raw_file( string( c_file_type_str_blob_encrypted ) + ss.str( ) ) );
 
          if( hash != dest_hash )
          {
