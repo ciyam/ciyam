@@ -591,33 +591,42 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
    }
    else
    {
-      public_key pub_key( extra_info, true );
+      string dummy;
 
-      auto_ptr< private_key > ap_priv_key;
-
-      if( !use_dummy_private_key )
-      {
-         string password;
-         get_identity( password, true, false, true );
-
-         // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-         // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-         ap_priv_key.reset( new private_key( "0"
-          + sha256( src_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
-      }
+      if( fetch_repository_entry_record( src_hash, dummy, dummy, dummy, false ) )
+         delete_file( src_hash );
       else
-         ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+      {
+         public_key pub_key( extra_info, true );
 
-      stringstream ss( file_data );
-      crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
+         auto_ptr< private_key > ap_priv_key;
 
-      file_data = string( c_file_type_str_blob_encrypted ) + ss.str( );
+         if( !use_dummy_private_key )
+         {
+            string password;
+            get_identity( password, true, false, true );
 
-      delete_file( src_hash );
+            // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+            // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+            ap_priv_key.reset( new private_key( "0"
+             + sha256( src_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
 
-      string local_hash( create_raw_file( file_data, false ) );
+            clear_key( password );
+         }
+         else
+            ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
 
-      store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+         stringstream ss( file_data );
+         crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
+
+         file_data = string( c_file_type_str_blob_encrypted ) + ss.str( );
+
+         delete_file( src_hash );
+
+         string local_hash( create_raw_file( file_data, false ) );
+
+         store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+      }
    }
 }
 
@@ -1867,6 +1876,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                                  if( !has_file( hash_info.substr( 0, pos ) ) )
                                     add_peer_file_hash_for_get( hash_info );
+                                 else
+                                    process_repository_file( hash_info );
                               }
 #endif
                            }
