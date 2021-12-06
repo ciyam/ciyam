@@ -693,6 +693,14 @@ void process_list_items( const string& hash, bool recurse = false )
             {
                if( local_public_key == master_public_key )
                   add_peer_file_hash_for_put( local_hash );
+               else
+               {
+                  string pull_hash(
+                   create_peer_repository_entry_pull_info( hash ) );
+
+                  if( !pull_hash.empty( ) )
+                     add_peer_file_hash_for_put( pull_hash );
+               }
             }
          }
       }
@@ -1693,15 +1701,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
-#ifdef SSL_SUPPORT
-            else
-            {
-               string pull_hash( create_peer_repository_entry_pull_info( hash ) );
-
-               if( !pull_hash.empty( ) )
-                  add_peer_file_hash_for_put( pull_hash );
-            }
-#endif
          }
          else
          {
