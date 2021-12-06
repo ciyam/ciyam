@@ -683,6 +683,14 @@ void process_list_items( const string& hash, bool recurse = false )
             if( !fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
                add_peer_file_hash_for_get( next_hash );
+            else if( local_public_key != master_public_key )
+            {
+               string pull_hash(
+                create_peer_repository_entry_pull_info( hash ) );
+
+               if( !pull_hash.empty( ) )
+                  add_peer_file_hash_for_put( pull_hash );
+            }
          }
          else if( recurse && is_list_file( next_hash ) )
             process_list_items( next_hash, recurse );
@@ -693,14 +701,6 @@ void process_list_items( const string& hash, bool recurse = false )
             {
                if( local_public_key == master_public_key )
                   add_peer_file_hash_for_put( local_hash );
-               else
-               {
-                  string pull_hash(
-                   create_peer_repository_entry_pull_info( hash ) );
-
-                  if( !pull_hash.empty( ) )
-                     add_peer_file_hash_for_put( pull_hash );
-               }
             }
          }
       }
