@@ -2064,7 +2064,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             src_hash = tag_file_hash( tag_or_hash );
 
          if( !dest_hash.empty( ) )
-            decrypt_pulled_peer_file( dest_hash, src_hash, password );
+            decrypt_pulled_peer_file( dest_hash, src_hash, password, false );
          else
             response = create_peer_repository_entry_push_info( src_hash, password );
 

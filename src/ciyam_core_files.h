@@ -159,11 +159,14 @@ std::string CIYAM_BASE_DECL_SPEC get_account_msg_secret(
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash );
 
+std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash,
+ const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
+
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
  const std::string& file_hash, const std::string& password, std::string* p_pub_key = 0 );
 
-void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
- const std::string& dest_hash, const std::string& src_hash, const std::string& password );
+void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file( const std::string& dest_hash,
+ const std::string& src_hash, const std::string& password, bool was_originally_encrypted = true );
 
 void CIYAM_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain, uint64_t block_height );
 

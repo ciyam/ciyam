@@ -81,7 +81,7 @@ const int c_max_line_length = 500;
 
 const int c_min_block_wait_passes = 8;
 
-const size_t c_max_put_size = 128;
+const size_t c_max_put_size = 256;
 
 const size_t c_peer_sleep_time = 5000;
 
@@ -583,11 +583,22 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
    // so it can be detected by a standard session to be decrypted.
    if( pos != string::npos )
    {
-      string target_hash( extra_info.substr( 0, pos ) );
-      string hex_pub_key( extra_info.substr( pos + 1 ) );
+      string hex_pub_key( extra_info.substr( 0, pos ) );
+      string target_hash( extra_info.substr( pos + 1 ) );
 
-      tag_file( '@' + target_hash, src_hash );
       tag_file( '~' + hex_pub_key, src_hash );
+      tag_file( '@' + target_hash, src_hash );
+
+      if( !use_dummy_private_key )
+      {
+         string password;
+         get_identity( password, true, false, true );
+
+         decrypt_pulled_peer_file( target_hash, src_hash, password );
+
+         clear_key( password );
+         delete_file( src_hash );
+      }
    }
    else
    {
@@ -642,7 +653,7 @@ string get_file_hash_from_put_data( const string& encoded_pubkey, const string& 
       // NOTE: Construct a public key object for the purpose of validation.
       public_key pubkey( encoded_pubkey, true );
 
-      string extra( encoded_pubkey );
+      string extra( hex_encode( base64::decode( encoded_pubkey ) ) );
 
       if( !encoded_target_hash.empty( ) )
       {
@@ -685,8 +696,8 @@ void process_list_items( const string& hash, bool recurse = false )
                add_peer_file_hash_for_get( next_hash );
             else if( local_public_key != master_public_key )
             {
-               string pull_hash(
-                create_peer_repository_entry_pull_info( hash ) );
+               string pull_hash( create_peer_repository_entry_pull_info(
+                next_hash, local_hash, local_public_key, master_public_key ) );
 
                if( !pull_hash.empty( ) )
                   add_peer_file_hash_for_put( pull_hash );
@@ -1876,7 +1887,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                                  if( !has_file( hash_info.substr( 0, pos ) ) )
                                     add_peer_file_hash_for_get( hash_info );
                                  else
-                                    process_repository_file( hash_info );
+                                    process_repository_file( hash_info, blockchain.empty( ) );
                               }
 #endif
                            }
