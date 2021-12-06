@@ -2895,16 +2895,17 @@ string extract_file( const string& hash, const string& dest_file_name, unsigned 
       if( p_is_list )
          *p_is_list = ( file_type == c_file_type_val_list );
 
+      bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
 
       session_file_buffer_access file_buffer;
 
-      unsigned long size = file_size( file_name ) - 1;
-
       size_t offset = 1;
 
+      unsigned long size = file_size( file_name ) - offset;
+
 #ifdef ZLIB_SUPPORT
-      if( is_compressed )
+      if( !is_encrypted && is_compressed )
       {
          unsigned long usize = file_buffer.get_size( ) - size;
 
@@ -2916,7 +2917,7 @@ string extract_file( const string& hash, const string& dest_file_name, unsigned 
       }
 #endif
 
-      if( !is_compressed )
+      if( is_encrypted || !is_compressed )
          memcpy( file_buffer.get_buffer( ), &data[ offset ], size );
 
       if( !dest_file_name.empty( ) )
