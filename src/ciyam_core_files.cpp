@@ -4694,6 +4694,8 @@ string create_peer_repository_entry_pull_info( const string& hash,
 
    // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
    retval = create_raw_file( file_data, false );
+
+   return retval;
 }
 
 string create_peer_repository_entry_push_info( const string& file_hash, const string& password, string* p_pub_key )
