@@ -785,15 +785,26 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
+      bool is_owner = has_tag( blockchain + ".p0.key" );
+
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
       if( !tree_root_hash.empty( ) )
       {
+
          if( !has_file( tree_root_hash ) )
             add_peer_file_hash_for_get( tree_root_hash );
          else
+         {
+            if( is_owner )
+               tag_file( c_ciyam_tag, tree_root_hash );
+
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+
             process_list_items( tree_root_hash, true );
+         }
       }
 
       set_session_variable(
@@ -801,9 +812,6 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
-
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
@@ -1226,7 +1234,20 @@ void socket_command_handler::get_file( const string& hash )
 
    // NOTE: If the file is a list then also need to get all of its items.
    if( is_list_file( hash.substr( 0, pos ) ) )
+   {
+      bool is_owner = has_tag( blockchain + ".p0.key" );
+
+      string tree_root_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+      if( is_owner )
+         tag_file( c_ciyam_tag, hash );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+
       process_list_items( hash.substr( 0, pos ) );
+   }
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
 }
