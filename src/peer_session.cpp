@@ -562,7 +562,7 @@ void process_core_file( const string& hash, const string& blockchain, size_t blo
 }
 
 #ifdef SSL_SUPPORT
-void process_repository_file( const string& hash_info, bool use_dummy_private_key = false )
+void process_repository_file( const string& blockchain, const string& hash_info, bool is_test_session = false )
 {
    guard g( g_mutex );
 
@@ -580,28 +580,43 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
 
    pos = extra_info.find( ';' );
 
-   // NOTE: If this file is the result of a repository pull request
-   // then tag it with both the target hash and public key (in hex)
-   // so it can be detected by a standard session to be decrypted.
    if( pos != string::npos )
    {
+      string hex_master;
+
       string hex_pub_key( extra_info.substr( 0, pos ) );
       string target_hash( extra_info.substr( pos + 1 ) );
 
-      if( use_dummy_private_key )
+      pos = hex_pub_key.find( '-' );
+
+      if( pos != string::npos )
+      {
+         hex_master = hex_pub_key.substr( pos + 1 );
+         hex_pub_key.erase( pos );
+      }
+
+      // NOTE: If this file is the result of a repository pull request
+      // then tag it with both the target hash and public key (in hex)
+      // so it can be detected by a standard session to be decrypted.
+      if( is_test_session )
       {
          tag_file( '~' + hex_pub_key, src_hash );
          tag_file( '@' + target_hash, src_hash );
       }
       else
       {
-         string password;
-         get_identity( password, true, false, true );
+         if( !has_tag( blockchain + ".p0.key" ) )
+            store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
+         else
+         {
+            string password;
+            get_identity( password, true, false, true );
 
-         decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key );
+            decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key );
 
-         clear_key( password );
-         delete_file( src_hash );
+            clear_key( password );
+            delete_file( src_hash );
+         }
       }
    }
    else
@@ -616,7 +631,7 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
 
          auto_ptr< private_key > ap_priv_key;
 
-         if( !use_dummy_private_key )
+         if( !is_test_session )
          {
             string password;
             get_identity( password, true, false, true );
@@ -645,12 +660,16 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
    }
 }
 
-string get_file_hash_from_put_data( const string& encoded_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
+string get_file_hash_from_put_data( const string& encoded_master,
+ const string& encoded_pubkey, const string& encoded_source_hash, const string& encoded_target_hash )
 {
    string retval;
 
    try
    {
+      if( !encoded_master.empty( ) )
+         base64::validate( encoded_master );
+
       base64::validate( encoded_pubkey );
       base64::validate( encoded_source_hash );
 
@@ -658,6 +677,12 @@ string get_file_hash_from_put_data( const string& encoded_pubkey, const string& 
       public_key pubkey( encoded_pubkey, true );
 
       string extra( hex_encode( base64::decode( encoded_pubkey ) ) );
+
+      if( !encoded_master.empty( ) )
+      {
+         public_key pubkey( encoded_master, true );
+         extra += '-' + hex_encode( base64::decode( encoded_master ) );
+      }
 
       if( !encoded_target_hash.empty( ) )
       {
@@ -1467,7 +1492,7 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_core_file( next_hash, blockchain, blockchain_height );
 #ifdef SSL_SUPPORT
          else
-            process_repository_file( next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
+            process_repository_file( blockchain, next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
 #endif
 
          if( !blockchain.empty( )
@@ -1865,8 +1890,18 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      {
                         if( lines[ 1 ].find( c_file_repository_public_key_line_prefix ) == 0 )
                         {
+                           string master_key;
+
                            string public_key(
                             lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
+
+                           pos = public_key.find( ',' );
+
+                           if( pos != string::npos )
+                           {
+                              master_key = public_key.substr( pos + 1 );
+                              public_key.erase( pos );
+                           }
 
                            if( lines[ 2 ].find( c_file_repository_source_hash_line_prefix ) == 0 )
                            {
@@ -1881,7 +1916,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 #ifndef SSL_SUPPORT
                               okay = true;
 #else
-                              string hash_info( get_file_hash_from_put_data( public_key, source_hash, target_hash ) );
+                              string hash_info( get_file_hash_from_put_data( master_key, public_key, source_hash, target_hash ) );
 
                               if( !hash_info.empty( ) )
                               {
@@ -1891,7 +1926,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                                  if( !has_file( hash_info.substr( 0, pos ) ) )
                                     add_peer_file_hash_for_get( hash_info );
                                  else
-                                    process_repository_file( hash_info, blockchain.empty( ) );
+                                    process_repository_file( blockchain, hash_info, socket_handler.get_is_test_session( ) );
                               }
 #endif
                            }

@@ -4683,6 +4683,10 @@ string create_peer_repository_entry_pull_info( const string& hash,
 
    file_data += c_file_repository_public_key_line_prefix;
    file_data += base64::encode( hex_decode( local_public_key ) );
+
+   if( !master_public_key.empty( ) )
+      file_data += '-' + base64::encode( hex_decode( master_public_key ) );
+
    file_data += '\n';
 
    file_data += c_file_repository_source_hash_line_prefix;
