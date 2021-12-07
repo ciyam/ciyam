@@ -1954,6 +1954,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                               if( !hash_info.empty( ) )
                               {
+                                 hash_info.erase( hash_info.length( ) - 1 );
+
                                  okay = true;
                                  pos = hash_info.find( ':' );
 
