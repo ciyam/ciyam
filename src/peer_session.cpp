@@ -596,8 +596,11 @@ void process_repository_file( const string& blockchain, const string& hash_info,
       }
 
       // NOTE: If this file is the result of a repository pull request
-      // then tag it with both the target hash and public key (in hex)
-      // so it can be detected by a standard session to be decrypted.
+      // then when testing tag it with both the target hash and public
+      // key (in hex) so it can be then detected by a standard session
+      // to be decrypted. If not testing then if is not the owner will
+      // store the repository entry otherwise will decrypt the initial
+      // file content.
       if( is_test_session )
       {
          tag_file( '~' + hex_pub_key, src_hash );
@@ -605,14 +608,24 @@ void process_repository_file( const string& blockchain, const string& hash_info,
       }
       else
       {
+         string dummy;
+
          if( !has_tag( blockchain + ".p0.key" ) )
-            store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
+         {
+            if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
+               store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
+         }
          else
          {
             string password;
             get_identity( password, true, false, true );
 
             decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key );
+
+            string repo_hash( create_peer_repository_entry_push_info( target_hash, password ) );
+
+            if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
+               store_repository_entry_record( target_hash, repo_hash, hex_master, hex_master );
 
             clear_key( password );
             delete_file( src_hash );
@@ -1895,7 +1908,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                            string public_key(
                             lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
 
-                           pos = public_key.find( ',' );
+                           pos = public_key.find( '-' );
 
                            if( pos != string::npos )
                            {
