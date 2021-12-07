@@ -4732,12 +4732,9 @@ string create_peer_repository_entry_push_info( const string& file_hash, const st
    return retval;
 }
 
-void decrypt_pulled_peer_file( const string& dest_hash,
- const string& src_hash, const string& password, bool was_originally_encrypted )
+void decrypt_pulled_peer_file(
+ const string& dest_hash, const string& src_hash, const string& password )
 {
-#ifndef SSL_SUPPORT
-   throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
-#else
    string all_tags( get_hash_tags( src_hash ) );
 
    vector< string > tags;
@@ -4764,31 +4761,41 @@ void decrypt_pulled_peer_file( const string& dest_hash,
       if( public_key_in_hex.empty( ) )
          throw runtime_error( "unable to locate peer public key tag for file '" + src_hash + "'" );
       else
-      {
-         public_key pub_key( public_key_in_hex );
+         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex );
+   }
+}
 
-         // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-         // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-         private_key priv_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) );
+void decrypt_pulled_peer_file( const string& dest_hash,
+ const string& src_hash, const string& password, const string& public_key_in_hex )
+{
+#ifndef SSL_SUPPORT
+   throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
+#else
+   public_key pub_key( public_key_in_hex );
 
-         string file_data( extract_file( src_hash, "" ) );
+   // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+   // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+   private_key priv_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) );
 
-         stringstream ss( file_data );
-         crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+   bool is_encrypted = false;
+   unsigned char type_and_extra = '\0';
 
-         string hash;
+   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted ) );
 
-         if( !was_originally_encrypted )
-            hash = create_raw_file( string( c_file_type_str_blob ) + ss.str( ) );
-         else
-            create_raw_file( string( c_file_type_str_blob_encrypted ) + ss.str( ), true, 0, 0, dest_hash.c_str( ) );
+   stringstream ss( file_data );
+   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
 
-         if( !was_originally_encrypted && ( hash != dest_hash ) )
-         {
-            delete_file( hash );
-            throw runtime_error( "cannot decrypt peer file (bad password or incorrect content)" );
-         }
-      }
+   string hash;
+
+   if( !is_encrypted )
+      hash = create_raw_file( string( 1, ( char )type_and_extra ) + ss.str( ) );
+   else
+      create_raw_file( string( 1, ( char )type_and_extra ) + ss.str( ), true, 0, 0, dest_hash.c_str( ) );
+
+   if( !is_encrypted && ( hash != dest_hash ) )
+   {
+      delete_file( hash );
+      throw runtime_error( "cannot decrypt peer file (bad password or incorrect content)" );
    }
 #endif
 }

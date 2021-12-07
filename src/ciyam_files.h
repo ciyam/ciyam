@@ -135,7 +135,8 @@ void CIYAM_BASE_DECL_SPEC store_temp_file(
 bool CIYAM_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC extract_file( const std::string& hash,
- const std::string& dest_file_name, unsigned char check_file_type_and_extra = '\0', bool* p_is_list = 0 );
+ const std::string& dest_file_name, unsigned char check_file_type_and_extra = '\0',
+ bool* p_is_list = 0, unsigned char* p_type_and_extra = 0, bool* p_is_encrypted = 0 );
 
 void CIYAM_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );

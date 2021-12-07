@@ -574,7 +574,9 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
    string src_hash( hash_info.substr( 0, pos ) );
    string extra_info( hash_info.substr( pos + 1 ) );
 
-   string file_data( extract_file( src_hash, "" ) );
+   unsigned char type_and_extra = '\0';
+
+   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra ) );
 
    pos = extra_info.find( ';' );
 
@@ -586,15 +588,17 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
       string hex_pub_key( extra_info.substr( 0, pos ) );
       string target_hash( extra_info.substr( pos + 1 ) );
 
-      tag_file( '~' + hex_pub_key, src_hash );
-      tag_file( '@' + target_hash, src_hash );
-
-      if( !use_dummy_private_key )
+      if( use_dummy_private_key )
+      {
+         tag_file( '~' + hex_pub_key, src_hash );
+         tag_file( '@' + target_hash, src_hash );
+      }
+      else
       {
          string password;
          get_identity( password, true, false, true );
 
-         decrypt_pulled_peer_file( target_hash, src_hash, password );
+         decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key );
 
          clear_key( password );
          delete_file( src_hash );
@@ -630,7 +634,7 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
          stringstream ss( file_data );
          crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
-         file_data = string( c_file_type_str_blob_encrypted ) + ss.str( );
+         file_data = string( 1, ( char )type_and_extra ) + ss.str( );
 
          delete_file( src_hash );
 

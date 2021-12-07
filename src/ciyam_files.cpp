@@ -2873,7 +2873,9 @@ bool temp_file_is_identical( const string& temp_name, const string& hash )
    return files_are_identical( temp_name, file_name );
 }
 
-string extract_file( const string& hash, const string& dest_file_name, unsigned char check_file_type_and_extra, bool* p_is_list )
+string extract_file( const string& hash,
+ const string& dest_file_name, unsigned char check_file_type_and_extra,
+ bool* p_is_list, unsigned char* p_type_and_extra, bool* p_is_encrypted )
 {
    guard g( g_mutex );
 
@@ -2897,6 +2899,12 @@ string extract_file( const string& hash, const string& dest_file_name, unsigned 
 
       bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
+
+      if( p_is_encrypted )
+         *p_is_encrypted = is_encrypted;
+
+      if( p_type_and_extra )
+         *p_type_and_extra = data[ 0 ];
 
       session_file_buffer_access file_buffer;
 
