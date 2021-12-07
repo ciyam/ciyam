@@ -612,7 +612,7 @@ void process_repository_file( const string& hash_info, bool use_dummy_private_ke
          delete_file( src_hash );
       else
       {
-         public_key pub_key( extra_info, true );
+         public_key pub_key( extra_info );
 
          auto_ptr< private_key > ap_priv_key;
 
