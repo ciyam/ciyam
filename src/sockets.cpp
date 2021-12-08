@@ -30,6 +30,7 @@
 #include "sockets.h"
 
 #include "base64.h"
+#include "format.h"
 #include "progress.h"
 #include "utilities.h"
 
@@ -424,7 +425,7 @@ int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout, progress
       string suffix;
 
       if( rcvd > c_max_progress_output_bytes )
-         suffix = "[...]";
+         suffix = "...[" + format_bytes( rcvd ) + ']';
 
       p_progress->output_progress( ">R> " + string( ( const char* )buf, min( rcvd, c_max_progress_output_bytes ) ) + suffix );
    }
@@ -456,7 +457,7 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, pr
          write_string = string( "<W<!" );
 
       if( sent > c_max_progress_output_bytes )
-         suffix = "[...]";
+         suffix = "...[" + format_bytes( sent ) + ']';
 
       p_progress->output_progress( write_string + string( ( const char* )buf, min( sent, c_max_progress_output_bytes ) ) + suffix );
    }
