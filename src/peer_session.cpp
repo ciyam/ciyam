@@ -587,6 +587,8 @@ void process_repository_file( const string& blockchain, const string& hash_info,
       string hex_pub_key( extra_info.substr( 0, pos ) );
       string target_hash( extra_info.substr( pos + 1 ) );
 
+      set_session_variable( target_hash, "" );
+
       pos = hex_pub_key.find( '-' );
 
       if( pos != string::npos )
@@ -1473,6 +1475,14 @@ void socket_command_handler::issue_cmd_for_peer( )
          next_hash.erase( );
       }
 
+      if( !next_hash.empty( ) && 
+       ( next_hash.find( ':' ) == string::npos )
+       && !get_session_variable( next_hash ).empty( ) )
+      {
+         pop_next_peer_file_hash_to_get( );
+         next_hash = top_next_peer_file_hash_to_get( );
+      }
+
       while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
       {
          pop_next_peer_file_hash_to_get( );
@@ -1954,15 +1964,22 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                               if( !hash_info.empty( ) )
                               {
-                                 hash_info.erase( hash_info.length( ) - 1 );
-
                                  okay = true;
                                  pos = hash_info.find( ':' );
 
                                  if( !has_file( hash_info.substr( 0, pos ) ) )
+                                 {
                                     add_peer_file_hash_for_get( hash_info );
+
+                                    if( !target_hash.empty( ) )
+                                    {
+                                       target_hash = hex_encode( base64::decode( target_hash ) );
+                                       set_session_variable( target_hash, hash_info.substr( 0, pos ) );
+                                    }
+                                 }
                                  else
-                                    process_repository_file( blockchain, hash_info, socket_handler.get_is_test_session( ) );
+                                    process_repository_file( blockchain,
+                                     hash_info.substr( hash_info.length( ) - 1 ), socket_handler.get_is_test_session( ) );
                               }
 #endif
                            }
