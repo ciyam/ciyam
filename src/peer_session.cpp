@@ -569,7 +569,7 @@ void process_repository_file( const string& blockchain, const string& hash_info,
    string::size_type pos = hash_info.find( ':' );
 
    if( pos == string::npos )
-      throw runtime_error( "unexpected missing public key for process_repository_file" );
+      throw runtime_error( "unexpected missing public key for process_repository_file with: " + hash_info );
 
    string src_hash( hash_info.substr( 0, pos ) );
    string extra_info( hash_info.substr( pos + 1 ) );
@@ -630,7 +630,9 @@ void process_repository_file( const string& blockchain, const string& hash_info,
                store_repository_entry_record( target_hash, repo_hash, hex_master, hex_master );
 
             clear_key( password );
+
             delete_file( src_hash );
+            delete_file( repo_hash );
          }
       }
    }
@@ -755,7 +757,19 @@ void process_list_items( const string& hash, bool recurse = false )
              local_hash, local_public_key, master_public_key, false ) )
             {
                if( local_public_key == master_public_key )
+               {
+                  if( !has_file( local_hash ) )
+                  {
+                     string password;
+                     get_identity( password, true, false, true );
+
+                     if( create_peer_repository_entry_push_info( next_hash, password ) != local_hash )
+                        throw runtime_error( "unexpected invalid local hash value for repository push info" );
+                  }
+
                   add_peer_file_hash_for_put( local_hash );
+                  set_session_variable( local_hash, next_hash );
+               }
             }
          }
       }
@@ -1565,7 +1579,15 @@ void socket_command_handler::issue_cmd_for_peer( )
          put_file( next_hash );
 
       if( had_hash )
+      {
          pop_next_peer_file_hash_to_put( );
+
+         if( !get_session_variable( next_hash ).empty( ) )
+         {
+            delete_file( next_hash );
+            set_session_variable( next_hash, "" );
+         }
+      }
    }
 }
 
@@ -1979,7 +2001,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                                  }
                                  else
                                     process_repository_file( blockchain,
-                                     hash_info.substr( hash_info.length( ) - 1 ), socket_handler.get_is_test_session( ) );
+                                     hash_info.substr( 0, hash_info.length( ) - 1 ), socket_handler.get_is_test_session( ) );
                               }
 #endif
                            }
