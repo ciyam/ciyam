@@ -1256,8 +1256,8 @@ void socket_command_handler::get_file( const string& hash )
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
-      if( is_owner )
-         tag_file( c_ciyam_tag, hash );
+      if( is_owner && !tree_root_hash.empty( ) )
+         tag_file( c_ciyam_tag, tree_root_hash );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
