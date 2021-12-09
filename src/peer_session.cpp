@@ -1383,9 +1383,16 @@ bool socket_command_handler::want_to_do_op( op o ) const
    }
    else
    {
-      // KLUDGE: For now just randomly decide (this should instead
-      // be based upon the actual needs of the peer).
-      retval = ( rand( ) % 10 == 0 );
+      if( o == e_op_chk
+       && top_next_peer_file_hash_to_get( ).empty( )
+       && top_next_peer_file_hash_to_put( ).empty( ) )
+         retval = ( rand( ) % 2 == 0 );
+      else
+      {
+         // KLUDGE: For now just randomly decide (this should instead
+         // be based upon the actual needs of the peer).
+         retval = ( rand( ) % 10 == 0 );
+      }
    }
 
    return retval;
