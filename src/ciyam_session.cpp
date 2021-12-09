@@ -1677,6 +1677,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_info_prefix ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_info_pat_or_hash ) );
 
+         possibly_expected_error = true;
+
          int depth_val = c_cmd_ciyam_session_file_info_depth_default;
          if( !depth.empty( ) )
             depth_val = atoi( depth.c_str( ) );

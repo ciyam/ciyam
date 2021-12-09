@@ -150,6 +150,7 @@ const char* const c_special_variable_secondary_validation = "@secondary_validati
 const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
+const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_blockchain_data_file_hash = "@blockchain_data_file_hash";
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
@@ -612,6 +613,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_peer_is_synchronising:
       s = string( c_special_variable_peer_is_synchronising );
+      break;
+
+      case e_special_var_blockchain_is_fetching:
+      s = string( c_special_variable_blockchain_is_fetching );
       break;
 
       case e_special_var_blockchain_zenith_hash:

@@ -39,6 +39,7 @@
 #include "ciyam_session.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
+#include "ciyam_constants.h"
 #include "ciyam_variables.h"
 #include "command_handler.h"
 #include "ciyam_core_files.h"
@@ -742,11 +743,15 @@ void process_list_items( const string& hash, bool recurse = false )
                add_peer_file_hash_for_get( next_hash );
             else if( local_public_key != master_public_key )
             {
-               string pull_hash( create_peer_repository_entry_pull_info(
-                next_hash, local_hash, local_public_key, master_public_key ) );
+               if( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
+               {
+                  string pull_hash( create_peer_repository_entry_pull_info(
+                   next_hash, local_hash, local_public_key, master_public_key ) );
 
-               if( !pull_hash.empty( ) )
-                  add_peer_file_hash_for_put( pull_hash );
+                  if( !pull_hash.empty( ) )
+                     add_peer_file_hash_for_put( pull_hash );
+               }
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -1452,6 +1457,9 @@ void socket_command_handler::issue_cmd_for_peer( )
                {
                   string next_block_hash( tag_file_hash( next_block_tag ) );
 
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
+
                   if( process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 ) )
                      blockchain_height = ++blockchain_height_pending;
                   else
@@ -1469,6 +1477,9 @@ void socket_command_handler::issue_cmd_for_peer( )
                {
                   add_peer_file_hash_for_get( next_block_hash );
                   blockchain_height_pending = blockchain_height + 1;
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_is_fetching ), c_true );
                }
             }
          }
