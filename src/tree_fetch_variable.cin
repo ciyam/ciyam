@@ -15,12 +15,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#NOTE: This script requires a tree tag, branch tree and a variable name.
+#NOTE: This script requires a tree tag, branch expr and a variable name.
 @else
 ;
-TTAG=$1
-TREE=$2
-VNAME=$3
+TREE=$1
+BRANCH=$2
+VARIABLE=$3
 ;
 DEPTH=3
 ;
@@ -31,7 +31,7 @@ LINES=@repstr:\:/\n:$TREE
 DEPTH=@$DEPTH+$OUTPUT
 ;
 .session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=Variables:$TREE:$VNAME $TTAG
+.file_info -recurse -d=-$DEPTH -p=Variables:$BRANCH:$VARIABLE $TREE
 ;
 @ifdef $OUTPUT
 #%OUTPUT:-1%

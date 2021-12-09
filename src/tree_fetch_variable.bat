@@ -15,6 +15,6 @@ del ~tree_fetch_variable
 goto end
 
 :usage
-echo Usage: tree_fetch_variable [tree tag] [branch tree] [variable name]
+echo Usage: tree_fetch_variable [tree tag] [branch expr] [variable name]
 
 :end

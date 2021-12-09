@@ -12,17 +12,17 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "2"
-#NOTE: This script requires a tree tag and branch tag.
+#NOTE: This script requires a tree tag and trunk tag.
 @else
 ;
-TTAG=$1
-TTYP=$2
+TREE=$1
+TRUNK=$2
 ;
-.file_hash "$TTYP"
+.file_hash "$TRUNK"
 ;
 @ifndef $ERROR
-.file_list -a=?$TTYP -d=$TTYP -sort $TTAG !$TTAG
-.file_tag -remove $TTYP
+.file_list -a=?$TRUNK -d=$TRUNK -sort $TREE !$TREE
+.file_tag -remove $TRUNK
 @endif
 ;
 @endif

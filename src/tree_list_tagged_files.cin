@@ -18,25 +18,25 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "4"
-#NOTE: This script needs a tree tag, branch type, tag list and branch tree expression.
+#NOTE: This script needs a tree tag, trunk name, tag list and branch expression.
 @else
 ;
-TTAG=$1
-TYPE=$2
+TREE=$1
+TRUNK=$2
 TAGS=$3
-EXPR=X$4
+BRANCH=X$4
 ;
 ITEMS=
-TTYPE=T
+TTRUNK=Tags
 PREFIX=
 WANT_INFO=
 .session_variable @set ""
 ;
-EXPR=@substr:1:$EXPR
-@ifdef $EXPR
-FIRST=@substr:0,1:$EXPR
+BRANCH=@substr:1:$BRANCH
+@ifdef $BRANCH
+FIRST=@substr:0,1:$BRANCH
 @ifeq "$FIRST" "?"
-EXPR=@substr:1:$EXPR
+BRANCH=@substr:1:$BRANCH
 PREFIX=?
 WANT_INFO=1
 @endif
@@ -44,8 +44,8 @@ WANT_INFO=1
 ;
 DEPTH=4
 NUM_DIRS=0
-@ifdef $EXPR
-LINES=@repstr:\:/\n:$EXPR
+@ifdef $BRANCH
+LINES=@repstr:\:/\n:$BRANCH
 .session_variable @deque ""
 .session_variable @deque "~$LINES"
 .session_variable @deque size
@@ -53,8 +53,8 @@ NUM_DIRS=$OUTPUT
 DEPTH=@$DEPTH+$OUTPUT
 @endif
 ;
-PREFIX=$PREFIX$TTYPE
-SUFFIX=$TYPE:$EXPR
+PREFIX=$PREFIX$TTRUNK
+SUFFIX=$TRUNK:$BRANCH
 ;
 LINES=@repstr:,/\n:$TAGS
 .session_variable @deque ""
@@ -75,7 +75,7 @@ NEXT_TAG=$OUTPUT
 .session_variable @deque
 DEQUE=$OUTPUT
 .session_variable @deque ""
-.file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:$SUFFIX* $TTAG
+.file_info -recurse -d=-$DEPTH -p=$PREFIX:$NEXT_TAG:$SUFFIX* $TREE
 .session_variable @deque "~$OUTPUT"
 ;
 @:INNER_LOOP

@@ -24,30 +24,30 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "6"
-#NOTE: This script needs tree tag, branch type, branch tree, sub-directory path, file and base path.
+#NOTE: This script needs tree tag, trunk name, branch expr, sub-directory path, file and base path.
 @else
 ;
-TTAG=$1
-TYPE=$2
-TREE=$3
-DIRS=$4
+TREE=$1
+TRUNK=$2
+BRANCH=$3
+SUBDIR=$4
 FILE=$5
 PATH=$6
-PREF=$7
+PREFIX=$7
 ;
-TAGP=@repstr:\//.:$DIRS
-@ifdef $PREF
-TAGP=$PREF$TAGP
+TAGP=@repstr:\//.:$SUBDIR
+@ifdef $PREFIX
+TAGP=$PREFIX$TAGP
 @endif
 ;
 @ifndef $MAX_FILE_SIZE
 MAX_FILE_SIZE=1M
 @endif
 ;
-FILE_NAME=$PATH/$DIRS/$FILE
-.file_put $MAX_FILE_SIZE*$PATH/$DIRS/$FILE $PATH/?$TAGP.$FILE
-.file_list -a=?$TAGP.$FILE -d=$DIRS/$FILE -sort $TTAG:$TYPE:$TREE !$TTAG
-@ifndef $PREF
+FILE_NAME=$PATH/$SUBDIR/$FILE
+.file_put $MAX_FILE_SIZE*$PATH/$SUBDIR/$FILE $PATH/?$TAGP.$FILE
+.file_list -a=?$TAGP.$FILE -d=$SUBDIR/$FILE -sort $TREE:$TRUNK:$BRANCH !$TREE
+@ifndef $PREFIX
 .file_tag -remove $TAGP.$FILE
 @endif
 ;

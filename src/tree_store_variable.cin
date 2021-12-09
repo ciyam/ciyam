@@ -15,26 +15,26 @@ NUM_ARGS=@$NUM_ARGS+1
 @endif
 ;
 @ifneq "$NUM_ARGS" "3"
-#NOTE: This script requires a tree tag, branch tree and a variable name.
+#NOTE: This script requires a tree tag, branch expr and a variable name.
 @else
 ;
-TTAG=$1
-TREE=$2
-VNAME=$3
-VDATA=$4
+TREE=$1
+BRANCH=$2
+VARIABLE=$3
+VAR_DATA=$4
 ;
-VTAG=Variables
+VTRUNK=Variables
 ;
-@ifndef $VDATA
-.file_hash "$VNAME"
+@ifndef $VAR_DATA
+.file_hash "$VARIABLE"
 @else
-.file_raw blob "$VDATA" "$VNAME"
+.file_raw blob "$VAR_DATA" "$VARIABLE"
 @endif
 ;
 @ifndef $ERROR
-.file_list -a=?$VNAME -d=$VNAME -sort $TTAG:$VTAG:$TREE !$TTAG
-@ifdef $VDATA
-.file_tag -remove $VNAME
+.file_list -a=?$VARIABLE -d=$VARIABLE -sort $TREE:$VTRUNK:$BRANCH !$TREE
+@ifdef $VAR_DATA
+.file_tag -remove $VARIABLE
 @endif
 @endif
 ;

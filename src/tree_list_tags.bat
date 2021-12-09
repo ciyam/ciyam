@@ -13,6 +13,6 @@ del ~tree_list_tags
 goto end
 
 :usage
-echo Usage: tree_list_tags [tree tag] [[branch type] [[branch tree expression]]]
+echo Usage: tree_list_tags [tree tag] [[trunk name] [[branch expression]]]
 
 :end

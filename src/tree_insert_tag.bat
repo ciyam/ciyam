@@ -17,6 +17,6 @@ del ~tree_insert_tag
 goto end
 
 :usage
-echo Usage: tree_insert_tag [tree tag] [branch type] [branch tree] [item name] [tag name]
+echo Usage: tree_insert_tag [tree tag] [trunk name] [branch expr] [item name] [tag name]
 
 :end

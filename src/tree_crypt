@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: tree_crypt [[!]tag name] [[password]]]"
+ echo "Usage: tree_crypt [[+]tag name] [[password]]]"
 else
  echo "<<tree_crypt.cin $1 $2" >~tree_crypt
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_crypt

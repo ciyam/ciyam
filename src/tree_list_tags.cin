@@ -4,30 +4,30 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifndef $1
-#NOTE: This script needs a tree tag and optionally a branch type and branch expression.
+#NOTE: This script needs a tree tag and optionally a trunk name and branch expression.
 @else
-TTAG=$1
-TYPE=$2
-EXPR=$3
+TREE=$1
+TRUNK=$2
+BRANCH=$3
 ;
-@ifndef $TYPE
+@ifndef $TRUNK
 PREFIX=X
 @else
-@ifndef $EXPR
-PREFIX=X*:$TYPE:*
+@ifndef $BRANCH
+PREFIX=X*:$TRUNK:*
 @else
-PREFIX=X*:$TYPE:$EXPR
+PREFIX=X*:$TRUNK:$BRANCH
 @endif
 @endif
 ;
-TTYPE=T
+TTRUNK=Tags
 DEPTH=2
 PREFIX=@substr:1:$PREFIX
 ;
 @ifndef $PREFIX
-PREFIX=$TTYPE:*
+PREFIX=$TTRUNK:*
 @else
-PREFIX=$TTYPE:$PREFIX
+PREFIX=$TTRUNK:$PREFIX
 .session_variable @deque ""
 LINES=@repstr:\:/\n:$PREFIX
 .session_variable @deque "~$LINES"
@@ -36,7 +36,7 @@ DEPTH=$OUTPUT
 @endif
 ;
 @label START
-.file_info -recurse -d=-$DEPTH -p=$PREFIX !$TTAG
+.file_info -recurse -d=-$DEPTH -p=$PREFIX !$TREE
 @ifdef $ERROR
 @label FINISH
 @endif

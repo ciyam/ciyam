@@ -18,6 +18,6 @@ del ~tree_insert_file
 goto end
 
 :usage
-echo Usage: tree_insert_file [tree tag] [branch type] [branch tree] [sub-directory path] [file name] [base path] [[tag prefix]]
+echo Usage: tree_insert_file [tree tag] [trunk name] [branch expr] [sub-directory path] [file name] [base path] [[tag prefix]]
 
 :end
