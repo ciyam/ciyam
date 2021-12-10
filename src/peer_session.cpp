@@ -1856,8 +1856,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
             if( was_initial_state )
             {
-               socket_handler.state( ) = e_peer_state_waiting_for_get;
                socket_handler.op_state( ) = e_peer_state_waiting_for_get;
+               socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
                if( !blockchain.empty( ) )
                {
