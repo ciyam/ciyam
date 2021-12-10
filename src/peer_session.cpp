@@ -2568,6 +2568,7 @@ void peer_session::on_start( )
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
+         cmd_handler.op_state( ) = e_peer_state_waiting_for_put;
 
          if( !blockchain.empty( ) )
          {
