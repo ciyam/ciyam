@@ -764,17 +764,23 @@ void process_list_items( const string& hash, bool recurse = false )
             {
                if( local_public_key == master_public_key )
                {
-                  if( !has_file( local_hash ) )
+                  if( get_session_variable(
+                   get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
                   {
-                     string password;
-                     get_identity( password, true, false, true );
+                     if( !has_file( local_hash ) )
+                     {
+                        string password;
+                        get_identity( password, true, false, true );
 
-                     if( create_peer_repository_entry_push_info( next_hash, password ) != local_hash )
-                        throw runtime_error( "unexpected invalid local hash value for repository push info" );
+                        if( create_peer_repository_entry_push_info( next_hash, password ) != local_hash )
+                           throw runtime_error( "unexpected invalid local hash value for repository push info" );
+
+                        clear_key( password );
+                     }
+
+                     add_peer_file_hash_for_put( local_hash );
+                     set_session_variable( local_hash, next_hash );
                   }
-
-                  add_peer_file_hash_for_put( local_hash );
-                  set_session_variable( local_hash, next_hash );
                }
             }
          }
@@ -1884,8 +1890,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
-                  socket_handler.set_blockchain_height( blockchain_height );
-                  process_block_for_height( blockchain, hash, blockchain_height );
+                  if( blockchain_height != socket_handler.get_blockchain_height( ) )
+                  {
+                     socket_handler.set_blockchain_height( blockchain_height );
+                     process_block_for_height( blockchain, hash, blockchain_height );
+                  }
                }
             }
          }
