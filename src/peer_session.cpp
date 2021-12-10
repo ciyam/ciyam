@@ -1504,7 +1504,7 @@ void socket_command_handler::issue_cmd_for_peer( )
    }
    else if( want_to_do_op( e_op_pip ) )
       pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
-   else if( next_hash_to_get.empty( ) )
+   else if( next_hash_to_put.empty( ) )
    {
       string next_hash( next_hash_to_get );
 
