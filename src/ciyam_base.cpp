@@ -5794,7 +5794,7 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    return num_sessions;
 }
 
-void add_peer_file_hash_for_get( const string& hash, size_t num_get_delays )
+void add_peer_file_hash_for_get( const string& hash )
 {
    guard g( g_mutex );
 
