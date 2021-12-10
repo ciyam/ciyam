@@ -818,21 +818,30 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
-      if( !tree_root_hash.empty( ) )
+      string blockchain_height_processed( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_height_processed ) ) );
+
+      if( blockchain_height_processed.empty( )
+       || from_string< size_t >( blockchain_height_processed ) < height )
       {
-
-         if( !has_file( tree_root_hash ) )
-            add_peer_file_hash_for_get( tree_root_hash );
-         else
+         if( !tree_root_hash.empty( ) )
          {
-            if( is_owner )
-               tag_file( c_ciyam_tag, tree_root_hash );
+            if( !has_file( tree_root_hash ) )
+               add_peer_file_hash_for_get( tree_root_hash );
+            else
+            {
+               if( is_owner )
+                  tag_file( c_ciyam_tag, tree_root_hash );
 
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-            process_list_items( tree_root_hash, true );
+               process_list_items( tree_root_hash, true );
+            }
          }
+
+         set_session_variable(
+          get_special_var_name( e_special_var_blockchain_height_processed ), to_string( height ) );
       }
 
       set_session_variable(
