@@ -1112,6 +1112,7 @@ class socket_command_handler : public command_handler
 
    peer_state& state( ) { return session_state; }
    peer_state& op_state( ) { return session_op_state; }
+
    peer_trust_level& trust_level( ) { return session_trust_level; }
 
    void kill_session( )
@@ -1770,27 +1771,28 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          bool has = has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
 
+         string hello_data, hello_hash;
+
+         hello_data = get_hello_data( hello_hash );
+
+         // NOTE: Create the dummy "hello" blob as it will be required.
+         if( !has_file( hello_hash ) )
+            create_raw_file( hello_data, false );
+
          if( !has )
          {
             response = c_response_not_found;
 
             if( was_initial_state )
             {
-               // NOTE: Create the dummy "hello" blob as it will be required.
-               string data, hello_hash;
-               data = get_hello_data( hello_hash );
-
-               if( !has_file( hello_hash ) )
-                  create_raw_file( data, false );
-
                if( !blockchain.empty( ) )
                {
                   if( tag_or_hash.find( c_bc_prefix ) != 0 )
                      socket_handler.state( ) = e_peer_state_invalid;
                   else
                   {
-                     socket_handler.state( ) = e_peer_state_waiting_for_get;
                      socket_handler.op_state( ) = e_peer_state_waiting_for_get;
+                     socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
                      socket_handler.trust_level( ) = e_peer_trust_level_normal;
 
@@ -1819,14 +1821,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         socket_handler.state( ) = e_peer_state_invalid;
                      else
                      {
-                        socket_handler.state( ) = e_peer_state_waiting_for_put;
                         socket_handler.op_state( ) = e_peer_state_waiting_for_put;
+                        socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
                         socket_handler.trust_level( ) = e_peer_trust_level_normal;
                      }
 
-                     increment_peer_files_uploaded( data.length( ) );
-                     increment_peer_files_downloaded( data.length( ) );
+                     increment_peer_files_uploaded( hello_data.length( ) );
+                     increment_peer_files_downloaded( hello_data.length( ) );
 
                      file_remove( temp_file_name );
                   }
@@ -1913,6 +1915,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             hash = tag_file_hash( tag_or_hash );
 
          socket.set_delay( );
+
+         if( !has_file( hash ) )
+         {
+            string hello_hash;
+            get_hello_data( hello_hash );
+         }
 
          if( hash != socket_handler.get_blockchain_info( ).first )
          {
@@ -2348,6 +2356,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                break;
             }
 
+            socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
+
             socket_handler.issue_cmd_for_peer( );
          }
       }
@@ -2534,6 +2544,14 @@ void peer_session::on_start( )
 
       okay = true;
 
+      string hello_data, hello_hash;
+
+      hello_data = get_hello_data( hello_hash );
+
+      // NOTE: Create the dummy "hello" blob as it will be required.
+      if( !has_file( hello_hash ) )
+         create_raw_file( hello_data, false );
+
       if( !responder )
       {
          progress* p_progress = 0;
@@ -2563,7 +2581,7 @@ void peer_session::on_start( )
          }
 
          if( hash_or_tag.empty( ) )
-            get_hello_data( hash_or_tag );
+            hash_or_tag = hello_hash;
 
          ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
 
