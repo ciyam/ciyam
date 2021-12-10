@@ -833,10 +833,10 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                if( is_owner )
                   tag_file( c_ciyam_tag, tree_root_hash );
 
+               process_list_items( tree_root_hash, true );
+
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
-
-               process_list_items( tree_root_hash, true );
             }
          }
 

@@ -5800,12 +5800,7 @@ void add_peer_file_hash_for_get( const string& hash, size_t num_get_delays )
 
    if( find( gtp_session->file_hashes_to_get.begin( ),
     gtp_session->file_hashes_to_get.end( ), hash ) == gtp_session->file_hashes_to_get.end( ) )
-   {
-      for( size_t i = 0; i < num_get_delays; i++ )
-         gtp_session->file_hashes_to_get.push_back( get_special_var_name( e_special_var_none ) );
-
       gtp_session->file_hashes_to_get.push_back( hash );
-   }
 }
 
 void store_repository_entry_record( const string& key,
@@ -5883,7 +5878,9 @@ void add_peer_file_hash_for_put( const string& hash )
 {
    guard g( g_mutex );
 
-   gtp_session->file_hashes_to_put.push_back( hash );
+   if( find( gtp_session->file_hashes_to_put.begin( ),
+    gtp_session->file_hashes_to_put.end( ), hash ) == gtp_session->file_hashes_to_put.end( ) )
+      gtp_session->file_hashes_to_put.push_back( hash );
 }
 
 void add_peer_file_hash_for_put_for_all_peers( const string& hash,
