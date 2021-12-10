@@ -106,7 +106,8 @@ enum peer_state
    e_peer_state_initiator,
    e_peer_state_responder,
    e_peer_state_waiting_for_get,
-   e_peer_state_waiting_for_put
+   e_peer_state_waiting_for_put,
+   e_peer_state_waiting_for_get_or_put
 };
 
 enum peer_trust_level
@@ -1046,6 +1047,7 @@ class socket_command_handler : public command_handler
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
     session_state( session_state ),
+    session_op_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
    {
       had_usage = false;
@@ -1109,6 +1111,7 @@ class socket_command_handler : public command_handler
    void issue_cmd_for_peer( );
 
    peer_state& state( ) { return session_state; }
+   peer_state& op_state( ) { return session_op_state; }
    peer_trust_level& trust_level( ) { return session_trust_level; }
 
    void kill_session( )
@@ -1166,6 +1169,7 @@ class socket_command_handler : public command_handler
    string prior_put_hash;
 
    peer_state session_state;
+   peer_state session_op_state;
    peer_trust_level session_trust_level;
 };
 
@@ -1405,6 +1409,9 @@ void socket_command_handler::issue_cmd_for_peer( )
    if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
       prior_put( ).erase( );
 
+   string next_hash_to_get( top_next_peer_file_hash_to_get( ) );
+   string next_hash_to_put( top_next_peer_file_hash_to_put( ) );
+
    if( get_needs_blockchain_info( ) )
    {
       string blockchain_info_hash;
@@ -1497,9 +1504,9 @@ void socket_command_handler::issue_cmd_for_peer( )
    }
    else if( want_to_do_op( e_op_pip ) )
       pip_peer( get_random_same_port_peer_ip_addr( c_local_ip_addr ) );
-   else if( get_last_issued_was_put( ) )
+   else if( next_hash_to_get.empty( ) )
    {
-      string next_hash( top_next_peer_file_hash_to_get( ) );
+      string next_hash( next_hash_to_get );
 
       if( !next_hash.empty( ) && next_hash[ 0 ] == c_reprocess_prefix )
       {
@@ -1587,7 +1594,7 @@ void socket_command_handler::issue_cmd_for_peer( )
    }
    else
    {
-      string next_hash( top_next_peer_file_hash_to_put( ) );
+      string next_hash( next_hash_to_put );
 
       bool had_hash = !next_hash.empty( );
 
@@ -1739,7 +1746,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( socket_handler.state( ) != e_peer_state_responder
           && socket_handler.state( ) != e_peer_state_waiting_for_get
-          && socket_handler.state( ) != e_peer_state_waiting_for_put )
+          && socket_handler.state( ) != e_peer_state_waiting_for_put
+          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for chk" );
 
          string hash( tag_or_hash );
@@ -1885,7 +1893,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string tag_or_hash( get_parm_val( parameters, c_cmd_peer_session_get_tag_or_hash ) );
 
-         if( socket_handler.state( ) != e_peer_state_waiting_for_get )
+         if( socket_handler.state( ) != e_peer_state_waiting_for_get
+          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
          {
             if( !socket_handler.get_is_responder( ) )
                throw runtime_error( "invalid state for get (initiator)" );
@@ -1917,7 +1926,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             socket_handler.get_blockchain_info( ).second.erase( );
          }
 
-         socket_handler.state( ) = e_peer_state_waiting_for_put;
+         socket_handler.op_state( ) = e_peer_state_waiting_for_put;
+         socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
          if( socket_handler.get_is_responder( ) )
          {
@@ -1931,7 +1941,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          string hash( get_parm_val( parameters, c_cmd_peer_session_put_hash ) );
 
-         if( socket_handler.state( ) != e_peer_state_waiting_for_put )
+         if( socket_handler.state( ) < e_peer_state_waiting_for_put )
          {
             if( !socket_handler.get_is_responder( ) )
                throw runtime_error( "invalid state for put (initiator)" );
@@ -2059,7 +2069,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                socket_handler.prior_put( ) = hash;
          }
 
-         socket_handler.state( ) = e_peer_state_waiting_for_get;
+         socket_handler.op_state( ) = e_peer_state_waiting_for_get;
+         socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
          if( socket_handler.get_is_responder( ) )
          {
@@ -2076,7 +2087,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          response = get_random_same_port_peer_ip_addr( c_local_ip_addr );
 
          if( socket_handler.state( ) != e_peer_state_waiting_for_get
-          && socket_handler.state( ) != e_peer_state_waiting_for_put )
+          && socket_handler.state( ) != e_peer_state_waiting_for_put
+          && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for pip" );
 
          if( socket_handler.get_is_responder( ) )
@@ -2151,8 +2163,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       else if( !is_condemned_session( ) )
          condemn_this_session( );
    }
-   else if( !socket_handler.get_is_responder( )
-    && !g_server_shutdown && ( socket_handler.state( ) == e_peer_state_waiting_for_get ) )
+   else if( !socket_handler.get_is_responder( ) && !g_server_shutdown
+    && ( socket_handler.op_state( ) == e_peer_state_waiting_for_get ) )
    {
       string response;
       if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
@@ -2315,7 +2327,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
       {
-         if( socket_handler.state( ) == e_peer_state_waiting_for_put )
+         if( socket_handler.op_state( ) == e_peer_state_waiting_for_put )
          {
             string response;
             if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
