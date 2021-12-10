@@ -1023,7 +1023,7 @@ bool get_block_height_from_tags( const string& blockchain, const string& hash, s
 
          next_tag.erase( spos );
 
-         block_height = from_string< size_t >( next_tag.substr( blockchain.length( ) ) );
+         block_height = from_string< size_t >( next_tag.substr( blockchain.length( ) + 1 ) );
 
          break;
       }
