@@ -1875,6 +1875,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
+            else if( socket_handler.get_is_responder( ) && tag_or_hash.find( c_bc_prefix ) == 0 )
+            {
+               if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+                  process_block_for_height( blockchain, hash, blockchain_height );
+            }
          }
 
          if( has && !blockchain.empty( ) && ( tag_or_hash == "c" + blockchain + ".info" ) )
@@ -2551,6 +2556,8 @@ void peer_session::on_start( )
       // NOTE: Create the dummy "hello" blob as it will be required.
       if( !has_file( hello_hash ) )
          create_raw_file( hello_data, false );
+
+      cmd_handler.prior_put( ) = hello_hash;
 
       if( !responder )
       {
