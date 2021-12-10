@@ -936,7 +936,7 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
    string block_height( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height ) ) );
 
-   if( block_height != to_string( height ) )
+   if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
       throw runtime_error( "specified height does not match that found in the block itself" );
    else
    {
@@ -1089,6 +1089,11 @@ class socket_command_handler : public command_handler
    const string& get_blockchain( ) const { return blockchain; }
 
    size_t get_blockchain_height( ) const { return blockchain_height; }
+
+   void set_blockchain_height( size_t new_height )
+   {
+      blockchain_height_pending = blockchain_height = new_height;
+   }
 
    bool get_is_test_session( ) const { return is_local && is_responder && blockchain.empty( ); }
 
@@ -1878,7 +1883,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             else if( socket_handler.get_is_responder( ) && tag_or_hash.find( c_bc_prefix ) == 0 )
             {
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+               {
+                  socket_handler.set_blockchain_height( blockchain_height );
                   process_block_for_height( blockchain, hash, blockchain_height );
+               }
             }
          }
 
