@@ -1702,7 +1702,7 @@ void socket_command_handler::handle_command_response( const string& response, bo
 
    if( !response.empty( ) )
    {
-      if( !is_special )
+      if( !is_special && is_responder )
          socket.set_delay( );
       else
          socket.set_no_delay( );
@@ -2329,52 +2329,54 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
       if( !g_server_shutdown && !is_condemned_session( ) )
       {
-         string new_acct( new_block.acct );
-
-         // NOTE: If either a better block at the newly minted block's height or a better previous block than
-         // the one it is currently linked to has been processed then will need to mint another new block. If
-         // a minting account was released then also mint another new block. Also if the same account that is
-         // minting had created the better block (i.e. from a Sybil peer) then will need to stop this account
-         // from minting (to minimise wasting any further resources).
-         if( !new_block_pwd_hash.empty( )
-          && ( has_better_block( blockchain, new_block.height, new_block.weight, &new_acct )
-          || was_released( blockchain )
-          || ( new_block.height > 1
-          && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
+         if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
          {
-            if( new_acct.empty( ) )
-               use_peer_account( blockchain, new_block_pwd_hash, true, true );
+            string new_acct( new_block.acct );
 
-            new_block_pwd_hash.erase( );
-         }
-
-         if( !new_block_pwd_hash.empty( ) )
-         {
-            if( new_block.num_txs < 0 )
-               new_block_pwd_hash.erase( );
-            else
+            // NOTE: If either a better block at the newly minted block's height or a better previous block than
+            // the one it is currently linked to has been processed then will need to mint another new block. If
+            // a minting account was released then also mint another new block. Also if the same account that is
+            // minting had created the better block (i.e. from a Sybil peer) then will need to stop this account
+            // from minting (to minimise wasting any further resources).
+            if( !new_block_pwd_hash.empty( )
+             && ( has_better_block( blockchain, new_block.height, new_block.weight, &new_acct )
+             || was_released( blockchain )
+             || ( new_block.height > 1
+             && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
             {
-               if( new_block_wait > 0 )
-                  --new_block_wait;
+               if( new_acct.empty( ) )
+                  use_peer_account( blockchain, new_block_pwd_hash, true, true );
+
+               new_block_pwd_hash.erase( );
+            }
+
+            if( !new_block_pwd_hash.empty( ) )
+            {
+               if( new_block.num_txs < 0 )
+                  new_block_pwd_hash.erase( );
                else
                {
-                  string tmp_new_block_pwd_hash( new_block_pwd_hash );
+                  if( new_block_wait > 0 )
+                     --new_block_wait;
+                  else
+                  {
+                     string tmp_new_block_pwd_hash( new_block_pwd_hash );
 
-                  new_block_pwd_hash.erase( );
+                     new_block_pwd_hash.erase( );
 
-                  if( !has_any_session_variable(
-                   get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
-                     store_new_block( blockchain, tmp_new_block_pwd_hash );
+                     if( !has_any_session_variable(
+                      get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
+                        store_new_block( blockchain, tmp_new_block_pwd_hash );
+                  }
                }
             }
-         }
-         else if( ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
-          && is_first_using_session_variable( peer_special_variable, blockchain )
-          && !has_any_session_variable(
-          get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
-         {
-            mint_new_block( blockchain, new_block, new_block_pwd_hash, false );
-            new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );
+            else if( is_first_using_session_variable( peer_special_variable, blockchain )
+             && !has_any_session_variable(
+             get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
+            {
+               mint_new_block( blockchain, new_block, new_block_pwd_hash, false );
+               new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );
+            }
          }
       }
 
