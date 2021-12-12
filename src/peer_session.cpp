@@ -2368,7 +2368,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                }
             }
          }
-         else if( !blockchain.empty( )
+         else if( ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
           && is_first_using_session_variable( peer_special_variable, blockchain )
           && !has_any_session_variable(
           get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
@@ -2743,6 +2743,7 @@ void peer_listener::on_start( )
          s.set_reuse_addr( );
 
          string listener_name( "peer" );
+
          if( !blockchain.empty( ) )
             listener_name += " (" + blockchain + ")";
 

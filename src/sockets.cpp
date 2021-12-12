@@ -203,6 +203,7 @@ bool tcp_socket::connect( const ip_address& addr, size_t timeout )
    if( timeout )
    {
       bool connected = false;
+
       if( set_non_blocking( ) )
       {
          ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) );
@@ -215,6 +216,7 @@ bool tcp_socket::connect( const ip_address& addr, size_t timeout )
          
          FD_ZERO( &fdset );
          FD_SET( socket, &fdset );
+
          if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
          {
             int so_error = 1;
@@ -253,6 +255,7 @@ SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
    else
    {
       socklen_t len = sizeof( sockaddr );
+
       return ::accept( socket, ( sockaddr* )&addr, &len );
    }
 }
@@ -330,6 +333,7 @@ bool tcp_socket::set_reuse_addr( )
 bool tcp_socket::has_input( size_t timeout ) const
 {
    bool okay;
+
    fd_set rfds;
    struct timeval tv;
 
