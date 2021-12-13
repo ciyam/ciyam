@@ -811,9 +811,10 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       tag_file( data_tag, hash );
 
-      tag_file( blockchain + c_zenith_suffix, block_hash );
+      bool tag_new_zenith = false;
+      bool wait_to_tag_zenith = false;
 
-      bool is_owner = has_tag( blockchain + ".p0.key" );
+      bool is_blockchain_owner = has_tag( blockchain + ".p0.key" );
 
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
@@ -827,18 +828,34 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
          if( !tree_root_hash.empty( ) )
          {
             if( !has_file( tree_root_hash ) )
+            {
+               wait_to_tag_zenith = true;
                add_peer_file_hash_for_get( tree_root_hash );
+            }
             else
             {
-               if( is_owner )
+               if( is_blockchain_owner )
                   tag_file( c_ciyam_tag, tree_root_hash );
 
                process_list_items( tree_root_hash, true );
+
+               if( top_next_peer_file_hash_to_get( ).empty( ) )
+                  tag_new_zenith = true;
+               else
+                  wait_to_tag_zenith = true;
 
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
             }
          }
+         else
+            tag_new_zenith = true;
+
+         if( tag_new_zenith )
+            tag_file( blockchain + c_zenith_suffix, block_hash );
+         else if( wait_to_tag_zenith )
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_zenith_hash ), block_hash );
 
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_height_processed ), to_string( height ) );
@@ -1413,13 +1430,13 @@ bool socket_command_handler::want_to_do_op( op o ) const
 
       if( o == e_op_chk
        && hash_to_get.empty( ) && hash_to_put.empty( ) )
-         retval = ( rand( ) % 2 == 0 );
+         retval = true;
       else
       {
          if( o == e_op_pip
           && hash_to_get.empty( ) && hash_to_put.empty( ) )
             retval = true;
-         else
+         else if( o != e_op_chk )
          {
             // KLUDGE: For now just randomly decide (this should instead
             // be based upon the actual needs of the peer).
@@ -1440,6 +1457,14 @@ void socket_command_handler::issue_cmd_for_peer( )
 
    string next_hash_to_get( top_next_peer_file_hash_to_get( ) );
    string next_hash_to_put( top_next_peer_file_hash_to_put( ) );
+
+   bool set_new_zenith = false;
+
+   string zenith_hash( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_zenith_hash ) ) );
+
+   if( !zenith_hash.empty( ) && next_hash_to_get.empty( ) )
+      set_new_zenith = true;
 
    if( get_needs_blockchain_info( ) )
    {
@@ -1518,6 +1543,12 @@ void socket_command_handler::issue_cmd_for_peer( )
 
                if( !next_block_hash.empty( ) && !has_file( next_block_hash ) )
                {
+                  string zenith_hash( get_session_variable(
+                   get_special_var_name( e_special_var_blockchain_zenith_hash ) ) );
+
+                  if( !zenith_hash.empty( ) )
+                     set_new_zenith = true;
+
                   add_peer_file_hash_for_get( next_block_hash );
                   blockchain_height_pending = blockchain_height + 1;
 
@@ -1642,6 +1673,14 @@ void socket_command_handler::issue_cmd_for_peer( )
             set_session_variable( next_hash, "" );
          }
       }
+   }
+
+   if( set_new_zenith )
+   {
+      tag_file( blockchain + c_zenith_suffix, zenith_hash );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_zenith_hash ), "" );
    }
 }
 

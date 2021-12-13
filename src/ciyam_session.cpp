@@ -1625,6 +1625,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
+         bool is_quiet( has_parm_val( parameters, c_cmd_ciyam_session_file_hash_quiet ) );
          string pat_or_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_hash_pat_or_tag ) );
 
          vector< string > tags;
@@ -1642,9 +1643,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          for( size_t i = 0; i < tags.size( ); i++ )
          {
+            bool rc = false;
+
             if( i > 0 )
                response += '\n';
-            response += tag_file_hash( tags[ i ] );
+            response += tag_file_hash( tags[ i ], is_quiet ? &rc : 0 );
          }
       }
       else if( command == c_cmd_ciyam_session_file_tag )

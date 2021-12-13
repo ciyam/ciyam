@@ -78,4 +78,9 @@ p:$PRIMARY_PUBKEY_HASH_ENC\n\
 s:$SECONDARY_PUBKEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.0.blk
 ;
-.file_tag $OUTPUT bc.$IDENT.zenith
+BLOCK_HASH=$OUTPUT
+;
+ .file_hash -q bc.$IDENT.zenith
+@ifndef "$OUTPUT"
+.file_tag $BLOCK_HASH bc.$IDENT.zenith
+@endif
