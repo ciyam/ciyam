@@ -81,12 +81,10 @@ const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
-const size_t c_pid_timeout = 5000;
-const size_t c_command_timeout = 60000;
-const size_t c_connect_timeout = 10000;
-const size_t c_greeting_timeout = 10000;
-
-const size_t c_default_max_file_size = 1000000;
+const size_t c_pid_timeout = 5000; // i.e. 5 secs
+const size_t c_command_timeout = 60000; // i.e. 60 secs
+const size_t c_connect_timeout = 10000; // i.e. 10 secs
+const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
 #ifdef _WIN32
 const size_t c_max_length_for_output_env_var = 1000;
@@ -118,11 +116,10 @@ string application_title( app_info_request request )
 
 int g_pid = get_pid( );
 
+bool g_use_tls = false;
 bool g_had_error = false;
 
-bool g_use_tls = false;
-
-size_t g_max_file_size = c_default_max_file_size;
+size_t g_max_file_size = c_files_area_item_max_size_default;
 
 string g_exec_cmd;
 string g_args_file;
@@ -722,7 +719,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   file_transfer( filename, socket,
                    ( !appending ? e_ft_direction_recv : e_ft_direction_recv_app ),
-                   c_max_file_transfer_size, c_response_okay_more, c_file_transfer_initial_timeout,
+                   g_max_file_size, c_response_okay_more, c_file_transfer_initial_timeout,
                    c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
 #ifdef ZLIB_SUPPORT
@@ -854,7 +851,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      p_chunk = ( unsigned char* )chunk_data.data( );
 
                   file_transfer(
-                   filename, socket, e_ft_direction_send, c_max_file_transfer_size,
+                   filename, socket, e_ft_direction_send, g_max_file_size,
                    c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
                    c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, 0, c_response_okay_skip );
 
@@ -946,7 +943,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         unsigned char prefix( c_file_type_char_blob );
 
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
+                         socket, e_ft_direction_send, g_max_file_size, c_response_okay_more,
                          c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
                      }
                      else if( response.substr( 0, pos ) == "put" )
@@ -954,7 +951,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         unsigned char prefix( c_file_type_char_blob );
 
                         file_transfer( response.substr( pos + 1 ),
-                         socket, e_ft_direction_recv, c_max_file_transfer_size, c_response_okay_more,
+                         socket, e_ft_direction_recv, g_max_file_size, c_response_okay_more,
                          c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
 
                         // NOTE: If is first "chk" and *not found* is returned then it is next expected
@@ -963,7 +960,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         if( was_chk_tag && !had_chk_command )
                         {
                            file_transfer( response.substr( pos + 1 ), socket,
-                            e_ft_direction_send, c_max_file_transfer_size, c_response_okay_more,
+                            e_ft_direction_send, g_max_file_size, c_response_okay_more,
                             c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size, &prefix );
                         }
                      }

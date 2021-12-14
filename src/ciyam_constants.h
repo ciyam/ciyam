@@ -66,12 +66,13 @@ const char* const c_file_kill_command = "file_kill";
 
 const char* const c_application_script_prefix = "app_script:";
 
-const size_t c_max_file_transfer_size = 1000000;
+const size_t c_file_transfer_line_timeout = 5000; // i.e. 5 secs
+const size_t c_file_transfer_initial_timeout = 20000; // i.e. 20 secs
 
-const size_t c_file_transfer_line_timeout = 5000;
-const size_t c_file_transfer_initial_timeout = 20000;
+const size_t c_file_transfer_max_line_size = 100000; // i.e. 100K
 
-const size_t c_file_transfer_max_line_size = 100000;
+const size_t c_files_area_item_max_num_default = 100000; // i.e. 100K
+const size_t c_files_area_item_max_size_default = 1000000; // i.e. 1MB
 
 const int c_file_type_val_blob = 0x01;
 const int c_file_type_val_list = 0x02;

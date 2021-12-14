@@ -2589,7 +2589,9 @@ void peer_session::on_start( )
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
       if( responder )
-         ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ), c_request_timeout );
+         ap_socket->write_line( string( c_protocol_version )
+          + ':' + to_string( get_files_area_item_max_size( ) )
+          + '\n' + string( c_response_okay ), c_request_timeout );
       else
       {
          string greeting;
@@ -2617,6 +2619,13 @@ void peer_session::on_start( )
             ap_socket->close( );
             throw runtime_error( "incompatible protocol version "
              + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
+         }
+
+         if( !ver_info.extra.empty( )
+          && from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
+         {
+            ap_socket->close( );
+            throw runtime_error( "unexpected files area item max size mismatch" );
          }
       }
 
