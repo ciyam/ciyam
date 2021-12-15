@@ -19,7 +19,7 @@ file_relegate "relegate one or more files from the files area to the archives" <
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 peer_listen "add a new peer listener" <val//port>[<val//blockchain>]
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
-peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>]<val//blockchain>}]
+peer_connect "add a new peer connection" <val//host><val//port>[{[<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain>}]
 peer_block_info "get new peer block information" <val//blockchain><val//password>[<val//account>]
 peer_account_info "get new peer account information" <val//blockchain><val//password>[<val//exponent>]
 peer_account_mint "start or stop minting or list minting peer accounts" <val//blockchain>[<val/-k=/pubkey>|<opt/-stop/stop>][<val//password>]

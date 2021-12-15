@@ -31,9 +31,9 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
-   peer_session( bool responder, std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr );
+   peer_session( bool is_responder, std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr, bool is_for_support = false );
 #  else
-   peer_session( bool responder, std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr );
+   peer_session( bool is_responder, std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr, bool is_for_support = false );
 #  endif
 
    ~peer_session( );
@@ -45,7 +45,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    private:
    bool is_local;
-   bool responder;
+   bool is_responder;
+   bool is_for_support;
 
    std::string port;
    std::string ip_addr;
@@ -87,7 +88,7 @@ std::string CIYAM_BASE_DECL_SPEC create_blockchain_transaction(
 void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchain );
 
 void CIYAM_BASE_DECL_SPEC create_peer_initiator( int port,
- const std::string& ip_addr, const std::string& blockchain, bool force = false );
+ const std::string& ip_addr, const std::string& blockchain, bool force = false, size_t num_for_support = 0 );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 

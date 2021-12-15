@@ -2005,8 +2005,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_port ) );
          bool force( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_force ) );
          string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_blockchain ) );
+         size_t num_supporters( atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_num_supporters ).c_str( ) ) );
 
-         create_peer_initiator( atoi( port.c_str( ) ), host, blockchain, force );
+         create_peer_initiator( atoi( port.c_str( ) ), host, blockchain, force, num_supporters );
       }
       else if( command == c_cmd_ciyam_session_peer_block_info )
       {
