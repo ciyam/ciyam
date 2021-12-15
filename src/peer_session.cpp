@@ -2595,6 +2595,8 @@ peer_session::peer_session( bool is_responder,
    {
       this->ap_socket->read_line( pid, c_request_timeout );
 
+      pid.erase( );
+
       if( pid == string( c_dummy_support_tag ) )
          is_for_support = true;
       else if( pid == string( c_dummy_peer_tag ) )
@@ -2871,10 +2873,23 @@ void peer_listener::on_start( )
                if( !g_server_shutdown && *ap_socket
                 && !has_max_peers( ) && get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
                {
+                  peer_session* p_session = 0;
+
                   // NOTE: Need to assume it is a support session initially (the first read will
                   // determine if it actually is or not).
-                  peer_session* p_session = construct_session(
-                   true, ap_socket, address.get_addr_string( ) + '=' + blockchain, true );
+                  try
+                  {
+                     p_session = construct_session(
+                      true, ap_socket, address.get_addr_string( ) + '=' + blockchain, true );
+                  }
+                  catch( exception& x )
+                  {
+                     issue_error( x.what( ) );
+                  }
+                  catch( ... )
+                  {
+                     issue_error( "unexpected unknown exception occurred constructing session" );
+                  }
 
                   if( p_session )
                      p_session->start( );
