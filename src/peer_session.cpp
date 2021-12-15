@@ -2593,9 +2593,9 @@ peer_session::peer_session( bool is_responder,
    }
    else
    {
-      this->ap_socket->read_line( pid, c_request_timeout );
-
       pid.erase( );
+
+      this->ap_socket->read_line( pid, c_request_timeout );
 
       if( pid == string( c_dummy_support_tag ) )
          is_for_support = true;
@@ -2621,6 +2621,7 @@ peer_session::~peer_session( )
 void peer_session::on_start( )
 {
    bool okay = false;
+   bool was_initialised = false;
 
    try
    {
@@ -2674,6 +2675,7 @@ void peer_session::on_start( )
       init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ) );
 
       okay = true;
+      was_initialised = true;
 
       bool has_zenith = false;
       size_t blockchain_height = 0;
@@ -2774,7 +2776,8 @@ void peer_session::on_start( )
 
       ap_socket->close( );
 
-      term_session( );
+      if( was_initialised )
+         term_session( );
    }
    catch( exception& x )
    {
@@ -2783,7 +2786,8 @@ void peer_session::on_start( )
       ap_socket->write_line( string( c_response_error_prefix ) + x.what( ), c_request_timeout );
       ap_socket->close( );
 
-      term_session( );
+      if( was_initialised )
+         term_session( );
    }
    catch( ... )
    {
@@ -2792,7 +2796,8 @@ void peer_session::on_start( )
       ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred", c_request_timeout );
       ap_socket->close( );
 
-      term_session( );
+      if( was_initialised )
+         term_session( );
    }
 
    if( !is_responder && !blockchain.empty( ) && !g_server_shutdown )
