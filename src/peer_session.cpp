@@ -2633,6 +2633,9 @@ void peer_session::on_start( )
 
       okay = true;
 
+      bool has_zenith = false;
+      size_t blockchain_height = 0;
+
       string hello_data, hello_hash;
 
       hello_data = get_hello_data( hello_hash );
@@ -2642,6 +2645,20 @@ void peer_session::on_start( )
          create_raw_file( hello_data, false );
 
       cmd_handler.prior_put( ) = hello_hash;
+
+      if( blockchain.find( c_bc_prefix ) == 0 )
+      {
+         if( has_tag( blockchain + c_zenith_suffix ) )
+         {
+            string zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
+
+            if( get_block_height_from_tags( blockchain, zenith_hash, blockchain_height ) )
+            {
+               has_zenith = true;
+               cmd_handler.set_blockchain_height( blockchain_height );
+            }
+         }
+      }
 
       if( !responder )
       {
@@ -2653,19 +2670,16 @@ void peer_session::on_start( )
 
          string hash_or_tag;
 
-         bool has_genesis_block = false;
-
          if( !blockchain.empty( ) )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               hash_or_tag = blockchain + ".0" + string( c_blk_suffix );
+               size_t height_for_chk = blockchain_height;
 
-               if( has_tag( hash_or_tag ) )
-               {
-                  has_genesis_block = true;
-                  hash_or_tag += ' ' + tag_file_hash( hash_or_tag );
-               }
+               if( has_zenith )
+                  ++blockchain_height;
+
+               hash_or_tag = blockchain + '.' + to_string( height_for_chk ) + string( c_blk_suffix );
             }
             else
                hash_or_tag = string( "c" + blockchain + ".head" );
@@ -2683,17 +2697,12 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               string genesis_block_hash;
+               string block_hash;
 
-               if( ap_socket->read_line( genesis_block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+               if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
-               else if( !has_genesis_block )
-               {
-                  if( genesis_block_hash != string( c_response_not_found ) )
-                     add_peer_file_hash_for_get( genesis_block_hash );
-               }
-               else if( genesis_block_hash != string( c_response_not_found ) )
-                  process_block_for_height( blockchain, genesis_block_hash, 0 );
+               else if( block_hash != string( c_response_not_found ) )
+                  add_peer_file_hash_for_get( block_hash );
             }
             else
             {
