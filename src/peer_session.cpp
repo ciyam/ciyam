@@ -2746,6 +2746,13 @@ void peer_session::on_start( )
                   ++height_for_chk;
 
                hash_or_tag = blockchain + '.' + to_string( height_for_chk ) + string( c_blk_suffix );
+
+               // NOTE: In case the responder does not have the genesis block include
+               // its hash as a dummy "nonce" (to be used by the responder for "get").
+               string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
+
+               if( has_tag( genesis_block_tag ) )
+                  hash_or_tag += ' ' + tag_file_hash( genesis_block_tag );
             }
             else
                hash_or_tag = string( "c" + blockchain + ".head" );
