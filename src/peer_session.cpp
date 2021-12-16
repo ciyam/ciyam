@@ -2032,12 +2032,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
-         if( !has_file( hash ) )
-         {
-            string hello_hash;
-            get_hello_data( hello_hash );
-         }
-
          if( hash != socket_handler.get_blockchain_info( ).first )
          {
             fetch_file( hash, socket, p_progress );
@@ -2620,16 +2614,16 @@ peer_session::peer_session( bool is_responder,
       this->ap_socket->read_line( pid, c_request_timeout );
 
       if( pid == string( c_dummy_support_tag ) )
-         is_for_support = true;
+         this->is_for_support = true;
       else if( pid == string( c_dummy_peer_tag ) )
-         is_for_support = false;
+         this->is_for_support = false;
       else
          throw runtime_error( "unexpected peer handshake" );
    }
 
-   // NOTE: This check is necessary because listener created sessions set "is_for_support"
-   // true as it is not know they are support sessionns until the first line has been read.
-   if( !is_for_support && has_session_with_ip_addr( this->ip_addr ) )
+   // NOTE: This check is necessary because listener created sessions set "is_for_support" true but
+   //  whether it is actually a support session is only knowable after the first line has been read.
+   if( !this->is_for_support && has_session_with_ip_addr( this->ip_addr ) )
       throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
 
    increment_session_count( );
