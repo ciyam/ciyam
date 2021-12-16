@@ -1943,7 +1943,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                         process_block_for_height( blockchain, hash, blockchain_height );
                   }
-                  else
+                  else if( !socket_handler.get_is_for_support( ) )
                   {
                      string all_tags( get_hash_tags( hash ) );
 
