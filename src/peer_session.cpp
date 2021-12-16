@@ -337,6 +337,8 @@ void process_core_file( const string& hash, const string& blockchain, size_t blo
 {
    guard g( g_mutex );
 
+   TRACE_LOG( TRACE_PEER_OPS, "(process_core_file) hash: " + hash + " height: " + to_string( blockchain_height ) );
+
    string::size_type pos = hash.find( ':' );
 
    string file_info( file_type_info( hash.substr( 0, pos ) ) );
@@ -574,6 +576,8 @@ void process_repository_file( const string& blockchain, const string& hash_info,
 {
    guard g( g_mutex );
 
+   TRACE_LOG( TRACE_PEER_OPS, "(process_repository_file) hash_info: " + hash_info );
+
    string::size_type pos = hash_info.find( ':' );
 
    if( pos == string::npos )
@@ -798,6 +802,8 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 {
    guard g( g_mutex );
 
+   TRACE_LOG( TRACE_PEER_OPS, "(process_data_file) hash: " + hash + " height: " + to_string( height ) );
+
    try
    {
       string block_tag( blockchain + '.' + to_string( height ) + c_blk_suffix );
@@ -893,6 +899,11 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 {
    guard g( g_mutex );
 
+   TRACE_LOG( TRACE_PEER_OPS, "(process_signature_file) hash: " + hash + " height: " + to_string( height ) );
+
+   if( !height )
+      throw runtime_error( "invalid zero height for process_signature_file" );
+
    try
    {
       string block_tag( blockchain + '.' + to_string( height ) + c_blk_suffix );
@@ -901,6 +912,12 @@ void process_signature_file( const string& blockchain, const string& hash, size_
        construct_blob_for_block_content( extract_file( tag_file_hash( block_tag ), "" ) ) );
 
       verify_core_file( block_content, true );
+
+      string block_height( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_height ) ) );
+
+      if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
+         throw runtime_error( "specified height does not match that found in the block itself (sig)" );
 
       string signature_tag( blockchain + '.' );
 
@@ -966,6 +983,8 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
 {
    bool retval = false;
 
+   TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
+
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
@@ -975,7 +994,7 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
     get_special_var_name( e_special_var_blockchain_height ) ) );
 
    if( !block_height.empty( ) && ( block_height != to_string( height ) ) )
-      throw runtime_error( "specified height does not match that found in the block itself" );
+      throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else
    {
       string primary_pubkey_hash( get_session_variable(
@@ -1633,13 +1652,16 @@ void socket_command_handler::issue_cmd_for_peer( )
             process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending );
          else if( next_hash == signature_file_hash )
          {
-            process_signature_file( blockchain, signature_file_hash, blockchain_height_pending );
+            if( blockchain_height != blockchain_height_pending )
+            {
+               process_signature_file( blockchain, signature_file_hash, blockchain_height_pending );
 
-            string data_file_hash( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
+               string data_file_hash( get_session_variable(
+                get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
 
-            if( !data_file_hash.empty( ) && !has_file( data_file_hash ) )
-               add_peer_file_hash_for_get( data_file_hash );
+               if( !data_file_hash.empty( ) && !has_file( data_file_hash ) )
+                  add_peer_file_hash_for_get( data_file_hash );
+            }
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );

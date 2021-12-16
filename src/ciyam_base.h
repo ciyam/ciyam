@@ -48,6 +48,7 @@ class ods_file_system;
 #  define TRACE_SOCK_OPS   0x00000800
 #  define TRACE_CORE_FLS   0x00001000
 #  define TRACE_SYNC_OPS   0x00002000
+#  define TRACE_PEER_OPS   0x00004000
 #  define TRACE_ANYTHING   0xffffffff
 
 #  define IF_IS_TRACING( flags )\

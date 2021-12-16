@@ -2531,6 +2531,7 @@ void verify_lamport( const string& content,
    uint64_t unix_time_stamp = 0;
 
    string header( lines[ 0 ] );
+
    if( header.empty( ) )
       throw runtime_error( "unexpected empty lamport header" );
    else
