@@ -2470,12 +2470,14 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          }
       }
 
+      size_t timeout = socket_handler.get_is_for_support( ) ? c_support_timeout : c_request_timeout;
+
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
       {
          if( socket_handler.op_state( ) == e_peer_state_waiting_for_put )
          {
             string response;
-            if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+            if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
             {
                cmd_and_args = "bye";
                break;
@@ -2492,8 +2494,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
             socket_handler.issue_cmd_for_peer( );
          }
       }
-
-      size_t timeout = socket_handler.get_is_for_support( ) ? c_support_timeout : c_request_timeout;
 
       if( socket.read_line( cmd_and_args, timeout, c_max_line_length, p_progress ) <= 0 )
       {
