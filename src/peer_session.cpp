@@ -1872,6 +1872,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for chk" );
 
+         string hello_data, hello_hash;
+
+         hello_data = get_hello_data( hello_hash );
+
+         // NOTE: Create the dummy "hello" blob as it will be required.
+         if( !has_file( hello_hash ) )
+            create_raw_file( hello_data, false );
+
          string hash( tag_or_hash );
 
          if( has_tag( tag_or_hash ) )
@@ -1888,14 +1896,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( tag_or_hash.find( c_key_suffix ) != string::npos )
             throw runtime_error( "invalid suspiciouus tag '" + tag_or_hash + "'" );
-
-         string hello_data, hello_hash;
-
-         hello_data = get_hello_data( hello_hash );
-
-         // NOTE: Create the dummy "hello" blob as it will be required.
-         if( !has_file( hello_hash ) )
-            create_raw_file( hello_data, false );
 
          bool has = has_file( hash, false );
          bool was_initial_state = ( socket_handler.state( ) == e_peer_state_responder );
@@ -2797,13 +2797,8 @@ void peer_session::on_start( )
 
                if( ap_socket->read_line( block_hash, timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
-               else if( block_hash != string( c_response_not_found ) )
-               {
-                  if( !is_for_support )
-                     add_peer_file_hash_for_get( block_hash );
-                  else
-                     add_peer_file_hash_for_get( hello_hash );
-               }
+               else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
+                  add_peer_file_hash_for_get( block_hash );
             }
             else
             {
