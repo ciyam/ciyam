@@ -101,6 +101,8 @@ const int c_storable_file_pad_len = 32;
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
 
+const char* const c_str_none = "(none)";
+
 const char* const c_ciyam_server = "ciyam_server";
 
 const char* const c_server_sid_file = "ciyam_server.sid";
@@ -292,6 +294,8 @@ struct session
 
       if( p_blockchain )
          blockchain = *p_blockchain;
+
+      last_cmd = string( c_str_none );
 
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
