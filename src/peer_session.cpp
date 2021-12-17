@@ -2667,14 +2667,16 @@ void peer_session::on_start( )
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
+      size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
+
       if( is_responder )
          ap_socket->write_line( string( c_protocol_version )
-          + ':' + to_string( get_files_area_item_max_size( ) )
-          + '\n' + string( c_response_okay ), c_request_timeout );
+          + ':' + to_string( get_files_area_item_max_size( ) ) + '\n' + string( c_response_okay ), timeout );
       else
       {
          string greeting;
-         if( ap_socket->read_line( greeting, c_request_timeout ) <= 0 )
+
+         if( ap_socket->read_line( greeting, timeout ) <= 0 )
          {
             string error;
             if( ap_socket->had_timeout( ) )
@@ -2690,12 +2692,14 @@ void peer_session::on_start( )
          if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
          {
             ap_socket->close( );
+
             throw runtime_error( greeting );
          }
 
          if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
          {
             ap_socket->close( );
+
             throw runtime_error( "incompatible protocol version "
              + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
          }
@@ -2704,6 +2708,7 @@ void peer_session::on_start( )
           && from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
          {
             ap_socket->close( );
+
             throw runtime_error( "unexpected files area item max size mismatch" );
          }
       }
@@ -2775,7 +2780,7 @@ void peer_session::on_start( )
          if( hash_or_tag.empty( ) )
             hash_or_tag = hello_hash;
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, timeout, p_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
          cmd_handler.op_state( ) = e_peer_state_waiting_for_put;
@@ -2786,7 +2791,7 @@ void peer_session::on_start( )
             {
                string block_hash;
 
-               if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+               if( ap_socket->read_line( block_hash, timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
                else if( !is_for_support && block_hash != string( c_response_not_found ) )
                   add_peer_file_hash_for_get( block_hash );
@@ -2795,7 +2800,7 @@ void peer_session::on_start( )
             {
                string blockchain_head_hash;
 
-               if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+               if( ap_socket->read_line( blockchain_head_hash, timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
 
                set_session_variable(
