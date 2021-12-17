@@ -1882,6 +1882,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          string hash( tag_or_hash );
 
+         if( hash == hello_hash )
+            response = hello_hash;
+
          if( has_tag( tag_or_hash ) )
             response = hash = tag_file_hash( tag_or_hash );
 
