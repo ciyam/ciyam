@@ -46,6 +46,7 @@
 #include "command_processor.h"
 
 //#define USE_THROTTLING
+//#define DEBUG_PEER_HANDSHAKE
 
 using namespace std;
 
@@ -87,6 +88,7 @@ const int c_max_num_for_support = 10;
 const int c_min_block_wait_passes = 8;
 
 const size_t c_max_put_size = 256;
+const size_t c_max_greeting_size = 256;
 
 const size_t c_peer_sleep_time = 5000;
 
@@ -2669,14 +2671,22 @@ void peer_session::on_start( )
 
       size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
 
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
+#ifdef DEBUG_PEER_HANDSHAKE
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_progress = &progress;
+#endif
+
       if( is_responder )
          ap_socket->write_line( string( c_protocol_version )
-          + ':' + to_string( get_files_area_item_max_size( ) ) + '\n' + string( c_response_okay ), timeout );
+          + ':' + to_string( get_files_area_item_max_size( ) ) + '\n' + string( c_response_okay ), timeout, p_progress );
       else
       {
          string greeting;
 
-         if( ap_socket->read_line( greeting, timeout ) <= 0 )
+         if( ap_socket->read_line( greeting, timeout, c_max_greeting_size, p_progress ) <= 0 )
          {
             string error;
             if( ap_socket->had_timeout( ) )
@@ -2747,12 +2757,6 @@ void peer_session::on_start( )
 
       if( !is_responder )
       {
-         progress* p_progress = 0;
-         trace_progress progress( TRACE_SOCK_OPS );
-
-         if( get_trace_flags( ) & TRACE_SOCK_OPS )
-            p_progress = &progress;
-
          string hash_or_tag;
 
          if( !is_for_support && !blockchain.empty( ) )
@@ -2793,8 +2797,13 @@ void peer_session::on_start( )
 
                if( ap_socket->read_line( block_hash, timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
-               else if( !is_for_support && block_hash != string( c_response_not_found ) )
-                  add_peer_file_hash_for_get( block_hash );
+               else if( block_hash != string( c_response_not_found ) )
+               {
+                  if( !is_for_support )
+                     add_peer_file_hash_for_get( block_hash );
+                  else
+                     add_peer_file_hash_for_get( hello_hash );
+               }
             }
             else
             {
