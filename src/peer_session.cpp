@@ -2505,6 +2505,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
+            if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
+               condemn_matching_sessions( );
+
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "bye".
             cmd_and_args = "bye";
@@ -2528,6 +2531,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       }
       else
       {
+         if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
+            condemn_matching_sessions( );
+
 #ifdef USE_THROTTLING
          if( cmd_and_args != "bye" )
             msleep( c_request_throttle_sleep_time );

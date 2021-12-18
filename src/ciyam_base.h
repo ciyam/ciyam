@@ -306,6 +306,7 @@ void CIYAM_BASE_DECL_SPEC condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );
 
 void CIYAM_BASE_DECL_SPEC condemn_this_session( );
+void CIYAM_BASE_DECL_SPEC condemn_matching_sessions( int num_seconds = 0, bool wait_until_term = false );
 
 void CIYAM_BASE_DECL_SPEC condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term );
 

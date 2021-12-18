@@ -102,6 +102,7 @@ const int c_storable_file_pad_len = 32;
 const int c_max_file_buffer_expansion = 2;
 
 const char* const c_str_none = "(none)";
+const char* const c_str_peer = "(peer)";
 
 const char* const c_ciyam_server = "ciyam_server";
 
@@ -4992,9 +4993,9 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          string check_script_error(
           get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 
-         // NOTE: If the script is intended to be synchronous and "no_logging" argument is set true
-         // then the first error that occurs in the the external script (or scripts if multiple are
-         // run using "delay") will thrown as an exception after the calling session's "system" (in
+         // NOTE: If the script is intended to be synchronous and the "no_logging" argument is true
+         // then the first error to occur in an external script (or scripts if the "delay" argument
+         // has being used) will be thrown as an exception after the calling session's "system" (in 
          // the case of delayed scripts that will occur at the end of transaction commit). Thus set
          // special variables for that here. As "ciyam_client" will set a session variable for each
          // script to the "script args" unique file name (via the "-args_file" command-line option)
@@ -5329,7 +5330,7 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
          if( !g_sessions[ i ]->is_peer_session )
             os << g_sessions[ i ]->p_storage_handler->get_name( );
          else
-            os << ( g_sessions[ i ]->blockchain.empty( ) ? string( "(peer" ) : g_sessions[ i ]->blockchain );
+            os << ( g_sessions[ i ]->blockchain.empty( ) ? string( c_str_peer ) : g_sessions[ i ]->blockchain );
 
          if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
             os << '*';
@@ -5526,6 +5527,33 @@ void condemn_this_session( )
 
    if( gtp_session )
       g_condemned_sessions.insert( make_pair( gtp_session->id, date_time::local( ) ) );
+}
+
+void condemn_matching_sessions( int num_seconds, bool wait_until_term )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+   {
+      size_t sess_id = gtp_session->id;
+
+      string ip_addr( gtp_session->ip_addr );
+      string blockchain( gtp_session->blockchain );
+
+      date_time dtm( date_time::local( ) + ( seconds )num_seconds );
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
+      {
+         if( g_sessions[ i ] && ( g_sessions[ i ]->id != sess_id )
+          && ( g_sessions[ i ]->ip_addr == ip_addr ) && ( g_sessions[ i ]->blockchain == blockchain ) )
+         {
+            if( !wait_until_term )
+               g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+            else
+               gtp_session->condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+         }
+      }
+   }
 }
 
 void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term )
