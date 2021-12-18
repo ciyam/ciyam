@@ -262,8 +262,9 @@ std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_arg
 void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
 void CIYAM_BASE_DECL_SPEC init_session(
- command_handler& cmd_handler, bool is_peer_session = false,
- const std::string* p_ip_addr = 0, const std::string* p_blockchain = 0, int port = 0 );
+ command_handler& cmd_handler,
+ bool is_peer_session = false, const std::string* p_ip_addr = 0,
+ const std::string* p_blockchain = 0, int port = 0, bool is_support_session = false );
 
 void CIYAM_BASE_DECL_SPEC term_session( );
 
@@ -353,7 +354,7 @@ unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::st
 unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
 void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash );
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash, bool check_for_supporters = false );
 
 void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
  const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
@@ -364,7 +365,7 @@ bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& key,
 std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( );
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash );
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put( const std::string& hash, bool check_for_supporters = false );
 
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_put_for_all_peers(
  const std::string& hash, const std::string* p_blockchain = 0,

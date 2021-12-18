@@ -79,6 +79,8 @@ const char c_global_storage_file_not_folder_suffix = '!';
 
 const int c_identity_burn = 100;
 
+const int c_min_needed_for_support = 5;
+
 const unsigned int c_default_max_peers = 100;
 
 // NOTE: This limit is supplied (along with the identity information) to
@@ -266,7 +268,7 @@ struct session
 {
    session( size_t id, size_t slot,
     command_handler& cmd_handler, storage_handler* p_storage_handler,
-    bool is_peer_session, const string* p_ip_addr, const string* p_blockchain )
+    bool is_peer_session, const string* p_ip_addr, const string* p_blockchain, bool is_support_session )
     :
     id( id ),
     slot( slot ),
@@ -288,7 +290,8 @@ struct session
     skip_is_constrained( false ),
     session_commands_executed( 0 ),
     is_peer_session( is_peer_session ),
-    p_storage_handler( p_storage_handler )
+    p_storage_handler( p_storage_handler ),
+    is_support_session( is_support_session )
    {
       if( p_ip_addr )
          ip_addr = *p_ip_addr;
@@ -340,6 +343,7 @@ struct session
    bool running_script;
 
    bool is_peer_session;
+   bool is_support_session;
 
    int64_t ods_tlg_size;
 
@@ -5193,8 +5197,8 @@ void generate_new_script_sio_files( )
    generate_new_script_sio( false );
 }
 
-void init_session( command_handler& cmd_handler,
- bool is_peer_session, const string* p_ip_addr, const string* p_blockchain, int port )
+void init_session( command_handler& cmd_handler, bool is_peer_session,
+ const string* p_ip_addr, const string* p_blockchain, int port, bool is_support_session )
 {
    guard g( g_mutex );
 
@@ -5203,8 +5207,8 @@ void init_session( command_handler& cmd_handler,
    {
       if( !g_sessions[ i ] )
       {
-         g_sessions[ i ] = new session( ++g_next_session_id,
-          i, cmd_handler, g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain );
+         g_sessions[ i ] = new session( ++g_next_session_id, i, cmd_handler,
+          g_storage_handlers[ 0 ], is_peer_session, p_ip_addr, p_blockchain, is_support_session );
 
          gtp_session = g_sessions[ i ];
          ods::instance( 0, true );
@@ -5225,6 +5229,52 @@ void term_session( )
 
    if( gtp_session )
    {
+      session* p_main_session = 0;
+
+      // NOTE: If a support session is being terminated then any file
+      // hashes it has yet to "get" or "put" are now returned back to
+      // the main session.
+      if( gtp_session->is_support_session )
+      {
+         for( size_t i = 0; i < g_max_sessions; i++ )
+         {
+            session* p_next = g_sessions[ i ];
+
+            if( p_next && !p_next->is_support_session
+             && ( p_next->ip_addr == gtp_session->ip_addr )
+             && ( p_next->blockchain == gtp_session->blockchain ) )
+            {
+               p_main_session = p_next;
+               break;
+            }
+         }
+
+         if( p_main_session )
+         {
+            size_t num_to_get = gtp_session->file_hashes_to_get.size( );
+
+            if( num_to_get )
+            {
+               for( size_t i = 0; i < num_to_get; i++ )
+               {
+                  p_main_session->file_hashes_to_get.push_back( gtp_session->file_hashes_to_get.front( ) );
+                  gtp_session->file_hashes_to_get.pop_front( );
+               }
+            }
+
+            size_t num_to_put = gtp_session->file_hashes_to_put.size( );
+
+            if( num_to_put )
+            {
+               for( size_t i = 0; i < num_to_put; i++ )
+               {
+                  p_main_session->file_hashes_to_put.push_back( gtp_session->file_hashes_to_put.front( ) );
+                  gtp_session->file_hashes_to_put.pop_front( );
+               }
+            }
+         }
+      }
+
       for( size_t i = 0; i < g_max_sessions; i++ )
       {
          if( gtp_session == g_sessions[ i ] )
@@ -5828,13 +5878,41 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    return num_sessions;
 }
 
-void add_peer_file_hash_for_get( const string& hash )
+void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters )
 {
    guard g( g_mutex );
 
    if( find( gtp_session->file_hashes_to_get.begin( ),
     gtp_session->file_hashes_to_get.end( ), hash ) == gtp_session->file_hashes_to_get.end( ) )
-      gtp_session->file_hashes_to_get.push_back( hash );
+   {
+      if( !check_for_supporters
+       || gtp_session->is_support_session
+       || ( gtp_session->file_hashes_to_get.size( ) < c_min_needed_for_support ) )
+         gtp_session->file_hashes_to_get.push_back( hash );
+      else
+      {
+         session* p_least_full = 0;
+
+         for( size_t i = 0; i < g_max_sessions; i++ )
+         {
+            session* p_next = g_sessions[ i ];
+
+            if( p_next && p_next->is_support_session
+             && ( p_next->ip_addr == gtp_session->ip_addr )
+             && ( p_next->blockchain == gtp_session->blockchain ) )
+            {
+               if( !p_least_full
+                || ( p_next->file_hashes_to_get.size( ) < p_least_full->file_hashes_to_get.size( ) ) )
+                  p_least_full = p_next;
+            }
+         }
+
+         if( !p_least_full )
+            p_least_full = gtp_session;
+
+         p_least_full->file_hashes_to_get.push_back( hash );
+      }
+   }
 }
 
 void store_repository_entry_record( const string& key,
@@ -5908,13 +5986,41 @@ void pop_next_peer_file_hash_to_get( )
       gtp_session->file_hashes_to_get.pop_front( );
 }
 
-void add_peer_file_hash_for_put( const string& hash )
+void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
 {
    guard g( g_mutex );
 
    if( find( gtp_session->file_hashes_to_put.begin( ),
     gtp_session->file_hashes_to_put.end( ), hash ) == gtp_session->file_hashes_to_put.end( ) )
-      gtp_session->file_hashes_to_put.push_back( hash );
+   {
+      if( !check_for_supporters
+       || gtp_session->is_support_session
+       || ( gtp_session->file_hashes_to_put.size( ) < c_min_needed_for_support ) )
+         gtp_session->file_hashes_to_put.push_back( hash );
+      else
+      {
+         session* p_least_full = 0;
+
+         for( size_t i = 0; i < g_max_sessions; i++ )
+         {
+            session* p_next = g_sessions[ i ];
+
+            if( p_next && p_next->is_support_session
+             && ( p_next->ip_addr == gtp_session->ip_addr )
+             && ( p_next->blockchain == gtp_session->blockchain ) )
+            {
+               if( !p_least_full
+                || ( p_next->file_hashes_to_put.size( ) < p_least_full->file_hashes_to_put.size( ) ) )
+                  p_least_full = p_next;
+            }
+         }
+
+         if( !p_least_full )
+            p_least_full = gtp_session;
+
+         p_least_full->file_hashes_to_put.push_back( hash );
+      }
+   }
 }
 
 void add_peer_file_hash_for_put_for_all_peers( const string& hash,

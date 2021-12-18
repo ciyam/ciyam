@@ -77,6 +77,7 @@ const char* const c_key_suffix = ".key";
 const char* const c_pub_suffix = ".pub";
 const char* const c_sig_suffix = ".sig";
 const char* const c_zenith_suffix = ".zenith";
+const char* const c_supporters_suffix = ".supporters";
 
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
@@ -336,11 +337,11 @@ string store_new_block( const string& blockchain, const string& password_hash )
    return process_txs( blockchain, "" );
 }
 
-void process_core_file( const string& hash, const string& blockchain, size_t blockchain_height = 0 )
+void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex );
 
-   TRACE_LOG( TRACE_PEER_OPS, "(process_core_file) hash: " + hash + " height: " + to_string( blockchain_height ) );
+   TRACE_LOG( TRACE_PEER_OPS, "(process_core_file) hash: " + hash );
 
    string::size_type pos = hash.find( ':' );
 
@@ -733,7 +734,7 @@ string get_file_hash_from_put_data( const string& encoded_master,
 }
 #endif
 
-void process_list_items( const string& hash, bool recurse = false )
+void process_list_items( const string& hash, bool recurse, bool check_for_supporters )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -754,7 +755,7 @@ void process_list_items( const string& hash, bool recurse = false )
          {
             if( !fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
-               add_peer_file_hash_for_get( next_hash );
+               add_peer_file_hash_for_get( next_hash, check_for_supporters );
             else if( local_public_key != master_public_key )
             {
                if( get_session_variable(
@@ -764,12 +765,12 @@ void process_list_items( const string& hash, bool recurse = false )
                    next_hash, local_hash, local_public_key, master_public_key ) );
 
                   if( !pull_hash.empty( ) )
-                     add_peer_file_hash_for_put( pull_hash );
+                     add_peer_file_hash_for_put( pull_hash, check_for_supporters );
                }
             }
          }
          else if( recurse && is_list_file( next_hash ) )
-            process_list_items( next_hash, recurse );
+            process_list_items( next_hash, recurse, check_for_supporters );
          else if( recurse )
          {
             if( fetch_repository_entry_record( next_hash,
@@ -791,7 +792,7 @@ void process_list_items( const string& hash, bool recurse = false )
                         clear_key( password );
                      }
 
-                     add_peer_file_hash_for_put( local_hash );
+                     add_peer_file_hash_for_put( local_hash, check_for_supporters );
                      set_session_variable( local_hash, next_hash );
                   }
                }
@@ -852,7 +853,12 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                if( is_blockchain_owner )
                   tag_file( c_ciyam_tag, tree_root_hash );
 
-               process_list_items( tree_root_hash, true );
+               bool check_for_supporters = false;
+
+               if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+                  check_for_supporters = true;
+
+               process_list_items( tree_root_hash, true, check_for_supporters );
 
                if( top_next_peer_file_hash_to_get( ).empty( ) )
                   tag_new_zenith = true;
@@ -1348,7 +1354,12 @@ void socket_command_handler::get_file( const string& hash )
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-      process_list_items( hash.substr( 0, pos ) );
+      bool check_for_supporters = false;
+
+      if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+         check_for_supporters = true;
+
+      process_list_items( hash.substr( 0, pos ), false, check_for_supporters );
    }
 
    increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
@@ -1684,7 +1695,7 @@ void socket_command_handler::issue_cmd_for_peer( )
          else if( next_hash == secondary_pubkey_hash )
             process_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height_pending, false );
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
-            process_core_file( next_hash, blockchain, blockchain_height );
+            process_core_file( next_hash, blockchain );
 #ifdef SSL_SUPPORT
          else
             process_repository_file( blockchain, next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
@@ -2668,6 +2679,7 @@ peer_session::~peer_session( )
 void peer_session::on_start( )
 {
    bool okay = false;
+   bool has_terminated = false;
    bool was_initialised = false;
 
    try
@@ -2732,7 +2744,7 @@ void peer_session::on_start( )
          }
       }
 
-      init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ) );
+      init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
 
       okay = true;
       was_initialised = true;
@@ -2838,7 +2850,10 @@ void peer_session::on_start( )
       ap_socket->close( );
 
       if( was_initialised )
+      {
          term_session( );
+         has_terminated = true;
+      }
    }
    catch( exception& x )
    {
@@ -2848,7 +2863,10 @@ void peer_session::on_start( )
       ap_socket->close( );
 
       if( was_initialised )
+      {
          term_session( );
+         has_terminated = true;
+      }
    }
    catch( ... )
    {
@@ -2858,8 +2876,14 @@ void peer_session::on_start( )
       ap_socket->close( );
 
       if( was_initialised )
+      {
          term_session( );
+         has_terminated = true;
+      }
    }
+
+   if( has_terminated && !is_for_support && !blockchain.empty( ) )
+      set_system_variable( blockchain + c_supporters_suffix, "" );
 
    if( !is_responder && !blockchain.empty( ) && !g_server_shutdown )
    {
@@ -3221,6 +3245,9 @@ void create_peer_initiator( int port, const string& ip_addr,
 
    size_t total_to_create = 1 + num_for_support;
 
+   peer_session* p_main_session = 0;
+   size_t num_supporters_created = 0;
+
    for( size_t i = 0; i < total_to_create; i++ )
    {
 #ifdef SSL_SUPPORT
@@ -3243,11 +3270,24 @@ void create_peer_initiator( int port, const string& ip_addr,
             peer_session* p_session = construct_session( false, ap_socket, address.get_addr_string( )
              + "=" + ( !blockchain.empty( ) ? blockchain : get_blockchain_for_port( port ) ) + ":" + to_string( port ), i > 0 );
 
-            if( p_session )
+            if( !p_session )
+               break;
+            else
+            {
+               if( !p_main_session )
+                  p_main_session = p_session;
+
                p_session->start( );
+
+               if( i > 0 )
+                  ++num_supporters_created;
+            }
          }
       }
    }
+
+   if( !blockchain.empty( ) && p_main_session && num_supporters_created )
+      set_system_variable( blockchain + c_supporters_suffix, c_true );
 }
 
 void create_initial_peer_sessions( )
