@@ -1183,7 +1183,7 @@ class socket_command_handler : public command_handler
 
    bool want_to_do_op( op o ) const;
 
-   void issue_cmd_for_peer( );
+   void issue_cmd_for_peer( bool check_for_supporters );
 
    peer_state& state( ) { return session_state; }
    peer_state& op_state( ) { return session_op_state; }
@@ -1504,15 +1504,21 @@ bool socket_command_handler::want_to_do_op( op o ) const
    return retval;
 }
 
-void socket_command_handler::issue_cmd_for_peer( )
+void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 {
    // NOTE: If a prior put no longer exists locally then it is to be expected
    // it would not exist in the peer either.
    if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
       prior_put( ).erase( );
 
-   string next_hash_to_get( top_next_peer_file_hash_to_get( ) );
-   string next_hash_to_put( top_next_peer_file_hash_to_put( ) );
+   bool any_supporter_has_top_get = false;
+   bool any_supporter_has_top_put = false;
+
+   string next_hash_to_get(
+    top_next_peer_file_hash_to_get( check_for_supporters ? &any_supporter_has_top_get : 0 ) );
+
+   string next_hash_to_put(
+    top_next_peer_file_hash_to_put( check_for_supporters ? &any_supporter_has_top_put : 0 ) );
 
    if( is_for_support
     && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
@@ -1523,7 +1529,8 @@ void socket_command_handler::issue_cmd_for_peer( )
    string zenith_hash( get_session_variable(
     get_special_var_name( e_special_var_blockchain_zenith_hash ) ) );
 
-   if( !zenith_hash.empty( ) && next_hash_to_get.empty( ) )
+   if( !zenith_hash.empty( ) && next_hash_to_get.empty( )
+    && !any_supporter_has_top_get && !any_supporter_has_top_put )
       set_new_zenith = true;
 
    if( get_needs_blockchain_info( ) )
@@ -1550,7 +1557,9 @@ void socket_command_handler::issue_cmd_for_peer( )
          }
       }
    }
-   else if( !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
+   else if(
+    !any_supporter_has_top_get && !any_supporter_has_top_put
+    && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
    {
       bool has_issued_chk = false;
 
@@ -1868,6 +1877,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    size_t blockchain_height = socket_handler.get_blockchain_height( );
 
+   bool check_for_supporters = false;
+
+   if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+      check_for_supporters = true;
+
    try
    {
       ostringstream osstr;
@@ -2040,7 +2054,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_response( response, true );
             response.erase( );
 
-            socket_handler.issue_cmd_for_peer( );
+            socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
       else if( command == c_cmd_peer_session_get )
@@ -2088,7 +2102,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_response( response, true );
             response.erase( );
 
-            socket_handler.issue_cmd_for_peer( );
+            socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
       else if( command == c_cmd_peer_session_put )
@@ -2231,7 +2245,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_response( response, true );
             response.erase( );
 
-            socket_handler.issue_cmd_for_peer( );
+            socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
       else if( command == c_cmd_peer_session_pip )
@@ -2250,7 +2264,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_response( response, true );
             response.erase( );
 
-            socket_handler.issue_cmd_for_peer( );
+            socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
       else if( command == c_cmd_peer_session_tls )
@@ -2355,7 +2369,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          throw runtime_error( "unexpected non-okay response from peer" );
       }
 
-      socket_handler.issue_cmd_for_peer( );
+      socket_handler.issue_cmd_for_peer( check_for_supporters );
    }
 }
 
@@ -2507,7 +2521,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
-            socket_handler.issue_cmd_for_peer( );
+            socket_handler.issue_cmd_for_peer( false );
          }
       }
 

@@ -1211,6 +1211,7 @@ struct scoped_lock_holder
 
 // NOTE: If max sessions is set to a value greater than 1000 then would need to change "gen_key".
 const size_t c_max_sessions_limit = 1000;
+const size_t c_max_storage_handlers_limit = 100;
 
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
@@ -3702,6 +3703,10 @@ void read_server_configuration( )
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
+      if( g_max_sessions > c_max_sessions_limit )
+         throw runtime_error( "max. sessions value " + to_string( g_max_sessions )
+          + " exceeds max. sessions limit " + to_string( c_max_sessions_limit ) );
+
       g_gpg_password = reader.read_opt_attribute( c_attribute_gpg_password );
       g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
       g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
@@ -3742,6 +3747,10 @@ void read_server_configuration( )
 
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
+
+      if( g_max_storage_handlers > c_max_storage_handlers_limit )
+         throw runtime_error( "max. storage handlers value " + to_string( g_max_storage_handlers )
+          + " is greater than max. storage handlers limit " + to_string( c_max_storage_handlers_limit ) );
 
       // NOTE: Use "unformat_bytes" here as well so 10K (instead of 10000) can be used in the config file.
       g_files_area_item_max_num = ( size_t )unformat_bytes( reader.read_opt_attribute(
@@ -5957,20 +5966,33 @@ bool fetch_repository_entry_record( const string& key,
    return true;
 }
 
-string top_next_peer_file_hash_to_get( )
+string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
 {
    guard g( g_mutex );
 
    string hash;
 
    if( !gtp_session->file_hashes_to_get.empty( ) )
-   {
       hash = gtp_session->file_hashes_to_get.front( );
 
-      if( hash == get_special_var_name( e_special_var_none ) )
+   if( hash.empty( ) && p_any_supporter_has )
+   {
+      *p_any_supporter_has = false;
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         hash.erase( );
-         gtp_session->file_hashes_to_get.pop_front( );
+         session* p_next = g_sessions[ i ];
+
+         if( p_next && p_next->is_support_session
+          && ( p_next->ip_addr == gtp_session->ip_addr )
+          && ( p_next->blockchain == gtp_session->blockchain ) )
+         {
+            if( !p_next->file_hashes_to_get.empty( ) )
+            {
+               *p_any_supporter_has = true;
+               break;
+            }
+         }
       }
    }
 
@@ -6036,7 +6058,7 @@ void add_peer_file_hash_for_put_for_all_peers( const string& hash,
    }
 }
 
-string top_next_peer_file_hash_to_put( )
+string top_next_peer_file_hash_to_put( bool* p_any_supporter_has )
 {
    guard g( g_mutex );
 
@@ -6044,6 +6066,27 @@ string top_next_peer_file_hash_to_put( )
 
    if( !gtp_session->file_hashes_to_put.empty( ) )
       hash = gtp_session->file_hashes_to_put.front( );
+
+   if( hash.empty( ) && p_any_supporter_has )
+   {
+      *p_any_supporter_has = false;
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
+      {
+         session* p_next = g_sessions[ i ];
+
+         if( p_next && p_next->is_support_session
+          && ( p_next->ip_addr == gtp_session->ip_addr )
+          && ( p_next->blockchain == gtp_session->blockchain ) )
+         {
+            if( !p_next->file_hashes_to_put.empty( ) )
+            {
+               *p_any_supporter_has = true;
+               break;
+            }
+         }
+      }
+   }
 
    return hash;
 }

@@ -12,6 +12,7 @@
  <set_trace>10000
 # <use_https>false
 # <blockchains>12346=28025710166
+# <max_sessions>100
 # <gpg_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <pem_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <rpc_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
