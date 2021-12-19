@@ -79,7 +79,7 @@ const char c_global_storage_file_not_folder_suffix = '!';
 
 const int c_identity_burn = 100;
 
-const int c_min_needed_for_support = 5;
+const int c_min_needed_for_support = 3;
 
 const unsigned int c_default_max_peers = 100;
 
@@ -5382,7 +5382,9 @@ void list_sessions( ostream& os, bool inc_dtms, bool include_progress )
          else
             os << ( g_sessions[ i ]->blockchain.empty( ) ? string( c_str_peer ) : g_sessions[ i ]->blockchain );
 
-         if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
+         if( g_sessions[ i ]->is_support_session )
+            os << '+';
+         else if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
             os << '*';
 
          string uid( g_sessions[ i ]->uid );
@@ -5897,7 +5899,7 @@ void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters )
          {
             session* p_next = g_sessions[ i ];
 
-            if( p_next && p_next->is_support_session
+            if( p_next
              && ( p_next->ip_addr == gtp_session->ip_addr )
              && ( p_next->blockchain == gtp_session->blockchain ) )
             {
@@ -5906,9 +5908,6 @@ void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters )
                   p_least_full = p_next;
             }
          }
-
-         if( !p_least_full )
-            p_least_full = gtp_session;
 
          p_least_full->file_hashes_to_get.push_back( hash );
       }
@@ -6005,7 +6004,7 @@ void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
          {
             session* p_next = g_sessions[ i ];
 
-            if( p_next && p_next->is_support_session
+            if( p_next
              && ( p_next->ip_addr == gtp_session->ip_addr )
              && ( p_next->blockchain == gtp_session->blockchain ) )
             {
@@ -6014,9 +6013,6 @@ void add_peer_file_hash_for_put( const string& hash, bool check_for_supporters )
                   p_least_full = p_next;
             }
          }
-
-         if( !p_least_full )
-            p_least_full = gtp_session;
 
          p_least_full->file_hashes_to_put.push_back( hash );
       }
