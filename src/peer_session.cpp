@@ -97,7 +97,9 @@ const size_t c_initial_timeout = 60000;
 const size_t c_request_timeout = 20000;
 const size_t c_support_timeout = 60000;
 
-const size_t c_support_session_sleep_time = 1000;
+const size_t c_main_session_sleep_time = 200;
+const size_t c_support_session_sleep_time = 100;
+const size_t c_support_session_sleep_repeats = 10;
 
 #ifdef USE_THROTTLING
 const size_t c_request_throttle_sleep_time = 250;
@@ -873,7 +875,12 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
             tag_new_zenith = true;
 
          if( tag_new_zenith )
+         {
             tag_file( blockchain + c_zenith_suffix, block_hash );
+
+            TRACE_LOG( TRACE_PEER_OPS, "::> new zenith hash: "
+             + block_hash + " height: " + to_string( height ) );
+         }
          else if( wait_to_tag_zenith )
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_zenith_hash ), block_hash );
@@ -978,6 +985,9 @@ void process_public_key_file( const string& blockchain, const string& hash, size
        blockchain + '.' + to_string( height ) + c_blk_suffix ) );
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
+
+      TRACE_LOG( TRACE_PEER_OPS, "##> new zenith hash: "
+       + block_hash + " height: " + to_string( height ) );
    }
 
    if( is_primary )
@@ -1514,15 +1524,24 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    bool any_supporter_has_top_get = false;
    bool any_supporter_has_top_put = false;
 
-   string next_hash_to_get(
-    top_next_peer_file_hash_to_get( check_for_supporters ? &any_supporter_has_top_get : 0 ) );
+   string next_hash_to_get, next_hash_to_put;
 
-   string next_hash_to_put(
-    top_next_peer_file_hash_to_put( check_for_supporters ? &any_supporter_has_top_put : 0 ) );
+   // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
+   for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
+   {
+      next_hash_to_get = top_next_peer_file_hash_to_get(
+       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_get : 0 );
 
-   if( is_for_support
-    && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
-      msleep( c_support_session_sleep_time );
+      next_hash_to_put = top_next_peer_file_hash_to_put(
+       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
+
+      if( is_for_support
+       && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
+         msleep( c_support_session_sleep_time );
+
+      if( !is_for_support || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
+         break;
+   }
 
    bool set_new_zenith = false;
 
@@ -1532,6 +1551,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( !zenith_hash.empty( ) && next_hash_to_get.empty( )
     && !any_supporter_has_top_get && !any_supporter_has_top_put )
       set_new_zenith = true;
+
+   // NOTE: If main session has nothing to do while support sessions
+   // are still processing get/put file hashes then will sleep here.
+   if( !is_for_support
+    && next_hash_to_get.empty( ) && next_hash_to_put.empty( )
+    && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
+      msleep( c_main_session_sleep_time );
 
    if( get_needs_blockchain_info( ) )
    {
@@ -1750,6 +1776,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( set_new_zenith )
    {
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
+
+      TRACE_LOG( TRACE_PEER_OPS, "==> new zenith hash: "
+       + zenith_hash + " height: " + to_string( blockchain_height ) );
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_hash ), "" );
