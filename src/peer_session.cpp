@@ -2439,6 +2439,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
    string blockchain( socket_handler.get_blockchain( ) );
 
+   bool check_for_supporters = false;
+
    while( true )
    {
       progress* p_progress = 0;
@@ -2500,6 +2502,11 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          }
       }
 
+
+      if( !check_for_supporters && !socket_handler.get_is_for_support( )
+       && !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+         check_for_supporters = true;
+
       size_t timeout = socket_handler.get_is_for_support( ) ? c_support_timeout : c_request_timeout;
 
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
@@ -2521,7 +2528,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
-            socket_handler.issue_cmd_for_peer( false );
+            socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
 
