@@ -781,7 +781,9 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                if( local_public_key == master_public_key )
                {
                   if( get_session_variable(
-                   get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
+                   get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
+                   && get_session_variable( 
+                   get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                   {
                      if( !has_file( local_hash ) )
                      {
@@ -878,7 +880,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
          {
             tag_file( blockchain + c_zenith_suffix, block_hash );
 
-            TRACE_LOG( TRACE_PEER_OPS, "::> new zenith hash: "
+            TRACE_LOG( TRACE_PEER_OPS, "--- new zenith hash: "
              + block_hash + " height: " + to_string( height ) );
          }
          else if( wait_to_tag_zenith )
@@ -986,7 +988,7 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
-      TRACE_LOG( TRACE_PEER_OPS, "##> new zenith hash: "
+      TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: "
        + block_hash + " height: " + to_string( height ) );
    }
 
@@ -1112,15 +1114,16 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket,
-    peer_state session_state, bool is_local, const string& blockchain, bool is_for_support = false )
+   socket_command_handler( ssl_socket& socket, peer_state session_state,
+    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #else
-   socket_command_handler( tcp_socket& socket,
-    peer_state session_state, bool is_local, const string& blockchain, bool is_for_support = false )
+   socket_command_handler( tcp_socket& socket, peer_state session_state,
+    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #endif
     :
     socket( socket ),
     is_local( is_local ),
+    is_owner( is_owner ),
     blockchain( blockchain ),
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
@@ -1157,6 +1160,8 @@ class socket_command_handler : public command_handler
    const string& get_next_command( ) { return next_command; }
 
    bool get_is_local( ) const { return is_local; }
+   bool get_is_owner( ) const { return is_owner; }
+
    bool get_is_responder( ) const { return is_responder; }
    bool get_is_for_support( ) const { return is_for_support; }
 
@@ -1236,7 +1241,9 @@ class socket_command_handler : public command_handler
 #endif
 
    bool is_local;
+   bool is_owner;
    bool had_usage;
+
    bool is_responder;
    bool is_for_support;
 
@@ -1777,7 +1784,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
 
-      TRACE_LOG( TRACE_PEER_OPS, "==> new zenith hash: "
+      TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
 
       set_session_variable(
@@ -2406,12 +2413,13 @@ class socket_command_processor : public command_processor
 {
    public:
    socket_command_processor( tcp_socket& socket,
-    command_handler& handler, bool is_local, bool is_responder )
+    command_handler& handler, bool is_local, bool is_owner, bool is_responder )
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
     new_block_wait( 0 ),
     is_local( is_local ),
+    is_owner( is_owner ),
     is_responder( is_responder ),
     needs_blockchain_info( false )
    {
@@ -2451,6 +2459,8 @@ class socket_command_processor : public command_processor
    string new_block_pwd_hash;
 
    bool is_local;
+   bool is_owner;
+
    bool is_responder;
 
    bool needs_blockchain_info;
@@ -2656,6 +2666,7 @@ peer_session::peer_session( bool is_responder,
 #endif
  :
  is_local( false ),
+ is_owner( false ),
  ip_addr( ip_addr ),
  ap_socket( ap_socket ),
  is_responder( is_responder ),
@@ -2681,11 +2692,23 @@ peer_session::peer_session( bool is_responder,
    if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) && !has_tag( "c" + blockchain ) )
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
+   if( port.empty( ) )
+      port = to_string( get_blockchain_port( blockchain ) );
+
    if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
-   if( port.empty( ) )
-      port = to_string( get_blockchain_port( blockchain ) );
+   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
+    && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
+      is_owner = true;
+
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_SOCK_OPS );
+
+#ifdef DEBUG_PEER_HANDSHAKE
+   if( get_trace_flags( ) & TRACE_SOCK_OPS )
+      p_progress = &progress;
+#endif
 
    // NOTE: A dummy PID is being written/read here so that the standard general
    // purpose client can be used to connect as a peer (for interactive testing).
@@ -2695,15 +2718,28 @@ peer_session::peer_session( bool is_responder,
    {
       if( is_for_support )
          pid = string( c_dummy_support_tag );
+      else if( is_owner )
+         pid += '!';
 
       this->ap_socket->set_no_delay( );
-      this->ap_socket->write_line( pid, c_request_timeout );
+      this->ap_socket->write_line( pid, c_request_timeout, p_progress );
    }
    else
    {
       pid.erase( );
 
-      this->ap_socket->read_line( pid, c_request_timeout );
+      this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_progress );
+
+      string::size_type pos = pid.find( '!' );
+
+      if( pos != string::npos )
+      {
+         pid.erase( pos );
+
+         if( is_owner )
+            set_session_variable( get_special_var_name(
+             e_special_var_blockchain_both_are_owners ), c_true );
+      }
 
       if( pid == string( c_dummy_support_tag ) )
          this->is_for_support = true;
@@ -2735,7 +2771,7 @@ void peer_session::on_start( )
    try
    {
       socket_command_handler cmd_handler( *ap_socket,
-       is_responder ? e_peer_state_responder : e_peer_state_initiator, is_local, blockchain, is_for_support );
+       is_responder ? e_peer_state_responder : e_peer_state_initiator, is_local, is_owner, blockchain, is_for_support );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
@@ -2785,12 +2821,25 @@ void peer_session::on_start( )
              + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
          }
 
-         if( !ver_info.extra.empty( )
-          && from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
+         if( !ver_info.extra.empty( ) )
          {
-            ap_socket->close( );
+            string::size_type pos = ver_info.extra.find( '!' );
 
-            throw runtime_error( "unexpected files area item max size mismatch" );
+            if( pos != string::npos )
+            {
+               ver_info.extra.erase( pos );
+
+               if( is_owner )
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_both_are_owners ), c_true );
+            }
+
+            if( from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
+            {
+               ap_socket->close( );
+
+               throw runtime_error( "unexpected files area item max size mismatch" );
+            }
          }
       }
 
@@ -2890,10 +2939,11 @@ void peer_session::on_start( )
           string( "started peer session " )
           + ( !is_responder ? "(as initiator)" : "(as responder)" )
           + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain )
+          + ( !is_owner ? "" : " owner" )
           + ( !is_for_support ? "" : " support" )
           + " (tid = " + to_string( current_thread_id( ) ) + ")" );
 
-         socket_command_processor processor( *ap_socket, cmd_handler, is_local, is_responder );
+         socket_command_processor processor( *ap_socket, cmd_handler, is_local, is_owner, is_responder );
          processor.process_commands( );
       }
 

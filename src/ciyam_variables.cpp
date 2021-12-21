@@ -154,6 +154,7 @@ const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fe
 const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
 const char* const c_special_variable_blockchain_data_file_hash = "@blockchain_data_file_hash";
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
+const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
 const char* const c_special_variable_blockchain_height_processed = "@blockchain_height_processed";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
@@ -630,6 +631,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_tree_root_hash:
       s = string( c_special_variable_blockchain_tree_root_hash );
+      break;
+
+      case e_special_var_blockchain_both_are_owners:
+      s = string( c_special_variable_blockchain_both_are_owners );
       break;
 
       case e_special_var_blockchain_height_processed:
