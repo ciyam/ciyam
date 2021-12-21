@@ -888,6 +888,9 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
                TRACE_LOG( TRACE_PEER_OPS, "--- new zenith hash: "
                 + block_hash + " height: " + to_string( height ) );
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( height ) );
             }
          }
          else if( wait_to_tag_zenith )
@@ -1797,6 +1800,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_hash ), "" );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
    }
 }
 
