@@ -1739,7 +1739,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
             process_core_file( next_hash, blockchain );
 #ifdef SSL_SUPPORT
-         else
+         else if( get_session_variable( 
+          get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
             process_repository_file( blockchain, next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
 #endif
 
