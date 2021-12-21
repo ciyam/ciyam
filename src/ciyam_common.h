@@ -164,6 +164,7 @@ enum special_var
    e_special_var_peer_is_synchronising,
    e_special_var_blockchain_is_fetching,
    e_special_var_blockchain_zenith_hash,
+   e_special_var_blockchain_zenith_height,
    e_special_var_blockchain_data_file_hash,
    e_special_var_blockchain_tree_root_hash,
    e_special_var_blockchain_both_are_owners,

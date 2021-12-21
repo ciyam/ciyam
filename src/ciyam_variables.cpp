@@ -152,6 +152,7 @@ const char* const c_special_variable_package_install_extra = "@package_install_e
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
 const char* const c_special_variable_blockchain_zenith_hash = "@blockchain_zenith_hash";
+const char* const c_special_variable_blockchain_zenith_height = "@blockchain_zenith_height";
 const char* const c_special_variable_blockchain_data_file_hash = "@blockchain_data_file_hash";
 const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tree_root_hash";
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
@@ -623,6 +624,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_zenith_hash:
       s = string( c_special_variable_blockchain_zenith_hash );
+      break;
+
+      case e_special_var_blockchain_zenith_height:
+      s = string( c_special_variable_blockchain_zenith_height );
       break;
 
       case e_special_var_blockchain_data_file_hash:
