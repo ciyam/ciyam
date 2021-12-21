@@ -761,7 +761,9 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
             else if( local_public_key != master_public_key )
             {
                if( get_session_variable(
-                get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
+                get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
+                && get_session_variable( 
+                get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                {
                   string pull_hash( create_peer_repository_entry_pull_info(
                    next_hash, local_hash, local_public_key, master_public_key ) );
