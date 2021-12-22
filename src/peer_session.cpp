@@ -2686,7 +2686,8 @@ peer_session::peer_session( bool is_responder,
  ip_addr( ip_addr ),
  ap_socket( ap_socket ),
  is_responder( is_responder ),
- is_for_support( is_for_support )
+ is_for_support( is_for_support ),
+ has_found_both_are_owners( false )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
@@ -2753,8 +2754,7 @@ peer_session::peer_session( bool is_responder,
          pid.erase( pos );
 
          if( is_owner )
-            set_session_variable( get_special_var_name(
-             e_special_var_blockchain_both_are_owners ), c_true );
+            has_found_both_are_owners = true;
       }
 
       if( pid == string( c_dummy_support_tag ) )
@@ -2853,8 +2853,7 @@ void peer_session::on_start( )
                ver_info.extra.erase( pos );
 
                if( is_owner )
-                  set_session_variable( get_special_var_name(
-                   e_special_var_blockchain_both_are_owners ), c_true );
+                  has_found_both_are_owners = true;
             }
 
             if( from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
@@ -2867,6 +2866,9 @@ void peer_session::on_start( )
       }
 
       init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
+
+      if( has_found_both_are_owners )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true );
 
       okay = true;
       was_initialised = true;
