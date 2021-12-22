@@ -630,7 +630,10 @@ void process_repository_file( const string& blockchain, const string& hash_info,
       {
          string dummy;
 
-         if( !has_tag( blockchain + ".p0.key" ) )
+         bool is_blockchain_owner = !get_session_variable(
+          get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
+
+         if( !is_blockchain_owner )
          {
             if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
                store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
@@ -644,10 +647,10 @@ void process_repository_file( const string& blockchain, const string& hash_info,
 
             string repo_hash( create_peer_repository_entry_push_info( target_hash, password ) );
 
+            clear_key( password );
+
             if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
                store_repository_entry_record( target_hash, repo_hash, hex_master, hex_master );
-
-            clear_key( password );
 
             delete_file( src_hash );
             delete_file( repo_hash );
@@ -760,10 +763,8 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                add_peer_file_hash_for_get( next_hash, check_for_supporters );
             else if( local_public_key != master_public_key )
             {
-               if( get_session_variable(
-                get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
-                && get_session_variable( 
-                get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+               if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
+                && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                {
                   string pull_hash( create_peer_repository_entry_pull_info(
                    next_hash, local_hash, local_public_key, master_public_key ) );
@@ -777,30 +778,45 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
             process_list_items( next_hash, recurse, check_for_supporters );
          else if( recurse )
          {
+            bool has_repository_entry = false;
+            bool put_info_and_store_repository_entry = false;
+
             if( fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
             {
+               has_repository_entry = true;
+
                if( local_public_key == master_public_key )
+                  put_info_and_store_repository_entry = true;
+            }
+            else if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( ) )
+               put_info_and_store_repository_entry = true;
+
+            if( put_info_and_store_repository_entry )
+            {
+               if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
+                && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                {
-                  if( get_session_variable(
-                   get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
-                   && get_session_variable( 
-                   get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+                  if( local_hash.empty( ) || !has_file( local_hash ) )
                   {
-                     if( !has_file( local_hash ) )
-                     {
-                        string password;
-                        get_identity( password, true, false, true );
+                     string password;
+                     get_identity( password, true, false, true );
 
-                        if( create_peer_repository_entry_push_info( next_hash, password ) != local_hash )
-                           throw runtime_error( "unexpected invalid local hash value for repository push info" );
+                     string push_info_hash( create_peer_repository_entry_push_info( next_hash, password, &master_public_key ) );
 
-                        clear_key( password );
-                     }
+                     clear_key( password );
 
-                     add_peer_file_hash_for_put( local_hash, check_for_supporters );
-                     set_session_variable( local_hash, next_hash );
+                     if( !local_hash.empty( ) && push_info_hash != local_hash )
+                        throw runtime_error( "unexpected invalid local hash value for repository push info" );
+
+                     local_hash = push_info_hash;
                   }
+
+                  if( !has_repository_entry )
+                     store_repository_entry_record( next_hash, local_hash, master_public_key, master_public_key );
+
+                  add_peer_file_hash_for_put( local_hash, check_for_supporters );
+                  set_session_variable( local_hash, next_hash );
                }
             }
          }
@@ -836,7 +852,8 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       bool tag_new_zenith = false;
       bool wait_to_tag_zenith = false;
 
-      bool is_blockchain_owner = has_tag( blockchain + ".p0.key" );
+      bool is_blockchain_owner = !get_session_variable(
+       get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
@@ -1372,8 +1389,6 @@ void socket_command_handler::get_file( const string& hash )
    // NOTE: If the file is a list then also need to get all of its items.
    if( is_list_file( hash.substr( 0, pos ) ) )
    {
-      bool is_owner = has_tag( blockchain + ".p0.key" );
-
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
@@ -2076,15 +2091,25 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
-            else if( !socket_handler.get_is_for_support( )
-             && socket_handler.get_is_responder( ) && ( tag_or_hash.find( c_bc_prefix ) == 0 ) )
+            else if( !socket_handler.get_is_for_support( ) && ( tag_or_hash.find( c_bc_prefix ) == 0 ) )
             {
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
-                  if( blockchain_height != socket_handler.get_blockchain_height( ) )
+                  if( socket_handler.get_is_responder( )
+                   && blockchain_height != socket_handler.get_blockchain_height( ) )
                   {
                      socket_handler.set_blockchain_height( blockchain_height );
                      process_block_for_height( blockchain, hash, blockchain_height );
+                  }
+                  else
+                  {
+                     // NOTE: If is blockchain owner and not currently fetching then provided that the other peer is not
+                     // also the owner then need to process the block to fetch/store any required repository entries for
+                     // which information about will need to be "put".
+                     if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( )
+                      && get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
+                      && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+                        process_block_for_height( blockchain, hash, blockchain_height );
                   }
                }
             }
@@ -2866,6 +2891,9 @@ void peer_session::on_start( )
       }
 
       init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
+
+      if( is_owner )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true );
 
       if( has_found_both_are_owners )
          set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true );

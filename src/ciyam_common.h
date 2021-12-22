@@ -155,6 +155,7 @@ enum special_var
    e_special_var_check_script_error,
    e_special_var_extra_field_values,
    e_special_var_file_info_buffered,
+   e_special_var_blockchain_is_owner,
    e_special_var_blockchain_head_hash,
    e_special_var_blockchain_info_hash,
    e_special_var_locally_minted_block,

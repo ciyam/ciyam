@@ -143,6 +143,7 @@ const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
+const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
 const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
 const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
 const char* const c_special_variable_locally_minted_block = "@locally_minted_block";
@@ -588,6 +589,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_file_info_buffered:
       s = string( c_special_variable_file_info_buffered );
+      break;
+
+      case e_special_var_blockchain_is_owner:
+      s = string( c_special_variable_blockchain_is_owner );
       break;
 
       case e_special_var_blockchain_head_hash:
