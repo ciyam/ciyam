@@ -822,10 +822,10 @@ void process_put_file( const string& blockchain, const string& hash, bool is_tes
                }
             }
          }
-      }
 
-      if( !okay )
-         throw runtime_error( "invalid file content for put" );
+         if( !okay )
+            throw runtime_error( "invalid file content for put" );
+      }
    }
 
    delete_file( hash, true );
@@ -876,7 +876,7 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                      file_data += c_blob_separator;
 
                   file_data += create_peer_repository_entry_pull_info(
-                   next_hash, local_hash, local_public_key, master_public_key );
+                   next_hash, local_hash, local_public_key, master_public_key, false );
                }
             }
          }
