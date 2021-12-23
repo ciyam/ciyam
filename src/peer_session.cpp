@@ -66,6 +66,8 @@ namespace
 
 mutex g_mutex;
 
+const char c_blob_separator = '&';
+
 const char c_reprocess_prefix = '*';
 const char c_repository_suffix = '!';
 
@@ -88,8 +90,8 @@ const int c_max_line_length = 500;
 const int c_max_num_for_support = 10;
 const int c_min_block_wait_passes = 8;
 
-const size_t c_max_put_size = 256;
 const size_t c_max_greeting_size = 256;
+const size_t c_max_put_blob_size = 256;
 
 const size_t c_peer_sleep_time = 5000;
 
@@ -739,6 +741,96 @@ string get_file_hash_from_put_data( const string& encoded_master,
 }
 #endif
 
+void process_put_file( const string& blockchain, const string& hash, bool is_test_session )
+{
+   string file_data( extract_file( hash, "" ) );
+
+   vector< string > blobs;
+   split( file_data, blobs, c_blob_separator );
+
+   for( size_t i = 0; i < blobs.size( ); i++ )
+   {
+      string next_blob( blobs[ i ] );
+
+      vector< string > lines;
+      split( next_blob, lines, '\n' );
+
+      bool okay = false;
+
+      if( lines.size( ) >= 3 )
+      {
+         string::size_type pos = lines[ 0 ].find( c_file_repository_meta_data_line_prefix );
+
+         if( pos == 0 )
+         {
+            string meta_data_info(
+             lines[ 0 ].substr( strlen( c_file_repository_meta_data_line_prefix ) ) );
+
+            if( meta_data_info == c_file_repository_meta_data_info_type_raw )
+            {
+               if( lines[ 1 ].find( c_file_repository_public_key_line_prefix ) == 0 )
+               {
+                  string master_key;
+
+                  string public_key(
+                   lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
+
+                  pos = public_key.find( '-' );
+
+                  if( pos != string::npos )
+                  {
+                     master_key = public_key.substr( pos + 1 );
+                     public_key.erase( pos );
+                  }
+
+                  if( lines[ 2 ].find( c_file_repository_source_hash_line_prefix ) == 0 )
+                  {
+                     string source_hash(
+                      lines[ 2 ].substr( strlen( c_file_repository_source_hash_line_prefix ) ) );
+
+                     string target_hash;
+
+                     if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
+                        target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
+
+#ifndef SSL_SUPPORT
+                     okay = true;
+#else
+                     string hash_info( get_file_hash_from_put_data( master_key, public_key, source_hash, target_hash ) );
+
+                     if( !hash_info.empty( ) )
+                     {
+                        okay = true;
+                        pos = hash_info.find( ':' );
+
+                        if( !has_file( hash_info.substr( 0, pos ) ) )
+                        {
+                           add_peer_file_hash_for_get( hash_info );
+
+                           if( !target_hash.empty( ) )
+                           {
+                              target_hash = hex_encode( base64::decode( target_hash ) );
+                              set_session_variable( target_hash, hash_info.substr( 0, pos ) );
+                           }
+                        }
+                        else
+                           process_repository_file( blockchain,
+                            hash_info.substr( 0, hash_info.length( ) - 1 ), is_test_session );
+                     }
+#endif
+                  }
+               }
+            }
+         }
+      }
+
+      if( !okay )
+         throw runtime_error( "invalid file content for put" );
+   }
+
+   delete_file( hash, true );
+}
+
 void process_list_items( const string& hash, bool recurse, bool check_for_supporters )
 {
    string all_list_items( extract_file( hash, "" ) );
@@ -746,8 +838,22 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
    vector< string > list_items;
    split( all_list_items, list_items, '\n' );
 
+   string file_data( c_file_type_str_blob );
+
+   size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
+      if( file_data.size( ) >= max_blob_file_data )
+      {
+         string file_hash( create_raw_file( file_data ) );
+
+         set_session_variable( file_hash, c_true );
+         add_peer_file_hash_for_put( file_hash, check_for_supporters );
+
+         file_data = string( c_file_type_str_blob );
+      }
+
       string next_item( list_items[ i ] );
 
       if( !next_item.empty( ) )
@@ -766,11 +872,11 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
                 && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
                {
-                  string pull_hash( create_peer_repository_entry_pull_info(
-                   next_hash, local_hash, local_public_key, master_public_key ) );
+                  if( file_data.size( ) > 1 )
+                     file_data += c_blob_separator;
 
-                  if( !pull_hash.empty( ) )
-                     add_peer_file_hash_for_put( pull_hash, check_for_supporters );
+                  file_data += create_peer_repository_entry_pull_info(
+                   next_hash, local_hash, local_public_key, master_public_key );
                }
             }
          }
@@ -802,25 +908,31 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                      string password;
                      get_identity( password, true, false, true );
 
-                     string push_info_hash( create_peer_repository_entry_push_info( next_hash, password, &master_public_key ) );
+                     if( file_data.size( ) > 1 )
+                        file_data += c_blob_separator;
+
+                     if( local_hash.empty( ) )
+                        local_hash = create_peer_repository_entry_push_info( next_hash, password );
+
+                     file_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
 
                      clear_key( password );
-
-                     if( !local_hash.empty( ) && push_info_hash != local_hash )
-                        throw runtime_error( "unexpected invalid local hash value for repository push info" );
-
-                     local_hash = push_info_hash;
                   }
 
                   if( !has_repository_entry )
                      store_repository_entry_record( next_hash, local_hash, master_public_key, master_public_key );
-
-                  add_peer_file_hash_for_put( local_hash, check_for_supporters );
-                  set_session_variable( local_hash, next_hash );
                }
             }
          }
       }
+   }
+
+   if( file_data.size( ) > 1 )
+   {
+      string file_hash( create_raw_file( file_data ) );
+
+      set_session_variable( file_hash, c_true );
+      add_peer_file_hash_for_put( file_hash, check_for_supporters );
    }
 }
 
@@ -2200,7 +2312,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !has_file( hash ) )
          {
-            store_file( hash, socket, 0, p_progress, false, c_max_put_size );
+            store_file( hash, socket, 0, p_progress, false );
 
             bytes = file_bytes( hash );
 
@@ -2208,86 +2320,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             get_hello_data( hello_hash );
 
             if( hash != hello_hash )
-            {
-               string file_data( extract_file( hash, "" ) );
-
-               vector< string > lines;
-               split( file_data, lines, '\n' );
-
-               bool okay = false;
-
-               if( lines.size( ) >= 3 )
-               {
-                  string::size_type pos = lines[ 0 ].find( c_file_repository_meta_data_line_prefix );
-
-                  if( pos == 0 )
-                  {
-                     string meta_data_info(
-                      lines[ 0 ].substr( strlen( c_file_repository_meta_data_line_prefix ) ) );
-
-                     if( meta_data_info == c_file_repository_meta_data_info_type_raw )
-                     {
-                        if( lines[ 1 ].find( c_file_repository_public_key_line_prefix ) == 0 )
-                        {
-                           string master_key;
-
-                           string public_key(
-                            lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
-
-                           pos = public_key.find( '-' );
-
-                           if( pos != string::npos )
-                           {
-                              master_key = public_key.substr( pos + 1 );
-                              public_key.erase( pos );
-                           }
-
-                           if( lines[ 2 ].find( c_file_repository_source_hash_line_prefix ) == 0 )
-                           {
-                              string source_hash(
-                               lines[ 2 ].substr( strlen( c_file_repository_source_hash_line_prefix ) ) );
-
-                              string target_hash;
-
-                              if( lines.size( ) > 3 && lines[ 3 ].find( c_file_repository_target_hash_line_prefix ) == 0 )
-                                 target_hash = lines[ 3 ].substr( strlen( c_file_repository_target_hash_line_prefix ) );
-
-#ifndef SSL_SUPPORT
-                              okay = true;
-#else
-                              string hash_info( get_file_hash_from_put_data( master_key, public_key, source_hash, target_hash ) );
-
-                              if( !hash_info.empty( ) )
-                              {
-                                 okay = true;
-                                 pos = hash_info.find( ':' );
-
-                                 if( !has_file( hash_info.substr( 0, pos ) ) )
-                                 {
-                                    add_peer_file_hash_for_get( hash_info );
-
-                                    if( !target_hash.empty( ) )
-                                    {
-                                       target_hash = hex_encode( base64::decode( target_hash ) );
-                                       set_session_variable( target_hash, hash_info.substr( 0, pos ) );
-                                    }
-                                 }
-                                 else
-                                    process_repository_file( blockchain,
-                                     hash_info.substr( 0, hash_info.length( ) - 1 ), socket_handler.get_is_test_session( ) );
-                              }
-#endif
-                           }
-                        }
-                     }
-                  }
-               }
-
-               delete_file( hash, true );
-
-               if( !okay )
-                  throw runtime_error( "invalid file content for put" );
-            }
+               process_put_file( blockchain, hash, socket_handler.get_is_test_session( ) );
          }
          else
          {

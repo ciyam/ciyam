@@ -4660,23 +4660,26 @@ string get_account_msg_secret( const string& blockchain, const string& password,
    return key_info.msg_secret;
 }
 
-string create_peer_repository_entry_pull_info( const string& hash )
+string create_peer_repository_entry_pull_info( const string& hash, bool store_as_blob )
 {
    string retval, local_hash, local_public_key, master_public_key;
 
    if( fetch_repository_entry_record( hash,
     local_hash, local_public_key, master_public_key, false ) && has_file( local_hash ) )
-      retval = create_peer_repository_entry_pull_info( hash, local_hash, local_public_key, master_public_key );
+      retval = create_peer_repository_entry_pull_info( hash, local_hash, local_public_key, master_public_key, store_as_blob );
 
    return retval;
 }
 
 string create_peer_repository_entry_pull_info( const string& hash,
- const string& local_hash, const string& local_public_key, const string& master_public_key )
+ const string& local_hash, const string& local_public_key, const string& master_public_key, bool store_as_blob )
 {
    string retval;
 
-   string file_data( c_file_type_str_blob );
+   string file_data;
+
+   if( store_as_blob )
+      file_data += string( c_file_type_str_blob );
 
    file_data += c_file_repository_meta_data_line_prefix;
    file_data += c_file_repository_meta_data_info_type_raw;
@@ -4697,20 +4700,27 @@ string create_peer_repository_entry_pull_info( const string& hash,
    file_data += c_file_repository_target_hash_line_prefix;
    file_data += base64::encode( hex_decode( hash ) );
 
-   // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
-   retval = create_raw_file( file_data, false );
+   if( !store_as_blob )
+      retval = file_data;
+   else
+      // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
+      retval = create_raw_file( file_data, false );
 
    return retval;
 }
 
-string create_peer_repository_entry_push_info( const string& file_hash, const string& password, string* p_pub_key )
+string create_peer_repository_entry_push_info(
+ const string& file_hash, const string& password, string* p_pub_key, bool store_as_blob )
 {
    string retval;
 
 #ifndef SSL_SUPPORT
    throw runtime_error( "create_peer_repository_entry_push_info requires SSL support" );
 #else
-   string file_data( c_file_type_str_blob );
+   string file_data;
+
+   if( store_as_blob )
+      file_data += string( c_file_type_str_blob );
 
    file_data += c_file_repository_meta_data_line_prefix;
    file_data += c_file_repository_meta_data_info_type_raw;
@@ -4730,8 +4740,11 @@ string create_peer_repository_entry_push_info( const string& file_hash, const st
    file_data += c_file_repository_source_hash_line_prefix;
    file_data += base64::encode( hex_decode( file_hash ) );
 
-   // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
-   retval = create_raw_file( file_data, false );
+   if( !store_as_blob )
+      retval = file_data;
+   else
+      // NOTE: Don't allow compression to assist with interactive testing and/or debugging.
+      retval = create_raw_file( file_data, false );
 #endif
 
    return retval;

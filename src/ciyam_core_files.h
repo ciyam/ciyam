@@ -157,13 +157,14 @@ inline std::string CIYAM_BASE_DECL_SPEC construct_account_info(
 std::string CIYAM_BASE_DECL_SPEC get_account_msg_secret(
  const std::string& blockchain, const std::string& password, const std::string& account );
 
-std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash );
+std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash, bool store_as_blob = true );
 
-std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info( const std::string& hash,
- const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
+std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info(
+ const std::string& hash, const std::string& local_hash,
+ const std::string& local_public_key, const std::string& master_public_key, bool store_as_blob = true );
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
- const std::string& file_hash, const std::string& password, std::string* p_pub_key = 0 );
+ const std::string& file_hash, const std::string& password, std::string* p_pub_key = 0, bool store_as_blob = true );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash, const std::string& password );
