@@ -2050,6 +2050,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    if( command != c_cmd_peer_session_bye )
       socket.set_delay( );
 
+   string hello_data, hello_hash;
+   hello_data = get_hello_data( hello_hash );
+
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
    string blockchain( socket_handler.get_blockchain( ) );
@@ -2075,10 +2078,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
           && socket_handler.state( ) != e_peer_state_waiting_for_put
           && socket_handler.state( ) != e_peer_state_waiting_for_get_or_put )
             throw runtime_error( "invalid state for chk" );
-
-         string hello_data, hello_hash;
-
-         hello_data = get_hello_data( hello_hash );
 
          // NOTE: Create the dummy "hello" blob as it will be required.
          if( !has_file( hello_hash ) )
@@ -2313,6 +2312,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             handler.issue_command_response( response, true );
             response.erase( );
 
+            if( blockchain.empty( ) && top_next_peer_file_hash_to_put( ).empty( ) )
+               add_peer_file_hash_for_put( hello_hash );
+
             socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
       }
@@ -2337,9 +2339,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             store_file( hash, socket, 0, p_progress, false );
 
             bytes = file_bytes( hash );
-
-            string hello_hash;
-            get_hello_data( hello_hash );
 
             if( hash != hello_hash )
                process_put_file( blockchain, hash, socket_handler.get_is_test_session( ) );
@@ -2640,7 +2639,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
             }
          }
       }
-
 
       if( !check_for_supporters && !socket_handler.get_is_for_support( )
        && !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
@@ -2969,7 +2967,6 @@ void peer_session::on_start( )
       size_t blockchain_height = 0;
 
       string hello_data, hello_hash;
-
       hello_data = get_hello_data( hello_hash );
 
       // NOTE: Create the dummy "hello" blob as it will be required.
