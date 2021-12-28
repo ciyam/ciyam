@@ -65,8 +65,9 @@ std::string CIYAM_BASE_DECL_SPEC file_type_info(
  bool allow_all_after = true, bool output_total_blob_size = false,
  progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC create_raw_file( const std::string& data,
- bool compress = true, const char* p_tag = 0, bool* p_is_existing = 0, const char* p_hash = 0 );
+std::string CIYAM_BASE_DECL_SPEC create_raw_file(
+ const std::string& data, bool compress = true, const char* p_tag = 0,
+ bool* p_is_existing = 0, const char* p_hash = 0, bool allow_uncompress = true );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
@@ -136,7 +137,7 @@ bool CIYAM_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, 
 
 std::string CIYAM_BASE_DECL_SPEC extract_file( const std::string& hash,
  const std::string& dest_file_name, unsigned char check_file_type_and_extra = '\0',
- bool* p_is_list = 0, unsigned char* p_type_and_extra = 0, bool* p_is_encrypted = 0 );
+ bool* p_is_list = 0, unsigned char* p_type_and_extra = 0, bool* p_is_encrypted = 0, bool set_is_encrypted = false );
 
 void CIYAM_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );

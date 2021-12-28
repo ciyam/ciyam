@@ -4709,8 +4709,8 @@ string create_peer_repository_entry_pull_info( const string& hash,
    return retval;
 }
 
-string create_peer_repository_entry_push_info(
- const string& file_hash, const string& password, string* p_pub_key, bool store_as_blob )
+string create_peer_repository_entry_push_info( const string& file_hash,
+ const string& password, string* p_pub_key, bool store_as_blob, bool is_for_testing )
 {
    string retval;
 
@@ -4726,15 +4726,21 @@ string create_peer_repository_entry_push_info(
    file_data += c_file_repository_meta_data_info_type_raw;
    file_data += '\n';
 
-   // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-   // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-   private_key priv_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) );
+   auto_ptr< private_key > ap_priv_key;
+
+   if( is_for_testing )
+      ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+   else
+      // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+      // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+      ap_priv_key.reset(
+       new private_key( "0" + sha256( file_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
 
    if( p_pub_key )
-      *p_pub_key = priv_key.get_public( );
+      *p_pub_key = ap_priv_key->get_public( );
 
    file_data += c_file_repository_public_key_line_prefix;
-   file_data += priv_key.get_public( true, true );
+   file_data += ap_priv_key->get_public( true, true );
    file_data += '\n';
 
    file_data += c_file_repository_source_hash_line_prefix;
@@ -4751,7 +4757,7 @@ string create_peer_repository_entry_push_info(
 }
 
 void decrypt_pulled_peer_file(
- const string& dest_hash, const string& src_hash, const string& password )
+ const string& dest_hash, const string& src_hash, const string& password, bool is_for_testing )
 {
    string all_tags( get_hash_tags( src_hash ) );
 
@@ -4779,21 +4785,27 @@ void decrypt_pulled_peer_file(
       if( public_key_in_hex.empty( ) )
          throw runtime_error( "unable to locate peer public key tag for file '" + src_hash + "'" );
       else
-         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex );
+         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex, is_for_testing );
    }
 }
 
 void decrypt_pulled_peer_file( const string& dest_hash,
- const string& src_hash, const string& password, const string& public_key_in_hex )
+ const string& src_hash, const string& password, const string& public_key_in_hex, bool is_for_testing )
 {
 #ifndef SSL_SUPPORT
    throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
 #else
    public_key pub_key( public_key_in_hex );
 
-   // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
-   // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
-   private_key priv_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) );
+   auto_ptr< private_key > ap_priv_key;
+
+   if( is_for_testing )
+      ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+   else
+      // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
+      // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
+      ap_priv_key.reset(
+       new private_key( "0" + sha256( dest_hash + password ).get_digest_as_string( ).substr( 1 ) ) );
 
    bool is_encrypted = false;
    unsigned char type_and_extra = '\0';
@@ -4801,14 +4813,14 @@ void decrypt_pulled_peer_file( const string& dest_hash,
    string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted ) );
 
    stringstream ss( file_data );
-   crypt_stream( ss, priv_key.construct_shared( pub_key ) );
+   crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
    string hash;
 
    if( !is_encrypted )
       hash = create_raw_file( string( 1, ( char )type_and_extra ) + ss.str( ) );
    else
-      create_raw_file( string( 1, ( char )type_and_extra ) + ss.str( ), true, 0, 0, dest_hash.c_str( ) );
+      create_raw_file( ( char )type_and_extra + ss.str( ), true, 0, 0, dest_hash.c_str( ) );
 
    if( !is_encrypted && ( hash != dest_hash ) )
    {

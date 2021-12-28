@@ -580,7 +580,7 @@ void process_core_file( const string& hash, const string& blockchain )
 }
 
 #ifdef SSL_SUPPORT
-void process_repository_file( const string& blockchain, const string& hash_info, bool is_test_session = false )
+void process_repository_file( const string& blockchain, const string& hash_info, bool is_test_session )
 {
    guard g( g_mutex );
 
@@ -596,7 +596,7 @@ void process_repository_file( const string& blockchain, const string& hash_info,
 
    unsigned char type_and_extra = '\0';
 
-   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra ) );
+   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true ) );
 
    pos = extra_info.find( ';' );
 
@@ -689,11 +689,11 @@ void process_repository_file( const string& blockchain, const string& hash_info,
          stringstream ss( file_data );
          crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
-         file_data = string( 1, ( char )type_and_extra ) + ss.str( );
+         file_data = ( char )type_and_extra + ss.str( );
 
          delete_file( src_hash );
 
-         string local_hash( create_raw_file( file_data, false ) );
+         string local_hash( create_raw_file( file_data ) );
 
          store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }
@@ -1631,9 +1631,9 @@ bool socket_command_handler::want_to_do_op( op o ) const
       if( o == e_op_init )
          chk_count = pip_count = 0;
       else if( o == e_op_pip )
-         retval = ( ++pip_count % 5 == 0 );
+         retval = ( ++pip_count % 3 == 0 );
       else
-         retval = ( ++chk_count % 10 == 0 );
+         retval = ( ++chk_count % 5 == 0 );
    }
    else
    {
@@ -2149,8 +2149,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         socket_handler.state( ) = e_peer_state_invalid;
                      else
                      {
+                        socket_handler.state( ) = e_peer_state_waiting_for_put;
                         socket_handler.op_state( ) = e_peer_state_waiting_for_put;
-                        socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
                         socket_handler.trust_level( ) = e_peer_trust_level_normal;
                      }
@@ -2167,6 +2167,21 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                }
             }
+            else if( blockchain.empty( ) )
+            {
+               string local_hash, local_public_key, master_public_key;
+
+               if( fetch_repository_entry_record( hash,
+                local_hash, local_public_key, master_public_key, false ) )
+               {
+                  string pull_hash(
+                   create_peer_repository_entry_pull_info( hash, local_hash, local_public_key, "" ) );
+
+                  add_peer_file_hash_for_put( pull_hash );
+
+                  set_session_variable( pull_hash, c_true );
+               }
+            }
          }
          else
          {
@@ -2180,10 +2195,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             if( was_initial_state )
             {
                socket_handler.op_state( ) = e_peer_state_waiting_for_get;
-               socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
-               if( !blockchain.empty( ) )
+               if( blockchain.empty( ) )
+                  socket_handler.state( ) = e_peer_state_waiting_for_get;
+               else
                {
+                  socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
+
                   if( tag_or_hash.find( c_bc_prefix ) == 0 )
                   {
                      if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
@@ -2284,7 +2302,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_put;
-         socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
+
+         if( blockchain.empty( ) )
+            socket_handler.state( ) = e_peer_state_waiting_for_put;
+         else
+            socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
          if( socket_handler.get_is_responder( ) )
          {
@@ -2348,7 +2370,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_get;
-         socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
+
+         if( blockchain.empty( ) )
+            socket_handler.state( ) = e_peer_state_waiting_for_get;
+         else
+            socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
          if( socket_handler.get_is_responder( ) )
          {
@@ -2639,7 +2665,10 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                break;
             }
 
-            socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
+            if( blockchain.empty( ) )
+               socket_handler.state( ) = e_peer_state_waiting_for_get;
+            else
+               socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
             socket_handler.issue_cmd_for_peer( check_for_supporters );
          }
@@ -2818,6 +2847,8 @@ peer_session::peer_session( bool is_responder,
       if( pid == string( c_dummy_support_tag ) )
          this->is_for_support = true;
       else if( pid == string( c_dummy_peer_tag ) )
+         this->is_for_support = false;
+      else if( blockchain.empty( ) )
          this->is_for_support = false;
       else
          throw runtime_error( "unexpected peer handshake" );

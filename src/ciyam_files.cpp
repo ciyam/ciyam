@@ -1112,7 +1112,8 @@ string file_type_info( const string& tag_or_hash,
    return retval;
 }
 
-string create_raw_file( const string& data, bool compress, const char* p_tag, bool* p_is_existing, const char* p_hash )
+string create_raw_file( const string& data, bool compress,
+ const char* p_tag, bool* p_is_existing, const char* p_hash, bool allow_uncompress )
 {
    guard g( g_mutex );
 
@@ -1121,8 +1122,10 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    bool file_extra_is_core = false;
 
-   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
-   unsigned char file_extra = ( data[ 0 ] & c_file_type_val_extra_mask );
+   unsigned char type_and_extra = data[ 0 ];
+
+   unsigned char file_type = ( type_and_extra & c_file_type_val_mask );
+   unsigned char file_extra = ( type_and_extra & c_file_type_val_extra_mask );
 
    if( file_extra & c_file_type_val_extra_core )
       file_extra_is_core = true;
@@ -1132,25 +1135,37 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
 
    string final_data( data );
 
-   bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
-   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
+   bool is_encrypted = ( type_and_extra & c_file_type_val_encrypted );
+   bool is_compressed = ( type_and_extra & c_file_type_val_compressed );
 
 #ifdef ZLIB_SUPPORT
    session_file_buffer_access file_buffer;
 
-   if( !is_encrypted && is_compressed )
+   // NOTE: Will attempt to uncompress even if encrypted as a way to detect if a file is not actually encrypted.
+   if( is_compressed && allow_uncompress )
    {
       unsigned long size = final_data.size( ) - 1;
       unsigned long usize = file_buffer.get_size( );
 
+      bool okay = true;
+
       if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&final_data[ 1 ], size ) != Z_OK )
-         throw runtime_error( "invalid content for create_raw_file (bad compressed or uncompressed too large)" );
+      {
+         if( is_encrypted )
+            okay = false;
+         else
+            throw runtime_error( "invalid content for create_raw_file (bad compressed or uncompressed too large)" );
+      }
 
-      compress = true;
-      is_compressed = false;
+      if( okay )
+      {
+         is_encrypted = false;
+         is_compressed = false;
 
-      final_data = ( data[ 0 ] & ~c_file_type_val_compressed );
-      final_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+         type_and_extra &= ~( c_file_type_val_encrypted | c_file_type_val_compressed );
+
+         final_data = ( char )type_and_extra + string( ( const char* )file_buffer.get_buffer( ), usize );
+      }
    }
 #else
    if( is_compressed )
@@ -1165,7 +1180,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       validate_list( final_data.substr( 1 ) );
 
 #ifdef ZLIB_SUPPORT
-   if( compress && !is_compressed && final_data.size( ) >= c_min_size_to_compress )
+   if( compress && !is_encrypted && !is_compressed && final_data.size( ) >= c_min_size_to_compress )
    {
       unsigned long size = final_data.size( ) - 1;
       unsigned long csize = file_buffer.get_size( );
@@ -1180,7 +1195,7 @@ string create_raw_file( const string& data, bool compress, const char* p_tag, bo
       {
          if( csize + offset < final_data.size( ) )
          {
-            final_data[ 0 ] |= c_file_type_val_compressed;
+            final_data[ 0 ] = ( type_and_extra | c_file_type_val_compressed );
 
             final_data.erase( offset );
             final_data += string( ( const char* )file_buffer.get_buffer( ), csize );
@@ -2875,7 +2890,7 @@ bool temp_file_is_identical( const string& temp_name, const string& hash )
 
 string extract_file( const string& hash,
  const string& dest_file_name, unsigned char check_file_type_and_extra,
- bool* p_is_list, unsigned char* p_type_and_extra, bool* p_is_encrypted )
+ bool* p_is_list, unsigned char* p_type_and_extra, bool* p_is_encrypted, bool set_is_encrypted )
 {
    guard g( g_mutex );
 
@@ -2896,6 +2911,9 @@ string extract_file( const string& hash,
 
       if( p_is_list )
          *p_is_list = ( file_type == c_file_type_val_list );
+
+      if( set_is_encrypted )
+         data[ 0 ] |= c_file_type_val_encrypted;
 
       bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
       bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
@@ -3461,7 +3479,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
                   if( tag_for_file.empty( ) )
                      tag_for_file = current_time_stamp_tag( false, days_ahead );
 
-                  create_raw_file( file_data, false, tag_for_file.c_str( ), 0, hash.c_str( ) );
+                  create_raw_file( file_data, false, tag_for_file.c_str( ), 0, hash.c_str( ), false );
 
                   break;
                }
