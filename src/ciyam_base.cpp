@@ -80,6 +80,7 @@ const char c_global_storage_file_not_folder_suffix = '!';
 const int c_identity_burn = 100;
 
 const int c_min_needed_for_support = 3;
+const int c_min_smtp_max_send_attempts = 1;
 
 const unsigned int c_default_max_peers = 100;
 
@@ -143,6 +144,7 @@ const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_sql_password = "sql_password";
+const char* const c_attribute_test_peer_port = "test_peer_port";
 const char* const c_attribute_default_storage = "default_storage";
 const char* const c_attribute_peer_ips_direct = "peer_ips_direct";
 const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
@@ -1209,9 +1211,12 @@ struct scoped_lock_holder
    size_t lock_handle;
 };
 
-// NOTE: If max sessions is set to a value greater than 1000 then would need to change "gen_key".
+// NOTE: If max. sessions is set to a value greater than 1000 then "gen_key" will need to be changed.
 const size_t c_max_sessions_limit = 1000;
+const size_t c_min_sessions_limit = 10;
+
 const size_t c_max_storage_handlers_limit = 100;
+const size_t c_min_storage_handlers_limit = 1;
 
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
@@ -3455,6 +3460,8 @@ string g_pem_password;
 string g_rpc_password;
 string g_sql_password;
 
+int g_test_peer_port = 0;
+
 string g_default_storage;
 
 unsigned int g_session_timeout = 0;
@@ -3489,7 +3496,9 @@ string g_smtp_suffix;
 string g_smtp_username;
 string g_smtp_password;
 string g_smtp_security;
-int g_smtp_max_send_attempts = 1;
+
+int g_smtp_max_send_attempts = c_min_smtp_max_send_attempts;
+
 int64_t g_smtp_max_attached_data = INT64_C( 100000 );
 
 typedef map< string, external_client > external_client_container;
@@ -3703,14 +3712,23 @@ void read_server_configuration( )
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
+      if( g_max_sessions < c_min_sessions_limit )
+         throw runtime_error( "max. sessions value " + to_string( g_max_sessions )
+          + " is less than min. sessions limit " + to_string( c_min_sessions_limit ) );
+
       if( g_max_sessions > c_max_sessions_limit )
          throw runtime_error( "max. sessions value " + to_string( g_max_sessions )
-          + " exceeds max. sessions limit " + to_string( c_max_sessions_limit ) );
+          + " is greater than max. sessions limit " + to_string( c_max_sessions_limit ) );
 
       g_gpg_password = reader.read_opt_attribute( c_attribute_gpg_password );
       g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
       g_rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
+
+      g_test_peer_port = atoi( reader.read_opt_attribute( c_attribute_test_peer_port, "0" ).c_str( ) );
+
+      if( g_test_peer_port < 0 )
+         throw runtime_error( "invalid negative test peer port value " + to_string( g_test_peer_port ) );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
@@ -3747,6 +3765,10 @@ void read_server_configuration( )
 
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
+
+      if( g_max_storage_handlers < c_min_storage_handlers_limit )
+         throw runtime_error( "max. storage handlers value " + to_string( g_max_storage_handlers )
+          + " is less than min. storage handlers limit " + to_string( c_min_storage_handlers_limit ) );
 
       if( g_max_storage_handlers > c_max_storage_handlers_limit )
          throw runtime_error( "max. storage handlers value " + to_string( g_max_storage_handlers )
@@ -3796,9 +3818,16 @@ void read_server_configuration( )
          if( !max_send_attempts.empty( ) )
             g_smtp_max_send_attempts = atoi( max_send_attempts.c_str( ) );
 
+         if( g_smtp_max_send_attempts < c_min_smtp_max_send_attempts )
+            throw runtime_error( "max. smtp send attempts " + to_string( g_smtp_max_send_attempts )
+             + " is less than min. smtp send attempts " + to_string( c_min_smtp_max_send_attempts ) );
+
          string max_attached_data = reader.read_opt_attribute( c_attribute_max_attached_data );
          if( !max_attached_data.empty( ) )
             g_smtp_max_attached_data = unformat_bytes( max_attached_data );
+
+         if( g_smtp_max_attached_data < 0 )
+            throw runtime_error( "invalid max. smtp attached data value " + to_string( g_smtp_max_attached_data ) );
 
          reader.finish_section( c_section_smtp );
       }
@@ -3812,6 +3841,9 @@ void read_server_configuration( )
             external_client client;
 
             client.port = atoi( reader.read_opt_attribute( c_attribute_port, "0" ).c_str( ) );
+
+            if( client.port < 0 )
+               throw runtime_error( "invalid client port value " + to_string( client.port ) );
 
             string key = reader.read_attribute( c_attribute_label );
             client.is_local = ( lower( reader.read_opt_attribute( c_attribute_is_local, c_false ) ) == c_true );
@@ -5801,6 +5833,12 @@ string get_sql_password( )
    }
 
    return pwd;
+}
+
+int get_test_peer_port( )
+{
+   guard g( g_mutex );
+   return g_test_peer_port;
 }
 
 string get_encrypted_gpg_password( )

@@ -336,6 +336,8 @@ std::string CIYAM_BASE_DECL_SPEC get_pem_password( );
 std::string CIYAM_BASE_DECL_SPEC get_rpc_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 
+int CIYAM_BASE_DECL_SPEC get_test_peer_port( );
+
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
 std::string CIYAM_BASE_DECL_SPEC get_encrypted_sql_password( );

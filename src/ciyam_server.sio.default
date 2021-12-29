@@ -17,6 +17,7 @@
 # <pem_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <rpc_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
 # <sql_password>*a8634af27d824c4bbf916e16cbd33284:GKmbnPd+f9Ar4AuAvvQNLg==
+# <test_peer_port>12346
 # <default_storage>test
 # <peer_ips_direct>127.0.0.1=28025710166
 # <peer_ips_permit>

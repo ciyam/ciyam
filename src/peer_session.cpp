@@ -2795,7 +2795,12 @@ peer_session::peer_session( bool is_responder,
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
    if( port.empty( ) )
-      port = to_string( get_blockchain_port( blockchain ) );
+   {
+      if( blockchain.empty( ) )
+         port = get_test_peer_port( );
+      else
+         port = to_string( get_blockchain_port( blockchain ) );
+   }
 
    if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
@@ -3563,14 +3568,16 @@ void init_peer_sessions( int start_listeners )
 {
    if( start_listeners )
    {
+      int test_peer_port = get_test_peer_port( );
+
+      if( test_peer_port > 0 )
+         create_peer_listener( test_peer_port, "" );
+
       map< int, string > blockchains;
       get_blockchains( blockchains );
 
       for( map< int, string >::iterator i = blockchains.begin( ); i != blockchains.end( ); ++i )
-      {
-         peer_listener* p_peer_listener = new peer_listener( i->first, i->second );
-         p_peer_listener->start( );
-      }
+         create_peer_listener( i->first, i->second );
    }
 
    create_initial_peer_sessions( );

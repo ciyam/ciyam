@@ -22,7 +22,7 @@ The "chk" command allows a peer to inquire as to whether another peer has a part
 a file (the latter being via an optional "nonce" argument). After commencing a session the "chk" command must
 be the first command to be issued. It should be noted that unless doing interactive testing any "chk" command
 that has provided a "tag" rather than a file "hash" in its request must provide a tag value which is prefixed
-with the common blockchain prefix (e.g. "c27243366536"). This command can be issued at any time by peers.
+with the common blockchain prefix (e.g. "bc.da667b8c4"). This command can be issued at any time by peers.
 
 The "pip" command allows peers to exchange IP addresses of other peers that they are connected to (one single
 address per call) and after the initial "chk" has been issued can also be used at any time by peers. Normally
@@ -42,13 +42,13 @@ file using the "chk" command and its "nonce" argument.
 Interactive Testing
 -------------------
 
-In order to interactively test the CIYAM peer protocol a special dummy blockchain entry will need to be added
-to the "ciyam_server.sio" configuration file such as this:
+In order to interactively test the CIYAM peer protocol a special configuration entry needs to be added to the
+"ciyam_server.sio" configuration file (immediately before the "<default_storage>" entry):
 
- <blockchains>12346=
-
-Normally the attribute would look more like "12346=27243366536" where "27243366536" identifies the blockchain
-but for interactive console testing the blockchain identity needs to be purposely left empty.
+...
+ <test_peer_port>12346
+# <default_storage>test
+...
 
 After changing the configuration file and restarting the server the "ciyam_server.log" should look similar to
 the following:
@@ -72,9 +72,9 @@ pip <addr> (exchange a random peer's ip address)
 tls (start TLS session)
 bye (terminate session)
 
-It should be noted that unlike the standard app server protocol the peer protocol uses a finite state machine
-to determine what commands are permitted to be executed at any particular point in time (the "?" help command
-can be executed at any time but is only permitted to be executed once per session).
+It should be noted that unlike the standard application server protocol the peer protocol uses a finite state
+machine to determine what commands are permitted to be executed at any particular point in time (the "?" help
+command can be executed at any time but is only permitted to be executed once per session).
 
 The following illustrates a simple interactive peer session:
 
