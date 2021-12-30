@@ -421,6 +421,9 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       int64_t secs_diff = seconds_between( standard, local );
 
+      string ciyam_server_prefix( c_ciyam_server );
+      ciyam_server_prefix += '.';
+
       do
       {
          file_filter ff;
@@ -432,6 +435,10 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
          {
             if( is_first )
             {
+               // NOTE: Need to ignore the application server's own files.
+               if( fs.get_name( ).find( ciyam_server_prefix ) == 0 )
+                  continue;
+
                string data( buffer_file( fs.get_full_name( ) ) );
                string file_name( construct_file_name_from_hash( data, false, false ) );
 
@@ -1814,6 +1821,12 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    if( is_external && name.find( c_time_stamp_tag_prefix ) == 0 )
       throw runtime_error( "invalid file time-stamp prefixed tag name '" + name + "'" );
 
+   string ciyam_server_prefix( c_ciyam_server );
+   ciyam_server_prefix += '.';
+
+   if( name.find( ciyam_server_prefix ) == 0 )
+      throw runtime_error( "invalid '" + ciyam_server_prefix + "' prefixed tag name '" + name + "'" );
+
    if( name.empty( ) )
       throw runtime_error( "unexpected empty tag name found in tag_file" );
    else
@@ -2416,10 +2429,10 @@ void crypt_file( const string& tag_or_hash, const string& password,
       {
          string dummy, pub_key;
 
-         string repo_hash( create_peer_repository_entry_push_info( hash, password, &pub_key ) );
+         create_peer_repository_entry_push_info( hash, password, &pub_key );
 
          if( !fetch_repository_entry_record( hash, dummy, dummy, dummy, false ) )
-            store_repository_entry_record( hash, repo_hash, pub_key, pub_key );
+            store_repository_entry_record( hash, "", pub_key, pub_key );
       }
 
       if( recurse && file_type == c_file_type_val_list )
@@ -2982,10 +2995,10 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    string status_info( get_archive_status( path ) );
 
-   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods::bulk_write bulk_write( system_ods_instance( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
-   ods::transaction ods_tx( ciyam_ods_instance( ) );
+   ods::transaction ods_tx( system_ods_instance( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
 
@@ -3011,8 +3024,8 @@ void remove_file_archive( const string& name, bool destroy_files )
 {
    guard g( g_mutex );
 
-   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods::bulk_write bulk_write( system_ods_instance( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
 
@@ -3021,7 +3034,7 @@ void remove_file_archive( const string& name, bool destroy_files )
       throw runtime_error( "Archive '" + name + "' not found." );
    else
    {
-      ods::transaction ods_tx( ciyam_ods_instance( ) );
+      ods::transaction ods_tx( system_ods_instance( ) );
 
       if( destroy_files )
       {
@@ -3062,8 +3075,8 @@ void repair_file_archive( const string& name )
 {
    guard g( g_mutex );
 
-   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods::bulk_write bulk_write( system_ods_instance( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
 
@@ -3072,7 +3085,7 @@ void repair_file_archive( const string& name )
       throw runtime_error( "Archive '" + name + "' not found." );
    else
    {
-      ods::transaction ods_tx( ciyam_ods_instance( ) );
+      ods::transaction ods_tx( system_ods_instance( ) );
 
       ods_fs.set_folder( name );
 
@@ -3136,15 +3149,15 @@ void archives_status_update( const string& name )
 {
    guard g( g_mutex );
 
-   ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods::bulk_write bulk_write( system_ods_instance( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
 
    vector< string > names;
    ods_fs.list_folders( names );
 
-   ods::transaction ods_tx( ciyam_ods_instance( ) );
+   ods::transaction ods_tx( system_ods_instance( ) );
 
    for( size_t i = 0; i < names.size( ); i++ )
    {
@@ -3186,8 +3199,8 @@ bool file_has_been_blacklisted( const string& hash )
 
    bool retval = false;
 
-   ods::bulk_read bulk_read( ciyam_ods_instance( ) );
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods::bulk_read bulk_read( system_ods_instance( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_blacklist_folder );
 
@@ -3206,10 +3219,10 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
 
    auto_ptr< ods::bulk_read > ap_bulk;
 
-   if( !ciyam_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( ciyam_ods_instance( ) ) );
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( system_ods_instance( ) ) );
 
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
 
@@ -3299,10 +3312,10 @@ string relegate_time_stamped_files( const string& hash,
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+      ods::bulk_write bulk_write( system_ods_instance( ) );
+      ods_file_system& ods_fs( system_ods_file_system( ) );
 
-      ods::transaction ods_tx( ciyam_ods_instance( ) );
+      ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < archives.size( ); i++ )
       {
@@ -3407,8 +3420,8 @@ bool has_file_been_archived( const string& hash )
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      ods::bulk_read bulk_read( ciyam_ods_instance( ) );
-      ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+      ods::bulk_read bulk_read( system_ods_instance( ) );
+      ods_file_system& ods_fs( system_ods_file_system( ) );
 
       for( size_t i = 0; i < archives.size( ); i++ )
       {
@@ -3452,8 +3465,8 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
          if( paths.size( ) != archives.size( ) )
             throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-         ods::bulk_read bulk_read( ciyam_ods_instance( ) );
-         ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+         ods::bulk_read bulk_read( system_ods_instance( ) );
+         ods_file_system& ods_fs( system_ods_file_system( ) );
 
          for( size_t i = 0; i < archives.size( ); i++ )
          {
@@ -3511,14 +3524,14 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    string all_archives( list_file_archives( true, &paths ) );
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !ciyam_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( ciyam_ods_instance( ) ) );
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-   ods_file_system& ods_fs( ciyam_ods_file_system( ) );
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    auto_ptr< ods::transaction > ap_ods_tx;
-   if( !ciyam_ods_instance( ).is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( ciyam_ods_instance( ) ) );
+   if( !system_ods_instance( ).is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
 
    if( !all_archives.empty( ) )
    {

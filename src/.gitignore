@@ -156,6 +156,9 @@ Meta.modules.lst
 # Ignore customised environment init file.
 ciyam_init_cmd.bat
 
+# Ignore any blockchain files directories.
+bc.da667b8c4
+
 # Ignore any specific blockchain init files (except sample ones).
 *.bc_init.cin
 !da667b8c4.bc_init.cin

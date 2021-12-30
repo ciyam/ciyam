@@ -107,10 +107,10 @@ const int c_max_file_buffer_expansion = 2;
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
-const char* const c_ciyam_server = "ciyam_server";
-
+const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
+const char* const c_server_tx_log_file = "ciyam_server.tlg";
 
 const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
@@ -1231,8 +1231,6 @@ string g_files_area_dir;
 size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
 size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 
-const char* const c_ciyam_server_tlg = "ciyam_server.tlg";
-
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
 
@@ -1280,25 +1278,25 @@ size_t get_last_raw_file_data_chunk( const string& log_blob_file_prefix, string&
    return raw_file_chunk;
 }
 
-void append_ciyam_ods_transaction_log_files( )
+void append_system_ods_transaction_log_files( )
 {
    string separator( ":" );
 
    string raw_file_data, old_raw_file_data;
-   size_t raw_file_chunk = get_last_raw_file_data_chunk( c_ciyam_server_tlg, old_raw_file_data );
+   size_t raw_file_chunk = get_last_raw_file_data_chunk( c_server_tx_log_file, old_raw_file_data );
 
    size_t max_chunk_size = g_files_area_item_max_size - 1;
 
    // NOTE: The initial "chunk" of the ODS transaction log needs to always be re-written as the
    // ODS transaction log header is being updated every time that the log is being appended to.
-   raw_file_data = string( c_file_type_str_blob ) + buffer_file( c_ciyam_server_tlg, max_chunk_size );
+   raw_file_data = string( c_file_type_str_blob ) + buffer_file( c_server_tx_log_file, max_chunk_size );
 
-   string log_raw_file_tag_name( string( c_ciyam_server_tlg ) + "." + to_comparable_string( 0, false, 5 ) );
+   string log_raw_file_tag_name( string( c_server_tx_log_file ) + "." + to_comparable_string( 0, false, 5 ) );
 
    create_raw_file( raw_file_data, true, log_raw_file_tag_name.c_str( ) );
 
    create_list_tree( log_raw_file_tag_name, log_raw_file_tag_name, true,
-    c_ciyam_tag + separator + c_variables_branch + separator + c_ciyam_server_tlg, c_ciyam_tag, "" );
+    c_ciyam_tag + separator + c_variables_branch + separator + c_server_tx_log_file, c_ciyam_tag, "" );
 
    if( raw_file_chunk > 0 )
    {
@@ -1306,7 +1304,7 @@ void append_ciyam_ods_transaction_log_files( )
 
       size_t bytes_buffered = raw_file_data.size( );
 
-      int64_t total_size = file_size( c_ciyam_server_tlg );
+      int64_t total_size = file_size( c_server_tx_log_file );
 
       while( true )
       {
@@ -1314,14 +1312,14 @@ void append_ciyam_ods_transaction_log_files( )
 
          if( bytes_buffered < max_chunk_size )
          {
-            raw_file_data += buffer_file( c_ciyam_server_tlg,
+            raw_file_data += buffer_file( c_server_tx_log_file,
              max_chunk_size - bytes_buffered, 0, ( raw_file_chunk * max_chunk_size ) + bytes_buffered );
 
             // NOTE: Each "line" is a chunk of the transaction log data.
             vector< string > lines;
             lines.push_back( raw_file_data );
 
-            append_transaction_log_lines_to_blob_files( c_ciyam_server_tlg, lines );
+            append_transaction_log_lines_to_blob_files( c_server_tx_log_file, lines );
          }
 
          if( ++raw_file_chunk * max_chunk_size >= total_size )
@@ -1387,9 +1385,12 @@ struct trace_progress : progress
    bool also_to_cout;
 };
 
-void init_ciyam_ods( )
+void init_system_ods( )
 {
-   gap_ods.reset( new ods( c_ciyam_server,
+   string ods_db_name( get_files_area_dir( ) );
+   ods_db_name += '/' + string( c_ciyam_server );
+
+   gap_ods.reset( new ods( ods_db_name.c_str( ),
     ods::e_open_mode_create_if_not_exist, ods::e_write_mode_exclusive, true ) );
 
    ods::bulk_write bulk_write( *gap_ods );
@@ -1399,7 +1400,7 @@ void init_ciyam_ods( )
 
    if( gap_ods->is_corrupt( ) )
    {
-      trace_progress progress( c_ciyam_server, true );
+      trace_progress progress( ods_db_name, true );
       gap_ods->reconstruct_database( &progress );
    }
    else if( gap_ods->is_new( ) )
@@ -1450,7 +1451,7 @@ void init_ciyam_ods( )
    }
 }
 
-void term_ciyam_ods( )
+void term_system_ods( )
 {
    gap_ofs.reset( );
    gap_ods.reset( );
@@ -4109,7 +4110,10 @@ void log_trace_message( int flag, const string& message )
       break;
    }
 
-   ofstream outf( "ciyam_server.log", ios::out | ios::app );
+   string log_file_name( get_files_area_dir( ) );
+   log_file_name += '/' + string( c_server_log_file );
+
+   ofstream outf( log_file_name.c_str( ), ios::out | ios::app );
 
    outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
     << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
@@ -4210,9 +4214,8 @@ void init_globals( )
 
       read_server_configuration( );
 
-      init_ciyam_ods( );
-
       init_files_area( );
+      init_system_ods( );
 
       check_timezone_info( );
 
@@ -4289,9 +4292,8 @@ void term_globals( )
       }
    }
 
+   term_system_ods( );
    term_files_area( );
-
-   term_ciyam_ods( );
 
    g_scripts.clear( );
 
@@ -4301,6 +4303,17 @@ void term_globals( )
    if( g_using_ssl )
       term_ssl( );
 #endif
+}
+
+void resync_system_ods( progress* p_progress )
+{
+   ( void )p_progress;
+
+   // NOTE: These calls are required when the files area directory
+   // is changed as the server ODS DB is stored in the files area.
+   term_system_ods( );
+
+   init_system_ods( );
 }
 
 void check_timezone_info( )
@@ -4629,14 +4642,19 @@ string get_files_area_dir( )
    return g_files_area_dir;
 }
 
-void set_files_area_dir( const string& files_area_dir )
+void set_files_area_dir( const char* p_files_area_dir )
 {
    guard g( g_mutex );
 
-   if( !files_area_dir.empty( ) )
-      g_files_area_dir = files_area_dir;
-   else
-      g_files_area_dir = string( c_files_directory );
+   if( p_files_area_dir )
+   {
+      string files_area_dir( p_files_area_dir );
+
+      if( !files_area_dir.empty( ) )
+         g_files_area_dir = files_area_dir;
+      else
+         g_files_area_dir = string( c_files_directory );
+   }
 }
 
 size_t get_files_area_item_max_num( )
@@ -8015,7 +8033,7 @@ bool storage_locked_for_admin( )
    return gtp_session->p_storage_handler->get_is_locked_for_admin( );
 }
 
-ods& storage_instance( )
+ods& storage_ods_instance( )
 {
    if( !ods::instance( ) )
       throw runtime_error( "storage has not been initialised" );
@@ -8023,12 +8041,12 @@ ods& storage_instance( )
    return *ods::instance( );
 }
 
-ods& ciyam_ods_instance( )
+ods& system_ods_instance( )
 {
    return *gap_ods;
 }
 
-ods_file_system& ciyam_ods_file_system( )
+ods_file_system& system_ods_file_system( )
 {
    return *gap_ofs;
 }
@@ -10539,7 +10557,7 @@ void transaction_start( )
    }
 
    if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
-      gtp_session->ods_tlg_size = file_size( c_ciyam_server_tlg );
+      gtp_session->ods_tlg_size = file_size( c_server_tx_log_file );
 
    gtp_session->transactions.push( new ods::transaction( *ods::instance( ) ) );
 }
@@ -10595,13 +10613,13 @@ void transaction_commit( )
 
    if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
    {
-      string all_tags( list_file_tags( string( c_ciyam_server_tlg ) + ".*" ) );
+      string all_tags( list_file_tags( string( c_server_tx_log_file ) + ".*" ) );
 
       if( all_tags.empty( )
-       || ( file_size( c_ciyam_server_tlg ) > gtp_session->ods_tlg_size ) )
+       || ( file_size( c_server_tx_log_file ) > gtp_session->ods_tlg_size ) )
       {
-         append_ciyam_ods_transaction_log_files( );
-         insert_log_blobs_into_tree( c_ciyam_server_tlg );
+         append_system_ods_transaction_log_files( );
+         insert_log_blobs_into_tree( c_server_tx_log_file );
       }
    }
 

@@ -652,7 +652,7 @@ void process_repository_file( const string& blockchain, const string& hash_info,
             clear_key( password );
 
             if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
-               store_repository_entry_record( target_hash, repo_hash, hex_master, hex_master );
+               store_repository_entry_record( target_hash, "", hex_master, hex_master );
 
             delete_file( src_hash );
             delete_file( repo_hash );
@@ -912,7 +912,7 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                         file_data += c_blob_separator;
 
                      if( local_hash.empty( ) )
-                        local_hash = create_peer_repository_entry_push_info( next_hash, password );
+                        create_peer_repository_entry_push_info( next_hash, password );
 
                      file_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
 
@@ -1784,9 +1784,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                if( !next_block_hash.empty( ) && !has_file( next_block_hash ) )
                {
-                  string zenith_hash( get_session_variable(
-                   get_special_var_name( e_special_var_blockchain_zenith_hash ) ) );
-
                   if( !zenith_hash.empty( ) )
                      set_new_zenith = true;
 

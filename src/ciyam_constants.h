@@ -22,8 +22,10 @@ const char* const c_dummy = "dummy";
 
 const char* const c_ciyam_tag = "ciyam";
 
-const char* const c_variables_branch = "V";
-const char* const c_web_files_branch = "W";
+const char* const c_ciyam_server = "ciyam_server";
+
+const char* const c_variables_branch = "Variables";
+const char* const c_web_files_branch = "Web_Files";
 
 const char* const c_meta_model_name = "Meta";
 

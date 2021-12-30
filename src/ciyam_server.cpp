@@ -187,8 +187,11 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_chdir = "chdir";
 const char* const c_cmd_chdir_directory = "directory";
 
+const char* const c_cmd_files = "files";
+const char* const c_cmd_files_directory = "directory";
+
 const char* const c_cmd_trace = "trace";
-const char* const c_cmd_trace_flags = "flags";
+const char* const c_cmd_trace_hex_flags = "hex_flags";
 
 const char* const c_cmd_quiet = "quiet";
 
@@ -215,6 +218,8 @@ int g_port = c_default_ciyam_port;
 int g_flags = 0;
 bool g_has_flags = false;
 
+string g_files_directory;
+
 const int c_accept_timeout = 250;
 
 const char* const c_update_signal_file = "ciyam_base.update";
@@ -234,6 +239,7 @@ const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_log_trace_string_func_name = "log_trace_string";
 const char* const c_register_listener_func_name = "register_listener";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
+const char* const c_set_files_area_dir_func_name = "set_files_area_dir";
 const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
 const char* const c_check_timezone_info_func_name = "check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "is_accepted_ip_addr";
@@ -246,6 +252,7 @@ const char* const c_init_auto_script_func_name = "_init_auto_script";
 const char* const c_log_trace_string_func_name = "_log_trace_string";
 const char* const c_register_listener_func_name = "_register_listener";
 const char* const c_init_ciyam_session_func_name = "_init_ciyam_session";
+const char* const c_set_files_area_dir_func_name = "_set_files_area_dir";
 const char* const c_init_peer_sessions_func_name = "_init_peer_sessions";
 const char* const c_check_timezone_info_func_name = "_check_timezone_info";
 const char* const c_is_accepted_ip_addr_func_name = "_is_accepted_ip_addr";
@@ -315,9 +322,15 @@ class ciyam_server_startup_functor : public command_functor
 
          set_cwd( directory );
       }
+      else if( command == c_cmd_files )
+      {
+         string directory( get_parm_val( parameters, c_cmd_files_directory ) );
+
+         g_files_directory = directory;
+      }
       else if( command == c_cmd_trace )
       {
-         string flags( get_parm_val( parameters, c_cmd_trace_flags ) );
+         string flags( get_parm_val( parameters, c_cmd_trace_hex_flags ) );
 
          istringstream isstr( flags );
          isstr >> hex >> g_flags;
@@ -406,10 +419,13 @@ int main( int argc, char* argv[ ] )
          startup_command_processor processor( cmd_handler, application_title, argc, argv );
 
          cmd_handler.add_command( c_cmd_chdir, 0,
-          "<val//directory>", "change directory", new ciyam_server_startup_functor( cmd_handler ) );
+          "<val//directory>", "change working directory", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_files, 0,
+          "<val//directory>", "system files area directory", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_trace, 0,
-          "<val//flags>", "set server trace flags", new ciyam_server_startup_functor( cmd_handler ) );
+          "<val//hex_flags>", "hexadecimal trace flags value", new ciyam_server_startup_functor( cmd_handler ) );
 
          cmd_handler.add_command( c_cmd_quiet, 1,
           "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
@@ -516,6 +532,9 @@ int main( int argc, char* argv[ ] )
          fp_init_ciyam_session fp_init_ciyam_session_func;
          fp_init_ciyam_session_func = ( fp_init_ciyam_session )ap_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
 
+         fp_set_files_area_dir fp_set_files_area_dir_func;
+         fp_set_files_area_dir_func = ( fp_set_files_area_dir )ap_dynamic_library->bind_to_function( c_set_files_area_dir_func_name );
+
          fp_init_peer_sessions fp_init_peer_sessions_func;
          fp_init_peer_sessions_func = ( fp_init_peer_sessions )ap_dynamic_library->bind_to_function( c_init_peer_sessions_func_name );
 
@@ -532,6 +551,9 @@ int main( int argc, char* argv[ ] )
          // as they may be of some assistance in tracing an issue with the init function.
          if( g_has_flags )
             ( *fp_trace_flags_func )( g_flags );
+
+         if( !g_files_directory.empty( ) )
+            ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
 
          ( *fp_init_globals_func )( );
 

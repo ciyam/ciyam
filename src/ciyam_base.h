@@ -34,6 +34,8 @@ class class_base;
 class command_handler;
 class ods_file_system;
 
+struct progress;
+
 #  define TRACE_COMMANDS   0x00000001
 #  define TRACE_SQLSTMTS   0x00000002
 #  define TRACE_CLASSOPS   0x00000004
@@ -110,6 +112,8 @@ extern "C" void CIYAM_BASE_DECL_SPEC term_globals( );
 typedef void ( *fp_init_globals )( );
 typedef void ( *fp_term_globals )( );
 
+void CIYAM_BASE_DECL_SPEC resync_system_ods( progress* p_progress );
+
 extern "C" void CIYAM_BASE_DECL_SPEC check_timezone_info( );
 
 typedef void ( *fp_check_timezone_info )( );
@@ -176,7 +180,15 @@ void CIYAM_BASE_DECL_SPEC register_blockchain( int port, const std::string& bloc
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
 std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
-void CIYAM_BASE_DECL_SPEC set_files_area_dir( const std::string& files_area_dir );
+
+extern "C" void CIYAM_BASE_DECL_SPEC set_files_area_dir( const char* p_files_area_dir );
+
+typedef void ( *fp_set_files_area_dir )( const char* );
+
+inline void set_files_area_dir( const std::string& files_area_dir )
+{
+   set_files_area_dir( files_area_dir.c_str( ) );
+}
 
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
@@ -227,7 +239,7 @@ void CIYAM_BASE_DECL_SPEC verify_active_external_service( const std::string& ext
 void CIYAM_BASE_DECL_SPEC decrypt_data( std::string& s, const std::string& data,
  bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
 
-inline std::string CIYAM_BASE_DECL_SPEC decrypt_data( const std::string& data,
+inline std::string decrypt_data( const std::string& data,
  bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
 {
    std::string s;
@@ -239,7 +251,7 @@ inline std::string CIYAM_BASE_DECL_SPEC decrypt_data( const std::string& data,
 void CIYAM_BASE_DECL_SPEC encrypt_data( std::string& s, const std::string& data,
  bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false );
 
-inline std::string CIYAM_BASE_DECL_SPEC encrypt_data( const std::string& data,
+inline std::string encrypt_data( const std::string& data,
  bool no_ssl = false, bool no_salt = false, bool hash_only = false, bool pwd_and_data = false )
 {
    std::string s;
@@ -476,11 +488,11 @@ void CIYAM_BASE_DECL_SPEC storage_unlock_all_tables( );
 
 bool CIYAM_BASE_DECL_SPEC storage_locked_for_admin( );
 
-ods CIYAM_BASE_DECL_SPEC& storage_instance( );
+ods CIYAM_BASE_DECL_SPEC& storage_ods_instance( );
 
-ods CIYAM_BASE_DECL_SPEC& ciyam_ods_instance( );
+ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
 
-ods_file_system CIYAM_BASE_DECL_SPEC& ciyam_ods_file_system( );
+ods_file_system CIYAM_BASE_DECL_SPEC& system_ods_file_system( );
 
 std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool append_slot_num = true );
 

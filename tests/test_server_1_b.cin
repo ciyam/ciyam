@@ -42,6 +42,11 @@ system_variable @files_area_dir test1
 file_stats
 system_variable @files_area_dir ""
 file_stats
+~rm test1/ciyam_server.dat
+~rm test1/ciyam_server.hdr
+~rm test1/ciyam_server.idx
+~rm test1/ciyam_server.log
+~rm test1/ciyam_server.tlg
 file_info -recurse -d=999 test
 file_crypt 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d abc
 file_crypt cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 abc

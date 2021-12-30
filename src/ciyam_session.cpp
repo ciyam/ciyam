@@ -4718,7 +4718,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                copy_stream( siof, sav_siof );
 
-               sav_server_db_file_names = ciyam_ods_instance( ).backup_database( ".sav", ' ' );
+               sav_server_db_file_names = system_ods_instance( ).backup_database( ".sav", ' ' );
             }
 
             if( exists_file( ltf_name ) )

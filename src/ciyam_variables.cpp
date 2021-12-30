@@ -748,10 +748,10 @@ string get_raw_system_variable( const string& name )
       if( var_name.empty( ) && had_persist_prefix )
          output_all_persistent_variables = true;
 
-      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-      scoped_ods_instance ods_instance( ciyam_ods_instance( ) );
+      ods::bulk_write bulk_write( system_ods_instance( ) );
+      scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-      ciyam_ods_file_system( ).set_root_folder( c_system_variables_folder );
+      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
 
       if( !var_name.empty( ) && had_persist_prefix
        && var_name.find_first_of( "?*" ) == string::npos )
@@ -763,11 +763,11 @@ string get_raw_system_variable( const string& name )
 
          if( value.empty( ) )
          {
-            if( ciyam_ods_file_system( ).has_file( var_name ) )
-               ciyam_ods_file_system( ).remove_file( var_name );
+            if( system_ods_file_system( ).has_file( var_name ) )
+               system_ods_file_system( ).remove_file( var_name );
          }
          else
-            ciyam_ods_file_system( ).store_as_text_file( var_name, value );
+            system_ods_file_system( ).store_as_text_file( var_name, value );
       }
       else
       {
@@ -780,7 +780,7 @@ string get_raw_system_variable( const string& name )
          else
             expr = var_name;
 
-         ciyam_ods_file_system( ).list_files( expr, variable_files );
+         system_ods_file_system( ).list_files( expr, variable_files );
 
          for( size_t i = 0; i < variable_files.size( ); i++ )
          {
@@ -790,7 +790,7 @@ string get_raw_system_variable( const string& name )
 
             if( had_restore_prefix || output_all_persistent_variables )
             {
-               ciyam_ods_file_system( ).fetch_from_text_file( next, value );
+               system_ods_file_system( ).fetch_from_text_file( next, value );
 
                if( !var_name.empty( ) )
                   g_variables[ next ] = value;
@@ -815,9 +815,9 @@ string get_raw_system_variable( const string& name )
                   value = g_variables[ next ];
 
                if( value.empty( ) )
-                  ciyam_ods_file_system( ).remove_file( next );
+                  system_ods_file_system( ).remove_file( next );
                else
-                  ciyam_ods_file_system( ).store_as_text_file( next, value );
+                  system_ods_file_system( ).store_as_text_file( next, value );
             }
          }
       }
@@ -900,23 +900,42 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
    if( var_name == string( c_special_variable_files_area_dir ) )
    {
+      string from( get_files_area_dir( ) );
+
+      if( val.empty( ) )
+         val = string( c_files_directory );
+
+      if( !is_init )
+      {
+         // NOTE: It makes no sense to persist "@files_area_dir"
+         // as application server files are being stored there.
+         persist = false;
+
+         TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
+      }
+
       set_files_area_dir( val );
 
       if( !is_init )
+      {
          resync_files_area( p_progress );
+         resync_system_ods( p_progress );
+ 
+         TRACE_LOG( TRACE_ANYTHING, "*** switched files area over from: " + from + " ***" );
+      }
    }
 
    if( persist )
    {
-      ods::bulk_write bulk_write( ciyam_ods_instance( ) );
-      scoped_ods_instance ods_instance( ciyam_ods_instance( ) );
+      ods::bulk_write bulk_write( system_ods_instance( ) );
+      scoped_ods_instance ods_instance( system_ods_instance( ) );
 
-      ciyam_ods_file_system( ).set_root_folder( c_system_variables_folder );
+      system_ods_file_system( ).set_root_folder( c_system_variables_folder );
 
       if( !val.empty( ) )
-         ciyam_ods_file_system( ).store_as_text_file( var_name, val );
-      else if( ciyam_ods_file_system( ).has_file( var_name ) )
-         ciyam_ods_file_system( ).remove_file( var_name );
+         system_ods_file_system( ).store_as_text_file( var_name, val );
+      else if( system_ods_file_system( ).has_file( var_name ) )
+         system_ods_file_system( ).remove_file( var_name );
    }
 }
 
