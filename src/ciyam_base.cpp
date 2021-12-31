@@ -1239,7 +1239,8 @@ map< string, map< string, string > > g_crypt_keys;
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
 
-size_t get_last_raw_file_data_chunk( const string& log_blob_file_prefix, string& raw_file_data, string* p_last_hash = 0, bool remove_existing_blobs = false )
+size_t get_last_raw_file_data_chunk( const string& log_blob_file_prefix,
+ string& raw_file_data, string* p_last_hash = 0, bool remove_existing_blobs = false )
 {
    size_t raw_file_chunk = 0;
 
@@ -1282,6 +1283,9 @@ void append_system_ods_transaction_log_files( )
 {
    string separator( ":" );
 
+   string server_tx_log_file( get_files_area_dir( ) );
+   server_tx_log_file += '/' + string( c_server_tx_log_file );
+
    string raw_file_data, old_raw_file_data;
    size_t raw_file_chunk = get_last_raw_file_data_chunk( c_server_tx_log_file, old_raw_file_data );
 
@@ -1289,7 +1293,7 @@ void append_system_ods_transaction_log_files( )
 
    // NOTE: The initial "chunk" of the ODS transaction log needs to always be re-written as the
    // ODS transaction log header is being updated every time that the log is being appended to.
-   raw_file_data = string( c_file_type_str_blob ) + buffer_file( c_server_tx_log_file, max_chunk_size );
+   raw_file_data = string( c_file_type_str_blob ) + buffer_file( server_tx_log_file, max_chunk_size );
 
    string log_raw_file_tag_name( string( c_server_tx_log_file ) + "." + to_comparable_string( 0, false, 5 ) );
 
@@ -1304,7 +1308,7 @@ void append_system_ods_transaction_log_files( )
 
       size_t bytes_buffered = raw_file_data.size( );
 
-      int64_t total_size = file_size( c_server_tx_log_file );
+      int64_t total_size = file_size( server_tx_log_file );
 
       while( true )
       {
@@ -1312,14 +1316,14 @@ void append_system_ods_transaction_log_files( )
 
          if( bytes_buffered < max_chunk_size )
          {
-            raw_file_data += buffer_file( c_server_tx_log_file,
+            raw_file_data += buffer_file( server_tx_log_file,
              max_chunk_size - bytes_buffered, 0, ( raw_file_chunk * max_chunk_size ) + bytes_buffered );
 
             // NOTE: Each "line" is a chunk of the transaction log data.
             vector< string > lines;
             lines.push_back( raw_file_data );
 
-            append_transaction_log_lines_to_blob_files( c_server_tx_log_file, lines );
+            append_transaction_log_lines_to_blob_files( server_tx_log_file, lines );
          }
 
          if( ++raw_file_chunk * max_chunk_size >= total_size )
@@ -10559,7 +10563,12 @@ void transaction_start( )
    }
 
    if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
-      gtp_session->ods_tlg_size = file_size( c_server_tx_log_file );
+   {
+      string server_tx_log_file( get_files_area_dir( ) );
+      server_tx_log_file += '/' + string( c_server_tx_log_file );
+
+      gtp_session->ods_tlg_size = file_size( server_tx_log_file );
+   }
 
    gtp_session->transactions.push( new ods::transaction( *ods::instance( ) ) );
 }
@@ -10615,10 +10624,13 @@ void transaction_commit( )
 
    if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
    {
+      string server_tx_log_file( get_files_area_dir( ) );
+      server_tx_log_file += '/' + string( c_server_tx_log_file );
+
       string all_tags( list_file_tags( string( c_server_tx_log_file ) + ".*" ) );
 
       if( all_tags.empty( )
-       || ( file_size( c_server_tx_log_file ) > gtp_session->ods_tlg_size ) )
+       || ( file_size( server_tx_log_file ) > gtp_session->ods_tlg_size ) )
       {
          append_system_ods_transaction_log_files( );
          insert_log_blobs_into_tree( c_server_tx_log_file );

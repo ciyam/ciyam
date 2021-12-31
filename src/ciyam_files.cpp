@@ -1824,7 +1824,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    string ciyam_prefix( c_ciyam_tag );
    ciyam_prefix += '_';
 
-   if( name.find( ciyam_prefix ) == 0 )
+   if( is_external && name.find( ciyam_prefix ) == 0 )
       throw runtime_error( "invalid '" + ciyam_prefix + "' prefixed tag name '" + name + "'" );
 
    if( name.empty( ) )
