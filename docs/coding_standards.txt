@@ -265,7 +265,7 @@ SQL is formatted so that it stands out from general code.
 
 Operator space rules for commas and parenthesis are different from the standard (e.g. (nospace,nospace))
 
-Keywods are in uppercase and names use prefixing.
+Keywords are in uppercase and names use prefixing.
 
 Prefix  Meaning
 ------  -------
@@ -296,4 +296,3 @@ string Meta_Workgroup::static_get_sql_columns( )
 
 SELECT C_Key_,C_Ver_,C_Rev_,C_Typ_,C_User_Id,C_Password,C_Permissions,C_Workgroup,C_Active
  FROM T_Meta_User USE INDEX (I_Meta_User_03) WHERE (C_User_Id >= 'guest') ORDER BY C_User_Id LIMIT 1
-

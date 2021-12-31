@@ -13,11 +13,15 @@ normally compressed when they are created (although this is optional).
 
 Because the name of the file is a secure hash of its content files cannot be edited (as a new version will of
 course have a new hash). For both this reason and the fact that SHA256 hashes are not things that most people
-could ever hope to remember "file tags" can be used for labelling and later locating files.
+could ever hope to remember "file tags" are used as labels for locating files.
 
 To see the list and usage of all the file system commands issue the following command from "ciyam_client":
 
 > ? file*
+
+When starting "ciyam_server" the files area directory can be changed with the "-files=<directory>" option and
+it should be noted that the system log files ("ciyam_script.log" and "ciyam_server.log") are created/appended
+in the files area directory (although they are not considered to be part of the file storage system).
 
 Fundamental File Types
 ----------------------

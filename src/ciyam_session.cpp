@@ -2082,7 +2082,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_transactions_blockchain ) );
 
-         if( !exists_file( blockchain + ".txs" ) )
+         if( !exists_file( blockchain + c_txs_file_ext ) )
             throw runtime_error( "no unprocessed txs found for blockchain: " + blockchain );
 
          vector< string > applications;
@@ -2094,7 +2094,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string application( applications[ i ] );
 
-            if( exists_file( application + ".log" ) )
+            if( exists_file( application + c_log_file_ext ) )
             {
                set_session_variable( get_special_var_name( e_special_var_application ), application );
                run_script( "app_blk_txs", false );
@@ -5617,8 +5617,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !num_lines.empty( ) )
             num = atoi( num_lines.c_str( ) );
 
+         string log_file_name( get_files_area_dir( ) );
+
+         log_file_name += '/';
+         log_file_name += ( is_script ? c_ciyam_script : c_ciyam_server );
+
+         log_file_name += c_log_file_ext;
+
          deque< string > lines;
-         buffer_file_tail( is_script ? "ciyam_script.log" : "ciyam_server.log", lines, num );
+         buffer_file_tail( log_file_name, lines, num );
 
          for( size_t i = 0; i < lines.size( ); i++ )
          {

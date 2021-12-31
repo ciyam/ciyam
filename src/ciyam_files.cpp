@@ -421,8 +421,8 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       int64_t secs_diff = seconds_between( standard, local );
 
-      string ciyam_server_prefix( c_ciyam_server );
-      ciyam_server_prefix += '.';
+      string ciyam_prefix( c_ciyam_tag );
+      ciyam_prefix += '_';
 
       do
       {
@@ -436,7 +436,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
             if( is_first )
             {
                // NOTE: Need to ignore the application server's own files.
-               if( fs.get_name( ).find( ciyam_server_prefix ) == 0 )
+               if( fs.get_name( ).find( ciyam_prefix ) == 0 )
                   continue;
 
                string data( buffer_file( fs.get_full_name( ) ) );
@@ -1821,11 +1821,11 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    if( is_external && name.find( c_time_stamp_tag_prefix ) == 0 )
       throw runtime_error( "invalid file time-stamp prefixed tag name '" + name + "'" );
 
-   string ciyam_server_prefix( c_ciyam_server );
-   ciyam_server_prefix += '.';
+   string ciyam_prefix( c_ciyam_tag );
+   ciyam_prefix += '_';
 
-   if( name.find( ciyam_server_prefix ) == 0 )
-      throw runtime_error( "invalid '" + ciyam_server_prefix + "' prefixed tag name '" + name + "'" );
+   if( name.find( ciyam_prefix ) == 0 )
+      throw runtime_error( "invalid '" + ciyam_prefix + "' prefixed tag name '" + name + "'" );
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty tag name found in tag_file" );

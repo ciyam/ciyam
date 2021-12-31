@@ -1623,11 +1623,12 @@
     <test/>
      <name>1
      <description>Test version, license, encryption, console features, file system and system variables.
-     <kill>!files/ciyam_server.dat
-     <kill>!files/ciyam_server.hdr
-     <kill>!files/ciyam_server.idx
-     <kill>!files/ciyam_server.log
-     <kill>!files/ciyam_server.tlg
+     <kill>!$FILES_DIR/ciyam_script.log
+     <kill>!$FILES_DIR/ciyam_server.dat
+     <kill>!$FILES_DIR/ciyam_server.hdr
+     <kill>!$FILES_DIR/ciyam_server.idx
+     <kill>!$FILES_DIR/ciyam_server.log
+     <kill>!$FILES_DIR/ciyam_server.tlg
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet

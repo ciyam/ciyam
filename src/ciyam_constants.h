@@ -22,6 +22,10 @@ const char* const c_dummy = "dummy";
 
 const char* const c_ciyam_tag = "ciyam";
 
+const char* const c_log_file_ext = ".log";
+const char* const c_txs_file_ext = ".txs";
+
+const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
 const char* const c_variables_branch = "Variables";

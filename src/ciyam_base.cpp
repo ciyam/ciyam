@@ -5094,6 +5094,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             script_args = "-log_on_error " + script_args;
       }
 
+      script_args += " \"" + get_files_area_dir( ) + "\"";
+
       // NOTE: For cases where one script may end up calling numerous others (i.e.
       // such as a scan across records) this special session variable is available
       // to prevent excess log entries appearing in the script log file.

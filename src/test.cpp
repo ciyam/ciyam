@@ -82,6 +82,7 @@ enum error_stop_point
 
 bool g_is_quiet = false;
 
+string g_files_directory = ".";
 string g_tests_directory = ".";
 
 size_t g_num_test_steps_captured = 0;
@@ -97,6 +98,8 @@ typedef vector< group >::iterator group_iterator;
 typedef vector< group >::size_type group_size_type;
 
 vector< string > g_all_kills;
+
+const char c_env_var_prefix = '$';
 
 const char* const c_true = "true";
 const char* const c_false = "false";
@@ -133,6 +136,7 @@ const char* const c_null_device_name = "nul";
 const char* const c_null_device_name = "/dev/null";
 #endif
 
+const char* const c_files_directory_var_name = "FILES_DIR";
 const char* const c_tests_directory_var_name = "TESTS_DIR";
 
 const int c_buffer_size = 32768;
@@ -546,7 +550,7 @@ int main( int argc, char* argv[ ] )
    if( argc < 2
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "-?" || string( argv[ 1 ] ) == "/?" )
    {
-      cout << "usage: test [-q] [-d=<tests_dir>] [-e={none|step|test|group}] <tests_file.sio> [<group_1[:test[;step]]> [<group_2[:test[;step]]> [...]]]" << endl;
+      cout << "usage: test [-q] [-e={none|step|test|group}] [-f=<files_dir>] [-t=<tests_dir>] <tests_file.sio> [<group_1[:test[;step]]> [<group_2[:test[;step]]> [...]]]" << endl;
 
       return 0;
    }
@@ -563,15 +567,6 @@ int main( int argc, char* argv[ ] )
       {
          if( next_arg == string( "-q" ) )
             g_is_quiet = true;
-         else if( next_arg.substr( 0, 2 ) == string( "-d" ) )
-         {
-            next_arg.erase( 0, 2 );
-
-            if( next_arg.size( ) > 1 && next_arg[ 0 ] == '=' );
-               next_arg.erase( 0, 1 );
-
-            g_tests_directory = next_arg;
-         }
          else if( next_arg.substr( 0, 2 ) == string( "-e" ) )
          {
             next_arg.erase( 0, 2 );
@@ -593,6 +588,24 @@ int main( int argc, char* argv[ ] )
                return 1;
             }
          }
+         else if( next_arg.substr( 0, 2 ) == string( "-f" ) )
+         {
+            next_arg.erase( 0, 2 );
+
+            if( next_arg.size( ) > 1 && next_arg[ 0 ] == '=' );
+               next_arg.erase( 0, 1 );
+
+            g_files_directory = next_arg;
+         }
+         else if( next_arg.substr( 0, 2 ) == string( "-t" ) )
+         {
+            next_arg.erase( 0, 2 );
+
+            if( next_arg.size( ) > 1 && next_arg[ 0 ] == '=' );
+               next_arg.erase( 0, 1 );
+
+            g_tests_directory = next_arg;
+         }
 
          if( first_arg + 1 == argc )
             break;
@@ -603,6 +616,7 @@ int main( int argc, char* argv[ ] )
       test_set_file_name = next_arg;
    }
 
+   set_environment_variable( c_files_directory_var_name, g_files_directory );
    set_environment_variable( c_tests_directory_var_name, g_tests_directory );
 
    while( ++first_arg < argc )
@@ -690,7 +704,14 @@ int main( int argc, char* argv[ ] )
             t.description = reader.read_attribute( c_test_description_value );
 
             while( reader.has_read_attribute( c_test_step_kill_value, s ) )
+            {
+               string findstr( 1, c_env_var_prefix );
+               findstr += c_files_directory_var_name;
+
+               replace( s, findstr, g_files_directory );
+
                t.kills.push_back( s );
+            }
 
             while( reader.has_started_section( c_section_test_step ) )
             {

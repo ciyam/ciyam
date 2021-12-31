@@ -21,8 +21,8 @@ set log_on_error=1
 :next2
 if '%1' == '' goto usage
 
-if '%2' == '' goto skip
-echo %date% %time% [%2]>>%1.log
+if '%3' == '' goto skip
+echo %date% %time% [%3]>>%1.log
 
 :skip
 ciyam_client -echo -quiet -no_prompt -no_stderr -no_progress -args_file=%1 < %1 >>%1.log
@@ -33,7 +33,7 @@ if not '%log_on_error%' == '1' goto skip2
 if not errorlevel 1 goto skip3
 
 :skip2
-type %1.log >> ciyam_script.log
+type %1.log >> %2/ciyam_script.log
 
 :skip3
 del %1
@@ -42,5 +42,5 @@ endlocal
 exit
 
 :usage
-echo Usage: script [[-do_not_log^|-log_on_error]] [script and args file] [[script name]]
+echo Usage: script [[-do_not_log^|-log_on_error]] [script and args file] [files area dir] [[script name]]
 endlocal
