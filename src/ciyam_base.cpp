@@ -1227,6 +1227,7 @@ size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
 
 string g_files_area_dir;
+string g_files_area_dir_default;
 
 size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
 size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
@@ -4655,9 +4656,19 @@ void set_files_area_dir( const char* p_files_area_dir )
       string files_area_dir( p_files_area_dir );
 
       if( !files_area_dir.empty( ) )
+      {
          g_files_area_dir = files_area_dir;
-      else if( g_files_area_dir.empty( ) )
-         g_files_area_dir = string( c_files_directory );
+
+         if( g_files_area_dir_default.empty( ) )
+            g_files_area_dir_default = g_files_area_dir;
+      }
+      else
+      {
+         if( g_files_area_dir_default.empty( ) )
+            g_files_area_dir_default = string( c_files_directory );
+
+         g_files_area_dir = g_files_area_dir_default;
+      }
    }
 }
 
