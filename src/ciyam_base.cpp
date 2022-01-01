@@ -1295,7 +1295,7 @@ void append_system_ods_transaction_log_files( )
    // ODS transaction log header is being updated every time that the log is being appended to.
    raw_file_data = string( c_file_type_str_blob ) + buffer_file( server_tx_log_file, max_chunk_size );
 
-   string log_raw_file_tag_name( string( c_server_tx_log_file ) + "." + to_comparable_string( 0, false, 5 ) );
+   string log_raw_file_tag_name( string( c_server_tx_log_file ) + "." + to_comparable_string( 0, false, 6 ) );
 
    create_raw_file( raw_file_data, true, log_raw_file_tag_name.c_str( ) );
 
@@ -4656,7 +4656,7 @@ void set_files_area_dir( const char* p_files_area_dir )
 
       if( !files_area_dir.empty( ) )
          g_files_area_dir = files_area_dir;
-      else
+      else if( g_files_area_dir.empty( ) )
          g_files_area_dir = string( c_files_directory );
    }
 }
