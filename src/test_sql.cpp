@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2021 CIYAM Developers
+// Copyright (c) 2012-2022 CIYAM Developers
 
 #include <string>
 #include <vector>
