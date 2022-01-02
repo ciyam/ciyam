@@ -131,7 +131,7 @@ void CIYAM_BASE_DECL_SPEC fetch_temp_file(
  const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
 
 void CIYAM_BASE_DECL_SPEC store_temp_file(
- const std::string& name, tcp_socket& socket, progress* p_progress = 0 );
+ const std::string& name, tcp_socket& socket, progress* p_progress = 0, bool is_existing = false );
 
 bool CIYAM_BASE_DECL_SPEC temp_file_is_identical( const std::string& temp_name, const std::string& hash );
 

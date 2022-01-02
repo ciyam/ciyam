@@ -741,10 +741,8 @@ string get_file_hash_from_put_data( const string& encoded_master,
 }
 #endif
 
-void process_put_file( const string& blockchain, const string& hash, bool is_test_session )
+void process_put_file( const string& blockchain, const string& file_data, bool is_test_session )
 {
-   string file_data( extract_file( hash, "" ) );
-
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
 
@@ -827,8 +825,6 @@ void process_put_file( const string& blockchain, const string& hash, bool is_tes
             throw runtime_error( "invalid file content for put" );
       }
    }
-
-   delete_file( hash, true );
 }
 
 void process_list_items( const string& hash, bool recurse, bool check_for_supporters )
@@ -2333,28 +2329,20 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          if( !has_file( hash ) )
          {
-            store_file( hash, socket, 0, p_progress, false );
+            string file_data;
 
-            bytes = file_bytes( hash );
+            store_file( hash, socket, 0, p_progress, false, 0, false, &file_data );
+
+            bytes = file_data.length( );
 
             if( hash != hello_hash )
-               process_put_file( blockchain, hash, socket_handler.get_is_test_session( ) );
+               process_put_file( blockchain, file_data.substr( 1 ), socket_handler.get_is_test_session( ) );
          }
          else
          {
             bytes = file_bytes( hash );
 
-            string temp_file_name( "~" + uuid( ).as_string( ) );
-            try
-            {
-               store_temp_file( temp_file_name, socket, p_progress );
-               file_remove( temp_file_name );
-            }
-            catch( ... )
-            {
-               file_remove( temp_file_name );
-               throw;
-            }
+            store_temp_file( "", socket, p_progress, true );
          }
 
          increment_peer_files_downloaded( bytes );

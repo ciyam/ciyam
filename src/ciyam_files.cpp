@@ -2598,7 +2598,7 @@ bool store_file( const string& hash,
    if( !max_bytes || max_bytes > get_files_area_item_max_size( ) )
       max_bytes = get_files_area_item_max_size( );
 
-   if( !file_name.empty( ) )
+   if( !p_file_data )
    {
       guard g( g_mutex );
 
@@ -2668,6 +2668,18 @@ bool store_file( const string& hash,
 
             if( !rc )
                throw runtime_error( "invalid 'list' file" );
+
+            if( p_file_data )
+            {
+               is_compressed = false;
+               is_no_compress = true;
+
+               total_bytes = usize + 1;
+
+               file_buffer.get_buffer( )[ 0 ] &= ~c_file_type_val_compressed;
+
+               memcpy( &file_buffer.get_buffer( )[ 1 ], &file_buffer.get_buffer( )[ size + 1 ], usize );
+            }
          }
 #endif
 
@@ -2706,7 +2718,7 @@ bool store_file( const string& hash,
                   file_copy( tmp_file_name, file_name );
                else
                {
-                  p_file_data->resize( total_bytes );
+                  *p_file_data = string( total_bytes, '\0' );
                   memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ 0 ], total_bytes );
                }
 #else
@@ -2735,7 +2747,7 @@ bool store_file( const string& hash,
                            write_file( file_name, ( unsigned char* )&file_buffer.get_buffer( )[ size ], csize + 1 );
                         else
                         {
-                           p_file_data->resize( csize + 1 );
+                           *p_file_data = string( csize + 1, '\0' );
                            memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ size ], csize + 1 );
                         }
                      }
@@ -2746,6 +2758,12 @@ bool store_file( const string& hash,
 
                if( !has_written && !tmp_file_name.empty( ) )
                   file_copy( tmp_file_name, file_name );
+
+               if( !has_written && tmp_file_name.empty( ) )
+               {
+                  *p_file_data = string( total_bytes, '\0' );
+                  memcpy( &( *p_file_data )[ 0 ], &file_buffer.get_buffer( )[ 0 ], total_bytes );
+               }
 #endif
             }
          }
@@ -2910,12 +2928,23 @@ void fetch_temp_file( const string& name, tcp_socket& socket, progress* p_progre
     c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
 }
 
-void store_temp_file( const string& name, tcp_socket& socket, progress* p_progress )
+void store_temp_file( const string& name, tcp_socket& socket, progress* p_progress, bool is_existing )
 {
-   file_transfer( name, socket,
-    e_ft_direction_recv, get_files_area_item_max_size( ),
-    c_response_okay_more, c_file_transfer_initial_timeout,
-    c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
+   if( !name.empty( ) )
+      file_transfer( name, socket,
+       e_ft_direction_recv, get_files_area_item_max_size( ),
+       c_response_okay_more, c_file_transfer_initial_timeout,
+       c_file_transfer_line_timeout, c_file_transfer_max_line_size, 0, 0, 0, p_progress );
+   else
+   {
+      session_file_buffer_access file_buffer;
+
+      file_transfer( name,
+       socket, e_ft_direction_recv, get_files_area_item_max_size( ),
+       ( is_existing ? c_response_okay_skip : c_response_okay_more ),
+       c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
+       0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !is_existing ? 0 : c_response_okay_skip ) );
+   }
 }
 
 bool temp_file_is_identical( const string& temp_name, const string& hash )

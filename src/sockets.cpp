@@ -627,6 +627,7 @@ size_t file_transfer( const string& name,
    size_t total_size = 0;
 
    bool not_base64 = false;
+   bool has_file_name = !name.empty( );
    bool max_size_exceeded = false;
 
    if( !max_line_size )
@@ -788,7 +789,7 @@ size_t file_transfer( const string& name,
 
       ofstream outf;
 
-      if( !name.empty( ) )
+      if( has_file_name )
       {
          outf.open( name.c_str( ), oflags );
 
@@ -902,7 +903,7 @@ size_t file_transfer( const string& name,
             break;
          }
 
-         if( outf && !outf.write( &decoded[ offset ], decoded_size ) )
+         if( has_file_name && !outf.write( &decoded[ offset ], decoded_size ) )
             throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
          written += decoded_size;
@@ -919,7 +920,7 @@ size_t file_transfer( const string& name,
             break;
       }
 
-      if( outf )
+      if( has_file_name )
          outf.close( );
    }
 
