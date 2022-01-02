@@ -618,12 +618,14 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
    return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
 }
 
-void file_transfer( const string& name,
+size_t file_transfer( const string& name,
  tcp_socket& s, ft_direction d, size_t max_size,
  const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
  size_t max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer,
  unsigned int buffer_size, progress* p_progress, const char* p_ack_skip_message )
 {
+   size_t total_size = 0;
+
    bool not_base64 = false;
    bool max_size_exceeded = false;
 
@@ -652,7 +654,6 @@ void file_transfer( const string& name,
       ifstream inpf;
       stringstream ss;
 
-      int64_t total_size = 0;
       istream* p_istream = 0;
 
       if( p_buffer && buffer_size )
@@ -785,14 +786,18 @@ void file_transfer( const string& name,
       if( d == e_ft_direction_recv_app )
          oflags |= ios::app;
 
-      ofstream outf( name.c_str( ), oflags );
-      if( !outf )
-         throw runtime_error( "file '" + name + "' could not be opened for output" );
+      ofstream outf;
+
+      if( !name.empty( ) )
+      {
+         outf.open( name.c_str( ), oflags );
+
+         if( !outf )
+            throw runtime_error( "file '" + name + "' could not be opened for output" );
+      }
 
       size_t written = 0;
       bool is_first = true;
-
-      int64_t total_size = 0;
 
       string next, decoded;
 
@@ -897,7 +902,7 @@ void file_transfer( const string& name,
             break;
          }
 
-         if( !outf.write( &decoded[ offset ], decoded_size ) )
+         if( outf && !outf.write( &decoded[ offset ], decoded_size ) )
             throw runtime_error( "unexpected error writing to file '" + name + "'" );
 
          written += decoded_size;
@@ -914,7 +919,8 @@ void file_transfer( const string& name,
             break;
       }
 
-      outf.close( );
+      if( outf )
+         outf.close( );
    }
 
    if( not_base64 || max_size_exceeded )
@@ -930,4 +936,6 @@ void file_transfer( const string& name,
       else
          throw runtime_error( "maximum file length exceeded" );
    }
+
+   return total_size;
 }

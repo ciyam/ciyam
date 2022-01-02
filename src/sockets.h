@@ -148,7 +148,7 @@ enum ft_direction
    e_ft_direction_recv_app
 };
 
-void file_transfer(
+size_t file_transfer(
  const std::string& name, tcp_socket& s, ft_direction d, size_t max_size,
  const char* p_ack_message, size_t initial_timeout = 0, size_t line_timeout = 0,
  size_t max_line_size = 0, unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0,
