@@ -616,6 +616,13 @@ bool has_file( const string& hash, bool check_is_hash )
    }
 }
 
+bool is_list_file( unsigned char ch )
+{
+   unsigned char file_type = ( ch & c_file_type_val_mask );
+
+   return ( file_type == c_file_type_val_list );
+}
+
 bool is_list_file( const string& hash )
 {
    guard g( g_mutex );
@@ -1120,7 +1127,7 @@ string file_type_info( const string& tag_or_hash,
 }
 
 string create_raw_file( const string& data, bool compress,
- const char* p_tag, bool* p_is_existing, const char* p_hash, bool allow_uncompress )
+ const char* p_tag, bool* p_is_existing, const char* p_hash, bool allow_uncompress, bool allow_missing_items )
 {
    guard g( g_mutex );
 
@@ -1184,7 +1191,7 @@ string create_raw_file( const string& data, bool compress,
    string file_name( construct_file_name_from_hash( hash, true ) );
 
    if( file_type != c_file_type_val_blob )
-      validate_list( final_data.substr( 1 ) );
+      validate_list( final_data.substr( 1 ), 0, allow_missing_items );
 
 #ifdef ZLIB_SUPPORT
    if( compress && !is_encrypted && !is_compressed && final_data.size( ) >= c_min_size_to_compress )
