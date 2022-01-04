@@ -167,11 +167,12 @@ std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info( const s
  const std::string& password, std::string* p_pub_key = 0, bool store_as_blob = true, bool is_for_testing = false );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
- const std::string& dest_hash, const std::string& src_hash, const std::string& password, bool is_for_testing = false );
+ const std::string& dest_hash, const std::string& src_hash,
+ const std::string& password, bool is_for_testing = false, const std::string* p_file_data = 0 );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
- const std::string& dest_hash, const std::string& src_hash,
- const std::string& password, const std::string& public_key_in_hex, bool is_for_testing = false );
+ const std::string& dest_hash, const std::string& src_hash, const std::string& password,
+ const std::string& public_key_in_hex, bool is_for_testing = false, const std::string* p_file_data = 0 );
 
 void CIYAM_BASE_DECL_SPEC perform_storage_rewind( const std::string& blockchain, uint64_t block_height );
 

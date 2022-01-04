@@ -4756,8 +4756,8 @@ string create_peer_repository_entry_push_info( const string& file_hash,
    return retval;
 }
 
-void decrypt_pulled_peer_file(
- const string& dest_hash, const string& src_hash, const string& password, bool is_for_testing )
+void decrypt_pulled_peer_file( const string& dest_hash,
+ const string& src_hash, const string& password, bool is_for_testing, const string* p_file_data )
 {
    string all_tags( get_hash_tags( src_hash ) );
 
@@ -4785,12 +4785,13 @@ void decrypt_pulled_peer_file(
       if( public_key_in_hex.empty( ) )
          throw runtime_error( "unable to locate peer public key tag for file '" + src_hash + "'" );
       else
-         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex, is_for_testing );
+         decrypt_pulled_peer_file( dest_hash, src_hash, password, public_key_in_hex, is_for_testing, p_file_data );
    }
 }
 
-void decrypt_pulled_peer_file( const string& dest_hash,
- const string& src_hash, const string& password, const string& public_key_in_hex, bool is_for_testing )
+void decrypt_pulled_peer_file(
+ const string& dest_hash, const string& src_hash, const string& password,
+ const string& public_key_in_hex, bool is_for_testing, const string* p_file_data )
 {
 #ifndef SSL_SUPPORT
    throw runtime_error( "decrypt_pulled_peer_file requires SSL support" );
@@ -4810,7 +4811,19 @@ void decrypt_pulled_peer_file( const string& dest_hash,
    bool is_encrypted = false;
    unsigned char type_and_extra = '\0';
 
-   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted ) );
+   string file_data;
+
+   if( p_file_data && !p_file_data->empty( ) )
+   {
+      file_data = *p_file_data;
+      type_and_extra = file_data[ 0 ];
+
+      is_encrypted = ( file_data[ 0 ] & c_file_type_val_encrypted );
+
+      file_data.erase( 0, 1 );
+   }
+   else
+      file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted );
 
    stringstream ss( file_data );
    crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
