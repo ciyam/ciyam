@@ -93,13 +93,19 @@ const int c_min_block_wait_passes = 8;
 const size_t c_max_greeting_size = 256;
 const size_t c_max_put_blob_size = 256;
 
+const size_t c_num_signature_lines = 256;
+const size_t c_num_public_key_lines = 256;
+const size_t c_key_pair_separator_pos = 64;
+
+const size_t c_num_hexadecimal_key_chars = 64;
+
 const size_t c_peer_sleep_time = 5000;
 
 const size_t c_initial_timeout = 60000;
 const size_t c_request_timeout = 20000;
 const size_t c_support_timeout = 60000;
 
-const size_t c_main_session_sleep_time = 200;
+const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
 const size_t c_support_session_sleep_repeats = 10;
 
@@ -580,7 +586,8 @@ void process_core_file( const string& hash, const string& blockchain )
 }
 
 #ifdef SSL_SUPPORT
-void process_repository_file( const string& blockchain, const string& hash_info, bool is_test_session )
+void process_repository_file( const string& blockchain,
+ const string& hash_info, bool is_test_session, const string* p_file_data = 0 )
 {
    guard g( g_mutex );
 
@@ -596,7 +603,22 @@ void process_repository_file( const string& blockchain, const string& hash_info,
 
    unsigned char type_and_extra = '\0';
 
-   string file_data( extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true ) );
+   bool was_extracted = false;
+
+   string file_data;
+
+   if( p_file_data && !p_file_data->empty( ) )
+   {
+      file_data = *p_file_data;
+      type_and_extra = file_data[ 0 ];
+
+      file_data.erase( 0, 1 );
+   }
+   else
+   {
+      was_extracted = true;
+      file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true );
+   }
 
    pos = extra_info.find( ';' );
 
@@ -654,7 +676,9 @@ void process_repository_file( const string& blockchain, const string& hash_info,
             if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
                store_repository_entry_record( target_hash, "", hex_master, hex_master );
 
-            delete_file( src_hash );
+            if( was_extracted )
+               delete_file( src_hash );
+
             delete_file( repo_hash );
          }
       }
@@ -664,7 +688,10 @@ void process_repository_file( const string& blockchain, const string& hash_info,
       string dummy;
 
       if( fetch_repository_entry_record( src_hash, dummy, dummy, dummy, false ) )
-         delete_file( src_hash );
+      {
+         if( was_extracted )
+            delete_file( src_hash );
+      }
       else
       {
          public_key pub_key( extra_info );
@@ -691,7 +718,8 @@ void process_repository_file( const string& blockchain, const string& hash_info,
 
          file_data = ( char )type_and_extra + ss.str( );
 
-         delete_file( src_hash );
+         if( was_extracted )
+            delete_file( src_hash );
 
          string local_hash( create_raw_file( file_data ) );
 
@@ -944,8 +972,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       string block_hash( tag_file_hash( block_tag ) );
 
-      string block_content(
-       construct_blob_for_block_content( extract_file( block_hash, "" ) ) );
+      string block_content( construct_blob_for_block_content( extract_file( block_hash, "" ) ) );
 
       verify_core_file( block_content, false );
 
@@ -1137,6 +1164,89 @@ void process_public_key_file( const string& blockchain, const string& hash, size
        get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
 }
 
+void validate_signature_file( const string& file_data )
+{
+   if( file_data.empty( ) )
+      throw runtime_error( "unexpected empty file data in 'validate_signature_file'" );
+
+   string content( file_data.substr( 1 ) );
+
+   if( content.empty( ) )
+      throw runtime_error( "unexpected empty file content in 'validate_signature_file'" );
+
+   vector< string > lines;
+   split( content, lines, '\n' );
+
+   if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
+      lines.pop_back( );
+
+   if( lines.size( ) != c_num_signature_lines )
+      throw runtime_error( "unexpected number of lines is " + to_string( lines.size( ) )
+       + " rather than " + to_string( c_num_public_key_lines ) + " in  'validate_signature_file'" );
+
+   for( size_t i = 0; i < c_num_signature_lines; i++ )
+   {
+      string next_line( lines[ i ] );
+
+      bool is_invalid = false;
+
+      if( next_line.size( ) != c_num_hexadecimal_key_chars )
+         is_invalid = true;
+      else  if( !are_hex_nibbles( next_line ) )
+         is_invalid = true;
+
+      if( is_invalid )
+         throw runtime_error( "unexpected invalid signature line: " + next_line );
+   }
+}
+
+void validate_public_key_file( const string& file_data )
+{
+   if( file_data.empty( ) )
+      throw runtime_error( "unexpected empty file data in 'validate_public_key_file'" );
+
+   string content( file_data.substr( 1 ) );
+
+   if( content.empty( ) )
+      throw runtime_error( "unexpected empty file content in 'validate_public_key_file'" );
+
+   vector< string > lines;
+   split( content, lines, '\n' );
+
+   if( !lines.empty( ) && lines[ lines.size( ) - 1 ].empty( ) )
+      lines.pop_back( );
+
+   if( lines.size( ) != c_num_public_key_lines )
+      throw runtime_error( "unexpected number of lines is " + to_string( lines.size( ) )
+       + " rather than " + to_string( c_num_public_key_lines ) + " in  'validate_public_key_file'" );
+
+   for( size_t i = 0; i < c_num_public_key_lines; i++ )
+   {
+      string next_line( lines[ i ] );
+
+      string::size_type pos = next_line.find( ' ' );
+
+      bool is_invalid = false;
+
+      if( ( pos == string::npos ) || ( pos != c_key_pair_separator_pos ) )
+         is_invalid = true;
+      else
+      {
+         string pair_0( next_line.substr( 0, pos ) );
+         string pair_1( next_line.substr( pos + 1 ) );
+
+         if( ( pair_0.size( ) != c_num_hexadecimal_key_chars )
+          || ( pair_1.size( ) != c_num_hexadecimal_key_chars ) )
+            is_invalid = true;
+         else  if( !are_hex_nibbles( pair_0 ) || !are_hex_nibbles( pair_1 ) )
+            is_invalid = true;
+      }
+
+      if( is_invalid )
+         throw runtime_error( "unexpected invalid public key pair line: " + next_line );
+   }
+}
+
 bool process_block_for_height( const string& blockchain, const string& hash, size_t height )
 {
    bool retval = false;
@@ -1326,7 +1436,7 @@ class socket_command_handler : public command_handler
    void get_hello( );
    void put_hello( );
 
-   void get_file( const string& hash );
+   void get_file( const string& hash, string* p_file_data = 0 );
    void put_file( const string& hash );
 
    void pip_peer( const string& ip_address );
@@ -1474,7 +1584,7 @@ void socket_command_handler::put_hello( )
    increment_peer_files_uploaded( file_bytes( hello_hash ) );
 }
 
-void socket_command_handler::get_file( const string& hash )
+void socket_command_handler::get_file( const string& hash_info, string* p_file_data )
 {
    last_issued_was_put = false;
 
@@ -1484,18 +1594,44 @@ void socket_command_handler::get_file( const string& hash )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   string::size_type pos = hash.find( ':' );
+   string::size_type pos = hash_info.find( ':' );
+
+   string hash( hash_info.substr( 0, pos ) );
 
    size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
 
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_get )
-    + " " + hash.substr( 0, pos ), timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, timeout, p_progress );
 
-   store_file( hash.substr( 0, pos ), socket, 0, p_progress, true, 0, true );
+   bool is_list = false;
+   size_t num_bytes = 0;
+
+   if( !p_file_data )
+   {
+      store_file( hash, socket, 0, p_progress, true, 0, true );
+
+      is_list = is_list_file( hash );
+      num_bytes = file_bytes( hash );
+   }
+   else
+   {
+      string file_data;
+
+      store_file( hash, socket, 0, p_progress, true, 0, true, &file_data );
+
+      *p_file_data = file_data;
+
+      num_bytes = file_data.size( );
+
+      if( is_list_file( file_data[ 0 ] ) )
+      {
+         is_list = true;
+         create_raw_file( file_data, true, 0, 0, 0, true, true );
+      }
+   }
 
    // NOTE: If the file is a list then also need to get all of its items.
-   if( is_list_file( hash.substr( 0, pos ) ) )
+   if( is_list )
    {
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
@@ -1511,10 +1647,10 @@ void socket_command_handler::get_file( const string& hash )
       if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
          check_for_supporters = true;
 
-      process_list_items( hash.substr( 0, pos ), false, check_for_supporters );
+      process_list_items( hash, false, check_for_supporters );
    }
 
-   increment_peer_files_downloaded( file_bytes( hash.substr( 0, pos ) ) );
+   increment_peer_files_downloaded( num_bytes );
 }
 
 void socket_command_handler::put_file( const string& hash )
@@ -1824,8 +1960,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !next_hash.empty( ) )
       {
-         get_file( next_hash );
+         string file_data;
+
+         get_file( next_hash, &file_data );
          pop_next_peer_file_hash_to_get( );
+
+         bool is_list = false;
+
+         if( file_data.empty( ) )
+            is_list = is_list_file( next_hash );
+         else
+            is_list = is_list_file( file_data[ 0 ] ); 
 
          string data_file_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
@@ -1841,6 +1986,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( next_hash == data_file_hash )
          {
+            verify_core_file( file_data, false );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
 
             blockchain_height = blockchain_height_pending;
@@ -1849,9 +1998,19 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
          }
          else if( next_hash == primary_pubkey_hash )
-            process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending );
+         {
+            validate_public_key_file( file_data );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
+            process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending, true );
+         }
          else if( next_hash == signature_file_hash )
          {
+            validate_signature_file( file_data );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
             if( blockchain_height != blockchain_height_pending )
             {
                process_signature_file( blockchain, signature_file_hash, blockchain_height_pending );
@@ -1867,13 +2026,32 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
              get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
          }
          else if( next_hash == secondary_pubkey_hash )
+         {
+            validate_public_key_file( file_data );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
             process_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height_pending, false );
+         }
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
-            process_core_file( next_hash, blockchain );
+         {
+            if( !is_list )
+            {
+               create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
+               process_core_file( next_hash, blockchain );
+            }
+         }
 #ifdef SSL_SUPPORT
-         else if( get_session_variable( 
-          get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
-            process_repository_file( blockchain, next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ) );
+         else
+         {
+            if( get_session_variable( 
+             get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+               process_repository_file( blockchain,
+                next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ), &file_data );
+            else if( !is_list )
+               create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+         }
 #endif
 
          if( !blockchain.empty( )

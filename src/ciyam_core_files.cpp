@@ -2731,7 +2731,7 @@ void verify_lamport( const string& content,
 
                string::size_type pos = last_block_info.find( ':' );
                if( pos == string::npos )
-                  throw runtime_error( "unexpected invalid block info in validate_lamport" );
+                  throw runtime_error( "unexpected invalid block info in verify_lamport" );
 
                verify_lamport( last_block_info.substr( pos + 1 ), false, 0, &info );
 
@@ -2750,7 +2750,7 @@ void verify_lamport( const string& content,
 
                   pos = data_file_info.find( ':' );
                   if( pos == string::npos )
-                     throw runtime_error( "unexpected invalid data info in validate_lamport" );
+                     throw runtime_error( "unexpected invalid data info in verify_lamport" );
 
                   verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
 

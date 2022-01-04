@@ -46,6 +46,8 @@ bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name, file_type type = e_f
 
 bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
 
+bool CIYAM_BASE_DECL_SPEC is_list_file( unsigned char ch );
+
 bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash );
 
 int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash, bool blobs_for_lists = false );
@@ -67,7 +69,7 @@ std::string CIYAM_BASE_DECL_SPEC file_type_info(
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file(
  const std::string& data, bool compress = true, const char* p_tag = 0,
- bool* p_is_existing = 0, const char* p_hash = 0, bool allow_uncompress = true );
+ bool* p_is_existing = 0, const char* p_hash = 0, bool allow_uncompress = true, bool allow_missing_items = false );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
  std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
