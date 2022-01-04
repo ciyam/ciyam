@@ -667,7 +667,7 @@ void process_repository_file( const string& blockchain,
             string password;
             get_identity( password, true, false, true );
 
-            decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key );
+            decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key, false, p_file_data );
 
             string repo_hash( create_peer_repository_entry_push_info( target_hash, password ) );
 
@@ -2037,6 +2037,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          {
             if( !is_list )
             {
+               // NOTE: Unles both are owners only core block files should be found here.
+               if( get_session_variable( 
+                get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+                  verify_core_file( file_data, false );
+
                create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
                process_core_file( next_hash, blockchain );
@@ -2050,7 +2055,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                process_repository_file( blockchain,
                 next_hash.substr( 0, next_hash.length( ) - 1 ), get_is_test_session( ), &file_data );
             else if( !is_list )
-               create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+            {
+               if( !blockchain.empty( ) )
+                  throw runtime_error( "unexpected blob hash: " + next_hash );
+               else
+                  create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+            }
          }
 #endif
 
