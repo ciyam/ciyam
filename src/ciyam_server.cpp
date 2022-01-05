@@ -184,6 +184,9 @@ void* signal_handler( void* id )
 const char* const c_app_title = "ciyam_server";
 const char* const c_app_version = "0.1";
 
+const char* const c_cmd_sid = "sid";
+const char* const c_cmd_sid_entropy = "entropy";
+
 const char* const c_cmd_chdir = "chdir";
 const char* const c_cmd_chdir_directory = "directory";
 
@@ -218,6 +221,7 @@ int g_port = c_default_ciyam_port;
 int g_flags = 0;
 bool g_has_flags = false;
 
+string g_entropy;
 string g_files_directory;
 
 const int c_accept_timeout = 250;
@@ -316,7 +320,13 @@ class ciyam_server_startup_functor : public command_functor
 
    void operator ( )( const string& command, const parameter_info& parameters )
    {
-      if( command == c_cmd_chdir )
+      if( command == c_cmd_sid )
+      {
+         string entropy( get_parm_val( parameters, c_cmd_sid_entropy ) );
+
+         g_entropy = entropy;
+      }
+      else if( command == c_cmd_chdir )
       {
          string directory( get_parm_val( parameters, c_cmd_chdir_directory ) );
 
@@ -418,37 +428,40 @@ int main( int argc, char* argv[ ] )
       {
          startup_command_processor processor( cmd_handler, application_title, argc, argv );
 
-         cmd_handler.add_command( c_cmd_chdir, 0,
+         cmd_handler.add_command( c_cmd_sid, 0,
+          "<val//entropy>", "system identity entropy", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_chdir, 1,
           "<val//directory>", "change working directory", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_files, 0,
+         cmd_handler.add_command( c_cmd_files, 1,
           "<val//directory>", "system files area directory", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_trace, 0,
+         cmd_handler.add_command( c_cmd_trace, 2,
           "<val//hex_flags>", "hexadecimal trace flags value", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_quiet, 1,
+         cmd_handler.add_command( c_cmd_quiet, 3,
           "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_auto, 1,
+         cmd_handler.add_command( c_cmd_no_auto, 3,
           "", "don't start the autoscript thread", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_peers, 1,
+         cmd_handler.add_command( c_cmd_no_peers, 3,
           "", "don't start any peer listener threads", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
-         cmd_handler.add_command( c_cmd_svcins, 2,
+         cmd_handler.add_command( c_cmd_svcins, 4,
           "", "install Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrem, 2,
+         cmd_handler.add_command( c_cmd_svcrem, 4,
           "", "remove Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrun, 2,
+         cmd_handler.add_command( c_cmd_svcrun, 4,
           "", "start as Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
 #ifdef __GNUG__
-         cmd_handler.add_command( c_cmd_daemon, 2,
+         cmd_handler.add_command( c_cmd_daemon, 4,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
@@ -555,7 +568,7 @@ int main( int argc, char* argv[ ] )
          if( !g_files_directory.empty( ) )
             ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
 
-         ( *fp_init_globals_func )( );
+         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ) );
 
          tcp_socket s;
          bool okay = s.open( );

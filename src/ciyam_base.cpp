@@ -4203,7 +4203,7 @@ void list_listeners( ostream& os )
       os << lci->first << ' ' << lci->second << '\n';
 }
 
-void init_globals( )
+void init_globals( const char* p_sid )
 {
    guard g( g_mutex );
 
@@ -4211,7 +4211,9 @@ void init_globals( )
    {
       g_sid.reserve( c_key_reserve_size );
 
-      if( file_exists( c_server_sid_file ) )
+      if( p_sid && strlen( p_sid ) )
+         set_sid( p_sid );
+      else if( file_exists( c_server_sid_file ) )
       {
          buffer_file( g_sid, c_server_sid_file );
          set_sid( g_sid );
