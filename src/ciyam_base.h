@@ -106,10 +106,10 @@ bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_globals( );
+extern "C" void CIYAM_BASE_DECL_SPEC init_globals( const char* p_sid = 0 );
 extern "C" void CIYAM_BASE_DECL_SPEC term_globals( );
 
-typedef void ( *fp_init_globals )( );
+typedef void ( *fp_init_globals )( const char* );
 typedef void ( *fp_term_globals )( );
 
 void CIYAM_BASE_DECL_SPEC resync_system_ods( progress* p_progress );

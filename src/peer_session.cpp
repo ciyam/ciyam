@@ -99,7 +99,7 @@ const size_t c_key_pair_separator_pos = 64;
 
 const size_t c_num_hexadecimal_key_chars = 64;
 
-const size_t c_peer_sleep_time = 5000;
+const size_t c_peer_sleep_time = 1000;
 
 const size_t c_initial_timeout = 60000;
 const size_t c_request_timeout = 20000;
@@ -605,19 +605,19 @@ void process_repository_file( const string& blockchain,
 
    bool was_extracted = false;
 
-   string file_data;
+   string file_data, file_content;
 
    if( p_file_data && !p_file_data->empty( ) )
    {
       file_data = *p_file_data;
       type_and_extra = file_data[ 0 ];
 
-      file_data.erase( 0, 1 );
+      file_content = file_data.substr( 1 );
    }
    else
    {
       was_extracted = true;
-      file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true );
+      file_content = extract_file( src_hash, "", 0, 0, &type_and_extra, 0, true );
    }
 
    pos = extra_info.find( ';' );
@@ -661,6 +661,11 @@ void process_repository_file( const string& blockchain,
          {
             if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
                store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
+
+            if( file_data.empty( ) )
+               file_data = ( char )type_and_extra + file_content;
+
+            create_raw_file( file_data, true, 0, 0, src_hash.c_str( ), true, true );
          }
          else
          {
@@ -713,7 +718,7 @@ void process_repository_file( const string& blockchain,
          else
             ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
 
-         stringstream ss( file_data );
+         stringstream ss( file_content );
          crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
 
          file_data = ( char )type_and_extra + ss.str( );
@@ -1914,7 +1919,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                has_issued_chk = true;
 
-               if( !next_block_hash.empty( ) && !has_file( next_block_hash ) )
+               if( next_block_hash.empty( ) )
+               {
+                  // NOTE: If is initiator and no new block was found then sleep a while
+                  // (don't do this when responder or conversation will always be slow).
+                  if( !is_responder )
+                     msleep( c_peer_sleep_time );
+               }
+               else if( !has_file( next_block_hash ) )
                {
                   if( !zenith_hash.empty( ) )
                      set_new_zenith = true;
