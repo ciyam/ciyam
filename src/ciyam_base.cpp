@@ -5111,6 +5111,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
             script_args = "-log_on_error " + script_args;
       }
 
+      // NOTE: If making any change to "script_args" then it likely will also need
+      // to be done in "auto_script.cpp" (as it also executes the 'script' script).
       script_args += " \"" + get_files_area_dir( ) + "\"";
 
       // NOTE: For cases where one script may end up calling numerous others (i.e.
