@@ -1386,6 +1386,9 @@ class socket_command_handler : public command_handler
    {
       had_usage = false;
 
+      dtm_rcvd_not_found = dtm_sent_not_found
+       = ( date_time::standard( ) - ( seconds )( c_peer_sleep_time / 1000 ) );
+
       needs_blockchain_info = ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) );
 
       is_responder = ( session_state == e_peer_state_responder );
@@ -1452,6 +1455,11 @@ class socket_command_handler : public command_handler
 
    void issue_cmd_for_peer( bool check_for_supporters );
 
+   void set_dtm_sent_not_found( const date_time& dtm )
+   {
+      dtm_sent_not_found = dtm;
+   }
+
    peer_state& state( ) { return session_state; }
    peer_state& op_state( ) { return session_op_state; }
 
@@ -1513,6 +1521,9 @@ class socket_command_handler : public command_handler
    string next_command;
 
    string prior_put_hash;
+
+   date_time dtm_rcvd_not_found;
+   date_time dtm_sent_not_found;
 
    peer_state session_state;
    peer_state session_op_state;
@@ -1921,10 +1932,21 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                if( next_block_hash.empty( ) )
                {
-                  // NOTE: If is initiator and no new block was found then sleep a while
-                  // (don't do this when responder or conversation will always be slow).
-                  if( !is_responder )
-                     msleep( c_peer_sleep_time );
+                  date_time now( date_time::standard( ) );
+
+                  seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
+
+                  dtm_rcvd_not_found = now;
+
+                  // NOTE: If neither peer has had a new block within one
+                  // second then sleep now to avoid unnecessary CPU usage.
+                  if( elapsed < 1.0 )
+                  {
+                     elapsed = ( seconds )( now - dtm_sent_not_found );
+
+                     if( elapsed < 1.0 )
+                        msleep( c_peer_sleep_time );
+                  }
                }
                else if( !has_file( next_block_hash ) )
                {
@@ -2302,6 +2324,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( !has )
          {
             response = c_response_not_found;
+
+            socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
 
             if( was_initial_state )
             {
