@@ -441,6 +441,8 @@ void autoscript_session::on_start( )
                      outf << "<" << arguments << endl;
                      outf.close( );
 
+                     script_args += " \"" + get_files_area_dir( ) + "\"";
+
                      // NOTE: Skip logging for any scripts that cycle too frequently.
                      if( cycle_seconds >= c_min_cycle_seconds_for_logging )
                         script_args += " " + g_scripts[ j->second ].name;
