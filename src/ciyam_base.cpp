@@ -1223,6 +1223,8 @@ const size_t c_max_storage_handlers_default = 10;
 
 string g_empty_string;
 
+int g_stream_socket = 0;
+
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
 
@@ -4160,6 +4162,16 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
 
    TRACE_LOG( TRACE_SYNC_OPS, "has_released: mutex = "
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
+}
+
+int get_stream_socket( )
+{
+   return g_stream_socket;
+}
+
+void set_stream_socket( int s )
+{
+   g_stream_socket = s;
 }
 
 void register_listener( int port, const char* p_info )
