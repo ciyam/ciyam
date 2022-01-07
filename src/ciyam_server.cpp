@@ -620,7 +620,7 @@ int main( int argc, char* argv[ ] )
 
                   if( has_udp )
                   {
-                     ( *fp_set_stream_socket_func )( u.get_socket( ) );
+                     ( *fp_set_stream_socket_func )( g_port, u.get_socket( ) );
 
                      if( !is_update && !g_is_quiet )
                         cout << "server now available on udp port " << g_port << "..." << endl;

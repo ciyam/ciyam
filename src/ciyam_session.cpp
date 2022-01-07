@@ -1834,6 +1834,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
       }
+      else if( command == c_cmd_ciyam_session_file_test_udp )
+      {
+         string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_num_packets ) );
+
+         size_t num = from_string< size_t >( num_packets );
+
+         recv_test_datagrams( num, get_stream_port( ), get_stream_socket( ), response );
+      }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
          bool recrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recrypt ) );

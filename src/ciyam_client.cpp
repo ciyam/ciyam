@@ -78,6 +78,8 @@ const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
+const char* const c_file_test_udp_cmd = "file_test";
+
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
@@ -576,6 +578,19 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          cout << "sending command: " << str << endl;
 #endif
          socket.write_line( str );
+
+         if( ( str.find( c_file_test_udp_cmd ) == 0 ) 
+          && ( str.length( ) > strlen( c_file_test_udp_cmd ) + 1 ) )
+         {
+            string::size_type pos = str.find( ' ' );
+
+            if( pos != string::npos )
+            {
+               size_t num = from_string< size_t >( str.substr( pos + 1 ) );
+
+               send_test_datagrams( num, get_port( ) );
+            }
+         }
 
 #ifdef SSL_SUPPORT
          if( ( str == "tls" || str == "starttls" ) && !socket.is_secure( ) )

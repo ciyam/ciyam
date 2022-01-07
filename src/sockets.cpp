@@ -39,6 +39,8 @@ using namespace std;
 namespace
 {
 
+const int c_test_buf_size = 1024;
+
 const int c_default_line_size = 1024;
 
 const int c_max_progress_output_bytes = 132;
@@ -629,6 +631,16 @@ int tcp_socket::write_line( int len, const char* p_data, size_t timeout, progres
    return n;
 }
 
+udp_socket::udp_socket( )
+ : socket_base( )
+{
+}
+
+udp_socket::udp_socket( SOCKET socket )
+ : socket_base( socket )
+{
+}
+
 bool udp_socket::open( )
 {
    if( socket == INVALID_SOCKET )
@@ -642,9 +654,9 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address* p
    return ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t* )&addrlen );
 }
 
-void udp_socket::send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen )
+int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen )
 {
-   ::sendto( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t )addrlen );
+   return ::sendto( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t )addrlen );
 }
 
 size_t file_transfer( const string& name,
@@ -968,4 +980,49 @@ size_t file_transfer( const string& name,
    }
 
    return total_size;
+}
+
+void recv_test_datagrams( size_t num, int port, int sock, string& str )
+{
+   udp_socket s( sock );
+
+   size_t addrlen;
+   ip_address address;
+
+   unsigned char buffer[ c_test_buf_size ];
+
+   for( size_t i = 0; i < num; i++ )
+   {
+      int len = s.recv_from( buffer, sizeof( buffer ), &address, addrlen );
+
+      if( len )
+      {
+         string next( ( size_t )len, '\0' );
+
+         memcpy( &next[ 0 ], buffer, len );
+
+         next += " <== " + address.get_addr_string( );
+
+         str += next;
+
+         if( i != num - 1 )
+            str += '\n';
+      }
+   }
+}
+
+void send_test_datagrams( size_t num, int port )
+{
+   udp_socket s;
+   ip_address address( port );
+
+   if( s.open( ) && s.bind( address ) )
+   {
+      for( size_t i = 0; i < num; i++ )
+      {
+         string data( to_comparable_string( i, false, 3 ) );
+
+         s.send_to( ( unsigned char* )data.data( ), data.length( ), &address, sizeof( address ) );
+      }
+   }
 }

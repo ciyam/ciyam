@@ -158,10 +158,13 @@ class tcp_socket : public socket_base
 class udp_socket : public socket_base
 {
    public:
+   udp_socket( );
+   udp_socket( SOCKET );
+
    bool open( );
 
    int recv_from( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t& addrlen );
-   void send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen );
+   int send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen );
 };
 
 enum ft_direction
@@ -176,5 +179,9 @@ size_t file_transfer(
  const char* p_ack_message, size_t initial_timeout = 0, size_t line_timeout = 0,
  size_t max_line_size = 0, unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0,
  unsigned int buffer_size = 0, progress* p_progress = 0, const char* p_ack_skip_message = 0 );
+
+void recv_test_datagrams( size_t num, int port, int sock, std::string& str );
+
+void send_test_datagrams( size_t num, int port );
 
 #endif
