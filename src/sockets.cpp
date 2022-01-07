@@ -83,6 +83,7 @@ winsock_init::~winsock_init( )
 ip_address::ip_address( int port )
 {
    memset( this, 0, sizeof( sockaddr_in ) );
+
    sin_family = AF_INET;
    sin_addr.s_addr = htonl( INADDR_ANY );
    sin_port = htons( ( u_short )port );
@@ -140,45 +141,27 @@ string ip_address::get_addr_string( ) const
    return string( buf );
 }
 
-tcp_socket::tcp_socket( )
+socket_base::socket_base( )
  :
  timed_out( false ),
- blank_line( false ),
  socket( INVALID_SOCKET )
 {
 }
 
-tcp_socket::tcp_socket( SOCKET socket )
+socket_base::socket_base( SOCKET socket )
  :
  timed_out( false ),
- blank_line( false ),
  socket( socket )
 {
 }
 
-tcp_socket::~tcp_socket( )
+socket_base::~socket_base( )
 {
    if( socket != INVALID_SOCKET )
       close( );
 }
 
-bool tcp_socket::open( )
-{
-   // NOTE: In order to stop connections from taking too long a 10 second timeout is specified
-   // (other later operations such as sends and receives can have specific timeouts provided).
-   struct timeval tv;
-   tv.tv_sec = 10; // i.e. 10 seconds
-
-   ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
-   ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
-
-   if( socket == INVALID_SOCKET )
-      socket = ::socket( AF_INET, SOCK_STREAM, 0 );
-
-   return ( socket != INVALID_SOCKET );
-}
-
-void tcp_socket::close( )
+void socket_base::close( )
 {
    if( socket != INVALID_SOCKET )
    {
@@ -193,12 +176,12 @@ void tcp_socket::close( )
    socket = INVALID_SOCKET;
 }
 
-bool tcp_socket::bind( const ip_address& addr )
+bool socket_base::bind( const ip_address& addr )
 {
    return ::bind( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
 }
 
-bool tcp_socket::connect( const ip_address& addr, size_t timeout )
+bool socket_base::connect( const ip_address& addr, size_t timeout )
 {
    if( timeout )
    {
@@ -238,12 +221,12 @@ bool tcp_socket::connect( const ip_address& addr, size_t timeout )
       return ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
 }
 
-bool tcp_socket::listen( )
+bool socket_base::listen( )
 {
    return ::listen( socket, SOMAXCONN ) != SOCKET_ERROR;
 }
 
-SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
+SOCKET socket_base::accept( ip_address& addr, size_t timeout ) const
 {
    bool okay = true;
 
@@ -260,29 +243,7 @@ SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
    }
 }
 
-bool tcp_socket::get_delay( )
-{
-   int val = 0;
-   socklen_t len = sizeof( val );
-
-   get_option( IPPROTO_TCP, TCP_NODELAY, ( char* )&val, len );
-
-   return ( val == 0 );
-}
-
-bool tcp_socket::set_delay( )
-{
-   int val = 0;
-   return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
-}
-
-bool tcp_socket::set_no_delay( )
-{
-   int val = 1;
-   return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
-}
-
-bool tcp_socket::set_blocking( )
+bool socket_base::set_blocking( )
 {
 #ifdef _WIN32
    unsigned long val = 0;
@@ -297,7 +258,7 @@ bool tcp_socket::set_blocking( )
 #endif
 }
 
-bool tcp_socket::set_non_blocking( )
+bool socket_base::set_non_blocking( )
 {
 #ifdef _WIN32
    unsigned long val = 1;
@@ -312,7 +273,7 @@ bool tcp_socket::set_non_blocking( )
 #endif
 }
 
-bool tcp_socket::set_no_linger( )
+bool socket_base::set_no_linger( )
 {
 #ifdef _WIN32
    LINGER val;
@@ -324,13 +285,13 @@ bool tcp_socket::set_no_linger( )
    return set_option( SOL_SOCKET, SO_LINGER, ( const char* )&val, sizeof( val ) );
 }
 
-bool tcp_socket::set_reuse_addr( )
+bool socket_base::set_reuse_addr( )
 {
    int val = 1;
    return set_option( SOL_SOCKET, SO_REUSEADDR, ( const char* )&val, sizeof( val ) );
 }
 
-bool tcp_socket::has_input( size_t timeout ) const
+bool socket_base::has_input( size_t timeout ) const
 {
    bool okay;
 
@@ -351,7 +312,7 @@ bool tcp_socket::has_input( size_t timeout ) const
    return okay;
 }
 
-bool tcp_socket::can_output( size_t timeout ) const
+bool socket_base::can_output( size_t timeout ) const
 {
    bool okay;
    fd_set wfds;
@@ -372,7 +333,7 @@ bool tcp_socket::can_output( size_t timeout ) const
    return okay;
 }
 
-int tcp_socket::recv( unsigned char* buf, int buflen, size_t timeout )
+int socket_base::recv( unsigned char* buf, int buflen, size_t timeout )
 {
    bool okay = true;
 
@@ -390,7 +351,7 @@ int tcp_socket::recv( unsigned char* buf, int buflen, size_t timeout )
    return n;
 }
 
-int tcp_socket::send( const unsigned char* buf, int buflen, size_t timeout )
+int socket_base::send( const unsigned char* buf, int buflen, size_t timeout )
 {
    bool okay = true;
 
@@ -409,7 +370,7 @@ int tcp_socket::send( const unsigned char* buf, int buflen, size_t timeout )
    return n;
 }
 
-int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
+int socket_base::recv_n( unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int rcvd = 0;
@@ -437,7 +398,7 @@ int tcp_socket::recv_n( unsigned char* buf, int buflen, size_t timeout, progress
    return rcvd;
 }
 
-int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
+int socket_base::send_n( const unsigned char* buf, int buflen, size_t timeout, progress* p_progress )
 {
    int n;
    int sent = 0;
@@ -467,6 +428,66 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout, pr
    }
 
    return sent;
+}
+
+bool socket_base::get_option( int type, int opt, char* p_buffer, socklen_t& buflen )
+{
+   return ::getsockopt( socket, type, opt, p_buffer, &buflen ) != SOCKET_ERROR;
+}
+
+bool socket_base::set_option( int type, int opt, const char* p_buffer, socklen_t buflen )
+{
+   return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
+}
+
+tcp_socket::tcp_socket( )
+ : socket_base( ),
+ blank_line( false )
+{
+}
+
+tcp_socket::tcp_socket( SOCKET socket )
+ : socket_base( socket ),
+ blank_line( false )
+{
+}
+
+bool tcp_socket::open( )
+{
+   // NOTE: In order to stop connections from taking too long a 10 second timeout is specified
+   // (other later operations such as sends and receives can have specific timeouts provided).
+   struct timeval tv;
+   tv.tv_sec = 10; // i.e. 10 seconds
+
+   ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
+   ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
+
+   if( socket == INVALID_SOCKET )
+      socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+
+   return ( socket != INVALID_SOCKET );
+}
+
+bool tcp_socket::get_delay( )
+{
+   int val = 0;
+   socklen_t len = sizeof( val );
+
+   get_option( IPPROTO_TCP, TCP_NODELAY, ( char* )&val, len );
+
+   return ( val == 0 );
+}
+
+bool tcp_socket::set_delay( )
+{
+   int val = 0;
+   return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
+}
+
+bool tcp_socket::set_no_delay( )
+{
+   int val = 1;
+   return set_option( IPPROTO_TCP, TCP_NODELAY, ( const char* )&val, sizeof( val ) );
 }
 
 int tcp_socket::read_line( string& str, size_t timeout, int max_chars, progress* p_progress )
@@ -608,14 +629,22 @@ int tcp_socket::write_line( int len, const char* p_data, size_t timeout, progres
    return n;
 }
 
-bool tcp_socket::get_option( int type, int opt, char* p_buffer, socklen_t& buflen )
+bool udp_socket::open( )
 {
-   return ::getsockopt( socket, type, opt, p_buffer, &buflen ) != SOCKET_ERROR;
+   if( socket == INVALID_SOCKET )
+      socket = ::socket( AF_INET, SOCK_DGRAM, 0 );
+
+   return ( socket != INVALID_SOCKET );
 }
 
-bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t buflen )
+int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t& addrlen )
 {
-   return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
+   return ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t* )&addrlen );
+}
+
+void udp_socket::send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen )
+{
+   ::sendto( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t )addrlen );
 }
 
 size_t file_transfer( const string& name,

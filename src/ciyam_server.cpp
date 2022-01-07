@@ -242,6 +242,7 @@ const char* const c_term_globals_func_name = "term_globals";
 const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_log_trace_string_func_name = "log_trace_string";
 const char* const c_register_listener_func_name = "register_listener";
+const char* const c_set_stream_socket_func_name = "set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "init_ciyam_session";
 const char* const c_set_files_area_dir_func_name = "set_files_area_dir";
 const char* const c_init_peer_sessions_func_name = "init_peer_sessions";
@@ -255,6 +256,7 @@ const char* const c_term_globals_func_name = "_term_globals";
 const char* const c_init_auto_script_func_name = "_init_auto_script";
 const char* const c_log_trace_string_func_name = "_log_trace_string";
 const char* const c_register_listener_func_name = "_register_listener";
+const char* const c_set_stream_socket_func_name = "_set_stream_socket";
 const char* const c_init_ciyam_session_func_name = "_init_ciyam_session";
 const char* const c_set_files_area_dir_func_name = "_set_files_area_dir";
 const char* const c_init_peer_sessions_func_name = "_init_peer_sessions";
@@ -542,6 +544,9 @@ int main( int argc, char* argv[ ] )
          fp_register_listener fp_register_listener_func;
          fp_register_listener_func = ( fp_register_listener )ap_dynamic_library->bind_to_function( c_register_listener_func_name );
 
+         fp_set_stream_socket fp_set_stream_socket_func;
+         fp_set_stream_socket_func = ( fp_set_stream_socket )ap_dynamic_library->bind_to_function( c_set_stream_socket_func_name );
+
          fp_init_ciyam_session fp_init_ciyam_session_func;
          fp_init_ciyam_session_func = ( fp_init_ciyam_session )ap_dynamic_library->bind_to_function( c_init_ciyam_session_func_name );
 
@@ -571,6 +576,8 @@ int main( int argc, char* argv[ ] )
          ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ) );
 
          tcp_socket s;
+         udp_socket u;
+
          bool okay = s.open( );
 
          ip_address address( g_port );
@@ -578,7 +585,7 @@ int main( int argc, char* argv[ ] )
          if( okay )
          {
             if( !s.set_reuse_addr( ) && !g_is_quiet )
-               cout << "warning: set_reuse_addr failed..." << endl;
+               cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
             ( *fp_register_listener_func )( g_port, "main" );
 
@@ -596,16 +603,35 @@ int main( int argc, char* argv[ ] )
 
             if( okay )
             {
-               if( !g_is_quiet )
-                  cout << "server now listening on port " << g_port << "..." << endl;
+               if( !is_update && !g_is_quiet )
+                  cout << "server now listening on tcp port " << g_port << "..." << endl;
 
-               string start_message( "main listener started on port " + to_string( g_port ) );
+               string start_message( "main listener started on tcp port " + to_string( g_port ) );
 
                ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
 
-               is_update = false;
-
                file_remove( c_shutdown_signal_file );
+
+               bool has_udp = u.open( );
+
+               if( has_udp )
+               {
+                  has_udp = u.bind( address );
+
+                  if( has_udp )
+                  {
+                     ( *fp_set_stream_socket_func )( u.get_socket( ) );
+
+                     if( !is_update && !g_is_quiet )
+                        cout << "server now available on udp port " << g_port << "..." << endl;
+
+                     string start_message( "main streamer started on udp port " + to_string( g_port ) );
+
+                     ( *fp_log_trace_string_func )( TRACE_ANYTHING, start_message.c_str( ) );
+                  }
+               }
+
+               is_update = false;
 
                if( g_start_autoscript )
                   ( *fp_init_auto_script_func )( );
@@ -653,6 +679,8 @@ int main( int argc, char* argv[ ] )
                }
 
                s.close( );
+               u.close( );
+
                file_remove( c_shutdown_signal_file );
 
                if( is_update && !g_server_shutdown )
@@ -666,7 +694,16 @@ int main( int argc, char* argv[ ] )
                   g_server_shutdown = 0;
                }
 
-               string finish_message( "main listener finished (port " + to_string( g_port ) + ")" );
+               string finish_message;
+
+               if( has_udp )
+               {
+                  finish_message = "main streamer finished (udp port " + to_string( g_port ) + ")";
+
+                  ( *fp_log_trace_string_func )( TRACE_ANYTHING, finish_message.c_str( ) );
+               }
+
+               finish_message = "main listener finished (tcp port " + to_string( g_port ) + ")";
 
                ( *fp_log_trace_string_func )( TRACE_ANYTHING, finish_message.c_str( ) );
 
@@ -682,7 +719,9 @@ int main( int argc, char* argv[ ] )
             else
             {
                rc = 1;
+
                s.close( );
+               u.close( );
 
                cerr << "error: unexpected socket error" << endl;
                ( *fp_log_trace_string_func )( TRACE_ANYTHING, "error: unexpected socket error" );
