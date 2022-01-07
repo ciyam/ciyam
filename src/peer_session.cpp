@@ -3380,7 +3380,7 @@ void peer_listener::on_start( )
          if( okay )
          {
             TRACE_LOG( TRACE_ANYTHING,
-             "peer listener started on port " + to_string( port )
+             "peer listener started on tcp port " + to_string( port )
              + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
             while( s && !g_server_shutdown )
@@ -3483,7 +3483,7 @@ void peer_listener::on_start( )
    }
 
    TRACE_LOG( TRACE_ANYTHING,
-    "peer listener finished (port " + to_string( port ) + ")"
+    "peer listener finished (tcp port " + to_string( port ) + ")"
     + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
 
    decrement_active_listeners( );
