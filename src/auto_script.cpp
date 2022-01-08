@@ -43,6 +43,8 @@ namespace
 
 #include "ciyam_constants.h"
 
+const size_t c_sleep_time = 1000; // i.e. 1 sec
+
 const char* const c_script_dummy_filename = "*script*";
 
 const char* const c_section_script = "script";
@@ -363,7 +365,7 @@ void autoscript_session::on_start( )
 
       while( true )
       {
-         msleep( 1000 );
+         msleep( c_sleep_time );
 
          if( g_server_shutdown )
             break;
