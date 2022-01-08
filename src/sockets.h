@@ -46,6 +46,7 @@ class ip_address : public sockaddr_in
    public:
    ip_address( int port = 0 );
    ip_address( const char* p_address, int port = 0 );
+
    ip_address& operator =( const char* p_address );
 
    std::string get_addr_string( ) const;
@@ -61,7 +62,7 @@ class socket_base
 
    public:
    socket_base( );
-   socket_base( SOCKET );
+   socket_base( SOCKET socket, bool close_in_dtor = false );
 
    virtual ~socket_base( );
 
@@ -72,6 +73,8 @@ class socket_base
 
    bool bind( const ip_address& addr );
    bool connect( const ip_address& addr, size_t timeout = c_default_connect_timeout );
+
+   virtual void on_bind( ) { }
 
    bool listen( );
 
@@ -124,7 +127,9 @@ class socket_base
 
    protected:
    SOCKET socket;
+
    bool timed_out;
+   bool close_in_dtor;
 
    // FUTURE: Need to add a member in order to detect the "would block" status before allowing these to be public.
    bool set_blocking( );
@@ -163,8 +168,10 @@ class udp_socket : public socket_base
 
    bool open( );
 
-   int recv_from( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t& addrlen );
-   int send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen );
+   void on_bind( );
+
+   int recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout = 0 );
+   int send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout = 0 );
 };
 
 enum ft_direction
@@ -180,8 +187,8 @@ size_t file_transfer(
  size_t max_line_size = 0, unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0,
  unsigned int buffer_size = 0, progress* p_progress = 0, const char* p_ack_skip_message = 0 );
 
-void recv_test_datagrams( size_t num, int port, int sock, std::string& str );
+void recv_test_datagrams( size_t num, int port, int socket, std::string& str, size_t timeout );
 
-void send_test_datagrams( size_t num, int port );
+void send_test_datagrams( size_t num, const std::string& host_name, int port, size_t timeout );
 
 #endif
