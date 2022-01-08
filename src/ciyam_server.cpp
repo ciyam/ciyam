@@ -616,6 +616,9 @@ int main( int argc, char* argv[ ] )
 
                if( has_udp )
                {
+                  if( !u.set_reuse_addr( ) && !g_is_quiet )
+                     cout << "warning: set_reuse_addr failed (for udp)..." << endl;
+
                   has_udp = u.bind( address );
 
                   if( has_udp )

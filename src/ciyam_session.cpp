@@ -80,7 +80,8 @@ mutex g_mutex;
 
 #include "trace_progress.cpp"
 
-const size_t c_request_timeout = 500;
+const size_t c_request_timeout = 500; // i.e. 1/2 sec
+const size_t c_datagram_timeout = 500; // i.e. 1/2 sec
 
 const int c_pdf_default_limit = 10000;
 
@@ -1840,7 +1841,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          size_t num = from_string< size_t >( num_packets );
 
-         recv_test_datagrams( num, get_stream_port( ), get_stream_socket( ), response );
+         recv_test_datagrams( num, get_stream_port( ), get_stream_socket( ), response, c_datagram_timeout );
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {

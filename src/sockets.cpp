@@ -105,11 +105,14 @@ ip_address& ip_address::operator =( const char* p_address )
 void ip_address::resolve( const char* p_address, int port )
 {
    memset( this, 0, sizeof( sockaddr_in ) );
+
    sin_family = AF_INET;
    sin_addr.s_addr = inet_addr( p_address );
+
    if( sin_addr.s_addr == INADDR_NONE && strcmp( p_address, "255.255.255.255" ) != 0 )
    {
       HOSTENT* p_host = ::gethostbyname( p_address );
+
       if( p_host )
          sin_addr.s_addr = ( ( IN_ADDR* )p_host->h_addr )->s_addr;
       else
@@ -146,20 +149,22 @@ string ip_address::get_addr_string( ) const
 socket_base::socket_base( )
  :
  timed_out( false ),
+ close_in_dtor( true ),
  socket( INVALID_SOCKET )
 {
 }
 
-socket_base::socket_base( SOCKET socket )
+socket_base::socket_base( SOCKET socket, bool close_in_dtor )
  :
  timed_out( false ),
+ close_in_dtor( close_in_dtor ),
  socket( socket )
 {
 }
 
 socket_base::~socket_base( )
 {
-   if( socket != INVALID_SOCKET )
+   if( close_in_dtor && socket != INVALID_SOCKET )
       close( );
 }
 
@@ -345,6 +350,7 @@ int socket_base::recv( unsigned char* buf, int buflen, size_t timeout )
       okay = has_input( timeout );
 
    int n = 0;
+
    if( !okay )
       timed_out = true;
    else
@@ -649,14 +655,48 @@ bool udp_socket::open( )
    return ( socket != INVALID_SOCKET );
 }
 
-int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t& addrlen )
+void udp_socket::on_bind( )
 {
-   return ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t* )&addrlen );
+   set_non_blocking( );
 }
 
-int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, ip_address* p_addr, size_t addrlen )
+int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout )
 {
-   return ::sendto( socket, p_buffer, buflen, 0, ( struct sockaddr* )p_addr, ( socklen_t )addrlen );
+   bool okay = true;
+
+   timed_out = false;
+
+   if( timeout )
+      okay = has_input( timeout );
+
+   int n = 0;
+   socklen_t addrlen;
+
+   if( !okay )
+      timed_out = true;
+   else
+      n = ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )&addr, ( socklen_t* )&addrlen );
+
+   return n;
+}
+
+int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout )
+{
+   bool okay = true;
+
+   timed_out = false;
+
+   if( timeout )
+      okay = can_output( timeout );
+
+   int n = 0;
+
+   if( !okay )
+      timed_out = true;
+   else
+      n = ::sendto( socket, p_buffer, buflen, 0, ( const struct sockaddr* )&addr, ( socklen_t )sizeof( addr ) );
+
+   return n;
 }
 
 size_t file_transfer( const string& name,
@@ -982,21 +1022,23 @@ size_t file_transfer( const string& name,
    return total_size;
 }
 
-void recv_test_datagrams( size_t num, int port, int sock, string& str )
+void recv_test_datagrams( size_t num, int port, int socket, string& str, size_t timeout )
 {
-   udp_socket s( sock );
+   udp_socket s( socket );
 
-   size_t addrlen;
-   ip_address address;
+   ip_address address( port );
 
    unsigned char buffer[ c_test_buf_size ];
 
    for( size_t i = 0; i < num; i++ )
    {
-      int len = s.recv_from( buffer, sizeof( buffer ), &address, addrlen );
+      int len = s.recv_from( buffer, sizeof( buffer ), address, timeout );
 
-      if( len )
+      if( len > 0 )
       {
+         if( !str.empty( ) )
+            str += '\n';
+
          string next( ( size_t )len, '\0' );
 
          memcpy( &next[ 0 ], buffer, len );
@@ -1004,25 +1046,27 @@ void recv_test_datagrams( size_t num, int port, int sock, string& str )
          next += " <== " + address.get_addr_string( );
 
          str += next;
-
-         if( i != num - 1 )
-            str += '\n';
       }
    }
 }
 
-void send_test_datagrams( size_t num, int port )
+void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout )
 {
    udp_socket s;
-   ip_address address( port );
+   ip_address address( host_name.c_str( ), port );
 
-   if( s.open( ) && s.bind( address ) )
+   if( !s.open( ) )
+      throw runtime_error( "unable to open udp_socket in send_test_datagrams" );
+
+   s.set_reuse_addr( );
+
+   for( size_t i = 0; i < num; i++ )
    {
-      for( size_t i = 0; i < num; i++ )
-      {
-         string data( to_comparable_string( i, false, 3 ) );
+      string data( to_comparable_string( i, false, 3 ) );
 
-         s.send_to( ( unsigned char* )data.data( ), data.length( ), &address, sizeof( address ) );
-      }
+      int num = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
+
+      if( !s.had_timeout( ) )
+         msleep( timeout );
    }
 }

@@ -86,6 +86,7 @@ const char* const c_error_output_prefix = "Error: ";
 const size_t c_pid_timeout = 5000; // i.e. 5 secs
 const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
+const size_t c_datagram_timeout = 50; // i.e. 1/20 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
 #ifdef _WIN32
@@ -588,7 +589,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             {
                size_t num = from_string< size_t >( str.substr( pos + 1 ) );
 
-               send_test_datagrams( num, get_port( ) );
+               // NOTE: Need to delay longer before first send so server is ready to receive.
+               msleep( c_datagram_timeout * 5 );
+
+               send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout );
             }
          }
 
