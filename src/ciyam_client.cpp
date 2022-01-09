@@ -13,6 +13,7 @@
 #  include <cstring>
 #  include <cstdlib>
 #  include <map>
+#  include <memory>
 #  include <string>
 #  include <sstream>
 #  include <iostream>
@@ -34,6 +35,7 @@
 #include "file_utils.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
+#  include "crypto_keys.h"
 #  ifdef _WIN32
 #     include <openssl/applink.c>
 #  endif
@@ -74,6 +76,8 @@ const char* const c_cmd_rpc_unlock_password = "password";
 const char* const c_env_var_pid = "PID";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_output = "OUTPUT";
+const char* const c_env_var_pub_key = "PUB_KEY";
+const char* const c_env_var_pub_keyx = "PUB_KEYX";
 const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
@@ -84,9 +88,10 @@ const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
 
 const size_t c_pid_timeout = 5000; // i.e. 5 secs
+const size_t c_pubkey_timeout = 5000; // i.e. 5 secs
 const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
-const size_t c_datagram_timeout = 50; // i.e. 1/20 secs
+const size_t c_datagram_timeout = 50; // i.e. 0.05 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
 #ifdef _WIN32
@@ -127,6 +132,10 @@ size_t g_max_file_size = c_files_area_item_max_size_default;
 string g_exec_cmd;
 string g_args_file;
 string g_rpc_password;
+
+#ifdef SSL_SUPPORT
+auto_ptr< private_key > gap_priv_key;
+#endif
 
 class ciyam_console_startup_functor : public command_functor
 {
@@ -1195,6 +1204,8 @@ int main( int argc, char* argv[ ] )
 
 #ifdef SSL_SUPPORT
    ssl_socket socket;
+
+   gap_priv_key.reset( new private_key( ) );
 #else
    tcp_socket socket;
 #endif
@@ -1294,6 +1305,25 @@ int main( int argc, char* argv[ ] )
                g_max_file_size = from_string< size_t >( ver_info.extra );
                set_environment_variable( c_env_var_max_file_size, ver_info.extra.c_str( ) );
             }
+
+            // NOTE: After handshake exchange public keys then commence command handling.
+            string pubkey;
+
+#ifdef SSL_SUPPORT
+            pubkey = gap_priv_key->get_public( );
+#endif
+            if( pubkey.empty( ) )
+               pubkey = string( c_none );
+            else
+               set_environment_variable( c_env_var_pub_key, pubkey );
+
+            string pubkeyx;
+            socket.read_line( pubkeyx, c_pubkey_timeout );
+
+            if( !pubkeyx.empty( ) && pubkeyx != string( c_none ) )
+               set_environment_variable( c_env_var_pub_keyx, pubkeyx );
+
+            socket.write_line( pubkey, c_pubkey_timeout );
 
             console_command_processor processor( cmd_handler );
 

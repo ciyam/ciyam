@@ -309,7 +309,7 @@ struct session
       variables.insert( make_pair( get_special_var_name( e_special_var_uuid ), uuid( ).as_string( ) ) );
 
 #ifndef SSL_SUPPORT
-      variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), "n/a" ) );
+      variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), c_none ) );
 #else
       variables.insert( make_pair( get_special_var_name( e_special_var_pubkey ), priv_key.get_public( ) ) );
 #endif
