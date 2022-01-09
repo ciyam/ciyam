@@ -154,7 +154,7 @@ namespace
 
 bool g_start_autoscript = true;
 bool g_start_peer_listeners = true;
-bool g_start_udp_stream_session = true;
+bool g_start_udp_stream_sessions = true;
 
 #ifdef _WIN32
 BOOL CtrlHandler( DWORD fdwCtrlType )
@@ -202,7 +202,7 @@ const char* const c_cmd_quiet = "quiet";
 
 const char* const c_cmd_no_auto = "no_auto";
 const char* const c_cmd_no_peers = "no_peers";
-const char* const c_cmd_no_stream = "no_stream";
+const char* const c_cmd_no_streams = "no_streams";
 
 #ifdef _WIN32
 const char* const c_cmd_svcins = "svcins";
@@ -242,8 +242,8 @@ const char* const c_ciyam_base_lib = "ciyam_base.dll";
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
-const char* const c_init_udp_stream_func_name = "init_udp_stream";
 const char* const c_init_auto_script_func_name = "init_auto_script";
+const char* const c_init_udp_streams_func_name = "init_udp_streams";
 const char* const c_log_trace_string_func_name = "log_trace_string";
 const char* const c_register_listener_func_name = "register_listener";
 const char* const c_set_stream_socket_func_name = "set_stream_socket";
@@ -257,8 +257,8 @@ const char* const c_unregister_listener_func_name = "unregister_listener";
 const char* const c_trace_flags_func_name = "_trace_flags";
 const char* const c_init_globals_func_name = "_init_globals";
 const char* const c_term_globals_func_name = "_term_globals";
-const char* const c_init_udp_stream_func_name = "_init_udp_stream";
 const char* const c_init_auto_script_func_name = "_init_auto_script";
+const char* const c_init_udp_streams_func_name = "_init_udp_streams";
 const char* const c_log_trace_string_func_name = "_log_trace_string";
 const char* const c_register_listener_func_name = "_register_listener";
 const char* const c_set_stream_socket_func_name = "_set_stream_socket";
@@ -360,8 +360,8 @@ class ciyam_server_startup_functor : public command_functor
          g_start_autoscript = false;
       else if( command == c_cmd_no_peers )
          g_start_peer_listeners = false;
-      else if( command == c_cmd_no_stream )
-         g_start_udp_stream_session = false;
+      else if( command == c_cmd_no_streams )
+         g_start_udp_stream_sessions = false;
 #ifdef _WIN32
       else if( command == c_cmd_svcins )
       {
@@ -458,8 +458,8 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_no_peers, 4,
           "", "don't start any peer listener threads", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_stream, 4,
-          "", "don't start the udp stream session thread", new ciyam_server_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_no_streams, 4,
+          "", "don't start the udp stream session threads", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
          cmd_handler.add_command( c_cmd_svcins, 5,
@@ -545,11 +545,11 @@ int main( int argc, char* argv[ ] )
          fp_term_globals fp_term_globals_func;
          fp_term_globals_func = ( fp_term_globals )ap_dynamic_library->bind_to_function( c_term_globals_func_name );
 
-         fp_init_udp_stream fp_init_udp_stream_func;
-         fp_init_udp_stream_func = ( fp_init_udp_stream )ap_dynamic_library->bind_to_function( c_init_udp_stream_func_name );
-
          fp_init_auto_script fp_init_auto_script_func;
          fp_init_auto_script_func = ( fp_init_auto_script )ap_dynamic_library->bind_to_function( c_init_auto_script_func_name );
+
+         fp_init_udp_streams fp_init_udp_streams_func;
+         fp_init_udp_streams_func = ( fp_init_udp_streams )ap_dynamic_library->bind_to_function( c_init_udp_streams_func_name );
 
          fp_log_trace_string fp_log_trace_string_func;
          fp_log_trace_string_func = ( fp_log_trace_string )ap_dynamic_library->bind_to_function( c_log_trace_string_func_name );
@@ -627,7 +627,7 @@ int main( int argc, char* argv[ ] )
 
                bool has_udp = false;
 
-               if( g_start_udp_stream_session )
+               if( g_start_udp_stream_sessions )
                   has_udp = u.open( );
 
                if( has_udp )
@@ -655,8 +655,8 @@ int main( int argc, char* argv[ ] )
                if( g_start_autoscript )
                   ( *fp_init_auto_script_func )( );
 
-               if( has_udp && g_start_udp_stream_session )
-                  ( *fp_init_udp_stream_func )( g_port, u.get_socket( ) );
+               if( has_udp && g_start_udp_stream_sessions )
+                  ( *fp_init_udp_streams_func )( g_port, u.get_socket( ) );
 
                ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
 

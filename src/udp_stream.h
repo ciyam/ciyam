@@ -15,10 +15,16 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+enum udp_direction
+{
+   e_udp_direction_recv,
+   e_udp_direction_send
+};
+
 class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
 {
    public:
-   udp_stream_session( int port, int sock );
+   udp_stream_session( int port, int sock, udp_direction direction );
    ~udp_stream_session( );
 
    void on_start( );
@@ -26,10 +32,12 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    private:
    int port;
    int sock;
+
+   udp_direction direction;
 };
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_udp_stream( int port, int sock );
+extern "C" void CIYAM_BASE_DECL_SPEC init_udp_streams( int port, int sock );
 
-typedef void ( *fp_init_udp_stream )( int, int );
+typedef void ( *fp_init_udp_streams )( int, int );
 
 #endif
