@@ -40,10 +40,11 @@ const size_t c_sleep_time = 1000; // i.e. 1 sec
 
 }
 
-udp_stream_session::udp_stream_session( int port, int sock )
+udp_stream_session::udp_stream_session( int port, int sock, udp_direction direction )
  :
  port( port ),
- sock( sock )
+ sock( sock ),
+ direction( direction )
 {
    ciyam_session::increment_session_count( );
 }
@@ -55,13 +56,15 @@ udp_stream_session::~udp_stream_session( )
 
 void udp_stream_session::on_start( )
 {
+   string stream_name( ( direction == e_udp_direction_recv ) ? "udp recv stream" : "udp send stream" );
+
 #ifdef DEBUG
-   cout << "started udp_stream session..." << endl;
+   cout << "started " << stream_name << " session..." << endl;
 #endif
    try
    {
       TRACE_LOG( TRACE_SESSIONS,
-       "started udp_stream session (tid = " + to_string( current_thread_id( ) ) + ")" );
+       "started " + stream_name + " session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
       while( true )
       {
@@ -71,7 +74,7 @@ void udp_stream_session::on_start( )
             break;
       }
 
-      TRACE_LOG( TRACE_SESSIONS, "finished udp_stream session" );
+      TRACE_LOG( TRACE_SESSIONS, "finished " + stream_name + " session" );
    }
    catch( exception& x )
    {
@@ -88,13 +91,16 @@ void udp_stream_session::on_start( )
       TRACE_LOG( TRACE_ANYTHING, "udp_stream error: unexpected unknown exception caught" );
    }
 #ifdef DEBUG
-   cout << "finished udp_stream session..." << endl;
+   cout << "finished " << stream_name << " session..." << endl;
 #endif
    delete this;
 }
 
-void init_udp_stream( int port, int sock )
+void init_udp_streams( int port, int sock )
 {
-   udp_stream_session* p_udp_stream_session = new udp_stream_session( port, sock );
-   p_udp_stream_session->start( );
+   udp_stream_session* p_udp_recv_stream_session = new udp_stream_session( port, sock, e_udp_direction_recv );
+   p_udp_recv_stream_session->start( );
+
+   udp_stream_session* p_udp_send_stream_session = new udp_stream_session( port, sock, e_udp_direction_send );
+   p_udp_send_stream_session->start( );
 }
