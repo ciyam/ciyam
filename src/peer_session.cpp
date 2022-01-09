@@ -90,6 +90,7 @@ const int c_max_line_length = 500;
 const int c_max_num_for_support = 10;
 const int c_min_block_wait_passes = 8;
 
+const size_t c_max_pubkey_size = 256;
 const size_t c_max_greeting_size = 256;
 const size_t c_max_put_blob_size = 256;
 
@@ -3167,6 +3168,30 @@ void peer_session::on_start( )
       }
 
       init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
+
+      string pubkeyx;
+
+      // NOTE: After handshake exchange public keys then commence peer protocol.
+      if( is_responder )
+      {
+         ap_socket->write_line( get_session_variable(
+          get_special_var_name( e_special_var_pubkey ) ), timeout, p_progress );
+
+         ap_socket->read_line( pubkeyx, timeout, c_max_pubkey_size, p_progress );
+      }
+      else
+      {
+         ap_socket->read_line( pubkeyx, timeout, c_max_pubkey_size, p_progress );
+
+         ap_socket->write_line( get_session_variable(
+          get_special_var_name( e_special_var_pubkey ) ), timeout, p_progress );
+      }
+
+      if( pubkeyx.empty( ) )
+         pubkeyx = string( c_none );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
 
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true );

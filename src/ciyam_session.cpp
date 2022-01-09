@@ -6177,6 +6177,17 @@ void ciyam_session::on_start( )
 
       init_session( cmd_handler );
 
+      // NOTE: After handshake exchange public keys then commence application protocol.
+      ap_socket->write_line( get_session_variable( get_special_var_name( e_special_var_pubkey ) ) );
+
+      string pubkeyx;
+      ap_socket->read_line( pubkeyx, c_request_timeout );
+
+      if( pubkeyx.empty( ) )
+         pubkeyx = string( c_none );
+
+      set_session_variable( get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
+
       socket_command_processor processor( *ap_socket, cmd_handler );
       processor.process_commands( );
 

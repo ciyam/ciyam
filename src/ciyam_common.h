@@ -99,6 +99,7 @@ enum special_var
    e_special_var_is_last,
    e_special_var_message,
    e_special_var_package,
+   e_special_var_pubkeyx,
    e_special_var_restore,
    e_special_var_slowest,
    e_special_var_storage,

@@ -86,6 +86,7 @@ const char* const c_special_variable_do_exec = "@do_exec";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
 const char* const c_special_variable_package = "@package";
+const char* const c_special_variable_pubkeyx = "@pubkeyx";
 const char* const c_special_variable_restore = "@restore";
 const char* const c_special_variable_slowest = "@slowest";
 const char* const c_special_variable_storage = "@storage";
@@ -365,6 +366,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_package:
       s = string( c_special_variable_package );
+      break;
+
+      case e_special_var_pubkeyx:
+      s = string( c_special_variable_pubkeyx );
       break;
 
       case e_special_var_restore:
