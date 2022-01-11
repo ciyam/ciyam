@@ -414,6 +414,9 @@ struct session
    set< size_t > release_sessions;
    map< size_t, date_time > condemned_sessions;
 
+   map< size_t, string > udp_recv_file_chunks;
+   map< size_t, string > udp_send_file_chunks;
+
    module_commands_registry_container commands_registry;
    object_instance_registry_container instance_registry;
 };
@@ -6869,6 +6872,45 @@ bool is_first_using_session_variable( const string& name, const string& value )
    }
 
    return false;
+}
+
+void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
+{
+   guard g( g_mutex );
+
+   if( slot < g_max_sessions )
+   {
+      if( g_sessions[ slot ] )
+         g_sessions[ slot ]->udp_recv_file_chunks.insert( make_pair( chunk, info_and_data ) );
+   }
+}
+
+void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const string& info_and_data )
+{
+   guard g( g_mutex );
+
+   if( slot < g_max_sessions )
+   {
+      if( g_sessions[ slot ] )
+         g_sessions[ slot ]->udp_send_file_chunks.insert( make_pair( chunk, info_and_data ) );
+   }
+}
+
+string get_udp_recv_file_chunk_info( size_t& chunk )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( gtp_session && !gtp_session->udp_recv_file_chunks.empty( ) )
+   {
+      chunk = gtp_session->udp_recv_file_chunks.begin( )->first;
+      retval = gtp_session->udp_recv_file_chunks.begin( )->second;
+
+      gtp_session->udp_recv_file_chunks.erase( gtp_session->udp_recv_file_chunks.begin( ) );
+   }
+
+   return retval;
 }
 
 void list_mutex_lock_ids_for_ciyam_base( ostream& outs )

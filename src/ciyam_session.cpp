@@ -1840,8 +1840,27 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_num_packets ) );
 
          size_t num = from_string< size_t >( num_packets );
+         size_t found = 0;
 
-         recv_test_datagrams( num, get_stream_port( ), get_stream_socket( ), response, c_datagram_timeout );
+         for( size_t i = 0; i < ( num * 2 ); i++ )
+         {
+            size_t chunk;
+
+            string next( get_udp_recv_file_chunk_info( chunk ) );
+
+            if( !next.empty( ) )
+            {
+               if( !response.empty( ) )
+                  response += '\n';
+
+               response += to_comparable_string( chunk, false, 3 ) + ':' + next;
+
+               if( ++found >= num )
+                  break;
+            }
+            else if( i < 10 )
+               msleep( c_datagram_timeout );
+         }
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {

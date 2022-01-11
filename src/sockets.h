@@ -187,7 +187,7 @@ size_t file_transfer(
  size_t max_line_size = 0, unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0,
  unsigned int buffer_size = 0, progress* p_progress = 0, const char* p_ack_skip_message = 0 );
 
-void recv_test_datagrams( size_t num, int port, int socket, std::string& str, size_t timeout );
+void recv_test_datagrams( size_t num, int port, int sock, std::string& str, size_t timeout );
 
 void send_test_datagrams( size_t num, const std::string& host_name, int port, size_t timeout );
 
