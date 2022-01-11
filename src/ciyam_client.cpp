@@ -74,7 +74,9 @@ const char* const c_cmd_rpc_unlock = "rpc_unlock";
 const char* const c_cmd_rpc_unlock_password = "password";
 
 const char* const c_env_var_pid = "PID";
+const char* const c_env_var_slot = "SLOT";
 const char* const c_env_var_error = "ERROR";
+const char* const c_env_var_slotx = "SLOTX";
 const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_pub_key = "PUB_KEY";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
@@ -1317,13 +1319,35 @@ int main( int argc, char* argv[ ] )
             else
                set_environment_variable( c_env_var_pub_key, pubkey );
 
-            string pubkeyx;
-            socket.read_line( pubkeyx, c_pubkey_timeout );
+            string slotx, pubkeyx, slotx_and_pubkeyx;
+            socket.read_line( slotx_and_pubkeyx, c_pubkey_timeout );
+
+            string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+            if( pos != string::npos )
+            {
+               slotx = slotx_and_pubkeyx.substr( 0, pos );
+               pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+            }
+
+            if( !slotx.empty( ) )
+               set_environment_variable( c_env_var_slotx, slotx );
 
             if( !pubkeyx.empty( ) && pubkeyx != string( c_none ) )
                set_environment_variable( c_env_var_pub_keyx, pubkeyx );
 
-            socket.write_line( pubkey, c_pubkey_timeout );
+            string slot( slotx );
+
+            if( !slot.empty( ) )
+               slot[ 0 ] = 'C';
+            else
+               slot = string( c_none );
+
+            set_environment_variable( c_env_var_slot, slot );
+
+            string slot_and_pubkey( slot + '-' + pubkey );
+
+            socket.write_line( slot_and_pubkey, c_pubkey_timeout );
 
             console_command_processor processor( cmd_handler );
 

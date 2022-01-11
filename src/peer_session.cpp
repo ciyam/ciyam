@@ -3169,26 +3169,39 @@ void peer_session::on_start( )
 
       init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
 
-      string pubkeyx;
+      string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
+      slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
+
+      string slotx, pubkeyx, slotx_and_pubkeyx;
 
       // NOTE: After handshake exchange public keys then commence peer protocol.
       if( is_responder )
       {
-         ap_socket->write_line( get_session_variable(
-          get_special_var_name( e_special_var_pubkey ) ), timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, timeout, p_progress );
 
-         ap_socket->read_line( pubkeyx, timeout, c_max_pubkey_size, p_progress );
+         ap_socket->read_line( slotx_and_pubkeyx, timeout, c_max_pubkey_size, p_progress );
       }
       else
       {
-         ap_socket->read_line( pubkeyx, timeout, c_max_pubkey_size, p_progress );
+         ap_socket->read_line( slotx_and_pubkeyx,
+          timeout, c_max_pubkey_size, p_progress );
 
-         ap_socket->write_line( get_session_variable(
-          get_special_var_name( e_special_var_pubkey ) ), timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, timeout, p_progress );
       }
 
-      if( pubkeyx.empty( ) )
-         pubkeyx = string( c_none );
+      string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+      if( pos != string::npos )
+      {
+         slotx = slotx_and_pubkeyx.substr( 0, pos );
+         pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+      }
+
+      if( slotx.empty( ) )
+         slotx = string( c_none );
+
+      set_session_variable(
+       get_special_var_name( e_special_var_slotx ), slotx );
 
       set_session_variable(
        get_special_var_name( e_special_var_pubkeyx ), pubkeyx );

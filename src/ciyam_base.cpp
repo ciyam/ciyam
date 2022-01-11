@@ -306,6 +306,9 @@ struct session
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
 
+      variables.insert( make_pair(
+       get_special_var_name( e_special_var_slot ), 'S' + to_comparable_string( slot, false, 3 ) ) );
+
       variables.insert( make_pair( get_special_var_name( e_special_var_uuid ), uuid( ).as_string( ) ) );
 
 #ifndef SSL_SUPPORT
