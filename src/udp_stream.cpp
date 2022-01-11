@@ -20,6 +20,7 @@
 
 #include "udp_stream.h"
 
+#include "sockets.h"
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
@@ -36,7 +37,10 @@ namespace
 
 #include "ciyam_constants.h"
 
+const size_t c_timeout = 50; // i.e. 0.05 secs
 const size_t c_sleep_time = 1000; // i.e. 1 sec
+
+const size_t c_buffer_size = 1500;
 
 }
 
@@ -61,6 +65,21 @@ void udp_stream_session::on_start( )
 #ifdef DEBUG
    cout << "started " << stream_name << " session..." << endl;
 #endif
+
+   int port = get_stream_port( );
+   int sock = get_stream_socket( );
+
+   auto_ptr< ip_address > ap_addr;
+   auto_ptr< udp_socket > ap_sock;
+
+   unsigned char buffer[ c_buffer_size ];
+
+   if( direction == e_udp_direction_recv )
+   {
+      ap_addr.reset( new ip_address( port ) );
+      ap_sock.reset( new udp_socket( sock ) );
+   }
+
    try
    {
       TRACE_LOG( TRACE_SESSIONS,
@@ -68,7 +87,43 @@ void udp_stream_session::on_start( )
 
       while( true )
       {
-         msleep( c_sleep_time );
+         if( direction == e_udp_direction_recv )
+         {
+            int len = ap_sock->recv_from( buffer, sizeof( buffer ), *ap_addr, c_timeout );
+
+            if( len > 0 )
+            {
+               string data( len, '\0' );
+
+               memcpy( &data[ 0 ], buffer, len );
+
+               string::size_type pos = data.find( ':' );
+
+               if( pos != string::npos && pos > 0 )
+               {
+                  size_t slot = from_string< size_t >( data.substr( 1, pos - 1 ) );
+
+                  data.erase( 0, pos + 1 );
+
+                  if( data.size( ) == 3 )
+                     data += ':' + ap_addr->get_addr_string( );
+
+                  pos = data.find( ':' );
+
+                  // NOTE: The chunk value should always be between 000 and 999.
+                  if( pos == 3 )
+                  {
+                     size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
+
+                     add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                  }
+               }
+            }
+         }
+         else
+         {
+            msleep( c_sleep_time );
+         }
 
          if( g_server_shutdown )
             break;

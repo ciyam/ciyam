@@ -47,7 +47,7 @@ const int c_max_progress_output_bytes = 132;
 
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
-const char* const c_env_var_name_slot = "SLOT";
+const char* const c_env_var_name_slotx = "SLOTX";
 
 struct scoped_empty_file_delete
 {
@@ -1044,9 +1044,9 @@ size_t file_transfer( const string& name,
    return total_size;
 }
 
-void recv_test_datagrams( size_t num, int port, int socket, string& str, size_t timeout )
+void recv_test_datagrams( size_t num, int port, int sock, string& str, size_t timeout )
 {
-   udp_socket s( socket );
+   udp_socket s( sock );
 
    ip_address address( port );
 
@@ -1087,7 +1087,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
 
    s.set_reuse_addr( );
 
-   string prefix( get_environment_variable( c_env_var_name_slot ) );
+   string prefix( get_environment_variable( c_env_var_name_slotx ) );
 
    for( size_t i = 0; i < num; i++ )
    {
@@ -1096,9 +1096,16 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
       if( !prefix.empty( ) )
          data = prefix + ':' + data;
 
-      int num = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
+      int n = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
-      if( i == 0 && !s.had_timeout( ) )
+      if( i == 0 && n == 0 )
+         throw runtime_error( "unable to send a UDP datagram to " + host_name );
+
+      // NOTE: If socket would block then retry after a further timeout.
+      if( i > 0 && n == 0 )
+      {
+         --i;
          msleep( timeout );
+      }
    }
 }

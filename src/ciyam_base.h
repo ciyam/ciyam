@@ -435,6 +435,11 @@ struct temporary_session_variable
    std::string original_value;
 };
 
+void CIYAM_BASE_DECL_SPEC add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
+void CIYAM_BASE_DECL_SPEC add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
+
+std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk );
+
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_base( std::ostream& outs );
 
 bool CIYAM_BASE_DECL_SPEC has_crypt_key_for_blockchain_account( const std::string& blockchain, const std::string& account );
