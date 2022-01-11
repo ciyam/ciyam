@@ -81,7 +81,7 @@ mutex g_mutex;
 #include "trace_progress.cpp"
 
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
-const size_t c_datagram_timeout = 500; // i.e. 1/2 sec
+const size_t c_datagram_timeout = 100; // i.e. 1/10 sec
 
 const int c_pdf_default_limit = 10000;
 
@@ -6177,15 +6177,31 @@ void ciyam_session::on_start( )
 
       init_session( cmd_handler );
 
-      // NOTE: After handshake exchange public keys then commence application protocol.
-      ap_socket->write_line( get_session_variable( get_special_var_name( e_special_var_pubkey ) ) );
+      string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
 
-      string pubkeyx;
-      ap_socket->read_line( pubkeyx, c_request_timeout );
+      slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
+
+      // NOTE: After handshake exchange public keys then commence application protocol.
+      ap_socket->write_line( slot_and_pubkey );
+
+      string slotx, pubkeyx, slotx_and_pubkeyx;
+      ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout );
+
+      string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+      if( pos != string::npos )
+      {
+         slotx = slotx_and_pubkeyx.substr( 0, pos );
+         pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+      }
+
+      if( slotx.empty( ) )
+         slotx = string( c_none );
 
       if( pubkeyx.empty( ) )
          pubkeyx = string( c_none );
 
+      set_session_variable( get_special_var_name( e_special_var_slotx ), slotx );
       set_session_variable( get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
 
       socket_command_processor processor( *ap_socket, cmd_handler );

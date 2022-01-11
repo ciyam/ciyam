@@ -47,6 +47,7 @@ const int c_max_progress_output_bytes = 132;
 
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
+const char* const c_env_var_name_slot = "SLOT";
 
 struct scoped_empty_file_delete
 {
@@ -660,7 +661,7 @@ void udp_socket::on_bind( )
    set_non_blocking( );
 }
 
-int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout )
+int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout, progress* p_progress )
 {
    bool okay = true;
 
@@ -677,10 +678,20 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& a
    else
       n = ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )&addr, ( socklen_t* )&addrlen );
 
+   if( n && p_progress )
+   {
+      string suffix;
+
+      if( n > c_max_progress_output_bytes )
+         suffix = "...[" + format_bytes( n ) + ']';
+
+      p_progress->output_progress( ">R>~" + string( ( const char* )p_buffer, min( n, c_max_progress_output_bytes ) ) + suffix );
+   }
+
    return n;
 }
 
-int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout )
+int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout, progress* p_progress )
 {
    bool okay = true;
 
@@ -695,6 +706,17 @@ int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_addres
       timed_out = true;
    else
       n = ::sendto( socket, p_buffer, buflen, 0, ( const struct sockaddr* )&addr, ( socklen_t )sizeof( addr ) );
+
+   if( p_progress )
+   {
+      string suffix;
+      string write_string( "<W<~" );
+
+      if( n > c_max_progress_output_bytes )
+         suffix = "...[" + format_bytes( n ) + ']';
+
+      p_progress->output_progress( write_string + string( ( const char* )p_buffer, min( n, c_max_progress_output_bytes ) ) + suffix );
+   }
 
    return n;
 }
@@ -1030,7 +1052,9 @@ void recv_test_datagrams( size_t num, int port, int socket, string& str, size_t 
 
    unsigned char buffer[ c_test_buf_size ];
 
-   for( size_t i = 0; i < num; i++ )
+   size_t found = 0;
+
+   for( size_t i = 0; i < ( num * 2 ); i++ )
    {
       int len = s.recv_from( buffer, sizeof( buffer ), address, timeout );
 
@@ -1046,6 +1070,9 @@ void recv_test_datagrams( size_t num, int port, int socket, string& str, size_t 
          next += " <== " + address.get_addr_string( );
 
          str += next;
+
+         if( ++found >= num )
+            break;
       }
    }
 }
@@ -1060,13 +1087,18 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
 
    s.set_reuse_addr( );
 
+   string prefix( get_environment_variable( c_env_var_name_slot ) );
+
    for( size_t i = 0; i < num; i++ )
    {
       string data( to_comparable_string( i, false, 3 ) );
 
+      if( !prefix.empty( ) )
+         data = prefix + ':' + data;
+
       int num = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
-      if( !s.had_timeout( ) )
+      if( i == 0 && !s.had_timeout( ) )
          msleep( timeout );
    }
 }

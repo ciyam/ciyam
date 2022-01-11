@@ -63,6 +63,7 @@ const char* const c_special_variable_path = "@path";
 const char* const c_special_variable_peer = "@peer";
 const char* const c_special_variable_port = "@port";
 const char* const c_special_variable_size = "@size";
+const char* const c_special_variable_slot = "@slot";
 const char* const c_special_variable_type = "@type";
 const char* const c_special_variable_uuid = "@uuid";
 const char* const c_special_variable_algos = "@algos";
@@ -74,6 +75,7 @@ const char* const c_special_variable_deque = "@deque";
 const char* const c_special_variable_embed = "@embed";
 const char* const c_special_variable_print = "@print";
 const char* const c_special_variable_quiet = "@quiet";
+const char* const c_special_variable_slotx = "@slotx";
 const char* const c_special_variable_title = "@title";
 const char* const c_special_variable_branch = "@branch";
 const char* const c_special_variable_cloned = "@cloned";
@@ -276,6 +278,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_size );
       break;
 
+      case e_special_var_slot:
+      s = string( c_special_variable_slot );
+      break;
+
       case e_special_var_type:
       s = string( c_special_variable_type );
       break;
@@ -318,6 +324,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_quiet:
       s = string( c_special_variable_quiet );
+      break;
+
+      case e_special_var_slotx:
+      s = string( c_special_variable_slotx );
       break;
 
       case e_special_var_title:
