@@ -594,7 +594,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          if( ( str.find( c_file_test_udp_cmd ) == 0 ) 
           && ( str.length( ) > strlen( c_file_test_udp_cmd ) + 1 ) )
          {
-            string::size_type pos = str.find( ' ' );
+            string::size_type pos = str.rfind( ' ' );
 
             if( pos != string::npos )
             {

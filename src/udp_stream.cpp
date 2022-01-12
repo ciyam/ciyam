@@ -93,6 +93,11 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
+               string ip_addr( ap_addr->get_addr_string( ) );
+
+               if( ( ip_addr == c_nul_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
+                  ip_addr = c_local_ip_addr;
+
                string data( len, '\0' );
 
                memcpy( &data[ 0 ], buffer, len );
@@ -103,21 +108,28 @@ void udp_stream_session::on_start( )
                {
                   size_t slot = from_string< size_t >( data.substr( 1, pos - 1 ) );
 
-                  data.erase( 0, pos + 1 );
+                  string sess_ip_addr( session_ip_addr( slot ) );
 
-                  if( data.size( ) == 3 )
-                     data += ':' + ap_addr->get_addr_string( );
-
-                  pos = data.find( ':' );
-
-                  // NOTE: The chunk value should always be between 000 and 999.
-                  if( pos == 3 )
+                  if( ip_addr == sess_ip_addr )
                   {
-                     size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
+                     data.erase( 0, pos + 1 );
 
-                     add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                     if( data.size( ) < 10 )
+                        data += ':' + ip_addr;
+
+                     pos = data.find( ':' );
+
+                     // NOTE: The chunk value should always be between 000 and 999.
+                     if( pos == 3 )
+                     {
+                        size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
+
+                        add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                     }
                   }
                }
+
+               msleep( 1 );
             }
          }
          else
