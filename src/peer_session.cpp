@@ -50,7 +50,6 @@
 
 using namespace std;
 
-extern size_t g_active_sessions;
 extern size_t g_active_listeners;
 
 extern volatile sig_atomic_t g_server_shutdown;

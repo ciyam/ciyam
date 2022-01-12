@@ -30,6 +30,7 @@
 #  define GS( s ) get_string( STRINGIZE( s ) )
 
 class ods;
+class date_time;
 class class_base;
 class command_handler;
 class ods_file_system;
@@ -289,6 +290,10 @@ void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
 
+std::string CIYAM_BASE_DECL_SPEC session_ip_addr( );
+
+std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
+
 bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr );
 
 std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );
@@ -437,6 +442,10 @@ struct temporary_session_variable
 
 void CIYAM_BASE_DECL_SPEC add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
 void CIYAM_BASE_DECL_SPEC add_udp_send_file_chunk_info( size_t slot, size_t chunk, const std::string& info_and_data );
+
+void CIYAM_BASE_DECL_SPEC clear_udp_recv_file_chunks( );
+
+size_t CIYAM_BASE_DECL_SPEC elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk );
 

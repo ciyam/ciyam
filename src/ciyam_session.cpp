@@ -1837,30 +1837,61 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_test_udp )
       {
+         bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_content ) );
          string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_num_packets ) );
 
          size_t num = from_string< size_t >( num_packets );
          size_t found = 0;
 
-         for( size_t i = 0; i < ( num * 2 ); i++ )
+         clear_udp_recv_file_chunks( );
+
+         date_time dtm( date_time::local( ) );
+
+         vector< string > lines;
+
+         msleep( c_datagram_timeout );
+
+         for( size_t i = 0; i < ( num * 5 ); i++ )
          {
             size_t chunk;
 
             string next( get_udp_recv_file_chunk_info( chunk ) );
 
-            if( !next.empty( ) )
+            if( next.empty( ) )
             {
-               if( !response.empty( ) )
-                  response += '\n';
-
-               response += to_comparable_string( chunk, false, 3 ) + ':' + next;
+               // NOTE: The millisecond sleep is to allow for local testing.
+               if( session_ip_addr( ) == c_local_ip_addr )
+                  msleep( 1 );
+            }
+            else
+            {
+               if( content )
+                  lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
 
                if( ++found >= num )
                   break;
             }
-            else if( i < 10 )
-               msleep( c_datagram_timeout );
          }
+
+         date_time dtm_now( date_time::local( ) );
+
+         size_t milliseconds = elapsed_since_last_recv( dtm, found ? 0 : &dtm_now );
+
+         if( content )
+         {
+            for( size_t i = 0; i < lines.size( ); i++ )
+            {
+               if( i > 0 )
+                  response += '\n';
+               response += lines[ i ];
+            }
+         }
+
+         if( !response.empty( ) )
+            response += '\n';
+
+         response += "packets = " + to_string( found )
+          + '/' + to_string( num ) + ", milliseconds = " + to_string( milliseconds );
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
@@ -6129,7 +6160,8 @@ ciyam_session::ciyam_session( tcp_socket* p_socket, const string& ip_addr )
 #endif
  :
  is_local( false ),
- pid_is_self( false )
+ pid_is_self( false ),
+ ip_addr( ip_addr )
 {
    ap_socket.reset( p_socket );
 
@@ -6156,6 +6188,7 @@ ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket, const string& i
  :
  is_local( false ),
  pid_is_self( false ),
+ ip_addr( ip_addr ),
  ap_socket( ap_socket )
 {
    if( !( *this->ap_socket ) )
@@ -6194,7 +6227,7 @@ void ciyam_session::on_start( )
        + ':' + to_string( get_files_area_item_max_size( ) )
        + '\n' + string( c_response_okay ), c_request_timeout );
 
-      init_session( cmd_handler );
+      init_session( cmd_handler, false, &ip_addr );
 
       string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
 

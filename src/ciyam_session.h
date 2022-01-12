@@ -48,6 +48,9 @@ class CIYAM_BASE_DECL_SPEC ciyam_session : public thread
    private:
    bool is_local;
    bool pid_is_self;
+
+   std::string ip_addr;
+
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
 #  else

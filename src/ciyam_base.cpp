@@ -296,7 +296,13 @@ struct session
     is_support_session( is_support_session )
    {
       if( p_ip_addr )
+      {
          ip_addr = *p_ip_addr;
+
+         // NOTE: Always use the IPv4 version for compatibility.
+         if( ip_addr == c_local_ip_addr_for_ipv6 )
+            ip_addr = c_local_ip_addr;
+      }
 
       if( p_blockchain )
          blockchain = *p_blockchain;
@@ -358,6 +364,7 @@ struct session
 
    date_time dtm_created;
    date_time dtm_last_cmd;
+   date_time dtm_last_recv;
 
    size_t peer_files_uploaded;
    int64_t peer_bytes_uploaded;
@@ -3652,7 +3659,7 @@ void read_server_configuration( )
    {
       sio_reader reader( inpf );
 
-      g_domain = reader.read_opt_attribute( c_attribute_domain, "localhost" );
+      g_domain = reader.read_opt_attribute( c_attribute_domain, c_local_host );
 
       string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
       if( !ip_addrs.empty( ) )
@@ -5413,6 +5420,33 @@ size_t session_id( )
    return rc;
 }
 
+string session_ip_addr( )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( gtp_session )
+      retval = gtp_session->ip_addr;
+
+   return retval;
+}
+
+string session_ip_addr( size_t slot )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( slot < g_max_sessions )
+   {
+      if( g_sessions[ slot ] )
+         retval = g_sessions[ slot ]->ip_addr;
+   }
+
+   return retval;
+}
+
 bool has_session_with_ip_addr( const string& ip_addr )
 {
    guard g( g_mutex );
@@ -6881,7 +6915,10 @@ void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info
    if( slot < g_max_sessions )
    {
       if( g_sessions[ slot ] )
+      {
+         g_sessions[ slot ]->dtm_last_recv = date_time::local( );
          g_sessions[ slot ]->udp_recv_file_chunks.insert( make_pair( chunk, info_and_data ) );
+      }
    }
 }
 
@@ -6894,6 +6931,38 @@ void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const string& info
       if( g_sessions[ slot ] )
          g_sessions[ slot ]->udp_send_file_chunks.insert( make_pair( chunk, info_and_data ) );
    }
+}
+
+void clear_udp_recv_file_chunks( )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      gtp_session->udp_recv_file_chunks.clear( );
+}
+
+size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
+{
+   guard g( g_mutex );
+
+   size_t retval = 0;
+
+   if( gtp_session )
+   {
+      millisecond ms1 = dtm.get_millisecond( );
+      millisecond ms2 = ( p_dtm ? p_dtm->get_millisecond( ) : gtp_session->dtm_last_recv.get_millisecond( ) );
+
+      if( ms1 > ms2 )
+         retval = ( ms1 - ms2 );
+      else
+         retval = ( ms2 - ms1 );
+
+      int64_t secs = seconds_between( dtm, ( p_dtm ? *p_dtm : gtp_session->dtm_last_recv ) );
+
+      retval += ( secs * 1000 );
+   }
+
+   return retval;
 }
 
 string get_udp_recv_file_chunk_info( size_t& chunk )

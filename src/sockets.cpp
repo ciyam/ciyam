@@ -47,6 +47,9 @@ const int c_max_progress_output_bytes = 132;
 
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
+
+const char* const c_local_host = "localhost";
+
 const char* const c_env_var_name_slotx = "SLOTX";
 
 struct scoped_empty_file_delete
@@ -1094,7 +1097,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
       string data( to_comparable_string( i, false, 3 ) );
 
       if( !prefix.empty( ) )
-         data = prefix + ':' + data;
+         data = prefix + ':' + data + ':' + prefix;
 
       int n = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
@@ -1102,10 +1105,13 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
 
       // NOTE: If socket would block then retry after a further timeout.
+      // The single millisecond sleep is to make local testing reliable.
       if( i > 0 && n == 0 )
       {
          --i;
          msleep( timeout );
       }
+      else if( host_name == c_local_host )
+         msleep( 1 );
    }
 }

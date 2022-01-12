@@ -228,6 +228,7 @@ string g_entropy;
 string g_files_directory;
 
 const int c_accept_timeout = 250;
+const int c_auto_start_delay = 250;
 
 const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
@@ -658,9 +659,14 @@ int main( int argc, char* argv[ ] )
                if( has_udp && g_start_udp_stream_sessions )
                   ( *fp_init_udp_streams_func )( g_port, u.get_socket( ) );
 
+               msleep( c_auto_start_delay );
+
+               int min_active_sessions = g_active_sessions;
+
                ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
 
                bool reported_shutdown = false;
+
                while( s && ( !g_server_shutdown || g_active_sessions ) )
                {
                   if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
@@ -681,13 +687,13 @@ int main( int argc, char* argv[ ] )
                      is_update = true;
 
                   if( is_update && !g_server_shutdown
-                   && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
+                   && ( !g_active_sessions || ( g_active_sessions == min_active_sessions ) ) )
                      break;
 
-                  // NOTE: If there are no active sessions (apart from the autoscript session) and is not
+                  // NOTE: If there are no active sessions (apart from the automatic sessions) and is not
                   // shutting down then check and update the timezone information if it has been changed.
                   if( !g_server_shutdown
-                   && ( !g_active_sessions || ( g_start_autoscript && g_active_sessions == 1 ) ) )
+                   && ( !g_active_sessions || ( g_active_sessions == min_active_sessions ) ) )
                      ( *fp_check_timezone_info_func )( );
 
                   // NOTE: Check for accepts and create new sessions.
