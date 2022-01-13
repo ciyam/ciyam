@@ -97,6 +97,9 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
+               // NOTE: Allow other sessions time to reduce the number of missed packets.
+               msleep( 1 );
+
                string ip_addr( ap_addr->get_addr_string( ) );
 
                if( ( ip_addr == c_nul_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )

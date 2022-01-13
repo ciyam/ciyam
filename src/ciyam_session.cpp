@@ -1851,7 +1851,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          msleep( c_datagram_timeout );
 
-         for( size_t i = 0; i < ( num * 3 ); i++ )
+         for( size_t i = 0; i < ( num * 5 ); i++ )
          {
             size_t chunk;
 
