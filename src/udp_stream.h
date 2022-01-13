@@ -24,7 +24,7 @@ enum udp_direction
 class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
 {
    public:
-   udp_stream_session( int port, int sock, udp_direction direction );
+   udp_stream_session( int port, int sock, udp_direction direction, size_t stream_num = 0 );
    ~udp_stream_session( );
 
    void on_start( );
@@ -32,6 +32,8 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    private:
    int port;
    int sock;
+
+   size_t stream_num;
 
    udp_direction direction;
 };
