@@ -1851,7 +1851,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          msleep( c_datagram_timeout );
 
-         for( size_t i = 0; i < ( num * 5 ); i++ )
+         for( size_t i = 0; i < ( num * 3 ); i++ )
          {
             size_t chunk;
 
@@ -1859,8 +1859,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( next.empty( ) )
             {
-               // NOTE: The millisecond sleep is to allow for local testing.
-               if( session_ip_addr( ) == c_local_ip_addr )
+               // NOTE: The single millisecond sleep is required to prevent packet loss.
+               if( i % 10 == 0 )
                   msleep( 1 );
             }
             else
@@ -6294,12 +6294,14 @@ void ciyam_session::on_start( )
 void ciyam_session::increment_session_count( )
 {
    guard g( g_mutex );
+
    ++g_active_sessions;
 }
 
 void ciyam_session::decrement_session_count( )
 {
    guard g( g_mutex );
+
    --g_active_sessions;
 }
 

@@ -1057,7 +1057,7 @@ void recv_test_datagrams( size_t num, int port, int sock, string& str, size_t ti
 
    size_t found = 0;
 
-   for( size_t i = 0; i < ( num * 2 ); i++ )
+   for( size_t i = 0; i < ( num * 3 ); i++ )
    {
       int len = s.recv_from( buffer, sizeof( buffer ), address, timeout );
 
@@ -1101,17 +1101,11 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
 
       int n = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
-      if( i == 0 && n == 0 )
+      if( n == 0 )
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
 
-      // NOTE: If socket would block then retry after a further timeout.
-      // The single millisecond sleep is to make local testing reliable.
-      if( i > 0 && n == 0 )
-      {
-         --i;
-         msleep( timeout );
-      }
-      else if( host_name == c_local_host )
+      // NOTE: The single millisecond sleep is required to prevent packet loss.
+      if( i % 10 == 0 )
          msleep( 1 );
    }
 }

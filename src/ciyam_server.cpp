@@ -228,7 +228,7 @@ string g_entropy;
 string g_files_directory;
 
 const int c_accept_timeout = 250;
-const int c_auto_start_delay = 250;
+const int c_active_start_delay = 500;
 
 const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
@@ -659,7 +659,7 @@ int main( int argc, char* argv[ ] )
                if( has_udp && g_start_udp_stream_sessions )
                   ( *fp_init_udp_streams_func )( g_port, u.get_socket( ) );
 
-               msleep( c_auto_start_delay );
+               msleep( c_active_start_delay );
 
                int min_active_sessions = g_active_sessions;
 
