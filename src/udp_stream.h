@@ -38,8 +38,9 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    udp_direction direction;
 };
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_udp_streams( int port, int sock );
+extern "C" void CIYAM_BASE_DECL_SPEC init_udp_streams(
+ int port, int sock, int* p_num_recv = 0, int* p_num_send = 0, int* p_total_sessions = 0 );
 
-typedef void ( *fp_init_udp_streams )( int, int );
+typedef void ( *fp_init_udp_streams )( int, int, int*, int*, int* );
 
 #endif

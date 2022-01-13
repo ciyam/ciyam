@@ -169,23 +169,54 @@ void udp_stream_session::on_start( )
    delete this;
 }
 
-void init_udp_streams( int port, int sock )
+void init_udp_streams( int port, int sock, int* p_num_recv, int* p_num_send, int* p_total_sessions )
 {
-   udp_stream_session* p_udp_recv_stream_session_1 = new udp_stream_session( port, sock, e_udp_direction_recv, 1 );
-   p_udp_recv_stream_session_1->start( );
+   int num_recv = get_num_recv_stream_sessions( );
+   int num_send = get_num_send_stream_sessions( );
 
-   udp_stream_session* p_udp_recv_stream_session_2 = new udp_stream_session( port, sock, e_udp_direction_recv, 2 );
-   p_udp_recv_stream_session_2->start( );
+   if( p_num_recv )
+      num_recv = *p_num_recv;
 
-   udp_stream_session* p_udp_recv_stream_session_3 = new udp_stream_session( port, sock, e_udp_direction_recv, 3 );
-   p_udp_recv_stream_session_3->start( );
+   if( p_num_send )
+      num_send = *p_num_send;
 
-   udp_stream_session* p_udp_recv_stream_session_4 = new udp_stream_session( port, sock, e_udp_direction_recv, 4 );
-   p_udp_recv_stream_session_4->start( );
+   if( num_recv < 0 )
+      num_recv = 0;
 
-   udp_stream_session* p_udp_recv_stream_session_5 = new udp_stream_session( port, sock, e_udp_direction_recv, 5 );
-   p_udp_recv_stream_session_5->start( );
+   if( num_send < 0 )
+      num_send = 0;
 
-   udp_stream_session* p_udp_send_stream_session = new udp_stream_session( port, sock, e_udp_direction_send );
-   p_udp_send_stream_session->start( );
+   if( num_recv == 1 )
+   {
+      udp_stream_session* p_udp_recv_stream_session = new udp_stream_session( port, sock, e_udp_direction_recv );
+      p_udp_recv_stream_session->start( );
+   }
+   else
+   {
+      for( int i = 0; i < num_recv; i++ )
+      {
+         udp_stream_session* p_udp_recv_stream_session = new udp_stream_session( port, sock, e_udp_direction_recv, i + 1 );
+         p_udp_recv_stream_session->start( );
+      }
+   }
+
+   if( p_total_sessions )
+      *p_total_sessions += num_recv;
+
+   if( num_send == 1 )
+   {
+      udp_stream_session* p_udp_send_stream_session = new udp_stream_session( port, sock, e_udp_direction_send );
+      p_udp_send_stream_session->start( );
+   }
+   else
+   {
+      for( int i = 0; i < num_send; i++ )
+      {
+         udp_stream_session* p_udp_send_stream_session = new udp_stream_session( port, sock, e_udp_direction_send, i + 1 );
+         p_udp_send_stream_session->start( );
+      }
+   }
+
+   if( p_total_sessions )
+      *p_total_sessions += num_send;
 }

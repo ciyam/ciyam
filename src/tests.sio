@@ -1631,7 +1631,7 @@
      <kill>!$FILES_DIR/ciyam_server.tlg
      <test_step/>
       <name>*init*
-      <exec>*ciyam_server -quiet
+      <exec>*ciyam_server -quiet -no_auto -no_peers -no_streams
       <input>false
       <output>none
      </test_step>
