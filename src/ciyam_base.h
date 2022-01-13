@@ -201,6 +201,9 @@ inline void set_files_area_dir( const std::string& files_area_dir )
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
 size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
 
+size_t CIYAM_BASE_DECL_SPEC get_num_recv_stream_sessions( );
+size_t CIYAM_BASE_DECL_SPEC get_num_send_stream_sessions( );
+
 std::string CIYAM_BASE_DECL_SPEC get_mbox_path( );
 std::string CIYAM_BASE_DECL_SPEC get_mbox_username( );
 

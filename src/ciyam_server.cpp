@@ -228,7 +228,9 @@ string g_entropy;
 string g_files_directory;
 
 const int c_accept_timeout = 250;
-const int c_active_start_delay = 500;
+const int c_active_start_delay = 250;
+
+const int c_max_wait_attempts = 20;
 
 const char* const c_update_signal_file = "ciyam_base.update";
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
@@ -653,13 +655,29 @@ int main( int argc, char* argv[ ] )
 
                is_update = false;
 
+               int expected_min_active = 0;
+
                if( g_start_autoscript )
+               {
                   ( *fp_init_auto_script_func )( );
+                  ++expected_min_active;
+               }
 
                if( has_udp && g_start_udp_stream_sessions )
-                  ( *fp_init_udp_streams_func )( g_port, u.get_socket( ) );
+                  ( *fp_init_udp_streams_func )( g_port, u.get_socket( ), 0, 0, &expected_min_active );
 
-               msleep( c_active_start_delay );
+               int start_wait_attempts = 0;
+
+               while( expected_min_active )
+               {
+                  msleep( c_active_start_delay );
+
+                  if( g_active_sessions == expected_min_active )
+                     break;
+
+                  if( ++start_wait_attempts > c_max_wait_attempts )
+                     throw runtime_error( "unexpected exceeded max. wait attempts for system sessions" );
+               }
 
                int min_active_sessions = g_active_sessions;
 

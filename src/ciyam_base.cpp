@@ -158,6 +158,8 @@ const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
 const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
+const char* const c_attribute_num_recv_stream_sessions = "num_recv_stream_sessions";
+const char* const c_attribute_num_send_stream_sessions = "num_send_stream_sessions";
 
 const char* const c_section_client = "client";
 const char* const c_section_extern = "extern";
@@ -1234,6 +1236,9 @@ const size_t c_min_storage_handlers_limit = 1;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
+const size_t c_num_recv_stream_sessions_default = 3;
+const size_t c_num_send_stream_sessions_default = 1;
+
 string g_empty_string;
 
 int g_stream_port = 0;
@@ -1247,6 +1252,9 @@ string g_files_area_dir_default;
 
 size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
 size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
+
+size_t g_num_recv_stream_sessions = c_num_recv_stream_sessions_default;
+size_t g_num_send_stream_sessions = c_num_send_stream_sessions_default;
 
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
@@ -3803,6 +3811,9 @@ void read_server_configuration( )
       g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
        c_attribute_files_area_item_max_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
 
+      g_num_recv_stream_sessions = from_string< size_t >( reader.read_opt_attribute(
+       c_attribute_num_recv_stream_sessions, to_string( c_num_recv_stream_sessions_default ) ) );
+
       reader.start_section( c_section_email );
 
       if( reader.has_started_section( c_section_mbox ) )
@@ -4714,6 +4725,16 @@ size_t get_files_area_item_max_num( )
 size_t get_files_area_item_max_size( )
 {
    return g_files_area_item_max_size;
+}
+
+size_t get_num_recv_stream_sessions( )
+{
+   return g_num_recv_stream_sessions;
+}
+
+size_t get_num_send_stream_sessions( )
+{
+   return g_num_send_stream_sessions;
 }
 
 string get_mbox_path( )
