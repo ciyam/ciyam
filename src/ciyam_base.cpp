@@ -6970,17 +6970,19 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
 
    if( gtp_session )
    {
+      int64_t secs_1 = unix_timestamp( dtm );
+      int64_t secs_2 = unix_timestamp( p_dtm ? *p_dtm : gtp_session->dtm_last_recv );
+
       millisecond ms1 = dtm.get_millisecond( );
       millisecond ms2 = ( p_dtm ? p_dtm->get_millisecond( ) : gtp_session->dtm_last_recv.get_millisecond( ) );
 
-      if( ms1 > ms2 )
-         retval = ( ms1 - ms2 );
+      int64_t total_ms1 = ( secs_1 * 1000 ) + ms1;
+      int64_t total_ms2 = ( secs_2 * 1000 ) + ms2;
+
+      if( total_ms1 > total_ms2 )
+         retval = ( total_ms1 - total_ms2 );
       else
-         retval = ( ms2 - ms1 );
-
-      int64_t secs = seconds_between( dtm, ( p_dtm ? *p_dtm : gtp_session->dtm_last_recv ) );
-
-      retval += ( secs * 1000 );
+         retval = ( total_ms2 - total_ms1 );
    }
 
    return retval;

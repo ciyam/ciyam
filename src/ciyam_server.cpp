@@ -705,29 +705,40 @@ int main( int argc, char* argv[ ] )
                      is_update = true;
 
                   if( is_update && !g_server_shutdown
-                   && ( !g_active_sessions || ( g_active_sessions == min_active_sessions ) ) )
+                   && ( !g_active_sessions || ( g_active_sessions <= min_active_sessions ) ) )
                      break;
 
-                  // NOTE: If there are no active sessions (apart from the automatic sessions) and is not
+                  // NOTE: If there are no active sessions (apart from auto-started sessions) and is not
                   // shutting down then check and update the timezone information if it has been changed.
                   if( !g_server_shutdown
-                   && ( !g_active_sessions || ( g_active_sessions == min_active_sessions ) ) )
+                   && ( !g_active_sessions || ( g_active_sessions <= min_active_sessions ) ) )
                      ( *fp_check_timezone_info_func )( );
 
                   // NOTE: Check for accepts and create new sessions.
+                  if( !is_update && !g_server_shutdown )
+                  {
 #ifdef SSL_SUPPORT
-                  auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
+                     auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
 #else
-                  auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+                     auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
 #endif
-                  if( *ap_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
-                     ( *fp_init_ciyam_session_func )( ap_socket.release( ), address.get_addr_string( ).c_str( ) );
+                     if( *ap_socket && ( *fp_is_accepted_ip_addr_func )( address.get_addr_string( ).c_str( ) ) )
+                        ( *fp_init_ciyam_session_func )( ap_socket.release( ), address.get_addr_string( ).c_str( ) );
+                  }
                }
 
                s.close( );
-               u.close( );
 
                file_remove( c_shutdown_signal_file );
+
+               if( g_server_shutdown )
+               {
+                  is_update = false;
+
+                  // NOTE: Wait for all active sessions and peer listeners to finish up before continuing.
+                  while( g_active_sessions || g_active_listeners )
+                     msleep( c_accept_timeout * 2 );
+               }
 
                if( is_update && !g_server_shutdown )
                {
@@ -739,6 +750,8 @@ int main( int argc, char* argv[ ] )
 
                   g_server_shutdown = 0;
                }
+
+               u.close( );
 
                string finish_message;
 
