@@ -81,7 +81,9 @@ mutex g_mutex;
 #include "trace_progress.cpp"
 
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
-const size_t c_datagram_timeout = 100; // i.e. 1/10 sec
+const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
+
+const size_t c_udp_wait_repeats = 20;
 
 const int c_pdf_default_limit = 10000;
 
@@ -1849,27 +1851,42 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          vector< string > lines;
 
-         msleep( c_datagram_timeout );
+         bool has_any = false;
 
-         for( size_t i = 0; i < ( num * 5 ); i++ )
+         for( size_t i = 0; i < c_udp_wait_repeats; i++ )
          {
-            size_t chunk;
-
-            string next( get_udp_recv_file_chunk_info( chunk ) );
-
-            if( next.empty( ) )
+            if( has_udp_recv_file_chunk_info( ) )
             {
-               // NOTE: The single millisecond sleep is required to prevent packet loss.
-               if( i % 10 == 0 )
-                  msleep( 1 );
+               has_any = true;
+               break;
             }
-            else
-            {
-               if( content )
-                  lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
 
-               if( ++found >= num )
-                  break;
+            msleep( c_udp_wait_timeout );
+         }
+
+         if( has_any )
+         {
+            for( size_t i = 0; i < ( num * 2 ); i++ )
+            {
+               size_t chunk;
+
+               string next( get_udp_recv_file_chunk_info( chunk ) );
+
+               if( next.empty( ) )
+               {
+                  // NOTE: This single millisecond sleep helps to prevent packet loss by
+                  // giving up some time for the UDP receiver threads to read datagrams.
+                  if( i % 10 == 0 )
+                     msleep( 1 );
+               }
+               else
+               {
+                  if( content )
+                     lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
+
+                  if( ++found >= num )
+                     break;
+               }
             }
          }
 
