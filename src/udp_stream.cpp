@@ -37,8 +37,8 @@ namespace
 
 #include "ciyam_constants.h"
 
-const size_t c_timeout = 50; // i.e. 0.05 secs
-const size_t c_sleep_time = 1000; // i.e. 1 sec
+const size_t c_timeout = 50; // i.e. 1/20 sec
+const size_t c_sleep_time = 250; // i.e. 1/4 sec
 
 const size_t c_buffer_size = 1500;
 

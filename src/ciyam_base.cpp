@@ -1236,7 +1236,7 @@ const size_t c_min_storage_handlers_limit = 1;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
-const size_t c_num_recv_stream_sessions_default = 3;
+const size_t c_num_recv_stream_sessions_default = 10;
 const size_t c_num_send_stream_sessions_default = 1;
 
 string g_empty_string;
@@ -6982,6 +6982,18 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
 
       retval += ( secs * 1000 );
    }
+
+   return retval;
+}
+
+bool has_udp_recv_file_chunk_info( )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   if( gtp_session && !gtp_session->udp_recv_file_chunks.empty( ) )
+      retval = true;
 
    return retval;
 }
