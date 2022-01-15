@@ -1084,7 +1084,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
 {
    auto_ptr< udp_socket > ap_udp_socket;
 
-   if( !p_socket )
+   if( !p_socket || !*p_socket )
    {
       ap_udp_socket.reset( new udp_socket );
 
