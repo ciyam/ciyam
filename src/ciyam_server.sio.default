@@ -27,7 +27,7 @@
 # <max_storage_handlers>10
 # <files_area_item_max_num>100K
 # <files_area_item_max_size>1M
-# <num_recv_stream_sessions>10
+# <num_recv_stream_sessions>20
 # <num_send_stream_sessions>1
  <email/>
 #  <pop3/>

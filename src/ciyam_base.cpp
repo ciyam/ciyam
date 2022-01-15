@@ -1236,7 +1236,7 @@ const size_t c_min_storage_handlers_limit = 1;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
-const size_t c_num_recv_stream_sessions_default = 10;
+const size_t c_num_recv_stream_sessions_default = 20;
 const size_t c_num_send_stream_sessions_default = 1;
 
 string g_empty_string;
@@ -6938,7 +6938,7 @@ void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info
       if( g_sessions[ slot ] )
       {
          g_sessions[ slot ]->dtm_last_recv = date_time::local( );
-         g_sessions[ slot ]->udp_recv_file_chunks.insert( make_pair( chunk, info_and_data ) );
+         g_sessions[ slot ]->udp_recv_file_chunks[ chunk ] = info_and_data;
       }
    }
 }
@@ -6950,7 +6950,7 @@ void add_udp_send_file_chunk_info( size_t slot, size_t chunk, const string& info
    if( slot < g_max_sessions )
    {
       if( g_sessions[ slot ] )
-         g_sessions[ slot ]->udp_send_file_chunks.insert( make_pair( chunk, info_and_data ) );
+         g_sessions[ slot ]->udp_send_file_chunks[ chunk ] = info_and_data;
    }
 }
 

@@ -1920,6 +1920,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response += "packets = " + to_string( found )
           + '/' + to_string( num ) + ", milliseconds = " + to_string( milliseconds );
+
+         if( has_udp_recv_file_chunk_info( ) )
+            response += " (just missed late arrivals)";
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
