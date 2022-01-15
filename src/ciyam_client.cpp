@@ -603,7 +603,12 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             {
                size_t num = from_string< size_t >( str.substr( pos + 1 ) );
 
-               send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
+               // NOTE: Allow local application server a little time to prepare to receive datagrams.
+               if( get_host( ) == c_local_host )
+                  msleep( c_datagram_timeout );
+
+               if( num > 0 && num <= 1000 )
+                  send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
             }
          }
 
