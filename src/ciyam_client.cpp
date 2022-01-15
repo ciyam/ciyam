@@ -171,9 +171,9 @@ class ciyam_console_command_handler : public console_command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   ciyam_console_command_handler( ssl_socket& socket )
+   ciyam_console_command_handler( ssl_socket& socket, udp_socket& usocket )
 #else
-   ciyam_console_command_handler( tcp_socket& socket )
+   ciyam_console_command_handler( tcp_socket& socket, udp_socket& usocket )
 #endif
     :
     port( c_default_ciyam_port ),
@@ -184,6 +184,7 @@ class ciyam_console_command_handler : public console_command_handler
     chunk_size( 0 ),
     total_chunks( 0 ),
     socket( socket ),
+    usocket( usocket ),
     had_message( false ),
     had_chk_command( false ),
     had_chunk_progress( false )
@@ -228,6 +229,8 @@ class ciyam_console_command_handler : public console_command_handler
 #else
    tcp_socket& socket;
 #endif
+
+   udp_socket& usocket;
 
    bool had_message;
    bool had_chk_command;
@@ -603,7 +606,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                // NOTE: Need a delay before the first send so server is ready to receive.
                msleep( c_datagram_timeout );
 
-               send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout );
+               send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
             }
          }
 
@@ -1212,7 +1215,9 @@ int main( int argc, char* argv[ ] )
    tcp_socket socket;
 #endif
 
-   ciyam_console_command_handler cmd_handler( socket );
+   udp_socket usocket;
+
+   ciyam_console_command_handler cmd_handler( socket, usocket );
 
    try
    {
@@ -1263,6 +1268,9 @@ int main( int argc, char* argv[ ] )
             if( !socket.set_no_delay( ) )
                cout << "warning: set_no_delay failed..." << endl;
 #endif
+            if( usocket.open( ) )
+               usocket.set_reuse_addr( );
+
             if( socket.write_line( to_string( g_pid ), c_pid_timeout ) <= 0 )
             {
                string error;
@@ -1378,6 +1386,7 @@ int main( int argc, char* argv[ ] )
              + string( cmd_handler.get_host( ) ) + "' on port " + to_string( cmd_handler.get_port( ) ) );
 
          socket.close( );
+         usocket.close( );
       }
 #ifdef __GNUG__
       if( isatty( STDIN_FILENO ) )

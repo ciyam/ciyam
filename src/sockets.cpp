@@ -1080,15 +1080,23 @@ void recv_test_datagrams( size_t num, int port, int sock, string& str, size_t ti
    }
 }
 
-void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout )
+void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout, udp_socket* p_socket )
 {
-   udp_socket s;
+   auto_ptr< udp_socket > ap_udp_socket;
+
+   if( !p_socket )
+   {
+      ap_udp_socket.reset( new udp_socket );
+
+      if( !ap_udp_socket->open( ) )
+         throw runtime_error( "unable to open udp_socket in send_test_datagrams" );
+
+      ap_udp_socket->set_reuse_addr( );
+
+      p_socket = ap_udp_socket.get( );
+   }
+
    ip_address address( host_name.c_str( ), port );
-
-   if( !s.open( ) )
-      throw runtime_error( "unable to open udp_socket in send_test_datagrams" );
-
-   s.set_reuse_addr( );
 
    string prefix( get_environment_variable( c_env_var_name_slotx ) );
 
@@ -1099,7 +1107,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
       if( !prefix.empty( ) )
          data = prefix + ':' + data + ':' + prefix;
 
-      int n = s.send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
+      int n = p_socket->send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
       if( n == 0 )
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
