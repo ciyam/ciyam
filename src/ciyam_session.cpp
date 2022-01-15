@@ -1845,8 +1845,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          size_t num = from_string< size_t >( num_packets );
          size_t found = 0;
 
-         clear_udp_recv_file_chunks( );
-
          date_time dtm( date_time::local( ) );
 
          vector< string > lines;

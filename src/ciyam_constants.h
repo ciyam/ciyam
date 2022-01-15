@@ -39,7 +39,7 @@ const char* const c_meta_class_name_application = "Application";
 
 const char* const c_ignore_field = "@ignore";
 
-const char* const c_nul_ip_addr = "0.0.0.0";
+const char* const c_null_ip_addr = "0.0.0.0";
 
 const char* const c_local_host = "localhost";
 
