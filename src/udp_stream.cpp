@@ -107,12 +107,11 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
-               // NOTE: Allow other sessions time to reduce the number of missed packets.
-               msleep( 1 );
-
                string ip_addr( ap_addr->get_addr_string( ) );
 
-               if( ( ip_addr == c_nul_ip_addr ) || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
+               bool is_null = ( ip_addr == c_null_ip_addr );
+
+               if( ip_addr == c_local_ip_addr_for_ipv6 )
                   ip_addr = c_local_ip_addr;
 
                string data( len, '\0' );
@@ -127,7 +126,7 @@ void udp_stream_session::on_start( )
 
                   string sess_ip_addr( session_ip_addr( slot ) );
 
-                  if( ip_addr == sess_ip_addr )
+                  if( is_null || ( ip_addr == sess_ip_addr ) )
                   {
                      data.erase( 0, pos + 1 );
 
