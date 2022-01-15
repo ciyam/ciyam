@@ -83,7 +83,7 @@ mutex g_mutex;
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
 
-const size_t c_udp_wait_repeats = 20;
+const size_t c_udp_wait_repeats = 50;
 
 const int c_pdf_default_limit = 10000;
 
@@ -1851,11 +1851,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool has_any = false;
 
-         if( num == 0 )
-            clear_udp_recv_file_chunks( );
-         else
+         if( num > 1000 )
+            throw runtime_error( "num value must be between 0 and 1000" );
+
+         if( num )
          {
-            msleep( c_udp_wait_timeout );
+            if( session_ip_addr( ) == c_local_ip_addr )
+               msleep( c_udp_wait_timeout );
 
             for( size_t i = 0; i < c_udp_wait_repeats; i++ )
             {
@@ -1878,8 +1880,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   if( next.empty( ) )
                   {
-                     // NOTE: This single millisecond sleep helps to prevent packet loss by
-                     // giving up some time for the UDP receiver threads to read datagrams.
+                     // NOTE: This millisecond of sleep can help to prevent packet loss by
+                     // giving up some time for the UDP receive threads to read datagrams.
                      if( i % 10 == 0 )
                         msleep( 1 );
                   }
@@ -1909,6 +1911,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                response += lines[ i ];
             }
          }
+
+         if( found >= num )
+            clear_udp_recv_file_chunks( );
 
          if( !response.empty( ) )
             response += '\n';
