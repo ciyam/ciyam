@@ -603,9 +603,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             {
                size_t num = from_string< size_t >( str.substr( pos + 1 ) );
 
-               // NOTE: Need a delay before the first send so server is ready to receive.
-               msleep( c_datagram_timeout );
-
                send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
             }
          }

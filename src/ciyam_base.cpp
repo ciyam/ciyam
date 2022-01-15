@@ -1242,7 +1242,7 @@ const size_t c_num_send_stream_sessions_default = 1;
 string g_empty_string;
 
 int g_stream_port = 0;
-int g_stream_socket = 0;
+int g_stream_sock = 0;
 
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
@@ -4194,15 +4194,15 @@ int get_stream_port( )
    return g_stream_port;
 }
 
-int get_stream_socket( )
+int get_stream_sock( )
 {
-   return g_stream_socket;
+   return g_stream_sock;
 }
 
 void set_stream_socket( int p, int s )
 {
    g_stream_port = p;
-   g_stream_socket = s;
+   g_stream_sock = s;
 }
 
 void register_listener( int port, const char* p_info )

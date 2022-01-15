@@ -88,7 +88,7 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 };
 
 int CIYAM_BASE_DECL_SPEC get_stream_port( );
-int CIYAM_BASE_DECL_SPEC get_stream_socket( );
+int CIYAM_BASE_DECL_SPEC get_stream_sock( );
 
 extern "C" void CIYAM_BASE_DECL_SPEC  set_stream_socket( int p, int s );
 
