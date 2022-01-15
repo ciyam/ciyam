@@ -107,6 +107,10 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
+               // NOTE: This single millisecond sleep helps to prevent packet loss by
+               // giving up some time for the other stream sessions to read datagrams.
+               msleep( 1 );
+
                string ip_addr( ap_addr->get_addr_string( ) );
 
                bool is_null = ( ip_addr == c_null_ip_addr );

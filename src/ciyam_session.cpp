@@ -1851,41 +1851,49 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          bool has_any = false;
 
-         for( size_t i = 0; i < c_udp_wait_repeats; i++ )
+         if( num == 0 )
+            clear_udp_recv_file_chunks( );
+         else
          {
-            if( has_udp_recv_file_chunk_info( ) )
-            {
-               has_any = true;
-               break;
-            }
-
             msleep( c_udp_wait_timeout );
-         }
 
-         if( has_any )
-         {
-            for( size_t i = 0; i < ( num * 2 ); i++ )
+            for( size_t i = 0; i < c_udp_wait_repeats; i++ )
             {
-               size_t chunk;
-
-               string next( get_udp_recv_file_chunk_info( chunk ) );
-
-               if( next.empty( ) )
+               if( has_udp_recv_file_chunk_info( ) )
                {
-                  // NOTE: This single millisecond sleep helps to prevent packet loss by
-                  // giving up some time for the UDP receiver threads to read datagrams.
-                  if( i % 10 == 0 )
-                     msleep( 1 );
+                  has_any = true;
+                  break;
                }
-               else
-               {
-                  if( content )
-                     lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
 
-                  if( ++found >= num )
-                     break;
+               msleep( c_udp_wait_timeout );
+            }
+
+            if( has_any )
+            {
+               for( size_t i = 0; i < ( num * 2 ); i++ )
+               {
+                  size_t chunk;
+
+                  string next( get_udp_recv_file_chunk_info( chunk ) );
+
+                  if( next.empty( ) )
+                  {
+                     // NOTE: This single millisecond sleep helps to prevent packet loss by
+                     // giving up some time for the UDP receiver threads to read datagrams.
+                     if( i % 10 == 0 )
+                        msleep( 1 );
+                  }
+                  else
+                  {
+                     if( content )
+                        lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
+
+                     if( ++found >= num )
+                        break;
+                  }
                }
             }
+
          }
 
          date_time dtm_now( date_time::local( ) );
