@@ -15,6 +15,9 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class ip_address;
+class udp_socket;
+
 enum udp_direction
 {
    e_udp_direction_recv,
@@ -26,6 +29,9 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    public:
    udp_stream_session( int port, int sock, udp_direction direction, size_t stream_num = 0 );
    ~udp_stream_session( );
+
+   int recv_from( udp_socket& socket,
+    ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout );
 
    void on_start( );
 

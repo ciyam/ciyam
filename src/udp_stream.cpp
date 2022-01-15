@@ -42,6 +42,8 @@ const size_t c_sleep_time = 250; // i.e. 1/4 sec
 
 const size_t c_buffer_size = 1500;
 
+mutex g_mutex;
+
 }
 
 udp_stream_session::udp_stream_session( int port, int sock, udp_direction direction, size_t stream_num )
@@ -59,6 +61,14 @@ udp_stream_session::~udp_stream_session( )
    ciyam_session::decrement_session_count( );
 }
 
+int udp_stream_session::recv_from( udp_socket& socket,
+ ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout )
+{
+   guard g( g_mutex );
+
+   return socket.recv_from( buffer, buflen, address, timeout );
+}
+
 void udp_stream_session::on_start( )
 {
    string stream_name( ( direction == e_udp_direction_recv ) ? "udp recv stream" : "udp send stream" );
@@ -71,7 +81,7 @@ void udp_stream_session::on_start( )
 #endif
 
    int port = get_stream_port( );
-   int sock = get_stream_socket( );
+   int sock = get_stream_sock( );
 
    auto_ptr< ip_address > ap_addr;
    auto_ptr< udp_socket > ap_sock;
@@ -93,7 +103,7 @@ void udp_stream_session::on_start( )
       {
          if( direction == e_udp_direction_recv )
          {
-            int len = ap_sock->recv_from( buffer, sizeof( buffer ), *ap_addr, c_timeout );
+            int len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), c_timeout );
 
             if( len > 0 )
             {
