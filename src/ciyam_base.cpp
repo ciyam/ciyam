@@ -1236,7 +1236,7 @@ const size_t c_min_storage_handlers_limit = 1;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
-const size_t c_num_recv_stream_sessions_default = 20;
+const size_t c_num_recv_stream_sessions_default = 10;
 const size_t c_num_send_stream_sessions_default = 1;
 
 string g_empty_string;

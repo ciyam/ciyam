@@ -390,6 +390,7 @@ void autoscript_session::on_start( )
          script_schedule_container new_schedule_items;
 
          i = g_script_schedule.lower_bound( now );
+
          for( j = g_script_schedule.begin( ); j != i; ++j )
          {
             if( j->first <= now )
