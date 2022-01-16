@@ -1900,7 +1900,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          date_time dtm_now( date_time::local( ) );
 
-         size_t milliseconds = elapsed_since_last_recv( dtm, found ? 0 : &dtm_now );
+         size_t milliseconds = elapsed_since_last_recv( dtm, &dtm_now );
 
          if( content )
          {
