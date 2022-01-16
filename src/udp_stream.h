@@ -18,6 +18,8 @@
 class ip_address;
 class udp_socket;
 
+struct progress;
+
 enum udp_direction
 {
    e_udp_direction_recv,
@@ -31,7 +33,7 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    ~udp_stream_session( );
 
    int recv_from( udp_socket& socket,
-    ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout );
+    ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout, progress* p_progress = 0 );
 
    void on_start( );
 
