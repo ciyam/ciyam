@@ -189,6 +189,7 @@ size_t file_transfer(
 
 void recv_test_datagrams( size_t num, int port, int sock, std::string& str, size_t timeout );
 
-void send_test_datagrams( size_t num, const std::string& host_name, int port, size_t timeout, udp_socket* p_socket = 0 );
+void send_test_datagrams( size_t num, const std::string& host_name,
+ int port, size_t timeout, udp_socket* p_socket = 0, bool reverse = false );
 
 #endif

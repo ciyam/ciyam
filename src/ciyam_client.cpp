@@ -609,8 +609,17 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                else
                   msleep( c_datagram_timeout / 2 );
 
+               // NOTE: In order to provide a more likely chance that the application server will
+               // receive all of the datagrams transmit them twice (second time in reverse order).
                if( num > 0 && num <= 1000 )
+               {
                   send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
+
+                  if( get_host( ) == c_local_host )
+                     msleep( c_datagram_timeout );
+
+                  send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket, true );
+               }
             }
          }
 

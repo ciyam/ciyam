@@ -1080,7 +1080,7 @@ void recv_test_datagrams( size_t num, int port, int sock, string& str, size_t ti
    }
 }
 
-void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout, udp_socket* p_socket )
+void send_test_datagrams( size_t num, const string& host_name, int port, size_t timeout, udp_socket* p_socket, bool reverse )
 {
    auto_ptr< udp_socket > ap_udp_socket;
 
@@ -1100,9 +1100,19 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
 
    string prefix( get_environment_variable( c_env_var_name_slotx ) );
 
+   size_t x = 0;
+
+   if( reverse )
+      x = num - 1;
+
    for( size_t i = 0; i < num; i++ )
    {
-      string data( to_comparable_string( i, false, 3 ) );
+      string data( to_comparable_string( x, false, 3 ) );
+
+      if( !reverse )
+         ++x;
+      else
+         --x;
 
       if( !prefix.empty( ) )
          data = prefix + ':' + data + ':';
