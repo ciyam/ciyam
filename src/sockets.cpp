@@ -1107,7 +1107,7 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
       if( !prefix.empty( ) )
          data = prefix + ':' + data + ':';
 
-      while( data.size( ) < 64 )
+      while( data.length( ) < 64 )
          data += '#';
 
       int n = p_socket->send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );

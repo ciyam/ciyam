@@ -227,7 +227,7 @@ bool g_has_flags = false;
 string g_entropy;
 string g_files_directory;
 
-const int c_accept_timeout = 250;
+const int c_accept_timeout = 500;
 const int c_active_start_delay = 250;
 
 const int c_max_wait_attempts = 20;
@@ -685,28 +685,43 @@ int main( int argc, char* argv[ ] )
 
                bool reported_shutdown = false;
 
-               while( s && ( !g_server_shutdown || g_active_sessions ) )
+               while( !g_server_shutdown || g_active_sessions )
                {
+                  if( !g_server_shutdown && !s )
+                  {
+                     ++g_server_shutdown;
+                     shutdown_reason = "bad listener";
+                  }
+
                   if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
                   {
                      ++g_server_shutdown;
                      shutdown_reason = "due to stop file";
                   }
 
+                  if( !is_update && !g_server_shutdown && file_exists( c_update_signal_file ) )
+                  {
+                     is_update = true;
+
+                     ++g_server_shutdown;
+                     shutdown_reason = "due to update file";
+                  }
+
                   if( g_server_shutdown && !reported_shutdown )
                   {
                      reported_shutdown = true;
 
-                     if( !g_is_quiet )
-                        cout << "server shutdown (due to interrupt) now underway..." << endl;
+                     if( !is_update && !g_is_quiet )
+                        cout << "server shutdown (" << shutdown_reason << ") now underway..." << endl;
                   }
 
-                  if( !is_update && !g_server_shutdown && file_exists( c_update_signal_file ) )
-                     is_update = true;
-
-                  if( is_update && !g_server_shutdown
-                   && ( !g_active_sessions || ( g_active_sessions <= min_active_sessions ) ) )
-                     break;
+                  if( g_server_shutdown ) 
+                  {
+                     if( !g_active_sessions )
+                        break;
+                     else
+                        msleep( c_accept_timeout );
+                  }
 
                   // NOTE: If there are no active sessions (apart from auto-started sessions) and is not
                   // shutting down then check and update the timezone information if it has been changed.
@@ -715,7 +730,7 @@ int main( int argc, char* argv[ ] )
                      ( *fp_check_timezone_info_func )( );
 
                   // NOTE: Check for accepts and create new sessions.
-                  if( !is_update && !g_server_shutdown )
+                  if( !g_server_shutdown )
                   {
 #ifdef SSL_SUPPORT
                      auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
@@ -728,30 +743,9 @@ int main( int argc, char* argv[ ] )
                }
 
                s.close( );
+               u.close( );
 
                file_remove( c_shutdown_signal_file );
-
-               if( g_server_shutdown )
-               {
-                  is_update = false;
-
-                  // NOTE: Wait for all active sessions and peer listeners to finish up before continuing.
-                  while( g_active_sessions || g_active_listeners )
-                     msleep( c_accept_timeout * 2 );
-               }
-
-               if( is_update && !g_server_shutdown )
-               {
-                  g_server_shutdown = 1;
-
-                  // NOTE: Wait for all active sessions and peer listeners to finish up before continuing.
-                  while( g_active_sessions || g_active_listeners )
-                     msleep( c_accept_timeout * 2 );
-
-                  g_server_shutdown = 0;
-               }
-
-               u.close( );
 
                string finish_message;
 
