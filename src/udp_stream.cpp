@@ -21,6 +21,7 @@
 #include "udp_stream.h"
 
 #include "sockets.h"
+#include "progress.h"
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
@@ -36,6 +37,8 @@ namespace
 {
 
 #include "ciyam_constants.h"
+
+#include "trace_progress.cpp"
 
 const size_t c_timeout = 25; // i.e. 1/40 sec
 const size_t c_sleep_time = 250; // i.e. 1/4 sec
@@ -62,11 +65,11 @@ udp_stream_session::~udp_stream_session( )
 }
 
 int udp_stream_session::recv_from( udp_socket& socket,
- ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout )
+ ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout, progress* p_progress )
 {
    guard g( g_mutex );
 
-   return socket.recv_from( buffer, buflen, address, timeout );
+   return socket.recv_from( buffer, buflen, address, timeout, p_progress );
 }
 
 void udp_stream_session::on_start( )
@@ -99,11 +102,19 @@ void udp_stream_session::on_start( )
       TRACE_LOG( TRACE_SESSIONS,
        "started " + stream_name + " session (tid = " + to_string( current_thread_id( ) ) + ")" );
 
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
       while( true )
       {
+         p_progress = 0;
+
+         if( get_trace_flags( ) & TRACE_SOCK_OPS )
+            p_progress = &progress;
+
          if( direction == e_udp_direction_recv )
          {
-            int len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), c_timeout );
+            int len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), c_timeout, p_progress );
 
             if( len > 0 )
             {
@@ -118,7 +129,7 @@ void udp_stream_session::on_start( )
                if( ip_addr == c_local_ip_addr_for_ipv6 )
                   ip_addr = c_local_ip_addr;
 
-               string data( len, '\0' );
+               string data( len + 1, '\0' );
 
                memcpy( &data[ 0 ], buffer, len );
 

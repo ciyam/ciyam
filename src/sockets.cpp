@@ -1105,6 +1105,13 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
    if( reverse )
       x = num - 1;
 
+   int pause = 100;
+
+   if( num <= 10 )
+      pause = 2;
+   else if( num <= 100 )
+      pause = 10;
+
    for( size_t i = 0; i < num; i++ )
    {
       string data( to_comparable_string( x, false, 3 ) );
@@ -1118,15 +1125,15 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
          data = prefix + ':' + data + ':';
 
       while( data.length( ) < 64 )
-         data += '#';
+         data += reverse ? '<' : '>';
 
       int n = p_socket->send_to( ( unsigned char* )data.data( ), data.length( ), address, timeout );
 
       if( n == 0 )
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
 
-      // NOTE: This millisecond sleep is provided in order to help prevent packet loss.
-      if( i % 10 == 0 )
-         msleep( 1 );
+      // NOTE: This five milliseconds sleep is provided in order to help prevent packet loss.
+      if( i % pause == 0 )
+         msleep( 5 );
    }
 }
