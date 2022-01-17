@@ -589,10 +589,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
             }
          }
 
-#ifdef DEBUG
-         cout << "sending command: " << str << endl;
-#endif
-         socket.write_line( str );
+         size_t num_datagrams = 0;
+         bool has_sent_datagrams = false;
 
          if( ( str.find( c_file_test_udp_cmd ) == 0 ) 
           && ( str.length( ) > strlen( c_file_test_udp_cmd ) + 1 ) )
@@ -601,26 +599,30 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
             if( pos != string::npos )
             {
-               size_t num = from_string< size_t >( str.substr( pos + 1 ) );
+               num_datagrams = from_string< size_t >( str.substr( pos + 1 ) );
 
-               // NOTE: Allow the application server a little time to prepare to receive datagrams.
-               if( get_host( ) == c_local_host )
-                  msleep( c_datagram_timeout );
-               else
-                  msleep( c_datagram_timeout / 2 );
-
-               // NOTE: In order to provide a more likely chance that the application server will
-               // receive all of the datagrams transmit them twice (second time in reverse order).
-               if( num > 0 && num <= 1000 )
+               if( num_datagrams > 0 && num_datagrams <= 1000 )
                {
-                  send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket );
-
-                  if( get_host( ) == c_local_host )
-                     msleep( c_datagram_timeout );
-
-                  send_test_datagrams( num, get_host( ), get_port( ), c_datagram_timeout, &usocket, true );
+                  has_sent_datagrams = true;
+                  send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_datagram_timeout, &usocket );
                }
             }
+         }
+
+#ifdef DEBUG
+         cout << "sending command: " << str << endl;
+#endif
+         socket.write_line( str );
+
+         if( has_sent_datagrams )
+         {
+            // NOTE: Allow the application server a little time to prepare to receive datagrams.
+            if( get_host( ) == c_local_host )
+               msleep( c_datagram_timeout );
+            else
+               msleep( c_datagram_timeout / 2 );
+
+            send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_datagram_timeout, &usocket, true );
          }
 
 #ifdef SSL_SUPPORT
