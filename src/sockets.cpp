@@ -320,12 +320,14 @@ bool socket_base::has_input( size_t timeout ) const
    okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
 
    FD_CLR( socket, &rfds );
+
    return okay;
 }
 
 bool socket_base::can_output( size_t timeout ) const
 {
    bool okay;
+
    fd_set wfds;
    struct timeval tv;
 
