@@ -1843,13 +1843,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_num_packets ) );
 
          size_t num = from_string< size_t >( num_packets );
-         size_t found = 0;
-
-         date_time dtm( date_time::local( ) );
-
-         vector< string > lines;
 
          bool has_any = false;
+         map< string, string > chunks;
+
+         date_time dtm( date_time::local( ) );
 
          if( num > 1000 )
             throw runtime_error( "num value must be between 0 and 1000" );
@@ -1888,9 +1886,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   else
                   {
                      if( content )
-                        lines.push_back( to_comparable_string( chunk, false, 3 ) + ':' + next );
+                        chunks.insert( make_pair( to_comparable_string( chunk, false, 3 ), next ) );
 
-                     if( ++found >= num )
+                     if( chunks.size( ) >= num )
                         break;
                   }
                }
@@ -1906,25 +1904,26 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( content )
          {
-            for( size_t i = 0; i < lines.size( ); i++ )
+            for( map< string, string >::iterator i = chunks.begin( ); i != chunks.end( ); ++i )
             {
-               if( i > 0 )
+               if( !response.empty( ) )
                   response += '\n';
-               response += lines[ i ];
+
+               response += i->first + ' ' + i->second;
             }
          }
 
          if( !response.empty( ) )
             response += '\n';
 
-         response += "packets = " + to_string( found )
+         response += "packets = " + to_string( chunks.size( ) )
           + '/' + to_string( num ) + ", milliseconds = " + to_string( milliseconds );
 
          msleep( c_udp_wait_timeout );
 
          if( has_udp_recv_file_chunk_info( ) )
          {
-            msleep( c_udp_wait_timeout );
+            msleep( c_udp_wait_timeout * 2 );
 
             clear_udp_recv_file_chunks( );
 
