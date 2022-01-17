@@ -6938,7 +6938,7 @@ void add_udp_recv_file_chunk_info( size_t slot, size_t chunk, const string& info
       if( g_sessions[ slot ] )
       {
          g_sessions[ slot ]->dtm_last_recv = date_time::local( );
-         g_sessions[ slot ]->udp_recv_file_chunks[ chunk ] = info_and_data;
+         g_sessions[ slot ]->udp_recv_file_chunks.insert( make_pair( chunk, info_and_data ) );
       }
    }
 }
