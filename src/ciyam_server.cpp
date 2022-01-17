@@ -676,14 +676,20 @@ int main( int argc, char* argv[ ] )
                      break;
 
                   if( ++start_wait_attempts > c_max_wait_attempts )
-                     throw runtime_error( "unexpected exceeded max. wait attempts for system sessions" );
+                  {
+                     ++g_server_shutdown;
+                     shutdown_reason = "max. wait attempts for system sessions";
+
+                     break;
+                  }
                }
+
+               bool reported_shutdown = false;
 
                int min_active_sessions = g_active_sessions;
 
-               ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
-
-               bool reported_shutdown = false;
+               if( !g_server_shutdown )
+                  ( *fp_init_peer_sessions_func )( g_start_peer_listeners );
 
                while( !g_server_shutdown || g_active_sessions )
                {
