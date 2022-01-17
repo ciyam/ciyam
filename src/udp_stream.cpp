@@ -40,7 +40,7 @@ namespace
 
 #include "trace_progress.cpp"
 
-const size_t c_timeout = 25; // i.e. 1/40 sec
+const size_t c_timeout = 100; // i.e. 1/10 sec
 const size_t c_sleep_time = 250; // i.e. 1/4 sec
 
 const size_t c_buffer_size = 1500;
