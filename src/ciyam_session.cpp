@@ -1898,6 +1898,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          }
 
+         clear_udp_recv_file_chunks( );
+
          date_time dtm_now( date_time::local( ) );
 
          size_t milliseconds = elapsed_since_last_recv( dtm, &dtm_now );
@@ -1912,17 +1914,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         if( found >= num )
-            clear_udp_recv_file_chunks( );
-
          if( !response.empty( ) )
             response += '\n';
 
          response += "packets = " + to_string( found )
           + '/' + to_string( num ) + ", milliseconds = " + to_string( milliseconds );
 
+         msleep( c_udp_wait_timeout );
+
          if( has_udp_recv_file_chunk_info( ) )
+         {
+            msleep( c_udp_wait_timeout );
+
+            clear_udp_recv_file_chunks( );
+
             response += " (just missed late arrivals)";
+         }
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
