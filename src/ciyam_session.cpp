@@ -83,7 +83,7 @@ mutex g_mutex;
 const size_t c_request_timeout = 500; // i.e. 1/2 sec
 const size_t c_udp_wait_timeout = 50; // i.e. 1/20 sec
 
-const size_t c_udp_wait_repeats = 50;
+const size_t c_udp_wait_repeats = 10;
 
 const int c_pdf_default_limit = 10000;
 
