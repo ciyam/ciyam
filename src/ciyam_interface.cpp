@@ -101,6 +101,7 @@ const size_t c_max_fcgi_input_size = 65536;
 const size_t c_max_param_input_size = 4096;
 
 const int c_pid_timeout = 2500;
+const int c_pubkey_timeout = 1000;
 const int c_connect_timeout = 2500;
 const int c_greeting_timeout = 2500;
 
@@ -1240,6 +1241,7 @@ void request_handler::process_request( )
                      }
 
                      string greeting;
+
                      if( p_session_info->p_socket->read_line( greeting, c_greeting_timeout ) <= 0 )
                      {
                         string error;
@@ -1252,15 +1254,55 @@ void request_handler::process_request( )
                      }
 
                      version_info ver_info;
+
                      if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
                         throw runtime_error( greeting );
 
                      // FUTURE: Some sort of "upgrade available" message should probably be displayed
                      // if the client is using an older minor protocol version than the app server.
-                     bool is_older;
+                     bool is_older = false;
+
                      if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version, &is_older ) )
                         throw runtime_error( "incompatible protocol version "
                          + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
+
+                     // NOTE: After initial handshake exchange public keys.
+                     string pubkey;
+
+                     if( pubkey.empty( ) )
+                        pubkey = string( c_none );
+
+                     string slotx, pubkeyx, slotx_and_pubkeyx;
+
+                     if( p_session_info->p_socket->read_line( slotx_and_pubkeyx, c_pubkey_timeout ) <= 0 )
+                     {
+                        string error;
+                        if( p_session_info->p_socket->had_timeout( ) )
+                           error = "timeout occurred trying to connect to server";
+                        else
+                           error = "application server has terminated this connection";
+
+                        throw runtime_error( error );
+                     }
+
+                     string::size_type pos = slotx_and_pubkeyx.find( '-' );
+
+                     if( pos != string::npos )
+                     {
+                        slotx = slotx_and_pubkeyx.substr( 0, pos );
+                        pubkeyx = slotx_and_pubkeyx.substr( pos + 1 );
+                     }
+
+                     string slot( slotx );
+
+                     if( !slot.empty( ) )
+                        slot[ 0 ] = 'C';
+                     else
+                        slot = string( c_none );
+
+                     string slot_and_pubkey( slot + '-' + pubkey );
+
+                     p_session_info->p_socket->write_line( slot_and_pubkey, c_pubkey_timeout );
 
 #ifdef SSL_SUPPORT
                      if( get_storage_info( ).use_tls )
@@ -1347,7 +1389,7 @@ void request_handler::process_request( )
                         }
                      }
 
-                     string::size_type pos = identity_info.find( ':' );
+                     pos = identity_info.find( ':' );
                      if( pos == string::npos )
                         throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
