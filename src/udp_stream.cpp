@@ -135,7 +135,7 @@ void udp_stream_session::on_start( )
 
                string::size_type pos = data.find( ':' );
 
-               if( pos != string::npos && pos > 0 )
+               if( pos != string::npos && pos > 1 )
                {
                   size_t slot = from_string< size_t >( data.substr( 1, pos - 1 ) );
 
@@ -145,7 +145,7 @@ void udp_stream_session::on_start( )
                   {
                      data.erase( 0, pos + 1 );
 
-                     if( data.size( ) < 10 )
+                     if( data.size( ) <= 64 )
                         data += ':' + ip_addr;
 
                      pos = data.find( ':' );

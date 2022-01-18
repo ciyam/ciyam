@@ -608,7 +608,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   // NOTE: Allow application server a little extra time to receive datagrams.
                   if( get_host( ) == c_local_host )
-                     msleep( c_datagram_timeout );
+                     msleep( c_datagram_timeout * 2 );
                   else
                      msleep( c_datagram_timeout / 2 );
                }
