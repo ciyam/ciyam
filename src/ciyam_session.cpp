@@ -1845,7 +1845,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          size_t num = from_string< size_t >( num_packets );
 
          bool has_any = false;
-         map< string, string > chunks;
+
+         set< size_t > chunks;
+         map< string, string > content_chunks;
 
          date_time dtm( date_time::local( ) );
 
@@ -1885,8 +1887,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                   else
                   {
+                     chunks.insert( chunk );
+
                      if( content )
-                        chunks.insert( make_pair( to_comparable_string( chunk, false, 3 ), next ) );
+                        content_chunks.insert( make_pair( to_comparable_string( chunk, false, 3 ), next ) );
 
                      if( chunks.size( ) >= num )
                         break;
@@ -1904,7 +1908,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( content )
          {
-            for( map< string, string >::iterator i = chunks.begin( ); i != chunks.end( ); ++i )
+            for( map< string, string >::iterator i = content_chunks.begin( ); i != content_chunks.end( ); ++i )
             {
                if( !response.empty( ) )
                   response += '\n';

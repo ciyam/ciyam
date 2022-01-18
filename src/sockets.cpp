@@ -427,7 +427,7 @@ int socket_base::send_n( const unsigned char* buf, int buflen, size_t timeout, p
       sent += n;
    }
 
-   if( p_progress )
+   if( p_progress && sent )
    {
       string suffix;
       string write_string( "<W< " );
@@ -683,7 +683,7 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& a
    else
       n = ::recvfrom( socket, p_buffer, buflen, 0, ( struct sockaddr* )&addr, ( socklen_t* )&addrlen );
 
-   if( n && p_progress )
+   if( n > 0 && p_progress )
    {
       string suffix;
 
@@ -712,7 +712,7 @@ int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_addres
    else
       n = ::sendto( socket, p_buffer, buflen, 0, ( const struct sockaddr* )&addr, ( socklen_t )sizeof( addr ) );
 
-   if( p_progress )
+   if( n > 0 && p_progress )
    {
       string suffix;
       string write_string( "<W<~" );
