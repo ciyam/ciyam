@@ -1134,8 +1134,8 @@ void send_test_datagrams( size_t num, const string& host_name, int port, size_t 
       if( n == 0 )
          throw runtime_error( "unable to send a UDP datagram to " + host_name );
 
-      // NOTE: This five milliseconds sleep is provided in order to help prevent packet loss.
+      // NOTE: This ten millisecond sleep is provided in order to help prevent packet loss.
       if( i % pause == 0 )
-         msleep( 5 );
+         msleep( 10 );
    }
 }

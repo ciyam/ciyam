@@ -623,7 +623,9 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          if( has_sent_datagrams )
          {
             if( get_host( ) == c_local_host )
-               msleep( c_datagram_timeout );
+               msleep( c_datagram_timeout * 2 );
+            else
+               msleep( c_datagram_timeout / 2 );
 
             // NOTE: Now send all the datagrams again (this time in reverse order).
             send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_datagram_timeout, &usocket, true );
