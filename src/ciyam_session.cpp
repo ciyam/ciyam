@@ -1876,6 +1876,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   size_t chunk;
 
+                  if( i && ( i % num == 0 ) )
+                     msleep( c_udp_wait_timeout );
+
                   string next( get_udp_recv_file_chunk_info( chunk ) );
 
                   if( next.empty( ) )
