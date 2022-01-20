@@ -8,6 +8,7 @@
 #  define SOCKETS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <string>
 #     ifdef _WIN32
 #        define NOMINMAX
@@ -145,11 +146,15 @@ class tcp_socket : public socket_base
    bool open( );
 
    bool get_delay( );
+
    bool set_delay( );
    bool set_no_delay( );
 
-   int read_line( std::string& str, size_t timeout = 0, int max_chars = 0, progress* p_progress = 0 );
-   int read_line( char* p_data, size_t timeout = 0, int max_chars = 0, progress* p_progress = 0, std::string* p_str = 0 );
+   int read_line( std::string& str,
+    size_t timeout = 0, int max_chars = 0, progress* p_progress = 0 );
+
+   int read_line( char* p_data,
+    size_t timeout = 0, int max_chars = 0, progress* p_progress = 0, std::string* p_str = 0 );
 
    int write_line( const std::string& str, size_t timeout = 0, progress* p_progress = 0 );
    int write_line( int len, const char* p_data, size_t timeout = 0, progress* p_progress = 0 );
@@ -170,8 +175,11 @@ class udp_socket : public socket_base
 
    void on_bind( );
 
-   int recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
-   int send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
+   int recv_from( unsigned char* p_buffer, size_t buflen,
+    ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
+
+   int send_to( unsigned char* p_buffer, size_t buflen,
+    const ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
 };
 
 enum ft_direction
@@ -181,11 +189,17 @@ enum ft_direction
    e_ft_direction_recv_app
 };
 
-size_t file_transfer(
- const std::string& name, tcp_socket& s, ft_direction d, size_t max_size,
- const char* p_ack_message, size_t initial_timeout = 0, size_t line_timeout = 0,
- size_t max_line_size = 0, unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0,
- unsigned int buffer_size = 0, progress* p_progress = 0, const char* p_ack_skip_message = 0 );
+struct udp_helper
+{
+   virtual void recv_data( unsigned char* p_buffer, unsigned int buffer_size,
+    std::ostream* p_ostream, size_t& start_offset, size_t& finish_offset, bool is_final = false ) = 0;
+};
+
+size_t file_transfer( const std::string& name,
+ tcp_socket& s, ft_direction d, size_t max_size, const char* p_ack_message,
+ size_t initial_timeout = 0, size_t line_timeout = 0, size_t max_line_size = 0,
+ unsigned char* p_prefix_char = 0, unsigned char* p_buffer = 0, unsigned int buffer_size = 0,
+ progress* p_progress = 0, const char* p_ack_skip_message = 0, udp_helper* p_udp_helper = 0 );
 
 void recv_test_datagrams( size_t num, int port, int sock, std::string& str, size_t timeout );
 

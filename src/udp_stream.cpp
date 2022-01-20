@@ -43,7 +43,10 @@ namespace
 const size_t c_timeout = 100; // i.e. 1/10 sec
 const size_t c_sleep_time = 250; // i.e. 1/4 sec
 
+const size_t c_addr_size = 64;
 const size_t c_buffer_size = 1500;
+
+const size_t c_max_buffers = 1000;
 
 mutex g_mutex;
 
@@ -89,7 +92,19 @@ void udp_stream_session::on_start( )
    auto_ptr< ip_address > ap_addr;
    auto_ptr< udp_socket > ap_sock;
 
-   unsigned char buffer[ c_buffer_size ];
+   unsigned char buffer[ c_buffer_size + 1 ];
+
+   vector< pair< string, string > > addr_data_pairs;
+
+   memset( buffer, sizeof( buffer ), '\0' );
+
+   for( size_t i = 0; i < c_max_buffers; i++ )
+   {
+      string addr( c_addr_size + 1, '\0' );
+      string data( c_buffer_size + 1, '\0' );
+
+      addr_data_pairs.push_back( make_pair( addr, data ) );
+   }
 
    if( direction == e_udp_direction_recv )
    {
@@ -118,44 +133,65 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
+               addr_data_pairs[ 0 ].first = ap_addr->get_addr_string( );
+               memcpy( &addr_data_pairs[ 0 ].second[ 0 ], buffer, len );
+
+               int num = 1;
+               for( size_t i = 1; i < c_max_buffers; i++ )
+               {
+                  len = recv_from( *ap_sock, *ap_addr, buffer, sizeof( buffer ), ( c_timeout / 10 ), p_progress );
+
+                  if( len <= 0 )
+                     break;
+
+                  num++;
+
+                  addr_data_pairs[ i ].first = ap_addr->get_addr_string( );
+                  memcpy( &addr_data_pairs[ i ].second[ 0 ], buffer, len );
+               }
+
+               if( g_server_shutdown )
+                  break;
+
                // NOTE: This single millisecond sleep helps to prevent packet loss by
                // giving up some time for the other stream sessions to read datagrams.
                msleep( 1 );
 
-               string ip_addr( ap_addr->get_addr_string( ) );
-
-               bool is_null = ( ip_addr == c_null_ip_addr );
-
-               if( ip_addr == c_local_ip_addr_for_ipv6 )
-                  ip_addr = c_local_ip_addr;
-
-               string data( len + 1, '\0' );
-
-               memcpy( &data[ 0 ], buffer, len );
-
-               string::size_type pos = data.find( ':' );
-
-               if( pos != string::npos && pos > 1 )
+               for( size_t i = 0; i < num; i++ )
                {
-                  size_t slot = from_string< size_t >( data.substr( 1, pos - 1 ) );
+                  string ip_addr( addr_data_pairs[ i ].first );
 
-                  string sess_ip_addr( session_ip_addr( slot ) );
+                  bool is_null = ( ip_addr == c_null_ip_addr );
 
-                  if( is_null || ( ip_addr == sess_ip_addr ) )
+                  if( ip_addr == c_local_ip_addr_for_ipv6 )
+                     ip_addr = c_local_ip_addr;
+
+                  string data( addr_data_pairs[ i ].second.c_str( ) );
+
+                  string::size_type pos = data.find( ':' );
+
+                  if( pos != string::npos && pos > 1 )
                   {
-                     data.erase( 0, pos + 1 );
+                     size_t slot = from_string< size_t >( data.substr( 1, pos - 1 ) );
 
-                     if( data.size( ) <= 64 )
-                        data += ':' + ip_addr;
+                     string sess_ip_addr( session_ip_addr( slot ) );
 
-                     pos = data.find( ':' );
-
-                     // NOTE: The chunk value should always be between 000 and 999.
-                     if( pos == 3 )
+                     if( is_null || ( ip_addr == sess_ip_addr ) )
                      {
-                        size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
+                        data.erase( 0, pos + 1 );
 
-                        add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                        if( data.size( ) <= 64 )
+                           data += ':' + ip_addr;
+
+                        pos = data.find( ':' );
+
+                        // NOTE: The chunk value should always be between 000 and 999.
+                        if( pos == 3 )
+                        {
+                           size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
+
+                           add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                        }
                      }
                   }
                }

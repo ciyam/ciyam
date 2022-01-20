@@ -7000,7 +7000,7 @@ bool has_udp_recv_file_chunk_info( )
    return retval;
 }
 
-string get_udp_recv_file_chunk_info( size_t& chunk )
+string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified )
 {
    guard g( g_mutex );
 
@@ -7008,10 +7008,15 @@ string get_udp_recv_file_chunk_info( size_t& chunk )
 
    if( gtp_session && !gtp_session->udp_recv_file_chunks.empty( ) )
    {
-      chunk = gtp_session->udp_recv_file_chunks.begin( )->first;
-      retval = gtp_session->udp_recv_file_chunks.begin( )->second;
+      size_t first_chunk = gtp_session->udp_recv_file_chunks.begin( )->first;
 
-      gtp_session->udp_recv_file_chunks.erase( gtp_session->udp_recv_file_chunks.begin( ) );
+      if( !chunk_specified || chunk == first_chunk )
+      {
+         chunk = first_chunk;
+         retval = gtp_session->udp_recv_file_chunks.begin( )->second;
+
+         gtp_session->udp_recv_file_chunks.erase( gtp_session->udp_recv_file_chunks.begin( ) );
+      }
    }
 
    return retval;
