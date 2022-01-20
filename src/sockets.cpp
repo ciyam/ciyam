@@ -726,11 +726,12 @@ int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_addres
    return n;
 }
 
-size_t file_transfer( const string& name,
- tcp_socket& s, ft_direction d, size_t max_size,
- const char* p_ack_message, size_t initial_timeout, size_t line_timeout,
- size_t max_line_size, unsigned char* p_prefix_char, unsigned char* p_buffer,
- unsigned int buffer_size, progress* p_progress, const char* p_ack_skip_message )
+size_t file_transfer(
+ const string& name, tcp_socket& s,
+ ft_direction d, size_t max_size, const char* p_ack_message,
+ size_t initial_timeout, size_t line_timeout, size_t max_line_size,
+ unsigned char* p_prefix_char, unsigned char* p_buffer, unsigned int buffer_size,
+ progress* p_progress, const char* p_ack_skip_message, udp_helper* p_udp_helper )
 {
    size_t total_size = 0;
 
@@ -814,7 +815,8 @@ size_t file_transfer( const string& name,
             if( s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading send response for size_info in file transfer" );
 
-            // NOTE: If the receiver has already got the file (or a peer session has been stopped) then quietly end the transfer.
+            // NOTE: If the receiver has already got the file (or a peer session has been stopped)
+            // then just quietly end the transfer.
             if( !next.empty( ) && ( next == c_bye || next == ack_message_skip ) )
                break;
 
@@ -931,7 +933,7 @@ size_t file_transfer( const string& name,
             if( next == c_bye )
                break;
 
-            // FUTURE: A ".bin" format should be added to support binary file transfers.
+            // FUTURE: A ".raw" format should be added to support binary file transfers.
             string::size_type pos = next.find( ':' );
             string::size_type fpos = next.find( c_base64_format );
 
@@ -963,7 +965,8 @@ size_t file_transfer( const string& name,
             s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
          }
 
-         // NOTE: If the receiver has already got the file (or a peer session has been stopped) then quietly end the transfer.
+         // NOTE: If the receiver has already got the file (or a peer session has been stopped)
+         // then just quietly end the transfer.
          if( ( ack_message_str == c_bye ) || ( ack_message_str == ack_message_skip ) )
             break;
 
