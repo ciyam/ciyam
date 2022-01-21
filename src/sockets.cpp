@@ -45,6 +45,8 @@ const int c_default_line_size = 1024;
 
 const int c_max_progress_output_bytes = 132;
 
+const char c_udp_suffix = '~';
+
 const char* const c_bye = "bye";
 const char* const c_base64_format = ".b64";
 
@@ -804,6 +806,9 @@ size_t file_transfer(
 
       size_info += to_string( max_line_size ) + string( c_base64_format );
 
+      if( p_udp_helper )
+         size_info += c_udp_suffix;
+
       while( true )
       {
          if( is_first )
@@ -820,6 +825,15 @@ size_t file_transfer(
             if( !next.empty( ) && ( next == c_bye || next == ack_message_skip ) )
                break;
 
+            string extra;
+            string::size_type pos = next.find( ':' );
+
+            if( pos != string::npos && next.find( ack_message_str ) == 0 )
+            {
+               extra = next.substr( pos + 1 );
+               next.erase( pos );
+            }
+            
             if( next != ack_message_str )
             {
                // NOTE: If "Error/error" is found in the message then just throw it as is.
@@ -835,6 +849,29 @@ size_t file_transfer(
             {
                p_istream = &ss;
                ss << string( ( const char* )p_buffer, buffer_size );
+            }
+
+            if( !extra.empty( ) )
+            {
+               size_t start_offset = from_string< size_t >( extra );
+
+               if( p_udp_helper && total_size )
+               {
+                  p_udp_helper->had_recv_help = true;
+                  p_udp_helper->recv_percent = ( start_offset / total_size ) * 100.0;
+               }
+
+               if( start_offset == total_size )
+                  break;
+               else if( start_offset )
+               {
+                  is_first = false;
+
+                  if( has_prefix_char )
+                     --start_offset;
+
+                  p_istream->seekg( start_offset, ios::beg );
+               }
             }
          }
 
@@ -943,6 +980,11 @@ size_t file_transfer(
                throw runtime_error( "invalid file transfer header line for recv" );
             }
 
+            bool had_sent_udp = false;
+
+            if( next[ next.length( ) - 1 ] == c_udp_suffix )
+               had_sent_udp = true;
+
             next.erase( fpos );
 
             total_size = from_string< int64_t >( next.substr( 0, pos ) );
@@ -962,7 +1004,32 @@ size_t file_transfer(
             max_line_size = chunk_size;
             next.resize( max_line_size );
 
-            s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
+            size_t start_offset = 0;
+
+            if( had_sent_udp && p_udp_helper )
+            {
+               p_udp_helper->recv_data( p_buffer, buffer_size, start_offset );
+
+               if( start_offset && has_file_name && !outf.write( ( const char* )p_buffer, start_offset ) )
+                  throw runtime_error( "unexpected error writing to file '" + name + "'" );
+
+               string ack_with_start_offset( ack_message_str + ':' + to_string( start_offset ) );
+
+               s.write_line( ack_with_start_offset, line_timeout, p_progress );
+
+               if( start_offset )
+               {
+                  is_first = false;
+
+                  if( start_offset == total_size )
+                     break;
+
+                  p_buf += start_offset;
+                  written += start_offset;
+               }
+            }
+            else
+               s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
          }
 
          // NOTE: If the receiver has already got the file (or a peer session has been stopped)

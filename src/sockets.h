@@ -8,7 +8,6 @@
 #  define SOCKETS_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
-#     include <iosfwd>
 #     include <string>
 #     ifdef _WIN32
 #        define NOMINMAX
@@ -191,8 +190,13 @@ enum ft_direction
 
 struct udp_helper
 {
-   virtual void recv_data( unsigned char* p_buffer, unsigned int buffer_size,
-    std::ostream* p_ostream, size_t& start_offset, size_t& finish_offset, bool is_final = false ) = 0;
+   udp_helper( ) : had_recv_help( false ), recv_percent( 0 ) { }
+
+   virtual void recv_data( unsigned char* p_buffer,
+    unsigned int buffer_size, size_t& start_offset ) { }
+
+   bool had_recv_help;
+   float recv_percent;
 };
 
 size_t file_transfer( const std::string& name,

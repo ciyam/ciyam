@@ -40,6 +40,7 @@
 #ifdef HPDF_SUPPORT
 #  include "pdf_gen.h"
 #endif
+#include "sockets.h"
 #include "threads.h"
 #include "progress.h"
 #include "pointers.h"
@@ -1543,6 +1544,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // to store a blacklisted file).
          if( is_new && file_has_been_blacklisted( filename ) )
             throw runtime_error( "file '" + filename + "' has been blacklisted" );
+
+         if( get_stream_sock( ) )
+            clear_udp_recv_file_chunks( );
 
          set_session_variable( get_special_var_name( e_special_var_last_file_put ), filename );
       }

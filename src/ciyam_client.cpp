@@ -24,6 +24,7 @@
 #endif
 
 #include "regex.h"
+#include "base64.h"
 #include "config.h"
 #include "format.h"
 #include "macros.h"
@@ -95,6 +96,8 @@ const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
 const size_t c_datagram_timeout = 50; // i.e. 0.05 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
+
+const size_t c_udp_file_bytes_per_packet = 1000;
 
 #ifdef _WIN32
 const size_t c_max_length_for_output_env_var = 1000;
@@ -185,6 +188,7 @@ class ciyam_console_command_handler : public console_command_handler
     total_chunks( 0 ),
     socket( socket ),
     usocket( usocket ),
+    num_udp_skips( 0 ),
     had_message( false ),
     had_chk_command( false ),
     had_chunk_progress( false )
@@ -231,6 +235,8 @@ class ciyam_console_command_handler : public console_command_handler
 #endif
 
    udp_socket& usocket;
+
+   size_t num_udp_skips;
 
    bool had_message;
    bool had_chk_command;
@@ -904,10 +910,98 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   if( chunk_size )
                      p_chunk = ( unsigned char* )chunk_data.data( );
 
+                  auto_ptr< udp_helper > ap_udp_helper;
+
+                  // NOTE: If using UDP then try and send the file/chunk content via UDP first
+                  // with the TCP file transfer still starting (but could finish straight away
+                  // if all content had already been received via UDP).
+                  if( usocket )
+                  {
+                     if( num_udp_skips )
+                        --num_udp_skips;
+                     else
+                     {
+                        ap_udp_helper.reset( new udp_helper );
+
+                        string slotx( get_environment_variable( c_env_var_slotx ) );
+
+                        ip_address address( get_host( ), get_port( ) );
+
+                        string data;
+                        size_t num_bytes = 0;
+
+                        size_t min_size_for_udp = ( c_udp_file_bytes_per_packet * 10 );
+
+                        if( p_chunk )
+                        {
+                           num_bytes = chunk_size;
+
+                           if( num_bytes >= min_size_for_udp )
+                              data = ( char )prefix + string( ( const char* )p_chunk, chunk_size );
+                        }
+                        else
+                        {
+                           num_bytes = file_size( filename );
+
+                           if( num_bytes >= min_size_for_udp )
+                              data = ( char )prefix + buffer_file( filename );
+                        }
+
+                        if( !data.empty( ) )
+                        {
+                           size_t num = 0;
+
+                           while( data.length( ) )
+                           {
+                              string::size_type pos = c_udp_file_bytes_per_packet;
+
+                              if( data.length( ) < pos )
+                                 pos = data.length( );
+
+                              string next_packet( slotx + ':' + to_comparable_string( num++, false, 3 ) + ':' );
+
+                              // nyi - should include hash info here (for now just pad with a marker)...
+                              while( next_packet.size( ) < 64 )
+                                 next_packet += '*';
+
+                              next_packet += base64::encode( data.substr( 0, pos ) );
+
+                              int n = usocket.send_to( ( unsigned char* )next_packet.data( ), next_packet.length( ), address, c_datagram_timeout );
+
+                              if( n <= 0 )
+                                 break;
+
+                              data.erase( 0, pos );
+                           }
+
+                           if( get_host( ) == c_local_host )
+                              msleep( c_datagram_timeout );
+                        }
+                     }
+                  }
+
                   file_transfer(
                    filename, socket, e_ft_direction_send, g_max_file_size,
-                   c_response_okay_more, c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
-                   c_file_transfer_max_line_size, &prefix, p_chunk, chunk_size, 0, c_response_okay_skip );
+                   c_response_okay_more, c_file_transfer_initial_timeout,
+                   c_file_transfer_line_timeout, c_file_transfer_max_line_size,
+                   &prefix, p_chunk, chunk_size, 0, c_response_okay_skip, ap_udp_helper.get( ) );
+
+                  if( ap_udp_helper.get( ) )
+                  {
+                     // NOTE: If the server is not using UDP then do not try again.
+                     if( !ap_udp_helper->had_recv_help )
+                        usocket.close( );
+                     else if( ap_udp_helper->recv_percent < 50.0 )
+                     {
+                        float percent = ap_udp_helper->recv_percent;
+
+                        // NOTE: Try again later depending upon the percentage received.
+                        if( percent < 10.0 )
+                           num_udp_skips = 100;
+                        else if( percent < 50.0 )
+                           num_udp_skips = 10;
+                     }
+                  }
 
                   if( !file_bytes && !chunk_data.empty( ) )
                      chunk_data.resize( 0 );

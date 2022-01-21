@@ -27,6 +27,7 @@
 #include "base64.h"
 #include "config.h"
 #include "sha256.h"
+#include "sockets.h"
 #include "threads.h"
 #include "utilities.h"
 #include "date_time.h"

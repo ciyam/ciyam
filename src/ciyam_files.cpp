@@ -80,6 +80,8 @@ const char* const c_file_archive_status_status_bad_create = "bad create";
 
 #include "ciyam_constants.h"
 
+#include "udp_stream_helper.cpp"
+
 mutex g_mutex;
 
 map< string, string > g_tag_hashes;
@@ -2619,11 +2621,17 @@ bool store_file( const string& hash,
    {
       session_file_buffer_access file_buffer;
 
+      auto_ptr< udp_stream_helper > ap_udp_stream_helper;
+
+      if( get_stream_sock( ) )
+         ap_udp_stream_helper.reset( new udp_stream_helper );
+
       total_bytes = file_transfer( tmp_file_name,
        socket, e_ft_direction_recv, max_bytes,
        ( existing ? c_response_okay_skip : c_response_okay_more ),
-       c_file_transfer_initial_timeout, c_file_transfer_line_timeout, c_file_transfer_max_line_size,
-       0, file_buffer.get_buffer( ), file_buffer.get_size( ), p_progress, ( !existing ? 0 : c_response_okay_skip ) );
+       c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
+       c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
+       p_progress, ( !existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
 
       if( !existing )
       {
