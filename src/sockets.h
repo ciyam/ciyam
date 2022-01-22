@@ -190,10 +190,11 @@ enum ft_direction
 
 struct udp_helper
 {
-   udp_helper( ) : had_recv_help( false ), recv_percent( 0 ) { }
+   udp_helper( const std::string& hash ) : hash( hash ), had_recv_help( false ), recv_percent( 0 ) { }
 
-   virtual void recv_data( unsigned char* p_buffer,
-    unsigned int buffer_size, size_t& start_offset ) { }
+   virtual void recv_data( unsigned char* p_buffer, unsigned int buffer_size, size_t& start_offset ) { }
+
+   std::string hash;
 
    bool had_recv_help;
    float recv_percent;
