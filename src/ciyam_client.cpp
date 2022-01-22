@@ -68,6 +68,9 @@ const char* const c_cmd_exec = "exec";
 const char* const c_cmd_exec_command = "command";
 const char* const c_cmd_exec_arguments = "arguments";
 
+const char* const c_cmd_vars = "vars";
+const char* const c_cmd_vars_name_vals = "name_vals";
+
 const char* const c_cmd_args_file = "args_file";
 const char* const c_cmd_args_file_name = "name";
 
@@ -78,6 +81,7 @@ const char* const c_env_var_pid = "PID";
 const char* const c_env_var_slot = "SLOT";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_slotx = "SLOTX";
+const char* const c_env_var_no_udp = "NO_UDP";
 const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_pub_key = "PUB_KEY";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
@@ -162,6 +166,25 @@ class ciyam_console_startup_functor : public command_functor
 
          if( !arguments.empty( ) )
             g_exec_cmd += " " + arguments;
+      }
+      else if( command == c_cmd_vars )
+      {
+         string name_vals( get_parm_val( parameters, c_cmd_vars_name_vals ) );
+
+         vector< string  > all_name_vals;
+         split( name_vals, all_name_vals );
+
+         for( size_t i = 0; i < all_name_vals.size( ); i++ )
+         {
+            string next_name_val( all_name_vals[ i ] );
+
+            string::size_type pos = next_name_val.find( '=' );
+
+            if( pos == string::npos )
+               set_environment_variable( next_name_val, c_true );
+            else
+               set_environment_variable( next_name_val.substr( 0, pos ), next_name_val.substr( pos + 1 ) );
+         }
       }
       else if( command == c_cmd_args_file )
          g_args_file = get_parm_val( parameters, c_cmd_args_file_name );
@@ -293,7 +316,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          bool was_no_compress = false;
          bool delete_after_put = false;
 
-         string get_dest_file, put_source_file;
+         string get_dest_file, put_file_hash, put_source_file;
 
          string::size_type pos = str.find( ' ' );
 
@@ -563,7 +586,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                else
                   tmp_hash.update( put_source_file, true );
 
-               string hash( tmp_hash.get_digest_as_string( ) );
+               put_file_hash = tmp_hash.get_digest_as_string( );
 
                if( !chunk_name.empty( ) )
                {
@@ -575,7 +598,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   if( !file_strip_prefix.empty( ) && item_name.find( file_strip_prefix ) == 0 )
                      item_name.erase( 0, file_strip_prefix.length( ) );
 
-                  file_list_data += hash + ' ' + item_name;
+                  file_list_data += put_file_hash + ' ' + item_name;
 
                   if( file_bytes == 0 )
                   {
@@ -588,7 +611,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   }
                }
 
-               str += hash + extra;
+               str += put_file_hash + extra;
 #ifdef DEBUG
                handle_command_response( str );
 #endif
@@ -603,7 +626,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          {
             string::size_type pos = str.rfind( ' ' );
 
-            if( pos != string::npos )
+            if( usocket && ( pos != string::npos ) )
             {
                num_datagrams = from_string< size_t >( str.substr( pos + 1 ) );
 
@@ -912,16 +935,18 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   auto_ptr< udp_helper > ap_udp_helper;
 
+                  bool no_udp = ( getenv( c_env_var_no_udp ) != 0 );
+
                   // NOTE: If using UDP then try and send the file/chunk content via UDP first
                   // with the TCP file transfer still starting (but could finish straight away
                   // if all content had already been received via UDP).
-                  if( usocket )
+                  if( !no_udp && usocket )
                   {
                      if( num_udp_skips )
                         --num_udp_skips;
                      else
                      {
-                        ap_udp_helper.reset( new udp_helper );
+                        ap_udp_helper.reset( new udp_helper( put_file_hash ) );
 
                         string slotx( get_environment_variable( c_env_var_slotx ) );
 
@@ -958,7 +983,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               if( data.length( ) < pos )
                                  pos = data.length( );
 
-                              string next_packet( slotx + ':' + to_comparable_string( num++, false, 3 ) + ':' );
+                              string next_packet( slotx + ':'
+                               + to_comparable_string( num++, false, 3 ) + ':' + put_file_hash.substr( 0, 9 ) + ':' );
 
                               // nyi - should include hash info here (for now just pad with a marker)...
                               while( next_packet.size( ) < 64 )
@@ -966,7 +992,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                               next_packet += base64::encode( data.substr( 0, pos ) );
 
-                              int n = usocket.send_to( ( unsigned char* )next_packet.data( ), next_packet.length( ), address, c_datagram_timeout );
+                              int n = usocket.send_to(
+                               ( unsigned char* )next_packet.data( ), next_packet.length( ), address, c_datagram_timeout );
 
                               if( n <= 0 )
                                  break;
@@ -1346,6 +1373,9 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_exec, 1,
           "<val//command>[<list//arguments// >]", "single command to execute", new ciyam_console_startup_functor( cmd_handler ) );
 
+         cmd_handler.add_command( c_cmd_vars, 1,
+          "<list//name_vals//,>", "set environment variables", new ciyam_console_startup_functor( cmd_handler ) );
+
          cmd_handler.add_command( c_cmd_args_file, 1,
           "<val//name>", "name of console args file", new ciyam_console_startup_functor( cmd_handler ) );
 
@@ -1362,6 +1392,8 @@ int main( int argc, char* argv[ ] )
 
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
+
+      bool no_udp = ( getenv( c_env_var_no_udp ) != 0 );
 
       if( socket.open( ) )
       {
@@ -1383,7 +1415,7 @@ int main( int argc, char* argv[ ] )
             if( !socket.set_no_delay( ) )
                cout << "warning: set_no_delay failed..." << endl;
 #endif
-            if( usocket.open( ) )
+            if( !no_udp && usocket.open( ) )
                usocket.set_reuse_addr( );
 
             if( socket.write_line( to_string( g_pid ), c_pid_timeout ) <= 0 )

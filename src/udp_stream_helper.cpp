@@ -7,8 +7,9 @@
 
 struct udp_stream_helper : udp_helper
 {
-   void recv_data( unsigned char* p_buffer,
-    unsigned int buflen, size_t& start_offset );
+   udp_stream_helper( const string& hash ) : udp_helper( hash ) { }
+
+   void recv_data( unsigned char* p_buffer, unsigned int buflen, size_t& start_offset );
 };
 
 void udp_stream_helper::recv_data(
@@ -41,6 +42,9 @@ void udp_stream_helper::recv_data(
             string next( get_udp_recv_file_chunk_info( chunk, true ) );
 
             if( next.empty( ) || next.size( ) < 59 )
+               break;
+
+            if( next.substr( 0, 9 ) != hash.substr( 0, 9 ) )
                break;
 
             // nyi - should validate hash info here...

@@ -2624,7 +2624,7 @@ bool store_file( const string& hash,
       auto_ptr< udp_stream_helper > ap_udp_stream_helper;
 
       if( get_stream_sock( ) )
-         ap_udp_stream_helper.reset( new udp_stream_helper );
+         ap_udp_stream_helper.reset( new udp_stream_helper( hash ) );
 
       total_bytes = file_transfer( tmp_file_name,
        socket, e_ft_direction_recv, max_bytes,
