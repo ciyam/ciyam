@@ -43,8 +43,11 @@ const int c_test_buf_size = 1024;
 
 const int c_default_line_size = 1024;
 
+const int c_append_to_size_info = 1000;
+
 const int c_max_progress_output_bytes = 132;
 
+const char c_app_suffix = '!';
 const char c_udp_suffix = '~';
 
 const char* const c_bye = "bye";
@@ -806,7 +809,40 @@ size_t file_transfer(
 
       size_info += to_string( max_line_size ) + string( c_base64_format );
 
-      if( p_udp_helper )
+      bool append_content_to_size_info = false;
+
+      if( total_size <= c_append_to_size_info )
+      {
+         size_info += c_app_suffix;
+         append_content_to_size_info = true;
+
+         if( !p_istream )
+         {
+            p_istream = &ss;
+            ss << string( ( const char* )p_buffer, buffer_size );
+         }
+
+         size_t offset = 0;
+
+         if( has_prefix_char )
+            ++offset;
+
+         string data( total_size - offset, '\0' );
+
+         if( !p_istream->read( &data[ 0 ], total_size - offset ) )
+            throw runtime_error( "unexpected failure to read data for size info append in file transfer" );
+
+         string content( base64::encode( has_prefix_char ? data : data.substr( 1 ) ) );
+
+         // NOTE: Prefix the base64 encoded content with the file type and extra in hex.
+         if( has_prefix_char )
+            size_info += hex_encode( p_prefix_char, 1 );
+         else
+            size_info += hex_encode( ( unsigned char* )&data[ 0 ], 1 );
+
+         size_info += content;
+      }
+      else if( p_udp_helper )
          size_info += c_udp_suffix;
 
       while( true )
@@ -814,6 +850,9 @@ size_t file_transfer(
          if( is_first )
          {
             s.write_line( size_info, initial_timeout, p_progress );
+
+            if( append_content_to_size_info )
+               break;
 
             s.read_line( next, initial_timeout, c_default_line_size, p_progress );
 
@@ -902,6 +941,9 @@ size_t file_transfer(
          if( s.send_n( ( unsigned char* )ap_buf2.get( ), max_line_size, line_timeout, p_progress ) != max_line_size )
             throw runtime_error( "unable to send " + to_string( max_line_size ) + " bytes using send_n in file transfer" );
 
+         if( p_istream->eof( ) )
+            break;
+
          s.read_line( next, line_timeout, c_default_line_size, p_progress );
 
          if( s.had_timeout( ) )
@@ -917,9 +959,6 @@ size_t file_transfer(
             else
                throw runtime_error( "was expecting '" + ack_message_str + "' but found '" + next + "'" );
          }
-
-         if( p_istream->eof( ) )
-            break;
       }
    }
    else
@@ -980,6 +1019,56 @@ size_t file_transfer(
                throw runtime_error( "invalid file transfer header line for recv" );
             }
 
+            string::size_type apos = next.find( c_app_suffix );
+
+            // NOTE: For very small files the content is appended to the size info line.
+            if( apos != string::npos )
+            {
+               string content( next.substr( apos + 1 ) );
+
+               if( content.size( ) < 6 )
+                  throw runtime_error( "unexpected invalid content in file transfer" );
+
+               // NOTE: Encoded content is expected to be prefixed by the file type and extra in hex.
+               string type_and_extra( hex_decode( content.substr( 0, 2 ) ) );
+
+               content.erase( 0, 2 );
+
+               if( !base64::valid_characters( content ) )
+               {
+                  not_base64 = true;
+                  unexpected_data = next;
+                  break;
+               }
+
+               if( content.empty( ) )
+                  throw runtime_error( "unexpected empty content in file transfer" );
+               else
+               {
+                  string data;
+
+                  if( !p_prefix_char )
+                     data += type_and_extra;
+                  else
+                     *p_prefix_char = type_and_extra[ 0 ];
+
+                  data += base64::decode( content );
+
+                  if( p_buffer )
+                     memcpy( p_buffer, &data[ 0 ], data.length( ) );
+
+                  if( has_file_name && !outf.write( &data[ 0 ], data.length( ) ) )
+                     throw runtime_error( "unexpected error writing to file '" + name + "'" );
+
+                  if( has_file_name )
+                     outf.close( );
+
+                  total_size = from_string< int64_t >( next.substr( 0, pos ) );
+               }
+
+               break;
+            }
+
             bool had_sent_udp = false;
 
             if( next[ next.length( ) - 1 ] == c_udp_suffix )
@@ -1020,6 +1109,9 @@ size_t file_transfer(
                if( start_offset )
                {
                   is_first = false;
+
+                  if( p_prefix_char )
+                     *p_prefix_char = *p_buf;
 
                   if( start_offset == total_size )
                      break;
@@ -1092,10 +1184,10 @@ size_t file_transfer(
             p_buf += decoded_size;
          }
 
-         s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
-
          if( written >= total_size )
             break;
+
+         s.write_line( ack_msg_line_len, &ack_message_line[ 0 ], line_timeout, p_progress );
       }
 
       if( has_file_name )
