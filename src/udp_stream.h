@@ -35,6 +35,9 @@ class CIYAM_BASE_DECL_SPEC udp_stream_session : public thread
    int recv_from( udp_socket& socket,
     ip_address& address, unsigned char* buffer, size_t buflen, size_t timeout, progress* p_progress = 0 );
 
+   int send_to( udp_socket& socket,
+    ip_address& address, const unsigned char* buffer, size_t buflen, size_t timeout, progress* p_progress = 0 );
+
    void on_start( );
 
    private:

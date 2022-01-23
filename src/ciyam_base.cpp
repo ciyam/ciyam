@@ -6409,6 +6409,21 @@ string get_session_variable( const string& name_or_expr )
    return expr.get_value( );
 }
 
+string get_session_variable( const string& name, size_t slot )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   if( ( slot < g_max_sessions ) && g_sessions[ slot ] )
+   {
+      if( g_sessions[ slot ]->variables.count( name ) )
+         retval = g_sessions[ slot ]->variables[ name ];
+   }
+
+   return retval;
+}
+
 void set_session_variable( const string& name,
  const string& value, bool* p_set_special_temporary, command_handler* p_command_handler )
 {

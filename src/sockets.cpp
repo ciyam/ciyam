@@ -701,7 +701,7 @@ int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& a
    return n;
 }
 
-int udp_socket::send_to( unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout, progress* p_progress )
+int udp_socket::send_to( const unsigned char* p_buffer, size_t buflen, const ip_address& addr, size_t timeout, progress* p_progress )
 {
    bool okay = true;
 
