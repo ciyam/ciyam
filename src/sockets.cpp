@@ -1095,7 +1095,7 @@ size_t file_transfer(
 
             size_t start_offset = 0;
 
-            if( had_sent_udp && p_udp_helper )
+            if( had_sent_udp && p_udp_helper && ( ack_message_str != ack_message_skip ) )
             {
                p_udp_helper->recv_data( p_buffer, buffer_size, start_offset );
 

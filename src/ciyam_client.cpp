@@ -86,6 +86,7 @@ const char* const c_env_var_output = "OUTPUT";
 const char* const c_env_var_pub_key = "PUB_KEY";
 const char* const c_env_var_pub_keyx = "PUB_KEYX";
 const char* const c_env_var_file_name = "FILE_NAME";
+const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
@@ -1394,6 +1395,7 @@ int main( int argc, char* argv[ ] )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
       bool no_udp = ( getenv( c_env_var_no_udp ) != 0 );
+      bool local_udp = ( getenv( c_env_var_local_udp ) != 0 );
 
       if( socket.open( ) )
       {
@@ -1415,7 +1417,7 @@ int main( int argc, char* argv[ ] )
             if( !socket.set_no_delay( ) )
                cout << "warning: set_no_delay failed..." << endl;
 #endif
-            if( !no_udp && usocket.open( ) )
+            if( !no_udp && ( local_udp || !is_default ) && usocket.open( ) )
                usocket.set_reuse_addr( );
 
             if( socket.write_line( to_string( g_pid ), c_pid_timeout ) <= 0 )
