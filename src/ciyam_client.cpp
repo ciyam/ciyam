@@ -1000,6 +1000,22 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                                  break;
 
                               data.erase( 0, pos );
+
+                              if( ( num <= 100 && ( num % 10 == 0 ) )
+                               || ( num > 1000 && ( num % 100 == 0 ) ) )
+                              {
+                                 unsigned char buffer[ 1500 ];
+
+                                 ip_address address;
+
+                                 n = usocket.recv_from( buffer, sizeof( buffer ), address, c_datagram_timeout );
+
+                                 if( n > 0 )
+                                 {
+                                    string msg( ( const char* )buffer, n );
+                                    //nyi - would need to check msg here...
+                                 }
+                              }
                            }
 
                            if( get_host( ) == c_local_host )

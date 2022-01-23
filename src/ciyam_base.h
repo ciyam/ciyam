@@ -410,6 +410,7 @@ void CIYAM_BASE_DECL_SPEC set_default_session_variables( int port = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC get_raw_session_variable( const std::string& name );
 std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name_or_expr );
+std::string CIYAM_BASE_DECL_SPEC get_session_variable( const std::string& name, size_t slot );
 
 void CIYAM_BASE_DECL_SPEC set_session_variable(
  const std::string& name, const std::string& value,

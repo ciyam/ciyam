@@ -47,7 +47,7 @@ void udp_stream_helper::recv_data(
             if( next.substr( 0, 9 ) != hash.substr( 0, 9 ) )
                break;
 
-            // nyi - should validate hash info here...
+            //nyi - should validate hash info here...
             next.erase( 0, 55 );
 
             bool rc = false;

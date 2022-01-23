@@ -1635,26 +1635,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_quiet( has_parm_val( parameters, c_cmd_ciyam_session_file_hash_quiet ) );
          string pat_or_tag( get_parm_val( parameters, c_cmd_ciyam_session_file_hash_pat_or_tag ) );
 
-         vector< string > tags;
-
-         if( pat_or_tag.size( ) == 1
-          || pat_or_tag.find_first_of( "?*" ) == string::npos )
-            tags.push_back( pat_or_tag );
+         // NOTE: Use !<prefix> to find the first matching full hash.
+         if( !pat_or_tag.empty( ) && pat_or_tag[ 0 ] == '!' )
+            response = get_hash( pat_or_tag.substr( 1 ) );
          else
          {
-            string all_tags( list_file_tags( pat_or_tag ) );
+            vector< string > tags;
 
-            if( !all_tags.empty( ) )
-               split( all_tags, tags, '\n' );
-         }
+            if( pat_or_tag.size( ) == 1
+             || pat_or_tag.find_first_of( "?*" ) == string::npos )
+               tags.push_back( pat_or_tag );
+            else
+            {
+               string all_tags( list_file_tags( pat_or_tag ) );
 
-         for( size_t i = 0; i < tags.size( ); i++ )
-         {
-            bool rc = false;
+               if( !all_tags.empty( ) )
+                  split( all_tags, tags, '\n' );
+            }
 
-            if( i > 0 )
-               response += '\n';
-            response += tag_file_hash( tags[ i ], is_quiet ? &rc : 0 );
+            for( size_t i = 0; i < tags.size( ); i++ )
+            {
+               bool rc = false;
+
+               if( i > 0 )
+                  response += '\n';
+               response += tag_file_hash( tags[ i ], is_quiet ? &rc : 0 );
+            }
          }
       }
       else if( command == c_cmd_ciyam_session_file_tag )

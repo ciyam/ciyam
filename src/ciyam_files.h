@@ -86,6 +86,8 @@ void CIYAM_BASE_DECL_SPEC tag_del(
 void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name,
  const std::string& hash, bool skip_tag_del = false, bool is_external = false );
 
+std::string CIYAM_BASE_DECL_SPEC get_hash( const std::string& prefix );
+
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
 
 std::string CIYAM_BASE_DECL_SPEC tag_file_hash( const std::string& name, bool* p_rc = 0 );

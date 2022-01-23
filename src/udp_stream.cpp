@@ -25,7 +25,9 @@
 #include "utilities.h"
 #include "date_time.h"
 #include "ciyam_base.h"
+#include "ciyam_files.h"
 #include "ciyam_session.h"
+#include "ciyam_variables.h"
 
 //#define DEBUG
 
@@ -46,7 +48,7 @@ const size_t c_sleep_time = 250; // i.e. 1/4 sec
 const size_t c_addr_size = 64;
 const size_t c_buffer_size = 1500;
 
-const size_t c_max_buffers = 1000;
+const size_t c_max_buffers = 100;
 
 mutex g_mutex;
 
@@ -73,6 +75,14 @@ int udp_stream_session::recv_from( udp_socket& socket,
    guard g( g_mutex );
 
    return socket.recv_from( buffer, buflen, address, timeout, p_progress );
+}
+
+int udp_stream_session::send_to( udp_socket& socket,
+ ip_address& address, const unsigned char* buffer, size_t buflen, size_t timeout, progress* p_progress )
+{
+   guard g( g_mutex );
+
+   return socket.send_to( buffer, buflen, address, timeout, p_progress );
 }
 
 void udp_stream_session::on_start( )
@@ -157,6 +167,8 @@ void udp_stream_session::on_start( )
                // giving up some time for the other stream sessions to read datagrams.
                msleep( 1 );
 
+               set< string > existing_files;
+
                for( size_t i = 0; i < num; i++ )
                {
                   string ip_addr( addr_data_pairs[ i ].first );
@@ -190,7 +202,33 @@ void udp_stream_session::on_start( )
                         {
                            size_t chunk = from_string< size_t >( data.substr( 0, pos ) );
 
-                           add_udp_recv_file_chunk_info( slot, chunk, data.substr( pos + 1 ) );
+                           data.erase( 0, pos + 1 );
+
+                           pos = data.find( ':' );
+
+                           if( pos != string::npos )
+                           {
+                              string hash( get_hash( data.substr( 0, pos ) ) );
+
+                              // NOTE: If file already exists then send a UDP message to try and stop further packets being sent.
+                              if( !hash.empty( ) )
+                              {
+                                 if( !existing_files.count( hash ) )
+                                 {
+                                    ip_address addr( ip_addr.c_str( ), port );
+
+                                    string slotx( get_session_variable( get_special_var_name( e_special_var_slotx ), slot ) );
+
+                                    string data( slotx + ":XXX:" + hash );
+
+                                    send_to( *ap_sock, addr, ( const unsigned char* )&data[ 0 ], data.length( ), c_timeout, p_progress );
+
+                                    existing_files.insert( hash );
+                                 }
+                              }
+                              else
+                                 add_udp_recv_file_chunk_info( slot, chunk, data );
+                           }
                         }
                      }
                   }

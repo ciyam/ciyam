@@ -177,7 +177,7 @@ class udp_socket : public socket_base
    int recv_from( unsigned char* p_buffer, size_t buflen,
     ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
 
-   int send_to( unsigned char* p_buffer, size_t buflen,
+   int send_to( const unsigned char* p_buffer, size_t buflen,
     const ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
 };
 

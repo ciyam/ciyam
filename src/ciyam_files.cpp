@@ -1944,6 +1944,23 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    }
 }
 
+string get_hash( const string& prefix )
+{
+   guard g( g_mutex );
+
+   string retval;
+
+   multimap< string, string >::iterator i = g_hash_tags.lower_bound( prefix );
+
+   if( i != g_hash_tags.end( ) )
+   {
+      if( i->first.find( prefix ) == 0 )
+         retval = i->first;
+   }
+
+   return retval;
+}
+
 string get_hash_tags( const string& hash )
 {
    guard g( g_mutex );
