@@ -7003,14 +7003,19 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
    return retval;
 }
 
-bool has_udp_recv_file_chunk_info( )
+bool has_udp_recv_file_chunk_info( size_t* p_num_chunks )
 {
    guard g( g_mutex );
 
    bool retval = false;
 
    if( gtp_session && !gtp_session->udp_recv_file_chunks.empty( ) )
+   {
       retval = true;
+
+      if( p_num_chunks )
+         *p_num_chunks = gtp_session->udp_recv_file_chunks.size( );
+   }
 
    return retval;
 }
