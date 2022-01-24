@@ -99,9 +99,12 @@ const size_t c_pid_timeout = 5000; // i.e. 5 secs
 const size_t c_pubkey_timeout = 5000; // i.e. 5 secs
 const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
-const size_t c_datagram_timeout = 50; // i.e. 0.05 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
+const size_t c_recv_datagram_timeout = 5; // i.e. 1/200 sec
+const size_t c_send_datagram_timeout = 50; // i.e. 1/20 sec
+
+const size_t c_udp_packet_buffer_size = 1500;
 const size_t c_udp_file_bytes_per_packet = 1000;
 
 #ifdef _WIN32
@@ -503,6 +506,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   if( get_environment_variable( c_env_var_error ).empty( ) )
                      set_environment_variable( c_env_var_error, put_file_error.c_str( ) );
 
+                  str.erase( );
                   chunk_size = 0;
 
                   return;
@@ -634,13 +638,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                if( num_datagrams > 0 && num_datagrams <= 1000 )
                {
                   has_sent_datagrams = true;
-                  send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_datagram_timeout, &usocket );
+                  send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_send_datagram_timeout, &usocket );
 
                   // NOTE: Allow application server a little extra time to receive datagrams.
                   if( get_host( ) == c_local_host )
-                     msleep( c_datagram_timeout * 2 );
+                     msleep( c_send_datagram_timeout * 2 );
                   else
-                     msleep( c_datagram_timeout / 2 );
+                     msleep( c_send_datagram_timeout / 2 );
                }
             }
          }
@@ -653,12 +657,12 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          if( has_sent_datagrams )
          {
             if( get_host( ) == c_local_host )
-               msleep( c_datagram_timeout * 2 );
+               msleep( c_send_datagram_timeout * 2 );
             else
-               msleep( c_datagram_timeout / 2 );
+               msleep( c_send_datagram_timeout / 2 );
 
             // NOTE: Now send all the datagrams again (this time in reverse order).
-            send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_datagram_timeout, &usocket, true );
+            send_test_datagrams( num_datagrams, get_host( ), get_port( ), c_send_datagram_timeout, &usocket, true );
          }
 
 #ifdef SSL_SUPPORT
@@ -994,7 +998,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               next_packet += base64::encode( data.substr( 0, pos ) );
 
                               int n = usocket.send_to(
-                               ( unsigned char* )next_packet.data( ), next_packet.length( ), address, c_datagram_timeout );
+                               ( unsigned char* )next_packet.data( ), next_packet.length( ), address, c_send_datagram_timeout );
 
                               if( n <= 0 )
                                  break;
@@ -1004,11 +1008,11 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               if( ( num <= 100 && ( num % 10 == 0 ) )
                                || ( num > 1000 && ( num % 100 == 0 ) ) )
                               {
-                                 unsigned char buffer[ 1500 ];
+                                 unsigned char buffer[ c_udp_packet_buffer_size ];
 
-                                 ip_address address;
+                                 ip_address address( get_port( ) );
 
-                                 n = usocket.recv_from( buffer, sizeof( buffer ), address, c_datagram_timeout );
+                                 n = usocket.recv_from( buffer, sizeof( buffer ), address, c_recv_datagram_timeout );
 
                                  if( n > 0 )
                                  {
@@ -1019,7 +1023,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            }
 
                            if( get_host( ) == c_local_host )
-                              msleep( c_datagram_timeout );
+                              msleep( c_send_datagram_timeout );
                         }
                      }
                   }
