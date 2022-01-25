@@ -1950,12 +1950,31 @@ string get_hash( const string& prefix )
 
    string retval;
 
-   multimap< string, string >::iterator i = g_hash_tags.lower_bound( prefix );
+   string::size_type pos = prefix.find_first_of( "?*" );
 
-   if( i != g_hash_tags.end( ) )
+   multimap< string, string >::iterator i = g_hash_tags.lower_bound( prefix.substr( 0, pos ) );
+
+   while( i != g_hash_tags.end( ) )
    {
-      if( i->first.find( prefix ) == 0 )
-         retval = i->first;
+      if( pos == string::npos )
+      {
+         if( i->first.find( prefix ) == 0 )
+            retval = i->first;
+         break;
+      }
+      else
+      {
+         if( wildcard_match( prefix, i->first ) )
+         {
+            if( !retval.empty( ) )
+               retval += '\n';
+            retval += i->first;
+
+            ++i;
+         }
+         else
+            break;
+      }
    }
 
    return retval;

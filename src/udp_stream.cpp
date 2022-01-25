@@ -48,7 +48,7 @@ const size_t c_sleep_time = 250; // i.e. 1/4 sec
 const size_t c_addr_size = 64;
 const size_t c_buffer_size = 1500;
 
-const size_t c_max_buffers = 100;
+const size_t c_max_buffers = 10;
 
 mutex g_mutex;
 
@@ -163,9 +163,9 @@ void udp_stream_session::on_start( )
                if( g_server_shutdown )
                   break;
 
-               // NOTE: This single millisecond sleep helps to prevent packet loss by
+               // NOTE: This several millisecond sleep helps to prevent packet loss by
                // giving up some time for the other stream sessions to read datagrams.
-               msleep( 1 );
+               msleep( 3 );
 
                set< string > existing_files;
 

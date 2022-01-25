@@ -20,7 +20,7 @@ void udp_stream_helper::recv_data(
       bool has_any = false;
 
       // NOTE: Wait an increasing amount of time for UDP data to be received.
-      for( size_t i = 1; i < 8; i++ )
+      for( size_t i = 5; i < 12; i++ )
       {
          msleep( i );
 
@@ -30,7 +30,7 @@ void udp_stream_helper::recv_data(
          {
             // NOTE: If has not found many chunks then sleep a little longer.
             if( num <= 10 )
-               msleep( 5 );
+               msleep( i * 2 );
 
             has_any = true;
             break;
@@ -71,9 +71,16 @@ void udp_stream_helper::recv_data(
 
             memcpy( ( p_buffer + start_offset ), &data[ 0 ], len );
 
-            // NOTE: Give up some time for further UDP packet receives.
-            if( ++chunk % 100 == 0 )
-               msleep( 10 );
+            // NOTE: Potentially give up some time for further UDP packet receives.
+            if( ++chunk % 10 == 0 )
+            {
+               size_t num = 0;
+
+               has_udp_recv_file_chunk_info( &num );
+
+               if( num <= 10 )
+                  msleep( 25 );
+            }
 
             remaining -= len;
             start_offset += len;

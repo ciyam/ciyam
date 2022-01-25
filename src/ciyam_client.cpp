@@ -15,6 +15,7 @@
 #  include <map>
 #  include <memory>
 #  include <string>
+#  include <iomanip>
 #  include <sstream>
 #  include <iostream>
 #  include <stdexcept>
@@ -1005,10 +1006,11 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                               data.erase( 0, pos );
 
-                              if( ( num <= 100 && ( num % 10 == 0 ) )
-                               || ( num > 1000 && ( num % 100 == 0 ) ) )
+                              if( num && ( num % 10 == 0 ) )
                               {
                                  unsigned char buffer[ c_udp_packet_buffer_size ];
+
+                                 msleep( 1 );
 
                                  ip_address address( get_port( ) );
 
@@ -1022,8 +1024,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               }
                            }
 
-                           if( get_host( ) == c_local_host )
+                           if( get_host( ) != c_local_host )
                               msleep( c_send_datagram_timeout );
+                           else
+                              msleep( c_send_datagram_timeout * 2 );
                         }
                      }
                   }
@@ -1039,15 +1043,20 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      // NOTE: If the server is not using UDP then do not try again.
                      if( !ap_udp_helper->had_recv_help )
                         usocket.close( );
-                     else if( ap_udp_helper->recv_percent < 50.0 )
+                     else
                      {
                         float percent = ap_udp_helper->recv_percent;
 
-                        // NOTE: Try again later depending upon the percentage received.
-                        if( percent < 10.0 )
-                           num_udp_skips = 100;
-                        else if( percent < 50.0 )
-                           num_udp_skips = 10;
+                        cout << '(' << setfill( '0' ) << ffmt( 1, 2 ) << percent << "% UDP)\n";
+
+                        if( percent < 50.0 )
+                        {
+                           // NOTE: Try again later depending upon the percentage received.
+                           if( percent < 10.0 )
+                              num_udp_skips = 100;
+                           else if( percent < 50.0 )
+                              num_udp_skips = 10;
+                        }
                      }
                   }
 
