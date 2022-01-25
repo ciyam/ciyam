@@ -102,7 +102,7 @@ const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
-const size_t c_recv_datagram_timeout = 5; // i.e. 1/200 sec
+const size_t c_recv_datagram_timeout = 2; // i.e. 1/500 sec
 const size_t c_send_datagram_timeout = 50; // i.e. 1/20 sec
 
 const size_t c_udp_packet_buffer_size = 1500;
@@ -1006,11 +1006,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                               data.erase( 0, pos );
 
-                              if( num && ( num % 10 == 0 ) )
+                              if( ( ( num < 100 ) && ( num % 25 == 0 ) )
+                               || ( num <= 1000 ) && ( num % 100 == 0 ) )
                               {
                                  unsigned char buffer[ c_udp_packet_buffer_size ];
-
-                                 msleep( 1 );
 
                                  ip_address address( get_port( ) );
 
