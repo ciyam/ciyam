@@ -30,7 +30,7 @@ void udp_stream_helper::recv_data(
          {
             // NOTE: If has not found many chunks then sleep a little longer.
             if( num <= 10 )
-               msleep( i * 2 );
+               msleep( 10 );
 
             has_any = true;
             break;
@@ -79,7 +79,7 @@ void udp_stream_helper::recv_data(
                has_udp_recv_file_chunk_info( &num );
 
                if( num <= 10 )
-                  msleep( 25 );
+                  msleep( 2 );
             }
 
             remaining -= len;
