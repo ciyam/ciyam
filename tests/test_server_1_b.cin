@@ -6,6 +6,8 @@ file_raw -text blob "at 1..."
 file_raw -text list "fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 0\n055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 1"
 file_raw -text list "c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1 first\nf0e0bbbf3321c7e483e3f7b4072e87791e1ec3cb74c3d4ac0db4faa765f12e32 second" root
 file_hash root
+file_hash !35ddd
+file_hash !f*
 file_info -content root
 file_info -recurse -d=1 root
 file_info -recurse -d=2 root

@@ -897,7 +897,7 @@ size_t file_transfer(
                if( p_udp_helper && total_size )
                {
                   p_udp_helper->had_recv_help = true;
-                  p_udp_helper->recv_percent = ( start_offset / total_size ) * 100.0;
+                  p_udp_helper->recv_percent = ( ( float )start_offset / ( float )total_size ) * 100.0;
                }
 
                if( start_offset == total_size )
