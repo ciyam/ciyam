@@ -671,6 +671,36 @@ void udp_socket::on_bind( )
    set_non_blocking( );
 }
 
+int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, size_t timeout, progress* p_progress )
+{
+   bool okay = true;
+
+   timed_out = false;
+
+   if( timeout )
+      okay = has_input( timeout );
+
+   int n = 0;
+   socklen_t addrlen;
+
+   if( !okay )
+      timed_out = true;
+   else
+      n = ::recvfrom( socket, p_buffer, buflen, 0, 0, 0 );
+
+   if( n > 0 && p_progress )
+   {
+      string suffix;
+
+      if( n > c_max_progress_output_bytes )
+         suffix = "...[" + format_bytes( n ) + ']';
+
+      p_progress->output_progress( ">R>~" + string( ( const char* )p_buffer, min( n, c_max_progress_output_bytes ) ) + suffix );
+   }
+
+   return n;
+}
+
 int udp_socket::recv_from( unsigned char* p_buffer, size_t buflen, ip_address& addr, size_t timeout, progress* p_progress )
 {
    bool okay = true;

@@ -91,6 +91,8 @@ const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
+const char* const c_udp_msg_cancel = "XXX";
+
 const char* const c_file_test_udp_cmd = "file_test";
 
 const char* const c_not_found_output = "Not Found";
@@ -102,7 +104,7 @@ const size_t c_command_timeout = 60000; // i.e. 60 secs
 const size_t c_connect_timeout = 10000; // i.e. 10 secs
 const size_t c_greeting_timeout = 10000; // i.e. 10 secs
 
-const size_t c_recv_datagram_timeout = 2; // i.e. 1/500 sec
+const size_t c_recv_datagram_timeout = 10; // i.e. 1/100 sec
 const size_t c_send_datagram_timeout = 50; // i.e. 1/20 sec
 
 const size_t c_udp_packet_buffer_size = 1500;
@@ -982,6 +984,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         {
                            size_t num = 0;
 
+                           string data_copy;
+
+                           bool was_cancelled = false;
+
+                           if( get_host( ) == string( c_local_host ) )
+                              data_copy = data;
+
                            while( data.length( ) )
                            {
                               string::size_type pos = c_udp_file_bytes_per_packet;
@@ -1011,22 +1020,65 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               {
                                  unsigned char buffer[ c_udp_packet_buffer_size ];
 
-                                 ip_address address( get_port( ) );
+                                 if( get_host( ) == string( c_local_host ) )
+                                    msleep( 5 );
 
-                                 n = usocket.recv_from( buffer, sizeof( buffer ), address, c_recv_datagram_timeout );
+                                 n = usocket.recv_from( buffer, sizeof( buffer ), c_recv_datagram_timeout );
 
                                  if( n > 0 )
                                  {
                                     string msg( ( const char* )buffer, n );
-                                    //nyi - would need to check msg here...
+
+                                    string::size_type pos = msg.find( ':' );
+                                    if( pos != string::npos )
+                                    {
+                                       string slot( msg.substr( 0, pos ) );
+
+                                       if( slot == get_environment_variable( c_env_var_slot ) )
+                                       {
+                                          msg.erase( 0, pos + 1 );
+                                          pos = msg.find( ':' );
+
+                                          if( pos != string::npos )
+                                          {
+                                             string chunk = msg.substr( 0, pos );
+                                             msg.erase( 0, pos + 1 );
+
+                                             if( msg == put_file_hash )
+                                             {
+                                                // NOTE: If server already has file content then cease sending.
+                                                if( chunk == c_udp_msg_cancel )
+                                                {
+                                                   cout << "(UDP cancel)\n";
+
+                                                   data.erase( );
+                                                   data_copy.erase( );
+
+                                                   was_cancelled = true;
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
                                  }
+                              }
+
+                              if( data.empty( ) )
+                              {
+                                 num = 0;
+                                 data = data_copy;
+
+                                 data_copy.erase( );
                               }
                            }
 
-                           if( get_host( ) != c_local_host )
-                              msleep( c_send_datagram_timeout );
-                           else
-                              msleep( c_send_datagram_timeout * 2 );
+                           if( !was_cancelled )
+                           {
+                              if( get_host( ) != string( c_local_host ) )
+                                 msleep( c_send_datagram_timeout );
+                              else
+                                 msleep( c_send_datagram_timeout * 2 );
+                           }
                         }
                      }
                   }

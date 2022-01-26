@@ -7020,7 +7020,7 @@ bool has_udp_recv_file_chunk_info( size_t* p_num_chunks )
    return retval;
 }
 
-string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified )
+string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified, size_t* p_first_chunk, size_t* p_num_chunks )
 {
    guard g( g_mutex );
 
@@ -7030,13 +7030,19 @@ string get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified )
    {
       size_t first_chunk = gtp_session->udp_recv_file_chunks.begin( )->first;
 
-      if( !chunk_specified || chunk == first_chunk )
+      if( p_first_chunk )
+         *p_first_chunk = first_chunk;
+
+      if( !chunk_specified || ( chunk == first_chunk ) )
       {
          chunk = first_chunk;
          retval = gtp_session->udp_recv_file_chunks.begin( )->second;
 
          gtp_session->udp_recv_file_chunks.erase( gtp_session->udp_recv_file_chunks.begin( ) );
       }
+
+      if( p_num_chunks )
+         *p_num_chunks = gtp_session->udp_recv_file_chunks.size( );
    }
 
    return retval;

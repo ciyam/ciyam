@@ -17,14 +17,12 @@ void udp_stream_helper::recv_data(
 {
    if( p_buffer )
    {
-      bool has_any = false;
+      size_t num = 0;
 
       // NOTE: Wait an increasing amount of time for UDP data to be received.
       for( size_t i = 5; i < 12; i++ )
       {
          msleep( i );
-
-         size_t num = 0;
 
          if( has_udp_recv_file_chunk_info( &num ) )
          {
@@ -32,24 +30,31 @@ void udp_stream_helper::recv_data(
             if( num <= 10 )
                msleep( 10 );
 
-            has_any = true;
             break;
          }
       }
 
-      if( has_any )
+      if( num )
       {
          size_t chunk = 0;
+         size_t retries = 0;
          size_t remaining = buflen;
 
          while( true )
          {
             string next( get_udp_recv_file_chunk_info( chunk, true ) );
 
-            if( next.empty( ) || next.size( ) < 59 )
-               break;
+            if( next.empty( ) )
+            {
+               msleep( 5 );
 
-            if( next.substr( 0, 9 ) != hash.substr( 0, 9 ) )
+               if( ++retries >= 5 )
+                  break;
+
+               continue;
+            }
+
+            if( next.size( ) < 59 || ( next.substr( 0, 9 ) != hash.substr( 0, 9 ) ) )
                break;
 
             //nyi - should validate hash info here...
@@ -71,16 +76,7 @@ void udp_stream_helper::recv_data(
 
             memcpy( ( p_buffer + start_offset ), &data[ 0 ], len );
 
-            // NOTE: Potentially give up some time for further UDP packet receives.
-            if( ++chunk % 10 == 0 )
-            {
-               size_t num = 0;
-
-               has_udp_recv_file_chunk_info( &num );
-
-               if( num <= 10 )
-                  msleep( 2 );
-            }
+            ++chunk;
 
             remaining -= len;
             start_offset += len;
