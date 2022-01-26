@@ -48,7 +48,7 @@ const size_t c_sleep_time = 250; // i.e. 1/4 sec
 const size_t c_addr_size = 64;
 const size_t c_buffer_size = 1500;
 
-const size_t c_max_buffers = 10;
+const size_t c_max_buffers = 100;
 
 mutex g_mutex;
 
@@ -104,16 +104,15 @@ void udp_stream_session::on_start( )
 
    unsigned char buffer[ c_buffer_size + 1 ];
 
-   vector< pair< string, string > > addr_data_pairs;
+   vector< pair< ip_address, string > > addr_data_pairs;
 
    memset( buffer, sizeof( buffer ), '\0' );
 
    for( size_t i = 0; i < c_max_buffers; i++ )
    {
-      string addr( c_addr_size + 1, '\0' );
       string data( c_buffer_size + 1, '\0' );
 
-      addr_data_pairs.push_back( make_pair( addr, data ) );
+      addr_data_pairs.push_back( make_pair( ip_address( ), data ) );
    }
 
    if( direction == e_udp_direction_recv )
@@ -143,7 +142,7 @@ void udp_stream_session::on_start( )
 
             if( len > 0 )
             {
-               addr_data_pairs[ 0 ].first = ap_addr->get_addr_string( );
+               addr_data_pairs[ 0 ].first = *ap_addr;
                memcpy( &addr_data_pairs[ 0 ].second[ 0 ], buffer, len );
 
                int num = 1;
@@ -156,7 +155,7 @@ void udp_stream_session::on_start( )
 
                   num++;
 
-                  addr_data_pairs[ i ].first = ap_addr->get_addr_string( );
+                  addr_data_pairs[ i ].first = *ap_addr;
                   memcpy( &addr_data_pairs[ i ].second[ 0 ], buffer, len );
                }
 
@@ -171,12 +170,17 @@ void udp_stream_session::on_start( )
 
                for( size_t i = 0; i < num; i++ )
                {
-                  string ip_addr( addr_data_pairs[ i ].first );
+                  ip_address addr( addr_data_pairs[ i ].first );
+
+                  string ip_addr( addr.get_addr_string( ) );
 
                   bool is_null = ( ip_addr == c_null_ip_addr );
 
-                  if( ip_addr == c_local_ip_addr_for_ipv6 )
+                  if( is_null || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
+                  {
                      ip_addr = c_local_ip_addr;
+                     addr = ip_address( c_local_ip_addr, port );
+                  }
 
                   string data( addr_data_pairs[ i ].second.c_str( ) );
 
@@ -215,8 +219,6 @@ void udp_stream_session::on_start( )
                               {
                                  if( !existing_files.count( hash ) )
                                  {
-                                    ip_address addr( ip_addr.c_str( ), port );
-
                                     string slotx( get_session_variable( get_special_var_name( e_special_var_slotx ), slot ) );
 
                                     string data( slotx + ":XXX:" + hash );

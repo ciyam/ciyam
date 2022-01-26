@@ -174,6 +174,9 @@ class udp_socket : public socket_base
 
    void on_bind( );
 
+   int recv_from( unsigned char* p_buffer,
+    size_t buflen, size_t timeout = 0, progress* p_progress = 0 );
+
    int recv_from( unsigned char* p_buffer, size_t buflen,
     ip_address& addr, size_t timeout = 0, progress* p_progress = 0 );
 

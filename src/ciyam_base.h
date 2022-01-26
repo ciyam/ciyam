@@ -452,7 +452,8 @@ void CIYAM_BASE_DECL_SPEC clear_udp_recv_file_chunks( );
 size_t CIYAM_BASE_DECL_SPEC elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm = 0 );
 
 bool CIYAM_BASE_DECL_SPEC has_udp_recv_file_chunk_info( size_t* p_num_chunks = 0 );
-std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk, bool chunk_specified = false );
+std::string CIYAM_BASE_DECL_SPEC get_udp_recv_file_chunk_info( size_t& chunk,
+ bool chunk_specified = false, size_t* p_first_chunk = 0, size_t* p_num_chunks = 0 );
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_base( std::ostream& outs );
 
