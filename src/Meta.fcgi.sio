@@ -350,16 +350,16 @@
    <name>enum_archive_standard_size
    <values/>
     <value/>
-     <data>10000000000
-     <name>enum_archive_standard_size_10_gb
-    </value>
-    <value/>
      <data>100000000000
      <name>enum_archive_standard_size_100_gb
     </value>
     <value/>
-     <data>1000000000000
-     <name>enum_archive_standard_size_1_tb
+     <data>300000000000
+     <name>enum_archive_standard_size_300_gb
+    </value>
+    <value/>
+     <data>500000000000
+     <name>enum_archive_standard_size_500_gb
     </value>
    </values>
   </enum>
@@ -3505,6 +3505,51 @@
      <ftype>string
      <extra>key_name+max_size=100
      <mandatory>false
+     <modifiers>
+    </field>
+   </fields>
+  </view>
+  <view/>
+   <id>603970
+   <cid>145100
+   <name>603970_name
+   <type>admin
+   <extra>
+   <modifiers>
+   <class>Global_Peerchain_Entry
+   <bclass>
+   <module>Meta
+   <fields/>
+    <field/>
+     <name>field_key
+     <field>@key
+     <ftype>
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_identity
+     <field>145101
+     <ftype>string
+     <extra>key_name+max_size=50
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_host_domain
+     <field>145102
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_port_number
+     <field>145103
+     <ftype>int
+     <extra>range=1025..65000
+     <mandatory>true
      <modifiers>
     </field>
    </fields>
@@ -8795,6 +8840,53 @@
      <field>140101
      <ftype>string
      <extra>max_size=100
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+   </columns>
+   <parents/>
+   </parents>
+   <restricts/>
+   </restricts>
+  </list>
+  <list/>
+   <id>603960
+   <cid>145100
+   <name>603960_name
+   <type>admin
+   <extra>
+   <actions>
+   <modifiers>
+   <view>603970
+   <class>Global_Peerchain_Entry
+   <bclass>
+   <order>forward
+   <module>Meta
+   <columns/>
+    <column/>
+     <name>field_global_peerchain_entry_identity
+     <field>145101
+     <ftype>string
+     <extra>max_size=50
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_peerchain_entry_host_domain
+     <field>145102
+     <ftype>string
+     <extra>max_size=100
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_peerchain_entry_port_number
+     <field>145103
+     <ftype>int
+     <extra>range=1025..65000
      <modifiers>
      <unique>false
      <indexed>false

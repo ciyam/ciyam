@@ -16,7 +16,7 @@
 `{`$enum_app_text_rows`=`'5=5 10=10 15=15 20=20 25=25 30=30 40=40 50=50 100=100`'`}
 `{`$enum_app_text_trunc_limit`=`'10=10 15=15 20=20 25=25 30=30 40=40 50=50 75=75 100=100`'`}
 `{`$enum_app_type`=`'0=Blockchain 1=Traditional`'`}
-`{`$enum_archive_standard_size`=`'10000000000=10_GB 100000000000=100_GB 1000000000000=1_TB`'`}
+`{`$enum_archive_standard_size`=`'100000000000=100_GB 300000000000=300_GB 500000000000=500_GB`'`}
 `{`$enum_arg_type`=`'0=in 1=out`'`}
 `{`$enum_cascade_op`=`'0=restrict 1=unlink 2=destroy -1=not_applicable`'`}
 `{`$enum_class_extra`=`'0=none 1=ordered`'`}
@@ -88,7 +88,7 @@
 `{`$enum_view_pdf_view_type`=`'0=none 2=Standard_2_Column 99=Customised`'`}
 `{`$enum_zero_padding`=`'0=none 1=decimals 2=all_digits 3=one_decimal`'`}
 `{`}
-`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Global_Blacklist_Entry Global_Repository_Entry Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
+`{`$all_classes`=`'Application Application_Script Auto_Code Class Enum Enum_Item Field Global_Archive Global_Blacklist_Entry Global_Peerchain_Entry Global_Repository_Entry Index Initial_Record Initial_Record_Value List List_Field List_Field_Type List_Type Model Modifier Modifier_Affect Module Package Package_Option Package_Type Permission Procedure Procedure_Arg Relationship Specification Specification_Field_Action Specification_Type Type User View View_Field View_Field_Type View_Type Workgroup`'`}
 `{`}
 `{`$specification_Application_group_list_id`=`'602900`'`}
 `{`$specification_Application_group_list_cid`=`'127100`'`}
@@ -1157,6 +1157,70 @@
 `{`$specification_Global_Blacklist_Entry_view_fmods001`=`'`'`}
 `{`$specification_Global_Blacklist_Entry_view_fname001`=`'field_global_blacklist_entry_content_hash`'`}
 `{`$specification_Global_Blacklist_Entry_view_fmand001`=`'false`'`}
+`{`}
+`{`$specification_Global_Peerchain_Entry_list_id`=`'603960`'`}
+`{`$specification_Global_Peerchain_Entry_list_cid`=`'145100`'`}
+`{`$specification_Global_Peerchain_Entry_list_name`=`'Global_Peerchain_Entries`'`}
+`{`$specification_Global_Peerchain_Entry_list_type`=`'admin`'`}
+`{`$specification_Global_Peerchain_Entry_list_acts`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_mods`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_extra`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_order`=`'forward`'`}
+`{`$specification_Global_Peerchain_Entry_list_binfo`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_column00`=`'145101`'`}
+`{`$specification_Global_Peerchain_Entry_list_clname00`=`'Global_Peerchain_Entry_Identity`'`}
+`{`$specification_Global_Peerchain_Entry_list_cltype00`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_list_clxtra00`=`'max_size=50`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods00`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_cluniq00`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_list_cindex00`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_list_column01`=`'145102`'`}
+`{`$specification_Global_Peerchain_Entry_list_clname01`=`'Global_Peerchain_Entry_Host_Domain`'`}
+`{`$specification_Global_Peerchain_Entry_list_cltype01`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_list_clxtra01`=`'max_size=100`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods01`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_cluniq01`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_list_cindex01`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_list_column02`=`'145103`'`}
+`{`$specification_Global_Peerchain_Entry_list_clname02`=`'Global_Peerchain_Entry_Port_Number`'`}
+`{`$specification_Global_Peerchain_Entry_list_cltype02`=`'int`'`}
+`{`$specification_Global_Peerchain_Entry_list_clxtra02`=`'range=1025..65000`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods02`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_cluniq02`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_list_cindex02`=`'false`'`}
+`{`}
+`{`$specification_Global_Peerchain_Entry_view_id`=`'603970`'`}
+`{`$specification_Global_Peerchain_Entry_view_cid`=`'145100`'`}
+`{`$specification_Global_Peerchain_Entry_view_name`=`'Global_Peerchain_Entry`'`}
+`{`$specification_Global_Peerchain_Entry_view_type`=`'admin`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_mods`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003`'`}
+`{`$specification_Global_Peerchain_Entry_view_field000`=`'@key`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype000`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra000`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods000`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname000`=`'field_key`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand000`=`'true`'`}
+`{`$specification_Global_Peerchain_Entry_view_field001`=`'145101`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype001`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra001`=`'key_name+max_size=50`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods001`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname001`=`'field_global_peerchain_entry_identity`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand001`=`'false`'`}
+`{`$specification_Global_Peerchain_Entry_view_field002`=`'145102`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype002`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra002`=`'max_size=100`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods002`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname002`=`'field_global_peerchain_entry_host_domain`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand002`=`'true`'`}
+`{`$specification_Global_Peerchain_Entry_view_field003`=`'145103`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype003`=`'int`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra003`=`'range=1025..65000`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods003`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname003`=`'field_global_peerchain_entry_port_number`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand003`=`'true`'`}
 `{`}
 `{`$specification_Global_Repository_Entry_list_id`=`'603980`'`}
 `{`$specification_Global_Repository_Entry_list_cid`=`'150100`'`}

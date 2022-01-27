@@ -149,11 +149,11 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
 `{`(`?`$user_source`)`#$user_source section=commands_impl`}
       // [<finish commands_impl>]
 
-      handler.issue_command_reponse( osstr.str( ) );
+      handler.issue_command_response( osstr.str( ) );
    }
    catch( exception& x )
    {
-      handler.issue_command_reponse( string( c_response_error_prefix ) + x.what( ), true );
+      handler.issue_command_response( string( c_response_error_prefix ) + x.what( ), true );
    }
 }
 

@@ -47,6 +47,7 @@ const char* const c_local_ip_addr = "127.0.0.1";
 const char* const c_local_ip_addr_for_ipv6 = "::1";
 
 const char* const c_timezones_file = "timezones.sio";
+
 const char* const c_autoscript_file = "autoscript.sio";
 const char* const c_manuscript_file = "manuscript.sio";
 
@@ -54,6 +55,7 @@ const char* const c_file_zero_length = "*";
 
 const char* const c_file_archives_folder = "arch";
 const char* const c_file_blacklist_folder = "blst";
+const char* const c_file_peerchain_folder = "peer";
 const char* const c_file_repository_folder = "repo";
 const char* const c_system_variables_folder = "vars";
 
