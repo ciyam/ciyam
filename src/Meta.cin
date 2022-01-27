@@ -98,7 +98,7 @@ user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,3
 user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
-user_defined_enum_add -id=950 archive_standard_size numeric 10000000000=10\\_GB,100000000000=100\\_GB,1000000000000=1\\_TB
+user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -106,6 +106,7 @@ user_defined_type_add -id=1015 str50 string "max_size 50"
 user_defined_type_add -id=1020 str100 string "max_size 100"
 user_defined_type_add -id=1025 str200 string "max_size 200"
 user_defined_type_add -id=1030 0..999999 int "range 0 999999"
+user_defined_type_add -id=1035 port int "range 1025 65000"
 user_defined_type_add -id=1040 digits int "range 0 16"
 user_defined_type_add -id=1045 label str30 "format label"
 user_defined_type_add -id=1050 identifier str30 "format identifier"
@@ -882,10 +883,10 @@ class_add -id=139100 Global_Archive Global_Archives -x=global:arch
 field_add -id=139101 Global_Archive Name str100 opt -transient
 field_add -id=139102 Global_Archive Path str200 mand
 field_add -id=139103 Global_Archive Size_Avail numeric mand -def=0 -x=numeric_type=bytes
-field_add -id=139104 Global_Archive Size_Limit numeric mand -def=10000000000 -x=numeric_type=bytes
+field_add -id=139104 Global_Archive Size_Limit numeric mand -def=100000000000 -x=numeric_type=bytes
 field_add -id=139105 Global_Archive Status_Info str10 opt
 field_add -id=139106 Global_Archive Actions string opt -x=actions -transient
-field_add -id=139107 Global_Archive Standard_Size_Limit numeric mand -def=10000000000 -e=archive_standard_size -transient
+field_add -id=139107 Global_Archive Standard_Size_Limit numeric mand -def=100000000000 -e=archive_standard_size -transient
 field_add -id=139108 Global_Archive Use_Custom_Size bool mand -def=0 -transient
 modifier_add -id=139310 Global_Archive Is_Not_Okay @class:lowlight;list,Status_Info:highlight;view
 modifier_add -id=139320 Global_Archive Is_Using_Custom_Size Standard_Size_Limit:relegate
@@ -894,6 +895,12 @@ procedure_add -id=139410 Global_Archive Status_Update
 procedure_add -id=139420 Global_Archive Repair_Archive
 class_add -id=140100 Global_Blacklist_Entry Global_Blacklist_Entries -x=global:blst!
 field_add -id=140101 Global_Blacklist_Entry Content_Hash str100 opt -transient
+;
+class_add -id=145100 Global_Peerchain_Entry Global_Peerchain_Entries -x=global:peer!
+field_add -id=145101 Global_Peerchain_Entry Identity str50 opt -transient
+field_add -id=145102 Global_Peerchain_Entry Host_Domain str100 mand -def=localhost
+field_add -id=145103 Global_Peerchain_Entry Port_Number port mand -def=1025
+;
 class_add -id=150100 Global_Repository_Entry Global_Repository_Entries -x=global:repo!
 field_add -id=150101 Global_Repository_Entry File_Hash str100 opt -transient
 field_add -id=150102 Global_Repository_Entry Local_Hash str100 mand
@@ -2264,6 +2271,10 @@ specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_ba
 ,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
+;
+specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Identity,Host_Domain,Port_Number"
+specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Identity;key_name,Host_Domain,Port_Number"
+;
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"
 specification_add -id=603990 {Global_Repository_Entry}_view view "? admin:no_edit Global_Repository_Entry @key,File_Hash;key_name,Local_Hash,Local_Public_Key,Master_Public_Key"
 model_save

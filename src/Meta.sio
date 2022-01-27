@@ -4760,7 +4760,7 @@
       <type>numeric
       <mandatory>true
       <extra>numeric_type=bytes
-      <default_value>10000000000
+      <default_value>100000000000
       <indexes/>
       </indexes>
       <modifiers/>
@@ -4787,7 +4787,7 @@
       <mandatory>true
       <transient>true
       <enum_id>950
-      <default_value>10000000000
+      <default_value>100000000000
       <indexes/>
       </indexes>
       <modifiers/>
@@ -4916,6 +4916,94 @@
        </specification>
        <specification/>
         <id>603950
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+    </fields>
+    <indexes/>
+    </indexes>
+    <modifiers/>
+    </modifiers>
+    <procedures/>
+    </procedures>
+   </class>
+   <class/>
+    <id>145100
+    <name>Global_Peerchain_Entry
+    <plural>Global_Peerchain_Entries
+    <version>
+    <extra>global:peer!
+    <specifications/>
+     <specification/>
+      <id>603960
+      <item>class
+     </specification>
+     <specification/>
+      <id>603970
+      <item>class
+     </specification>
+    </specifications>
+    <fields/>
+     <field/>
+      <id>145102
+      <name>Host_Domain
+      <type>1020
+      <mandatory>true
+      <default_value>localhost
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145101
+      <name>Identity
+      <type>1015
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145103
+      <name>Port_Number
+      <type>1035
+      <mandatory>true
+      <default_value>1025
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
         <item>field
        </specification>
       </specifications>
@@ -31650,6 +31738,34 @@
     </data>
    </specification>
    <specification/>
+    <id>603960
+    <name>{Global_Peerchain_Entry}_list
+    <type>list
+    <data/>
+     <name>*
+     <type>admin
+     <class_id>145100
+     <ordering>forward
+     <field_info>145101
+     <field_info>145102
+     <field_info>145103
+    </data>
+   </specification>
+   <specification/>
+    <id>603970
+    <name>{Global_Peerchain_Entry}_view
+    <type>view
+    <data/>
+     <name>?
+     <type>admin
+     <class_id>145100
+     <field_info>@key
+     <field_info>145101;key_name
+     <field_info>145102
+     <field_info>145103
+    </data>
+   </specification>
+   <specification/>
     <id>603980
     <name>{Global_Repository_Entry}_list
     <type>list
@@ -38617,7 +38733,7 @@
     <id>950
     <name>archive_standard_size
     <type>numeric
-    <key_values>10000000000=10\_GB,100000000000=100\_GB,1000000000000=1\_TB
+    <key_values>100000000000=100\_GB,300000000000=300\_GB,500000000000=500\_GB
    </user_defined_enum>
    <user_defined_enum/>
     <id>570
@@ -39101,6 +39217,17 @@
     <domain/>
      <name>format
      <type>identifier
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
+    <id>1035
+    <name>port
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>1025
+     <maximum>65000
     </domain>
    </user_defined_type>
    <user_defined_type/>
