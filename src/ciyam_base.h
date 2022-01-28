@@ -185,6 +185,9 @@ std::string CIYAM_BASE_DECL_SPEC get_blockchain_for_port( int port );
 
 void CIYAM_BASE_DECL_SPEC register_blockchain( int port, const std::string& blockchain );
 
+void CIYAM_BASE_DECL_SPEC get_peerchain_listeners(
+ std::multimap< int, std::string >& peerchain_listeners, bool auto_start_only = true );
+
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
 std::string CIYAM_BASE_DECL_SPEC get_files_area_dir( );
@@ -297,7 +300,7 @@ std::string CIYAM_BASE_DECL_SPEC session_ip_addr( );
 
 std::string CIYAM_BASE_DECL_SPEC session_ip_addr( size_t slot );
 
-bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr );
+bool CIYAM_BASE_DECL_SPEC has_session_with_ip_addr( const std::string& ip_addr, const std::string& blockchain );
 
 std::string CIYAM_BASE_DECL_SPEC get_random_same_port_peer_ip_addr( const std::string& empty_value );
 

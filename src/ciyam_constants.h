@@ -18,6 +18,9 @@ const char* const c_okay = "okay";
 const char* const c_true = "true";
 const char* const c_false = "false";
 
+const char* const c_true_value = "1";
+const char* const c_false_value = "0";
+
 const char* const c_dummy = "dummy";
 
 const char* const c_ciyam_tag = "ciyam";

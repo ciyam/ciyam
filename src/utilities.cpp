@@ -1782,6 +1782,32 @@ bool check_version_info( const version_info& ver_info, int major_version, int mi
    return okay;
 }
 
+void parse_host_and_or_port( const string& host_and_or_port, string& host, int& port )
+{
+   if( !host_and_or_port.empty( ) )
+   {
+      if( host_and_or_port.find( '.' ) == string::npos
+       && host_and_or_port.find( ':' ) == string::npos
+       && host_and_or_port[ 0 ] >= '0' && host_and_or_port[ 0 ] <= '9' )
+         port = atoi( host_and_or_port.c_str( ) );
+      else
+      {
+         host = host_and_or_port;
+         string::size_type pos = host.find( ':' );
+
+         // NOTE: If host is an IPV6 address then use '-' as the port separator.
+         if( pos == string::npos || host.find( ':', pos + 1 ) != string::npos )
+            pos = host.find( '-' );
+
+         if( pos != string::npos )
+         {
+            port = atoi( host.substr( pos + 1 ).c_str( ) );
+            host.erase( pos );
+         }
+      }
+   }
+}
+
 size_t setup_arguments( const char* p_input, vector< string >& arguments, char esc, const char* p_specials )
 {
    arguments.clear( );

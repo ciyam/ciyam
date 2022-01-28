@@ -535,6 +535,8 @@ int main( int argc, char* argv[ ] )
 
       while( true )
       {
+         g_server_shutdown = 0;
+
          ap_dynamic_library.reset( new dynamic_library( c_ciyam_base_lib, "ciyam_base" ) );
 
          file_remove( c_update_signal_file );
