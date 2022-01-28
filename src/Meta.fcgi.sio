@@ -3552,6 +3552,14 @@
      <mandatory>true
      <modifiers>
     </field>
+    <field/>
+     <name>field_global_peerchain_entry_auto_start
+     <field>145104
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
    </fields>
   </view>
   <view/>

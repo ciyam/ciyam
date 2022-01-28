@@ -60,29 +60,34 @@ inline void sanity_check( const string& s )
 const int32_t c_version = 1;
 
 
+const char* const c_field_id_Auto_Start = "145104";
 const char* const c_field_id_Host_Domain = "145102";
 const char* const c_field_id_Identity = "145101";
 const char* const c_field_id_Port_Number = "145103";
 
+const char* const c_field_name_Auto_Start = "Auto_Start";
 const char* const c_field_name_Host_Domain = "Host_Domain";
 const char* const c_field_name_Identity = "Identity";
 const char* const c_field_name_Port_Number = "Port_Number";
 
+const char* const c_field_display_name_Auto_Start = "field_global_peerchain_entry_auto_start";
 const char* const c_field_display_name_Host_Domain = "field_global_peerchain_entry_host_domain";
 const char* const c_field_display_name_Identity = "field_global_peerchain_entry_identity";
 const char* const c_field_display_name_Port_Number = "field_global_peerchain_entry_port_number";
 
-const int c_num_fields = 3;
+const int c_num_fields = 4;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
    "145101",
    "145102",
-   "145103"
+   "145103",
+   "145104"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Auto_Start",
    "Host_Domain",
    "Identity",
    "Port_Number"
@@ -167,6 +172,7 @@ inline validation_error_value_type
     construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
 }
 
+bool g_default_Auto_Start = bool( 0 );
 string g_default_Host_Domain = string( "localhost" );
 string g_default_Identity = string( );
 int g_default_Port_Number = int( 1025 );
@@ -252,6 +258,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Global_Peerchain_Entry->Auto_Start( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Host_Domain || field_name == c_field_name_Host_Domain )
       {
          handled = true;
@@ -281,6 +293,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+
+      if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, bool >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Auto_Start, field_value );
+      }
 
       if( !handled && field_name == c_field_id_Host_Domain || field_name == c_field_name_Host_Domain )
       {
@@ -340,6 +359,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    {
       return *cp_obj;
    }
+
+   bool impl_Auto_Start( ) const { return lazy_fetch( p_obj ), v_Auto_Start; }
+   void impl_Auto_Start( bool Auto_Start ) { v_Auto_Start = Auto_Start; }
 
    const string& impl_Host_Domain( ) const { return lazy_fetch( p_obj ), v_Host_Domain; }
    void impl_Host_Domain( const string& Host_Domain ) { sanity_check( Host_Domain ); v_Host_Domain = Host_Domain; }
@@ -410,6 +432,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    size_t total_child_relationships;
 
+   bool v_Auto_Start;
    string v_Host_Domain;
    string v_Identity;
    int v_Port_Number;
@@ -422,14 +445,18 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Host_Domain( ) );
+      retval = to_string( impl_Auto_Start( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Identity( ) );
+      retval = to_string( impl_Host_Domain( ) );
       break;
 
       case 2:
+      retval = to_string( impl_Identity( ) );
+      break;
+
+      case 3:
       retval = to_string( impl_Port_Number( ) );
       break;
 
@@ -445,14 +472,18 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Domain, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, bool >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Auto_Start, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Identity, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Domain, value );
       break;
 
       case 2:
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Identity, value );
+      break;
+
+      case 3:
       func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Number, value );
       break;
 
@@ -466,14 +497,18 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
    switch( field )
    {
       case 0:
-      impl_Host_Domain( g_default_Host_Domain );
+      impl_Auto_Start( g_default_Auto_Start );
       break;
 
       case 1:
-      impl_Identity( g_default_Identity );
+      impl_Host_Domain( g_default_Host_Domain );
       break;
 
       case 2:
+      impl_Identity( g_default_Identity );
+      break;
+
+      case 3:
       impl_Port_Number( g_default_Port_Number );
       break;
 
@@ -489,14 +524,18 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
    switch( field )
    {
       case 0:
-      retval = ( v_Host_Domain == g_default_Host_Domain );
+      retval = ( v_Auto_Start == g_default_Auto_Start );
       break;
 
       case 1:
-      retval = ( v_Identity == g_default_Identity );
+      retval = ( v_Host_Domain == g_default_Host_Domain );
       break;
 
       case 2:
+      retval = ( v_Identity == g_default_Identity );
+      break;
+
+      case 3:
       retval = ( v_Port_Number == g_default_Port_Number );
       break;
 
@@ -578,6 +617,7 @@ void Meta_Global_Peerchain_Entry::impl::add_extra_paging_info( vector< pair< str
 
 void Meta_Global_Peerchain_Entry::impl::clear( )
 {
+   v_Auto_Start = g_default_Auto_Start;
    v_Host_Domain = g_default_Host_Domain;
    v_Identity = g_default_Identity;
    v_Port_Number = g_default_Port_Number;
@@ -842,6 +882,16 @@ Meta_Global_Peerchain_Entry::~Meta_Global_Peerchain_Entry( )
    delete p_impl;
 }
 
+bool Meta_Global_Peerchain_Entry::Auto_Start( ) const
+{
+   return p_impl->impl_Auto_Start( );
+}
+
+void Meta_Global_Peerchain_Entry::Auto_Start( bool Auto_Start )
+{
+   p_impl->impl_Auto_Start( Auto_Start );
+}
+
 const string& Meta_Global_Peerchain_Entry::Host_Domain( ) const
 {
    return p_impl->impl_Host_Domain( );
@@ -1043,6 +1093,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Auto_Start )
+   {
+      p_id = c_field_id_Auto_Start;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Host_Domain )
    {
       p_id = c_field_id_Host_Domain;
@@ -1084,6 +1144,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Auto_Start )
+   {
+      p_name = c_field_name_Auto_Start;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Host_Domain )
    {
       p_name = c_field_name_Host_Domain;
@@ -1148,6 +1218,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
+   {
+      name = string( c_field_display_name_Auto_Start );
+      get_module_string( c_field_display_name_Auto_Start, &next );
+   }
    else if( id_or_name == c_field_id_Host_Domain || id_or_name == c_field_name_Host_Domain )
    {
       name = string( c_field_display_name_Host_Domain );
@@ -1178,6 +1253,8 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
+      display_name = get_module_string( c_field_display_name_Auto_Start );
    else if( id_or_name == c_field_id_Host_Domain || id_or_name == c_field_name_Host_Domain )
       display_name = get_module_string( c_field_display_name_Host_Domain );
    else if( id_or_name == c_field_id_Identity || id_or_name == c_field_name_Identity )
@@ -1457,6 +1534,7 @@ void Meta_Global_Peerchain_Entry::static_get_class_info( class_info_container& c
 
 void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "145104", "Auto_Start", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "145102", "Host_Domain", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145101", "Identity", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145103", "Port_Number", "int", false, "", "" ) );
@@ -1492,14 +1570,18 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "145102";
+      p_id = "145104";
       break;
 
       case 2:
-      p_id = "145101";
+      p_id = "145102";
       break;
 
       case 3:
+      p_id = "145101";
+      break;
+
+      case 4:
       p_id = "145103";
       break;
    }
@@ -1517,14 +1599,18 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Host_Domain";
+      p_id = "Auto_Start";
       break;
 
       case 2:
-      p_id = "Identity";
+      p_id = "Host_Domain";
       break;
 
       case 3:
+      p_id = "Identity";
+      break;
+
+      case 4:
       p_id = "Port_Number";
       break;
    }
@@ -1541,12 +1627,14 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Host_Domain || field == c_field_name_Host_Domain )
+   else if( field == c_field_id_Auto_Start || field == c_field_name_Auto_Start )
       rc += 1;
-   else if( field == c_field_id_Identity || field == c_field_name_Identity )
+   else if( field == c_field_id_Host_Domain || field == c_field_name_Host_Domain )
       rc += 2;
-   else if( field == c_field_id_Port_Number || field == c_field_name_Port_Number )
+   else if( field == c_field_id_Identity || field == c_field_name_Identity )
       rc += 3;
+   else if( field == c_field_id_Port_Number || field == c_field_name_Port_Number )
+      rc += 4;
 
    return rc - 1;
 }

@@ -90,8 +90,8 @@ std::string CIYAM_BASE_DECL_SPEC create_blockchain_transaction(
 
 void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchain );
 
-void CIYAM_BASE_DECL_SPEC create_peer_initiator( int port,
- const std::string& ip_addr, const std::string& blockchain, bool force = false, size_t num_for_support = 0 );
+void CIYAM_BASE_DECL_SPEC create_peer_initiator( const std::string& blockchain,
+ const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0 );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 

@@ -1390,27 +1390,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 void ciyam_console_command_handler::process_custom_startup_option( size_t num, const string& option )
 {
    if( num == 0 )
-   {
-      if( !option.empty( )
-       && option.find( '.' ) == string::npos
-       && option[ 0 ] >= '0' && option[ 0 ] <= '9' )
-         port = atoi( option.c_str( ) );
-      else
-      {
-         host = option;
-         string::size_type pos = host.find( ':' );
-
-         // NOTE: If host is an IPV6 address then use '-' as the port separator.
-         if( pos == string::npos || host.find( ':', pos + 1 ) != string::npos )
-            pos = host.find( '-' );
-
-         if( pos != string::npos )
-         {
-            port = atoi( host.substr( pos + 1 ).c_str( ) );
-            host.erase( pos );
-         }
-      }
-   }
+      parse_host_and_or_port( option, host, port );
    else
       throw runtime_error( "unexpected custom startup option '" + option + "'" );
 }

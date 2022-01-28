@@ -138,7 +138,6 @@ const char* const c_attribute_max_peers = "max_peers";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_local_hash = "local_hash";
-const char* const c_attribute_blockchains = "blockchains";
 const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
@@ -170,6 +169,10 @@ const char* const c_attribute_is_local = "is_local";
 const char* const c_attribute_protocol = "protocol";
 const char* const c_attribute_extra_info = "extra_info";
 const char* const c_attribute_script_name = "script_name";
+
+const char* const c_peerchain_attribute_auto_start = "auto_start";
+const char* const c_peerchain_attribute_host_domain = "host_domain";
+const char* const c_peerchain_attribute_port_number = "port_number";
 
 const char* const c_default_web_root = "%root%/%store%";
 
@@ -1840,7 +1843,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          string skip_after_fetch_var(
           instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-         if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
+         if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
             ; // i.e. do nothing
          else
             instance_accessor.perform_after_fetch( );
@@ -2000,7 +2003,7 @@ bool fetch_instance_from_db( class_base& instance,
             string skip_after_fetch_var(
              instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-            if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
+            if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
                ; // i.e. do nothing
             else
                instance_accessor.perform_after_fetch( is_minimal_fetch );
@@ -3411,7 +3414,7 @@ void append_transaction_log_command( storage_handler& handler,
       bool use_init_tx_id = false;
       string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
 
-      if( init_log_id == "1" || init_log_id == c_true )
+      if( init_log_id == c_true || init_log_id == c_true_value )
          use_init_tx_id = true;
 
       // NOTE: When log file is truncated during a backup no transaction is active, so
@@ -3720,28 +3723,6 @@ void read_server_configuration( )
       }
 
       g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
-
-      string all_blockchains( reader.read_opt_attribute( c_attribute_blockchains ) );
-
-      if( !all_blockchains.empty( ) )
-      {
-         vector< string > blockchains;
-         split( all_blockchains, blockchains, ' ' );
-
-         for( size_t i = 0; i < blockchains.size( ); i++ )
-         {
-            string next( blockchains[ i ] );
-            string::size_type pos = next.find( '=' );
-            if( pos == string::npos )
-               throw runtime_error( "invalid format '" + next + "' for blockchains entry" );
-
-            if( g_blockchain_ids.count( next.substr( pos + 1 ) ) )
-               throw runtime_error( "invalid repeated blockchain id: " + next.substr( pos + 1 ) );
-
-            g_blockchains.insert( make_pair( atoi( next.substr( 0, pos ).c_str( ) ), next.substr( pos + 1 ) ) );
-            g_blockchain_ids.insert( make_pair( next.substr( pos + 1 ), atoi( next.substr( 0, pos ).c_str( ) ) ) );
-         }
-      }
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -4684,6 +4665,41 @@ void register_blockchain( int port, const string& blockchain )
    g_blockchain_ids[ blockchain ] = port;
 }
 
+void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool auto_start_only )
+{
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_peerchain_folder );
+
+   vector< string > peerchains;
+
+   gap_ofs->list_files( "", peerchains );
+
+   for( size_t i = 0; i < peerchains.size( ); i++ )
+   {
+      string identity( peerchains[ i ] );
+
+      stringstream sio_data;
+      auto_ptr< sio_reader > ap_sio_reader;
+
+      gap_ofs->get_file( identity, &sio_data, true );
+      ap_sio_reader.reset( new sio_reader( sio_data ) );
+
+      string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
+      string host_domain( ap_sio_reader->read_attribute( c_peerchain_attribute_host_domain ) );
+      string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
+
+      if( ( host_domain == string( c_local_host ) )
+       && ( !auto_start_only || ( auto_start == c_true_value ) ) )
+      {
+         int port = atoi( port_number.c_str( ) );
+
+         peerchain_listeners.insert( make_pair( port, identity ) );
+      }
+   }
+}
+
 bool get_using_ssl( )
 {
    return g_using_ssl;
@@ -5051,7 +5067,7 @@ int exec_system( const string& cmd, bool async, bool delay )
    string check_script_error(
     get_raw_session_variable( get_special_var_name( e_special_var_check_script_error ) ) );
 
-   if( check_script_error == "1" || check_script_error == c_true )
+   if( check_script_error == c_true || check_script_error == c_true_value )
    {
       set_session_variable( get_special_var_name( e_special_var_check_script_error ), "" );
 
@@ -5061,7 +5077,7 @@ int exec_system( const string& cmd, bool async, bool delay )
 
          set_system_variable( gtp_session->async_or_delayed_temp_file, "" );
 
-         if( !value.empty( ) && value != string( "1" ) )
+         if( !value.empty( ) && value != c_true_value )
          {
             // NOTE: If the error starts with '@' then assume that it is actually
             // intended to be an execute "return" message rather than an error.
@@ -5144,8 +5160,8 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
          if( !async && no_logging
           && check_script_error != "0" && check_script_error != c_false )
          {
-            set_system_variable( args_file, "1" );
-            set_session_variable( get_special_var_name( e_special_var_check_script_error ), "1" );
+            set_system_variable( args_file, c_true_value );
+            set_session_variable( get_special_var_name( e_special_var_check_script_error ), c_true_value );
          }
       }
 
@@ -5164,7 +5180,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
       {
          string errors_only( get_raw_session_variable( get_special_var_name( e_special_var_errors_only ) ) );
 
-         if( errors_only == "1" || errors_only == "true" )
+         if( errors_only == c_true || errors_only == c_true_value )
             script_args = "-log_on_error " + script_args;
       }
 
@@ -5177,7 +5193,7 @@ int run_script( const string& script_name, bool async, bool delay, bool no_loggi
       // to prevent excess log entries appearing in the script log file.
       string quiet( get_raw_session_variable( get_special_var_name( e_special_var_quiet ) ) );
 
-      if( quiet != "1" && quiet != "true" )
+      if( quiet != c_true && quiet != c_true_value )
          script_args += " " + script_name;
 
 #ifdef _WIN32
@@ -5472,13 +5488,15 @@ string session_ip_addr( size_t slot )
    return retval;
 }
 
-bool has_session_with_ip_addr( const string& ip_addr )
+bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
 {
    guard g( g_mutex );
 
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
-      if( g_sessions[ i ] && g_sessions[ i ]->ip_addr == ip_addr )
+      if( g_sessions[ i ]
+       && ( g_sessions[ i ]->ip_addr == ip_addr )
+       && ( g_sessions[ i ]->blockchain == blockchain ) )
          return true;
    }
 
@@ -6378,7 +6396,7 @@ string get_raw_session_variable( const string& name )
           && has_crypt_key_for_blockchain_account(
           gtp_session->variables[ get_special_var_name( e_special_var_blockchain ) ],
           gtp_session->variables[ get_special_var_name( e_special_var_uid ) ] ) )
-            retval = "1";
+            retval = c_true_value;
       }
    }
 
@@ -7431,7 +7449,7 @@ void storage_comment( const string& comment )
       bool use_init_tx_id = false;
       string init_log_id( get_raw_session_variable( get_special_var_name( e_special_var_init_log_id ) ) );
 
-      if( init_log_id == "1" || init_log_id == c_true )
+      if( init_log_id == c_true || init_log_id == c_true_value )
          use_init_tx_id = true;
 
       // NOTE: During a "restore" the comment does not need to be logged unless it follows or is a part of
@@ -10637,7 +10655,7 @@ void instance_prepare_execute( size_t handle,
 
       if( skip_after_fetch )
          ap_tmp_skip_after_fetch.reset( new temporary_object_variable(
-          instance, get_special_var_name( e_special_var_skip_after_fetch ), "1" ) );
+          instance, get_special_var_name( e_special_var_skip_after_fetch ), c_true_value ) );
 
       instance.perform_fetch( key );
       instance_accessor.set_ver_exp( ver_info );
@@ -10879,11 +10897,11 @@ void transaction_commit( )
          string next( gtp_session->async_or_delayed_temp_files[ i ] );
 
          if( script_error.empty( )
-          && ( check_script_error == "1" || check_script_error == c_true ) )
+          && ( check_script_error == c_true || check_script_error == c_true_value ) )
          {
             string value( get_raw_system_variable( next ) );
 
-            if( !value.empty( ) && value != string( "1" ) )
+            if( !value.empty( ) && value != c_true_value )
                script_error = value;
          }
 
@@ -11729,7 +11747,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             // field might have needed to be a certain value in "to_store" but has been changed by code
             // that was executed in "for_store").
             temporary_object_variable tmp_object_secondary_validation(
-             instance_accessor.get_obj( ), get_special_var_name( e_special_var_secondary_validation ), "1" );
+             instance_accessor.get_obj( ), get_special_var_name( e_special_var_secondary_validation ), c_true_value );
 
             if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
             {
@@ -12399,7 +12417,7 @@ bool perform_instance_iterate( class_base& instance,
       string skip_after_fetch_var(
        instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-      if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+      if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
          skip_after_fetch = true;
 
       size_t row_cache_limit = c_iteration_row_cache_limit;
@@ -12643,7 +12661,7 @@ bool perform_instance_iterate_next( class_base& instance )
          string skip_after_fetch_var(
           instance.get_raw_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-         if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+         if( skip_after_fetch_var == c_true || skip_after_fetch_var == c_true_value )
             skip_after_fetch = true;
 
          fetch_instance_from_row_cache( instance, skip_after_fetch );

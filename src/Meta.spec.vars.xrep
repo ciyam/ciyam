@@ -1196,7 +1196,7 @@
 `{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_mods`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003`'`}
+`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004`'`}
 `{`$specification_Global_Peerchain_Entry_view_field000`=`'@key`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype000`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra000`=`'`'`}
@@ -1221,6 +1221,12 @@
 `{`$specification_Global_Peerchain_Entry_view_fmods003`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname003`=`'field_global_peerchain_entry_port_number`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand003`=`'true`'`}
+`{`$specification_Global_Peerchain_Entry_view_field004`=`'145104`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype004`=`'bool`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra004`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods004`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname004`=`'field_global_peerchain_entry_auto_start`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand004`=`'true`'`}
 `{`}
 `{`$specification_Global_Repository_Entry_list_id`=`'603980`'`}
 `{`$specification_Global_Repository_Entry_list_cid`=`'150100`'`}

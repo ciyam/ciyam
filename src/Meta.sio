@@ -4946,6 +4946,23 @@
     </specifications>
     <fields/>
      <field/>
+      <id>145104
+      <name>Auto_Start
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>145102
       <name>Host_Domain
       <type>1020
@@ -31763,6 +31780,7 @@
      <field_info>145101;key_name
      <field_info>145102
      <field_info>145103
+     <field_info>145104
     </data>
    </specification>
    <specification/>

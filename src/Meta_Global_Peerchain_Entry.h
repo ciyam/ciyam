@@ -26,13 +26,17 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Host_Domain = 1,
-      e_field_id_Identity = 2,
-      e_field_id_Port_Number = 3
+      e_field_id_Auto_Start = 1,
+      e_field_id_Host_Domain = 2,
+      e_field_id_Identity = 3,
+      e_field_id_Port_Number = 4
    };
 
    Meta_Global_Peerchain_Entry( );
    ~Meta_Global_Peerchain_Entry( );
+
+   bool Auto_Start( ) const;
+   void Auto_Start( bool Auto_Start );
 
    const std::string& Host_Domain( ) const;
    void Host_Domain( const std::string& Host_Domain );
