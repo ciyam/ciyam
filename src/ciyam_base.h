@@ -114,10 +114,10 @@ bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 
-extern "C" void CIYAM_BASE_DECL_SPEC init_globals( const char* p_sid = 0 );
+extern "C" void CIYAM_BASE_DECL_SPEC init_globals( const char* p_sid = 0, int* p_use_udp = 0 );
 extern "C" void CIYAM_BASE_DECL_SPEC term_globals( );
 
-typedef void ( *fp_init_globals )( const char* );
+typedef void ( *fp_init_globals )( const char*, int* );
 typedef void ( *fp_term_globals )( );
 
 void CIYAM_BASE_DECL_SPEC resync_system_ods( progress* p_progress );
@@ -187,6 +187,8 @@ void CIYAM_BASE_DECL_SPEC register_blockchain( int port, const std::string& bloc
 
 void CIYAM_BASE_DECL_SPEC get_peerchain_listeners(
  std::multimap< int, std::string >& peerchain_listeners, bool auto_start_only = true );
+
+bool CIYAM_BASE_DECL_SPEC get_use_udp( );
 
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 

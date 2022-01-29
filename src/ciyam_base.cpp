@@ -125,6 +125,7 @@ const char* const c_attribute_server = "server";
 const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_reg_key = "license";
+const char* const c_attribute_use_udp = "use_udp";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_ip_addrs = "ip_addrs";
 const char* const c_attribute_na_addrs = "na_addrs";
@@ -3489,6 +3490,7 @@ string g_web_root;
 
 string g_set_trace;
 
+bool g_use_udp = false;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
@@ -3675,6 +3677,8 @@ void read_server_configuration( )
       sio_reader reader( inpf );
 
       g_domain = reader.read_opt_attribute( c_attribute_domain, c_local_host );
+
+      g_use_udp = ( lower( reader.read_opt_attribute( c_attribute_use_udp, c_false ) ) == c_true );
 
       string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
       if( !ip_addrs.empty( ) )
@@ -4231,7 +4235,7 @@ void list_listeners( ostream& os )
       os << lci->first << ' ' << lci->second << '\n';
 }
 
-void init_globals( const char* p_sid )
+void init_globals( const char* p_sid, int* p_use_udp )
 {
    guard g( g_mutex );
 
@@ -4248,6 +4252,9 @@ void init_globals( const char* p_sid )
       }
 
       read_server_configuration( );
+
+      if( p_use_udp )
+         *p_use_udp = g_use_udp;
 
       init_files_area( );
       init_system_ods( );
@@ -4698,6 +4705,11 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
          peerchain_listeners.insert( make_pair( port, identity ) );
       }
    }
+}
+
+bool get_use_udp( )
+{
+   g_use_udp;
 }
 
 bool get_using_ssl( )

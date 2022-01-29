@@ -4,6 +4,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
 # <domain>server.com
+# <use_udp>false
 # <ip_addrs>127.0.0.1
 # <na_addrs>
  <timezone>UTC

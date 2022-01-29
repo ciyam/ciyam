@@ -591,7 +591,12 @@ int main( int argc, char* argv[ ] )
          if( !g_files_directory.empty( ) )
             ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
 
-         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ) );
+         int use_udp = 0;
+
+         ( *fp_init_globals_func )( g_entropy.empty( ) ? 0 : g_entropy.c_str( ), &use_udp );
+
+         if( !use_udp )
+            g_start_udp_stream_sessions = false;
 
          tcp_socket s;
          udp_socket u;
