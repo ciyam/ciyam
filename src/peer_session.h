@@ -66,13 +66,14 @@ class CIYAM_BASE_DECL_SPEC peer_listener : public thread
 {
    public:
    peer_listener( int port ) : port( port ) { }
-   peer_listener( int port, const std::string& blockchain ) : port( port ), blockchain( blockchain ) { }
+   peer_listener( int port, const std::string& blockchains ) : port( port ), blockchains( blockchains ) { }
 
    void on_start( );
 
    private:
    int port;
-   std::string blockchain;
+
+   std::string blockchains;
 };
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );

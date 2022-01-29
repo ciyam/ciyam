@@ -3515,7 +3515,7 @@ set< string > g_rejected_ip_addrs;
 set< string > g_accepted_peer_ip_addrs;
 set< string > g_rejected_peer_ip_addrs;
 
-map< int, string > g_blockchains;
+multimap< int, string > g_blockchains;
 map< string, int > g_blockchain_ids;
 
 map< string, string > g_initial_peer_ips;
@@ -4624,13 +4624,6 @@ string list_peer_ip_addrs_for_rejection( )
    return retval;
 }
 
-void get_blockchains( map< int, string >& blockchains )
-{
-   guard g( g_mutex );
-
-   blockchains = g_blockchains;
-}
-
 int get_blockchain_port( const string& blockchain )
 {
    guard g( g_mutex );
@@ -4648,28 +4641,38 @@ bool get_is_known_blockchain( const string& blockchain )
    return g_blockchain_ids.count( blockchain );
 }
 
-string get_blockchain_for_port( int port )
+void register_blockchains( int port, const string& blockchains )
 {
    guard g( g_mutex );
 
-   string retval;
+   if( !blockchains.empty( ) )
+   {
+      vector< string > all_blockchains;
+      split( blockchains, all_blockchains );
 
-   if( g_blockchains.count( port ) )
-      retval = g_blockchains[ port ];
+      bool has_checked = false;
 
-   return retval;
-}
+      for( size_t i = 0; i < 2; i++ )
+      {
+         for( size_t j = 0; j < all_blockchains.size( ); j++ )
+         {
+            string next( all_blockchains[ j ] );
 
-void register_blockchain( int port, const string& blockchain )
-{
-   guard g( g_mutex );
-
-   if( g_blockchain_ids.count( blockchain ) && g_blockchain_ids[ blockchain ] != port )
-      throw runtime_error( "blockchain "
-       + blockchain + " is already registered to port " + to_string( g_blockchain_ids[ blockchain ] ) );
-
-   g_blockchains[ port ] = blockchain;
-   g_blockchain_ids[ blockchain ] = port;
+            // NOTE: Check for errors in the first pass and insert blockchains in the second pass.
+            if( i == 0 )
+            {
+               if( g_blockchain_ids.count( next ) && g_blockchain_ids[ next ] != port )
+                  throw runtime_error( "blockchain "
+                   + next + " is already registered to port " + to_string( g_blockchain_ids[ next ] ) );
+            }
+            else
+            {
+               g_blockchains.insert( make_pair( port, next ) );
+               g_blockchain_ids[ next ] = port;
+            }
+         }
+      }
+   }
 }
 
 void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool auto_start_only )

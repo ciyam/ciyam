@@ -2092,9 +2092,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchain ) );
+         string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
-         create_peer_listener( atoi( port.c_str( ) ), blockchain );
+         create_peer_listener( atoi( port.c_str( ) ), blockchains );
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {

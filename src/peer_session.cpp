@@ -206,21 +206,35 @@ void add_peer_to_retry( const string& ip_addr, const string& blockchain )
    g_peers_to_retry[ blockchain ].push_back( ip_addr );
 }
 
-string get_peer_to_retry( const string& blockchain )
+string get_peer_to_retry( const string& blockchains, string& blockchain )
 {
    guard g( g_mutex );
 
    string retval;
 
-   while( !g_peers_to_retry[ blockchain ].empty( ) )
-   {
-      retval = g_peers_to_retry[ blockchain ].front( );
-      g_peers_to_retry[ blockchain ].pop_front( );
+   vector< string > all_blockchains;
+   split( blockchains, all_blockchains );
 
-      if( get_is_accepted_peer_ip_addr( retval.substr( 0, retval.find( '!' ) ) ) )
+   for( size_t i = 0; i < all_blockchains.size( ); i++ )
+   {
+      string next( all_blockchains[ i ] );
+
+      while( !g_peers_to_retry[ next ].empty( ) )
+      {
+         retval = g_peers_to_retry[ next ].front( );
+         g_peers_to_retry[ next ].pop_front( );
+
+         if( get_is_accepted_peer_ip_addr( retval.substr( 0, retval.find( '!' ) ) ) )
+         {
+            blockchain = next;
+            break;
+         }
+         else
+            retval.erase( );
+      }
+
+      if( !retval.empty( ) )
          break;
-      else
-         retval.erase( );
    }
 
    return retval;
@@ -2957,21 +2971,25 @@ peer_session* construct_session( bool is_responder,
 
    string::size_type pos = ip_addr.find( '=' );
 
-   string blockchain;
+   string blockchains;
+
+   bool already_has_session = false;
 
    if( pos != string::npos )
    {
-      blockchain = ip_addr.substr( pos + 1 );
-      string::size_type ppos = blockchain.find( ':' );
+      blockchains = ip_addr.substr( pos + 1 );
+      string::size_type ppos = blockchains.find( ':' );
 
       if( ppos != string::npos )
-         blockchain.erase( ppos );
+         blockchains.erase( ppos );
+
+      if( blockchains.find( ',' ) == string::npos )
+         already_has_session = has_session_with_ip_addr( ip_addr.substr( 0, pos ), blockchains );
    }
 
-   if( is_for_support
+   if( is_for_support || !already_has_session 
     || ip_addr.substr( 0, pos ) == c_local_ip_addr
-    || ip_addr.substr( 0, pos ) == c_local_ip_addr_for_ipv6
-    || !has_session_with_ip_addr( ip_addr.substr( 0, pos ), blockchain ) )
+    || ip_addr.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
       p_session = new peer_session( is_responder, ap_socket, ip_addr, is_for_support );
 
    return p_session;
@@ -3019,14 +3037,15 @@ peer_session::peer_session( bool is_responder,
    {
       if( blockchain.empty( ) )
          port = get_test_peer_port( );
-      else
+      else if( blockchain.find( ',' ) == 0 )
          port = to_string( get_blockchain_port( blockchain ) );
    }
 
    if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
-   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
+   if( !is_responder
+    && !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
     && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
       is_owner = true;
 
@@ -3046,7 +3065,11 @@ peer_session::peer_session( bool is_responder,
    {
       if( is_for_support )
          pid = string( c_dummy_support_tag );
-      else if( is_owner )
+
+      if( !blockchain.empty( ) )
+         pid += ':' + blockchain;
+
+      if( is_owner && !is_for_support )
          pid += '!';
 
       this->ap_socket->set_no_delay( );
@@ -3060,13 +3083,38 @@ peer_session::peer_session( bool is_responder,
 
       string::size_type pos = pid.find( '!' );
 
+      bool peer_is_owner = false;
+
       if( pos != string::npos )
       {
          pid.erase( pos );
-
-         if( is_owner )
-            has_found_both_are_owners = true;
+         peer_is_owner = true;
       }
+
+      pos = pid.find( ':' );
+
+      if( pos != string::npos )
+      {
+         set< string > blockchains;
+         split( blockchain, blockchains );
+
+         blockchain = pid.substr( pos + 1 );
+
+         if( !blockchains.count( blockchain ) )
+            throw runtime_error( "unsupported blockchain '" + blockchain + "' for peer listener" );
+
+         if( port.empty( ) )
+            port = to_string( get_blockchain_port( blockchain ) );
+
+         pid.erase( pos );
+      }
+
+      if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
+       && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
+         is_owner = true;
+
+      if( is_owner && peer_is_owner )
+         has_found_both_are_owners = true;
 
       if( pid == string( c_dummy_support_tag ) )
          this->is_for_support = true;
@@ -3416,8 +3464,8 @@ void peer_listener::on_start( )
 
          string listener_name( "peer" );
 
-         if( !blockchain.empty( ) )
-            listener_name += " (" + blockchain + ")";
+         if( !blockchains.empty( ) )
+            listener_name += " (" + blockchains + ")";
 
          listener_registration registration( port, listener_name );
 
@@ -3428,9 +3476,7 @@ void peer_listener::on_start( )
 
          if( okay )
          {
-            TRACE_LOG( TRACE_ANYTHING,
-             "peer listener started on tcp port " + to_string( port )
-             + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+            TRACE_LOG( TRACE_ANYTHING, "peer listener started on tcp port " + to_string( port ) );
 
             while( s && !g_server_shutdown )
             {
@@ -3450,7 +3496,7 @@ void peer_listener::on_start( )
                   try
                   {
                      p_session = construct_session(
-                      true, ap_socket, address.get_addr_string( ) + '=' + blockchain, true );
+                      true, ap_socket, address.get_addr_string( ) + '=' + blockchains, true );
                   }
                   catch( exception& x )
                   {
@@ -3467,9 +3513,10 @@ void peer_listener::on_start( )
 
                // NOTE: If a previously good peer has become disconnected then will
                // try and re-connect to it here.
-               if( !g_server_shutdown && !blockchain.empty( ) && !has_max_peers( ) )
+               if( !g_server_shutdown && !blockchains.empty( ) && !has_max_peers( ) )
                {
-                  string peer_info( get_peer_to_retry( blockchain ) );
+                  string blockchain;
+                  string peer_info( get_peer_to_retry( blockchains, blockchain ) );
 
                   int peer_port( port );
                   string peer_ip_addr( peer_info );
@@ -3531,9 +3578,7 @@ void peer_listener::on_start( )
       issue_error( "unexpected unknown exception occurred" );
    }
 
-   TRACE_LOG( TRACE_ANYTHING,
-    "peer listener finished (tcp port " + to_string( port ) + ")"
-    + ( blockchain.empty( ) ? "" : " for blockchain " + blockchain ) );
+   TRACE_LOG( TRACE_ANYTHING, "peer listener finished (tcp port " + to_string( port ) + ")" );
 
    decrement_active_listeners( );
 
@@ -3694,7 +3739,7 @@ string create_blockchain_transaction( const string& blockchain,
    return tx_hash;
 }
 
-void create_peer_listener( int port, const string& blockchain )
+void create_peer_listener( int port, const string& blockchains )
 {
    if( !has_registered_listener( port ) )
    {
@@ -3702,10 +3747,10 @@ void create_peer_listener( int port, const string& blockchain )
       if( port < 1025 )
          throw runtime_error( "invalid attempt to use port number less than 1025" );
 #endif
-      if( !blockchain.empty( ) )
-         register_blockchain( port, blockchain );
+      if( !blockchains.empty( ) )
+         register_blockchains( port, blockchains );
 
-      peer_listener* p_peer_listener = new peer_listener( port, blockchain );
+      peer_listener* p_peer_listener = new peer_listener( port, blockchains );
       p_peer_listener->start( );
    }
 }
@@ -3842,9 +3887,23 @@ void init_peer_sessions( int start_listeners )
       multimap< int, string > peerchain_listeners;
       get_peerchain_listeners( peerchain_listeners );
 
-      //nyi - Multiple blockchain identities can be tied to the one port but currently only one is supported.
+      map< int, string > port_blockchains;
+
       for( multimap< int, string >::iterator i = peerchain_listeners.begin( ); i != peerchain_listeners.end( ); ++i )
-         create_peer_listener( i->first, c_bc_prefix + i->second );
+      {
+         string next_blockchain( c_bc_prefix + i->second );
+
+         if( !port_blockchains.count( i->first ) )
+            port_blockchains.insert( make_pair( i->first, next_blockchain ) );
+         else
+         {
+            string blockchains( port_blockchains.find( i->first )->second + ',' + next_blockchain );
+            port_blockchains[ i->first ] = blockchains;
+         }
+      }
+
+      for( map< int, string >::iterator i = port_blockchains.begin( ); i != port_blockchains.end( ); ++i )
+         create_peer_listener( i->first, i->second );
    }
 
    create_initial_peer_sessions( );
