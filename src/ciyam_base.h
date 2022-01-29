@@ -176,14 +176,10 @@ void CIYAM_BASE_DECL_SPEC remove_peer_ip_addr_from_rejection( const std::string&
 
 std::string CIYAM_BASE_DECL_SPEC list_peer_ip_addrs_for_rejection( );
 
-void CIYAM_BASE_DECL_SPEC get_blockchains( std::map< int, std::string >& blockchains );
-
 int CIYAM_BASE_DECL_SPEC get_blockchain_port( const std::string& blockchain );
 bool CIYAM_BASE_DECL_SPEC get_is_known_blockchain( const std::string& blockchain );
 
-std::string CIYAM_BASE_DECL_SPEC get_blockchain_for_port( int port );
-
-void CIYAM_BASE_DECL_SPEC register_blockchain( int port, const std::string& blockchain );
+void CIYAM_BASE_DECL_SPEC register_blockchains( int port, const std::string& blockchains );
 
 void CIYAM_BASE_DECL_SPEC get_peerchain_listeners(
  std::multimap< int, std::string >& peerchain_listeners, bool auto_start_only = true );
