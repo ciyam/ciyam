@@ -1569,6 +1569,24 @@
    </values>
   </enum>
   <enum/>
+   <id>955
+   <name>enum_peerchain_status
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_peerchain_status_inactive
+    </value>
+    <value/>
+     <data>1
+     <name>enum_peerchain_status_connected
+    </value>
+    <value/>
+     <data>2
+     <name>enum_peerchain_status_listening
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>500
    <name>enum_primitive
    <values/>
@@ -3557,6 +3575,14 @@
      <field>145104
      <ftype>bool
      <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_status
+     <field>145105
+     <ftype>int
+     <extra>no_edit+enum=955
      <mandatory>true
      <modifiers>
     </field>
@@ -8877,6 +8903,15 @@
      <field>145101
      <ftype>string
      <extra>max_size=50
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_global_peerchain_entry_status
+     <field>145105
+     <ftype>int
+     <extra>enum=955
      <modifiers>
      <unique>false
      <indexed>false

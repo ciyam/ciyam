@@ -146,7 +146,6 @@ const char* const c_attribute_rpc_password = "rpc_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_test_peer_port = "test_peer_port";
 const char* const c_attribute_default_storage = "default_storage";
-const char* const c_attribute_peer_ips_direct = "peer_ips_direct";
 const char* const c_attribute_peer_ips_permit = "peer_ips_permit";
 const char* const c_attribute_peer_ips_reject = "peer_ips_reject";
 const char* const c_attribute_script_reconfig = "script_reconfig";
@@ -2140,6 +2139,16 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
          {
             string data, attribute_name( lower( field_names[ i ] ) );
 
+            size_t field_num = instance.get_field_num( field_names[ i ] );
+
+            if( instance.is_field_transient( field_num ) )
+            {
+               if( p_columns )
+                  p_columns->push_back( instance.get_field_value( field_num ) );
+
+               continue;
+            }
+
             if( is_file_not_folder )
                data = ap_sio_reader->read_opt_attribute( attribute_name );
             else if( gap_ofs->has_file( attribute_name ) )
@@ -2148,7 +2157,7 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
             if( p_columns )
                p_columns->push_back( data );
             else
-               instance.set_field_value( instance.get_field_num( field_names[ i ] ), data );
+               instance.set_field_value( field_num, data );
          }
       }
 
@@ -3518,8 +3527,6 @@ set< string > g_rejected_peer_ip_addrs;
 multimap< int, string > g_blockchains;
 map< string, int > g_blockchain_ids;
 
-map< string, string > g_initial_peer_ips;
-
 string g_mbox_path;
 string g_mbox_username;
 
@@ -3751,24 +3758,6 @@ void read_server_configuration( )
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
       set_system_variable( get_special_var_name( e_special_var_storage ), g_default_storage );
-
-      string peer_ips_direct( reader.read_opt_attribute( c_attribute_peer_ips_direct ) );
-
-      if( !peer_ips_direct.empty( ) )
-      {
-         vector< string > ips_direct;
-         split( peer_ips_direct, ips_direct, ' ' );
-
-         for( size_t i = 0; i < ips_direct.size( ); i++ )
-         {
-            string next( ips_direct[ i ] );
-            string::size_type pos = next.find( '=' );
-            if( pos == string::npos )
-               throw runtime_error( "invalid format '" + next + "' for peer_ips_direct entry" );
-
-            g_initial_peer_ips.insert( make_pair( next.substr( 0, pos ), next.substr( pos + 1 ) ) );
-         }
-      }
 
       string peer_ips_permit( reader.read_opt_attribute( c_attribute_peer_ips_permit ) );
       if( !peer_ips_permit.empty( ) )
@@ -4568,11 +4557,6 @@ string get_web_root( )
    return g_web_root;
 }
 
-void get_initial_peer_ips( map< string, string >& ips )
-{
-   ips = g_initial_peer_ips;
-}
-
 bool get_is_accepted_ip_addr( const string& ip_addr )
 {
    return ( g_rejected_ip_addrs.empty( ) || g_rejected_ip_addrs.count( ip_addr ) == 0 )
@@ -4672,6 +4656,37 @@ void register_blockchains( int port, const string& blockchains )
             }
          }
       }
+   }
+}
+
+void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_start_only )
+{
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_peerchain_folder );
+
+   vector< string > peerchains;
+
+   gap_ofs->list_files( "", peerchains );
+
+   for( size_t i = 0; i < peerchains.size( ); i++ )
+   {
+      string identity( peerchains[ i ] );
+
+      stringstream sio_data;
+      auto_ptr< sio_reader > ap_sio_reader;
+
+      gap_ofs->get_file( identity, &sio_data, true );
+      ap_sio_reader.reset( new sio_reader( sio_data ) );
+
+      string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
+      string host_domain( ap_sio_reader->read_attribute( c_peerchain_attribute_host_domain ) );
+      string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
+
+      if( ( host_domain != string( c_local_host ) )
+       && ( !auto_start_only || ( auto_start == c_true_value ) ) )
+         peerchain_externals.push_back( host_domain + '=' + identity + ':' + port_number );
    }
 }
 
@@ -5507,11 +5522,14 @@ bool has_session_with_ip_addr( const string& ip_addr, const string& blockchain )
 {
    guard g( g_mutex );
 
+   // NOTE: Need to ignore suffix if was included.
+   string::size_type pos = blockchain.find( '_' );
+
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ]
        && ( g_sessions[ i ]->ip_addr == ip_addr )
-       && ( g_sessions[ i ]->blockchain == blockchain ) )
+       && ( g_sessions[ i ]->blockchain == blockchain.substr( 0, pos ) ) )
          return true;
    }
 

@@ -99,6 +99,7 @@ user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Up
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
+user_defined_enum_add -id=955 peerchain_status int 0=Inactive,1=Connected,2=Listening
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -900,6 +901,7 @@ field_add -id=145101 Global_Peerchain_Entry Identity str50 opt -transient
 field_add -id=145102 Global_Peerchain_Entry Host_Domain str100 mand -def=localhost
 field_add -id=145103 Global_Peerchain_Entry Port_Number port mand -def=1025
 field_add -id=145104 Global_Peerchain_Entry Auto_Start bool mand -def=0
+field_add -id=145105 Global_Peerchain_Entry Status int mand -def=0 -e=peerchain_status -transient
 class_add -id=150100 Global_Repository_Entry Global_Repository_Entries -x=global:repo!
 field_add -id=150101 Global_Repository_Entry File_Hash str100 opt -transient
 field_add -id=150102 Global_Repository_Entry Local_Hash str100 mand
@@ -2270,8 +2272,8 @@ specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_ba
 ,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
-specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Identity,Host_Domain,Port_Number"
-specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Identity;key_name,Host_Domain,Port_Number,Auto_Start"
+specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Identity,Status,Host_Domain,Port_Number"
+specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Identity;key_name,Host_Domain,Port_Number,Auto_Start,Status;no_edit"
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"
 specification_add -id=603990 {Global_Repository_Entry}_view view "? admin:no_edit Global_Repository_Entry @key,File_Hash;key_name,Local_Hash,Local_Public_Key,Master_Public_Key"
 model_save

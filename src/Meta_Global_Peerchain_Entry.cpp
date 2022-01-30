@@ -64,25 +64,29 @@ const char* const c_field_id_Auto_Start = "145104";
 const char* const c_field_id_Host_Domain = "145102";
 const char* const c_field_id_Identity = "145101";
 const char* const c_field_id_Port_Number = "145103";
+const char* const c_field_id_Status = "145105";
 
 const char* const c_field_name_Auto_Start = "Auto_Start";
 const char* const c_field_name_Host_Domain = "Host_Domain";
 const char* const c_field_name_Identity = "Identity";
 const char* const c_field_name_Port_Number = "Port_Number";
+const char* const c_field_name_Status = "Status";
 
 const char* const c_field_display_name_Auto_Start = "field_global_peerchain_entry_auto_start";
 const char* const c_field_display_name_Host_Domain = "field_global_peerchain_entry_host_domain";
 const char* const c_field_display_name_Identity = "field_global_peerchain_entry_identity";
 const char* const c_field_display_name_Port_Number = "field_global_peerchain_entry_port_number";
+const char* const c_field_display_name_Status = "field_global_peerchain_entry_status";
 
-const int c_num_fields = 4;
+const int c_num_fields = 5;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
    "145101",
    "145102",
    "145103",
-   "145104"
+   "145104",
+   "145105"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -90,7 +94,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Auto_Start",
    "Host_Domain",
    "Identity",
-   "Port_Number"
+   "Port_Number",
+   "Status"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -105,16 +110,18 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 1;
+const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
-   "145101"
+   "145101",
+   "145105"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
-   "Identity"
+   "Identity",
+   "Status"
 };
 
 inline bool is_transient_field( const string& field )
@@ -176,6 +183,31 @@ bool g_default_Auto_Start = bool( 0 );
 string g_default_Host_Domain = string( "localhost" );
 string g_default_Identity = string( );
 int g_default_Port_Number = int( 1025 );
+int g_default_Status = int( 0 );
+
+set< int > g_peerchain_status_enum;
+
+const int c_enum_peerchain_status_Inactive( 0 );
+const int c_enum_peerchain_status_Connected( 1 );
+const int c_enum_peerchain_status_Listening( 2 );
+
+string get_enum_string_peerchain_status( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for peerchain_status" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_peerchain_status_Inactive";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_peerchain_status_Connected";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_peerchain_status_Listening";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for peerchain_status" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -282,6 +314,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Port_Number( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Global_Peerchain_Entry->Status( ), cmd_handler.retval );
+      }
+
       if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
@@ -320,6 +358,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
          handled = true;
          func_string_setter< Meta_Global_Peerchain_Entry, int >(
           *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Port_Number, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, int >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Status, field_value );
       }
 
       if( !handled )
@@ -371,6 +416,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    int impl_Port_Number( ) const { return lazy_fetch( p_obj ), v_Port_Number; }
    void impl_Port_Number( int Port_Number ) { v_Port_Number = Port_Number; }
+
+   int impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
+   void impl_Status( int Status ) { v_Status = Status; }
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -436,6 +484,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    string v_Host_Domain;
    string v_Identity;
    int v_Port_Number;
+   int v_Status;
 };
 
 string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
@@ -458,6 +507,10 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
 
       case 3:
       retval = to_string( impl_Port_Number( ) );
+      break;
+
+      case 4:
+      retval = to_string( impl_Status( ) );
       break;
 
       default:
@@ -487,6 +540,10 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
       func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Number, value );
       break;
 
+      case 4:
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Status, value );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range in set field value" );
    }
@@ -510,6 +567,10 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
 
       case 3:
       impl_Port_Number( g_default_Port_Number );
+      break;
+
+      case 4:
+      impl_Status( g_default_Status );
       break;
 
       default:
@@ -537,6 +598,10 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
 
       case 3:
       retval = ( v_Port_Number == g_default_Port_Number );
+      break;
+
+      case 4:
+      retval = ( v_Status == g_default_Status );
       break;
 
       default:
@@ -621,6 +686,7 @@ void Meta_Global_Peerchain_Entry::impl::clear( )
    v_Host_Domain = g_default_Host_Domain;
    v_Identity = g_default_Identity;
    v_Port_Number = g_default_Port_Number;
+   v_Status = g_default_Status;
 }
 
 bool Meta_Global_Peerchain_Entry::impl::value_will_be_provided( const string& field_name )
@@ -671,6 +737,11 @@ void Meta_Global_Peerchain_Entry::impl::validate(
       p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Port_Number,
        get_module_string( c_field_display_name_Port_Number ) + " " + error_message ) );
 
+   if( !g_peerchain_status_enum.count( v_Status ) )
+      p_validation_errors->insert( construct_validation_error( vf.num, c_field_name_Status,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Status ) ) ) ) );
+
    // [<start validate>]
    // [<finish validate>]
 }
@@ -718,6 +789,17 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
    // [<start after_fetch>]
 //nyi
    get_obj( ).Identity( get_obj( ).get_key( ) );
+
+   if( get_obj( ).Host_Domain( ) == g_default_Host_Domain )
+   {
+      if( has_registered_listener( get_obj( ).Port_Number( ) ) )
+         get_obj( ).Status( c_enum_peerchain_status_Listening );
+   }
+   else
+   {
+      if( has_any_session_variable( get_obj( ).Identity( ) ) )
+         get_obj( ).Status( c_enum_peerchain_status_Connected );
+   }
    // [<finish after_fetch>]
 }
 
@@ -920,6 +1002,16 @@ int Meta_Global_Peerchain_Entry::Port_Number( ) const
 void Meta_Global_Peerchain_Entry::Port_Number( int Port_Number )
 {
    p_impl->impl_Port_Number( Port_Number );
+}
+
+int Meta_Global_Peerchain_Entry::Status( ) const
+{
+   return p_impl->impl_Status( );
+}
+
+void Meta_Global_Peerchain_Entry::Status( int Status )
+{
+   p_impl->impl_Status( Status );
 }
 
 string Meta_Global_Peerchain_Entry::get_field_value( int field ) const
@@ -1133,6 +1225,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Status )
+   {
+      p_id = c_field_id_Status;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
 
    return p_id;
 }
@@ -1183,6 +1285,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Status )
+   {
+      p_name = c_field_name_Status;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
    }
 
    return p_name;
@@ -1238,6 +1350,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
       name = string( c_field_display_name_Port_Number );
       get_module_string( c_field_display_name_Port_Number, &next );
    }
+   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
+   {
+      name = string( c_field_display_name_Status );
+      get_module_string( c_field_display_name_Status, &next );
+   }
 
    // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
    // has one) will be in the module string that immediately follows that of its name.
@@ -1261,6 +1378,8 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
       display_name = get_module_string( c_field_display_name_Identity );
    else if( id_or_name == c_field_id_Port_Number || id_or_name == c_field_name_Port_Number )
       display_name = get_module_string( c_field_display_name_Port_Number );
+   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
+      display_name = get_module_string( c_field_display_name_Status );
 
    return display_name;
 }
@@ -1538,6 +1657,7 @@ void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& a
    all_field_info.push_back( field_info( "145102", "Host_Domain", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145101", "Identity", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145103", "Port_Number", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "145105", "Status", "int", false, "", "" ) );
 }
 
 void Meta_Global_Peerchain_Entry::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -1584,6 +1704,10 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
       case 4:
       p_id = "145103";
       break;
+
+      case 5:
+      p_id = "145105";
+      break;
    }
 
    if( !p_id )
@@ -1613,6 +1737,10 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
       case 4:
       p_id = "Port_Number";
       break;
+
+      case 5:
+      p_id = "Status";
+      break;
    }
 
    if( !p_id )
@@ -1635,6 +1763,8 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
       rc += 3;
    else if( field == c_field_id_Port_Number || field == c_field_name_Port_Number )
       rc += 4;
+   else if( field == c_field_id_Status || field == c_field_name_Status )
+      rc += 5;
 
    return rc - 1;
 }
@@ -1658,7 +1788,9 @@ void Meta_Global_Peerchain_Entry::static_get_text_search_fields( vector< string 
 
 void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
-   ( void )pairs;
+   pairs.push_back( make_pair( "enum_peerchain_status_0", get_enum_string_peerchain_status( 0 ) ) );
+   pairs.push_back( make_pair( "enum_peerchain_status_1", get_enum_string_peerchain_status( 1 ) ) );
+   pairs.push_back( make_pair( "enum_peerchain_status_2", get_enum_string_peerchain_status( 2 ) ) );
 }
 
 void Meta_Global_Peerchain_Entry::static_get_sql_indexes( vector< string >& indexes )
@@ -1702,6 +1834,10 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
 
    g_state_names_variable = get_special_var_name( e_special_var_state_names );
+
+   g_peerchain_status_enum.insert( 0 );
+   g_peerchain_status_enum.insert( 1 );
+   g_peerchain_status_enum.insert( 2 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

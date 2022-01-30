@@ -29,7 +29,8 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
       e_field_id_Auto_Start = 1,
       e_field_id_Host_Domain = 2,
       e_field_id_Identity = 3,
-      e_field_id_Port_Number = 4
+      e_field_id_Port_Number = 4,
+      e_field_id_Status = 5
    };
 
    Meta_Global_Peerchain_Entry( );
@@ -46,6 +47,9 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
 
    int Port_Number( ) const;
    void Port_Number( int Port_Number );
+
+   int Status( ) const;
+   void Status( int Status );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
