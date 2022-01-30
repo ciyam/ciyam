@@ -5025,6 +5025,29 @@
        </specification>
       </specifications>
      </field>
+     <field/>
+      <id>145105
+      <name>Status
+      <type>int
+      <mandatory>true
+      <transient>true
+      <enum_id>955
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
     </fields>
     <indexes/>
     </indexes>
@@ -31764,6 +31787,7 @@
      <class_id>145100
      <ordering>forward
      <field_info>145101
+     <field_info>145105;enum=955
      <field_info>145102
      <field_info>145103
     </data>
@@ -31781,6 +31805,7 @@
      <field_info>145102
      <field_info>145103
      <field_info>145104
+     <field_info>145105;no_edit+enum=955
     </data>
    </specification>
    <specification/>
@@ -38992,6 +39017,12 @@
     <name>pdf_font_type
     <type>int
     <key_values>0=Times_Roman,1=Helvetica,20=SimSun,21=SimHei
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>955
+    <name>peerchain_status
+    <type>int
+    <key_values>0=Inactive,1=Connected,2=Listening
    </user_defined_enum>
    <user_defined_enum/>
     <id>500

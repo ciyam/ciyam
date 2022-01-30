@@ -162,8 +162,6 @@ std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use
 std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );
 
-void CIYAM_BASE_DECL_SPEC get_initial_peer_ips( std::map< std::string, std::string >& ips );
-
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 bool CIYAM_BASE_DECL_SPEC get_is_accepted_peer_ip_addr( const std::string& ip_addr );
 
@@ -180,6 +178,9 @@ int CIYAM_BASE_DECL_SPEC get_blockchain_port( const std::string& blockchain );
 bool CIYAM_BASE_DECL_SPEC get_is_known_blockchain( const std::string& blockchain );
 
 void CIYAM_BASE_DECL_SPEC register_blockchains( int port, const std::string& blockchains );
+
+void CIYAM_BASE_DECL_SPEC get_peerchain_externals(
+ std::vector< std::string >& peerchain_externals, bool auto_start_only = true );
 
 void CIYAM_BASE_DECL_SPEC get_peerchain_listeners(
  std::multimap< int, std::string >& peerchain_listeners, bool auto_start_only = true );

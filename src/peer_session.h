@@ -53,7 +53,9 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    std::string port;
    std::string ip_addr;
+
    std::string blockchain;
+   std::string blockchain_suffix;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;

@@ -141,9 +141,6 @@ set< string > g_blockchain_release;
 
 map< string, set< string > > g_blockchain_passwords;
 
-set< string > g_good_peers;
-map< string, deque< string > > g_peers_to_retry;
-
 size_t g_num_peers = 0;
 
 bool has_max_peers( )
@@ -183,61 +180,6 @@ string get_hello_data( string& hello_hash )
    hello_hash = sha256( data ).get_digest_as_string( );
 
    return data;
-}
-
-void add_good_peer( const string& ip_addr, const string& blockchain )
-{
-   guard g( g_mutex );
-
-   g_good_peers.insert( ip_addr + '=' + blockchain );
-}
-
-bool was_good_peer( const string& ip_addr, const string& blockchain )
-{
-   guard g( g_mutex );
-
-   return g_good_peers.count( ip_addr + '=' + blockchain );
-}
-
-void add_peer_to_retry( const string& ip_addr, const string& blockchain )
-{
-   guard g( g_mutex );
-
-   g_peers_to_retry[ blockchain ].push_back( ip_addr );
-}
-
-string get_peer_to_retry( const string& blockchains, string& blockchain )
-{
-   guard g( g_mutex );
-
-   string retval;
-
-   vector< string > all_blockchains;
-   split( blockchains, all_blockchains );
-
-   for( size_t i = 0; i < all_blockchains.size( ); i++ )
-   {
-      string next( all_blockchains[ i ] );
-
-      while( !g_peers_to_retry[ next ].empty( ) )
-      {
-         retval = g_peers_to_retry[ next ].front( );
-         g_peers_to_retry[ next ].pop_front( );
-
-         if( get_is_accepted_peer_ip_addr( retval.substr( 0, retval.find( '!' ) ) ) )
-         {
-            blockchain = next;
-            break;
-         }
-         else
-            retval.erase( );
-      }
-
-      if( !retval.empty( ) )
-         break;
-   }
-
-   return retval;
 }
 
 bool was_released( const string& blockchain )
@@ -3030,6 +2972,13 @@ peer_session::peer_session( bool is_responder,
       blockchain.erase( pos );
    }
 
+   pos = blockchain.find( '_' );
+   if( pos != string::npos )
+   {
+      blockchain_suffix = blockchain.substr( pos );
+      blockchain.erase( pos );
+   }
+
    if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) && !has_tag( "c" + blockchain ) )
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
@@ -3311,6 +3260,8 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
+               set_session_variable( blockchain + blockchain_suffix, c_true_value );
+
                size_t height_for_chk = blockchain_height;
 
                if( has_zenith )
@@ -3413,21 +3364,6 @@ void peer_session::on_start( )
    if( has_terminated && !is_for_support && !blockchain.empty( ) )
       set_system_variable( blockchain + c_supporters_suffix, "" );
 
-   if( !is_responder && !blockchain.empty( ) && !g_server_shutdown )
-   {
-      string addr( ip_addr );
-      if( !port.empty( ) )
-         addr += '!' + port;
-
-      if( okay )
-         add_good_peer( addr, blockchain );
-      else if( was_good_peer( addr, blockchain ) )
-         okay = true;
-
-      if( okay )
-         add_peer_to_retry( addr, blockchain );
-   }
-
    delete this;
 }
 
@@ -3509,54 +3445,6 @@ void peer_listener::on_start( )
 
                   if( p_session )
                      p_session->start( );
-               }
-
-               // NOTE: If a previously good peer has become disconnected then will
-               // try and re-connect to it here.
-               if( !g_server_shutdown && !blockchains.empty( ) && !has_max_peers( ) )
-               {
-                  string blockchain;
-                  string peer_info( get_peer_to_retry( blockchains, blockchain ) );
-
-                  int peer_port( port );
-                  string peer_ip_addr( peer_info );
-
-                  string::size_type pos = peer_info.find( '!' );
-                  if( pos != string::npos )
-                  {
-                     peer_ip_addr = peer_info.substr( 0, pos );
-                     peer_port = atoi( peer_info.substr( pos + 1 ).c_str( ) );
-                  }
-
-                  if( !peer_info.empty( ) )
-                  {
-#ifdef SSL_SUPPORT
-                     auto_ptr< ssl_socket > ap_socket( new ssl_socket );
-#else
-                     auto_ptr< tcp_socket > ap_socket( new tcp_socket );
-#endif
-
-                     bool started = false;
-                     if( ap_socket->open( ) )
-                     {
-                        ip_address address( peer_ip_addr.c_str( ), peer_port );
-
-                        if( ap_socket->connect( address, c_initial_timeout ) )
-                        {
-                           peer_session* p_session = construct_session(
-                            false, ap_socket, peer_ip_addr + "=" + blockchain + ":" + to_string( peer_port ) );
-
-                           if( p_session )
-                           {
-                              started = true;
-                              p_session->start( );
-                           }
-                        }
-                     }
-
-                     if( !started )
-                        add_peer_to_retry( peer_info, blockchain );
-                  }
                }
             }
 
@@ -3825,27 +3713,34 @@ void create_peer_initiator( const string& blockchain,
 
 void create_initial_peer_sessions( )
 {
-   map< string, string > initial_ips;
-   get_initial_peer_ips( initial_ips );
+   vector< string > peerchain_externals;
 
-   for( map< string, string >::iterator i = initial_ips.begin( ); i!= initial_ips.end( ); ++i )
+   get_peerchain_externals( peerchain_externals );
+
+   for( size_t i = 0; i < peerchain_externals.size( ); i++ )
    {
-      string ip_addr( i->first );
+      string ip_addr( peerchain_externals[ i ] );
 
-      string blockchain( i->second );
+      string::size_type pos = ip_addr.find( '=' );
+
+      string blockchain;
+      if( pos != string::npos )
+      {
+         blockchain = ip_addr.substr( pos + 1 );
+         ip_addr.erase( 0, pos );
+      }
 
       int port = 0;
 
-      // NOTE: A specific port can be provided if an initial peer
-      // is not using the standard port for that blockchain.
-      string::size_type pos = blockchain.find( ':' );
+      pos = blockchain.find( ':' );
       if( pos != string::npos )
       {
          port = atoi( blockchain.substr( pos + 1 ).c_str( ) );
          blockchain.erase( pos );
       }
-      else
-         port = get_blockchain_port( blockchain );
+
+      if( !port )
+         throw runtime_error( "invalid or missing port in '" + peerchain_externals[ i ] + "'" );
 
       if( !get_is_accepted_peer_ip_addr( ip_addr ) )
          continue;
