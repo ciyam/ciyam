@@ -4936,6 +4936,18 @@
     <extra>global:peer!
     <specifications/>
      <specification/>
+      <id>600098b
+      <item>class
+     </specification>
+     <specification/>
+      <id>600098c
+      <item>class
+     </specification>
+     <specification/>
+      <id>600898a
+      <item>class
+     </specification>
+     <specification/>
       <id>603960
       <item>class
      </specification>
@@ -4946,7 +4958,7 @@
     </specifications>
     <fields/>
      <field/>
-      <id>145104
+      <id>145105
       <name>Auto_Start
       <type>bool
       <mandatory>true
@@ -4964,13 +4976,63 @@
      </field>
      <field/>
       <id>145102
-      <name>Host_Domain
+      <name>Description
       <type>1020
       <mandatory>true
-      <default_value>localhost
       <indexes/>
       </indexes>
       <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603960
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145107
+      <name>Entry_Type
+      <type>int
+      <mandatory>true
+      <transient>true
+      <enum_id>960
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600898a
+        <item>field
+       </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145103
+      <name>Host_Domain
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145300
+        <affect>relegate;view
+       </modifier>
+       <modifier/>
+        <id>145301
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -5005,7 +5067,32 @@
       </specifications>
      </field>
      <field/>
-      <id>145103
+      <id>145108
+      <name>Num_Helpers
+      <type>1026
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145300
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145301
+        <affect>protect
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145104
       <name>Port_Number
       <type>1035
       <mandatory>true
@@ -5013,6 +5100,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>145301
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -5026,7 +5117,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145105
+      <id>145106
       <name>Status
       <type>int
       <mandatory>true
@@ -5038,6 +5129,14 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600098b
+        <item>field
+       </specification>
+       <specification/>
+        <id>600098c
+        <item>field
+       </specification>
        <specification/>
         <id>603960
         <item>field
@@ -5052,6 +5151,14 @@
     <indexes/>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>145300
+      <name>Is_Listener
+     </modifier>
+     <modifier/>
+      <id>145301
+      <name>Not_Is_Inactive
+     </modifier>
     </modifiers>
     <procedures/>
     </procedures>
@@ -25014,7 +25121,7 @@
      <field/>
       <id>102103
       <name>Max_Size
-      <type>1030
+      <type>1031
       <mandatory>true
       <default_value>0
       <indexes/>
@@ -31778,6 +31885,39 @@
     </data>
    </specification>
    <specification/>
+    <id>600898a
+    <name>{Global_Peerchain_Entry}_Is_Listener
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145300
+     <field_id>145107
+     <field_value>1
+    </data>
+   </specification>
+   <specification/>
+    <id>600098b
+    <name>{Global_Peerchain_Entry}_Not_Is_Inactive
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145301
+     <field_id>145106
+     <field_value>0
+     <not_equal>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600098c
+    <name>{Global_Peerchain_Entry}_Not_Is_Inactive_protect
+    <type>state_protect
+    <data/>
+     <protect_spec>protect_not_equal.spec.xrep
+     <protect_value>0
+     <protect_scope>delete
+    </data>
+   </specification>
+   <specification/>
     <id>603960
     <name>{Global_Peerchain_Entry}_list
     <type>list
@@ -31787,9 +31927,10 @@
      <class_id>145100
      <ordering>forward
      <field_info>145101
-     <field_info>145105;enum=955
      <field_info>145102
+     <field_info>145106;enum=955
      <field_info>145103
+     <field_info>145104
     </data>
    </specification>
    <specification/>
@@ -31803,9 +31944,12 @@
      <field_info>@key
      <field_info>145101;key_name
      <field_info>145102
+     <field_info>145107;new_edit+force+enum=960
      <field_info>145103
      <field_info>145104
-     <field_info>145105;no_edit+enum=955
+     <field_info>145108
+     <field_info>145105
+     <field_info>145106;no_edit+enum=955
     </data>
    </specification>
    <specification/>
@@ -39019,6 +39163,12 @@
     <key_values>0=Times_Roman,1=Helvetica,20=SimSun,21=SimHei
    </user_defined_enum>
    <user_defined_enum/>
+    <id>960
+    <name>peerchain_entry_type
+    <type>int
+    <key_values>0=Caller,1=Listener
+   </user_defined_enum>
+   <user_defined_enum/>
     <id>955
     <name>peerchain_status
     <type>int
@@ -39207,7 +39357,62 @@
   </user_defined_enums>
   <user_defined_types/>
    <user_defined_type/>
+    <id>1026
+    <name>0..9
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>0
+     <maximum>9
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
+    <id>1027
+    <name>0..99
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>0
+     <maximum>99
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
+    <id>1028
+    <name>0..999
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>0
+     <maximum>999
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
+    <id>1029
+    <name>0..9999
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>0
+     <maximum>9999
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
     <id>1030
+    <name>0..99999
+    <type>int
+    <sys_type>int
+    <domain/>
+     <name>range
+     <minimum>0
+     <maximum>99999
+    </domain>
+   </user_defined_type>
+   <user_defined_type/>
+    <id>1031
     <name>0..999999
     <type>int
     <sys_type>int
@@ -39275,8 +39480,8 @@
     <sys_type>int
     <domain/>
      <name>range
-     <minimum>1025
-     <maximum>65000
+     <minimum>20
+     <maximum>65535
     </domain>
    </user_defined_type>
    <user_defined_type/>
