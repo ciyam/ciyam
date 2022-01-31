@@ -87,7 +87,7 @@ const char* const c_dummy_support_tag = "support";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
-const int c_max_num_for_support = 10;
+const int c_max_num_for_support = 9;
 const int c_min_block_wait_passes = 8;
 
 const size_t c_max_pubkey_size = 256;
@@ -3260,7 +3260,9 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               set_session_variable( blockchain + blockchain_suffix, c_true_value );
+               string identity( blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix );
+
+               set_session_variable( identity, c_true_value );
 
                size_t height_for_chk = blockchain_height;
 
@@ -3632,8 +3634,8 @@ void create_peer_listener( int port, const string& blockchains )
    if( !has_registered_listener( port ) )
    {
 #ifdef __GNUG__
-      if( port < 1025 )
-         throw runtime_error( "invalid attempt to use port number less than 1025" );
+      if( port < 1024 )
+         throw runtime_error( "invalid attempt to use port number less than 1024" );
 #endif
       if( !blockchains.empty( ) )
          register_blockchains( port, blockchains );
@@ -3659,10 +3661,10 @@ void create_peer_initiator( const string& blockchain,
    int port = 0;
    string ip_addr( c_local_host );
 
-   if( get_is_known_blockchain( blockchain ) )
-      port = get_blockchain_port( blockchain );
-
    parse_host_and_or_port( host_and_or_port, ip_addr, port );
+
+   if( !port )
+      throw runtime_error( "invalid or missing port in '" + host_and_or_port + "' for create_peer_initiator" );
 
    size_t total_to_create = 1 + num_for_support;
 
@@ -3719,54 +3721,30 @@ void create_initial_peer_sessions( )
 
    for( size_t i = 0; i < peerchain_externals.size( ); i++ )
    {
-      string ip_addr( peerchain_externals[ i ] );
+      string next( peerchain_externals[ i ] );
 
-      string::size_type pos = ip_addr.find( '=' );
+      string::size_type pos = next.find( '=' );
+      if( pos == string::npos )
+         throw runtime_error( "unexpected next peerchain_external '" + next + "'" );
 
-      string blockchain;
+      size_t num_for_support = 0;
+
+      string blockchain( c_bc_prefix + next.substr( 0, pos ) );
+      next.erase( 0, pos + 1 );
+
+      pos = blockchain.find( '+' );
       if( pos != string::npos )
       {
-         blockchain = ip_addr.substr( pos + 1 );
-         ip_addr.erase( 0, pos );
-      }
-
-      int port = 0;
-
-      pos = blockchain.find( ':' );
-      if( pos != string::npos )
-      {
-         port = atoi( blockchain.substr( pos + 1 ).c_str( ) );
+         num_for_support = from_string< size_t >( blockchain.substr( pos + 1 ) );
          blockchain.erase( pos );
       }
 
-      if( !port )
-         throw runtime_error( "invalid or missing port in '" + peerchain_externals[ i ] + "'" );
-
-      if( !get_is_accepted_peer_ip_addr( ip_addr ) )
-         continue;
+      string ip_addr( next );
 
       if( g_server_shutdown || has_max_peers( ) )
          break;
 
-#ifdef SSL_SUPPORT
-      auto_ptr< ssl_socket > ap_socket( new ssl_socket );
-#else
-      auto_ptr< tcp_socket > ap_socket( new tcp_socket );
-#endif
-
-      if( ap_socket->open( ) )
-      {
-         ip_address address( ip_addr.c_str( ), port );
-
-         if( ap_socket->connect( address ) )
-         {
-            peer_session* p_session = construct_session( false,
-             ap_socket, address.get_addr_string( ) + "=" + blockchain + ":" + to_string( port ) );
-
-            if( p_session )
-               p_session->start( );
-         }
-      }
+      create_peer_initiator( blockchain, ip_addr, false, num_for_support );
    }
 }
 

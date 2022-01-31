@@ -27,10 +27,13 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    {
       e_field_id_none = 0,
       e_field_id_Auto_Start = 1,
-      e_field_id_Host_Domain = 2,
-      e_field_id_Identity = 3,
-      e_field_id_Port_Number = 4,
-      e_field_id_Status = 5
+      e_field_id_Description = 2,
+      e_field_id_Entry_Type = 3,
+      e_field_id_Host_Domain = 4,
+      e_field_id_Identity = 5,
+      e_field_id_Num_Helpers = 6,
+      e_field_id_Port_Number = 7,
+      e_field_id_Status = 8
    };
 
    Meta_Global_Peerchain_Entry( );
@@ -39,11 +42,20 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    bool Auto_Start( ) const;
    void Auto_Start( bool Auto_Start );
 
+   const std::string& Description( ) const;
+   void Description( const std::string& Description );
+
+   int Entry_Type( ) const;
+   void Entry_Type( int Entry_Type );
+
    const std::string& Host_Domain( ) const;
    void Host_Domain( const std::string& Host_Domain );
 
    const std::string& Identity( ) const;
    void Identity( const std::string& Identity );
+
+   int Num_Helpers( ) const;
+   void Num_Helpers( int Num_Helpers );
 
    int Port_Number( ) const;
    void Port_Number( int Port_Number );

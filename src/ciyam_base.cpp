@@ -171,7 +171,9 @@ const char* const c_attribute_extra_info = "extra_info";
 const char* const c_attribute_script_name = "script_name";
 
 const char* const c_peerchain_attribute_auto_start = "auto_start";
+const char* const c_peerchain_attribute_description = "description";
 const char* const c_peerchain_attribute_host_domain = "host_domain";
+const char* const c_peerchain_attribute_num_helpers = "num_helpers";
 const char* const c_peerchain_attribute_port_number = "port_number";
 
 const char* const c_default_web_root = "%root%/%store%";
@@ -4681,12 +4683,14 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
       ap_sio_reader.reset( new sio_reader( sio_data ) );
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
+      string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
       string host_domain( ap_sio_reader->read_attribute( c_peerchain_attribute_host_domain ) );
+      string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
       string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
 
       if( ( host_domain != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_externals.push_back( host_domain + '=' + identity + ':' + port_number );
+         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_domain + ':' + port_number );
    }
 }
 
@@ -4712,7 +4716,9 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       ap_sio_reader.reset( new sio_reader( sio_data ) );
 
       string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
+      string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
       string host_domain( ap_sio_reader->read_attribute( c_peerchain_attribute_host_domain ) );
+      string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
       string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
 
       if( ( host_domain == string( c_local_host ) )
