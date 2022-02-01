@@ -38,6 +38,8 @@ const int c_lock_attempt_sleep_time = 200;
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
+const char* const c_special_variable_queue_prefix = "@queue_";
+
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
@@ -119,6 +121,7 @@ const char* const c_special_variable_init_log_id = "@init_log_id";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
 const char* const c_special_variable_permissions = "@permissions";
+const char* const c_special_variable_queue_peers = "@queue_peers";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_state_names = "@state_names";
 const char* const c_special_variable_transaction = "@transaction";
@@ -502,6 +505,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_permissions );
       break;
 
+      case e_special_var_queue_peers:
+      s = string( c_special_variable_queue_peers );
+      break;
+
       case e_special_var_skip_update:
       s = string( c_special_variable_skip_update );
       break;
@@ -856,7 +863,22 @@ string get_raw_system_variable( const string& name )
    else
    {
       if( g_variables.count( var_name ) )
+      {
          retval = g_variables[ var_name ];
+
+         if( var_name.find( c_special_variable_queue_prefix ) == 0 )
+         {
+            string::size_type pos = retval.find( ',' );
+ 
+            if( pos == string::npos )
+               g_variables.erase( var_name );
+            else
+            {
+               g_variables[ var_name ] = retval.substr( pos + 1 );
+               retval.erase( pos );
+            }
+         }
+      }
    }
 
    return retval;
@@ -903,6 +925,14 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          val.clear( );
       else
          val = to_string( num_value );
+   }
+
+   if( !val.empty( ) && ( var_name.find( c_special_variable_queue_prefix ) == 0 ) )
+   {
+      string old_value( g_variables[ var_name ] );
+
+      if( !old_value.empty( ) )
+         val = old_value + ',' + val;
    }
 
    if( !val.empty( ) )

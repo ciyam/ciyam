@@ -46,6 +46,7 @@
 #include "ciyam_core_files.h"
 #include "command_processor.h"
 
+//#define DEBUG
 //#define USE_THROTTLING
 //#define DEBUG_PEER_HANDSHAKE
 
@@ -100,11 +101,13 @@ const size_t c_key_pair_separator_pos = 64;
 
 const size_t c_num_hexadecimal_key_chars = 64;
 
+const size_t c_sleep_time = 1000;
+
 const size_t c_peer_sleep_time = 1000;
 
-const size_t c_initial_timeout = 60000;
-const size_t c_request_timeout = 20000;
-const size_t c_support_timeout = 60000;
+const size_t c_initial_timeout = 8000;
+const size_t c_request_timeout = 2500;
+const size_t c_support_timeout = 2500;
 
 const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
@@ -1520,8 +1523,6 @@ void socket_command_handler::get_hello( )
          throw runtime_error( "invalid get_hello" );
       }
 
-      increment_peer_files_downloaded( file_bytes( hello_hash ) );
-
       file_remove( temp_file_name );
    }
    catch( ... )
@@ -1553,8 +1554,6 @@ void socket_command_handler::put_hello( )
    socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, timeout, p_progress );
 
    fetch_file( hello_hash, socket, p_progress );
-
-   increment_peer_files_uploaded( file_bytes( hello_hash ) );
 }
 
 void socket_command_handler::get_file( const string& hash_info, string* p_file_data )
@@ -1663,10 +1662,11 @@ void socket_command_handler::pip_peer( const string& ip_address )
    if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
    {
       string error;
-      if( socket.had_timeout( ) )
-         error = "timeout occurred getting peer response";
-      else
+
+      if( !socket.had_timeout( ) )
          error = "peer has terminated this connection";
+      else
+         error = "timeout occurred getting peer response";
 
       socket.close( );
       throw runtime_error( error );
@@ -1704,10 +1704,11 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
    {
       string error;
-      if( socket.had_timeout( ) )
-         error = "timeout occurred getting peer response";
-      else
+
+      if( !socket.had_timeout( ) )
          error = "peer has terminated this connection";
+      else
+         error = "timeout occurred getting peer response";
 
       socket.close( );
       throw runtime_error( error );
@@ -2328,9 +2329,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                         socket_handler.trust_level( ) = e_peer_trust_level_normal;
                      }
 
-                     increment_peer_files_uploaded( hello_data.length( ) );
-                     increment_peer_files_downloaded( hello_data.length( ) );
-
                      file_remove( temp_file_name );
                   }
                   catch( ... )
@@ -2526,7 +2524,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             store_temp_file( "", socket, p_progress, true );
          }
 
-         increment_peer_files_downloaded( bytes );
+         if( hash != hello_hash )
+            increment_peer_files_downloaded( bytes );
 
          if( has_file( hash ) )
          {
@@ -2643,10 +2642,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
       {
          string error;
-         if( socket.had_timeout( ) )
-            error = "timeout occurred getting peer response";
-         else
+
+         if( !socket.had_timeout( ) )
             error = "peer has terminated this connection";
+         else
+            error = "timeout occurred getting peer response";
 
          socket.close( );
 
@@ -3671,6 +3671,12 @@ void create_peer_initiator( const string& blockchain,
    peer_session* p_main_session = 0;
    size_t num_supporters_created = 0;
 
+   size_t prefix_length = strlen( c_bc_prefix );
+
+   string identity( blockchain.length( ) <= prefix_length ? blockchain : blockchain.substr( prefix_length ) );
+
+   temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
+
    for( size_t i = 0; i < total_to_create; i++ )
    {
 #ifdef SSL_SUPPORT
@@ -3688,7 +3694,7 @@ void create_peer_initiator( const string& blockchain,
          else if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
             throw runtime_error( "ip address " + ip_addr + " is not permitted" );
 
-         if( ap_socket->connect( address, c_initial_timeout ) )
+         if( ap_socket->connect( address, ( i == 0 ) ? c_initial_timeout : c_support_timeout ) )
          {
             peer_session* p_session = construct_session( false, ap_socket,
              address.get_addr_string( ) + "=" + blockchain + ":" + to_string( port ), i > 0 );
@@ -3713,39 +3719,91 @@ void create_peer_initiator( const string& blockchain,
       set_system_variable( blockchain + c_supporters_suffix, c_true_value );
 }
 
-void create_initial_peer_sessions( )
+peer_session_starter::peer_session_starter( )
 {
-   vector< string > peerchain_externals;
+   ciyam_session::increment_session_count( );
+}
 
-   get_peerchain_externals( peerchain_externals );
+peer_session_starter::~peer_session_starter( )
+{
+   ciyam_session::decrement_session_count( );
+}
 
-   for( size_t i = 0; i < peerchain_externals.size( ); i++ )
+void peer_session_starter::on_start( )
+{
+   try
    {
-      string next( peerchain_externals[ i ] );
+      vector< string > peerchain_externals;
 
-      string::size_type pos = next.find( '=' );
-      if( pos == string::npos )
-         throw runtime_error( "unexpected next peerchain_external '" + next + "'" );
+      get_peerchain_externals( peerchain_externals );
 
-      size_t num_for_support = 0;
-
-      string blockchain( c_bc_prefix + next.substr( 0, pos ) );
-      next.erase( 0, pos + 1 );
-
-      pos = blockchain.find( '+' );
-      if( pos != string::npos )
+      for( size_t i = 0; i < peerchain_externals.size( ); i++ )
       {
-         num_for_support = from_string< size_t >( blockchain.substr( pos + 1 ) );
-         blockchain.erase( pos );
+         if( g_server_shutdown || has_max_peers( ) )
+            break;
+
+         start_peer_session( peerchain_externals[ i ] );
       }
 
-      string ip_addr( next );
+      while( true )
+      {
+         if( g_server_shutdown || has_max_peers( ) )
+            break;
 
-      if( g_server_shutdown || has_max_peers( ) )
-         break;
+         string identity( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
-      create_peer_initiator( blockchain, ip_addr, false, num_for_support );
+         if( identity.empty( ) )
+            msleep( c_sleep_time );
+         else
+         {
+            string peer_info( get_peerchain_external( identity ) );
+
+            if( !peer_info.empty( ) )
+               start_peer_session( peer_info );
+         }
+      }
    }
+   catch( exception& x )
+   {
+#ifdef DEBUG
+      cout << "peer_session_starter error: " << x.what( ) << endl;
+#endif
+      TRACE_LOG( TRACE_ANYTHING, string( "peer_session_starter error: " ) + x.what( ) );
+   }
+   catch( ... )
+   {
+#ifdef DEBUG
+      cout << "unexpected peer_session_starter exception..." << endl;
+#endif
+      TRACE_LOG( TRACE_ANYTHING, "peer_session_starter error: unexpected unknown exception caught" );
+   }
+
+   delete this;
+}
+
+void peer_session_starter::start_peer_session( const string& peer_info )
+{
+   string info( peer_info );
+
+   string::size_type pos = info.find( '=' );
+   if( pos == string::npos )
+      throw runtime_error( "unexpected peer_info '" + peer_info + "'" );
+
+   size_t num_for_support = 0;
+
+   string blockchain( c_bc_prefix + info.substr( 0, pos ) );
+   info.erase( 0, pos + 1 );
+
+   pos = blockchain.find( '+' );
+   if( pos != string::npos )
+   {
+      num_for_support = from_string< size_t >( blockchain.substr( pos + 1 ) );
+      blockchain.erase( pos );
+   }
+
+   string ip_addr( info );
+
+   create_peer_initiator( blockchain, ip_addr, false, num_for_support );
 }
 
 void init_peer_sessions( int start_listeners )
@@ -3779,5 +3837,6 @@ void init_peer_sessions( int start_listeners )
          create_peer_listener( i->first, i->second );
    }
 
-   create_initial_peer_sessions( );
+   peer_session_starter* p_peer_session_start = new peer_session_starter;
+   p_peer_session_start->start( );
 }

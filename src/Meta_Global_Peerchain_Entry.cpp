@@ -233,8 +233,9 @@ string get_enum_string_peerchain_entry_type( int val )
 }
 
 const int c_enum_peerchain_status_Inactive( 0 );
-const int c_enum_peerchain_status_Connected( 1 );
-const int c_enum_peerchain_status_Listening( 2 );
+const int c_enum_peerchain_status_Connecting( 1 );
+const int c_enum_peerchain_status_Connected( 2 );
+const int c_enum_peerchain_status_Listening( 3 );
 
 string get_enum_string_peerchain_status( int val )
 {
@@ -245,8 +246,10 @@ string get_enum_string_peerchain_status( int val )
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_peerchain_status_Inactive";
    else if( to_string( val ) == to_string( "1" ) )
-      string_name = "enum_peerchain_status_Connected";
+      string_name = "enum_peerchain_status_Connecting";
    else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_peerchain_status_Connected";
+   else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_peerchain_status_Listening";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for peerchain_status" );
@@ -775,6 +778,9 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    // [(finish modifier_field_value)] 600898a
 
    // [<start get_state>]
+   //nyi
+   if( !get_system_variable( get_obj( ).Identity( ) ).empty( ) )
+      state |= c_state_is_changing;
    // [<finish get_state>]
 
    return state;
@@ -1008,6 +1014,8 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 
       if( has_any_session_variable( get_obj( ).Identity( ) ) )
          get_obj( ).Status( c_enum_peerchain_status_Connected );
+      else if( !get_system_variable( get_obj( ).Identity( ) ).empty( ) )
+         get_obj( ).Status( c_enum_peerchain_status_Connecting );
    }
    // [<finish after_fetch>]
 }
@@ -2178,6 +2186,7 @@ void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< strin
    pairs.push_back( make_pair( "enum_peerchain_status_0", get_enum_string_peerchain_status( 0 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_1", get_enum_string_peerchain_status( 1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_2", get_enum_string_peerchain_status( 2 ) ) );
+   pairs.push_back( make_pair( "enum_peerchain_status_3", get_enum_string_peerchain_status( 3 ) ) );
 }
 
 void Meta_Global_Peerchain_Entry::static_get_sql_indexes( vector< string >& indexes )
@@ -2228,6 +2237,7 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
    g_peerchain_status_enum.insert( 0 );
    g_peerchain_status_enum.insert( 1 );
    g_peerchain_status_enum.insert( 2 );
+   g_peerchain_status_enum.insert( 3 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

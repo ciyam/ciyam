@@ -4661,6 +4661,43 @@ void register_blockchains( int port, const string& blockchains )
    }
 }
 
+string get_peerchain_external( const string& identity )
+{
+   ods::bulk_read bulk_read( *gap_ods );
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   string retval;
+
+   gap_ofs->set_root_folder( c_file_peerchain_folder );
+
+   vector< string > peerchains;
+
+   gap_ofs->list_files( "", peerchains );
+
+   for( size_t i = 0; i < peerchains.size( ); i++ )
+   {
+      if( identity == peerchains[ i ] )
+      {
+         stringstream sio_data;
+         auto_ptr< sio_reader > ap_sio_reader;
+
+         gap_ofs->get_file( identity, &sio_data, true );
+         ap_sio_reader.reset( new sio_reader( sio_data ) );
+
+         string auto_start( ap_sio_reader->read_attribute( c_peerchain_attribute_auto_start ) );
+         string description( ap_sio_reader->read_attribute( c_peerchain_attribute_description ) );
+         string host_domain( ap_sio_reader->read_attribute( c_peerchain_attribute_host_domain ) );
+         string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
+         string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
+
+         if( host_domain != string( c_local_host ) )
+            retval = identity + '+' + num_helpers + '=' + host_domain + '-' + port_number;
+      }
+   }
+
+   return retval;
+}
+
 void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_start_only )
 {
    ods::bulk_read bulk_read( *gap_ods );
@@ -4690,7 +4727,7 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
       if( ( host_domain != string( c_local_host ) )
        && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_domain + ':' + port_number );
+         peerchain_externals.push_back( identity + '+' + num_helpers + '=' + host_domain + '-' + port_number );
    }
 }
 

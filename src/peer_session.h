@@ -78,6 +78,17 @@ class CIYAM_BASE_DECL_SPEC peer_listener : public thread
    std::string blockchains;
 };
 
+class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
+{
+   public:
+   peer_session_starter( );
+   ~peer_session_starter( );
+
+   void on_start( );
+
+   void start_peer_session( const std::string& peer_info );
+};
+
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );
 
 std::string CIYAM_BASE_DECL_SPEC use_peer_account(
