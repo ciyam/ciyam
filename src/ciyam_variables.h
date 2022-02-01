@@ -42,6 +42,25 @@ void CIYAM_BASE_DECL_SPEC set_system_variable(
 bool CIYAM_BASE_DECL_SPEC set_system_variable(
  const std::string& name, const std::string& value, const std::string& current, progress* p_progress = 0 );
 
+struct temporary_system_variable
+{
+   temporary_system_variable( const std::string& name, const std::string& value )
+    :
+    name( name )
+   {
+      original_value = get_system_variable( name );
+      set_system_variable( name, value );
+   }
+
+   ~temporary_system_variable( )
+   {
+      set_system_variable( name, original_value );
+   }
+
+   std::string name;
+   std::string original_value;
+};
+
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_variables( std::ostream& outs );
 
 #endif

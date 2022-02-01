@@ -738,8 +738,7 @@ int main( int argc, char* argv[ ] )
 
                   // NOTE: If there are no active sessions (apart from auto-started sessions) and is not
                   // shutting down then check and update the timezone information if it has been changed.
-                  if( !g_server_shutdown
-                   && ( !g_active_sessions || ( g_active_sessions <= min_active_sessions ) ) )
+                  if( !g_server_shutdown && ( g_active_sessions <= min_active_sessions ) )
                      ( *fp_check_timezone_info_func )( );
 
                   // NOTE: Check for accepts and create new sessions.

@@ -58,7 +58,7 @@
 `{`$enum_orientation`=`'0=landscape 1=portrait 2=neither`'`}
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
 `{`$enum_peerchain_entry_type`=`'0=Caller 1=Listener`'`}
-`{`$enum_peerchain_status`=`'0=Inactive 1=Connected 2=Listening`'`}
+`{`$enum_peerchain_status`=`'0=Inactive 1=Connecting 2=Connected 3=Listening`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
 `{`$enum_procedure_arg_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 99=Any_Primitive`'`}
 `{`$enum_procedure_arg_type`=`'0=in 1=out 99=Any_Type`'`}

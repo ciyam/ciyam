@@ -132,6 +132,7 @@ enum special_var
    e_special_var_output_file,
    e_special_var_path_prefix,
    e_special_var_permissions,
+   e_special_var_queue_peers,
    e_special_var_skip_update,
    e_special_var_state_names,
    e_special_var_transaction,

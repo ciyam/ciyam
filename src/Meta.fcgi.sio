@@ -1592,10 +1592,14 @@
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_status_connected
+     <name>enum_peerchain_status_connecting
     </value>
     <value/>
      <data>2
+     <name>enum_peerchain_status_connected
+    </value>
+    <value/>
+     <data>3
      <name>enum_peerchain_status_listening
     </value>
    </values>
