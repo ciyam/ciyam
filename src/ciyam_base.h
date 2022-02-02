@@ -179,7 +179,7 @@ bool CIYAM_BASE_DECL_SPEC get_is_known_blockchain( const std::string& blockchain
 
 void CIYAM_BASE_DECL_SPEC register_blockchains( int port, const std::string& blockchains );
 
-std::string CIYAM_BASE_DECL_SPEC get_peerchain_external( const std::string& identity );
+std::string CIYAM_BASE_DECL_SPEC get_peerchain_info( const std::string& identity, bool* p_is_listener = 0 );
 
 void CIYAM_BASE_DECL_SPEC get_peerchain_externals(
  std::vector< std::string >& peerchain_externals, bool auto_start_only = true );

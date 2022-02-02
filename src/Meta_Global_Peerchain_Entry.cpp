@@ -60,6 +60,7 @@ inline void sanity_check( const string& s )
 const int32_t c_version = 1;
 
 
+const char* const c_field_id_Actions = "145109";
 const char* const c_field_id_Auto_Start = "145105";
 const char* const c_field_id_Description = "145102";
 const char* const c_field_id_Entry_Type = "145107";
@@ -69,6 +70,7 @@ const char* const c_field_id_Num_Helpers = "145108";
 const char* const c_field_id_Port_Number = "145104";
 const char* const c_field_id_Status = "145106";
 
+const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Auto_Start = "Auto_Start";
 const char* const c_field_name_Description = "Description";
 const char* const c_field_name_Entry_Type = "Entry_Type";
@@ -78,6 +80,7 @@ const char* const c_field_name_Num_Helpers = "Num_Helpers";
 const char* const c_field_name_Port_Number = "Port_Number";
 const char* const c_field_name_Status = "Status";
 
+const char* const c_field_display_name_Actions = "field_global_peerchain_entry_actions";
 const char* const c_field_display_name_Auto_Start = "field_global_peerchain_entry_auto_start";
 const char* const c_field_display_name_Description = "field_global_peerchain_entry_description";
 const char* const c_field_display_name_Entry_Type = "field_global_peerchain_entry_entry_type";
@@ -87,7 +90,7 @@ const char* const c_field_display_name_Num_Helpers = "field_global_peerchain_ent
 const char* const c_field_display_name_Port_Number = "field_global_peerchain_entry_port_number";
 const char* const c_field_display_name_Status = "field_global_peerchain_entry_status";
 
-const int c_num_fields = 8;
+const int c_num_fields = 9;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -98,11 +101,13 @@ const char* const c_all_sorted_field_ids[ ] =
    "145105",
    "145106",
    "145107",
-   "145108"
+   "145108",
+   "145109"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Actions",
    "Auto_Start",
    "Description",
    "Entry_Type",
@@ -125,17 +130,19 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 3;
+const int c_num_transient_fields = 4;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "145101",
    "145106",
-   "145107"
+   "145107",
+   "145109"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
+   "Actions",
    "Entry_Type",
    "Identity",
    "Status"
@@ -149,8 +156,17 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), compare );
 }
 
-const uint64_t c_modifier_Is_Listener = UINT64_C( 0x100 );
-const uint64_t c_modifier_Not_Is_Inactive = UINT64_C( 0x200 );
+const char* const c_procedure_id_Connect = "145410";
+const char* const c_procedure_id_Disconnect = "145420";
+const char* const c_procedure_id_Finish_Listening = "145440";
+const char* const c_procedure_id_Start_Listening = "145430";
+
+const uint64_t c_modifier_Is_Connected = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Connecting = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Disconnecting = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Listener = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Listening = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Not_Is_Inactive = UINT64_C( 0x2000 );
 
 domain_string_max_size< 100 > g_Description_domain;
 domain_string_max_size< 100 > g_Host_Domain_domain;
@@ -201,6 +217,7 @@ inline validation_error_value_type
     construct_key_from_int( "", ++num, 4 ) + ':' + field_name, error_message );
 }
 
+string g_default_Actions = string( );
 bool g_default_Auto_Start = bool( 0 );
 string g_default_Description = string( );
 int g_default_Entry_Type = int( 0 );
@@ -236,6 +253,7 @@ const int c_enum_peerchain_status_Inactive( 0 );
 const int c_enum_peerchain_status_Connecting( 1 );
 const int c_enum_peerchain_status_Connected( 2 );
 const int c_enum_peerchain_status_Listening( 3 );
+const int c_enum_peerchain_status_Disconnecting( 4 );
 
 string get_enum_string_peerchain_status( int val )
 {
@@ -251,6 +269,8 @@ string get_enum_string_peerchain_status( int val )
       string_name = "enum_peerchain_status_Connected";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_peerchain_status_Listening";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_peerchain_status_Disconnecting";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for peerchain_status" );
 
@@ -338,6 +358,12 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Global_Peerchain_Entry->Actions( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
       {
          handled = true;
@@ -397,6 +423,13 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
+         func_string_setter< Meta_Global_Peerchain_Entry, string >(
+          *cmd_handler.p_Meta_Global_Peerchain_Entry, &Meta_Global_Peerchain_Entry::Actions, field_value );
+      }
 
       if( !handled && field_name == c_field_id_Auto_Start || field_name == c_field_name_Auto_Start )
       {
@@ -471,6 +504,30 @@ void Meta_Global_Peerchain_Entry_command_functor::operator ( )( const string& co
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Connect )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Connect( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Disconnect )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Disconnect( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Finish_Listening )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Finish_Listening( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Global_Peerchain_Entry_Start_Listening )
+   {
+      cmd_handler.p_Meta_Global_Peerchain_Entry->Start_Listening( );
+
+      cmd_handler.retval.erase( );
+   }
 }
 
 struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_command_handler
@@ -491,6 +548,9 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    {
       return *cp_obj;
    }
+
+   const string& impl_Actions( ) const { return lazy_fetch( p_obj ), v_Actions; }
+   void impl_Actions( const string& Actions ) { sanity_check( Actions ); v_Actions = Actions; }
 
    bool impl_Auto_Start( ) const { return lazy_fetch( p_obj ), v_Auto_Start; }
    void impl_Auto_Start( bool Auto_Start ) { v_Auto_Start = Auto_Start; }
@@ -515,6 +575,14 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    int impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
    void impl_Status( int Status ) { v_Status = Status; }
+
+   void impl_Connect( );
+
+   void impl_Disconnect( );
+
+   void impl_Finish_Listening( );
+
+   void impl_Start_Listening( );
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -576,6 +644,7 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
 
    size_t total_child_relationships;
 
+   string v_Actions;
    bool v_Auto_Start;
    string v_Description;
    int v_Entry_Type;
@@ -586,6 +655,49 @@ struct Meta_Global_Peerchain_Entry::impl : public Meta_Global_Peerchain_Entry_co
    int v_Status;
 };
 
+void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Connect_impl>]
+   //nyi
+   set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
+   msleep( 250 );
+   // [<finish Connect_impl>]
+}
+
+void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Disconnect_impl>]
+   //nyi
+   set_system_variable( '~' + get_obj( ).Identity( ), c_true_value );
+   // [<finish Disconnect_impl>]
+}
+
+void Meta_Global_Peerchain_Entry::impl::impl_Finish_Listening( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Finish_Listening_impl>]
+   // [<finish Finish_Listening_impl>]
+}
+
+void Meta_Global_Peerchain_Entry::impl::impl_Start_Listening( )
+{
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start Start_Listening_impl>]
+   set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
+   msleep( 250 );
+   // [<finish Start_Listening_impl>]
+}
+
 string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
 {
    string retval;
@@ -593,34 +705,38 @@ string Meta_Global_Peerchain_Entry::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Auto_Start( ) );
+      retval = to_string( impl_Actions( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Description( ) );
+      retval = to_string( impl_Auto_Start( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Entry_Type( ) );
+      retval = to_string( impl_Description( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Host_Domain( ) );
+      retval = to_string( impl_Entry_Type( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Identity( ) );
+      retval = to_string( impl_Host_Domain( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Num_Helpers( ) );
+      retval = to_string( impl_Identity( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Port_Number( ) );
+      retval = to_string( impl_Num_Helpers( ) );
       break;
 
       case 7:
+      retval = to_string( impl_Port_Number( ) );
+      break;
+
+      case 8:
       retval = to_string( impl_Status( ) );
       break;
 
@@ -636,34 +752,38 @@ void Meta_Global_Peerchain_Entry::impl::set_field_value( int field, const string
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, bool >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Auto_Start, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Actions, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Description, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, bool >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Auto_Start, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Entry_Type, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Description, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Domain, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Entry_Type, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Identity, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Host_Domain, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Num_Helpers, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, string >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Identity, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Number, value );
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Num_Helpers, value );
       break;
 
       case 7:
+      func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Port_Number, value );
+      break;
+
+      case 8:
       func_string_setter< Meta_Global_Peerchain_Entry::impl, int >( *this, &Meta_Global_Peerchain_Entry::impl::impl_Status, value );
       break;
 
@@ -677,34 +797,38 @@ void Meta_Global_Peerchain_Entry::impl::set_field_default( int field )
    switch( field )
    {
       case 0:
-      impl_Auto_Start( g_default_Auto_Start );
+      impl_Actions( g_default_Actions );
       break;
 
       case 1:
-      impl_Description( g_default_Description );
+      impl_Auto_Start( g_default_Auto_Start );
       break;
 
       case 2:
-      impl_Entry_Type( g_default_Entry_Type );
+      impl_Description( g_default_Description );
       break;
 
       case 3:
-      impl_Host_Domain( g_default_Host_Domain );
+      impl_Entry_Type( g_default_Entry_Type );
       break;
 
       case 4:
-      impl_Identity( g_default_Identity );
+      impl_Host_Domain( g_default_Host_Domain );
       break;
 
       case 5:
-      impl_Num_Helpers( g_default_Num_Helpers );
+      impl_Identity( g_default_Identity );
       break;
 
       case 6:
-      impl_Port_Number( g_default_Port_Number );
+      impl_Num_Helpers( g_default_Num_Helpers );
       break;
 
       case 7:
+      impl_Port_Number( g_default_Port_Number );
+      break;
+
+      case 8:
       impl_Status( g_default_Status );
       break;
 
@@ -720,34 +844,38 @@ bool Meta_Global_Peerchain_Entry::impl::is_field_default( int field ) const
    switch( field )
    {
       case 0:
-      retval = ( v_Auto_Start == g_default_Auto_Start );
+      retval = ( v_Actions == g_default_Actions );
       break;
 
       case 1:
-      retval = ( v_Description == g_default_Description );
+      retval = ( v_Auto_Start == g_default_Auto_Start );
       break;
 
       case 2:
-      retval = ( v_Entry_Type == g_default_Entry_Type );
+      retval = ( v_Description == g_default_Description );
       break;
 
       case 3:
-      retval = ( v_Host_Domain == g_default_Host_Domain );
+      retval = ( v_Entry_Type == g_default_Entry_Type );
       break;
 
       case 4:
-      retval = ( v_Identity == g_default_Identity );
+      retval = ( v_Host_Domain == g_default_Host_Domain );
       break;
 
       case 5:
-      retval = ( v_Num_Helpers == g_default_Num_Helpers );
+      retval = ( v_Identity == g_default_Identity );
       break;
 
       case 6:
-      retval = ( v_Port_Number == g_default_Port_Number );
+      retval = ( v_Num_Helpers == g_default_Num_Helpers );
       break;
 
       case 7:
+      retval = ( v_Port_Number == g_default_Port_Number );
+      break;
+
+      case 8:
       retval = ( v_Status == g_default_Status );
       break;
 
@@ -763,14 +891,44 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    uint64_t state = 0;
 
    // [(start modifier_field_value)] 600098b
-   if( get_obj( ).Status( ) != 0 )
-      state |= c_modifier_Not_Is_Inactive;
+   if( get_obj( ).Status( ) == 2 ) // i.e. Connected
+      state |= c_modifier_Is_Connected;
    // [(finish modifier_field_value)] 600098b
 
-   // [(start protect_not_equal)] 600098c
+   // [(start modifier_field_value)] 600098c
+   if( get_obj( ).Status( ) == 3 ) // i.e. Listening
+      state |= c_modifier_Is_Listening;
+   // [(finish modifier_field_value)] 600098c
+
+   // [(start modifier_field_value)] 600098d
+   if( get_obj( ).Status( ) == 1 ) // i.e. Connecting
+      state |= c_modifier_Is_Connecting;
+   // [(finish modifier_field_value)] 600098d
+
+   // [(start modifier_field_value)] 600098e
+   if( get_obj( ).Status( ) == 4 ) // i.e. Disconnecting
+      state |= c_modifier_Is_Connecting;
+   // [(finish modifier_field_value)] 600098e
+
+   // [(start protect_equal)] 600098f
+   if( check_equal( get_obj( ).Status( ), 1 ) )
+      state |= ( c_state_uneditable | c_state_undeletable | c_state_is_changing );
+   // [(finish protect_equal)] 600098f
+
+   // [(start protect_equal)] 600098g
+   if( check_equal( get_obj( ).Status( ), 4 ) )
+      state |= ( c_state_uneditable | c_state_undeletable | c_state_is_changing );
+   // [(finish protect_equal)] 600098g
+
+   // [(start modifier_field_value)] 600098h
+   if( get_obj( ).Status( ) != 0 )
+      state |= c_modifier_Not_Is_Inactive;
+   // [(finish modifier_field_value)] 600098h
+
+   // [(start protect_not_equal)] 600098i
    if( check_not_equal( get_obj( ).Status( ), 0 ) )
       state |= ( c_state_undeletable );
-   // [(finish protect_not_equal)] 600098c
+   // [(finish protect_not_equal)] 600098i
 
    // [(start modifier_field_value)] 600898a
    if( get_obj( ).Entry_Type( ) == 1 )
@@ -778,9 +936,6 @@ uint64_t Meta_Global_Peerchain_Entry::impl::get_state( ) const
    // [(finish modifier_field_value)] 600898a
 
    // [<start get_state>]
-   //nyi
-   if( !get_system_variable( get_obj( ).Identity( ) ).empty( ) )
-      state |= c_state_is_changing;
    // [<finish get_state>]
 
    return state;
@@ -791,8 +946,16 @@ string Meta_Global_Peerchain_Entry::impl::get_state_names( ) const
    string state_names;
    uint64_t state = get_state( );
 
+   if( state & c_modifier_Is_Connected )
+      state_names += "|" + string( "Is_Connected" );
+   if( state & c_modifier_Is_Connecting )
+      state_names += "|" + string( "Is_Connecting" );
+   if( state & c_modifier_Is_Disconnecting )
+      state_names += "|" + string( "Is_Disconnecting" );
    if( state & c_modifier_Is_Listener )
       state_names += "|" + string( "Is_Listener" );
+   if( state & c_modifier_Is_Listening )
+      state_names += "|" + string( "Is_Listening" );
    if( state & c_modifier_Not_Is_Inactive )
       state_names += "|" + string( "Not_Is_Inactive" );
 
@@ -852,6 +1015,7 @@ void Meta_Global_Peerchain_Entry::impl::add_extra_paging_info( vector< pair< str
 
 void Meta_Global_Peerchain_Entry::impl::clear( )
 {
+   v_Actions = g_default_Actions;
    v_Auto_Start = g_default_Auto_Start;
    v_Description = g_default_Description;
    v_Entry_Type = g_default_Entry_Type;
@@ -997,6 +1161,7 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 
    // [<start after_fetch>]
 //nyi
+   get_obj( ).Actions( "" );
    get_obj( ).Identity( get_obj( ).get_key( ) );
 
    if( get_obj( ).Host_Domain( ) == c_local_host )
@@ -1006,16 +1171,25 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 
       if( has_registered_listener( get_obj( ).Port_Number( ) ) )
          get_obj( ).Status( c_enum_peerchain_status_Listening );
+      else
+         get_obj( ).Actions( '<' + string( c_procedure_id_Start_Listening ) );
    }
    else
    {
       if( !is_null( get_obj( ).Identity( ) ) )
          get_obj( ).Entry_Type( c_enum_peerchain_entry_type_Caller );
 
-      if( has_any_session_variable( get_obj( ).Identity( ) ) )
+      if( !get_system_variable( '~' + get_obj( ).Identity( ) ).empty( ) )
+         get_obj( ).Status( c_enum_peerchain_status_Disconnecting );
+      else if( has_any_session_variable( get_obj( ).Identity( ) ) )
+      {
          get_obj( ).Status( c_enum_peerchain_status_Connected );
+         get_obj( ).Actions( '<' + string( c_procedure_id_Disconnect ) );
+      }
       else if( !get_system_variable( get_obj( ).Identity( ) ).empty( ) )
          get_obj( ).Status( c_enum_peerchain_status_Connecting );
+      else
+         get_obj( ).Actions( '<' + string( c_procedure_id_Connect ) );
    }
    // [<finish after_fetch>]
 }
@@ -1188,6 +1362,16 @@ Meta_Global_Peerchain_Entry::~Meta_Global_Peerchain_Entry( )
    delete p_impl;
 }
 
+const string& Meta_Global_Peerchain_Entry::Actions( ) const
+{
+   return p_impl->impl_Actions( );
+}
+
+void Meta_Global_Peerchain_Entry::Actions( const string& Actions )
+{
+   p_impl->impl_Actions( Actions );
+}
+
 bool Meta_Global_Peerchain_Entry::Auto_Start( ) const
 {
    return p_impl->impl_Auto_Start( );
@@ -1266,6 +1450,26 @@ int Meta_Global_Peerchain_Entry::Status( ) const
 void Meta_Global_Peerchain_Entry::Status( int Status )
 {
    p_impl->impl_Status( Status );
+}
+
+void Meta_Global_Peerchain_Entry::Connect( )
+{
+   p_impl->impl_Connect( );
+}
+
+void Meta_Global_Peerchain_Entry::Disconnect( )
+{
+   p_impl->impl_Disconnect( );
+}
+
+void Meta_Global_Peerchain_Entry::Finish_Listening( )
+{
+   p_impl->impl_Finish_Listening( );
+}
+
+void Meta_Global_Peerchain_Entry::Start_Listening( )
+{
+   p_impl->impl_Start_Listening( );
 }
 
 string Meta_Global_Peerchain_Entry::get_field_value( int field ) const
@@ -1439,6 +1643,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Actions )
+   {
+      p_id = c_field_id_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Auto_Start )
    {
       p_id = c_field_id_Auto_Start;
@@ -1530,6 +1744,16 @@ const char* Meta_Global_Peerchain_Entry::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Actions )
+   {
+      p_name = c_field_name_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Auto_Start )
    {
       p_name = c_field_name_Auto_Start;
@@ -1644,6 +1868,11 @@ string Meta_Global_Peerchain_Entry::get_field_uom_symbol( const string& id_or_na
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   {
+      name = string( c_field_display_name_Actions );
+      get_module_string( c_field_display_name_Actions, &next );
+   }
    else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
    {
       name = string( c_field_display_name_Auto_Start );
@@ -1699,6 +1928,8 @@ string Meta_Global_Peerchain_Entry::get_field_display_name( const string& id_or_
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+      display_name = get_module_string( c_field_display_name_Actions );
    else if( id_or_name == c_field_id_Auto_Start || id_or_name == c_field_name_Auto_Start )
       display_name = get_module_string( c_field_display_name_Auto_Start );
    else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
@@ -1863,6 +2094,14 @@ string Meta_Global_Peerchain_Entry::get_execute_procedure_info( const string& pr
 
    if( procedure_id.empty( ) )
       throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "145410" ) // i.e. Connect
+      retval = "";
+   else if( procedure_id == "145420" ) // i.e. Disconnect
+      retval = "";
+   else if( procedure_id == "145440" ) // i.e. Finish_Listening
+      retval = "";
+   else if( procedure_id == "145430" ) // i.e. Start_Listening
+      retval = "";
 
    return retval;
 }
@@ -1933,20 +2172,68 @@ void Meta_Global_Peerchain_Entry::get_always_required_field_names(
    ( void )use_transients;
 
    // [(start modifier_field_value)] 600098b
-   dependents.insert( "Status" ); // (for Not_Is_Inactive modifier)
+   dependents.insert( "Status" ); // (for Is_Connected modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Status ) )
     || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
       names.insert( "Status" );
    // [(finish modifier_field_value)] 600098b
 
-   // [(start protect_not_equal)] 600098c
+   // [(start modifier_field_value)] 600098c
+   dependents.insert( "Status" ); // (for Is_Listening modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish modifier_field_value)] 600098c
+
+   // [(start modifier_field_value)] 600098d
+   dependents.insert( "Status" ); // (for Is_Connecting modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish modifier_field_value)] 600098d
+
+   // [(start modifier_field_value)] 600098e
+   dependents.insert( "Status" ); // (for Is_Connecting modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish modifier_field_value)] 600098e
+
+   // [(start protect_equal)] 600098f
    dependents.insert( "Status" );
 
    if( ( use_transients && is_field_transient( e_field_id_Status ) )
     || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
       names.insert( "Status" );
-   // [(finish protect_not_equal)] 600098c
+   // [(finish protect_equal)] 600098f
+
+   // [(start protect_equal)] 600098g
+   dependents.insert( "Status" );
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish protect_equal)] 600098g
+
+   // [(start modifier_field_value)] 600098h
+   dependents.insert( "Status" ); // (for Not_Is_Inactive modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish modifier_field_value)] 600098h
+
+   // [(start protect_not_equal)] 600098i
+   dependents.insert( "Status" );
+
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
+   // [(finish protect_not_equal)] 600098i
 
    // [(start modifier_field_value)] 600898a
    dependents.insert( "Entry_Type" ); // (for Is_Listener modifier)
@@ -2012,6 +2299,7 @@ void Meta_Global_Peerchain_Entry::static_get_class_info( class_info_container& c
 
 void Meta_Global_Peerchain_Entry::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "145109", "Actions", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145105", "Auto_Start", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "145102", "Description", "string", false, "", "" ) );
    all_field_info.push_back( field_info( "145107", "Entry_Type", "int", false, "", "" ) );
@@ -2052,34 +2340,38 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "145105";
+      p_id = "145109";
       break;
 
       case 2:
-      p_id = "145102";
+      p_id = "145105";
       break;
 
       case 3:
-      p_id = "145107";
+      p_id = "145102";
       break;
 
       case 4:
-      p_id = "145103";
+      p_id = "145107";
       break;
 
       case 5:
-      p_id = "145101";
+      p_id = "145103";
       break;
 
       case 6:
-      p_id = "145108";
+      p_id = "145101";
       break;
 
       case 7:
-      p_id = "145104";
+      p_id = "145108";
       break;
 
       case 8:
+      p_id = "145104";
+      break;
+
+      case 9:
       p_id = "145106";
       break;
    }
@@ -2097,34 +2389,38 @@ const char* Meta_Global_Peerchain_Entry::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Auto_Start";
+      p_id = "Actions";
       break;
 
       case 2:
-      p_id = "Description";
+      p_id = "Auto_Start";
       break;
 
       case 3:
-      p_id = "Entry_Type";
+      p_id = "Description";
       break;
 
       case 4:
-      p_id = "Host_Domain";
+      p_id = "Entry_Type";
       break;
 
       case 5:
-      p_id = "Identity";
+      p_id = "Host_Domain";
       break;
 
       case 6:
-      p_id = "Num_Helpers";
+      p_id = "Identity";
       break;
 
       case 7:
-      p_id = "Port_Number";
+      p_id = "Num_Helpers";
       break;
 
       case 8:
+      p_id = "Port_Number";
+      break;
+
+      case 9:
       p_id = "Status";
       break;
    }
@@ -2141,29 +2437,41 @@ int Meta_Global_Peerchain_Entry::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Auto_Start || field == c_field_name_Auto_Start )
+   else if( field == c_field_id_Actions || field == c_field_name_Actions )
       rc += 1;
-   else if( field == c_field_id_Description || field == c_field_name_Description )
+   else if( field == c_field_id_Auto_Start || field == c_field_name_Auto_Start )
       rc += 2;
-   else if( field == c_field_id_Entry_Type || field == c_field_name_Entry_Type )
+   else if( field == c_field_id_Description || field == c_field_name_Description )
       rc += 3;
-   else if( field == c_field_id_Host_Domain || field == c_field_name_Host_Domain )
+   else if( field == c_field_id_Entry_Type || field == c_field_name_Entry_Type )
       rc += 4;
-   else if( field == c_field_id_Identity || field == c_field_name_Identity )
+   else if( field == c_field_id_Host_Domain || field == c_field_name_Host_Domain )
       rc += 5;
-   else if( field == c_field_id_Num_Helpers || field == c_field_name_Num_Helpers )
+   else if( field == c_field_id_Identity || field == c_field_name_Identity )
       rc += 6;
-   else if( field == c_field_id_Port_Number || field == c_field_name_Port_Number )
+   else if( field == c_field_id_Num_Helpers || field == c_field_name_Num_Helpers )
       rc += 7;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( field == c_field_id_Port_Number || field == c_field_name_Port_Number )
       rc += 8;
+   else if( field == c_field_id_Status || field == c_field_name_Status )
+      rc += 9;
 
    return rc - 1;
 }
 
 procedure_info_container& Meta_Global_Peerchain_Entry::static_get_procedure_info( )
 {
+   static bool initialised = false;
    static procedure_info_container procedures;
+
+   if( !initialised )
+   {
+      initialised = true;
+      procedures.insert( make_pair( "145410", procedure_info( "Connect" ) ) );
+      procedures.insert( make_pair( "145420", procedure_info( "Disconnect" ) ) );
+      procedures.insert( make_pair( "145440", procedure_info( "Finish_Listening" ) ) );
+      procedures.insert( make_pair( "145430", procedure_info( "Start_Listening" ) ) );
+   }
 
    return procedures;
 }
@@ -2187,6 +2495,7 @@ void Meta_Global_Peerchain_Entry::static_get_all_enum_pairs( vector< pair< strin
    pairs.push_back( make_pair( "enum_peerchain_status_1", get_enum_string_peerchain_status( 1 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_2", get_enum_string_peerchain_status( 2 ) ) );
    pairs.push_back( make_pair( "enum_peerchain_status_3", get_enum_string_peerchain_status( 3 ) ) );
+   pairs.push_back( make_pair( "enum_peerchain_status_4", get_enum_string_peerchain_status( 4 ) ) );
 }
 
 void Meta_Global_Peerchain_Entry::static_get_sql_indexes( vector< string >& indexes )
@@ -2238,6 +2547,7 @@ void Meta_Global_Peerchain_Entry::static_class_init( const char* p_module_name )
    g_peerchain_status_enum.insert( 1 );
    g_peerchain_status_enum.insert( 2 );
    g_peerchain_status_enum.insert( 3 );
+   g_peerchain_status_enum.insert( 4 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

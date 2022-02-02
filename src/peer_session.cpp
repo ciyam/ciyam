@@ -101,13 +101,13 @@ const size_t c_key_pair_separator_pos = 64;
 
 const size_t c_num_hexadecimal_key_chars = 64;
 
-const size_t c_sleep_time = 1000;
+const size_t c_sleep_time = 250;
 
 const size_t c_peer_sleep_time = 1000;
 
 const size_t c_initial_timeout = 8000;
-const size_t c_request_timeout = 2500;
-const size_t c_support_timeout = 2500;
+const size_t c_request_timeout = 3000;
+const size_t c_support_timeout = 3000;
 
 const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
@@ -1508,10 +1508,8 @@ void socket_command_handler::get_hello( )
 
    string temp_file_name( "~" + uuid( ).as_string( ) );
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + hello_hash, timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hello_hash, c_request_timeout, p_progress );
 
    try
    {
@@ -1548,10 +1546,8 @@ void socket_command_handler::put_hello( )
    if( !has_file( hello_hash ) )
       create_raw_file( data, false );
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hello_hash, c_request_timeout, p_progress );
 
    fetch_file( hello_hash, socket, p_progress );
 }
@@ -1570,10 +1566,8 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
    string hash( hash_info.substr( 0, pos ) );
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_get ) + " " + hash, c_request_timeout, p_progress );
 
    bool is_list = false;
    size_t num_bytes = 0;
@@ -1635,10 +1629,8 @@ void socket_command_handler::put_file( const string& hash )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_delay( );
-   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_put ) + " " + hash, c_request_timeout, p_progress );
 
    fetch_file( hash, socket, p_progress );
 
@@ -1653,13 +1645,11 @@ void socket_command_handler::pip_peer( const string& ip_address )
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_no_delay( );
-   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, timeout, p_progress );
+   socket.write_line( string( c_cmd_peer_session_pip ) + " " + ip_address, c_request_timeout, p_progress );
 
    string response;
-   if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
+   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
    {
       string error;
 
@@ -1683,13 +1673,11 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
    string expected;
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    socket.set_no_delay( );
 
    if( p_response )
       socket.write_line(
-       string( c_cmd_peer_session_chk ) + " " + hash_or_tag, timeout, p_progress );
+       string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
    else
    {
       string nonce( uuid( ).as_string( ) );
@@ -1697,11 +1685,11 @@ void socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
       expected = hash_with_nonce( hash_or_tag, nonce );
 
       socket.write_line( string( c_cmd_peer_session_chk )
-       + " " + hash_or_tag + " " + nonce, timeout, p_progress );
+       + " " + hash_or_tag + " " + nonce, c_request_timeout, p_progress );
    }
 
    string response;
-   if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
+   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
    {
       string error;
 
@@ -2112,7 +2100,13 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 {
    str = cmd_and_args;
 
+   string identity( get_session_variable(
+    get_special_var_name( e_special_var_identity ) ) );
+
    if( session_state == e_peer_state_invalid )
+      str = c_cmd_peer_session_bye;
+   else if( !identity.empty( )
+    && !get_system_variable( '~' + identity ).empty( ) )
       str = c_cmd_peer_session_bye;
 
    if( !str.empty( ) )
@@ -2151,8 +2145,10 @@ void socket_command_handler::postprocess_command_and_args( const string& cmd_and
    last_command = cmd_and_args.substr( 0, pos );
 
    if( has_finished( ) )
+   {
       TRACE_LOG( TRACE_SESSIONS, get_blockchain( ).empty( )
        ? "finished peer session" : "finished peer session for blockchain " + get_blockchain( ) );
+   }
 }
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
@@ -2163,8 +2159,6 @@ void socket_command_handler::handle_command_response( const string& response, bo
    if( get_trace_flags( ) & TRACE_SOCK_OPS )
       p_progress = &progress;
 
-   size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
    if( !response.empty( ) )
    {
       if( !is_special && is_responder )
@@ -2172,13 +2166,13 @@ void socket_command_handler::handle_command_response( const string& response, bo
       else
          socket.set_no_delay( );
 
-      socket.write_line( response, timeout, p_progress );
+      socket.write_line( response, c_request_timeout, p_progress );
    }
 
    if( !is_special && is_responder )
    {
       socket.set_no_delay( );
-      socket.write_line( c_response_okay, timeout, p_progress );
+      socket.write_line( c_response_okay, c_request_timeout, p_progress );
    }
 }
 
@@ -2637,9 +2631,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    {
       string response;
 
-      size_t timeout = socket_handler.get_is_for_support( ) ? c_support_timeout : c_request_timeout;
-
-      if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
+      if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
       {
          string error;
 
@@ -2810,14 +2802,12 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
        && !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
          check_for_supporters = true;
 
-      size_t timeout = socket_handler.get_is_for_support( ) ? c_support_timeout : c_request_timeout;
-
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
       {
          if( socket_handler.op_state( ) == e_peer_state_waiting_for_put )
          {
             string response;
-            if( socket.read_line( response, timeout, 0, p_progress ) <= 0 )
+            if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
             {
                cmd_and_args = "bye";
                break;
@@ -2838,7 +2828,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          }
       }
 
-      if( socket.read_line( cmd_and_args, timeout, c_max_line_length, p_progress ) <= 0 )
+      if( socket.read_line( cmd_and_args, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
           && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
@@ -3102,8 +3092,6 @@ void peer_session::on_start( )
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
 
-      size_t timeout = is_for_support ? c_support_timeout : c_request_timeout;
-
       progress* p_progress = 0;
       trace_progress progress( TRACE_SOCK_OPS );
 
@@ -3120,13 +3108,13 @@ void peer_session::on_start( )
             extra += '!';
 
          ap_socket->write_line( string( c_protocol_version )
-          + ':' + extra + '\n' + string( c_response_okay ), timeout, p_progress );
+          + ':' + extra + '\n' + string( c_response_okay ), c_request_timeout, p_progress );
       }
       else
       {
          string greeting;
 
-         if( ap_socket->read_line( greeting, timeout, c_max_greeting_size, p_progress ) <= 0 )
+         if( ap_socket->read_line( greeting, c_request_timeout, c_max_greeting_size, p_progress ) <= 0 )
          {
             string error;
             if( ap_socket->had_timeout( ) )
@@ -3185,16 +3173,16 @@ void peer_session::on_start( )
       // NOTE: After handshake exchange public keys then commence peer protocol.
       if( is_responder )
       {
-         ap_socket->write_line( slot_and_pubkey, timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_progress );
 
-         ap_socket->read_line( slotx_and_pubkeyx, timeout, c_max_pubkey_size, p_progress );
+         ap_socket->read_line( slotx_and_pubkeyx, c_request_timeout, c_max_pubkey_size, p_progress );
       }
       else
       {
          ap_socket->read_line( slotx_and_pubkeyx,
-          timeout, c_max_pubkey_size, p_progress );
+          c_request_timeout, c_max_pubkey_size, p_progress );
 
-         ap_socket->write_line( slot_and_pubkey, timeout, p_progress );
+         ap_socket->write_line( slot_and_pubkey, c_request_timeout, p_progress );
       }
 
       string::size_type pos = slotx_and_pubkeyx.find( '-' );
@@ -3263,6 +3251,7 @@ void peer_session::on_start( )
                string identity( blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix );
 
                set_session_variable( identity, c_true_value );
+               set_session_variable( get_special_var_name( e_special_var_identity ), identity );
 
                size_t height_for_chk = blockchain_height;
 
@@ -3285,7 +3274,7 @@ void peer_session::on_start( )
          if( hash_or_tag.empty( ) )
             hash_or_tag = hello_hash;
 
-         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, timeout, p_progress );
+         ap_socket->write_line( string( c_cmd_peer_session_chk ) + " " + hash_or_tag, c_request_timeout, p_progress );
 
          cmd_handler.state( ) = e_peer_state_waiting_for_put;
          cmd_handler.op_state( ) = e_peer_state_waiting_for_put;
@@ -3296,7 +3285,7 @@ void peer_session::on_start( )
             {
                string block_hash;
 
-               if( ap_socket->read_line( block_hash, timeout, c_max_line_length, p_progress ) <= 0 )
+               if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
                else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
                   add_peer_file_hash_for_get( block_hash );
@@ -3305,7 +3294,7 @@ void peer_session::on_start( )
             {
                string blockchain_head_hash;
 
-               if( ap_socket->read_line( blockchain_head_hash, timeout, c_max_line_length, p_progress ) <= 0 )
+               if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
                   okay = false;
 
                set_session_variable(
@@ -3364,7 +3353,14 @@ void peer_session::on_start( )
    }
 
    if( has_terminated && !is_for_support && !blockchain.empty( ) )
-      set_system_variable( blockchain + c_supporters_suffix, "" );
+   {
+      if( blockchain.find( c_bc_prefix ) == 0 )
+      {
+         set_system_variable( blockchain + c_supporters_suffix, "" );
+
+         set_system_variable( '~' + blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix, "" );
+      }
+   }
 
    delete this;
 }
@@ -3756,10 +3752,24 @@ void peer_session_starter::on_start( )
             msleep( c_sleep_time );
          else
          {
-            string peer_info( get_peerchain_external( identity ) );
+            bool is_listener = false;
+
+            string peer_info( get_peerchain_info( identity, &is_listener ) );
 
             if( !peer_info.empty( ) )
-               start_peer_session( peer_info );
+            {
+               if( !is_listener )
+                  start_peer_session( peer_info );
+               else
+               {
+                  string::size_type pos = peer_info.find( '=' );
+                  if( pos != string::npos )
+                  {
+                     int port = from_string< int >( peer_info.substr( pos + 1 ) );
+                     create_peer_listener( port, peer_info.substr( 0, pos ) );
+                  }
+               }
+            }
          }
       }
    }

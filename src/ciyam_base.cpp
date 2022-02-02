@@ -4661,7 +4661,7 @@ void register_blockchains( int port, const string& blockchains )
    }
 }
 
-string get_peerchain_external( const string& identity )
+string get_peerchain_info( const string& identity, bool* p_is_listener )
 {
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -4690,8 +4690,18 @@ string get_peerchain_external( const string& identity )
          string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
          string port_number( ap_sio_reader->read_attribute( c_peerchain_attribute_port_number ) );
 
-         if( host_domain != string( c_local_host ) )
+         if( host_domain == string( c_local_host ) )
+         {
+            if( p_is_listener )
+               *p_is_listener = true;
+            retval = identity + '=' + port_number;
+         }
+         else
+         {
+            if( p_is_listener )
+               *p_is_listener = false;
             retval = identity + '+' + num_helpers + '=' + host_domain + '-' + port_number;
+         }
       }
    }
 

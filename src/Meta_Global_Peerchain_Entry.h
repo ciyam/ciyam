@@ -26,18 +26,22 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Auto_Start = 1,
-      e_field_id_Description = 2,
-      e_field_id_Entry_Type = 3,
-      e_field_id_Host_Domain = 4,
-      e_field_id_Identity = 5,
-      e_field_id_Num_Helpers = 6,
-      e_field_id_Port_Number = 7,
-      e_field_id_Status = 8
+      e_field_id_Actions = 1,
+      e_field_id_Auto_Start = 2,
+      e_field_id_Description = 3,
+      e_field_id_Entry_Type = 4,
+      e_field_id_Host_Domain = 5,
+      e_field_id_Identity = 6,
+      e_field_id_Num_Helpers = 7,
+      e_field_id_Port_Number = 8,
+      e_field_id_Status = 9
    };
 
    Meta_Global_Peerchain_Entry( );
    ~Meta_Global_Peerchain_Entry( );
+
+   const std::string& Actions( ) const;
+   void Actions( const std::string& Actions );
 
    bool Auto_Start( ) const;
    void Auto_Start( bool Auto_Start );
@@ -62,6 +66,14 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
 
    int Status( ) const;
    void Status( int Status );
+
+   virtual void Connect( );
+
+   virtual void Disconnect( );
+
+   virtual void Finish_Listening( );
+
+   virtual void Start_Listening( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
