@@ -1602,6 +1602,10 @@
      <data>3
      <name>enum_peerchain_status_listening
     </value>
+    <value/>
+     <data>4
+     <name>enum_peerchain_status_disconnecting
+    </value>
    </values>
   </enum>
   <enum/>
@@ -3594,7 +3598,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>true
-     <modifiers>100:relegate,200:protect
+     <modifiers>800:relegate,2000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_port_number
@@ -3602,7 +3606,7 @@
      <ftype>int
      <extra>range=20..65535
      <mandatory>true
-     <modifiers>200:protect
+     <modifiers>2000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_num_helpers
@@ -3610,7 +3614,7 @@
      <ftype>int
      <extra>range=0..9
      <mandatory>true
-     <modifiers>100:relegate,200:protect
+     <modifiers>800:relegate,2000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_auto_start
@@ -3626,6 +3630,14 @@
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_actions
+     <field>145109
+     <ftype>string
+     <extra>actions
+     <mandatory>false
      <modifiers>
     </field>
    </fields>
@@ -8933,7 +8945,7 @@
    <type>admin
    <extra>
    <actions>
-   <modifiers>
+   <modifiers>100:extralight1,1000:extralight1,200:extralight,400:extralight
    <view>603970
    <class>Global_Peerchain_Entry
    <bclass>
@@ -8972,7 +8984,7 @@
      <field>145103
      <ftype>string
      <extra>max_size=100
-     <modifiers>200:protect
+     <modifiers>2000:protect
      <unique>false
      <indexed>false
     </column>
@@ -8981,7 +8993,7 @@
      <field>145104
      <ftype>int
      <extra>range=20..65535
-     <modifiers>200:protect
+     <modifiers>2000:protect
      <unique>false
      <indexed>false
     </column>

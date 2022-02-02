@@ -58,7 +58,7 @@
 `{`$enum_orientation`=`'0=landscape 1=portrait 2=neither`'`}
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
 `{`$enum_peerchain_entry_type`=`'0=Caller 1=Listener`'`}
-`{`$enum_peerchain_status`=`'0=Inactive 1=Connecting 2=Connected 3=Listening`'`}
+`{`$enum_peerchain_status`=`'0=Inactive 1=Connecting 2=Connected 3=Listening 4=Disconnecting`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
 `{`$enum_procedure_arg_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 99=Any_Primitive`'`}
 `{`$enum_procedure_arg_type`=`'0=in 1=out 99=Any_Type`'`}
@@ -1165,7 +1165,7 @@
 `{`$specification_Global_Peerchain_Entry_list_name`=`'Global_Peerchain_Entries`'`}
 `{`$specification_Global_Peerchain_Entry_list_type`=`'admin`'`}
 `{`$specification_Global_Peerchain_Entry_list_acts`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_list_mods`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_list_mods`=`'100:extralight1,1000:extralight1,200:extralight,400:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_list_extra`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_list_order`=`'forward`'`}
 `{`$specification_Global_Peerchain_Entry_list_binfo`=`'`'`}
@@ -1194,14 +1194,14 @@
 `{`$specification_Global_Peerchain_Entry_list_clname03`=`'Global_Peerchain_Entry_Host_Domain`'`}
 `{`$specification_Global_Peerchain_Entry_list_cltype03`=`'string`'`}
 `{`$specification_Global_Peerchain_Entry_list_clxtra03`=`'max_size=100`'`}
-`{`$specification_Global_Peerchain_Entry_list_clmods03`=`'200:protect`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods03`=`'2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_list_cluniq03`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_list_cindex03`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_list_column04`=`'145104`'`}
 `{`$specification_Global_Peerchain_Entry_list_clname04`=`'Global_Peerchain_Entry_Port_Number`'`}
 `{`$specification_Global_Peerchain_Entry_list_cltype04`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_list_clxtra04`=`'range=20..65535`'`}
-`{`$specification_Global_Peerchain_Entry_list_clmods04`=`'200:protect`'`}
+`{`$specification_Global_Peerchain_Entry_list_clmods04`=`'2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_list_cluniq04`=`'false`'`}
 `{`$specification_Global_Peerchain_Entry_list_cindex04`=`'false`'`}
 `{`}
@@ -1212,7 +1212,7 @@
 `{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_mods`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008`'`}
+`{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008 009`'`}
 `{`$specification_Global_Peerchain_Entry_view_field000`=`'@key`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype000`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra000`=`'`'`}
@@ -1240,19 +1240,19 @@
 `{`$specification_Global_Peerchain_Entry_view_field004`=`'145103`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype004`=`'string`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra004`=`'max_size=100`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods004`=`'100:relegate,200:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods004`=`'800:relegate,2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname004`=`'field_global_peerchain_entry_host_domain`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand004`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field005`=`'145104`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype005`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra005`=`'range=20..65535`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods005`=`'200:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods005`=`'2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname005`=`'field_global_peerchain_entry_port_number`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand005`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field006`=`'145108`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype006`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra006`=`'range=0..9`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods006`=`'100:relegate,200:protect`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods006`=`'800:relegate,2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname006`=`'field_global_peerchain_entry_num_helpers`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand006`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field007`=`'145105`'`}
@@ -1267,6 +1267,12 @@
 `{`$specification_Global_Peerchain_Entry_view_fmods008`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname008`=`'field_global_peerchain_entry_status`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand008`=`'true`'`}
+`{`$specification_Global_Peerchain_Entry_view_field009`=`'145109`'`}
+`{`$specification_Global_Peerchain_Entry_view_ftype009`=`'string`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra009`=`'actions`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods009`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fname009`=`'field_global_peerchain_entry_actions`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmand009`=`'false`'`}
 `{`}
 `{`$specification_Global_Repository_Entry_list_id`=`'603980`'`}
 `{`$specification_Global_Repository_Entry_list_cid`=`'150100`'`}
