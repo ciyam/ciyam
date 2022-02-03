@@ -1496,10 +1496,13 @@ void term_system_ods( )
 }
 
 typedef map< int, string > listener_container;
+typedef map< string, int > listener_id_container;
 
 typedef listener_container::const_iterator listener_const_iterator;
+typedef listener_id_container::const_iterator listener_id_const_iterator;
 
 listener_container g_listeners;
+listener_id_container g_listener_ids;
 
 size_t g_next_session_id;
 
@@ -3526,9 +3529,6 @@ set< string > g_rejected_ip_addrs;
 set< string > g_accepted_peer_ip_addrs;
 set< string > g_rejected_peer_ip_addrs;
 
-multimap< int, string > g_blockchains;
-map< string, int > g_blockchain_ids;
-
 string g_mbox_path;
 string g_mbox_username;
 
@@ -4185,30 +4185,121 @@ void set_stream_socket( int p, int s )
    g_stream_sock = s;
 }
 
-void register_listener( int port, const char* p_info )
+void register_listener( int port, const char* p_info, const char* p_id_info )
 {
    g_listeners.insert( make_pair( port, p_info ) );
+
+   if( p_id_info )
+   {
+      string ids( p_id_info );
+
+      if( !ids.empty( ) )
+      {
+         vector< string > all_ids;
+         split( ids, all_ids );
+
+         for( size_t i = 0; i < all_ids.size( ); i++ )
+            g_listener_ids.insert( make_pair( all_ids[ i ], port ) );
+      }
+   }
 }
 
-void unregister_listener( int port )
+void unregister_listener( int port, const char* p_id_info )
 {
-   g_listeners.erase( port );
+   if( p_id_info )
+   {
+      string ids( p_id_info );
+
+      if( !ids.empty( ) )
+      {
+         vector< string > all_ids;
+         split( ids, all_ids );
+
+         for( size_t i = 0; i < all_ids.size( ); i++ )
+            g_listener_ids.erase( all_ids[ i ] );
+      }
+   }
+
+   bool found = false;
+   for( listener_id_const_iterator lidci = g_listener_ids.begin( ); lidci != g_listener_ids.end( ); ++lidci )
+   {
+      if( lidci->second == port )
+      {
+         found = true;
+         break;
+      }
+   }
+
+   if( !found )
+      g_listeners.erase( port );
 }
 
-listener_registration::listener_registration( int port, const string& info )
+listener_registration::listener_registration( int port, const string& info, const char* p_id_info )
  :
  port( port )
 {
    guard g( g_mutex );
 
-   register_listener( port, info.c_str( ) );
+   if( p_id_info )
+      id_info = string( p_id_info );
+
+   register_listener( port, info.c_str( ), p_id_info );
 }
 
 listener_registration::~listener_registration( )
 {
    guard g( g_mutex );
 
-   unregister_listener( port );
+   unregister_listener( port, id_info.c_str( ) );
+}
+
+void listener_registration::insert_id( const string& id )
+{
+   g_listener_ids.insert( make_pair( id, port ) );
+
+   if( id_info.empty( ) )
+      id_info = id;
+   else
+   {
+      set< string > ids;
+      split( id_info, ids );
+
+      ids.insert( id );
+
+      id_info.erase( );
+
+      for( set< string >::iterator i = ids.begin( ); i != ids.end( ); ++i )
+      {
+         if( !id_info.empty( ) )
+            id_info += ',';
+         id_info += *i;
+      }
+   }
+}
+
+void listener_registration::remove_id( const string& id )
+{
+   if( !id_info.empty( ) )
+   {
+      g_listener_ids.erase( id );
+
+      set< string > ids;
+      split( id_info, ids );
+
+      id_info.erase( );
+
+      for( set< string >::iterator i = ids.begin( ); i != ids.end( ); ++i )
+      {
+         string next( *i );
+
+         if( id != next )
+         {
+            if( !id_info.empty( ) )
+               id_info += ',';
+            id_info += next;
+         }
+      }
+   }
 }
 
 bool has_registered_listener( int port )
@@ -4218,12 +4309,39 @@ bool has_registered_listener( int port )
    return g_listeners.count( port );
 }
 
+bool has_registered_listener( int port, const string& id )
+{
+   guard g( g_mutex );
+
+   return g_listeners.count( port ) && g_listener_ids.count( id );
+}
+
 void list_listeners( ostream& os )
 {
    guard g( g_mutex );
 
    for( listener_const_iterator lci = g_listeners.begin( ); lci != g_listeners.end( ); ++lci )
-      os << lci->first << ' ' << lci->second << '\n';
+   {
+      string ids;
+
+      for( listener_id_const_iterator lidci = g_listener_ids.begin( ); lidci != g_listener_ids.end( ); ++lidci )
+      {
+         if( lidci->second == lci->first )
+         {
+            if( !ids.empty( ) )
+               ids += ',';
+            else
+               ids += " (";
+
+            ids += lidci->first;
+         }
+      }
+
+      if( !ids.empty( ) )
+         ids += ')';
+
+      os << lci->first << ' ' << lci->second << ids << '\n';
+   }
 }
 
 void init_globals( const char* p_sid, int* p_use_udp )
@@ -4608,57 +4726,6 @@ string list_peer_ip_addrs_for_rejection( )
    }
 
    return retval;
-}
-
-int get_blockchain_port( const string& blockchain )
-{
-   guard g( g_mutex );
-
-   if( !g_blockchain_ids.count( blockchain ) )
-      throw runtime_error( "unknown blockchain: " + blockchain );
-
-   return g_blockchain_ids[ blockchain ];
-}
-
-bool get_is_known_blockchain( const string& blockchain )
-{
-   guard g( g_mutex );
-
-   return g_blockchain_ids.count( blockchain );
-}
-
-void register_blockchains( int port, const string& blockchains )
-{
-   guard g( g_mutex );
-
-   if( !blockchains.empty( ) )
-   {
-      vector< string > all_blockchains;
-      split( blockchains, all_blockchains );
-
-      bool has_checked = false;
-
-      for( size_t i = 0; i < 2; i++ )
-      {
-         for( size_t j = 0; j < all_blockchains.size( ); j++ )
-         {
-            string next( all_blockchains[ j ] );
-
-            // NOTE: Check for errors in the first pass and insert blockchains in the second pass.
-            if( i == 0 )
-            {
-               if( g_blockchain_ids.count( next ) && g_blockchain_ids[ next ] != port )
-                  throw runtime_error( "blockchain "
-                   + next + " is already registered to port " + to_string( g_blockchain_ids[ next ] ) );
-            }
-            else
-            {
-               g_blockchains.insert( make_pair( port, next ) );
-               g_blockchain_ids[ next ] = port;
-            }
-         }
-      }
-   }
 }
 
 string get_peerchain_info( const string& identity, bool* p_is_listener )

@@ -94,23 +94,29 @@ extern "C" void CIYAM_BASE_DECL_SPEC  set_stream_socket( int p, int s );
 
 typedef void ( *fp_set_stream_socket )( int, int );
 
-extern "C" void CIYAM_BASE_DECL_SPEC register_listener( int port, const char* p_info );
-extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( int port );
+extern "C" void CIYAM_BASE_DECL_SPEC register_listener( int port, const char* p_info, const char* p_id_info = 0 );
+extern "C" void CIYAM_BASE_DECL_SPEC unregister_listener( int port, const char* p_id_info = 0 );
 
-typedef void ( *fp_register_listener )( int, const char* );
-typedef void ( *fp_unregister_listener )( int );
+typedef void ( *fp_register_listener )( int, const char*, const char* );
+typedef void ( *fp_unregister_listener )( int, const char* );
 
 class CIYAM_BASE_DECL_SPEC listener_registration
 {
    public:
-   listener_registration( int port, const std::string& info );
+   listener_registration( int port, const std::string& info, const char* p_id_info = 0 );
    ~listener_registration( );
+
+   void insert_id( const std::string& id );
+   void remove_id( const std::string& id );
 
    private:
    int port;
+
+   std::string id_info;
 };
 
 bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
+bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port, const std::string& id );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 

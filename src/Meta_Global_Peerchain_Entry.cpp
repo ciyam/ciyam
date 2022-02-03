@@ -661,7 +661,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
    ( void )state;
 
    // [<start Connect_impl>]
-   //nyi
+//nyi
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
    msleep( 250 );
    // [<finish Connect_impl>]
@@ -673,7 +673,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
    ( void )state;
 
    // [<start Disconnect_impl>]
-   //nyi
+//nyi
    set_system_variable( '~' + get_obj( ).Identity( ), c_true_value );
    // [<finish Disconnect_impl>]
 }
@@ -684,6 +684,9 @@ void Meta_Global_Peerchain_Entry::impl::impl_Finish_Listening( )
    ( void )state;
 
    // [<start Finish_Listening_impl>]
+//nyi
+   set_system_variable( '@' + to_string( get_obj( ).Port_Number( ) ), '~' + get_obj( ).Identity( ) );
+   msleep( 500 );
    // [<finish Finish_Listening_impl>]
 }
 
@@ -693,8 +696,9 @@ void Meta_Global_Peerchain_Entry::impl::impl_Start_Listening( )
    ( void )state;
 
    // [<start Start_Listening_impl>]
+//nyi
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
-   msleep( 250 );
+   msleep( 500 );
    // [<finish Start_Listening_impl>]
 }
 
@@ -1169,8 +1173,11 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
       if( !is_null( get_obj( ).Identity( ) ) )
          get_obj( ).Entry_Type( c_enum_peerchain_entry_type_Listener );
 
-      if( has_registered_listener( get_obj( ).Port_Number( ) ) )
+      if( has_registered_listener( get_obj( ).Port_Number( ), get_obj( ).Identity( ) ) )
+      {
          get_obj( ).Status( c_enum_peerchain_status_Listening );
+         get_obj( ).Actions( '<' + string( c_procedure_id_Finish_Listening ) );
+      }
       else
          get_obj( ).Actions( '<' + string( c_procedure_id_Start_Listening ) );
    }
@@ -1233,7 +1240,7 @@ void Meta_Global_Peerchain_Entry::impl::to_store( bool is_create, bool is_intern
    ( void )state;
 
    // [<start to_store>]
-   //nyi
+//nyi
    if( get_obj( ).Entry_Type( ) == c_enum_peerchain_entry_type_Listener )
       get_obj( ).Host_Domain( c_local_host );
    // [<finish to_store>]
@@ -1248,7 +1255,7 @@ void Meta_Global_Peerchain_Entry::impl::for_store( bool is_create, bool is_inter
    ( void )state;
 
    // [<start for_store>]
-   //nyi
+//nyi
    if( ( get_obj( ).Host_Domain( ) == c_local_host )
     && ( get_obj( ).Entry_Type( ) == c_enum_peerchain_entry_type_Caller ) )
       throw runtime_error( "Invalid Host Domain '" + to_string( c_local_host ) + "' for Caller" );
