@@ -610,7 +610,7 @@ int main( int argc, char* argv[ ] )
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
-            ( *fp_register_listener_func )( g_port, "main" );
+            ( *fp_register_listener_func )( g_port, "main", "" );
 
             if( !is_update )
             {
@@ -792,7 +792,7 @@ int main( int argc, char* argv[ ] )
                ( *fp_log_trace_string_func )( TRACE_ANYTHING, "error: unexpected socket error" );
             }
 
-            ( *fp_unregister_listener_func )( g_port );
+            ( *fp_unregister_listener_func )( g_port, "" );
          }
 
          ( *fp_term_globals_func )( );

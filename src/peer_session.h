@@ -102,7 +102,9 @@ std::string CIYAM_BASE_DECL_SPEC create_blockchain_transaction(
  const std::string& blockchain, const std::string& application,
  const std::string& log_command, const std::vector< std::string >* p_file_info = 0 );
 
-void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchain );
+std::string CIYAM_BASE_DECL_SPEC prefixed_blockchains( const std::string& blockchains );
+
+void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchains );
 
 void CIYAM_BASE_DECL_SPEC create_peer_initiator( const std::string& blockchain,
  const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0 );

@@ -2100,15 +2100,6 @@ void socket_command_handler::preprocess_command_and_args( string& str, const str
 {
    str = cmd_and_args;
 
-   string identity( get_session_variable(
-    get_special_var_name( e_special_var_identity ) ) );
-
-   if( session_state == e_peer_state_invalid )
-      str = c_cmd_peer_session_bye;
-   else if( !identity.empty( )
-    && !get_system_variable( '~' + identity ).empty( ) )
-      str = c_cmd_peer_session_bye;
-
    if( !str.empty( ) )
    {
       TRACE_LOG( TRACE_COMMANDS, cmd_and_args );
@@ -2612,6 +2603,23 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    handler.issue_command_response( response, !send_okay_response );
 
+   // NOTE: If a disconnect has been actioned for an initiator then issue a "bye" after
+   // condemning the session.
+   if( !socket_handler.get_is_responder( ) && !socket_handler.get_is_for_support( ) )
+   {
+      string identity( get_session_variable(
+       get_special_var_name( e_special_var_identity ) ) );
+
+      if( !get_system_variable( '~' + identity ).empty( ) )
+      {
+         if( !is_condemned_session( ) )
+         {
+            condemn_this_session( );
+            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+         }
+      }
+   }
+
    if( !send_okay_response || is_condemned_session( ) )
    {
       socket_handler.state( ) = e_peer_state_invalid;
@@ -2972,13 +2980,8 @@ peer_session::peer_session( bool is_responder,
    if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) && !has_tag( "c" + blockchain ) )
       throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
 
-   if( port.empty( ) )
-   {
-      if( blockchain.empty( ) )
-         port = get_test_peer_port( );
-      else if( blockchain.find( ',' ) == 0 )
-         port = to_string( get_blockchain_port( blockchain ) );
-   }
+   if( port.empty( ) && blockchain.empty( ) )
+      port = get_test_peer_port( );
 
    if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
@@ -3041,9 +3044,6 @@ peer_session::peer_session( bool is_responder,
 
          if( !blockchains.count( blockchain ) )
             throw runtime_error( "unsupported blockchain '" + blockchain + "' for peer listener" );
-
-         if( port.empty( ) )
-            port = to_string( get_blockchain_port( blockchain ) );
 
          pid.erase( pos );
       }
@@ -3163,7 +3163,10 @@ void peer_session::on_start( )
          }
       }
 
-      init_session( cmd_handler, true, &ip_addr, &blockchain, from_string< int >( port ), is_for_support );
+      string unprefixed_blockchain( blockchain );
+      replace( unprefixed_blockchain, c_bc_prefix, "" );
+
+      init_session( cmd_handler, true, &ip_addr, &unprefixed_blockchain, from_string< int >( port ), is_for_support );
 
       string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
       slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
@@ -3398,10 +3401,10 @@ void peer_listener::on_start( )
 
          string listener_name( "peer" );
 
-         if( !blockchains.empty( ) )
-            listener_name += " (" + blockchains + ")";
+         string unprefixed_blockchains( blockchains );
+         replace( unprefixed_blockchains, c_bc_prefix, "" );
 
-         listener_registration registration( port, listener_name );
+         listener_registration registration( port, listener_name, unprefixed_blockchains.c_str( ) );
 
          okay = s.bind( address );
 
@@ -3414,6 +3417,66 @@ void peer_listener::on_start( )
 
             while( s && !g_server_shutdown )
             {
+               string identity_changes( get_system_variable( '@' + to_string( port ) ) );
+
+               // NOTE; Uses the system variable "@<port>" in order to insert or remove blockchains from the listener.
+               if( !identity_changes.empty( ) )
+               {
+                  bool is_remove = false;
+
+                  if( identity_changes[ 0 ] == '~' )
+                  {
+                     is_remove = true;
+                     identity_changes.erase( 0, 1 );
+                  }
+
+                  if( !identity_changes.empty( ) )
+                  {
+                     set< string > existing_blockchains;
+
+                     split( unprefixed_blockchains, existing_blockchains );
+
+                     vector< string > all_changes;
+                     split( identity_changes, all_changes );
+
+                     for( size_t i = 0; i < all_changes.size( ); i++ )
+                     {
+                        string next( all_changes[ i ] );
+
+                        if( is_remove )
+                        {
+                           if( existing_blockchains.count( next ) )
+                           {
+                              registration.remove_id( next );
+                              existing_blockchains.erase( next );
+                           }
+                        }
+                        else
+                        {
+                           if( !existing_blockchains.count( next ) )
+                           {
+                              registration.insert_id( next );
+                              existing_blockchains.insert( next );
+                           }
+                        }
+                     }
+
+                     if( existing_blockchains.empty( ) )
+                        break;
+
+                     unprefixed_blockchains.erase( );
+
+                     for( set< string >::iterator i = existing_blockchains.begin( ); i != existing_blockchains.end( ); ++i )
+                     {
+                        if( !unprefixed_blockchains.empty( ) )
+                           unprefixed_blockchains += ',';
+                        unprefixed_blockchains += *i;
+                     }
+
+                     blockchains = prefixed_blockchains( unprefixed_blockchains );
+                  }
+               }
+
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
                auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
@@ -3625,16 +3688,43 @@ string create_blockchain_transaction( const string& blockchain,
    return tx_hash;
 }
 
+string prefixed_blockchains( const string& blockchains )
+{
+   string retval;
+
+   if( !blockchains.empty( ) )
+   {
+      vector< string > all_blockchains;
+
+      split( blockchains, all_blockchains );
+
+      for( size_t i = 0; i < all_blockchains.size( ); i++ )
+      {
+         string next( all_blockchains[ i ] );
+
+         if( !retval.empty( ) )
+            retval += ',';
+
+         if( next.find( c_bc_prefix ) != 0 )
+            retval += c_bc_prefix;
+
+         retval += next;
+      }
+   }
+
+   return retval;
+}
+
 void create_peer_listener( int port, const string& blockchains )
 {
-   if( !has_registered_listener( port ) )
+   if( has_registered_listener( port ) )
+      set_system_variable( '@' + to_string( port ), blockchains );
+   else
    {
 #ifdef __GNUG__
       if( port < 1024 )
          throw runtime_error( "invalid attempt to use port number less than 1024" );
 #endif
-      if( !blockchains.empty( ) )
-         register_blockchains( port, blockchains );
 
       peer_listener* p_peer_listener = new peer_listener( port, blockchains );
       p_peer_listener->start( );
@@ -3669,7 +3759,8 @@ void create_peer_initiator( const string& blockchain,
 
    size_t prefix_length = strlen( c_bc_prefix );
 
-   string identity( blockchain.length( ) <= prefix_length ? blockchain : blockchain.substr( prefix_length ) );
+   string identity( blockchain );
+   replace( identity, c_bc_prefix, "" );
 
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 

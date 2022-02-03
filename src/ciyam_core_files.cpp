@@ -1067,9 +1067,6 @@ pair< uint64_t, uint64_t > verify_block( const string& content,
       if( block_height && !has_tag( "c" + chain + ".a" + account + "*" ) )
          throw runtime_error( "unknown account '" + account + "' for block header" );
 
-      if( block_height == 0 && !get_is_known_blockchain( account ) )
-         throw runtime_error( "invalid unrecognised blockchain '" + account + "'" );
-
       if( block_height < cinfo.checkpoint_start_height )
          throw runtime_error( "invalid block height is below current checkpoint" );
    }
