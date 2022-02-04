@@ -2092,9 +2092,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
+         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove ) );
          string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
-         create_peer_listener( atoi( port.c_str( ) ), prefixed_blockchains( blockchains ) );
+         if( !remove )
+            create_peer_listener( atoi( port.c_str( ) ), prefixed_blockchains( blockchains ) );
+         else
+         {
+            if( has_registered_listener( atoi( port.c_str( ) ) ) )
+               set_system_variable( '@' + port, '~' + unprefixed_blockchains( blockchains ) );
+         }
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {

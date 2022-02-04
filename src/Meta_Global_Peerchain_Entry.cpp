@@ -663,7 +663,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
    // [<start Connect_impl>]
 //nyi
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
-   msleep( 250 );
+   msleep( c_peer_sleep_time );
    // [<finish Connect_impl>]
 }
 
@@ -675,6 +675,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
    // [<start Disconnect_impl>]
 //nyi
    set_system_variable( '~' + get_obj( ).Identity( ), c_true_value );
+   msleep( c_peer_sleep_time );
    // [<finish Disconnect_impl>]
 }
 
@@ -686,7 +687,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Finish_Listening( )
    // [<start Finish_Listening_impl>]
 //nyi
    set_system_variable( '@' + to_string( get_obj( ).Port_Number( ) ), '~' + get_obj( ).Identity( ) );
-   msleep( 500 );
+   msleep( c_peer_sleep_time );
    // [<finish Finish_Listening_impl>]
 }
 
@@ -698,7 +699,7 @@ void Meta_Global_Peerchain_Entry::impl::impl_Start_Listening( )
    // [<start Start_Listening_impl>]
 //nyi
    set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
-   msleep( 500 );
+   msleep( c_peer_sleep_time );
    // [<finish Start_Listening_impl>]
 }
 
