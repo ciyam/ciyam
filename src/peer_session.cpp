@@ -103,8 +103,6 @@ const size_t c_num_hexadecimal_key_chars = 64;
 
 const size_t c_sleep_time = 250;
 
-const size_t c_peer_sleep_time = 1000;
-
 const size_t c_initial_timeout = 8000;
 const size_t c_request_timeout = 3000;
 const size_t c_support_timeout = 3000;
@@ -1347,7 +1345,7 @@ class socket_command_handler : public command_handler
       had_usage = false;
 
       dtm_rcvd_not_found = dtm_sent_not_found
-       = ( date_time::standard( ) - ( seconds )( c_peer_sleep_time / 1000 ) );
+       = ( date_time::standard( ) - ( seconds )( c_peer_sleep_time / 1000.0 ) );
 
       needs_blockchain_info = ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) );
 
@@ -2615,6 +2613,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( !is_condemned_session( ) )
          {
             condemn_this_session( );
+
+            if( !is_captured_session( ) )
+               handler.set_finished( );
+
+            set_session_variable( identity, "" );
+
             socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
          }
       }
@@ -2745,6 +2749,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
    bool check_for_supporters = false;
 
+   string identity( get_session_variable(
+    get_special_var_name( e_special_var_identity ) ) );
+
    while( true )
    {
       progress* p_progress = 0;
@@ -2867,6 +2874,10 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       }
       else
       {
+         // NOTE: If disconnecting then clear identity session variable immediately.
+         if( !get_system_variable( '~' + identity ).empty( ) )
+            set_session_variable( identity, "" );
+
          if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
             condemn_matching_sessions( );
 
@@ -3424,6 +3435,8 @@ void peer_listener::on_start( )
                {
                   bool is_remove = false;
 
+                  set_system_variable( '@' + to_string( port ), "" );
+
                   if( identity_changes[ 0 ] == '~' )
                   {
                      is_remove = true;
@@ -3713,6 +3726,16 @@ string prefixed_blockchains( const string& blockchains )
    }
 
    return retval;
+}
+
+string unprefixed_blockchains( const string& blockchains )
+{
+   string retval;
+
+   string identities( blockchains );
+   replace( identities, c_bc_prefix, "" );
+
+   return identities;
 }
 
 void create_peer_listener( int port, const string& blockchains )
