@@ -2646,20 +2646,6 @@ void verify_lamport( const string& content,
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
          }
-         else if( !unix_time_stamp )
-         {
-            size_t len = strlen( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix );
-
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_lamport_detail_unix_block_time_stamp_prefix ) )
-               throw runtime_error( "invalid unix lamport time stamp attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            unix_time_stamp = from_string< uint64_t >( next_attribute );
-
-            if( p_lamport_info )
-               p_lamport_info->unix_time_stamp = unix_time_stamp;
-         }
          else
             throw runtime_error( "unexpected extraneous genesis lamport attribute '" + next_attribute + "'" );
       }
@@ -2770,7 +2756,7 @@ void verify_lamport( const string& content,
             if( p_lamport_info )
                p_lamport_info->unix_time_stamp = unix_time_stamp;
 
-            if( check_sigs && ( unix_time_stamp <= info.unix_time_stamp ) )
+            if( check_sigs && lamport_height > 1 && ( unix_time_stamp <= info.unix_time_stamp ) )
                throw runtime_error( "invalid unix lamport time stamp not more recent than last" );
 
             if( check_sigs && ( unix_time_stamp < data.unix_time_stamp ) )
@@ -2781,7 +2767,7 @@ void verify_lamport( const string& content,
       }
    }
 
-   if( !unix_time_stamp )
+   if( lamport_height && !unix_time_stamp )
       throw runtime_error( "unexpected missing unix lamport time stamp attribute" );
 
    if( !lamport_height )
