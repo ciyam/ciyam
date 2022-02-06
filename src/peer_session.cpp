@@ -853,7 +853,10 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
          {
             if( !fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
-               add_peer_file_hash_for_get( next_hash, check_for_supporters );
+            {
+               if( !recurse )
+                  add_peer_file_hash_for_get( next_hash, check_for_supporters );
+            }
             else if( local_public_key != master_public_key )
             {
                if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
@@ -1858,8 +1861,28 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   string next_block_hash( tag_file_hash( next_block_tag ) );
 
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
+                  // NOTE: If zenith height is not greater than the blockchain height
+                  // then block was not created locally and will assume that fetching
+                  // must have not been previously completed.
+                  string zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
+
+                  size_t zenith_height = 0;
+
+                  if( !get_block_height_from_tags( blockchain, zenith_hash, zenith_height ) )
+                     throw runtime_error( "unexpected error determining zenith height" );
+
+                  if( zenith_height > blockchain_height )
+                     set_session_variable(
+                      get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
+                  else
+                  {
+                     chk_file( next_block_tag, &next_block_hash );
+                     
+                     has_issued_chk = true;
+
+                     set_session_variable(
+                      get_special_var_name( e_special_var_blockchain_is_fetching ), c_true_value );
+                  }
 
                   if( process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 ) )
                      blockchain_height = ++blockchain_height_pending;
@@ -3749,7 +3772,7 @@ void create_peer_listener( int port, const string& blockchains )
          throw runtime_error( "invalid attempt to use port number less than 1024" );
 #endif
 
-      peer_listener* p_peer_listener = new peer_listener( port, blockchains );
+      peer_listener* p_peer_listener = new peer_listener( port, prefixed_blockchains( blockchains ) );
       p_peer_listener->start( );
    }
 }
