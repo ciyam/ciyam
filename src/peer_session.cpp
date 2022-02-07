@@ -794,7 +794,8 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
 
                         if( !has_file( hash_info.substr( 0, pos ) ) )
                         {
-                           add_peer_file_hash_for_get( hash_info );
+                           // NOTE: If the hash had already been added then will append the rest of the info to that.
+                           add_peer_file_hash_for_get( hash_info, false, ':' );
 
                            if( !target_hash.empty( ) )
                            {
@@ -829,6 +830,13 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
+   string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
+   string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
+   string blockchain_both_are_owners_name( get_special_var_name( e_special_var_blockchain_both_are_owners ) );
+
+   string first_hash_name( get_special_var_name( e_special_var_hash ) );
+   string first_hash_to_get( get_session_variable( first_hash_name ) );
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       if( file_data.size( ) >= max_blob_file_data )
@@ -849,18 +857,21 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
 
          string local_hash, local_public_key, master_public_key;
 
+         if( next_hash == first_hash_to_get )
+         {
+            first_hash_to_get.erase( );
+            set_session_variable( first_hash_name, "" );
+         }
+
          if( !has_file( next_hash ) )
          {
             if( !fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
+               add_peer_file_hash_for_get( next_hash, check_for_supporters );
+            else if( first_hash_to_get.empty( ) && ( local_public_key != master_public_key ) )
             {
-               if( !recurse )
-                  add_peer_file_hash_for_get( next_hash, check_for_supporters );
-            }
-            else if( local_public_key != master_public_key )
-            {
-               if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
-                && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+               if( get_session_variable( blockchain_is_fetching_name ).empty( )
+                && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
                {
                   if( file_data.size( ) > 1 )
                      file_data += c_blob_separator;
@@ -885,13 +896,13 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                if( local_public_key == master_public_key )
                   put_info_and_store_repository_entry = true;
             }
-            else if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( ) )
+            else if( !get_session_variable( blockchain_is_owner_name ).empty( ) )
                put_info_and_store_repository_entry = true;
 
-            if( put_info_and_store_repository_entry )
+            if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
             {
-               if( get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
-                && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+               if( get_session_variable( blockchain_is_fetching_name ).empty( )
+                && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
                {
                   if( local_hash.empty( ) || !has_file( local_hash ) )
                   {
@@ -953,6 +964,9 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       bool tag_new_zenith = false;
       bool wait_to_tag_zenith = false;
 
+      string first_hash_name( get_special_var_name( e_special_var_hash ) );
+      string first_hash_to_get( get_session_variable( first_hash_name ) );
+
       bool is_blockchain_owner = !get_session_variable(
        get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
@@ -982,12 +996,20 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
                   check_for_supporters = true;
 
+               if( first_hash_to_get == tree_root_hash )
+                  set_session_variable( first_hash_name, "" );
+
                process_list_items( tree_root_hash, true, check_for_supporters );
 
                if( top_next_peer_file_hash_to_get( ).empty( ) )
                   tag_new_zenith = true;
                else
+               {
                   wait_to_tag_zenith = true;
+
+                  set_session_variable(
+                   get_special_var_name( e_special_var_list_hash ), tree_root_hash );
+               }
 
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
@@ -1274,6 +1296,14 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
 
       if( !data_file_hash.empty( ) )
       {
+         string first_hash_name( get_special_var_name( e_special_var_hash ) );
+         string first_hash_to_get( get_session_variable( first_hash_name ) );
+
+         if( ( first_hash_to_get == data_file_hash )
+          || ( first_hash_to_get == primary_pubkey_hash )
+          || ( first_hash_to_get == signature_file_hash ) )
+            set_session_variable( first_hash_name, "" );
+
          if( !has_file( data_file_hash ) )
             add_peer_file_hash_for_get( data_file_hash );
          else
@@ -1735,15 +1765,19 @@ bool socket_command_handler::want_to_do_op( op o ) const
       string hash_to_get( top_next_peer_file_hash_to_get( ) );
       string hash_to_put( top_next_peer_file_hash_to_put( ) );
 
-      if( o == e_op_chk
-       && hash_to_get.empty( ) && hash_to_put.empty( ) )
-         retval = true;
+      if( o == e_op_chk )
+      {
+         if( hash_to_get.empty( ) && hash_to_put.empty( ) )
+            retval = true;
+      }
       else
       {
-         if( o == e_op_pip
-          && hash_to_get.empty( ) && hash_to_put.empty( ) )
-            retval = true;
-         else if( o != e_op_chk )
+         if( o == e_op_pip )
+         {
+            if( hash_to_get.empty( ) && hash_to_put.empty( ) )
+               retval = true;
+         }
+         else
          {
             // KLUDGE: For now just randomly decide (this should instead
             // be based upon the actual needs of the peer).
@@ -1871,23 +1905,41 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   if( !get_block_height_from_tags( blockchain, zenith_hash, zenith_height ) )
                      throw runtime_error( "unexpected error determining zenith height" );
 
+                  bool need_to_check = false;
+
                   if( zenith_height > blockchain_height )
                      set_session_variable(
                       get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
                   else
                   {
-                     chk_file( next_block_tag, &next_block_hash );
-                     
-                     has_issued_chk = true;
+                     need_to_check = true;
 
                      set_session_variable(
                       get_special_var_name( e_special_var_blockchain_is_fetching ), c_true_value );
                   }
 
-                  if( process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 ) )
+                  bool has_block_data = process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
+
+                  if( !need_to_check && has_block_data )
                      blockchain_height = ++blockchain_height_pending;
                   else
+                  {
+                     if( need_to_check )
+                     {
+                        string file_hash( top_next_peer_file_hash_to_get( ) );
+
+                        // NOTE: Use the "nonce" argument to indicate the first
+                        // file to be fetched (so that pull requests will start
+                        // from the correct point).
+                        if( !file_hash.empty( ) )
+                           next_block_tag += " @" + file_hash;
+
+                        chk_file( next_block_tag, &next_block_hash );
+                        has_issued_chk = true;
+                     }
+
                      blockchain_height_pending = blockchain_height + 1;
+                  }
                }
             }
             else
@@ -2105,6 +2157,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( set_new_zenith )
    {
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
+
+      blockchain_height = blockchain_height_pending;
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
@@ -2366,7 +2420,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
              && tag_or_hash.find( c_bc_prefix ) == 0 )
                nonce.erase( );
 
-            if( !nonce.empty( ) )
+            if( !nonce.empty( ) && nonce[ 0 ] != '@' )
                response = hash_with_nonce( hash, nonce );
 
             if( was_initial_state )
@@ -2410,6 +2464,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                   else
                   {
+                     string first_item_hash;
+
+                     // NOTE: In the case where a peer had not completed fetching
+                     // all files for a new block height the nonce value (using a
+                     // '@' prefix) identifies the next "get" file which (if this
+                     // is a repository entry) needs to be the first to be "put".
+                     if( !nonce.empty( ) && nonce[ 0 ] == '@' )
+                        first_item_hash = nonce.substr( 1 );
+
+                     temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
+
                      // NOTE: If is blockchain owner and not currently fetching then provided that the other peer is not
                      // also the owner then need to process the block to fetch/store any required repository entries for
                      // which information about will need to be "put".
