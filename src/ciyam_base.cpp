@@ -6221,12 +6221,22 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    return num_sessions;
 }
 
-void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters )
+void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters, char info_suffix )
 {
    guard g( g_mutex );
 
-   if( find( gtp_session->file_hashes_to_get.begin( ),
-    gtp_session->file_hashes_to_get.end( ), hash ) == gtp_session->file_hashes_to_get.end( ) )
+   string::size_type pos = string::npos;
+
+   if( info_suffix )
+      pos = hash.find( info_suffix );
+
+   deque< string >::iterator i = find(
+    gtp_session->file_hashes_to_get.begin( ),
+    gtp_session->file_hashes_to_get.end( ), hash.substr( 0, pos ) );
+
+   if( i != gtp_session->file_hashes_to_get.end( ) )
+      *i += hash.substr( pos );
+   else
    {
       if( !check_for_supporters
        || gtp_session->is_support_session

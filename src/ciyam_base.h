@@ -393,7 +393,8 @@ unsigned int CIYAM_BASE_DECL_SPEC get_num_sessions_for_blockchain( const std::st
 unsigned int CIYAM_BASE_DECL_SPEC get_session_timeout( );
 void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 
-void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash, bool check_for_supporters = false );
+void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get(
+ const std::string& hash, bool check_for_supporters = false, char info_suffix = '\0' );
 
 void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
  const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
