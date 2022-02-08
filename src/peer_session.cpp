@@ -1133,7 +1133,12 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
    tag_file( pubkey_tag, hash );
 
-   if( !height && !is_primary )
+   string zenith_height_name(
+    get_special_var_name( e_special_var_blockchain_zenith_height ) );
+
+   string zenith_height( get_session_variable( zenith_height_name ) );
+
+   if( !height && !is_primary && zenith_height.empty( ) )
    {
       string block_hash( tag_file_hash(
        blockchain + '.' + to_string( height ) + c_blk_suffix ) );
@@ -1142,6 +1147,8 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: "
        + block_hash + " height: " + to_string( height ) );
+
+      set_session_variable( zenith_height_name, to_string( height ) );
    }
 
    if( is_primary )
@@ -2045,7 +2052,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
 
-            blockchain_height = blockchain_height_pending;
+            string zenith_height( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
+
+            if( from_string< size_t >( zenith_height ) == blockchain_height_pending )
+               blockchain_height = blockchain_height_pending;
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
@@ -2435,7 +2446,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   if( tag_or_hash.find( c_bc_prefix ) == 0 )
                   {
-                     if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+                     string zenith_height( get_session_variable(
+                      get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
+
+                     if( zenith_height.empty( )
+                      && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                         process_block_for_height( blockchain, hash, blockchain_height );
                   }
                   else if( !socket_handler.get_is_for_support( ) )
@@ -2456,10 +2471,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
-                  if( socket_handler.get_is_responder( )
-                   && blockchain_height != socket_handler.get_blockchain_height( ) )
+                  if( socket_handler.get_is_responder( ) )
                   {
-                     socket_handler.set_blockchain_height( blockchain_height );
+                     if( blockchain_height > socket_handler.get_blockchain_height( ) )
+                        socket_handler.set_blockchain_height( blockchain_height );
+
                      process_block_for_height( blockchain, hash, blockchain_height );
                   }
                   else
