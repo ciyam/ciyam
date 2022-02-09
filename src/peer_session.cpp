@@ -587,8 +587,6 @@ void process_repository_file( const string& blockchain,
       string hex_pub_key( extra_info.substr( 0, pos ) );
       string target_hash( extra_info.substr( pos + 1 ) );
 
-      set_session_variable( target_hash, "" );
-
       pos = hex_pub_key.find( '-' );
 
       if( pos != string::npos )
@@ -794,14 +792,11 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
 
                         if( !has_file( hash_info.substr( 0, pos ) ) )
                         {
-                           // NOTE: If the hash had already been added then will append the rest of the info to that.
-                           add_peer_file_hash_for_get( hash_info, false, ':' );
-
                            if( !target_hash.empty( ) )
-                           {
                               target_hash = hex_encode( base64::decode( target_hash ) );
-                              set_session_variable( target_hash, hash_info.substr( 0, pos ) );
-                           }
+
+                           // NOTE: Pull information will be pushed at the front and target (if queued) will be removed.
+                           add_peer_file_hash_for_get( hash_info, false, true, target_hash.empty( ) ? 0 : &target_hash );
                         }
                         else
                            process_repository_file( blockchain,
@@ -2004,14 +1999,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          next_hash.erase( );
       }
 
-      if( !next_hash.empty( ) && 
-       ( next_hash.find( ':' ) == string::npos )
-       && !get_session_variable( next_hash ).empty( ) )
-      {
-         pop_next_peer_file_hash_to_get( );
-         next_hash = top_next_peer_file_hash_to_get( );
-      }
-
       while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
       {
          pop_next_peer_file_hash_to_get( );
@@ -2471,6 +2458,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
+                  string first_item_hash;
+
+                  // NOTE: In the case where a peer had not completed fetching
+                  // all files for a new block height the nonce value (using a
+                  // '@' prefix) identifies the next "get" file which (if this
+                  // is a repository entry) needs to be the first to be "put".
+                  if( !nonce.empty( ) && nonce[ 0 ] == '@' )
+                     first_item_hash = nonce.substr( 1 );
+
+                  temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
+
                   if( socket_handler.get_is_responder( ) )
                   {
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
@@ -2480,17 +2478,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                   else
                   {
-                     string first_item_hash;
-
-                     // NOTE: In the case where a peer had not completed fetching
-                     // all files for a new block height the nonce value (using a
-                     // '@' prefix) identifies the next "get" file which (if this
-                     // is a repository entry) needs to be the first to be "put".
-                     if( !nonce.empty( ) && nonce[ 0 ] == '@' )
-                        first_item_hash = nonce.substr( 1 );
-
-                     temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
-
                      // NOTE: If is blockchain owner and not currently fetching then provided that the other peer is not
                      // also the owner then need to process the block to fetch/store any required repository entries for
                      // which information about will need to be "put".

@@ -6221,47 +6221,56 @@ unsigned int get_num_sessions_for_blockchain( const string& blockchain )
    return num_sessions;
 }
 
-void add_peer_file_hash_for_get( const string& hash, bool check_for_supporters, char info_suffix )
+void add_peer_file_hash_for_get( const string& hash,
+ bool check_for_supporters, bool add_at_front, const string* p_hash_to_remove )
 {
    guard g( g_mutex );
 
-   string::size_type pos = string::npos;
+   string hash_to_remove;
+   if( p_hash_to_remove )
+      hash_to_remove = *p_hash_to_remove;
 
-   if( info_suffix )
-      pos = hash.find( info_suffix );
-
-   deque< string >::iterator i = find(
-    gtp_session->file_hashes_to_get.begin( ),
-    gtp_session->file_hashes_to_get.end( ), hash.substr( 0, pos ) );
-
-   if( i != gtp_session->file_hashes_to_get.end( ) )
-      *i += hash.substr( pos );
-   else
+   if( !hash_to_remove.empty( ) )
    {
-      if( !check_for_supporters
-       || gtp_session->is_support_session
-       || ( gtp_session->file_hashes_to_get.size( ) < c_min_needed_for_support ) )
+      deque< string >::iterator i = find(
+       gtp_session->file_hashes_to_get.begin( ),
+       gtp_session->file_hashes_to_get.end( ), hash_to_remove );
+
+      if( i != gtp_session->file_hashes_to_get.end( ) )
+         gtp_session->file_hashes_to_get.erase( i );
+   }
+
+   if( !check_for_supporters
+    || gtp_session->is_support_session
+    || ( gtp_session->file_hashes_to_get.size( ) < c_min_needed_for_support ) )
+   {
+      if( !add_at_front )
          gtp_session->file_hashes_to_get.push_back( hash );
       else
+         gtp_session->file_hashes_to_get.push_front( hash );
+   }
+   else
+   {
+      session* p_least_full = 0;
+
+      for( size_t i = 0; i < g_max_sessions; i++ )
       {
-         session* p_least_full = 0;
+         session* p_next = g_sessions[ i ];
 
-         for( size_t i = 0; i < g_max_sessions; i++ )
+         if( p_next
+          && ( p_next->ip_addr == gtp_session->ip_addr )
+          && ( p_next->blockchain == gtp_session->blockchain ) )
          {
-            session* p_next = g_sessions[ i ];
-
-            if( p_next
-             && ( p_next->ip_addr == gtp_session->ip_addr )
-             && ( p_next->blockchain == gtp_session->blockchain ) )
-            {
-               if( !p_least_full
-                || ( p_next->file_hashes_to_get.size( ) < p_least_full->file_hashes_to_get.size( ) ) )
-                  p_least_full = p_next;
-            }
+            if( !p_least_full
+             || ( p_next->file_hashes_to_get.size( ) < p_least_full->file_hashes_to_get.size( ) ) )
+               p_least_full = p_next;
          }
-
-         p_least_full->file_hashes_to_get.push_back( hash );
       }
+
+      if( !add_at_front )
+         p_least_full->file_hashes_to_get.push_back( hash );
+      else
+         p_least_full->file_hashes_to_get.push_front( hash );
    }
 }
 
