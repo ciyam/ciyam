@@ -87,6 +87,12 @@ class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
    void has_released( const guard* p_guard, const char* p_msg );
 };
 
+int CIYAM_BASE_DECL_SPEC get_server_port( );
+
+extern "C" void CIYAM_BASE_DECL_SPEC  set_server_port( int p );
+
+typedef void ( *fp_set_server_port )( int );
+
 int CIYAM_BASE_DECL_SPEC get_stream_port( );
 int CIYAM_BASE_DECL_SPEC get_stream_sock( );
 

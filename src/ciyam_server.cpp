@@ -245,6 +245,7 @@ const char* const c_ciyam_base_lib = "ciyam_base.dll";
 const char* const c_trace_flags_func_name = "trace_flags";
 const char* const c_init_globals_func_name = "init_globals";
 const char* const c_term_globals_func_name = "term_globals";
+const char* const c_set_server_port_func_name = "set_server_port";
 const char* const c_init_auto_script_func_name = "init_auto_script";
 const char* const c_init_udp_streams_func_name = "init_udp_streams";
 const char* const c_log_trace_string_func_name = "log_trace_string";
@@ -260,6 +261,7 @@ const char* const c_unregister_listener_func_name = "unregister_listener";
 const char* const c_trace_flags_func_name = "_trace_flags";
 const char* const c_init_globals_func_name = "_init_globals";
 const char* const c_term_globals_func_name = "_term_globals";
+const char* const c_set_server_port_func_name = "_set_server_port";
 const char* const c_init_auto_script_func_name = "_init_auto_script";
 const char* const c_init_udp_streams_func_name = "_init_udp_streams";
 const char* const c_log_trace_string_func_name = "_log_trace_string";
@@ -528,6 +530,9 @@ int main( int argc, char* argv[ ] )
       string pid( to_string( get_pid( ) ) );
       set_environment_variable( "PID", pid.c_str( ) );
 
+      if( g_port != c_default_ciyam_port )
+         set_environment_variable( "PORT", to_string( g_port ) );
+
       string shutdown_reason( "due to interrupt" );
 
       bool is_update = false;
@@ -549,6 +554,9 @@ int main( int argc, char* argv[ ] )
 
          fp_term_globals fp_term_globals_func;
          fp_term_globals_func = ( fp_term_globals )ap_dynamic_library->bind_to_function( c_term_globals_func_name );
+
+         fp_set_server_port fp_set_server_port_func;
+         fp_set_server_port_func = ( fp_set_server_port )ap_dynamic_library->bind_to_function( c_set_server_port_func_name );
 
          fp_init_auto_script fp_init_auto_script_func;
          fp_init_auto_script_func = ( fp_init_auto_script )ap_dynamic_library->bind_to_function( c_init_auto_script_func_name );
@@ -607,6 +615,8 @@ int main( int argc, char* argv[ ] )
 
          if( okay )
          {
+            ( *fp_set_server_port_func )( g_port );
+
             if( !s.set_reuse_addr( ) && !g_is_quiet )
                cout << "warning: set_reuse_addr failed (for tcp)..." << endl;
 
