@@ -831,8 +831,13 @@ void Meta_Global_Repository_Entry::impl::for_destroy( bool is_internal )
 
    // [<start for_destroy>]
 //nyi
+   string hash( get_obj( ).Local_Hash( ) );
+
+   if( hash.empty( ) )
+      hash = get_obj( ).get_key( );
+
    temporary_session_variable tmp_session_name(
-    get_special_var_name( e_special_var_hash ), get_obj( ).Local_Hash( ) );
+    get_special_var_name( e_special_var_hash ), hash );
 
    run_script( "remove_file", false, false, true );
    // [<finish for_destroy>]
