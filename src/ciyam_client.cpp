@@ -79,6 +79,7 @@ const char* const c_cmd_rpc_unlock = "rpc_unlock";
 const char* const c_cmd_rpc_unlock_password = "password";
 
 const char* const c_env_var_pid = "PID";
+const char* const c_env_var_port = "PORT";
 const char* const c_env_var_slot = "SLOT";
 const char* const c_env_var_error = "ERROR";
 const char* const c_env_var_slotx = "SLOTX";
@@ -224,6 +225,11 @@ class ciyam_console_command_handler : public console_command_handler
     had_chunk_progress( false )
    {
       set_custom_startup_options( 1, "[<port> or <host[(:|-)port]>]" );
+
+      string env_var_port( get_environment_variable( c_env_var_port ) );
+
+      if( !env_var_port.empty( ) )
+         port = atoi( env_var_port.c_str( ) );
    }
 
    const char* get_host( ) const { return host.c_str( ); }

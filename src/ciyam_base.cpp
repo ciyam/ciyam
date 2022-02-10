@@ -1246,6 +1246,8 @@ const size_t c_num_send_stream_sessions_default = 1;
 
 string g_empty_string;
 
+int g_server_port = c_default_ciyam_port;
+
 int g_stream_port = 0;
 int g_stream_sock = 0;
 
@@ -4167,6 +4169,16 @@ void trace_mutex::has_released( const guard* p_guard, const char* p_msg )
 
    TRACE_LOG( TRACE_SYNC_OPS, "has_released: mutex = "
     + to_string( this ) + ", guard = " + to_string( p_guard ) + extra );
+}
+
+int get_server_port( )
+{
+   return g_server_port;
+}
+
+void set_server_port( int p )
+{
+   g_server_port = p;
 }
 
 int get_stream_port( )
