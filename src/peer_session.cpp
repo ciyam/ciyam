@@ -48,7 +48,7 @@
 
 //#define DEBUG
 //#define USE_THROTTLING
-//#define DEBUG_PEER_HANDSHAKE
+#define DEBUG_PEER_HANDSHAKE
 
 using namespace std;
 
@@ -3355,12 +3355,7 @@ void peer_session::on_start( )
                set_session_variable( identity, c_true_value );
                set_session_variable( get_special_var_name( e_special_var_identity ), identity );
 
-               size_t height_for_chk = blockchain_height;
-
-               if( has_zenith )
-                  ++height_for_chk;
-
-               hash_or_tag = blockchain + '.' + to_string( height_for_chk ) + string( c_blk_suffix );
+               hash_or_tag = blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
 
                // NOTE: In case the responder does not have the genesis block include
                // its hash as a dummy "nonce" (to be used by the responder for "get").
