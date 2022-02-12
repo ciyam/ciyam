@@ -907,9 +907,6 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                      if( file_data.size( ) > 1 )
                         file_data += c_blob_separator;
 
-                     if( local_hash.empty( ) )
-                        create_peer_repository_entry_push_info( next_hash, password );
-
                      file_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
 
                      clear_key( password );

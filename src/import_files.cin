@@ -9,10 +9,23 @@
 TAG_PREFIX=$2
 SUB_DIRECTORY=$3
 FILES_EXPRESSION=$4
+PATHS_EXPRESSION=$5
+;
+IS_CURRENT=
+@ifeq "$1" "."
+@ifeq "$1" "$3"
+IS_CURRENT=1
+@endif
+@endif
 ;
 FILES_EXTRA=
 @ifdef $FILES_EXPRESSION
 FILES_EXTRA=:$FILES_EXPRESSION
+@endif
+;
+PATHS_EXTRA=
+@ifdef $PATHS_EXPRESSION
+PATHS_EXTRA=:$PATHS_EXPRESSION
 @endif
 ;
 @ifndef $MAX_FILE_SIZE
@@ -27,9 +40,11 @@ START=@fullpath:$1
 UUID=$OUTPUT
 ;
 @ifndef $SUB_DIRECTORY
-PATHS=@paths:$START
+PATHS=@paths:$START$PATHS_EXTRA
 @else
-PATHS=@paths:$START/$SUB_DIRECTORY
+@ifndef $IS_CURRENT
+PATHS=@paths:$START$PATHS_EXTRA/$SUB_DIRECTORY
+@endif
 @ifndef $PATHS
 .session_variable @deque ""
 DIRS=@repstr:\//\n:$SUB_DIRECTORY
@@ -103,7 +118,11 @@ HAD_ANY_FILES=1
 ;
 @ifndef $SUB_DIRECTORY
 @ifeq "." "$NEXT_PATH"
+@ifdef $IS_CURRENT
+FILE_NAME=$NEXT_FILE
+@else
 FILE_NAME=$1/$NEXT_FILE
+@endif
 @else
 FILE_NAME=$1/$NEXT_PATH/$NEXT_FILE
 @endif

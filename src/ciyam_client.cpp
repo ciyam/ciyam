@@ -393,6 +393,9 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                put_source_file = data;
 
+               // NOTE: Special case to get rid of "./".
+               replace( put_source_file, "*.//./", "*" );
+
                // NOTE: If file is in the form "dir/./name" then get rid of the "./".
                replace( put_source_file, "/./", "/" );
 

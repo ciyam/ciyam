@@ -44,6 +44,16 @@
   <arguments>tree_insert_file.cin @tag @type @branch @sub_directory @name @path @tag_prefix
  </script>
  <script/>
+  <name>tree_insert_trunk
+  <filename>*script*
+  <arguments>tree_insert_trunk.cin @tree @trunk
+ </script>
+ <script/>
+  <name>tree_insert_branch
+  <filename>*script*
+  <arguments>tree_insert_branch.cin @tree @trunk @branch
+ </script>
+ <script/>
   <name>add_blacklist
   <filename>*script*
   <arguments>add_blacklist.cin @hash
