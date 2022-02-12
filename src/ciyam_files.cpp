@@ -2474,7 +2474,7 @@ void crypt_file( const string& tag_or_hash, const string& password,
       {
          string dummy, pub_key;
 
-         create_peer_repository_entry_push_info( hash, password, &pub_key );
+         create_peer_repository_entry_push_info( hash, password, &pub_key, false );
 
          if( !fetch_repository_entry_record( hash, dummy, dummy, dummy, false ) )
             store_repository_entry_record( hash, "", pub_key, pub_key );

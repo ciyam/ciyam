@@ -5981,6 +5981,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string script_name( get_parm_val( parameters, c_cmd_ciyam_session_runscript_script_name ) );
          string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_runscript_arg_val_pairs ) );
 
+         bool async = true;
+
+         if( !script_name.empty( ) && script_name[ 0 ] == '!' )
+         {
+            async = false;
+            script_name.erase( 0, 1 );
+         }
+
          if( script_name.find_first_of( "?*" ) == string::npos )
          {
             vector< ref_count_ptr< temporary_session_variable > > temporary_session_variables;
@@ -6004,7 +6012,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
             }
 
-            run_script( script_name );
+            run_script( script_name, async );
          }
          else
          {

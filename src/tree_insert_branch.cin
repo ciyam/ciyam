@@ -1,0 +1,32 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $3
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "3"
+#NOTE: This script requires a tree tag, trunk name and branch tag.
+@else
+;
+TREE=$1
+TRUNK=$2
+BRANCH=$3
+;
+.file_hash "$BRANCH"
+;
+@ifndef $ERROR
+.file_list -a=?$BRANCH -d=$BRANCH -sort $TREE:$TRUNK !$TREE
+.file_tag -remove $BRANCH
+@endif
+;
+@endif
