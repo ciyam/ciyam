@@ -672,7 +672,13 @@ void process_repository_file( const string& blockchain,
             clear_key( password );
          }
          else
+         {
+            // NOTE: If using interactive testing the file may not be encrypted so to ensure
+            // the file system doesn't get confused flag the file as being encrypted anyway.
+            type_and_extra |= c_file_type_char_encrypted;
+
             ap_priv_key.reset( new private_key( sha256( c_dummy ).get_digest_as_string( ) ) );
+         }
 
          stringstream ss( file_content );
          crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
@@ -682,7 +688,7 @@ void process_repository_file( const string& blockchain,
          if( was_extracted )
             delete_file( src_hash );
 
-         string local_hash( create_raw_file( file_data ) );
+         string local_hash( create_raw_file( file_data, false, 0, 0, 0, false ) );
 
          store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }

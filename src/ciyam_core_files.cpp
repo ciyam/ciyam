@@ -4806,7 +4806,12 @@ void decrypt_pulled_peer_file(
       file_data.erase( 0, 1 );
    }
    else
-      file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted );
+   {
+      if( !is_for_testing )
+         file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted );
+      else
+         file_data = extract_file( src_hash, "", 0, 0, &type_and_extra, &is_encrypted, true );
+   }
 
    stringstream ss( file_data );
    crypt_stream( ss, ap_priv_key->construct_shared( pub_key ) );
