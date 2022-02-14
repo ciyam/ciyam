@@ -49,6 +49,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool is_responder;
    bool is_for_support;
 
+   bool peer_is_owner;
    bool has_found_both_are_owners;
 
    std::string port;

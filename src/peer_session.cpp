@@ -48,7 +48,7 @@
 
 //#define DEBUG
 //#define USE_THROTTLING
-#define DEBUG_PEER_HANDSHAKE
+//#define DEBUG_PEER_HANDSHAKE
 
 using namespace std;
 
@@ -2481,12 +2481,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                   }
                   else
                   {
-                     // NOTE: If is blockchain owner and not currently fetching then provided that the other peer is not
-                     // also the owner then need to process the block to fetch/store any required repository entries for
-                     // which information about will need to be "put".
-                     if( !get_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( )
-                      && get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( )
-                      && get_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ) ).empty( ) )
+                     if( !first_item_hash.empty( )
+                      || get_session_variable( get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
                         process_block_for_height( blockchain, hash, blockchain_height );
                   }
                }
@@ -3056,6 +3052,7 @@ peer_session::peer_session( bool is_responder,
  ap_socket( ap_socket ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
+ peer_is_owner( false ),
  has_found_both_are_owners( false )
 {
    if( !( *this->ap_socket ) )
@@ -3129,8 +3126,6 @@ peer_session::peer_session( bool is_responder,
       this->ap_socket->read_line( pid, c_request_timeout, c_max_greeting_size, p_progress );
 
       string::size_type pos = pid.find( '!' );
-
-      bool peer_is_owner = false;
 
       if( pos != string::npos )
       {
@@ -3312,6 +3307,9 @@ void peer_session::on_start( )
 
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true_value );
+
+      if( peer_is_owner )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_peer_is_owner ), c_true_value );
 
       if( has_found_both_are_owners )
          set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true_value );
