@@ -118,6 +118,8 @@ const char c_file_type_char_mime_blob = '\x21';
 const char c_file_type_char_encrypted = '\x04';
 const char c_file_type_char_compressed = '\x08';
 
+const char c_file_type_char_blob_encrypted = '\x05';
+
 const char c_file_type_char_blob_compressed = '\x09';
 const char c_file_type_char_list_compressed = '\x0a';
 
