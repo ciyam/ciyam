@@ -2705,7 +2705,8 @@ void verify_lamport( const string& content,
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_signature_file_hash ), signature_file_hash );
 
-            if( check_sigs || has_file( signature_file_hash ) )
+            if( check_sigs
+             || ( !p_lamport_info && ( has_file( public_key_hash ) && has_file( signature_file_hash ) ) ) )
             {
                if( !has_file( signature_file_hash ) )
                   throw runtime_error( "signature file '" + signature_file_hash + "' not found" );
@@ -2727,7 +2728,7 @@ void verify_lamport( const string& content,
                   set_session_variable(
                    get_special_var_name( e_special_var_blockchain_data_file_hash ), data_file_hash );
 
-               if( has_file( data_file_hash ) )
+               if( !p_lamport_info && has_file( data_file_hash ) )
                {
                   string data_file_info( extract_file( data_file_hash, "", c_file_type_char_core_blob ) );
 
