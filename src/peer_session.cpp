@@ -798,7 +798,9 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
 
                         if( !has_file( hash_info.substr( 0, pos ) ) )
                         {
-                           if( !target_hash.empty( ) )
+                           if( target_hash.empty( ) )
+                              target_hash = hash_info.substr( 0, pos );
+                           else
                               target_hash = hex_encode( base64::decode( target_hash ) );
 
                            // NOTE: Pull information will be pushed at the front and target (if queued) will be removed.
@@ -1258,6 +1260,9 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
       throw runtime_error( "specified height does not match that found in the block itself (blk)" );
    else
    {
+      bool waiting_for_pubkey = false;
+      bool waiting_for_signature = false;
+
       string primary_pubkey_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
@@ -1269,7 +1274,10 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
              + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
 
          if( !has_file( primary_pubkey_hash ) )
+         {
+            waiting_for_pubkey = true;
             add_peer_file_hash_for_get( primary_pubkey_hash );
+         }
          else
             process_public_key_file( blockchain, primary_pubkey_hash, height );
       }
@@ -1291,8 +1299,11 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
       if( !signature_file_hash.empty( ) )
       {
          if( !has_file( signature_file_hash ) )
+         {
+            waiting_for_signature = true;
             add_peer_file_hash_for_get( signature_file_hash );
-         else
+         }
+         else if( !waiting_for_pubkey )
             process_signature_file( blockchain, signature_file_hash, height );
       }
 
@@ -1311,7 +1322,7 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
 
          if( !has_file( data_file_hash ) )
             add_peer_file_hash_for_get( data_file_hash );
-         else
+         else if( !waiting_for_pubkey && !waiting_for_signature )
          {
             retval = true;
             process_data_file( blockchain, data_file_hash, height );

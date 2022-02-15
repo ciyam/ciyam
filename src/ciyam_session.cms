@@ -108,8 +108,8 @@ system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value
 system_listeners "list system listeners"
 trace "get/set trace flags" [<val//new_flags>]
 trace_flags "view available trace flags"
-decode "decode base64 to hex" <val//data>
-encode "encode hex to base64" <val//data>
+decode "decode base64 to hex" [<opt/-text/text>]<val//data>
+encode "encode hex to base64" [<opt/-text/text>]<val//data>
 decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
 password "retrieve an encrypted system password" <val//name>

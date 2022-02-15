@@ -5822,14 +5822,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_decode )
       {
          string data( get_parm_val( parameters, c_cmd_ciyam_session_decode_data ) );
+         bool text( has_parm_val( parameters, c_cmd_ciyam_session_decode_text ) );
 
-         response = hex_encode( base64::decode( data ) );
+         if( text )
+            response = base64::decode( data );
+         else
+            response = hex_encode( base64::decode( data ) );
       }
       else if( command == c_cmd_ciyam_session_encode )
       {
          string data( get_parm_val( parameters, c_cmd_ciyam_session_encode_data ) );
+         bool text( has_parm_val( parameters, c_cmd_ciyam_session_encode_text ) );
 
-         response = base64::encode( hex_decode( data ) );
+         if( text )
+            response = base64::encode( data );
+         else
+            response = base64::encode( hex_decode( data ) );
       }
       else if( command == c_cmd_ciyam_session_decrypt )
       {
