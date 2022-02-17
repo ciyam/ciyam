@@ -1271,7 +1271,8 @@ map< string, map< string, string > > g_crypt_keys;
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
 
-size_t get_last_raw_file_data_chunk( const string& log_blob_file_prefix,
+size_t get_last_raw_file_data_chunk(
+ const string& tree_tag, const string& log_blob_file_prefix,
  string& raw_file_data, string* p_last_hash = 0, bool remove_existing_blobs = false )
 {
    size_t raw_file_chunk = 0;
@@ -1291,8 +1292,7 @@ size_t get_last_raw_file_data_chunk( const string& log_blob_file_prefix,
          for( size_t i = 0; i < tags.size( ); i++ )
             tag_del( tags[ i ], true );
 
-         create_list_tree( "", log_blob_file_prefix, true,
-          c_ciyam_tag + separator + c_variables_branch, c_ciyam_tag, "" );
+         create_list_tree( "", log_blob_file_prefix, true, tree_tag, tree_tag, "" );
       }
       else
       {
@@ -1319,7 +1319,7 @@ void append_system_ods_transaction_log_files( )
    server_tx_log_file += '/' + string( c_server_tx_log_file );
 
    string raw_file_data, old_raw_file_data;
-   size_t raw_file_chunk = get_last_raw_file_data_chunk( c_server_tx_log_file, old_raw_file_data );
+   size_t raw_file_chunk = get_last_raw_file_data_chunk( c_ciyam_logs_tag, c_server_tx_log_file, old_raw_file_data );
 
    size_t max_chunk_size = g_files_area_item_max_size - 1;
 
@@ -1331,8 +1331,8 @@ void append_system_ods_transaction_log_files( )
 
    create_raw_file( raw_file_data, true, log_raw_file_tag_name.c_str( ) );
 
-   create_list_tree( log_raw_file_tag_name, log_raw_file_tag_name, true,
-    c_ciyam_tag + separator + c_variables_branch + separator + c_server_tx_log_file, c_ciyam_tag, "" );
+   create_list_tree( log_raw_file_tag_name, log_raw_file_tag_name,
+    true, c_ciyam_logs_tag + separator + c_server_tx_log_file, c_ciyam_logs_tag, "" );
 
    if( raw_file_chunk > 0 )
    {
@@ -3384,7 +3384,7 @@ void append_transaction_log_command( storage_handler& handler,
 
       bool append_to_log_blob_files = false;
 
-      if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
+      if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
          append_to_log_blob_files = true;
 
       string extra_info_name( get_special_var_name( e_special_var_extra_field_values ) );
@@ -10982,7 +10982,7 @@ void transaction_start( )
       exec_sql( *gtp_session->ap_db, "BEGIN" );
    }
 
-   if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
+   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
    {
       string server_tx_log_file( get_files_area_dir( ) );
       server_tx_log_file += '/' + string( c_server_tx_log_file );
@@ -11042,7 +11042,7 @@ void transaction_commit( )
       }
    }
 
-   if( has_files_area_tag( c_ciyam_tag, e_file_type_list ) )
+   if( has_files_area_tag( c_ciyam_logs_tag, e_file_type_list ) )
    {
       string server_tx_log_file( get_files_area_dir( ) );
       server_tx_log_file += '/' + string( c_server_tx_log_file );
@@ -11053,7 +11053,7 @@ void transaction_commit( )
        || ( file_size( server_tx_log_file ) > gtp_session->ods_tlg_size ) )
       {
          append_system_ods_transaction_log_files( );
-         insert_log_blobs_into_tree( c_server_tx_log_file );
+         insert_log_blobs_into_tree( c_ciyam_logs_tag, c_server_tx_log_file );
       }
    }
 
@@ -11260,7 +11260,7 @@ void append_transaction_log_command( const string& log_command )
    }
 }
 
-void insert_log_blobs_into_tree( const string& log_blob_file_prefix )
+void insert_log_blobs_into_tree( const string& tree_tag, const string& log_blob_file_prefix )
 {
    guard g( g_mutex );
 
@@ -11279,8 +11279,8 @@ void insert_log_blobs_into_tree( const string& log_blob_file_prefix )
          {
             string next_tag( tags[ i ] );
 
-            create_list_tree( next_tag, next_tag, true,
-             c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+            create_list_tree( next_tag, next_tag,
+             true, tree_tag + separator + log_blob_file_prefix, tree_tag, "" );
 
             if( i != tags.size( ) - 1 )
                tag_del( tags[ i ] );
@@ -11303,9 +11303,9 @@ void append_transaction_log_lines_to_blob_files(
       string last_tag, last_hash;
 
       size_t raw_file_chunk = get_last_raw_file_data_chunk(
-       log_blob_file_prefix, raw_file_data, &last_hash, remove_existing_blobs );
+       c_ciyam_logs_tag, log_blob_file_prefix, raw_file_data, &last_hash, remove_existing_blobs );
 
-      log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 5 );
+      log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 6 );
 
       string next_line;
       for( size_t i = 0; i < log_lines.size( ); i++ )
@@ -11325,14 +11325,14 @@ void append_transaction_log_lines_to_blob_files(
                      delete_file( last_hash, true );
                }
                else
-                  create_list_tree( log_raw_file_tag, log_raw_file_tag, true,
-                   c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+                  create_list_tree( log_raw_file_tag, log_raw_file_tag,
+                   true, c_ciyam_logs_tag + separator + log_blob_file_prefix, c_ciyam_logs_tag, "" );
             }
 
             ++raw_file_chunk;
 
             raw_file_data.erase( 1 );
-            log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 5 );
+            log_raw_file_tag = log_blob_file_prefix + "." + to_comparable_string( raw_file_chunk, false, 6 );
          }
 
          raw_file_data += next_line;
@@ -11348,8 +11348,8 @@ void append_transaction_log_lines_to_blob_files(
                delete_file( last_hash, true );
          }
          else
-            create_list_tree( log_raw_file_tag, log_raw_file_tag, true,
-             c_ciyam_tag + separator + c_variables_branch + separator + log_blob_file_prefix, c_ciyam_tag, "" );
+            create_list_tree( log_raw_file_tag, log_raw_file_tag,
+             true, c_ciyam_logs_tag + separator + log_blob_file_prefix, c_ciyam_logs_tag, "" );
       }
    }
 }

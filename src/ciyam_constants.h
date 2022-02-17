@@ -24,6 +24,7 @@ const char* const c_false_value = "0";
 const char* const c_dummy = "dummy";
 
 const char* const c_ciyam_tag = "ciyam";
+const char* const c_ciyam_logs_tag = "ciyam.logs";
 
 const char* const c_log_file_ext = ".log";
 const char* const c_txs_file_ext = ".txs";
