@@ -169,7 +169,7 @@ void CIYAM_BASE_DECL_SPEC get_identity( std::string& s,
 
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& identity_info, const char* p_encrypted_sid = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use_reg_key = false );
+std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data );
 
 std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );

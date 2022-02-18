@@ -39,30 +39,30 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Allow_Duplicate_Logins = 3,
       e_field_id_Allow_Module_Switching = 4,
       e_field_id_Auto_Login_Days = 5,
-      e_field_id_Blockchain_Id = 6,
-      e_field_id_Create_Database = 7,
-      e_field_id_Created_Database = 8,
-      e_field_id_Creation_Script = 9,
-      e_field_id_Default_Image_Height = 10,
-      e_field_id_Default_Image_Width = 11,
-      e_field_id_Default_List_Print_Row_Limit = 12,
-      e_field_id_Default_List_Row_Limit = 13,
-      e_field_id_Default_Max_Attached_File_Size = 14,
-      e_field_id_Default_Multiline_Max_Rows = 15,
-      e_field_id_Default_Multiline_Min_Rows = 16,
-      e_field_id_Default_Multiline_Text_Limit = 17,
-      e_field_id_Default_Multiline_Text_Trunc = 18,
-      e_field_id_Encrypt_Dynamic_Content = 19,
-      e_field_id_Generate_Details = 20,
-      e_field_id_Generate_Status = 21,
-      e_field_id_Generate_Type = 22,
-      e_field_id_Installing_Script = 23,
-      e_field_id_Keep_Existing_Data = 24,
-      e_field_id_Module_Prefix = 25,
-      e_field_id_Name = 26,
-      e_field_id_Print_Lists_With_Check_Boxes = 27,
-      e_field_id_Print_Lists_With_Row_Numbers = 28,
-      e_field_id_Registration_Key = 29,
+      e_field_id_Available_NOT_IN_USE = 6,
+      e_field_id_Blockchain_Id = 7,
+      e_field_id_Create_Database = 8,
+      e_field_id_Created_Database = 9,
+      e_field_id_Creation_Script = 10,
+      e_field_id_Default_Image_Height = 11,
+      e_field_id_Default_Image_Width = 12,
+      e_field_id_Default_List_Print_Row_Limit = 13,
+      e_field_id_Default_List_Row_Limit = 14,
+      e_field_id_Default_Max_Attached_File_Size = 15,
+      e_field_id_Default_Multiline_Max_Rows = 16,
+      e_field_id_Default_Multiline_Min_Rows = 17,
+      e_field_id_Default_Multiline_Text_Limit = 18,
+      e_field_id_Default_Multiline_Text_Trunc = 19,
+      e_field_id_Encrypt_Dynamic_Content = 20,
+      e_field_id_Generate_Details = 21,
+      e_field_id_Generate_Status = 22,
+      e_field_id_Generate_Type = 23,
+      e_field_id_Installing_Script = 24,
+      e_field_id_Keep_Existing_Data = 25,
+      e_field_id_Module_Prefix = 26,
+      e_field_id_Name = 27,
+      e_field_id_Print_Lists_With_Check_Boxes = 28,
+      e_field_id_Print_Lists_With_Row_Numbers = 29,
       e_field_id_Show_Inaccessible_Modules = 30,
       e_field_id_Type = 31,
       e_field_id_Use_Check_Boxes_for_Bools = 32,
@@ -92,6 +92,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    int Auto_Login_Days( ) const;
    void Auto_Login_Days( int Auto_Login_Days );
+
+   const std::string& Available_NOT_IN_USE( ) const;
+   void Available_NOT_IN_USE( const std::string& Available_NOT_IN_USE );
 
    const std::string& Blockchain_Id( ) const;
    void Blockchain_Id( const std::string& Blockchain_Id );
@@ -158,9 +161,6 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    bool Print_Lists_With_Row_Numbers( ) const;
    void Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_Numbers );
-
-   const std::string& Registration_Key( ) const;
-   void Registration_Key( const std::string& Registration_Key );
 
    bool Show_Inaccessible_Modules( ) const;
    void Show_Inaccessible_Modules( bool Show_Inaccessible_Modules );

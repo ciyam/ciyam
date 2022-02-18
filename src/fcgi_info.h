@@ -465,7 +465,6 @@ struct storage_info
    time_t sio_mod;
    time_t extkeys_mod;
 
-   std::string reg_key;
    std::string url_opts;
    std::string menu_opts;
 

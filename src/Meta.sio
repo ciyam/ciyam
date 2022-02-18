@@ -167,6 +167,18 @@
       </specifications>
      </field>
      <field/>
+      <id>127132
+      <name>Available_NOT_IN_USE
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>127135
       <name>Blockchain_Id
       <type>1010
@@ -620,26 +632,6 @@
       <indexes/>
       </indexes>
       <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>602910
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>127132
-      <name>Registration_Key
-      <type>1020
-      <mandatory>false
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>127311
-        <affect>relegate
-       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -30736,7 +30728,6 @@
      <field_info>127130
      <field_info>127124;enum=906
      <field_info>127108
-     <field_info>127132
      <field_info>127104
     </data>
    </specification>
