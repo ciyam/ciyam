@@ -4,7 +4,6 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
- <reg_key>`{`$reg_key`}
  <use_tls>`{`$use_tls`}
  <url_opts>`{`$url_opts`}
  <row_limit>`{`$row_limit`}

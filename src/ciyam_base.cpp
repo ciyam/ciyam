@@ -124,7 +124,6 @@ const char* const c_attribute_domain = "domain";
 const char* const c_attribute_server = "server";
 const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
-const char* const c_attribute_reg_key = "license";
 const char* const c_attribute_use_udp = "use_udp";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_ip_addrs = "ip_addrs";
@@ -3499,8 +3498,8 @@ void append_transaction_log_command( storage_handler& handler,
 string_container g_strings;
 
 string g_sid;
+
 string g_domain;
-string g_reg_key;
 string g_timezone;
 string g_web_root;
 
@@ -3698,8 +3697,6 @@ void read_server_configuration( )
       string na_addrs( reader.read_opt_attribute( c_attribute_na_addrs ) );
       if( !na_addrs.empty( ) )
          split( na_addrs, g_rejected_ip_addrs, ' ' );
-
-      g_reg_key = upper( reader.read_opt_attribute( c_attribute_reg_key ) );
 
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
@@ -4591,8 +4588,6 @@ void get_identity( string& s, bool prepend_sid, bool append_max_user_limit, bool
 
    s.reserve( c_key_reserve_size );
 
-   s = g_reg_key;
-
    if( prepend_sid || append_max_user_limit )
    {
       if( prepend_sid )
@@ -4620,19 +4615,12 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
 {
    guard g( g_mutex );
 
-   string::size_type pos = identity_info.find( '-' );
-
-   if( pos == string::npos )
-      g_reg_key.erase( );
-   else
-      g_reg_key = identity_info.substr( pos + 1 );
-
-   string s( identity_info.substr( 0, pos ) );
-
    bool is_encrypted = false;
 
    if( g_sid.find( ':' ) != string::npos )
       is_encrypted = true;
+
+   string s( identity_info );
 
    // NOTE: Encrypted identity passwords must be < 32 characters.
    if( s.length( ) >= 32 )
@@ -4653,15 +4641,17 @@ void set_identity( const string& identity_info, const char* p_encrypted_sid )
          set_sid( g_sid );
    }
 
+   clear_key( s );
+
    if( p_encrypted_sid )
       write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 }
 
-string get_checksum( const string& data, bool use_reg_key )
+string get_checksum( const string& data )
 {
    guard g( g_mutex );
 
-   string prefix( !use_reg_key ? get_sid( ) : g_reg_key );
+   string prefix( get_sid( ) );
 
    sha1 hash( prefix + data );
 
