@@ -1217,7 +1217,15 @@ class socket_command_handler : public command_handler
     lock_expires( 0 ),
     restoring( false )
    {
-      locked = !get_rpc_password( ).empty( );
+      bool is_encrypted = false;
+      bool has_system_id = has_identity( &is_encrypted );
+
+      if( is_encrypted || !has_system_id )
+         locked_identity = true;
+      else
+         locked_identity = false;
+
+      locked_rpc = !get_rpc_password( ).empty( );
    }
 
 #ifdef SSL_SUPPORT
@@ -1228,11 +1236,12 @@ class socket_command_handler : public command_handler
 
    const string& get_next_command( ) { return next_command; }
 
-   bool is_locked( ) const { return locked; }
+   bool is_locked( ) const { return ( locked_rpc || locked_identity ); }
+
    bool is_restoring( ) const { return restoring; }
 
-   void lock( ) { locked = true; }
-   void unlock( ) { locked = false; }
+   void unlock_rpc( ) { locked_rpc = false; }
+   void unlock_identity( ) { locked_identity = false; }
 
    void set_lock_expires( unsigned int seconds )
    {
@@ -1243,7 +1252,7 @@ class socket_command_handler : public command_handler
    {
       if( lock_expires && unix_timestamp( ) > lock_expires )
       {
-         locked = true;
+         locked_rpc = true;
          lock_expires = 0;
       }
    }
@@ -1305,6 +1314,9 @@ class socket_command_handler : public command_handler
 
    bool locked;
    bool restoring;
+
+   bool locked_rpc;
+   bool locked_identity;
 
    int64_t lock_expires;
 
@@ -1462,6 +1474,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
       if( socket_handler.is_locked( )
        && command != c_cmd_ciyam_session_quit
+       && command != c_cmd_ciyam_session_identity
        && command != c_cmd_ciyam_session_starttls
        && command != c_cmd_ciyam_session_session_rpc_unlock )
       {
@@ -1487,11 +1500,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( !info.empty( ) )
+         {
+            bool was_locked = socket_handler.is_locked( );
+
             set_identity( info, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
+
+            bool is_encrypted = false;
+            bool has_system_id = has_identity( &is_encrypted );
+
+            if( was_locked && !is_encrypted && has_system_id )
+               socket_handler.unlock_identity( );
+         }
 
          clear_key( info );
 
-         get_identity( response, true, true );
+         get_identity( response, true );
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
@@ -1949,7 +1972,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( password == get_special_var_name( e_special_var_sid ) )
-            get_identity( password, true, false, true );
+            get_identity( password, false, true );
 
          try
          {
@@ -2168,7 +2191,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          if( password == get_special_var_name( e_special_var_sid ) )
-            get_identity( password, true, false, true );
+            get_identity( password, false, true );
 
          string src_hash( tag_or_hash );
 
@@ -2255,7 +2278,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( data_from_file )
             data = load_file( data, true );
          else if( data == get_special_var_name( e_special_var_sid ) )
-            get_identity( data, true, false, true );
+            get_identity( data, false, true );
 
          if( data_from_file && data.empty( ) )
             response = "(file not found)";
@@ -4704,7 +4727,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string seconds( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_unlock_seconds ) );
 
          if( password == get_rpc_password( ) )
-            socket_handler.unlock( );
+            socket_handler.unlock_rpc( );
 
          unsigned int val;
          if( !seconds.empty( ) )

@@ -78,4 +78,6 @@ BLOCK_HASH=$OUTPUT
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 @endif
 ;
+.system_variable >@identity $IDENT
+;
 @endif

@@ -1330,11 +1330,7 @@ void request_handler::process_request( )
                         if( g_seed == c_unlock )
                         {
 #ifdef SSL_SUPPORT
-                           string pubkey;
-                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
-                              throw runtime_error( "unexpected failure to get @pubkey value" );
-
-                           public_key pub_key( pubkey );
+                           public_key pub_key( pubkeyx );
                            private_key priv_key;
 
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
@@ -1372,11 +1368,7 @@ void request_handler::process_request( )
                            outf << identity_info.substr( 0, pos );
 
 #ifdef SSL_SUPPORT
-                           string pubkey;
-                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
-                              throw runtime_error( "unexpected failure to get @pubkey value" );
-
-                           public_key pub_key( pubkey );
+                           public_key pub_key( pubkeyx );
                            private_key priv_key;
 
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
