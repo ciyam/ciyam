@@ -3563,6 +3563,8 @@ void sid_hash( string& s, bool use_truncated = false )
 {
    guard g( g_mutex );
 
+   string sid( get_sid( ) );
+
    string tmp;
    tmp.reserve( c_key_reserve_size );
 
@@ -3571,10 +3573,11 @@ void sid_hash( string& s, bool use_truncated = false )
    tmp.resize( salt_len );
    memcpy( &tmp[ 0 ], c_salt_value, salt_len );
 
-   tmp += get_sid( );
+   tmp += sid;
 
    sha256 hash1( tmp );
 
+   clear_key( sid );
    clear_key( tmp );
 
    // NOTE: Fix the initial size so that no temporary string is used.
@@ -3668,7 +3671,7 @@ void output_script_info( const string& pat, ostream& os )
       if( i->second.filename == c_script_dummy_filename )
       {
          string::size_type pos = args.find( ' ' );
-         args.erase( 0, pos );
+         args.erase( 0, pos + 1 );
       }
 
       if( !args.empty( ) )
@@ -4365,8 +4368,10 @@ void init_globals( const char* p_sid, int* p_use_udp )
          set_sid( p_sid );
       else if( file_exists( c_server_sid_file ) )
       {
-         buffer_file( g_sid, c_server_sid_file );
-         set_sid( g_sid );
+         string sid;
+         buffer_file( sid, c_server_sid_file );
+
+         set_sid( sid );
       }
 
       read_server_configuration( );
@@ -4582,69 +4587,100 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool prepend_sid, bool append_max_user_limit, bool use_truncated )
+void get_identity( string& s, bool append_max_user_limit, bool use_truncated )
 {
    guard g( g_mutex );
 
    s.reserve( c_key_reserve_size );
 
-   if( prepend_sid || append_max_user_limit )
+   string sid( get_sid( ) );
+
+   if( !sid.empty( ) )
+      sid_hash( s, use_truncated );
+   else
    {
-      if( prepend_sid )
-      {
-         string suffix( s );
-
-         if( !g_sid.empty( ) )
-            sid_hash( s, use_truncated );
-         else
-         {
-            string seed;
-            get_mnemonics_or_hex_seed( s, seed );
-         }
-
-         if( !suffix.empty( ) )
-            s += "-" + suffix;
-      }
-
-      if( append_max_user_limit )
-         s += ":" + to_string( g_max_user_limit );
+      string seed;
+      get_mnemonics_or_hex_seed( s, seed );
    }
+
+   clear_key( sid );
+
+   if( append_max_user_limit )
+      s += ":" + to_string( g_max_user_limit );
 }
 
-void set_identity( const string& identity_info, const char* p_encrypted_sid )
+bool has_identity( bool* p_is_encrypted )
 {
    guard g( g_mutex );
 
-   bool is_encrypted = false;
+   string sid( get_sid( ) );
 
-   if( g_sid.find( ':' ) != string::npos )
-      is_encrypted = true;
+   bool retval = !sid.empty( );
 
-   string s( identity_info );
-
-   // NOTE: Encrypted identity passwords must be < 32 characters.
-   if( s.length( ) >= 32 )
-      set_sid( s );
-   else if( is_encrypted )
+   if( p_is_encrypted )
    {
-      string encrypted( g_sid );
-
-      data_decrypt( g_sid, g_sid, s );
-
-      if( count( g_sid.begin( ), g_sid.end( ), ' ' ) == 11 )
-         get_mnemonics_or_hex_seed( g_sid, g_sid );
-
-      // NOTE: If invalid password then restore the encrypted value.
-      if( !are_hex_nibbles( g_sid ) )
-         g_sid = encrypted;
+      if( sid.find( ':' ) != string::npos )
+         *p_is_encrypted = true;
       else
-         set_sid( g_sid );
+         *p_is_encrypted = false;
    }
 
-   clear_key( s );
+   clear_key( sid );
 
-   if( p_encrypted_sid )
-      write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
+   return retval;
+}
+
+void set_identity( const string& info, const char* p_encrypted_sid )
+{
+   bool run_bc_gen_script = false;
+
+   // NOTE: Empty code block for scope purposes.
+   {
+      guard g( g_mutex );
+
+      bool is_encrypted = false;
+
+      string sid( get_sid( ) );
+
+      if( sid.find( ':' ) != string::npos )
+         is_encrypted = true;
+
+      // NOTE: Encrypted identity passwords must be < 32 characters.
+      if( info.length( ) >= 32 )
+         set_sid( info );
+      else if( is_encrypted )
+      {
+         string encrypted( sid );
+
+         data_decrypt( sid, sid, info );
+
+         if( count( sid.begin( ), sid.end( ), ' ' ) == 11 )
+            get_mnemonics_or_hex_seed( sid, sid );
+
+         if( are_hex_nibbles( sid ) )
+            set_sid( sid );
+      }
+
+      clear_key( sid );
+
+      if( p_encrypted_sid && !file_exists( c_server_sid_file ) )
+      {
+         write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
+
+         if( get_system_variable(
+          get_special_var_name( e_special_var_identity ) ).empty( ) )
+         {
+            string sid_name( get_special_var_name( e_special_var_sid ) );
+
+            set_session_variable( sid_name, sid_name );
+
+            run_bc_gen_script = true;
+         }
+      }
+   }
+
+   if( run_bc_gen_script )
+      run_script( "bc_gen", false );
 }
 
 string get_checksum( const string& data )

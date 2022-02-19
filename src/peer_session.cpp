@@ -626,7 +626,7 @@ void process_repository_file( const string& blockchain,
          else
          {
             string password;
-            get_identity( password, true, false, true );
+            get_identity( password, false, true );
 
             decrypt_pulled_peer_file( target_hash, src_hash, password, hex_pub_key, false, p_file_data );
 
@@ -662,7 +662,7 @@ void process_repository_file( const string& blockchain,
          if( !is_test_session )
          {
             string password;
-            get_identity( password, true, false, true );
+            get_identity( password, false, true );
 
             // NOTE: The first nibble is zeroed out to ensure that the hash value is always valid to use
             // as a Bitcoin address "secret" (as the range of its EC is smaller than the full 256 bits).
@@ -910,7 +910,7 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                   if( local_hash.empty( ) || !has_file( local_hash ) )
                   {
                      string password;
-                     get_identity( password, true, false, true );
+                     get_identity( password, false, true );
 
                      if( file_data.size( ) > 1 )
                         file_data += c_blob_separator;

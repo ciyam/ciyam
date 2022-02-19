@@ -4,6 +4,11 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
  <script/>
+  <name>bc_gen
+  <filename>*script*
+  <arguments>bc_gen.cin @sid
+ </script>
+ <script/>
   <name>app_blk_txs
   <filename>*script*
   <arguments>app_blk_txs.cin @application @rewind_height @block_height
