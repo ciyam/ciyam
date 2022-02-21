@@ -17,7 +17,7 @@
 <tr>
    <td align="right">@@mnemonics</td>
    <td>
-      <textarea class="loginfields" name="entropy" rows="2" cols="35" id="entropy" maxlength="120" validate="reqd">@@identity_mnemonics</textarea>
+      <textarea class="loginfields" name="entropy" tabindex="1" rows="2" cols="35" id="entropy" maxlength="120" validate="reqd">@@identity_mnemonics</textarea>
    </td>
 </tr>
 <tr>
