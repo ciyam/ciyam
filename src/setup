@@ -10,6 +10,7 @@ else
  if [ $# -gt 2 ]; then
   export WEBDIR=$3
  fi
+
  if [ "$WEBDIR" = "" ]; then
   echo Error: Missing environment variable 'WEBDIR'.
  else
@@ -69,15 +70,6 @@ else
   rm footer.htms
 
   chmod -R g+w $WEBDIR/$2/*
-
-  if [ ! "$2" = "meta" ]; then
-   if [ -f $WEBDIR/meta/identity.txt ] && [ ! -f $WEBDIR/$2/identity.txt ]; then
-    ln -s $WEBDIR/meta/identity.txt $WEBDIR/$2/identity.txt
-   fi
-   if [ -f $WEBDIR/meta/encrypted.txt ] && [ ! -f $WEBDIR/$2/encrypted.txt ]; then
-    ln -s $WEBDIR/meta/encrypted.txt $WEBDIR/$2/encrypted.txt
-   fi
-  fi
 
  fi
 fi

@@ -773,7 +773,8 @@ field_add -id=127128 Application Add_Modules_Automatically bool mand -def=1 -tra
 field_add -id=127129 Application Keep_Existing_Data bool mand -def=1
 field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=0
 field_add -id=127131 Application Use_Embedded_Images bool mand -def=0
-field_add -id=127132 Application Available_NOT_IN_USE string opt
+;;; NOTE: Registration_Key is no longer in use (but has been left for backwards compatibility).
+field_add -id=127132 Application Registration_Key string opt
 field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 field_add -id=127135 Application Blockchain_Id str30 opt

@@ -107,8 +107,8 @@ const int c_greeting_timeout = 2500;
 
 const char* const c_unlock = "unlock";
 
-const char* const c_id_file = "identity.txt";
-const char* const c_eid_file = "encrypted.txt";
+const char* const c_id_file = "../meta/identity.txt";
+const char* const c_eid_file = "../meta/encrypted.txt";
 
 const char* const c_stop_file = "ciyam_interface.stop";
 
@@ -918,7 +918,7 @@ void request_handler::process_request( )
 
       if( file_exists( c_stop_file ) )
       {
-         msleep( 3000 );
+         msleep( 2500 );
          if( file_exists( c_stop_file ) )
             throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
       }
@@ -934,6 +934,9 @@ void request_handler::process_request( )
 
       title = mod_info.title;
       module_id = mod_info.id;
+
+      if( g_id.empty( ) && file_exists( c_id_file ) )
+         g_id = buffer_file( c_id_file );
 
       bool is_invalid_session = false;
 
@@ -1194,6 +1197,9 @@ void request_handler::process_request( )
          if( module_name == "Meta" )
             is_meta_module = true;
 
+         string id_file_name( c_id_file );
+         string eid_file_name( c_eid_file );
+
          if( !p_session_info->p_socket )
          {
 #ifndef USE_MULTIPLE_REQUEST_HANDLERS
@@ -1360,11 +1366,11 @@ void request_handler::process_request( )
                            if( !simple_command( *p_session_info, "identity " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to determine encrypted identity information" );
 
-                           string::size_type pos = identity_info.find_last_of( "-:" );
+                           string::size_type pos = identity_info.find( ':' );
                            if( pos == string::npos )
                               throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
-                           ofstream outf( c_eid_file );
+                           ofstream outf( eid_file_name.c_str( ) );
                            outf << identity_info.substr( 0, pos );
 
 #ifdef SSL_SUPPORT
@@ -1392,13 +1398,13 @@ void request_handler::process_request( )
                         g_unlock_fails = 0;
                         g_id = get_id_from_server_id( );
 
-                        if( !file_exists( c_id_file ) )
+                        if( !file_exists( id_file_name.c_str( ) ) )
                         {
-                           ofstream outf( c_id_file );
+                           ofstream outf( id_file_name.c_str( ) );
                            outf << g_id;
                         }
 
-                        if( !file_exists( c_id_file ) )
+                        if( !file_exists( id_file_name.c_str( ) ) )
                            throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
 
                      }
@@ -1414,7 +1420,7 @@ void request_handler::process_request( )
                               if( !is_meta_module )
                                  msleep( 2500 );
                               else
-                                 file_remove( c_eid_file );
+                                 file_remove( eid_file_name.c_str( ) );
                            }
                         }
 
@@ -1424,11 +1430,11 @@ void request_handler::process_request( )
 
                         string encrypted_id;
 
-                        if( file_exists( c_eid_file ) )
+                        if( file_exists( eid_file_name.c_str( ) ) )
                         {
-                           encrypted_id = buffer_file( c_eid_file );
+                           encrypted_id = buffer_file( eid_file_name.c_str( ) );
 
-                           if( server_id != encrypted_id && !file_exists( c_id_file ) )
+                           if( server_id != encrypted_id && !file_exists( id_file_name.c_str( ) ) )
                            {
                               login_refresh = true;
                               g_seed = string( c_unlock );
@@ -1443,14 +1449,14 @@ void request_handler::process_request( )
 
                            if( !g_seed.empty( ) )
                            {
-                              ofstream outf( c_id_file );
+                              ofstream outf( id_file_name.c_str( ) );
                               outf << g_id;
 
                               clear_key( g_seed );
                               g_seed.erase( );
                            }
 
-                           if( !g_id.empty( ) && !file_exists( c_id_file ) )
+                           if( !g_id.empty( ) && !file_exists( id_file_name.c_str( ) ) )
                               throw runtime_error( "unable to create identity file (incorrect directory perms?)" );
 
                            if( was_unlock )
@@ -1473,7 +1479,7 @@ void request_handler::process_request( )
                               output_form( module_name, extra_content,
                                unlock_html, "", false, GDS( c_display_system_unlock ) );
                            }
-                           else if( is_meta_module )
+                           else if( is_meta_module || g_is_blockchain_application )
                            {
                               string identity_html( g_identity_html );
 
