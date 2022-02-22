@@ -158,7 +158,6 @@ file_put test2.jpg test2.jpg
 file_raw list test1.jpg,test2.jpg test.1
 file_info -content test.1
 file_put test.jpg test.jpg
-file_list *
 file_list -a=test.jpg test.1 test.2
 file_info -content test.1
 file_info -content test.2

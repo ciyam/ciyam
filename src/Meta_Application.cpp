@@ -1815,10 +1815,6 @@ void Meta_Application::impl::impl_Generate( )
       if( !outm )
          throw runtime_error( "unexpected error opening '" + modules_list + "' for output" );
 
-      // NOTE: Treat the blockchain attribute as a module name.
-      if( !get_obj( ).Blockchain_Id( ).empty( ) )
-         outm << get_obj( ).Blockchain_Id( ) << '\n';
-
       ofstream outs( generate_script.c_str( ) );
       if( !outs )
          throw runtime_error( "unexpected error opening '" + generate_script + "' for output" );
