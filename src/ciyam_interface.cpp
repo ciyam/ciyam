@@ -588,12 +588,7 @@ void timeout_handler::on_start( )
             }
 
             if( si->second->p_socket )
-            {
-               if( !g_is_blockchain_application )
-                  release_socket( si->second->p_socket );
-               else
-                  disconnect_socket( si->second->p_socket );
-            }
+               release_socket( si->second->p_socket );
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -1170,9 +1165,6 @@ void request_handler::process_request( )
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-            if( g_is_blockchain_application )
-               login_html = g_login_password_html;
-
             output_form( module_name, extra_content, login_html, osstr.str( ) );
 
             if( cookies_permitted )
@@ -1668,62 +1660,16 @@ void request_handler::process_request( )
                      p_session_info->user_module = module_name;
                   else
                   {
-                     bool has_fetched = false;
+                     // NOTE: Avoid displaying an error if the user information has yet to be provided.
+                     if( username.empty( ) && userhash.empty( ) )
+                        display_error = false;
 
-                     if( g_is_blockchain_application )
-                     {
-                        if( password == c_guest_user_key )
-                           username = password;
-                        else
-                        {
-#ifdef SSL_SUPPORT
-                           string pubkey;
-                           if( !simple_command( *p_session_info, "session_variable @pubkey", &pubkey ) )
-                              throw runtime_error( "unexpected failure to get @pubkey value" );
+                     fetch_user_record( id_for_login,
+                      module_id, module_name, mod_info, *p_session_info,
+                      is_authorised || ( persistent == c_true ) || !base64_data.empty( ),
+                      true, username, userhash, password, unique_id );
 
-                           public_key pub_key( pubkey );
-                           private_key priv_key;
-
-                           if( !simple_command( *p_session_info, "peer_account_mint "
-                            + get_storage_info( ).blockchain + " -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, password, 0, true ), &username ) )
-                              throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-#else
-                           if( !simple_command( *p_session_info, "peer_account_mint "
-                            + get_storage_info( ).blockchain + " \"" + escaped( password, "\"" ) + "\"", &username ) )
-                              throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-#endif
-
-                           // NOTE: The "admin" user is the one whose account id matches the blockchain id.
-                           if( username == get_storage_info( ).blockchain )
-                              username = c_admin_user_key;
-
-                           if( !simple_command( *p_session_info,
-                            "session_variable @blockchain " + get_storage_info( ).blockchain ) )
-                              throw runtime_error( "unexpected failure to set blockchain session_variable" );
-                        }
-
-                        fetch_user_record( id_for_login, module_id, module_name,
-                         mod_info, *p_session_info, false, false, username, "", "", "" );
-
-                        has_fetched = true;
-                     }
-
-                     if( !has_fetched )
-                     {
-                        // NOTE: Avoid displaying an error if the user information has yet to be provided.
-                        if( username.empty( ) && userhash.empty( ) )
-                           display_error = false;
-
-                        fetch_user_record( id_for_login, module_id, module_name, mod_info,
-                         *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
-                         true, username, userhash, password, unique_id );
-                     }
-
-                     if( !g_is_blockchain_application )
-                        pwd_hash = p_session_info->user_pwd_hash;
-                     else
-                        pwd_hash = p_session_info->user_pwd_hash = sha256( password ).get_digest_as_string( );
+                     pwd_hash = p_session_info->user_pwd_hash;
                   }
 
                   if( !is_authorised )
@@ -2172,16 +2118,6 @@ void request_handler::process_request( )
                else if( p_session_info->change_pwd_tm
                 && ( unix_timestamp( ) >= p_session_info->change_pwd_tm ) )
                   cmd = c_cmd_pwd;
-            }
-
-            // NOTE: If a new password hash is passed from the client after logging in then
-            // encrypt and store it in the application server "files area" for later usage.
-            if( !g_is_blockchain_application && p_session_info->logged_in && !newhash.empty( ) )
-            {
-               string data( data_encrypt( newhash, get_server_id( ) ) );
-
-               string cmd( "file_raw blob " + data + " " + p_session_info->user_key );
-               simple_command( *p_session_info, cmd );
             }
 
             // NOTE: For a save or continue edit action it is expected that a field list and
@@ -2692,17 +2628,7 @@ void request_handler::process_request( )
       if( cmd != c_cmd_status )
       {
          extra_content_func += " serverId = '" + g_id + "';";
-
-         bool needs_unique = true;
-
-         if( g_is_blockchain_application )
-         {
-            needs_unique = false;
-            extra_content_func += " uniqueId = '';";
-         }
-
-         if( needs_unique )
-            extra_content_func += " uniqueId = '" + unique_id + "';";
+         extra_content_func += " uniqueId = '" + unique_id + "';";
       }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
@@ -2779,9 +2705,6 @@ void request_handler::process_request( )
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-         if( g_is_blockchain_application )
-            login_html = g_login_password_html;
-
          if( created_session && p_session_info->logged_in )
          {
             login_html = "<p>" + string_message( GDS( c_display_click_here_to_login ),
@@ -2827,12 +2750,8 @@ void request_handler::process_request( )
       }
       else
       {
-         if( g_is_blockchain_application )
-            extra_content << "<input type=\"hidden\" value=\"serverId = '"
-             + g_id + "'; uniqueId = ''; had_act_error = true;\" id=\"extra_content_func\"/>\n";
-         else
-            extra_content << "<input type=\"hidden\" value=\"serverId = '"
-             + g_id + "'; uniqueId = '" + unique_id + "'; had_act_error = true;\" id=\"extra_content_func\"/>\n";
+         extra_content << "<input type=\"hidden\" value=\"serverId = '"
+          + g_id + "'; uniqueId = '" + unique_id + "'; had_act_error = true;\" id=\"extra_content_func\"/>\n";
       }
    }
    catch( ... )
@@ -2870,12 +2789,7 @@ void request_handler::process_request( )
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          if( p_session_info->p_socket )
-         {
-            if( !g_is_blockchain_application )
-               release_socket( p_session_info->p_socket );
-            else
-               disconnect_socket( p_session_info->p_socket );
-         }
+            release_socket( p_session_info->p_socket );
 #endif
          remove_non_persistent( session_id );
 
@@ -2984,7 +2898,7 @@ void request_handler::process_request( )
 #endif
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-   if( p_session_info && p_session_info->p_socket && !g_is_blockchain_application )
+   if( p_session_info && p_session_info->p_socket )
    {
       release_socket( p_session_info->p_socket );
       p_session_info->p_socket = 0;
@@ -2992,12 +2906,7 @@ void request_handler::process_request( )
 #endif
 
    if( finished_session )
-   {
-      if( p_session_info && p_session_info->p_socket && g_is_blockchain_application )
-         disconnect_socket( p_session_info->p_socket );
-
       destroy_session( session_id );
-   }
    else if( p_session_info )
       p_session_info->locked = false;
 }

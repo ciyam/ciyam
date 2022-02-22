@@ -375,8 +375,6 @@ file_info -content test.1
 b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9 test1.jpg
 efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f test2.jpg
 file_put test.jpg test.jpg
-file_list *
-Error: file '*' not found
 file_list -a=test.jpg test.1 test.2
 326c9c4eb765fbebe5ecc274e25089319a0eee03c4dae4047dc84e18da46347a
 file_info -content test.1

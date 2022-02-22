@@ -53,7 +53,7 @@ SECONDARY_PUBKEY_HASH=$OUTPUT
 .file_hash bc.$UUID.s0.key
 SECONDARY_PRIVKEY_HASH=$OUTPUT
 ;
-#Creating genesis block for identity '$IDENT'...
+#Creating genesis block for blockchain '$IDENT'...
 ;
 .file_tag -remove bc.$UUID.p0.pub
 .file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.p0.pub
@@ -80,4 +80,6 @@ BLOCK_HASH=$OUTPUT
  .file_hash -q bc.$IDENT.zenith
 @ifndef "$OUTPUT"
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
+.system_variable >@blockchain $IDENT
 @endif
+;
