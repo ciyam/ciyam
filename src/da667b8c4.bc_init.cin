@@ -3,8 +3,6 @@
 ; Distributed under the MIT/X11 software license, please refer to the file license.txt
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
-#Creating Lamport keys with demo passphrase...
-;
 .crypto_seed "taxi act describe attitude focus ugly govern outer note isolate endless act"
 ;de604cee0755a3d81944ea96aed12681
 ENTROPY_P0=%OUTPUT%-0

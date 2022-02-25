@@ -589,35 +589,7 @@ function load2( )
          while( full_context.length % 40 )
             full_context += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
-         var full_key = key;
-         var last_key = full_key;
-
-         var all_bytes = string_to_bytes( full_context );
-
-         while( full_key.length < all_bytes.length )
-         {
-            var next = hex_sha256( last_key );
-
-            full_key += next;
-            last_key = next;
-         }
-
-         var encrypted = '';
-
-         // KLUDGE: The string is not encrypted in place as characters are UTF encoded
-         // so the encrypted string is actually a hex string. It may be instead better
-         // to use an array of bytes (which would require an extra base64 interface).
-         for( var i = 0; i < all_bytes.length; i++ )
-         {
-            var val = ( full_key.charCodeAt( i ) ^ all_bytes[ i ] );
-
-            var hex = '';
-            if( val < 16 )
-               hex += '0';
-            hex += val.toString( 16 );
-
-            encrypted += hex;
-         }
+         var encrypted = encrypt_raw_data( full_context, key );
 
          post_data = 'base64=' + Base64.encode( encrypted );
 
@@ -803,31 +775,7 @@ function process( )
    }
    else
    {
-      response = Base64.decode( response );
-
-      // NOTE: Now the encrypted hex string is decoded.
-      var full_key = localStorage.getItem( 'skey' );
-      var last_key = full_key;
-
-      while( full_key.length < response.length / 2 )
-      {
-         var next = hex_sha256( last_key );
-
-         full_key += next;
-         last_key = next;
-      }
-
-      var decrypted = '';
-      for( i = 0; i < response.length; i += 2 )
-      {
-         var hex = response.charAt( i );
-         hex += response.charAt( i + 1 );
-
-         var val = parseInt( hex, 16 );
-         val = val ^ full_key.charCodeAt( i / 2 );
-
-         decrypted += String.fromCharCode( val );
-      }
+      var decrypted = decrypt_hex_data( Base64.decode( response ), localStorage.getItem( 'skey' ) );
 
       var str = utf8_decode( decrypted );
 
@@ -1149,6 +1097,80 @@ function hash_with_unique( pwd_hash )
       retval = hex_sha256( retval + uniqueId ).toLowerCase( );
 
    return retval;
+}
+
+function encrypt_raw_data( raw_data, key, min_length )
+{
+   var encrypted = '';
+
+   var full_key = key;
+   var last_key = full_key;
+   
+   var raw_data_copy = raw_data;
+   
+   if( min_length != null && raw_data_copy.length < min_length )
+   {
+      raw_data_copy += '\0';
+
+      while( raw_data_copy.length < min_length )
+         raw_data_copy += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
+   }
+   
+   var all_bytes = string_to_bytes( raw_data_copy );
+
+   while( full_key.length < all_bytes.length )
+   {
+      var next = hex_sha256( last_key );
+
+      full_key += next;
+      last_key = next;
+   }
+
+   // KLUDGE: The string is not encrypted in place as characters are UTF encoded
+   // so the encrypted string is actually a hex string. It may be instead better
+   // to use an array of bytes (which would require an extra base64 interface).
+   for( var i = 0; i < all_bytes.length; i++ )
+   {
+      var val = ( full_key.charCodeAt( i ) ^ all_bytes[ i ] );
+
+      var hex = '';
+      if( val < 16 )
+         hex += '0';
+      hex += val.toString( 16 );
+
+      encrypted += hex;
+   }
+   
+   return encrypted;
+}
+
+function decrypt_hex_data( hex_data, key )
+{
+   var decrypted = '';
+
+   var full_key = key;
+   var last_key = full_key;
+
+   while( full_key.length < hex_data.length / 2 )
+   {
+      var next = hex_sha256( last_key );
+
+      full_key += next;
+      last_key = next;
+   }
+
+   for( i = 0; i < hex_data.length; i += 2 )
+   {
+      var hex = hex_data.charAt( i );
+      hex += hex_data.charAt( i + 1 );
+
+      var val = parseInt( hex, 16 );
+      val = val ^ full_key.charCodeAt( i / 2 );
+
+      decrypted += String.fromCharCode( val );
+   }
+
+   return decrypted;
 }
 
 function escape_char( input, ch )
