@@ -1,5 +1,5 @@
 version "display protocol version"
-identity "get/set identity information" [<val/-k=/pubkey>][<val//info>][<val//encrypted>]
+identity "get/set identity information" [<opt/-md5/md5>][<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
 file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]

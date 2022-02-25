@@ -135,7 +135,7 @@ void read_module_strings( module_info& info, tcp_socket& socket )
    }
 }
 
-bool simple_command( session_info& sess_info, const string& cmd, string* p_response )
+bool simple_command( session_info& sess_info, const string& cmd, string* p_response, bool is_optional )
 {
    DEBUG_TRACE( cmd );
 
@@ -163,8 +163,21 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
 
    if( p_response )
    {
-      *p_response = response;
-      DEBUG_TRACE( response );
+      if( response != c_response_okay )
+      {
+         *p_response = response;
+         DEBUG_TRACE( response );
+      }
+      else
+      {
+         if( !is_optional )
+            return false;
+         else
+         {
+            p_response->clear( );
+            return true;
+         }
+      }
 
       response.clear( );
       if( sess_info.p_socket->read_line( response, c_subsequent_response_timeout ) <= 0 )

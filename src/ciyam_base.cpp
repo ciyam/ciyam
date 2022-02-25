@@ -4587,7 +4587,7 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-void get_identity( string& s, bool append_max_user_limit, bool use_truncated )
+void get_identity( string& s, bool append_max_user_limit, bool use_truncated, bool md5_version )
 {
    guard g( g_mutex );
 
@@ -4604,6 +4604,13 @@ void get_identity( string& s, bool append_max_user_limit, bool use_truncated )
    }
 
    clear_key( sid );
+
+   // NOTE: This variant is being used by the FCGI UI.
+   if( md5_version )
+   {
+      MD5 hash( ( unsigned char* )s.c_str( ) );
+      s = string( hash.hex_digest( ) ).substr( 12 );
+   }
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );

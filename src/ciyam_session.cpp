@@ -1486,6 +1486,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_identity )
       {
+         bool is_md5( has_parm_val( parameters, c_cmd_ciyam_session_identity_md5 ) );
+         bool is_raw( has_parm_val( parameters, c_cmd_ciyam_session_identity_raw ) );
          string info( get_parm_val( parameters, c_cmd_ciyam_session_identity_info ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_identity_pubkey ) );
          string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_identity_encrypted ) );
@@ -1514,7 +1516,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          clear_key( info );
 
-         get_identity( response, true );
+         get_identity( response, !is_raw, false, is_md5 );
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {

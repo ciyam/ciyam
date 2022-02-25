@@ -547,6 +547,12 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
       }
       decoded = s;
    }
+   else
+   {
+      string::size_type pos = decoded.find( '\0' );
+      if( pos != string::npos )
+         decoded.erase( pos );
+   }
 }
 
 class timeout_handler : public thread
@@ -741,7 +747,9 @@ void request_handler::process_request( )
 
    string session_id;
    string interface_file;
+
    session_info* p_session_info = 0;
+
    ostringstream form_content, extra_content;
 
    bool cookies_permitted = false;
@@ -983,10 +991,18 @@ void request_handler::process_request( )
          using_anonymous = true;
       }
 
+      if( cmd != c_cmd_status )
+         unique_id = get_unique( g_id, raddr );
+
       if( cmd == c_cmd_identity )
       {
          g_seed = input_data[ c_param_data ];
          g_id_pwd = input_data[ c_param_extra ];
+
+         if( g_seed != c_unlock )
+            crypt_decoded( unique_id, g_seed );
+
+         crypt_decoded( unique_id, g_id_pwd );
 
          if( !mod_info.allows_anonymous_access )
          {
@@ -1023,9 +1039,6 @@ void request_handler::process_request( )
 
       if( is_ssl && cmd.empty( ) && input_data.count( c_http_param_ruser ) )
          cmd = c_cmd_open;
-
-      if( cmd != c_cmd_status )
-         unique_id = get_unique( g_id, raddr );
 
       string activation_file;
       if( is_activation )
@@ -1146,6 +1159,8 @@ void request_handler::process_request( )
       }
 
       string extra_content_func;
+
+      bool is_identity_form = false;
       bool has_just_logged_in = false;
 
       if( !p_session_info )
@@ -1473,6 +1488,8 @@ void request_handler::process_request( )
                            }
                            else if( is_meta_module || g_is_blockchain_application )
                            {
+                              is_identity_form = true;
+
                               string identity_html( g_identity_html );
 
                               str_replace( identity_html,
@@ -1481,7 +1498,11 @@ void request_handler::process_request( )
                               str_replace( identity_html,
                                c_identity_introduction_2, GDS( c_display_identity_introduction_2 ) );
 
-                              str_replace( identity_html, c_identity_mnemonics, server_id );
+                              // NOTE: Encrypt mnemonics using the "unique_id" value as the key.
+                              string encrypted_seed( server_id );
+                              crypt_decoded( unique_id, encrypted_seed, false );
+
+                              str_replace( identity_html, c_identity_mnemonics, encrypted_seed );
 
                               str_replace( identity_html, c_mnemonics, GDS( c_display_mnemonics ) );
                               str_replace( identity_html, c_confirm_identity, GDS( c_display_confirm_identity ) );
@@ -2629,6 +2650,10 @@ void request_handler::process_request( )
       {
          extra_content_func += " serverId = '" + g_id + "';";
          extra_content_func += " uniqueId = '" + unique_id + "';";
+
+         // NOTE: Mnemonics are (simplistically) encrypted to prevent clear text observation via packet sniffing.
+         if( is_identity_form )
+            extra_content_func += " document.identity.entropy.value = decrypt_hex_data( document.identity.entropy.value, uniqueId );";
       }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
