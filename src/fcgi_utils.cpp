@@ -1319,8 +1319,6 @@ void output_form( const string& module_name, ostream& os,
 
          os << "<h3 class=\"right-top\">" << title_string << "</h3>" << endl;
       }
-      else if( is_blockchain_application( ) )
-         os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_password ) << "</h3>" << endl;
       else
          os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
    }

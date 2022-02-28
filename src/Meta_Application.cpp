@@ -314,19 +314,21 @@ const int c_num_encrypted_fields = 0;
 
 bool is_encrypted_field( const string& ) { static bool false_value( false ); return false_value; }
 
-const int c_num_transient_fields = 4;
+const int c_num_transient_fields = 5;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "127106",
    "127125",
    "127128",
+   "127135",
    "127136"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
    "Add_Modules_Automatically",
+   "Blockchain_Id",
    "Create_Database",
    "Generate_Details",
    "Type"
@@ -1772,8 +1774,8 @@ void Meta_Application::impl::impl_Generate( )
 
    get_obj( ).op_update( );
 
-   int ogen_type = get_obj( ).Generate_Type( );
-   bool okeep_data = get_obj( ).Keep_Existing_Data( );
+   int orig_gen_type = get_obj( ).Generate_Type( );
+   bool orig_keep_data = get_obj( ).Keep_Existing_Data( );
 
    get_obj( ).Generate_Type( gen_type );
    get_obj( ).Keep_Existing_Data( keep_data );
@@ -1782,7 +1784,7 @@ void Meta_Application::impl::impl_Generate( )
 #else
    string generate_script( get_obj( ).Name( ) + ".generate.bat" );
 #endif
-   // NOTE: Empty block for scope purposes (to ensure script file is closed before being executed).
+   try
    {
       string app_dir( lower( get_obj( ).Name( ) ) );
 #ifndef _WIN32
@@ -2211,25 +2213,6 @@ void Meta_Application::impl::impl_Generate( )
 
       outupg << "#Starting DB Rebuild...\n";
 
-      // NOTE: If discarding data then remove all blockchain files and if there is an
-      // "init" script found for the blockchain and it needs to be run the execute it.
-      if( !is_null( get_obj( ).Blockchain_Id( ) ) )
-      {
-         string blockchain_init_script( get_obj( ).Blockchain_Id( ) + ".bc_init.cin" );
-
-         if( !get_obj( ).Keep_Existing_Data( ) || is_null( get_obj( ).Generate_Status( ) ) )
-         {
-            if( exists_file( blockchain_init_script ) )
-               outupg << ".";
-            outupg << "file_kill -p=bc." << get_obj( ).Blockchain_Id( ) << "*\n";
-         }
-
-         if( ( !get_obj( ).Keep_Existing_Data( )
-          || is_null( get_obj( ).Generate_Status( ) ) )
-          && exists_file( blockchain_init_script ) )
-            outupg << "<" << blockchain_init_script << "\n";
-      }
-
       outupg << "storage_restore -rebuild " << get_obj( ).Name( ) << "\n";
       outupg << "#Finished DB Rebuild...\n";
 
@@ -2257,8 +2240,6 @@ void Meta_Application::impl::impl_Generate( )
          if( !get_obj( ).Keep_Existing_Data( ) )
          {
             outs << "if exist " << get_obj( ).Name( ) << ".log del " << get_obj( ).Name( ) << ".log\n";
-            if( !is_null( get_obj( ).Blockchain_Id( ) ) )
-               outs << "if exist " << get_obj( ).Name( ) << ".txs.log del " << get_obj( ).Name( ) << ".txs.log\n";
             outs << "if exist " << get_obj( ).Name( ) << ".dead_keys.lst del " << get_obj( ).Name( ) << ".dead_keys.lst\n";
          }
          outs << "if not exist " << get_obj( ).Name( ) << ".log copy app.log " << get_obj( ).Name( ) << ".log >nul\n";
@@ -2272,12 +2253,6 @@ void Meta_Application::impl::impl_Generate( )
             outs << " if [ -f " << get_obj( ).Name( ) << ".log ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".log\n";
             outs << " fi\n";
-            if( !is_null( get_obj( ).Blockchain_Id( ) ) )
-            {
-               outs << " if [ -f " << get_obj( ).Name( ) << ".txs.log ]; then\n";
-               outs << "  rm " << get_obj( ).Name( ) << ".txs.log\n";
-               outs << " fi\n";
-            }
             outs << " if [ -f " << get_obj( ).Name( ) << ".dead_keys.lst ]; then\n";
             outs << "  rm " << get_obj( ).Name( ) << ".dead_keys.lst\n";
             outs << " fi\n";
@@ -2307,8 +2282,8 @@ void Meta_Application::impl::impl_Generate( )
       outssx << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Actions ) << "=127410,"
-       << get_obj( ).static_get_field_id( e_field_id_Generate_Type ) << "=" << to_string( ogen_type ) << ","
-       << get_obj( ).static_get_field_id( e_field_id_Keep_Existing_Data ) << "=" << to_string( okeep_data ) << ","
+       << get_obj( ).static_get_field_id( e_field_id_Generate_Type ) << "=" << to_string( orig_gen_type ) << ","
+       << get_obj( ).static_get_field_id( e_field_id_Keep_Existing_Data ) << "=" << to_string( orig_keep_data ) << ","
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generated\"\n";
 
       outssx << "system_variable @" << storage_name( ) << "_protect \"\"\n";
@@ -2377,6 +2352,11 @@ void Meta_Application::impl::impl_Generate( )
       get_obj( ).Generate_Status( "Generating Vars..." );
 
       get_obj( ).op_apply( );
+   }
+   catch( ... )
+   {
+      set_system_variable( "@" + storage_name( ) + "_protect", "" );
+      throw;
    }
 
 #ifdef _WIN32
@@ -3609,6 +3589,9 @@ void Meta_Application::impl::after_fetch( )
             }
          } while( get_obj( ).child_Module( ).iterate_next( ) );
       }
+
+      if( !get_obj( ).Type( ) )
+         get_obj( ).Blockchain_Id( get_system_variable( get_special_var_name( e_special_var_blockchain ) ) );
    }
    // [<finish after_fetch>]
 }
@@ -3739,6 +3722,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
             get_obj( ).child_Module( ).Application( get_obj( ).get_key( ) );
             get_obj( ).child_Module( ).Model( cp_clone->child_Module( ).Model( ) );
             get_obj( ).child_Module( ).op_apply( );
+
          } while( cp_clone->child_Module( ).iterate_next( ) );
       }
    }
@@ -5937,7 +5921,6 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Allow_Duplicate_Logins" );
    names.push_back( "C_Allow_Module_Switching" );
    names.push_back( "C_Auto_Login_Days" );
-   names.push_back( "C_Blockchain_Id" );
    names.push_back( "C_Created_Database" );
    names.push_back( "C_Creation_Script" );
    names.push_back( "C_Default_Image_Height" );
@@ -5983,7 +5966,6 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Allow_Duplicate_Logins( ) ) );
    values.push_back( to_string( Allow_Module_Switching( ) ) );
    values.push_back( to_string( Auto_Login_Days( ) ) );
-   values.push_back( sql_quote( to_string( Blockchain_Id( ) ) ) );
    values.push_back( to_string( Created_Database( ) ) );
    values.push_back( sql_quote( to_string( Creation_Script( ) ) ) );
    values.push_back( to_string( Default_Image_Height( ) ) );
@@ -6675,7 +6657,6 @@ string Meta_Application::static_get_sql_columns( )
     "C_Allow_Duplicate_Logins INTEGER NOT NULL,"
     "C_Allow_Module_Switching INTEGER NOT NULL,"
     "C_Auto_Login_Days INTEGER NOT NULL,"
-    "C_Blockchain_Id VARCHAR(200) NOT NULL,"
     "C_Created_Database INTEGER NOT NULL,"
     "C_Creation_Script VARCHAR(75) NOT NULL,"
     "C_Default_Image_Height INTEGER NOT NULL,"

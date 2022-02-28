@@ -9438,6 +9438,7 @@ string get_instance_owner( size_t handle, const string& context )
    else
    {
       string owner_field( instance.get_owner_field_name( ) );
+
       if( !owner_field.empty( ) )
       {
          string method_name_and_args( "get " );

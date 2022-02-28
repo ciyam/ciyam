@@ -410,7 +410,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                set_field_values += "=" + escaped( escaped( user_field_info[ userfetch ], "," ), ",\"", c_nul, "rn\r\n" );
 
                // NOTE: Set an instance variable so the application server can identify the trigger field.
-               if( is_new_record || act == c_act_edit || !is_blockchain_application( ) )
+               if( is_new_record || act == c_act_edit )
                   set_field_values += ",@trigger=" + userfetch;
             }
          }
@@ -434,12 +434,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      // NOTE: If the "force" field is flagged as an encrypted field then encrypt it now.
                      if( view.encrypted_fields.count( view.user_force_fields[ i ] ) )
                      {
-                        if( !is_blockchain_application( ) )
-                          set_field_values += "=" + data_encrypt(
-                           user_field_info[ view.user_force_fields[ i ] ], get_server_id( ) );
-                        else
-                          set_field_values += "=" + data_encrypt(
-                           user_field_info[ view.user_force_fields[ i ] ], p_session_info->user_pwd_hash );
+                       set_field_values += "=" + data_encrypt(
+                        user_field_info[ view.user_force_fields[ i ] ], get_server_id( ) );
                      }
                      else
                         set_field_values += "=" + escaped( escaped(
@@ -493,7 +489,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
-      if( !is_blockchain_application( ) && act == c_act_exec )
+      if( act == c_act_exec )
       {
          if( !set_field_values.empty( ) )
             set_field_values += ",";
@@ -574,10 +570,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                 && !view.hidden_fields.count( view.field_ids[ i ] )
                 && view.encrypted_fields.count( view.field_ids[ i ] ) )
                {
-                  if( !is_blockchain_application( ) )
-                     item_value = data_decrypt( item_value, get_server_id( ) );
-                  else
-                     item_value = data_decrypt( item_value, p_session_info->user_pwd_hash );
+                  item_value = data_decrypt( item_value, get_server_id( ) );
 
                   item_values[ field_num ] = item_value;
                }
@@ -1132,34 +1125,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         field_value_pairs.push_back(
                          make_pair( view.modify_datetime_field, "U" + date_time::standard( ).as_string( ) ) );
 
-                     if( !new_file.empty( ) && is_blockchain_application( ) )
-                     {
-                        bool is_encrypted = view.encrypted_fields.count( file_field_id );
-
-                        if( is_encrypted && !view.ignore_encrypted_field.empty( )
-                         && view.field_values.count( view.ignore_encrypted_field ) )
-                        {
-                           if( view.field_values.find( view.ignore_encrypted_field )->second == string( c_true_value ) )
-                              is_encrypted = false;
-                        }
-
-                        // NOTE: For blockchain applications encrypt file attachments if required.
-                        if( is_encrypted )
-                        {
-                           fstream fs;
-                           fs.open( new_file.c_str( ), ios::in | ios::out | ios::binary );
-
-                           if( fs )
-                           {
-                              crypt_stream( fs, harden_key_with_salt(
-                               p_session_info->user_pwd_hash, file_name_without_path( new_file, true ) ) );
-
-                              fs.flush( );
-                              fs.close( );
-                           }
-                        }
-                     }
-
                      string fields_and_values_prefix;
 
                      if( act != c_act_remove )
@@ -1415,74 +1380,62 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          {
             if( cmd != c_cmd_join && cmd != c_cmd_open && !mod_info.user_class_id.empty( ) )
             {
-               if( is_blockchain_application( ) )
+               // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
+               // should not be menus but just direct links to the "client crypto" implementations.
+               extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
+
+               extra_content << "<div id=\"sign_in_up\"><ul>";
+
+               if( file_exists( "../openid/" + app_dir_name, false ) )
+                  extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                   << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
+
+               extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+               extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
+
+               extra_content << "<li><a href=\"http://" << input_data[ c_http_param_host ]
+                << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+               extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
+
+               extra_content << "</ul></div></li>";
+
+               // NOTE: To limit "sign ups" to specific IP addresses simply add them
+               // as lines to the list of "sign up testers" file (to let *all* users
+               // have access simply remove the file).
+               set< string > testers;
+               if( file_exists( c_sign_up_testers_file ) )
                {
-                  extra_content << "<div id=\"sign\"><ul><li><a href=\"http://" << input_data[ c_http_param_host ]
-                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_password;
+                  testers.insert( "10.0.0.1" );
 
-                  extra_content << "\">" << GDS( c_display_sign_in ) << "</a></li></ul>";
+                  testers.insert( c_local_ip_addr );
+                  testers.insert( c_local_ip_addr_for_ipv6 );
 
-                  extra_content << "</div>\n";
+                  buffer_file_lines( c_sign_up_testers_file, testers );
                }
-               else
+
+               if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
                {
-                  // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
-                  // should not be menus but just direct links to the "client crypto" implementations.
-                  extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
+                  extra_content << "<li><a class=\"grey\" href=\"#\">" << GDS( c_display_sign_up ) << "</a>";
 
                   extra_content << "<div id=\"sign_in_up\"><ul>";
 
                   if( file_exists( "../openid/" + app_dir_name, false ) )
-                     extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                     extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
                       << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
 
-                  extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
-                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                  extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                   << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
                   extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
 
-                  extra_content << "<li><a href=\"http://" << input_data[ c_http_param_host ]
-                   << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                  extra_content << "<li><a class=\"grey\" href=\"http://" << input_data[ c_http_param_host ]
+                   << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
                   extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
 
-                  extra_content << "</ul></div></li>";
-
-                  // NOTE: To limit "sign ups" to specific IP addresses simply add them
-                  // as lines to the list of "sign up testers" file (to let *all* users
-                  // have access simply remove the file).
-                  set< string > testers;
-                  if( file_exists( c_sign_up_testers_file ) )
-                  {
-                     testers.insert( "10.0.0.1" );
-
-                     testers.insert( c_local_ip_addr );
-                     testers.insert( c_local_ip_addr_for_ipv6 );
-
-                     buffer_file_lines( c_sign_up_testers_file, testers );
-                  }
-
-                  if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
-                  {
-                     extra_content << "<li><a class=\"grey\" href=\"#\">" << GDS( c_display_sign_up ) << "</a>";
-
-                     extra_content << "<div id=\"sign_in_up\"><ul>";
-
-                     if( file_exists( "../openid/" + app_dir_name, false ) )
-                        extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
-                         << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
-
-                     extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
-                      << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
-                     extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
-
-                     extra_content << "<li><a class=\"grey\" href=\"http://" << input_data[ c_http_param_host ]
-                      << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
-                     extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
-
-                     extra_content << "</div></li></ul>";
-                  }
-
-                  extra_content << "</ul></div>\n";
+                  extra_content << "</div></li></ul>";
                }
+
+               extra_content << "</ul></div>\n";
             }
          }
          else
@@ -1554,7 +1507,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                extra_content << GDS( c_display_logged_in_as ) << " "
                 << ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name );
 
-            if( !is_blockchain_application( ) && !p_session_info->needs_pin
+            if( !p_session_info->needs_pin
              && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
             {
                if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
@@ -2407,10 +2360,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   {
                      password = hash_password( g_id + password + req_username );
 
-                     if( is_blockchain_application( ) )
-                        password = data_encrypt( password, password );
-                     else
-                        password = data_encrypt( password, get_server_id( ) );
+                     password = data_encrypt( password, get_server_id( ) );
 
                      bool is_anon_email_addr = false;
                      string::size_type pos = email_addr.find( "@" );

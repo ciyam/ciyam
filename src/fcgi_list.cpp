@@ -574,9 +574,6 @@ void output_list_form( ostream& os,
    if( is_parent_edit || sess_info.is_read_only || sess_info.user_id.empty( ) )
       allow_list_actions = false;
 
-   if( is_blockchain_application( ) && sess_info.user_id == c_guest_user_key )
-      allow_list_actions = false;
-
    bool is_no_new = has_perm_extra( c_list_type_extra_no_new, extras, sess_info );
    bool is_no_erase = has_perm_extra( c_list_type_extra_no_erase, extras, sess_info );
    bool is_owner_new = has_perm_extra( c_list_type_extra_owner_new, extras, sess_info );
@@ -3380,8 +3377,7 @@ void output_list_form( ostream& os,
                            is_encrypted = false;
                      }
 
-                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
-                      is_blockchain_application( ) && is_encrypted ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name );
                   }
 
                   if( !is_href && !is_printable
