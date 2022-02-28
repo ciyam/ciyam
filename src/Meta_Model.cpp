@@ -7423,13 +7423,8 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
          {
             if( cp_type->Name( ) == "Standard" )
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
-            else if( ( cp_type->Name( ) == "User"
-             && get_obj( ).Type( ) && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User )
-             || ( cp_type->Name( ) == "User_B"
-             && !get_obj( ).Type( ) && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User ) )
-            {
+            else if( cp_type->Name( ) == "User" && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User )
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
-            }
             else if( cp_type->Name( ) == "Group" && get_obj( ).Add_Packages( ) >= c_enum_add_packages_Standard_User_Group )
                single_types.push_back( make_pair( cp_type->get_key( ), cp_type->Name( ) + " " + cp_type->Plural( ) ) );
          } while( cp_type->iterate_next( ) );
@@ -7445,12 +7440,6 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
 
          string name( name_and_plural.substr( 0, pos ) );
          string plural( pos == string::npos ? name_and_plural : name_and_plural.substr( pos + 1 ) );
-
-         if( name.length( ) > 3 && name.substr( name.length( ) - 2 ) == "_B" )
-            name.erase( name.length( ) - 2 );
-
-         if( plural.length( ) > 3 && plural.substr( plural.length( ) - 2 ) == "_B" )
-            plural.erase( plural.length( ) - 2 );
 
          get_obj( ).child_Package( ).Model( get_obj( ).get_key( ) );
          get_obj( ).child_Package( ).Package_Type( single_types[ i ].first );

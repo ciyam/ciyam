@@ -625,9 +625,6 @@ bool output_view_form( ostream& os, const string& act,
    if( sess_info.is_read_only || sess_info.user_id.empty( ) )
       is_no_edit = true;
 
-   if( is_blockchain_application( ) && sess_info.user_id == c_guest_user_key )
-      is_no_edit = true;
-
    if( is_printable )
    {
       is_no_edit = true;
@@ -803,8 +800,7 @@ bool output_view_form( ostream& os, const string& act,
              && !sess_info.user_id.empty( )
              && !source.actions_value.empty( )
              && ( !( source.state & c_state_unactionable )
-             || view_extras.count( c_view_type_extra_ignore_unactionable ) )
-             && ( !is_blockchain_application( ) || sess_info.user_id != c_guest_user_key ) )
+             || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
             {
                if( had_any )
                   os << c_nbsp;
@@ -1610,12 +1606,7 @@ bool output_view_form( ostream& os, const string& act,
             split( source.vici->second->fields[ i ].pextra, parent_extras, '+' );
 
          if( !cell_data.empty( ) && parent_extras.count( c_parent_extra_decrypt ) )
-         {
-            if( !is_blockchain_application( ) )
-               cell_data = data_decrypt( cell_data, get_server_id( ) );
-            else
-               cell_data = data_decrypt( cell_data, sess_info.user_pwd_hash );
-         }
+            cell_data = data_decrypt( cell_data, get_server_id( ) );
 
          if( !field_list.empty( ) )
             field_list += ',';
@@ -2407,8 +2398,7 @@ bool output_view_form( ostream& os, const string& act,
                            is_encrypted = false;
                      }
 
-                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name,
-                      is_blockchain_application( ) && is_encrypted ? sess_info.user_pwd_hash.c_str( ) : 0 );
+                     create_tmp_file_link_or_copy( tmp_link_path, file_name, file_full_ext, link_file_name );
                   }
 
                   bool has_image = false;

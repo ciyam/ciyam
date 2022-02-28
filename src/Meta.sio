@@ -171,6 +171,7 @@
       <name>Blockchain_Id
       <type>1010
       <mandatory>false
+      <transient>true
       <indexes/>
       </indexes>
       <modifiers/>
@@ -30692,7 +30693,7 @@
      <class_id>127100
      <field_info>127101;new_edit
      <field_info>127136;non_new+no_edit+enum=907
-     <field_info>127135;non_new
+     <field_info>127135;non_new+no_edit
      <field_info>127120;non_new+always_editable+force+enum=905
      <field_info>127137;new_only+force
      <field_info>302225:138101;new_edit+max_size=100

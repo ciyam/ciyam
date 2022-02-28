@@ -2557,7 +2557,7 @@
      <name>field_application_blockchain_id
      <field>127135
      <ftype>string
-     <extra>non_new+max_size=30
+     <extra>non_new+no_edit+max_size=30
      <mandatory>false
      <modifiers>4000:relegate
     </field>

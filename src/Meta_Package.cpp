@@ -2608,6 +2608,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               else
                                  value.erase( );
                            }
+                           else if( get_obj( ).child_Package_Option( ).Name( ) == "@use_peerchains" )
+                           {
+                              if( !get_obj( ).Model( ).Type( ) )
+                                 value = "1";
+                              else
+                                 value.erase( );
+                           }
                            get_obj( ).child_Package_Option( ).Use_Option( value == "1" || value == "true" );
                            break;
 

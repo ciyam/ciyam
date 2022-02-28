@@ -149,7 +149,7 @@
 `{`$specification_Application_view_fmand001`=`'true`'`}
 `{`$specification_Application_view_field002`=`'127135`'`}
 `{`$specification_Application_view_ftype002`=`'string`'`}
-`{`$specification_Application_view_extra002`=`'non_new+max_size=30`'`}
+`{`$specification_Application_view_extra002`=`'non_new+no_edit+max_size=30`'`}
 `{`$specification_Application_view_fmods002`=`'4000:relegate`'`}
 `{`$specification_Application_view_fname002`=`'field_application_blockchain_id`'`}
 `{`$specification_Application_view_fmand002`=`'false`'`}
