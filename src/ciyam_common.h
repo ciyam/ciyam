@@ -107,7 +107,6 @@ enum special_var
    e_special_var_storage,
    e_special_var_tz_name,
    e_special_var_trigger,
-   e_special_var_cmd_hash,
    e_special_var_key_info,
    e_special_var_executed,
    e_special_var_identity,
