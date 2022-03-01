@@ -5906,7 +5906,7 @@ void set_session_progress_output( const string& progress_output )
       gtp_session->progress_output = progress_output;
 }
 
-void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_info )
+void set_last_session_cmd( const string& cmd )
 {
    guard g( g_mutex );
 
@@ -5914,17 +5914,6 @@ void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_i
    {
       gtp_session->last_cmd = cmd;
       gtp_session->dtm_last_cmd = date_time::local( );
-
-      string::size_type pos = parameter_info.find( cmd );
-      if( pos != 0 )
-         pos = 0;
-      else
-         pos += cmd.length( );
-
-      string s( cmd + parameter_info.substr( pos ) );
-      s = sha1( s ).get_digest_as_string( );
-
-      set_session_variable( get_special_var_name( e_special_var_cmd_hash ), s.substr( 0, 20 ) );
    }
 }
 

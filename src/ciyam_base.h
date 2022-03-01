@@ -346,7 +346,7 @@ void CIYAM_BASE_DECL_SPEC set_slowest_if_applicable( );
 
 void CIYAM_BASE_DECL_SPEC set_session_progress_output( const std::string& progress_output );
 
-void CIYAM_BASE_DECL_SPEC set_last_session_cmd_and_hash( const std::string& cmd, const std::string& parameter_info );
+void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
 
 void CIYAM_BASE_DECL_SPEC condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );

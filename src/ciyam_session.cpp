@@ -1448,7 +1448,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    set_session_progress_output( "" );
    increment_session_commands_executed( );
-   set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
+
+   set_last_session_cmd( command );
 
    progress* p_progress = 0;
 #ifdef HPDF_SUPPORT
@@ -3196,8 +3197,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                key = new_key;
          }
 
-         set_last_session_cmd_and_hash( command, next_command );
-
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
@@ -3490,7 +3489,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ver_info.erase( );
 
          set_dtm_if_now( dtm, next_command );
-         set_last_session_cmd_and_hash( command, next_command );
 
          string extra_field_values_prefix( get_special_var_name( e_special_var_extra_field_values ) + "," );
 
@@ -3936,8 +3934,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
-         set_last_session_cmd_and_hash( command, next_command );
-
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
@@ -4154,8 +4150,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                log_as_update = true;
                method.erase( 0, 1 );
             }
-
-            set_last_session_cmd_and_hash( command, next_command );
          }
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );

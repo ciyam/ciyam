@@ -2298,7 +2298,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    string hello_data, hello_hash;
    hello_data = get_hello_data( hello_hash );
 
-   set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
+   set_last_session_cmd( command );
 
    string blockchain( socket_handler.get_blockchain( ) );
 
