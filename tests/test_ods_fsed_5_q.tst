@@ -2,5 +2,5 @@ cd
 /
 branch objects
 aaa/
-xxx (266 B)
+xxx (289 B)
 exit
