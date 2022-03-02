@@ -1,0 +1,23 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start default_to_variable)] `{`$arg_id`}
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish default_to_variable)] `{`$arg_id`}
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start default_to_variable)] `{`$arg_id`}
+   if( is_create`{`@eq`(`$arg_inc_clones`,`'`'`)
+    && get_obj( ).get_clone_key( ).empty( )`}
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
+`{`@eq`(`$arg_system`,`'true`'`)\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_value`}" ) ) );
+`,`@eq`(`$arg_session`,`'true`'`)\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_value`}" ) ) );
+`,\
+      get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_value`}" ) ) );
+`}\
+   // [(finish default_to_variable)] `{`$arg_id`}
+`}

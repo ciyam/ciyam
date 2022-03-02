@@ -39,19 +39,19 @@ In order to interactively test the CIYAM peer protocol a special configuration e
 "ciyam_server.sio" configuration file (immediately before the "<default_storage>" entry):
 
 ...
- <test_peer_port>12346
+ <test_peer_port>11111
 # <default_storage>test
 ...
 
 After changing the configuration file and restarting the server the "ciyam_server.log" should look similar to
 the following:
 
-[2017-04-07 17:52:25] [000000] [general] server started on port 12345 (pid = 2572)
-[2017-04-07 17:52:25] [000000] [general] peer listener started on port 12346
+[2017-04-07 17:52:25] [000000] [general] server started on port 11011 (pid = 888)
+[2017-04-07 17:52:25] [000000] [general] peer listener started on port 11111
 
-To connect use "ciyam_client" specifying the port number (i.e. 12346 per above) as follows:
+To connect use "ciyam_client" specifying the port number (i.e. 11111 per above) as follows:
 
-./ciyam_client 12346
+./ciyam_client 11111
 
 To see a list of all the available peer commands after starting the client type "?" and hit enter:
 
@@ -71,7 +71,7 @@ command can be executed at any time but is only permitted to be executed once pe
 
 The following illustrates a simple interactive peer session:
 
-./ciyam_client 12346
+./ciyam_client 11111
 
 > chk hello
 (not found)
@@ -162,7 +162,7 @@ issued for "52326e48bde0bf6bb78fe965728c8679a5594e42d9cb0f95b9df41b391903282"):
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_client -quiet 12346
+ ./ciyam_client -quiet 11111
 chk hello
 put 52326e48bde0bf6bb78fe965728c8679a5594e42d9cb0f95b9df41b391903282
 ~rm 52326e48bde0bf6bb78fe965728c8679a5594e42d9cb0f95b9df41b391903282
@@ -206,7 +206,7 @@ the encrypted content) and the "target hash" (being the hash of the originally p
 #-----------------------------------------------------------------------------------------------------------#
 # NOTE: Copy and paste the following into your terminal session:                                            #
 #-----------------------------------------------------------------------------------------------------------#
- ./ciyam_client -quiet 12346
+ ./ciyam_client -quiet 11111
 chk hello
 chk a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 ~cat 2698f28dd389bb6e2d13f8daaedcc625b642359b7055654022dd2553f83455fc

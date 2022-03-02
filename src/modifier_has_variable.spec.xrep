@@ -1,6 +1,8 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start modifier_has_variable)] `{`$arg_id`}
-`{`!`@eq`(`$arg_session_var`,`'`'`)\
+`{`@eq`(`$arg_system`,`'true`'`)\
+   if( !get_system_variable( "`{`$arg_value`}" ).empty( ) )
+`,`@eq`(`$arg_session`,`'true`'`)\
    if( !get_session_variable( "`{`$arg_value`}" ).empty( ) )
 `,\
    if( !get_obj( ).get_variable( "`{`$arg_value`}" ).empty( ) )

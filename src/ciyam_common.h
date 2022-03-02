@@ -117,6 +117,7 @@ enum special_var
    e_special_var_image_dir,
    e_special_var_increment,
    e_special_var_list_hash,
+   e_special_var_peer_port,
    e_special_var_val_error,
    e_special_var_blockchain,
    e_special_var_extra_info,
