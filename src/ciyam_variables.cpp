@@ -106,6 +106,7 @@ const char* const c_special_variable_decrement = "@decrement";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
 const char* const c_special_variable_list_hash = "@list_hash";
+const char* const c_special_variable_peer_port = "@peer_port";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
@@ -443,6 +444,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_list_hash:
       s = string( c_special_variable_list_hash );
+      break;
+
+      case e_special_var_peer_port:
+      s = string( c_special_variable_peer_port );
       break;
 
       case e_special_var_val_error:

@@ -4390,6 +4390,9 @@ void init_globals( const char* p_sid, int* p_use_udp )
       set_system_variable( get_special_var_name( e_special_var_os ), "Windows" );
 #endif
 
+      set_system_variable(
+       get_special_var_name( e_special_var_peer_port ), to_string( c_default_ciyam_peer_port ) );
+
       // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
       // to be run, however, it is been read at startup just to ensure that the .sio file isn't
       // initially malformed.
