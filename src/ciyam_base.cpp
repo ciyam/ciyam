@@ -4642,7 +4642,7 @@ bool has_identity( bool* p_is_encrypted )
 
 void set_identity( const string& info, const char* p_encrypted_sid )
 {
-   bool run_bc_gen_script = false;
+   bool run_scripts = false;
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -4684,13 +4684,17 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_session_variable( sid_name, sid_name );
 
-            run_bc_gen_script = true;
+            run_scripts = true;
          }
       }
    }
 
-   if( run_bc_gen_script )
+   if( run_scripts )
+   {
       run_script( "bc_gen", false );
+      run_script( "init_ciyam_tree", false );
+      run_script( "create_home_peer", false );
+   }
 }
 
 string get_checksum( const string& data )
