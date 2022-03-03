@@ -1,0 +1,26 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @peer_port
+PEER_PORT=$OUTPUT
+@ifeq "$PEER_PORT" ""
+#Error: Found empty '@peer_port' system variable value.
+@else
+.system_variable @blockchain
+BLOCKCHAIN=$OUTPUT
+@ifeq "$BLOCKCHAIN" ""
+#Error: Found empty '@blockchain' system variable value.
+@else
+.peer_listen $PEER_PORT $BLOCKCHAIN
+@ifndef $ERROR
+.storage_init Meta
+.pc sys @now Meta Global_Peerchain_Entry $BLOCKCHAIN "Auto_Start=1,Description=Home,Entry_Type=1,Port_Number=$PEER_PORT"
+@ifndef $ERROR
+#Created listener and global peerchain entry for blockchain '$BLOCKCHAIN' on port $PEER_PORT.
+@endif
+.storage_term
+@endif
+@endif
+@endif

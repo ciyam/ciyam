@@ -2107,7 +2107,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
          if( !remove )
-            create_peer_listener( atoi( port.c_str( ) ), prefixed_blockchains( blockchains ) );
+            create_peer_listener( atoi( port.c_str( ) ), unprefixed_blockchains( blockchains ) );
          else
          {
             if( has_registered_listener( atoi( port.c_str( ) ) ) )
