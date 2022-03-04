@@ -1,0 +1,12 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @blockchain
+;
+@ifeq "$OUTPUT" ""
+<<bc_gen.cin @sid
+<<init_ciyam_peer.cin
+<<init_ciyam_tree.cin
+@endif

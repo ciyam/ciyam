@@ -16,7 +16,7 @@ BLOCKCHAIN=$OUTPUT
 .peer_listen $PEER_PORT $BLOCKCHAIN
 @ifndef $ERROR
 .storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry $BLOCKCHAIN "Auto_Start=1,Description=Home,Entry_Type=1,Port_Number=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $BLOCKCHAIN "Auto_Start=1,Description=Local,Entry_Type=1,Port_Number=$PEER_PORT"
 @ifndef $ERROR
 #Created listener and global peerchain entry for blockchain '$BLOCKCHAIN' on port $PEER_PORT.
 @endif

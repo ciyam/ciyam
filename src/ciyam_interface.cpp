@@ -1200,6 +1200,7 @@ void request_handler::process_request( )
          bool was_unlock = false;
          bool is_meta_module = false;
          bool has_output_form = false;
+         bool has_set_identity = false;
 
          if( module_name == "Meta" )
             is_meta_module = true;
@@ -1366,10 +1367,6 @@ void request_handler::process_request( )
                            string encrypted( g_seed );
                            data_encrypt( encrypted, encrypted, g_id_pwd );
 
-                           clear_key( g_id_pwd );
-
-                           g_id_pwd.erase( );
-
                            if( !simple_command( *p_session_info, "identity " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to determine encrypted identity information" );
 
@@ -1386,7 +1383,7 @@ void request_handler::process_request( )
 
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
                             + " " + priv_key.encrypt_message( pub_key, g_seed ) + " " + encrypted, &identity_info ) )
-                              throw runtime_error( "unable to set/update dentity information" );
+                              throw runtime_error( "unable to set/update identity information" );
 #else
                            if( !simple_command( *p_session_info, "identity " + g_seed + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
@@ -1458,6 +1455,8 @@ void request_handler::process_request( )
                            {
                               ofstream outf( id_file_name.c_str( ) );
                               outf << g_id;
+
+                              has_set_identity = true;
 
                               clear_key( g_seed );
                               g_seed.erase( );
@@ -1570,6 +1569,35 @@ void request_handler::process_request( )
 #else
                         g_has_connected = connection_okay = true;
 #endif
+                     }
+
+                     if( has_set_identity )
+                     {
+                        string admin_pwd_hash( hash_password( g_id + g_id_pwd + c_admin_user_key ) );
+
+                        string admin_user_hash( sha256( c_admin_user_key + admin_pwd_hash ).get_digest_as_string( ) );
+
+                        string encrypted_pwd( data_encrypt( admin_pwd_hash, get_server_id( ) ) );
+
+                        vector< pair< string, string > > pwd_field_value_pairs;
+
+                        pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_pwd ) );
+                        pwd_field_value_pairs.push_back( make_pair( mod_info.user_hash_field_id, admin_user_hash ) );
+
+                        string error_message;
+
+                        if( !perform_update( module_id, mod_info.user_class_id,
+                         c_admin_user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
+                        {
+                           if( !error_message.empty( ) )
+                              throw error_message;
+                           else
+                              throw runtime_error( "unexpected server error occurred." );
+                        }
+
+                        clear_key( g_id_pwd );
+
+                        g_id_pwd.erase( );
                      }
 
                      clear_key( server_id );
