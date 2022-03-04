@@ -4,9 +4,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 <sio/>
  <script/>
-  <name>bc_gen
+  <name>init_ciyam
   <filename>*script*
-  <arguments>bc_gen.cin @sid
+  <arguments>init_ciyam.cin
  </script>
  <script/>
   <name>app_blk_txs
@@ -42,16 +42,6 @@
   <name>export_app_file
   <filename>*script*
   <arguments>export_app_file.cin @app_directory @list_hash @web_root
- </script>
- <script/>
-  <name>init_ciyam_tree
-  <filename>*script*
-  <arguments>init_ciyam_tree.cin
- </script>
- <script/>
-  <name>create_home_peer
-  <filename>*script*
-  <arguments>create_home_peer.cin
  </script>
  <script/>
   <name>tree_insert_file

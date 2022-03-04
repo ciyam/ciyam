@@ -3670,8 +3670,13 @@ void output_script_info( const string& pat, ostream& os )
 
       if( i->second.filename == c_script_dummy_filename )
       {
-         string::size_type pos = args.find( ' ' );
-         args.erase( 0, pos + 1 );
+         string script_name( i->first + ".cin" );
+
+         if( args.find( script_name ) == 0 )
+            args.erase( 0, script_name.length( ) );
+
+         if( !args.empty( ) && args[ 0 ] == ' ' )
+            args.erase( 0, 1 );
       }
 
       if( !args.empty( ) )
@@ -4642,7 +4647,7 @@ bool has_identity( bool* p_is_encrypted )
 
 void set_identity( const string& info, const char* p_encrypted_sid )
 {
-   bool run_scripts = false;
+   bool run_init_script = false;
 
    // NOTE: Empty code block for scope purposes.
    {
@@ -4684,17 +4689,13 @@ void set_identity( const string& info, const char* p_encrypted_sid )
 
             set_session_variable( sid_name, sid_name );
 
-            run_scripts = true;
+            run_init_script = true;
          }
       }
    }
 
-   if( run_scripts )
-   {
-      run_script( "bc_gen", false );
-      run_script( "init_ciyam_tree", false );
-      run_script( "create_home_peer", false );
-   }
+   if( run_init_script )
+      run_script( "init_ciyam", false );
 }
 
 string get_checksum( const string& data )
