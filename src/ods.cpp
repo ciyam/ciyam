@@ -218,13 +218,14 @@ string format_version( int16_t version )
 class log_stream : public read_write_stream
 {
    public:
-   log_stream( const char* p_file_name = 0, bool use_sync = true )
+   log_stream( const char* p_file_name = 0, bool use_sync = false )
     :
     fd( 0 ),
-    pos( 0 )
+    pos( 0 ),
+    use_sync( use_sync )
    {
       if( p_file_name )
-         init( p_file_name, use_sync );
+         init( p_file_name );
    }
 
    ~log_stream( )
@@ -232,7 +233,7 @@ class log_stream : public read_write_stream
       term( );
    }
 
-   void init( const char* p_file_name, bool use_sync = true )
+   void init( const char* p_file_name )
    {
 #ifdef __GNUG__
       if( !use_sync )
@@ -300,6 +301,8 @@ class log_stream : public read_write_stream
    private:
    int fd;
    int64_t pos;
+
+   bool use_sync;
 };
 
 struct log_info
@@ -1086,7 +1089,7 @@ class ods_index_entry
 class header_file
 {
    public:
-   header_file( const char* p_file_name, ods::write_mode w_mode );
+   header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync = false );
 
    ~header_file( );
 
@@ -1119,7 +1122,7 @@ class header_file
 #endif
 };
 
-header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
+header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync )
  :
  handle( 0 ),
  offset( -1 ),
@@ -1136,7 +1139,10 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
       okay = true;
    else
    {
-      lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
+      if( !use_sync )
+         lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+      else
+         lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
 
       if( lock_handle > 0 )
       {
@@ -1162,7 +1168,11 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode )
    if( okay )
    {
       offset = 0;
-      handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
+
+      if( !use_sync )
+         handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+      else
+         handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
    }
 #endif
 
@@ -1992,7 +2002,10 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
             THROW_ODS_ERROR( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         if( !use_sync_file_writes )
+            tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_DIRECT, ODS_DEFAULT_PERMS );
+         else
+            tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_ops_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
 #endif
@@ -6939,4 +6952,3 @@ void ods::write_trans_data_bytes( const char* p_src, int64_t len )
          trans_write_data_buffer_offs += chunk;
    }
 }
-
