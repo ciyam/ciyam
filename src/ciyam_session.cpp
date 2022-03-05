@@ -5441,6 +5441,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      string std_next;
 
+                     // FUTURE: This message should be handled as a server string message.
+                     handler.output_progress( "Restoring standard Meta records..." );
+
                      while( getline( std_inpf, std_next ) )
                      {
                         if( std_next.empty( ) )
