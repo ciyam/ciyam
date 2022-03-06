@@ -1089,7 +1089,7 @@ class ods_index_entry
 class header_file
 {
    public:
-   header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync = false );
+   header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync_write = false );
 
    ~header_file( );
 
@@ -1115,6 +1115,7 @@ class header_file
    string lock_file_name;
 
    bool is_exclusive;
+   bool use_sync_write;
 
 #ifdef __GNUG__
    flock file_lock;
@@ -1122,13 +1123,14 @@ class header_file
 #endif
 };
 
-header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync )
+header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool use_sync_write )
  :
  handle( 0 ),
  offset( -1 ),
  lock_handle( 0 ),
  lock_file_name( p_file_name ),
- is_exclusive( w_mode == ods::e_write_mode_exclusive )
+ is_exclusive( w_mode == ods::e_write_mode_exclusive ),
+ use_sync_write( use_sync_write )
 {
    lock_file_name += c_lock_file_name_ext;
 
@@ -1139,7 +1141,7 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool 
       okay = true;
    else
    {
-      if( !use_sync )
+      if( !use_sync_write )
          lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
       else
          lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
@@ -1169,7 +1171,7 @@ header_file::header_file( const char* p_file_name, ods::write_mode w_mode, bool 
    {
       offset = 0;
 
-      if( !use_sync )
+      if( !use_sync_write )
          handle = _open( p_file_name, O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
       else
          handle = _open( p_file_name, O_RDWR | O_CREAT | O_SYNC, ODS_DEFAULT_PERMS );
@@ -2457,6 +2459,7 @@ ods::ods( const ods& o )
  is_in_read( false ),
  is_in_write( false ),
  permit_copy( false ),
+ use_sync_write( false ),
  prevent_lazy_write( false ),
  data_read_buffer_num( -1 ),
  data_read_buffer_offs( 0 ),
@@ -2531,15 +2534,17 @@ ods::ods( const ods& o )
    permit_copy = true;
 }
 
-ods::ods( const char* p_name,
- open_mode o_mode, write_mode w_mode,
- bool using_tranlog, bool* p_not_found, const char* p_password )
+ods::ods(
+ const char* p_name, open_mode o_mode,
+ write_mode w_mode, bool using_tranlog,
+ bool* p_not_found, const char* p_password, bool use_sync_write )
  :
  okay( false ),
  p_progress( 0 ),
  is_in_read( false ),
  is_in_write( false ),
  permit_copy( false ),
+ use_sync_write( use_sync_write ),
  prevent_lazy_write( false ),
  data_read_buffer_num( -1 ),
  data_read_buffer_offs( 0 ),
@@ -2597,7 +2602,7 @@ ods::ods( const char* p_name,
 #endif
 
    p_impl->rp_header_file
-    = new header_file( p_impl->header_file_name.c_str( ), w_mode );
+    = new header_file( p_impl->header_file_name.c_str( ), w_mode, ( !using_tranlog && use_sync_write ) );
 
    if( *p_impl->rp_header_file <= 0 )
       THROW_ODS_ERROR( "unable to open database header file (locked?)" );
@@ -2684,7 +2689,7 @@ ods::ods( const char* p_name,
       else if( using_tranlog )
       {
          // NOTE: If using a transaction log then create a default tranlog header.
-         log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+         log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
          tranlog_info.init_time = tranlog_info.sequence_new_tm = now;
 
@@ -2776,11 +2781,12 @@ ods::ods( const char* p_name,
    p_impl->rp_session_delete_total = new int64_t( 0 );
 
    p_impl->rp_ods_data_cache_buffer =
-    new ods_data_cache_buffer( *this, p_impl->data_file_name,
-     c_data_max_cache_items, c_data_items_per_region, c_data_num_cache_regions );
+    new ods_data_cache_buffer( *this, p_impl->data_file_name, c_data_max_cache_items,
+    c_data_items_per_region, c_data_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
 
-   p_impl->rp_ods_index_cache_buffer = new ods_index_cache_buffer( p_impl->index_file_name,
-    p_impl->rp_header_file->get_offset( ), c_index_max_cache_items, c_index_items_per_region, c_index_num_cache_regions );
+   p_impl->rp_ods_index_cache_buffer = new ods_index_cache_buffer(
+    p_impl->index_file_name, p_impl->rp_header_file->get_offset( ), c_index_max_cache_items,
+    c_index_items_per_region, c_index_num_cache_regions, true, true, ( !using_tranlog && use_sync_write ) );
 
    auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );
 
@@ -2970,7 +2976,7 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rewind transactions when bulk locked for dumping or reading" );
 
-   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_info tranlog_info;
    tranlog_info.read( logf );
@@ -3653,7 +3659,7 @@ void ods::move_free_data_to_end( progress* p_progress )
    {
       log_entry_offs = append_log_entry( p_impl->rp_header_info->transaction_id++, &old_append_offs );
 
-      log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+      log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
       logf.set_pos( old_append_offs );
 
@@ -3808,7 +3814,7 @@ void ods::move_free_data_to_end( progress* p_progress )
 
    if( log_entry_offs )
    {
-      log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+      log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
       log_entry tranlog_entry;
 
@@ -3900,7 +3906,7 @@ void ods::truncate_log( const char* p_ext )
    int64_t now = _time64( 0 );
 #endif
 
-   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    ++tranlog_info.sequence;
 
@@ -5179,7 +5185,7 @@ int64_t ods::log_append_offset( )
 
 int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const char* p_label )
 {
-   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_info tranlog_info;
    tranlog_info.read( logf );
@@ -5253,7 +5259,7 @@ int64_t ods::append_log_entry( int64_t tx_id, int64_t* p_append_offset, const ch
 
 void ods::log_entry_commit( int64_t entry_offset, int64_t commit_offs, int64_t commit_items )
 {
-   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_entry tranlog_entry;
 
@@ -5273,7 +5279,7 @@ void ods::append_log_entry_item( int64_t num,
 {
    date_time dtm( date_time::local( ) );
 
-   log_stream logf( p_impl->tranlog_file_name.c_str( ) );
+   log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
    log_info tranlog_info;
    tranlog_info.read( logf );

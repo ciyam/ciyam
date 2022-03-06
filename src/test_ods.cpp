@@ -27,8 +27,6 @@
 #  define MAX_DESC_LEN 100
 #endif
 
-#define CIYAM_BASE_IMPL
-
 #include "ods.h"
 #include "format.h"
 #include "console.h"
@@ -60,13 +58,15 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_password = "p";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
-const char* const c_cmd_use_in_regression_tests = "test";
+const char* const c_cmd_use_synchronised_write = "sync";
+const char* const c_cmd_use_for_regression_tests = "test";
 
 bool g_encrypted = false;
 bool g_needs_magic = false;
 bool g_shared_write = true;
 bool g_use_transaction_log = false;
-bool g_use_in_regression_tests = false;
+bool g_use_synchronised_write = false;
+bool g_use_for_regression_tests = false;
 
 bool g_application_title_called = false;
 
@@ -357,8 +357,10 @@ class test_ods_startup_functor : public command_functor
          g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
-      else if( command == c_cmd_use_in_regression_tests )
-         g_use_in_regression_tests = true;
+      else if( command == c_cmd_use_synchronised_write )
+         g_use_synchronised_write = true;
+      else if( command == c_cmd_use_for_regression_tests )
+         g_use_for_regression_tests = true;
    }
 };
 
@@ -410,7 +412,7 @@ void test_ods_command_handler::init_ods( const char* p_file_name )
 
    if( g_encrypted )
    {
-      if( g_use_in_regression_tests )
+      if( g_use_for_regression_tests )
          password = "test";
       else
       {
@@ -425,9 +427,14 @@ void test_ods_command_handler::init_ods( const char* p_file_name )
       }
    }
 
+   const char* p_password = 0;
+
+   if( !password.empty( ) )
+      p_password = password.c_str( );
+
    ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
     ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
-    g_use_transaction_log, &not_found, password.empty( ) ? 0 : password.c_str( ) ) );
+    g_use_transaction_log, &not_found, p_password, g_use_synchronised_write ) );
 
    clear_key( password );
 
@@ -1015,15 +1022,19 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new test_ods_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_use_in_regression_tests, 2,
-          "", "use this in regression tests", new test_ods_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_use_synchronised_write, 1,
+          "", "use synchronised file write", new test_ods_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_use_for_regression_tests, 2,
+          "", "use this for regression tests", new test_ods_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
          cmd_handler.remove_command( c_cmd_exclusive );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
-         cmd_handler.remove_command( c_cmd_use_in_regression_tests );
+         cmd_handler.remove_command( c_cmd_use_synchronised_write );
+         cmd_handler.remove_command( c_cmd_use_for_regression_tests );
       }
 
       if( !cmd_handler.has_option_quiet( ) )

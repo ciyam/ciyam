@@ -592,9 +592,9 @@ class ODS_DECL_SPEC ods
 
    ods( const ods& o );
 
-   ods( const char* p_name,
-    open_mode o_mode, write_mode w_mode = e_write_mode_shared,
-    bool using_tranlog = false, bool* p_not_found = 0, const char* p_password = 0 );
+   ods( const char* p_name, open_mode o_mode,
+    write_mode w_mode = e_write_mode_shared, bool using_tranlog = false,
+    bool* p_not_found = 0, const char* p_password = 0, bool use_sync_write = false );
 
    virtual ~ods( );
 
@@ -729,6 +729,7 @@ class ODS_DECL_SPEC ods
 
    private:
    bool okay;
+
    std::string meta;
 
    struct impl;
@@ -800,6 +801,8 @@ class ODS_DECL_SPEC ods
 
    bool is_in_read;
    bool is_in_write;
+
+   bool use_sync_write;
 
    progress* p_progress;
 
@@ -879,4 +882,3 @@ struct scoped_ods_instance
 };
 
 #endif
-

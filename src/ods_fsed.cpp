@@ -4,7 +4,7 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifdef __BORLANDC__
+#ifdef PRECOMPILE_H
 #  include "precompile.h"
 #endif
 #pragma hdrstop
@@ -41,7 +41,8 @@ const char* const c_app_version = "0.1";
 const char* const c_cmd_password = "p";
 const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
-const char* const c_cmd_use_in_regression_tests = "test";
+const char* const c_cmd_use_synchronised_write = "sync";
+const char* const c_cmd_use_for_regression_tests = "test";
 
 int64_t g_oid = 0;
 
@@ -50,7 +51,8 @@ string g_name( c_app_title );
 bool g_encrypted = false;
 bool g_shared_write = true;
 bool g_use_transaction_log = false;
-bool g_use_in_regression_tests = false;
+bool g_use_synchronised_write = false;
+bool g_use_for_regression_tests = false;
 
 bool g_application_title_called = false;
 
@@ -210,8 +212,10 @@ class ods_fsed_startup_functor : public command_functor
          g_shared_write = false;
       else if( command == c_cmd_use_transaction_log )
          g_use_transaction_log = true;
-      else if( command == c_cmd_use_in_regression_tests )
-         g_use_in_regression_tests = true;
+      else if( command == c_cmd_use_synchronised_write )
+         g_use_synchronised_write = true;
+      else if( command == c_cmd_use_for_regression_tests )
+         g_use_for_regression_tests = true;
    }
 };
 
@@ -227,7 +231,7 @@ class ods_fsed_command_handler : public console_command_handler
       set_custom_startup_options( 2, "[<name> [<ident>]]" );
    }
 
-   void init( );
+   void init_ods( const char* p_file_name );
 
    private:
    auto_ptr< ods > ap_ods;
@@ -236,14 +240,14 @@ class ods_fsed_command_handler : public console_command_handler
    void process_custom_startup_option( size_t num, const string& option );
 };
 
-void ods_fsed_command_handler::init( )
+void ods_fsed_command_handler::init_ods( const char* p_file_name )
 {
    string password;
    bool not_found = false;
 
    if( g_encrypted )
    {
-      if( g_use_in_regression_tests )
+      if( g_use_for_regression_tests )
          password = "test";
       else
       {
@@ -258,9 +262,14 @@ void ods_fsed_command_handler::init( )
       }
    }
 
-   ap_ods.reset( new ods( g_name.c_str( ), ods::e_open_mode_create_if_not_exist,
+   const char* p_password = 0;
+
+   if( !password.empty( ) )
+      p_password = password.c_str( );
+
+   ap_ods.reset( new ods( p_file_name, ods::e_open_mode_create_if_not_exist,
     ( g_shared_write ? ods::e_write_mode_shared : ods::e_write_mode_exclusive ),
-    g_use_transaction_log, &not_found, password.empty( ) ? 0 : password.c_str( ) ) );
+    g_use_transaction_log, &not_found, p_password, g_use_synchronised_write ) );
 
    clear_key( password );
 
@@ -596,21 +605,25 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_use_transaction_log, 1,
           "", "use transaction log file", new ods_fsed_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_use_in_regression_tests, 2,
-          "", "use this in regression tests", new ods_fsed_startup_functor( cmd_handler ) );
+         cmd_handler.add_command( c_cmd_use_synchronised_write, 1,
+          "", "use synchronised file write", new ods_fsed_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_use_for_regression_tests, 2,
+          "", "use this for regression tests", new ods_fsed_startup_functor( cmd_handler ) );
 
          processor.process_commands( );
 
          cmd_handler.remove_command( c_cmd_password );
          cmd_handler.remove_command( c_cmd_exclusive );
          cmd_handler.remove_command( c_cmd_use_transaction_log );
-         cmd_handler.remove_command( c_cmd_use_in_regression_tests );
+         cmd_handler.remove_command( c_cmd_use_synchronised_write );
+         cmd_handler.remove_command( c_cmd_use_for_regression_tests );
       }
 
       if( !cmd_handler.has_option_quiet( ) )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
-      cmd_handler.init( );
+      cmd_handler.init_ods( g_name.c_str( ) );
 
       cmd_handler.add_commands( 0,
        ods_fsed_command_functor_factory, ARRAY_PTR_AND_SIZE( ods_fsed_command_definitions ) );
