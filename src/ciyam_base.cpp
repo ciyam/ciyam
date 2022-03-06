@@ -153,6 +153,7 @@ const char* const c_attribute_local_public_key = "local_public_key";
 const char* const c_attribute_master_public_key = "master_public_key";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
+const char* const c_attribute_ods_use_sync_write = "ods_use_sync_write";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
 const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
@@ -1270,6 +1271,8 @@ map< string, map< string, string > > g_crypt_keys;
 auto_ptr< ods > gap_ods;
 auto_ptr< ods_file_system > gap_ofs;
 
+bool g_ods_use_sync_write = true;
+
 size_t get_last_raw_file_data_chunk(
  const string& tree_tag, const string& log_blob_file_prefix,
  string& raw_file_data, string* p_last_hash = 0, bool remove_existing_blobs = false )
@@ -1425,8 +1428,10 @@ void init_system_ods( )
    string ods_db_name( get_files_area_dir( ) );
    ods_db_name += '/' + string( c_ciyam_server );
 
-   gap_ods.reset( new ods( ods_db_name.c_str( ),
-    ods::e_open_mode_create_if_not_exist, ods::e_write_mode_exclusive, true ) );
+   gap_ods.reset(
+    new ods( ods_db_name.c_str( ),
+    ods::e_open_mode_create_if_not_exist,
+    ods::e_write_mode_exclusive, true, 0, 0, g_ods_use_sync_write ) );
 
    ods::bulk_write bulk_write( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -1597,7 +1602,9 @@ void perform_storage_op( storage_op op,
 
       try
       {
-         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode, ods::e_write_mode_exclusive, true, &file_not_found ) );
+         auto_ptr< ods > ap_ods( new ods( name.c_str( ), open_mode,
+          ods::e_write_mode_exclusive, true, &file_not_found, 0, g_ods_use_sync_write ) );
+
          auto_ptr< storage_handler > ap_handler( new storage_handler( slot, name, ap_ods.get( ) ) );
 
          ap_handler->obtain_bulk_write( );
@@ -1714,6 +1721,7 @@ void perform_storage_op( storage_op op,
 
       bool created_ods_instance = false;
       storage_handler* p_old_handler = gtp_session->p_storage_handler;
+
       try
       {
          gtp_session->ap_db.reset( new sql_db( p_new_handler->get_name( ), p_new_handler->get_name( ) ) );
@@ -3779,6 +3787,8 @@ void read_server_configuration( )
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
+
+      g_ods_use_sync_write = ( lower( reader.read_opt_attribute( c_attribute_ods_use_sync_write, c_true ) ) == c_false );
 
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
