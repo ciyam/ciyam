@@ -3564,7 +3564,7 @@
      <name>field_global_peerchain_entry_identity
      <field>145101
      <ftype>string
-     <extra>key_name+max_size=50
+     <extra>non_new+no_edit+key_hide+max_size=50
      <mandatory>false
      <modifiers>
     </field>

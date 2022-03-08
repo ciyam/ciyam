@@ -1167,7 +1167,11 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
    // [<start after_fetch>]
 //nyi
    get_obj( ).Actions( "" );
-   get_obj( ).Identity( get_obj( ).get_key( ) );
+
+   string identity( get_obj( ).get_key( ) );
+   string::size_type pos = identity.find( '_' );
+
+   get_obj( ).Identity( identity.substr( 0, pos ) );
 
    if( get_obj( ).Host_Domain( ) == c_local_host )
    {
