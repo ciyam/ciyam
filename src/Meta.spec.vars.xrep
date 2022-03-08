@@ -1215,7 +1215,7 @@
 `{`$specification_Global_Peerchain_Entry_view_fmand000`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field001`=`'145101`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype001`=`'string`'`}
-`{`$specification_Global_Peerchain_Entry_view_extra001`=`'key_name+max_size=50`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra001`=`'non_new+no_edit+key_hide+max_size=50`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmods001`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname001`=`'field_global_peerchain_entry_identity`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand001`=`'false`'`}

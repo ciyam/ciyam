@@ -561,6 +561,9 @@ void setup_view_fields( view_source& view,
       if( field_id == c_key_field )
          key_field_index = view.display_names.size( ) - 1;
 
+      if( !is_new_record && extra_data.count( c_view_field_extra_key_hide ) )
+         view.hidden_fields.insert( c_key_field );
+
       if( extra_data.count( c_view_field_extra_key_name ) )
          key_field_display_name = display_name;
 

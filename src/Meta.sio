@@ -32124,7 +32124,7 @@
      <type>admin
      <class_id>145100
      <field_info>@key
-     <field_info>145101;key_name
+     <field_info>145101;non_new+no_edit+key_hide
      <field_info>145102
      <field_info>145107;new_edit+force+enum=960
      <field_info>145103

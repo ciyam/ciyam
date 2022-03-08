@@ -4046,6 +4046,11 @@ void init_peer_sessions( int start_listeners )
       {
          string next_blockchain( c_bc_prefix + i->second );
 
+         string::size_type pos = next_blockchain.find( '_' );
+
+         if( pos != string::npos )
+            next_blockchain.erase( pos );
+
          if( !port_blockchains.count( i->first ) )
             port_blockchains.insert( make_pair( i->first, next_blockchain ) );
          else
