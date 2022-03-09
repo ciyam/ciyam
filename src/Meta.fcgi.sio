@@ -3622,7 +3622,7 @@
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
-     <modifiers>
+     <modifiers>100:extralight1,1000:extralight1,200:extralight,400:extralight
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions

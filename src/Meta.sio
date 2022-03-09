@@ -5162,6 +5162,22 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>145301
+        <affect>extralight1;view
+       </modifier>
+       <modifier/>
+        <id>145302
+        <affect>extralight1;view
+       </modifier>
+       <modifier/>
+        <id>145303
+        <affect>extralight;view
+       </modifier>
+       <modifier/>
+        <id>145304
+        <affect>extralight;view
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
