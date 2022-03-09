@@ -1258,7 +1258,7 @@
 `{`$specification_Global_Peerchain_Entry_view_field008`=`'145106`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype008`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra008`=`'no_edit+enum=955`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods008`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods008`=`'100:extralight1,1000:extralight1,200:extralight,400:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname008`=`'field_global_peerchain_entry_status`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand008`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field009`=`'145109`'`}

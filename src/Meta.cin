@@ -914,10 +914,10 @@ field_add -id=145107 Global_Peerchain_Entry Entry_Type int mand -def=0 -e=peerch
 field_add -id=145108 Global_Peerchain_Entry Num_Helpers 0..9 mand -def=0
 field_add -id=145109 Global_Peerchain_Entry Actions string opt -transient -x=actions
 modifier_add -id=145300 Global_Peerchain_Entry Is_Listener Host_Domain:relegate;view,Num_Helpers:relegate
-modifier_add -id=145301 Global_Peerchain_Entry Is_Connected @class:extralight1;list
-modifier_add -id=145302 Global_Peerchain_Entry Is_Listening @class:extralight1;list
-modifier_add -id=145303 Global_Peerchain_Entry Is_Connecting @class:extralight;list
-modifier_add -id=145304 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list
+modifier_add -id=145301 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
+modifier_add -id=145302 Global_Peerchain_Entry Is_Listening @class:extralight1;list,Status:extralight1;view
+modifier_add -id=145303 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
+modifier_add -id=145304 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145305 Global_Peerchain_Entry Not_Is_Inactive Host_Domain:protect,Port_Number:protect,Num_Helpers:protect
 procedure_add -id=145410 Global_Peerchain_Entry Connect
 procedure_add -id=145420 Global_Peerchain_Entry Disconnect
