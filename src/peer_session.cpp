@@ -3966,7 +3966,14 @@ void peer_session_starter::on_start( )
          {
             bool is_listener = false;
 
-            string peer_info( get_peerchain_info( identity, &is_listener ) );
+            // NOTE: If identity is prefixed with '!' then will always start a listener.
+            if( identity[ 0 ] == '!' )
+            {
+               is_listener = true;
+               identity.erase( 0, 1 );
+            }
+
+            string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
 
             if( !peer_info.empty( ) )
             {

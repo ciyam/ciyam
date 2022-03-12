@@ -4975,7 +4975,7 @@
     </specifications>
     <fields/>
      <field/>
-      <id>145109
+      <id>145110
       <name>Actions
       <type>string
       <mandatory>false
@@ -4993,7 +4993,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145105
+      <id>145106
       <name>Auto_Start
       <type>bool
       <mandatory>true
@@ -5030,7 +5030,7 @@
       </specifications>
      </field>
      <field/>
-      <id>145107
+      <id>145108
       <name>Entry_Type
       <type>int
       <mandatory>true
@@ -5054,7 +5054,7 @@
      </field>
      <field/>
       <id>145103
-      <name>Host_Domain
+      <name>Host_Name
       <type>1020
       <mandatory>true
       <indexes/>
@@ -5074,6 +5074,31 @@
         <id>603960
         <item>field
        </specification>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145104
+      <name>Host_Port
+      <type>1035
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145300
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>145305
+        <affect>protect
+       </modifier>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>603970
         <item>field
@@ -5102,7 +5127,28 @@
       </specifications>
      </field>
      <field/>
-      <id>145108
+      <id>145105
+      <name>Local_Port
+      <type>1035
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>145305
+        <affect>protect
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>603970
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>145109
       <name>Num_Helpers
       <type>1026
       <mandatory>true
@@ -5127,32 +5173,24 @@
       </specifications>
      </field>
      <field/>
-      <id>145104
-      <name>Port_Number
-      <type>1035
-      <mandatory>true
-      <default_value>1025
+      <id>145111
+      <name>Port_Numbers
+      <type>string
+      <mandatory>false
+      <transient>true
       <indexes/>
       </indexes>
       <modifiers/>
-       <modifier/>
-        <id>145305
-        <affect>protect
-       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>603960
         <item>field
        </specification>
-       <specification/>
-        <id>603970
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
-      <id>145106
+      <id>145107
       <name>Status
       <type>int
       <mandatory>true
@@ -5242,13 +5280,13 @@
       <affect>extralight;list
      </modifier>
      <modifier/>
-      <id>145300
-      <name>Is_Listener
-     </modifier>
-     <modifier/>
       <id>145302
       <name>Is_Listening
       <affect>extralight1;list
+     </modifier>
+     <modifier/>
+      <id>145300
+      <name>Is_Local_Only
      </modifier>
      <modifier/>
       <id>145305
@@ -32018,7 +32056,7 @@
      <class_id>145100
      <modifier_id>145301
      <enum_id>955
-     <field_id>145106
+     <field_id>145107
      <field_value>Connected
      <enum_value_name>Connected
     </data>
@@ -32031,7 +32069,7 @@
      <class_id>145100
      <modifier_id>145303
      <enum_id>955
-     <field_id>145106
+     <field_id>145107
      <field_value>Connecting
      <enum_value_name>Connecting
     </data>
@@ -32064,20 +32102,9 @@
      <class_id>145100
      <modifier_id>145303
      <enum_id>955
-     <field_id>145106
+     <field_id>145107
      <field_value>Disconnecting
      <enum_value_name>Disconnecting
-    </data>
-   </specification>
-   <specification/>
-    <id>600898a
-    <name>{Global_Peerchain_Entry}_Is_Listener
-    <type>modifier_field_value
-    <data/>
-     <class_id>145100
-     <modifier_id>145300
-     <field_id>145107
-     <field_value>1
     </data>
    </specification>
    <specification/>
@@ -32088,9 +32115,20 @@
      <class_id>145100
      <modifier_id>145302
      <enum_id>955
-     <field_id>145106
+     <field_id>145107
      <field_value>Listening
      <enum_value_name>Listening
+    </data>
+   </specification>
+   <specification/>
+    <id>600898a
+    <name>{Global_Peerchain_Entry}_Is_Local_Only
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145300
+     <field_id>145108
+     <field_value>1
     </data>
    </specification>
    <specification/>
@@ -32100,7 +32138,7 @@
     <data/>
      <class_id>145100
      <modifier_id>145305
-     <field_id>145106
+     <field_id>145107
      <field_value>0
      <not_equal>true
     </data>
@@ -32126,9 +32164,9 @@
      <ordering>forward
      <field_info>145101
      <field_info>145102
-     <field_info>145106;enum=955
+     <field_info>145107;enum=955
      <field_info>145103
-     <field_info>145104
+     <field_info>145111
     </data>
    </specification>
    <specification/>
@@ -32140,15 +32178,16 @@
      <type>admin
      <class_id>145100
      <field_info>@key
-     <field_info>145101;non_new+no_edit+key_hide
+     <field_info>145101;key_name
      <field_info>145102
-     <field_info>145107;new_edit+force+enum=960
+     <field_info>145108;new_edit+force+enum=960
+     <field_info>145105
      <field_info>145103
      <field_info>145104
-     <field_info>145108
-     <field_info>145105
-     <field_info>145106;no_edit+enum=955
      <field_info>145109
+     <field_info>145106
+     <field_info>145107;no_edit+enum=955
+     <field_info>145110
     </data>
    </specification>
    <specification/>
@@ -39365,7 +39404,7 @@
     <id>960
     <name>peerchain_entry_type
     <type>int
-    <key_values>0=Caller,1=Listener
+    <key_values>0=Hosted,1=Local_Only
    </user_defined_enum>
    <user_defined_enum/>
     <id>955
@@ -39679,7 +39718,7 @@
     <sys_type>int
     <domain/>
      <name>range
-     <minimum>20
+     <minimum>0
      <maximum>65535
     </domain>
    </user_defined_type>
