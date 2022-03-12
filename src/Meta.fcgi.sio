@@ -1574,11 +1574,11 @@
    <values/>
     <value/>
      <data>0
-     <name>enum_peerchain_entry_type_caller
+     <name>enum_peerchain_entry_type_hosted
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_entry_type_listener
+     <name>enum_peerchain_entry_type_local_only
     </value>
    </values>
   </enum>
@@ -3564,7 +3564,7 @@
      <name>field_global_peerchain_entry_identity
      <field>145101
      <ftype>string
-     <extra>non_new+no_edit+key_hide+max_size=50
+     <extra>key_name+max_size=50
      <mandatory>false
      <modifiers>
     </field>
@@ -3578,39 +3578,47 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_entry_type
-     <field>145107
+     <field>145108
      <ftype>int
      <extra>new_edit+force+enum=960
      <mandatory>true
      <modifiers>
     </field>
     <field/>
-     <name>field_global_peerchain_entry_host_domain
-     <field>145103
-     <ftype>string
-     <extra>max_size=100
-     <mandatory>true
-     <modifiers>800:relegate,2000:protect
-    </field>
-    <field/>
-     <name>field_global_peerchain_entry_port_number
-     <field>145104
+     <name>field_global_peerchain_entry_local_port
+     <field>145105
      <ftype>int
-     <extra>range=20..65535
+     <extra>range=0..65535
      <mandatory>true
      <modifiers>2000:protect
     </field>
     <field/>
+     <name>field_global_peerchain_entry_host_name
+     <field>145103
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>true
+     <modifiers>1000:relegate,2000:protect
+    </field>
+    <field/>
+     <name>field_global_peerchain_entry_host_port
+     <field>145104
+     <ftype>int
+     <extra>range=0..65535
+     <mandatory>true
+     <modifiers>1000:relegate,2000:protect
+    </field>
+    <field/>
      <name>field_global_peerchain_entry_num_helpers
-     <field>145108
+     <field>145109
      <ftype>int
      <extra>range=0..9
      <mandatory>true
-     <modifiers>800:relegate,2000:protect
+     <modifiers>1000:relegate,2000:protect
     </field>
     <field/>
      <name>field_global_peerchain_entry_auto_start
-     <field>145105
+     <field>145106
      <ftype>bool
      <extra>
      <mandatory>true
@@ -3618,15 +3626,15 @@
     </field>
     <field/>
      <name>field_global_peerchain_entry_status
-     <field>145106
+     <field>145107
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
-     <modifiers>100:extralight1,1000:extralight1,200:extralight,400:extralight
+     <modifiers>100:extralight1,800:extralight1,200:extralight,400:extralight
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions
-     <field>145109
+     <field>145110
      <ftype>string
      <extra>actions
      <mandatory>false
@@ -8937,7 +8945,7 @@
    <type>admin
    <extra>
    <actions>
-   <modifiers>100:extralight1,1000:extralight1,200:extralight,400:extralight
+   <modifiers>100:extralight1,800:extralight1,200:extralight,400:extralight
    <view>603970
    <class>Global_Peerchain_Entry
    <bclass>
@@ -8964,7 +8972,7 @@
     </column>
     <column/>
      <name>field_global_peerchain_entry_status
-     <field>145106
+     <field>145107
      <ftype>int
      <extra>enum=955
      <modifiers>
@@ -8972,7 +8980,7 @@
      <indexed>false
     </column>
     <column/>
-     <name>field_global_peerchain_entry_host_domain
+     <name>field_global_peerchain_entry_host_name
      <field>145103
      <ftype>string
      <extra>max_size=100
@@ -8981,11 +8989,11 @@
      <indexed>false
     </column>
     <column/>
-     <name>field_global_peerchain_entry_port_number
-     <field>145104
-     <ftype>int
-     <extra>range=20..65535
-     <modifiers>2000:protect
+     <name>field_global_peerchain_entry_port_numbers
+     <field>145111
+     <ftype>string
+     <extra>
+     <modifiers>
      <unique>false
      <indexed>false
     </column>

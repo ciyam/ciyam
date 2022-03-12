@@ -89,14 +89,14 @@
   <arguments>install_application.cin @grp @uid @name @key @script @package_install_extra
  </script>
  <script/>
-  <name>create_peerchain_entries
+  <name>create_peerchain_entry
   <filename>*script*
-  <arguments>create_peerchain_entries.cin @identity @auto_start @description @host_domain @port_number
+  <arguments>create_peerchain_entry.cin @identity @auto_start @description @host_name @host_port
  </script>
  <script/>
-  <name>update_peerchain_entries
+  <name>update_peerchain_entry
   <filename>*script*
-  <arguments>update_peerchain_entries.cin @identity @auto_start @description @host_domain @port_number
+  <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port
  </script>
  <script/>
   <name>install_application_script

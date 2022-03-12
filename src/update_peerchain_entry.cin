@@ -30,17 +30,10 @@ DESCRIPTION=$3
 HOST_NAME=$4
 HOST_PORT=$5
 ;
-.system_variable @blockchain
-BLOCKCHAIN=$OUTPUT
-@ifeq "$BLOCKCHAIN" ""
-#Error: Found empty '@blockchain' system variable value.
-@else
 .storage_init Meta
-.pu sys @now Meta Global_Peerchain_Entry %IDENTITY%_listener "Auto_Start=$AUTO_START,Description=$DESCRIPTION"
-.pu sys @now Meta Global_Peerchain_Entry %BLOCKCHAIN%_%IDENTITY% "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Host_Domain=$HOST_NAME,Port_Number=$HOST_PORT"
+.pu sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT"
 @ifndef $ERROR
-#Updated listener and global peerchain entries for identity '$IDENTITY'.
+#Updated global peerchain entry for identity '$IDENTITY'.
 @endif
 .storage_term
-@endif
 @endif

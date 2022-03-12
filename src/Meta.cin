@@ -100,7 +100,7 @@ user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
 user_defined_enum_add -id=955 peerchain_status int 0=Inactive,1=Connecting,2=Connected,3=Listening,4=Disconnecting
-user_defined_enum_add -id=960 peerchain_entry_type int 0=Caller,1=Listener
+user_defined_enum_add -id=960 peerchain_entry_type int 0=Hosted,1=Local_Only
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
@@ -113,7 +113,7 @@ user_defined_type_add -id=1028 0..999 int "range 0 999"
 user_defined_type_add -id=1029 0..9999 int "range 0 9999"
 user_defined_type_add -id=1030 0..99999 int "range 0 99999"
 user_defined_type_add -id=1031 0..999999 int "range 0 999999"
-user_defined_type_add -id=1035 port int "range 20 65535"
+user_defined_type_add -id=1035 port int "range 0 65535"
 user_defined_type_add -id=1040 digits int "range 0 16"
 user_defined_type_add -id=1045 label str30 "format label"
 user_defined_type_add -id=1050 identifier str30 "format identifier"
@@ -906,19 +906,21 @@ field_add -id=140101 Global_Blacklist_Entry Content_Hash str100 opt -transient
 class_add -id=145100 Global_Peerchain_Entry Global_Peerchain_Entries -x=global:peer!
 field_add -id=145101 Global_Peerchain_Entry Identity str50 opt -transient
 field_add -id=145102 Global_Peerchain_Entry Description str100 mand
-field_add -id=145103 Global_Peerchain_Entry Host_Domain str100 mand
-field_add -id=145104 Global_Peerchain_Entry Port_Number port mand -def=1025
-field_add -id=145105 Global_Peerchain_Entry Auto_Start bool mand -def=0
-field_add -id=145106 Global_Peerchain_Entry Status int mand -def=0 -e=peerchain_status -transient
-field_add -id=145107 Global_Peerchain_Entry Entry_Type int mand -def=0 -e=peerchain_entry_type -transient
-field_add -id=145108 Global_Peerchain_Entry Num_Helpers 0..9 mand -def=0
-field_add -id=145109 Global_Peerchain_Entry Actions string opt -transient -x=actions
-modifier_add -id=145300 Global_Peerchain_Entry Is_Listener Host_Domain:relegate;view,Num_Helpers:relegate
+field_add -id=145103 Global_Peerchain_Entry Host_Name str100 mand
+field_add -id=145104 Global_Peerchain_Entry Host_Port port mand -def=0
+field_add -id=145105 Global_Peerchain_Entry Local_Port port mand -def=0
+field_add -id=145106 Global_Peerchain_Entry Auto_Start bool mand -def=0
+field_add -id=145107 Global_Peerchain_Entry Status int mand -def=0 -e=peerchain_status -transient
+field_add -id=145108 Global_Peerchain_Entry Entry_Type int mand -def=0 -e=peerchain_entry_type -transient
+field_add -id=145109 Global_Peerchain_Entry Num_Helpers 0..9 mand -def=0
+field_add -id=145110 Global_Peerchain_Entry Actions string opt -transient -x=actions
+field_add -id=145111 Global_Peerchain_Entry Port_Numbers string opt -transient
+modifier_add -id=145300 Global_Peerchain_Entry Is_Local_Only Host_Name:relegate;view,Host_Port:relegate,Num_Helpers:relegate
 modifier_add -id=145301 Global_Peerchain_Entry Is_Connected @class:extralight1;list,Status:extralight1;view
 modifier_add -id=145302 Global_Peerchain_Entry Is_Listening @class:extralight1;list,Status:extralight1;view
 modifier_add -id=145303 Global_Peerchain_Entry Is_Connecting @class:extralight;list,Status:extralight;view
 modifier_add -id=145304 Global_Peerchain_Entry Is_Disconnecting @class:extralight;list,Status:extralight;view
-modifier_add -id=145305 Global_Peerchain_Entry Not_Is_Inactive Host_Domain:protect,Port_Number:protect,Num_Helpers:protect
+modifier_add -id=145305 Global_Peerchain_Entry Not_Is_Inactive Host_Name:protect,Host_Port:protect,Local_Port:protect,Num_Helpers:protect
 procedure_add -id=145410 Global_Peerchain_Entry Connect
 procedure_add -id=145420 Global_Peerchain_Entry Disconnect
 procedure_add -id=145430 Global_Peerchain_Entry Start_Listening
@@ -2053,7 +2055,7 @@ specification_add -id=600894 {Package_Option}_Hide_View modifier_field_value "Pa
 specification_add -id=600895 {Package_Option}_Hide_List modifier_field_value "Package_Option Hide_List Has_List false"
 specification_add -id=600896 {Package_Option}_Hide_Modifier modifier_field_value "Package_Option Hide_Modifier Has_Modifier false"
 specification_add -id=600897 {Package_Option}_Hide_Procedure modifier_field_value "Package_Option Hide_Procedure Has_Procedure false"
-specification_add -id=600898a {Global_Peerchain_Entry}_Is_Listener modifier_field_value "Global_Peerchain_Entry Is_Listener Entry_Type 1"
+specification_add -id=600898a {Global_Peerchain_Entry}_Is_Local_Only modifier_field_value "Global_Peerchain_Entry Is_Local_Only Entry_Type 1"
 specification_add -id=600098b {Global_Peerchain_Entry}_Is_Connected modifier_field_value "Global_Peerchain_Entry Is_Connected Status Connected -enum=peerchain_status"
 specification_add -id=600098c {Global_Peerchain_Entry}_Is_Listening modifier_field_value "Global_Peerchain_Entry Is_Listening Status Listening -enum=peerchain_status"
 specification_add -id=600098d {Global_Peerchain_Entry}_Is_Connecting modifier_field_value "Global_Peerchain_Entry Is_Connecting Status Connecting -enum=peerchain_status"
@@ -2302,9 +2304,9 @@ specification_add -id=603850 {Global_Archive}_view view "? admin:no_edit,auto_ba
 ,Size_Avail;non_new+no_edit,Use_Custom_Size;force+new_only,Size_Limit,Standard_Size_Limit;new_only,Status_Info;non_new+no_edit,Actions"
 specification_add -id=603900 {Global_Blacklist_Entry}_list list "* admin Global_Blacklist_Entry Content_Hash"
 specification_add -id=603950 {Global_Blacklist_Entry}_view view "? admin:no_edit,auto_back Global_Blacklist_Entry @key,Content_Hash;key_name"
-specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Identity,Description,Status,Host_Domain,Port_Number"
-specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Identity;non_new+no_edit+key_hide,Description\
-,Entry_Type;new_edit+force,Host_Domain,Port_Number,Num_Helpers,Auto_Start,Status;no_edit,Actions"
+specification_add -id=603960 {Global_Peerchain_Entry}_list list "* admin Global_Peerchain_Entry Identity,Description,Status,Host_Name,Port_Numbers"
+specification_add -id=603970 {Global_Peerchain_Entry}_view view "? admin Global_Peerchain_Entry @key,Identity;key_name,Description\
+,Entry_Type;new_edit+force,Local_Port,Host_Name,Host_Port,Num_Helpers,Auto_Start,Status;no_edit,Actions"
 specification_add -id=603980 {Global_Repository_Entry}_list list "* admin:no_new Global_Repository_Entry File_Hash"
 specification_add -id=603990 {Global_Repository_Entry}_view view "? admin:no_edit Global_Repository_Entry @key,File_Hash;key_name,Local_Hash,Local_Public_Key,Master_Public_Key"
 model_save
