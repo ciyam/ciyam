@@ -80,7 +80,6 @@ const char* const c_key_suffix = ".key";
 const char* const c_pub_suffix = ".pub";
 const char* const c_sig_suffix = ".sig";
 const char* const c_zenith_suffix = ".zenith";
-const char* const c_supporters_suffix = ".supporters";
 
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
@@ -993,7 +992,8 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
                bool check_for_supporters = false;
 
-               if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+               if( !get_session_variable( get_special_var_name(
+                e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
                   check_for_supporters = true;
 
                if( first_hash_to_get == tree_root_hash )
@@ -1657,7 +1657,8 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
 
       bool check_for_supporters = false;
 
-      if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+      if( !get_session_variable( get_special_var_name(
+       e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
          check_for_supporters = true;
 
       process_list_items( hash, false, check_for_supporters );
@@ -2306,7 +2307,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    bool check_for_supporters = false;
 
-   if( !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+   if( !get_session_variable( get_special_var_name(
+    e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
       check_for_supporters = true;
 
    try
@@ -2853,6 +2855,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    string identity( get_session_variable(
     get_special_var_name( e_special_var_identity ) ) );
 
+   string ip_addr( get_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
+
    while( true )
    {
       progress* p_progress = 0;
@@ -2914,8 +2918,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          }
       }
 
-      if( !check_for_supporters && !socket_handler.get_is_for_support( )
-       && !get_system_variable( blockchain + c_supporters_suffix ).empty( ) )
+      if( !check_for_supporters && !get_session_variable(
+       get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
          check_for_supporters = true;
 
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
@@ -3013,15 +3017,15 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
 #ifdef SSL_SUPPORT
 peer_session* construct_session( bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& ip_addr, bool is_for_support = false )
+ auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support = false )
 #else
 peer_session* construct_session( bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& ip_addr, bool is_for_support = false )
+ auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support = false )
 #endif
 {
    peer_session* p_session = 0;
 
-   string::size_type pos = ip_addr.find( '=' );
+   string::size_type pos = addr_info.find( '=' );
 
    string blockchains;
 
@@ -3029,20 +3033,20 @@ peer_session* construct_session( bool is_responder,
 
    if( pos != string::npos )
    {
-      blockchains = ip_addr.substr( pos + 1 );
+      blockchains = addr_info.substr( pos + 1 );
       string::size_type ppos = blockchains.find( ':' );
 
       if( ppos != string::npos )
          blockchains.erase( ppos );
 
       if( blockchains.find( ',' ) == string::npos )
-         already_has_session = has_session_with_ip_addr( ip_addr.substr( 0, pos ), blockchains );
+         already_has_session = has_session_with_ip_addr( addr_info.substr( 0, pos ), blockchains );
    }
 
    if( is_for_support || !already_has_session 
-    || ip_addr.substr( 0, pos ) == c_local_ip_addr
-    || ip_addr.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
-      p_session = new peer_session( is_responder, ap_socket, ip_addr, is_for_support );
+    || addr_info.substr( 0, pos ) == c_local_ip_addr
+    || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
+      p_session = new peer_session( is_responder, ap_socket, addr_info, is_for_support );
 
    return p_session;
 }
@@ -3051,29 +3055,30 @@ peer_session* construct_session( bool is_responder,
 
 #ifdef SSL_SUPPORT
 peer_session::peer_session( bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& ip_addr, bool is_for_support )
+ auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support )
 #else
 peer_session::peer_session( bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& ip_addr, bool is_for_support )
+ auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support )
 #endif
  :
  is_local( false ),
  is_owner( false ),
- ip_addr( ip_addr ),
+ ip_addr( addr_info ),
  ap_socket( ap_socket ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
  peer_is_owner( false ),
+ has_support_sessions( false ),
  has_found_both_are_owners( false )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
 
-   string::size_type pos = ip_addr.find( '=' );
+   string::size_type pos = addr_info.find( '=' );
    if( pos != string::npos )
    {
-      blockchain = ip_addr.substr( pos + 1 );
-      this->ip_addr.erase( pos );
+      blockchain = addr_info.substr( pos + 1 );
+      ip_addr.erase( pos );
    }
 
    pos = blockchain.find( ':' );
@@ -3096,7 +3101,7 @@ peer_session::peer_session( bool is_responder,
    if( port.empty( ) && blockchain.empty( ) )
       port = get_test_peer_port( );
 
-   if( this->ip_addr == c_local_ip_addr || this->ip_addr == c_local_ip_addr_for_ipv6 )
+   if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
    if( !is_responder
@@ -3178,7 +3183,7 @@ peer_session::peer_session( bool is_responder,
 
    // NOTE: This check is necessary because listener created sessions set "is_for_support" true but
    //  whether it is actually a support session is only knowable after the first line has been read.
-   if( !this->is_for_support && has_session_with_ip_addr( this->ip_addr, blockchain ) )
+   if( !this->is_for_support && has_session_with_ip_addr( ip_addr, blockchain ) )
       throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
 
    increment_session_count( );
@@ -3325,6 +3330,9 @@ void peer_session::on_start( )
       if( has_found_both_are_owners )
          set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true_value );
 
+      if( is_for_support || has_support_sessions )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_peer_has_supporters ), c_true_value );
+
       okay = true;
       was_initialised = true;
 
@@ -3467,11 +3475,7 @@ void peer_session::on_start( )
    if( has_terminated && !is_for_support && !blockchain.empty( ) )
    {
       if( blockchain.find( c_bc_prefix ) == 0 )
-      {
-         set_system_variable( blockchain + c_supporters_suffix, "" );
-
          set_system_variable( '~' + blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix, "" );
-      }
    }
 
    delete this;
@@ -3866,9 +3870,9 @@ void create_peer_initiator( const string& blockchain,
        + " sessions for support (max is " + to_string( c_max_num_for_support ) + ")" );
 
    int port = 0;
-   string ip_addr( c_local_host );
+   string host( c_local_host );
 
-   parse_host_and_or_port( host_and_or_port, ip_addr, port );
+   parse_host_and_or_port( host_and_or_port, host, port );
 
    if( !port )
       throw runtime_error( "invalid or missing port in '" + host_and_or_port + "' for create_peer_initiator" );
@@ -3883,6 +3887,10 @@ void create_peer_initiator( const string& blockchain,
    string identity( blockchain );
    replace( identity, c_bc_prefix, "" );
 
+   ip_address address( host.c_str( ), port );
+
+   string ip_addr( address.get_addr_string( ) );
+
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
    for( size_t i = 0; i < total_to_create; i++ )
@@ -3895,26 +3903,34 @@ void create_peer_initiator( const string& blockchain,
 
       if( ap_socket->open( ) )
       {
-         ip_address address( ip_addr.c_str( ), port );
-
          if( force )
-            remove_peer_ip_addr_from_rejection( address.get_addr_string( ) );
-         else if( !get_is_accepted_peer_ip_addr( address.get_addr_string( ) ) )
+            remove_peer_ip_addr_from_rejection( ip_addr );
+         else if( !get_is_accepted_peer_ip_addr( ip_addr ) )
             throw runtime_error( "ip address " + ip_addr + " is not permitted" );
 
          if( ap_socket->connect( address, ( i == 0 ) ? c_initial_timeout : c_support_timeout ) )
          {
             peer_session* p_session = construct_session( false, ap_socket,
-             address.get_addr_string( ) + "=" + blockchain + ":" + to_string( port ), i > 0 );
+             ip_addr + "=" + blockchain + ":" + to_string( port ), i > 0 );
 
             if( !p_session )
                break;
             else
             {
-               if( !p_main_session )
+               if( !p_main_session && total_to_create > 1 )
                   p_main_session = p_session;
+               else
+               {
+                  // NOTE: The main session start is delayed in order to
+                  // be sure it should be checking for support sessions.
+                  if( p_main_session )
+                  {
+                     p_main_session->set_has_support_sessions( );
+                     p_main_session->start( );
+                  }
 
-               p_session->start( );
+                  p_session->start( );
+               }
 
                if( i > 0 )
                   ++num_supporters_created;
@@ -3923,8 +3939,10 @@ void create_peer_initiator( const string& blockchain,
       }
    }
 
-   if( !blockchain.empty( ) && p_main_session && num_supporters_created )
-      set_system_variable( blockchain + c_supporters_suffix, c_true_value );
+   // NOTE: As main session start is delayed until first support session has
+   // been constructed if no support session was constructed then start now.
+   if( p_main_session && ( total_to_create > 1 ) && !num_supporters_created )
+      p_main_session->start( );
 }
 
 peer_session_starter::peer_session_starter( )
@@ -4030,9 +4048,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       blockchain.erase( pos );
    }
 
-   string ip_addr( info );
-
-   create_peer_initiator( blockchain, ip_addr, false, num_for_support );
+   create_peer_initiator( blockchain, info, false, num_for_support );
 }
 
 void init_peer_sessions( int start_listeners )

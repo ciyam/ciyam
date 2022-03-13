@@ -87,6 +87,7 @@ const char* const c_special_variable_pubkey = "@pubkey";
 const char* const c_special_variable_return = "@return";
 const char* const c_special_variable_script = "@script";
 const char* const c_special_variable_do_exec = "@do_exec";
+const char* const c_special_variable_ip_addr = "@ip_addr";
 const char* const c_special_variable_is_last = "@is_last";
 const char* const c_special_variable_message = "@message";
 const char* const c_special_variable_package = "@package";
@@ -166,6 +167,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
 const char* const c_special_variable_blockchain_height_processed = "@blockchain_height_processed";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
+const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
 const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
@@ -368,6 +370,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_do_exec:
       s = string( c_special_variable_do_exec );
+      break;
+
+      case e_special_var_ip_addr:
+      s = string( c_special_variable_ip_addr );
       break;
 
       case e_special_var_is_last:
@@ -680,6 +686,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_total_child_field_in_parent:
       s = string( c_special_variable_total_child_field_in_parent );
+      break;
+
+      case e_special_var_blockchain_peer_has_supporters:
+      s = string( c_special_variable_blockchain_peer_has_supporters );
       break;
 
       case e_special_var_blockchain_primary_pubkey_hash:

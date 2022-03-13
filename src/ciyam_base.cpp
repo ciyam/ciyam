@@ -310,6 +310,9 @@ struct session
          // NOTE: Always use the IPv4 version for compatibility.
          if( ip_addr == c_local_ip_addr_for_ipv6 )
             ip_addr = c_local_ip_addr;
+
+         variables.insert( make_pair(
+          get_special_var_name( e_special_var_ip_addr ), ip_addr ) );
       }
 
       if( p_blockchain )

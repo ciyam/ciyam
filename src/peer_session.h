@@ -31,14 +31,18 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
-   peer_session( bool is_responder, std::auto_ptr< ssl_socket >& ap_socket, const std::string& ip_addr, bool is_for_support = false );
+   peer_session( bool is_responder,
+    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false );
 #  else
-   peer_session( bool is_responder, std::auto_ptr< tcp_socket >& ap_socket, const std::string& ip_addr, bool is_for_support = false );
+   peer_session( bool is_responder,
+    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false );
 #  endif
 
    ~peer_session( );
 
    void on_start( );
+
+   bool set_has_support_sessions( ) { has_support_sessions = true; }
 
    static void increment_session_count( );
    static void decrement_session_count( );
@@ -50,6 +54,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool is_for_support;
 
    bool peer_is_owner;
+   bool has_support_sessions;
    bool has_found_both_are_owners;
 
    std::string port;
