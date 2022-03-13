@@ -98,6 +98,7 @@ enum special_var
    e_special_var_return,
    e_special_var_script,
    e_special_var_do_exec,
+   e_special_var_ip_addr,
    e_special_var_is_last,
    e_special_var_message,
    e_special_var_package,
@@ -176,6 +177,7 @@ enum special_var
    e_special_var_blockchain_both_are_owners,
    e_special_var_blockchain_height_processed,
    e_special_var_total_child_field_in_parent,
+   e_special_var_blockchain_peer_has_supporters,
    e_special_var_blockchain_primary_pubkey_hash,
    e_special_var_blockchain_signature_file_hash,
    e_special_var_blockchain_secondary_pubkey_hash
