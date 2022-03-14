@@ -74,7 +74,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Id = "103104";
 const char* const c_field_id_Internal = "103103";
 const char* const c_field_id_Name = "103101";
@@ -2245,4 +2244,3 @@ void Meta_Enum::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

@@ -87,7 +87,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Internal = "112104";
 const char* const c_field_id_Name = "112101";
 const char* const c_field_id_Order = "112105";
@@ -2696,4 +2695,3 @@ void Meta_Procedure_Arg::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

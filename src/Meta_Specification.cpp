@@ -198,7 +198,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "115108";
 const char* const c_field_id_All_Strings = "115124";
 const char* const c_field_id_All_Vars = "115123";
@@ -16465,4 +16464,3 @@ void Meta_Specification::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

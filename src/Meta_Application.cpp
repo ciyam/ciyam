@@ -93,7 +93,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "127104";
 const char* const c_field_id_Add_Modules_Automatically = "127128";
 const char* const c_field_id_Allow_Duplicate_Logins = "127108";
@@ -6896,4 +6895,3 @@ void Meta_Application::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

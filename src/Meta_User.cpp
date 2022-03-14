@@ -73,7 +73,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Active = "100102";
 const char* const c_field_id_Description = "100104";
 const char* const c_field_id_Email = "100105";
@@ -2428,4 +2427,3 @@ void Meta_User::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-
