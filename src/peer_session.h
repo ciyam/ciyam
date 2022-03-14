@@ -61,7 +61,6 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    std::string ip_addr;
 
    std::string blockchain;
-   std::string blockchain_suffix;
 
 #  ifdef SSL_SUPPORT
    std::auto_ptr< ssl_socket > ap_socket;
@@ -96,17 +95,6 @@ class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
 };
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );
-
-std::string CIYAM_BASE_DECL_SPEC use_peer_account(
- const std::string& blockchain, const std::string& password, bool release = false, bool is_pwd_hash = false );
-
-std::string CIYAM_BASE_DECL_SPEC get_account_password( const std::string& blockchain, const std::string& account );
-
-void CIYAM_BASE_DECL_SPEC lock_blockchain_transaction( std::auto_ptr< guard >& ap_guard );
-
-std::string CIYAM_BASE_DECL_SPEC create_blockchain_transaction(
- const std::string& blockchain, const std::string& application,
- const std::string& log_command, const std::vector< std::string >* p_file_info = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC prefixed_blockchains( const std::string& blockchains );
 std::string CIYAM_BASE_DECL_SPEC unprefixed_blockchains( const std::string& blockchains );
