@@ -72,7 +72,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Allow_Child_Relationship = "114191";
 const char* const c_field_id_Allow_Enum = "114198";
 const char* const c_field_id_Allow_Enum_Item = "114199";
@@ -13477,4 +13476,3 @@ void Meta_Specification_Type::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

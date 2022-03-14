@@ -61,7 +61,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Allow_Child_Rel_Select_Specifics = "123113";
 const char* const c_field_id_Allow_Exclude_In_Use_FK = "123106";
 const char* const c_field_id_Allow_Link_Empty_Restriction = "123121";
@@ -3418,4 +3417,3 @@ void Meta_List_Field_Type::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

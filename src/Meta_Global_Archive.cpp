@@ -61,7 +61,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "139106";
 const char* const c_field_id_Name = "139101";
 const char* const c_field_id_Path = "139102";
@@ -2276,4 +2275,3 @@ void Meta_Global_Archive::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

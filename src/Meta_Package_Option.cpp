@@ -148,7 +148,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "137116";
 const char* const c_field_id_Class = "302830a";
 const char* const c_field_id_Date = "137111";
@@ -7439,4 +7438,3 @@ void Meta_Package_Option::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

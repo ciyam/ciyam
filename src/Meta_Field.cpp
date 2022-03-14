@@ -144,7 +144,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Access_Permission = "300750";
 const char* const c_field_id_Access_Restriction = "107121";
 const char* const c_field_id_Access_Scope = "107123";
@@ -8574,4 +8573,3 @@ void Meta_Field::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

@@ -91,7 +91,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Class = "300900";
 const char* const c_field_id_Internal = "109102";
 const char* const c_field_id_Name = "109101";
@@ -2486,4 +2485,3 @@ void Meta_Modifier::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

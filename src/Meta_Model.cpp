@@ -112,7 +112,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "105109";
 const char* const c_field_id_Add_Packages = "105112";
 const char* const c_field_id_Allow_Anonymous_Access = "105116";
@@ -9636,4 +9635,3 @@ void Meta_Model::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

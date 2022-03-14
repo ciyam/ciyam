@@ -81,7 +81,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Id = "101102";
 const char* const c_field_id_Name = "101101";
 const char* const c_field_id_Next_Enum_Id = "101104";
@@ -2677,4 +2676,3 @@ void Meta_Workgroup::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

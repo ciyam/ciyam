@@ -84,7 +84,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Field = "302520";
 const char* const c_field_id_Initial_Record = "302510";
 const char* const c_field_id_Value = "130101";
@@ -1761,4 +1760,3 @@ void Meta_Initial_Record_Value::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

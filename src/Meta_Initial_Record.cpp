@@ -76,7 +76,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Class = "302410";
 const char* const c_field_id_Comments = "129102";
 const char* const c_field_id_Key = "129101";
@@ -2087,4 +2086,3 @@ void Meta_Initial_Record::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

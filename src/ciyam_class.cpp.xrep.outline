@@ -343,7 +343,6 @@ inline void sanity_check( const string& s )
 #include "`{`$full_class_name`}.cmh"
 
 const int32_t c_version = `{`$class_version`};
-
 `{`?`$base_fields`[`$base_fields`%,`,
 const char* const c_field_id_\0 = "\1";\
 `]`}
@@ -4879,4 +4878,3 @@ void `{`$full_class_name`}::static_class_term( const char* p_module_name )
 `{`(`?`$user_source`)`#$user_source section=static_class_term`}
    // [<finish static_class_term>]
 }
-

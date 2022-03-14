@@ -79,7 +79,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Auto_Round = "102118";
 const char* const c_field_id_Date_Precision = "102112";
 const char* const c_field_id_Default_UOM = "102120";
@@ -4299,4 +4298,3 @@ void Meta_Type::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

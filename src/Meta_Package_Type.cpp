@@ -62,7 +62,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Actions = "135105";
 const char* const c_field_id_Dependencies = "135107";
 const char* const c_field_id_File = "135103";
@@ -2604,4 +2603,3 @@ void Meta_Package_Type::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

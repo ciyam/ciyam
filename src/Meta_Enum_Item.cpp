@@ -72,7 +72,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Enum = "300400";
 const char* const c_field_id_Filter = "104105";
 const char* const c_field_id_Internal = "104104";
@@ -2484,4 +2483,3 @@ void Meta_Enum_Item::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

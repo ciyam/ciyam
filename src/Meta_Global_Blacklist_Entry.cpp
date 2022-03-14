@@ -59,7 +59,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_Content_Hash = "140101";
 
 const char* const c_field_name_Content_Hash = "Content_Hash";
@@ -1425,4 +1424,3 @@ void Meta_Global_Blacklist_Entry::static_class_term( const char* p_module_name )
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-

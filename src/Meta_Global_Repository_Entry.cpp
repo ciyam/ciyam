@@ -59,7 +59,6 @@ inline void sanity_check( const string& s )
 
 const int32_t c_version = 1;
 
-
 const char* const c_field_id_File_Hash = "150101";
 const char* const c_field_id_Local_Hash = "150102";
 const char* const c_field_id_Local_Public_Key = "150103";
@@ -1749,4 +1748,3 @@ void Meta_Global_Repository_Entry::static_class_term( const char* p_module_name 
    // [<start static_class_term>]
    // [<finish static_class_term>]
 }
-
