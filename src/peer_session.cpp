@@ -137,10 +137,6 @@ enum peer_trust_level
    e_peer_trust_level_normal
 };
 
-set< string > g_blockchain_release;
-
-map< string, set< string > > g_blockchain_passwords;
-
 size_t g_num_peers = 0;
 
 bool has_max_peers( )
@@ -182,128 +178,6 @@ string get_hello_data( string& hello_hash )
    return data;
 }
 
-bool was_released( const string& blockchain )
-{
-   guard g( get_core_files_trace_mutex( ) );
-
-   bool retval = false;
-
-   if( g_blockchain_release.count( blockchain ) )
-   {
-      retval = true;
-      g_blockchain_release.erase( blockchain );
-   }
-
-   return retval;
-}
-
-string process_txs( const string& blockchain, const string& tx_hash )
-{
-   string hash;
-
-   system_variable_lock blockchain_lock( blockchain );
-
-   if( !tx_hash.empty( ) || file_exists( blockchain + ".txs" ) )
-   {
-      vector< string > applications;
-      uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, tx_hash, applications );
-
-      if( !tx_hash.empty( ) )
-         set_session_variable( get_special_var_name( e_special_var_rewind_height ), "" );
-
-      set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
-
-      for( size_t i = 0; i < applications.size( ); i++ )
-      {
-         string application( applications[ i ] );
-
-         if( file_exists( application + ".log" ) )
-         {
-            set_session_variable( get_special_var_name( e_special_var_application ), application );
-            run_script( "app_blk_txs", false );
-         }
-
-         file_remove( applications[ i ] + ".txs.cin" );
-      }
-   }
-
-   hash = construct_blockchain_info_file( blockchain );
-
-   return hash;
-}
-
-string mint_new_block( const string& blockchain,
- new_block_info& new_block, string& password_hash, bool is_for_store )
-{
-   guard g( get_core_files_trace_mutex( ), "mint_new_block" );
-
-   string data;
-
-   set< string >& passwords( g_blockchain_passwords[ blockchain ] );
-
-   if( !passwords.empty( ) )
-   {
-      string next_data;
-      new_block_info next_block;
-
-      bool is_reminting = !password_hash.empty( );
-
-      for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-      {
-         string next_password( *i );
-
-         if( is_reminting && sha256( next_password ).get_digest_as_string( ) != password_hash )
-            continue;
-
-         next_data = construct_new_block( blockchain, next_password, &next_block, is_for_store );
-
-         // NOTE: If no valid "nonce" was found then don't proceed.
-         if( next_block.num_txs < 0 )
-            break;
-
-         if( i == passwords.begin( ) || is_reminting || next_block.weight < new_block.weight )
-         {
-            data = next_data;
-            new_block = next_block;
-
-            if( is_reminting )
-               break;
-
-            password_hash = sha256( next_password ).get_digest_as_string( );
-         }
-      }
-   }
-
-   return data;
-}
-
-string store_new_block( const string& blockchain, const string& password_hash )
-{
-   guard g( g_mutex );
-
-   if( password_hash.empty( ) )
-      return string( );
-
-   string hash( password_hash );
-
-   // NOTE: Before storing now re-mint the block just in case further txs can be added to it.
-   new_block_info new_block;
-   string data( mint_new_block( blockchain, new_block, hash, true ) );
-
-   if( data.empty( ) )
-      return string( );
-
-   vector< pair< string, string > > extras;
-
-   temporary_session_variable tmp_session_locally_minted_block(
-    get_special_var_name( e_special_var_locally_minted_block ), "1" );
-
-   verify_core_file( data, true, &extras );
-   create_raw_file_with_extras( "", extras );
-
-   return process_txs( blockchain, "" );
-}
-
 void process_core_file( const string& hash, const string& blockchain )
 {
    guard g( g_mutex );
@@ -337,21 +211,9 @@ void process_core_file( const string& hash, const string& blockchain )
          {
             vector< pair< string, string > > extras;
 
-            string block_content;
+            string block_content( construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
-            if( pos != string::npos )
-            {
-               block_content = construct_blob_for_block_content(
-                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) );
-
-               verify_core_file( block_content, true, &extras );
-            }
-            else
-            {
-               block_content = construct_blob_for_block_content( extract_file( hash, "" ) );
-
-               verify_core_file( block_content, false, &extras );
-            }
+            verify_core_file( block_content, false, &extras );
 
             if( !extras.empty( ) )
                create_raw_file_with_extras( "", extras );
@@ -391,142 +253,6 @@ void process_core_file( const string& hash, const string& blockchain )
 
             if( !signature_file_hash.empty( ) && !has_file( signature_file_hash ) )
                add_peer_file_hash_for_get( signature_file_hash );
-
-            if( primary_pubkey_hash.empty( ) )
-               process_txs( blockchain, "" );
-         }
-         catch( ... )
-         {
-            delete_file( hash.substr( 0, pos ), false );
-            throw;
-         }
-      }
-      else if( is_transaction( core_type ) )
-      {
-         if( pos != string::npos )
-         {
-            try
-            {
-               vector< pair< string, string > > extras;
-
-               string transaction_content( construct_blob_for_transaction_content(
-                extract_file( hash.substr( 0, pos ), "" ), hash.substr( pos + 1 ) ) );
-
-               verify_core_file( transaction_content, true, &extras );
-
-               create_raw_file_with_extras( "", extras );
-
-               if( !has_any_session_variable(
-                get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
-                  process_txs( blockchain, hash.substr( 0, pos ) );
-            }
-            catch( ... )
-            {
-               delete_file( hash.substr( 0, pos ), false );
-               throw;
-            }
-         }
-      }
-      else if( is_checkpoint_info( core_type ) )
-      {
-         try
-         {
-            string content( extract_file( hash.substr( 0, pos ), "" ) );
-
-            checkpoint_info cp_info;
-            get_checkpoint_info( blockchain, content, cp_info );
-
-            if( !has_file( cp_info.checkpoint_hash ) )
-            {
-               // NOTE: Fetch any blobs that have not already been stored locally.
-               for( size_t i = 0; i < cp_info.blob_hashes_with_sigs.size( ); i++ )
-               {
-                  string hash_with_sig( cp_info.blob_hashes_with_sigs[ i ] );
-
-                  string::size_type pos = hash_with_sig.find( ':' );
-
-                  if( !has_file( hash_with_sig.substr( 0, pos ) ) )
-                     add_peer_file_hash_for_get( hash_with_sig );
-               }
-
-               // NOTE: Because the checkpoint won't be created locally until blocks
-               // after its height have been processed the checkpoint itself must be
-               // stored to avoid the peer simply getting stuck at the height of the
-               // checkpoint.
-               add_peer_file_hash_for_get( cp_info.checkpoint_hash );
-            }
-
-            delete_file( hash.substr( 0, pos ), false );
-         }
-         catch( ... )
-         {
-            delete_file( hash.substr( 0, pos ), false );
-            throw;
-         }
-      }
-      else if( is_blockchain_info( core_type ) )
-      {
-         try
-         {
-            string content( extract_file( hash.substr( 0, pos ), "" ) );
-
-            blockchain_info bc_info;
-            get_blockchain_info( content, bc_info );
-
-            bool needs_checkpoint = false;
-
-            for( size_t i = 0; i < bc_info.checkpoint_info.size( ); i++ )
-            {
-               string next_info( bc_info.checkpoint_info[ i ] );
-
-               string::size_type pos = next_info.find( '.' );
-               if( pos == string::npos )
-                  throw runtime_error( "invalid checkpoint information: " + next_info );
-
-               if( !has_file( next_info.substr( 0, pos ) ) )
-               {
-                  add_peer_file_hash_for_get( next_info.substr( pos + 1 ) );
-                  needs_checkpoint = true;
-                  break;
-               }
-            }
-
-            if( needs_checkpoint )
-               set_session_variable(
-                get_special_var_name( e_special_var_peer_is_synchronising ), blockchain );
-            else
-            {
-               string blockchain_head_hash( get_session_variable(
-                get_special_var_name( e_special_var_blockchain_head_hash ) ) );
-
-               if( !blockchain_head_hash.empty( ) && !has_file( blockchain_head_hash ) )
-                  set_session_variable(
-                   get_special_var_name( e_special_var_peer_is_synchronising ), blockchain );
-               else
-               {
-                  set_session_variable(
-                   get_special_var_name( e_special_var_blockchain_head_hash ), "" );
-
-                  set_session_variable(
-                   get_special_var_name( e_special_var_peer_is_synchronising ), "" );
-               }
-
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_info_hash ), hash.substr( 0, pos ) );
-
-               // NOTE: Fetch any blobs that have not already been stored locally.
-               for( size_t i = 0; i < bc_info.blob_hashes_with_sigs.size( ); i++ )
-               {
-                  string hash_with_sig( bc_info.blob_hashes_with_sigs[ i ] );
-
-                  string::size_type pos = hash_with_sig.find( ':' );
-
-                  if( !has_file( hash_with_sig.substr( 0, pos ) ) )
-                     add_peer_file_hash_for_get( hash_with_sig );
-               }
-            }
-
-            delete_file( hash.substr( 0, pos ), false );
          }
          catch( ... )
          {
@@ -1396,8 +1122,6 @@ class socket_command_handler : public command_handler
       dtm_rcvd_not_found = dtm_sent_not_found
        = ( date_time::standard( ) - ( seconds )( c_peer_sleep_time / 1000.0 ) );
 
-      needs_blockchain_info = ( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) );
-
       is_responder = ( session_state == e_peer_state_responder );
 
       if( get_is_test_session( ) )
@@ -1429,9 +1153,6 @@ class socket_command_handler : public command_handler
 
    bool get_last_issued_was_put( ) const { return last_issued_was_put; }
    void set_last_issued_was_put( bool val ) { last_issued_was_put = val; }
-
-   bool get_needs_blockchain_info( ) const { return needs_blockchain_info; }
-   void set_needs_blockchain_info( bool val ) { needs_blockchain_info = val; }
 
    const string& get_blockchain( ) const { return blockchain; }
 
@@ -1515,8 +1236,6 @@ class socket_command_handler : public command_handler
    bool is_for_support;
 
    bool last_issued_was_put;
-
-   bool needs_blockchain_info;
 
    string blockchain;
    pair< string, string > blockchain_info;
@@ -1851,33 +1570,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
     && ( any_supporter_has_top_get || any_supporter_has_top_put ) )
       msleep( c_main_session_sleep_time );
 
-   if( get_needs_blockchain_info( ) )
-   {
-      string blockchain_info_hash;
-      chk_file( "c" + blockchain + ".info", &blockchain_info_hash );
-
-      if( !blockchain_info_hash.empty( ) )
-      {
-         set_needs_blockchain_info( false );
-
-         string last_blockchain_info(
-          get_raw_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
-
-         if( !has_file( blockchain_info_hash ) && blockchain_info_hash != last_blockchain_info )
-            add_peer_file_hash_for_get( blockchain_info_hash );
-         else
-         {
-            set_session_variable(
-             get_special_var_name( e_special_var_blockchain_head_hash ), "" );
-
-            set_session_variable(
-             get_special_var_name( e_special_var_peer_is_synchronising ), "" );
-         }
-      }
-   }
-   else if(
-    !any_supporter_has_top_get && !any_supporter_has_top_put
-    && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
+   if( !any_supporter_has_top_get
+    && !any_supporter_has_top_put && !prior_put( ).empty( ) && want_to_do_op( e_op_chk ) )
    {
       bool has_issued_chk = false;
 
@@ -2129,20 +1823,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             }
          }
 #endif
-
-         if( !blockchain.empty( )
-          && ( blockchain.find( c_bc_prefix ) != 0 )
-          && top_next_peer_file_hash_to_get( ).empty( ) )
-            set_needs_blockchain_info( true );
       }
       else
-      {
          get_hello( );
-
-         if( !blockchain.empty( )
-          && ( blockchain.find( c_bc_prefix ) != 0 ) )
-            set_needs_blockchain_info( true );
-      }
    }
    else
    {
@@ -2789,11 +2472,9 @@ class socket_command_processor : public command_processor
     : command_processor( handler ),
     socket( socket ),
     handler( handler ),
-    new_block_wait( 0 ),
     is_local( is_local ),
     is_owner( is_owner ),
-    is_responder( is_responder ),
-    needs_blockchain_info( false )
+    is_responder( is_responder )
    {
       peer_special_variable = get_special_var_name( e_special_var_peer );
 
@@ -2805,10 +2486,7 @@ class socket_command_processor : public command_processor
       socket_command_handler& socket_handler = dynamic_cast< socket_command_handler& >( handler );
 
       if( !socket_handler.get_blockchain( ).empty( ) )
-      {
-         needs_blockchain_info = true;
          value = socket_handler.get_blockchain( );
-      }
 
       set_session_variable( peer_special_variable, value );
 
@@ -2826,16 +2504,10 @@ class socket_command_processor : public command_processor
    string initiator_special_variable;
    string responder_special_variable;
 
-   int new_block_wait;
-   new_block_info new_block;
-   string new_block_pwd_hash;
-
    bool is_local;
    bool is_owner;
 
    bool is_responder;
-
-   bool needs_blockchain_info;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
@@ -2864,59 +2536,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
-
-      if( !g_server_shutdown && !is_condemned_session( ) )
-      {
-         if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
-         {
-            string new_acct( new_block.acct );
-
-            // NOTE: If either a better block at the newly minted block's height or a better previous block than
-            // the one it is currently linked to has been processed then will need to mint another new block. If
-            // a minting account was released then also mint another new block. Also if the same account that is
-            // minting had created the better block (i.e. from a Sybil peer) then will need to stop this account
-            // from minting (to minimise wasting any further resources).
-            if( !new_block_pwd_hash.empty( )
-             && ( has_better_block( blockchain, new_block.height, new_block.weight, &new_acct )
-             || was_released( blockchain )
-             || ( new_block.height > 1
-             && has_better_block( blockchain, new_block.height - 1, new_block.previous_block_weight ) ) ) )
-            {
-               if( new_acct.empty( ) )
-                  use_peer_account( blockchain, new_block_pwd_hash, true, true );
-
-               new_block_pwd_hash.erase( );
-            }
-
-            if( !new_block_pwd_hash.empty( ) )
-            {
-               if( new_block.num_txs < 0 )
-                  new_block_pwd_hash.erase( );
-               else
-               {
-                  if( new_block_wait > 0 )
-                     --new_block_wait;
-                  else
-                  {
-                     string tmp_new_block_pwd_hash( new_block_pwd_hash );
-
-                     new_block_pwd_hash.erase( );
-
-                     if( !has_any_session_variable(
-                      get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
-                        store_new_block( blockchain, tmp_new_block_pwd_hash );
-                  }
-               }
-            }
-            else if( is_first_using_session_variable( peer_special_variable, blockchain )
-             && !has_any_session_variable(
-             get_special_var_name( e_special_var_peer_is_synchronising ), blockchain ) )
-            {
-               mint_new_block( blockchain, new_block, new_block_pwd_hash, false );
-               new_block_wait = ( c_min_block_wait_passes * ( int )new_block.range );
-            }
-         }
-      }
 
       if( !check_for_supporters && !get_session_variable(
        get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
@@ -3088,15 +2707,8 @@ peer_session::peer_session( bool is_responder,
       blockchain.erase( pos );
    }
 
-   pos = blockchain.find( '_' );
-   if( pos != string::npos )
-   {
-      blockchain_suffix = blockchain.substr( pos );
-      blockchain.erase( pos );
-   }
-
-   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) && !has_tag( "c" + blockchain ) )
-      throw runtime_error( "no blockchain metadata file tag 'c" + blockchain + "' was found" );
+   if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) != 0 ) )
+      throw runtime_error( "invalid blockchain tag prefix '" + blockchain + "'" );
 
    if( port.empty( ) && blockchain.empty( ) )
       port = get_test_peer_port( );
@@ -3117,6 +2729,8 @@ peer_session::peer_session( bool is_responder,
       p_progress = &progress;
 #endif
 
+   this->ap_socket->set_no_delay( );
+
    // NOTE: A dummy PID is being written/read here so that the standard general
    // purpose client can be used to connect as a peer (for interactive testing).
    string pid( c_dummy_peer_tag );
@@ -3132,7 +2746,6 @@ peer_session::peer_session( bool is_responder,
       if( is_owner && !is_for_support )
          pid += '!';
 
-      this->ap_socket->set_no_delay( );
       this->ap_socket->write_line( pid, c_request_timeout, p_progress );
    }
    else
@@ -3373,7 +2986,7 @@ void peer_session::on_start( )
          {
             if( blockchain.find( c_bc_prefix ) == 0 )
             {
-               string identity( blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix );
+               string identity( blockchain.substr( strlen( c_bc_prefix ) ) );
 
                set_session_variable( identity, c_true_value );
                set_session_variable( get_special_var_name( e_special_var_identity ), identity );
@@ -3475,7 +3088,7 @@ void peer_session::on_start( )
    if( has_terminated && !is_for_support && !blockchain.empty( ) )
    {
       if( blockchain.find( c_bc_prefix ) == 0 )
-         set_system_variable( '~' + blockchain.substr( strlen( c_bc_prefix ) ) + blockchain_suffix, "" );
+         set_system_variable( '~' + blockchain.substr( strlen( c_bc_prefix ) ), "" );
    }
 
    delete this;
@@ -3652,155 +3265,6 @@ void peer_listener::on_start( )
 void list_mutex_lock_ids_for_peer_session( std::ostream& outs )
 {
    outs << "peer_session::g_mutex = " << g_mutex.get_lock_id( ) << '\n';
-}
-
-string use_peer_account( const string& blockchain, const string& password, bool release, bool is_pwd_hash )
-{
-   guard g( get_core_files_trace_mutex( ), "use_peer_account" );
-
-   string retval;
-
-   if( password.empty( ) )
-   {
-      if( g_blockchain_passwords.count( blockchain ) )
-      {
-         set< string >& passwords( g_blockchain_passwords[ blockchain ] );
-
-         if( !release )
-         {
-            set< string > account_ids;
-
-            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-               account_ids.insert( check_account( blockchain, *i ) );
-
-            for( set< string >::iterator i = account_ids.begin( ); i != account_ids.end( ); ++i )
-            {
-               if( !retval.empty( ) )
-                  retval += '\n';
-
-               retval += *i;
-            }
-         }
-         else
-         {
-            for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-               set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, *i ), "" );
-
-            g_blockchain_release.insert( blockchain );
-            g_blockchain_passwords.erase( blockchain );
-         }
-      }
-   }
-   else
-   {
-      if( release )
-      {
-         if( g_blockchain_passwords.count( blockchain ) )
-         {
-            string tmp_password( password );
-
-            if( is_pwd_hash )
-            {
-               set< string >& passwords( g_blockchain_passwords[ blockchain ] );
-
-               for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-               {
-                  if( sha256( *i ).get_digest_as_string( ) == password )
-                  {
-                     tmp_password = *i;
-                     break;
-                  }
-               }
-            }
-
-            set_crypt_key_for_blockchain_account( blockchain, check_account( blockchain, tmp_password ), "" );
-
-            g_blockchain_release.insert( blockchain );
-            g_blockchain_passwords[ blockchain ].erase( tmp_password );
-         }
-      }
-      else
-      {
-         retval = check_account( blockchain, password );
-         g_blockchain_passwords[ blockchain ].insert( password );
-
-         set_crypt_key_for_blockchain_account( blockchain,
-          retval, sha256( password ).get_digest_as_string( ) );
-      }
-   }
-
-   return retval;
-}
-
-string get_account_password( const string& blockchain, const string& account )
-{
-   guard g( get_core_files_trace_mutex( ), "get_account_password" );
-
-   if( !g_blockchain_passwords.count( blockchain ) )
-      throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );
-
-   string password;
-   set< string >& passwords = g_blockchain_passwords[ blockchain ];
-
-   string test_account( account == string( c_admin ) ? blockchain : account );
-
-   for( set< string >::iterator i = passwords.begin( ); i != passwords.end( ); ++i )
-   {
-      if( check_account( blockchain, *i ) == test_account )
-      {
-         password = *i;
-         break;
-      }
-   }
-
-   if( password.empty( ) )
-      throw runtime_error( "invalid or non-minting account " + account + " for blockchain " + blockchain );
-
-   return password;
-}
-
-void lock_blockchain_transaction( auto_ptr< guard >& ap_guard )
-{
-   ap_guard.reset( new guard( get_core_files_trace_mutex( ), "lock_blockchain_transaction" ) );
-}
-
-string create_blockchain_transaction( const string& blockchain,
- const string& application, const string& log_command, const vector< string >* p_file_info )
-{
-   guard g( get_core_files_trace_mutex( ), "create_blockchain_transaction" );
-
-   if( !g_blockchain_passwords.count( blockchain ) )
-      throw runtime_error( "blockchain " + blockchain + " has not been unlocked" );
-
-   string::size_type pos = log_command.find( ' ' );
-   if( pos == string::npos )
-      throw runtime_error( "invalid log command format: " + log_command );
-
-   string cmd( log_command.substr( 0, pos ) );
-   string remaining( log_command.substr( pos + 1 ) );
-
-   pos = remaining.find( ' ' );
-   if( pos == string::npos )
-      throw runtime_error( "invalid log command format: " + log_command );
-
-   string account = remaining.substr( 0, pos );
-   remaining.erase( 0, pos );
-
-   string password( get_account_password( blockchain, account ) );
-
-   string tx_hash;
-
-   string tx_data( construct_new_transaction( blockchain,
-    password, account, application, cmd + remaining, true, &tx_hash, p_file_info ) );
-
-   vector< pair< string, string > > extras;
-
-   verify_core_file( tx_data, true, &extras );
-   create_raw_file_with_extras( "", extras );
-
-   construct_blockchain_info_file( blockchain );
-
-   return tx_hash;
 }
 
 string prefixed_blockchains( const string& blockchains )

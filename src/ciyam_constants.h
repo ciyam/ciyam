@@ -142,17 +142,6 @@ const char* const c_file_type_str_blob_no_compress = "\x81";
 
 const char* const c_file_type_core_data_object = "dat";
 const char* const c_file_type_core_block_object = "blk";
-const char* const c_file_type_core_rewind_object = "rwd";
-const char* const c_file_type_core_account_object = "acc";
-const char* const c_file_type_core_checkpoint_object = "chk";
-const char* const c_file_type_core_transaction_object = "txn";
-const char* const c_file_type_core_blockchain_info_object = "bci";
-const char* const c_file_type_core_blockchain_meta_object = "bcm";
-const char* const c_file_type_core_checkpoint_info_object = "cpi";
-const char* const c_file_type_core_checkpoint_prune_object = "cpr";
-const char* const c_file_type_core_checkpoint_blocks_object = "cbk";
-const char* const c_file_type_core_transactions_info_object = "txi";
-const char* const c_file_type_core_checkpoint_transactions_object = "ctx";
 
 const char* const c_file_type_core_data_header_height_prefix = "h=";
 const char* const c_file_type_core_data_header_identity_prefix = "i=";
@@ -163,65 +152,14 @@ const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
 const char* const c_file_type_core_data_detail_unix_time_stamp_prefix = "u:";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
-const char* const c_file_type_core_block_header_weight_prefix = "w=";
-const char* const c_file_type_core_block_header_account_prefix = "a=";
-const char* const c_file_type_core_block_header_chain_meta_prefix = "cm=";
-const char* const c_file_type_core_block_header_public_key_prefix = "pk=";
-const char* const c_file_type_core_block_header_account_hash_prefix = "ah=";
-const char* const c_file_type_core_block_header_account_lock_prefix = "al=";
-const char* const c_file_type_core_block_header_total_weight_prefix = "tw=";
-const char* const c_file_type_core_block_header_previous_block_prefix = "pb=";
+const char* const c_file_type_core_block_header_identity_prefix = "i=";
 
-const char* const c_file_type_core_block_detail_account_prefix = "a:";
-const char* const c_file_type_core_block_detail_signature_prefix = "s:";
-const char* const c_file_type_core_block_detail_transaction_prefix = "t:";
-const char* const c_file_type_core_block_detail_proof_of_work_prefix = "w:";
-
-const char* const c_file_type_core_block_header_chain_meta_requisite_prefix = "r:";
-
-const char* const c_file_type_core_block_detail_account_exp_prefix = "e=";
-const char* const c_file_type_core_block_detail_account_hash_prefix = "h=";
-const char* const c_file_type_core_block_detail_account_lock_prefix = "l=";
-const char* const c_file_type_core_block_detail_account_msg_key_prefix = "mk=";
-const char* const c_file_type_core_block_detail_account_tx_hash_prefix = "th=";
-const char* const c_file_type_core_block_detail_account_tx_lock_prefix = "tl=";
-
-const char* const c_file_type_core_lamport_header_height_prefix = "h=";
-const char* const c_file_type_core_lamport_header_identity_prefix = "i=";
-
-const char* const c_file_type_core_lamport_detail_last_hash_prefix = "l:";
-const char* const c_file_type_core_lamport_detail_pubkey_hash_prefix = "p:";
-const char* const c_file_type_core_lamport_detail_primary_pubkey_prefix = "p:";
-const char* const c_file_type_core_lamport_detail_secondary_pubkey_prefix = "s:";
-const char* const c_file_type_core_lamport_detail_signature_file_hash_prefix = "s:";
-const char* const c_file_type_core_lamport_detail_unix_block_time_stamp_prefix = "u:";
-
-const char* const c_file_type_core_transaction_header_account_prefix = "a=";
-const char* const c_file_type_core_transaction_header_sequence_prefix = "s=";
-const char* const c_file_type_core_transaction_header_public_key_prefix = "pk=";
-const char* const c_file_type_core_transaction_header_application_prefix = "ap=";
-const char* const c_file_type_core_transaction_header_previous_tchain_prefix = "pt=";
-const char* const c_file_type_core_transaction_header_transaction_hash_prefix = "th=";
-const char* const c_file_type_core_transaction_header_transaction_lock_prefix = "tl=";
-
-const char* const c_file_type_core_transaction_detail_log_prefix = "l:";
-const char* const c_file_type_core_transaction_detail_signature_prefix = "s:";
-
-const char* const c_file_type_core_transaction_special_file_extract_prefix = "fe ";
-const char* const c_file_type_core_transaction_special_file_extract_command = "fe";
-const char* const c_file_type_core_transaction_special_perform_create_command = "pc";
-const char* const c_file_type_core_transaction_special_perform_update_command = "pu";
-const char* const c_file_type_core_transaction_special_perform_destroy_command = "pd";
-const char* const c_file_type_core_transaction_special_perform_execute_command = "pe";
-
-const char* const c_file_type_core_blockchain_info_header_chain_prefix = "c=";
-const char* const c_file_type_core_blockchain_info_header_height_prefix = "h=";
-
-const char* const c_file_type_core_checkpoint_info_header_chain_prefix = "c=";
-const char* const c_file_type_core_checkpoint_info_header_height_prefix = "h=";
-const char* const c_file_type_core_checkpoint_info_header_checkpoint_prefix = "cp=";
-
-const char* const c_file_type_core_transactions_info_header_chain_prefix = "c=";
+const char* const c_file_type_core_block_detail_last_hash_prefix = "l:";
+const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
+const char* const c_file_type_core_block_detail_primary_pubkey_prefix = "p:";
+const char* const c_file_type_core_block_detail_secondary_pubkey_prefix = "s:";
+const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
+const char* const c_file_type_core_block_detail_unix_block_time_stamp_prefix = "u:";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";
@@ -250,4 +188,3 @@ const char* const c_response_error_prefix = "(error)";
 const char* const c_response_message_prefix = "(message)";
 
 #endif
-

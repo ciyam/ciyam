@@ -162,25 +162,6 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
-void set_variable( size_t handle, const string& vname,
- const string& value, auto_ptr< temporary_session_variable >* p_ap_tmp_bh = 0 )
-{
-   if( !storage_blockchain( ).empty( )
-    && vname != get_special_var_name( e_special_var_bh )
-    && get_raw_session_variable( get_special_var_name( e_special_var_storage ) ) != "ciyam" )
-      throw runtime_error( "invalid field '" + vname + "'" );
-
-   // NOTE: The special variable used for block height is set as a session variable as it
-   // needs to apply to any other records created or updated in the same operation scope.
-   if( vname == get_special_var_name( e_special_var_bh ) )
-   {
-      if( p_ap_tmp_bh && !p_ap_tmp_bh->get( ) )
-         p_ap_tmp_bh->reset( new temporary_session_variable( vname, value ) );
-   }
-   else
-      instance_set_variable( handle, "", vname, value );
-}
-
 void check_not_possible_protocol_response( const string& value )
 {
    string response( c_response_okay );
@@ -413,7 +394,7 @@ void replace_method_with_shortened_id( string& next_command, const string& metho
    next_command.insert( pos, shortened_method_id );
 }
 
-string& remove_uid_extra_from_log_command( string& log_command, bool is_traditional_app )
+string& remove_uid_extra_from_log_command( string& log_command )
 {
    string::size_type pos = log_command.find( ' ' );
    if( pos != string::npos )
@@ -441,32 +422,6 @@ string& remove_uid_extra_from_log_command( string& log_command, bool is_traditio
 
             log_command = prefix + uid_info.substr( 0, xpos ) + log_command.substr( npos );
          }
-      }
-   }
-
-   if( !is_traditional_app )
-   {
-      pos = log_command.find( '"' );
-
-      // NOTE: Remove group and timezone name args for logging if is a blockchain app.
-      string::size_type gpos = log_command.find( " -g=" );
-      if( gpos != string::npos && ( pos == string::npos || gpos < pos ) )
-      {
-         string::size_type spos = log_command.find( ' ', gpos + 1 );
-         if( spos == string::npos )
-            throw runtime_error( "unexpected group info in: " + log_command );
-         else
-            log_command.erase( gpos, spos - gpos );
-      }
-
-      string::size_type tpos = log_command.find( " -tz=" );
-      if( tpos != string::npos && ( pos == string::npos || tpos < pos ) )
-      {
-         string::size_type spos = log_command.find( ' ', tpos + 1 );
-         if( spos == string::npos )
-            throw runtime_error( "unexpected tz info in: " + log_command );
-         else
-            log_command.erase( tpos, spos - tpos );
       }
    }
 
@@ -590,65 +545,6 @@ string resolve_method_name( const string& module, const string& mclass,
    return method_name;
 }
 
-struct blockchain_transaction_commit_helper : public transaction_commit_helper
-{
-   blockchain_transaction_commit_helper(
-    const string& blockchain, const string& storage_name,
-    const string& transaction_cmd, const vector< string >* p_file_info = 0 )
-    :
-    blockchain( blockchain ),
-    storage_name( storage_name ),
-    transaction_cmd( transaction_cmd ),
-    p_file_info( p_file_info )
-   {
-      lock_blockchain_transaction( ap_guard );
-   }
-
-   void at_commit( )
-   {
-      tx_hash = get_raw_session_variable( get_special_var_name( e_special_var_transaction ) );
-
-      if( tx_hash.empty( ) )
-         tx_hash = create_blockchain_transaction( blockchain, storage_name, transaction_cmd, p_file_info );
-   }
-
-   void after_commit( )
-   {
-      append_transaction_for_blockchain_application( storage_name, tx_hash );
-      ap_guard.reset( );
-   }
-
-   void after_rollback( )
-   {
-      if( p_file_info )
-      {
-         // NOTE: Remove any files that had been imported into the files area.
-         for( size_t i = 0; i < p_file_info->size( ); i++ )
-         {
-            string next( ( *p_file_info )[ i ] );
-
-            vector< string > parts;
-            split( next, parts, ' ' );
-
-            if( parts.size( ) > 1 )
-            {
-               if( has_file( parts[ 1 ] ) )
-                  delete_file( parts[ 1 ] );
-            }
-         }
-      }
-   }
-
-   auto_ptr< guard > ap_guard;
-
-   string tx_hash;
-   string blockchain;
-   string storage_name;
-   string transaction_cmd;
-
-   const vector< string >* p_file_info;
-};
-
 struct summary_info
 {
    int idx;
@@ -736,16 +632,13 @@ void add_pdf_variables( size_t handle,
       {
          string value = execute_object_command( handle, context, "get " + field );
 
+         bool is_encrypted = false;
+         bool is_transient = false;
+
+         string type_name( get_field_type_name( handle, "", field, &is_encrypted, &is_transient ) );
+
          if( !value.empty( ) && !tz_name.empty( ) )
          {
-            bool is_encrypted = false;
-            string type_name = get_field_type_name( handle, context, field, &is_encrypted );
-
-            if( is_encrypted
-             && uid_matches_session_mint_account( )
-             && !get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
-               value = decrypt( value );
-
             if( type_name == "date_time" || type_name == "tdatetime" )
                value = utc_to_local( date_time( value ), tz_name ).as_string( );
          }
@@ -2139,45 +2032,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          create_peer_initiator( prefixed_blockchains( blockchain ), host_and_or_port, force, num_supporters );
       }
-      else if( command == c_cmd_ciyam_session_peer_block_info )
-      {
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_block_info_blockchain ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_block_info_password ) );
-         string account( get_parm_val( parameters, c_cmd_ciyam_session_peer_block_info_account ) );
-
-         // NOTE: To make sure the console client doesn't time out issue a progress message.
-         handler.output_progress( "(creating a new block)" );
-
-         response = construct_new_block( blockchain, password, account, false, 0, true );
-      }
-      else if( command == c_cmd_ciyam_session_peer_account_info )
-      {
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_info_blockchain ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_info_password ) );
-         unsigned int exponent( atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_info_exponent ).c_str( ) ) );
-
-         response = construct_account_info( blockchain, password, exponent );
-      }
-      else if( command == c_cmd_ciyam_session_peer_account_mint )
-      {
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_mint_blockchain ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_mint_pubkey ) );
-         bool stop( has_parm_val( parameters, c_cmd_ciyam_session_peer_account_mint_stop ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_account_mint_password ) );
-
-         if( !pubkey.empty( ) )
-         {
-            password.reserve( c_secret_reserve_size );
-            session_shared_decrypt( password, pubkey, password );
-         }
-
-         response = use_peer_account( blockchain, password, stop );
-
-         if( !password.empty( ) )
-            set_session_mint_account( stop ? string( ) : response );
-
-         clear_key( password );
-      }
       else if( command == c_cmd_ciyam_session_peer_persist_file )
       {
          string dest_hash( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_dest_hash ) );
@@ -2207,41 +2061,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = create_peer_repository_entry_push_info( src_hash, password, 0, true, is_dummy_for_testing );
 
          clear_key( password );
-      }
-      else if( command == c_cmd_ciyam_session_peer_transactions )
-      {
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_transactions_blockchain ) );
-
-         if( !exists_file( blockchain + c_txs_file_ext ) )
-            throw runtime_error( "no unprocessed txs found for blockchain: " + blockchain );
-
-         vector< string > applications;
-         uint64_t block_height = construct_transaction_scripts_for_blockchain( blockchain, "", applications );
-
-         set_session_variable( get_special_var_name( e_special_var_block_height ), to_string( block_height ) );
-
-         for( size_t i = 0; i < applications.size( ); i++ )
-         {
-            string application( applications[ i ] );
-
-            if( exists_file( application + c_log_file_ext ) )
-            {
-               set_session_variable( get_special_var_name( e_special_var_application ), application );
-               run_script( "app_blk_txs", false );
-            }
-
-            file_remove( applications[ i ] + ".txs.cin" );
-         }
-      }
-      else if( command == c_cmd_ciyam_session_peer_transaction_info )
-      {
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_transaction_info_blockchain ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_transaction_info_password ) );
-         string account( get_parm_val( parameters, c_cmd_ciyam_session_peer_transaction_info_account ) );
-         string application( get_parm_val( parameters, c_cmd_ciyam_session_peer_transaction_info_application ) );
-         string tx_data( get_parm_val( parameters, c_cmd_ciyam_session_peer_transaction_info_tx_data ) );
-
-         response = construct_new_transaction( blockchain, password, account, application, tx_data, false );
       }
       else if( command == c_cmd_ciyam_session_crypto_addr )
       {
@@ -2706,8 +2525,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string output_file( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_ciyam_session_perform_fetch_title_name ) );
 
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
 #ifndef HPDF_SUPPORT
          if( create_pdf )
             throw runtime_error( "pdf generation has not been compiled into this server" );
@@ -2903,19 +2720,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !perms.empty( ) )
                split( perms, perm_set );
             set_perms( perm_set );
-
-            auto_ptr< system_variable_lock > ap_blockchain_lock;
-
-            if( !is_anon_uid( ) && !blockchain.empty( )
-             && !storage_locked_for_admin( ) && uid_matches_session_mint_account( ) )
-            {
-               string account( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-               set_session_secret(
-                get_account_msg_secret( blockchain, get_account_password( blockchain, account ), account ) );
-
-               ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
-            }
 
             // NOTE: If a space is provided as the key then fetch the default record values or if the
             // first character of the key is a space then clone a default record from another.
@@ -3143,10 +2947,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string field_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_field_values ) );
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_create_method ) );
 
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-         bool is_blockchain_app = get_session_is_using_blockchain( );
-
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
 
@@ -3158,13 +2958,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // NOTE: If no key was provided then automatically generate a key.
          if( key.empty( ) || key[ 0 ] == ' ' )
          {
-            string new_key( gen_key( 0, blockchain.empty( ) ) );
-
-            if( !blockchain.empty( ) )
-            {
-               string append( uid.substr( 0, uid.find_first_of( ":!" ) ) );
-               new_key += append.substr( 0, min( append.length( ), c_max_key_append_chars ) );
-            }
+            string new_key( gen_key( 0, true ) );
 
             size_t remove_length = 2; // i.e. To remove "" if that is how the key was provided.
             string::size_type spos = next_command.find( uid ) + uid.length( ) + 1;
@@ -3279,32 +3073,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
-               auto_ptr< temporary_session_variable > ap_tmp_bh;
-               auto_ptr< system_variable_lock > ap_blockchain_lock;
-               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
-
-               bool has_transaction_hash =
-                !get_raw_session_variable( get_special_var_name( e_special_var_transaction ) ).empty( );
-
-               bool skip_blockchain_lock =
-                !get_raw_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
-
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-               {
-                  if( !has_transaction_hash )
-                  {
-                     string account( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-                     set_session_secret( get_account_msg_secret(
-                      blockchain, get_account_password( blockchain, account ), account ) );
-                  }
-
-                  if( !skip_blockchain_lock )
-                     ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
-               }
-
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
+
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
@@ -3312,12 +3083,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                  {
-                     if( !blockchain.empty( ) )
-                        set_variable( handle, i->first, i->second );
-                     else
-                        set_variable( handle, i->first, i->second, &ap_tmp_bh );
-                  }
+                     instance_set_variable( handle, "", i->first, i->second );
                }
 
                op_instance_create( handle, "", key, false );
@@ -3330,21 +3096,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   {
                      bool is_encrypted = false;
                      bool is_transient = false;
-                     bool was_date_time = false;
 
                      string type_name( get_field_type_name( handle, "", i->first, &is_encrypted, &is_transient ) );
 
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                        {
-                           was_date_time = true;
                            i->second = convert_local_to_utc( i->second, tz_name );
-                        }
                      }
 
-                     if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                      || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+                     if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                      {
                         string scope_and_perm_info;
 
@@ -3356,22 +3117,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, true, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args;
-
-                     if( !blockchain.empty( ) )
-                     {
-                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
-                        method_name_and_args += i->first;
-
-                        if( was_date_time )
-                           method_name_and_args += " raw";
-
-                        value = execute_object_command( handle, "", method_name_and_args );
-
-                        method_name_and_args = "set ";
-                     }
-                     else
-                        method_name_and_args = string( "set " );
+                     string value, method_name_and_args( "set " );
 
                      method_name_and_args += i->first + " ";
                      method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
@@ -3379,46 +3125,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      execute_object_command( handle, "", method_name_and_args );
 
                      fields_set.insert( i->first );
-
-                     if( is_transient && is_blockchain_app && blockchain.empty( ) )
-                        throw runtime_error( "invalid attempt to set transient field: " + i->first );
-
-                     if( !blockchain.empty( ) )
-                     {
-                        // NOTE: Field values that are the same as the default ones are omitted from the log
-                        // as are values for all transient fields (unless used with initial data).
-                        if( ( !is_transient || is_init_uid( ) ) && value != i->second )
-                        {
-                           if( !field_values_to_log.empty( ) )
-                              field_values_to_log += ",";
-
-                           string field_id( get_shortened_field_id( module, mclass, i->first ) );
-
-                           field_values_to_log += field_id + '=';
-                           field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
-                        }
-                     }
                   }
                }
 
-               if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
-               remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
-
-               if( !blockchain.empty( ) )
-               {
-                  replace_field_values_to_log( next_command, field_values_to_log );
-                  replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-
-                  if( !storage_locked_for_admin( ) )
-                     ap_commit_helper.reset(
-                      new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
-               }
+               remove_uid_extra_from_log_command( next_command );
 
                if( instance_persistence_type_is_sql( handle ) )
-                  transaction_log_command( next_command, ap_commit_helper.get( ) );
+                  transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -3471,18 +3187,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_method ) );
          string check_values( get_parm_val( parameters, c_cmd_ciyam_session_perform_update_check_values ) );
 
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-         bool is_blockchain_app = get_session_is_using_blockchain( );
-
          string field_values_to_log;
          string module_and_class( module + ' ' + mclass );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
-
-         if( !ver_info.empty( ) && is_blockchain_app )
-            throw runtime_error( "version info is not permitted for blockchain applications" );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -3587,32 +3296,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                vector< string > file_hashes;
                vector< string > files_to_remove;
 
-               auto_ptr< temporary_session_variable > ap_tmp_bh;
-               auto_ptr< system_variable_lock > ap_blockchain_lock;
-               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
-
-               bool has_transaction_hash =
-                !get_raw_session_variable( get_special_var_name( e_special_var_transaction ) ).empty( );
-
-               bool skip_blockchain_lock =
-                !get_raw_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
-
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-               {
-                  if( !has_transaction_hash )
-                  {
-                     string account( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-                     set_session_secret( get_account_msg_secret(
-                      blockchain, get_account_password( blockchain, account ), account ) );
-                  }
-
-                  if( !skip_blockchain_lock )
-                     ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
-               }
-
                map< string, string > field_scope_and_perm_info_by_id;
                map< string, string > field_scope_and_perm_info_by_name;
+
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
@@ -3621,12 +3307,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                  {
-                     if( !blockchain.empty( ) )
-                        set_variable( handle, i->first, i->second );
-                     else
-                        set_variable( handle, i->first, i->second, &ap_tmp_bh );
-                  }
+                     instance_set_variable( handle, "", i->first, i->second );
                   else
                   {
                      if( !update_fields.empty( ) )
@@ -3640,8 +3321,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_instance_update( handle, "", key, ver_info, false );
 
-               if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
 
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
@@ -3664,7 +3344,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      bool is_encrypted = false;
                      bool is_transient = false;
                      bool is_file_field = false;
-                     bool was_date_time = false;
 
                      string type_name( get_field_type_name(
                       handle, "", i->first, &is_encrypted, &is_transient, &is_file_field ) );
@@ -3672,14 +3351,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                        {
-                           was_date_time = true;
                            i->second = convert_local_to_utc( i->second, tz_name );
-                        }
                      }
 
-                     if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                      || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+                     if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                      {
                         string scope_and_perm_info;
 
@@ -3691,25 +3366,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         check_instance_field_permission( module, handle, false, scope_and_perm_info );
                      }
 
-                     string value, method_name_and_args;
+                     string value, method_name_and_args( "set " );
 
-                     if( is_blockchain_app )
-                     {
-                        method_name_and_args = string( was_date_time ? "cmd " : "get " );
-                        method_name_and_args += i->first;
-
-                        if( was_date_time )
-                           method_name_and_args += " raw";
-
-                        value = execute_object_command( handle, "", method_name_and_args );
-
-                        method_name_and_args = "set ";
-                     }
-                     else
-                        method_name_and_args = string( "set " );
-
-                     if( blockchain.empty( ) || !is_encrypted
-                      || value.empty( ) != i->second.empty( ) || decrypt( value ) != decrypt( i->second ) )
+                     if( !is_encrypted || value.empty( ) != i->second.empty( ) || decrypt( value ) != decrypt( i->second ) )
                      {
                         method_name_and_args += i->first + " ";
                         method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
@@ -3718,103 +3377,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
 
                      fields_set.insert( i->first );
-
-                     if( is_transient && is_blockchain_app && blockchain.empty( ) )
-                        throw runtime_error( "invalid attempt to set transient field: " + i->first );
-
-                     if( is_blockchain_app && blockchain.empty( ) && !storage_locked_for_admin( ) )
-                     {
-                        if( is_file_field && value != i->second )
-                        {
-                           if( !i->second.empty( ) )
-                           {
-                              string tag( "c" + storage_blockchain( ) + ".f"
-                               + storage_name( ) + "." + module + "." + mclass + "." + i->second );
-
-                              if( has_tag( tag ) )
-                              {
-                                 file_names.push_back( i->second );
-                                 file_hashes.push_back( tag_file_hash( tag ) );
-                              }
-                           }
-                           else
-                           {
-                              string tag( "c" + storage_blockchain( ) + ".f"
-                               + storage_name( ) + "." + module + "." + mclass + "." + value );
-
-                              file_names.push_back( value );
-                              file_hashes.push_back( "~" + tag_file_hash( tag ) );
-
-                              if( has_tag( tag ) )
-                                 tag_del( tag );
-
-                              files_to_remove.push_back( get_attached_file_path( module, mclass, value ) );
-                           }
-                        }
-                     }
-
-                     if( !blockchain.empty( ) )
-                     {
-                        // NOTE: Field values that are the same as the record's current ones are omitted from
-                        // the log as are values for all transient fields.
-                        if( ( !is_transient || is_init_uid( ) )
-                         && ( ( value.empty( ) != i->second.empty( ) )
-                         || ( !is_encrypted && value != i->second )
-                         || ( is_encrypted && decrypt( value ) != decrypt( i->second ) ) ) )
-                        {
-                           if( !field_values_to_log.empty( ) )
-                              field_values_to_log += ",";
-
-                           if( is_file_field && !i->second.empty( ) )
-                           {
-                              string tag( "c" + blockchain + ".f"
-                               + storage_name( ) + "." + module + "." + mclass + "." + i->second );
-
-                              string hash;
-                              if( has_transaction_hash && has_tag( tag ) )
-                                 hash = tag_file_hash( tag );
-                              else if( !has_transaction_hash )
-                              {
-                                 string filepath( get_attached_file_path( module, mclass, i->second ) );
-
-                                 string data( c_file_type_str_blob );
-                                 data += buffer_file( filepath );
-
-                                 hash = create_raw_file( data, true, tag.c_str( ) );
-                              }
-
-                              if( !hash.empty( ) )
-                              {
-                                 file_names.push_back( i->second );
-                                 file_hashes.push_back( hash );
-
-                                 file_info.push_back( "fe " + hash + " " + i->second );
-                              }
-                           }
-                           else if( is_file_field )
-                           {
-                              string tag( "c" + blockchain + ".f"
-                               + storage_name( ) + "." + module + "." + mclass + "." + value );
-
-                              file_names.push_back( value );
-                              file_hashes.push_back( "~" + tag_file_hash( tag ) );
-
-                              if( has_tag( tag ) )
-                                 tag_del( tag );
-
-                              files_to_remove.push_back( get_attached_file_path( module, mclass, value ) );
-                           }
-
-                           string field_id( get_shortened_field_id( module, mclass, i->first ) );
-
-                           field_values_to_log += field_id + '=';
-                           field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
-                        }
-                     }
                   }
                }
 
-               remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+               remove_uid_extra_from_log_command( next_command );
 
                if( !file_names.empty( ) )
                {
@@ -3844,22 +3410,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   set_session_variable( get_special_var_name( e_special_var_file_hashes ), all_file_hashes );
                }
 
-               if( !blockchain.empty( ) )
-               {
-                  if( !field_values_to_log.empty( ) )
-                  {
-                     replace_field_values_to_log( next_command, field_values_to_log );
-                     replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-
-                     if( !storage_locked_for_admin( ) )
-                        ap_commit_helper.reset(
-                         new blockchain_transaction_commit_helper(
-                         blockchain, storage_name( ), next_command, &file_info ) );
-
-                     transaction_log_command( next_command, ap_commit_helper.get( ) );
-                  }
-               }
-               else if( instance_persistence_type_is_sql( handle ) )
+               if( instance_persistence_type_is_sql( handle ) )
                   transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -3914,19 +3465,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string key( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_ciyam_session_perform_destroy_ver_info ) );
 
-         auto_ptr< temporary_session_variable > ap_tmp_bh;
-
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-         bool is_blockchain_app = get_session_is_using_blockchain( );
-
          string module_and_class( module + ' ' + mclass );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
-
-         if( !ver_info.empty( ) && is_blockchain_app )
-            throw runtime_error( "version info is not permitted for blockchain applications" );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -3973,32 +3515,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_grp( grp );
                set_uid( uid );
+
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
-
-               auto_ptr< system_variable_lock > ap_blockchain_lock;
-               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
-
-               bool has_transaction_hash =
-                !get_raw_session_variable( get_special_var_name( e_special_var_transaction ) ).empty( );
-
-               bool skip_blockchain_lock =
-                !get_raw_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
-
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-               {
-                  if( !has_transaction_hash )
-                  {
-                     string account( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-                     set_session_secret( get_account_msg_secret(
-                      blockchain, get_account_password( blockchain, account ), account ) );
-                  }
-
-                  if( !skip_blockchain_lock )
-                     ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
-               }
 
                if( progress )
                   instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
@@ -4007,22 +3527,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-                  {
-                     if( !blockchain.empty( ) )
-                        set_variable( handle, i->first, i->second );
-                     else
-                        set_variable( handle, i->first, i->second, &ap_tmp_bh );
-                  }
+                     instance_set_variable( handle, "", i->first, i->second );
                }
 
                op_destroy_rc rc;
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
 
-               if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
 
-               remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+               remove_uid_extra_from_log_command( next_command );
 
                // NOTE: If the "quiet" option is used then will quietly ignore records that are
                // not found. But otherwise if not okay then call without the return code so the
@@ -4045,21 +3559,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      }
                   }
 
-                  if( blockchain.empty( ) )
-                  {
-                     if( instance_persistence_type_is_sql( handle ) )
-                        transaction_log_command( next_command );
-                  }
-                  else
-                  {
-                     replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-
-                     if( !storage_locked_for_admin( ) )
-                        ap_commit_helper.reset(
-                         new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
-
-                     transaction_log_command( next_command, ap_commit_helper.get( ) );
-                  }
+                  if( instance_persistence_type_is_sql( handle ) )
+                     transaction_log_command( next_command );
 
                   op_instance_apply( handle, "", false );
                }
@@ -4100,15 +3601,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
-
-         auto_ptr< temporary_session_variable > ap_tmp_bh;
-
-         string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-         bool is_blockchain_app = get_session_is_using_blockchain( );
-
-         if( !vers.empty( ) && is_blockchain_app )
-            throw runtime_error( "version info is not permitted for blockchain applications" );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -4242,12 +3734,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
-               {
-                  if( !blockchain.empty( ) )
-                     set_variable( handle, i->first, i->second );
-                  else
-                     set_variable( handle, i->first, i->second, &ap_tmp_bh );
-               }
+                  instance_set_variable( handle, "", i->first, i->second );
                else
                   has_any_set_flds = true;
             }
@@ -4283,34 +3770,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_grp( grp );
                set_uid( uid );
+
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
-
-               auto_ptr< system_variable_lock > ap_blockchain_lock;
-               auto_ptr< blockchain_transaction_commit_helper > ap_commit_helper;
-
-               string blockchain( get_raw_session_variable( get_special_var_name( e_special_var_blockchain ) ) );
-
-               bool has_transaction_hash =
-                !get_raw_session_variable( get_special_var_name( e_special_var_transaction ) ).empty( );
-
-               bool skip_blockchain_lock =
-                !get_raw_session_variable( get_special_var_name( e_special_var_skip_blockchain_lock ) ).empty( );
-
-               if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-               {
-                  if( !has_transaction_hash )
-                  {
-                     string account( get_raw_session_variable( get_special_var_name( e_special_var_uid ) ) );
-
-                     set_session_secret( get_account_msg_secret(
-                      blockchain, get_account_password( blockchain, account ), account ) );
-                  }
-
-                  if( !skip_blockchain_lock )
-                     ap_blockchain_lock.reset( new system_variable_lock( blockchain ) );
-               }
 
                if( log_as_update && all_keys.size( ) != 1 )
                   throw runtime_error( "perform_execute cannot log_as_update with multiple keys" );
@@ -4348,8 +3811,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   instance_prepare_execute( handle, "", next_key, next_ver, has_any_set_flds );
 
-                  if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                   || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+                  if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                      check_instance_op_permission( module, handle, get_execute_procedure_info( handle, "", method_id ) );
 
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
@@ -4368,8 +3830,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                               j->second = convert_local_to_utc( j->second, tz_name );
                         }
 
-                        if( ( is_blockchain_app && !is_init_uid( ) && !storage_locked_for_admin( ) )
-                         || ( !is_blockchain_app && !is_system_uid( ) && !storage_locked_for_admin( ) ) )
+                        if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                         {
                            string scope_and_perm_info;
 
@@ -4386,41 +3847,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         method_name_and_args += "\"" + escaped( j->second, "\"", c_nul ) + "\"";
 
                         execute_object_command( handle, "", method_name_and_args );
-
-                        if( i == 0 && !blockchain.empty( ) && log_transaction )
-                        {
-                           if( !field_values_to_log.empty( ) )
-                              field_values_to_log += ",";
-
-                           string field_id( get_shortened_field_id( module, mclass, j->first ) );
-
-                           field_values_to_log += field_id + '=';
-                           field_values_to_log += escaped( escaped( j->second, "," ), ",\"", c_nul, "rn\r\n" );
-                        }
                      }
                   }
 
                   if( i == 0 && log_transaction && !log_as_update )
                   {
-                     remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+                     remove_uid_extra_from_log_command( next_command );
 
-                     if( !blockchain.empty( ) )
-                     {
-                        string::size_type rpos = 0;
-
-                        if( !field_values_to_log.empty( ) )
-                           replace_field_values_to_log( next_command, field_values_to_log, "-v=", &rpos );
-
-                        replace_method_with_shortened_id( next_command, method, rpos, module, mclass, method_id );
-
-                        replace_module_and_class_to_log( next_command, module_and_class, module, mclass );
-
-                        if( !storage_locked_for_admin( ) )
-                           ap_commit_helper.reset(
-                            new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
-                     }
-
-                     transaction_log_command( next_command, ap_commit_helper.get( ) );
+                     transaction_log_command( next_command );
                   }
 
                   if( has_any_set_flds )
@@ -4437,13 +3871,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         next_command = "pu " + uid + " " + dtm + " "
                          + module + " " + mclass + " " + next_key + " =" + next_ver + " \"" + fields_and_values + "\"";
 
-                        remove_uid_extra_from_log_command( next_command, !is_blockchain_app );
+                        remove_uid_extra_from_log_command( next_command );
 
-                        if( !blockchain.empty( ) && !storage_locked_for_admin( ) )
-                           ap_commit_helper.reset(
-                            new blockchain_transaction_commit_helper( blockchain, storage_name( ), next_command ) );
-
-                        transaction_log_command( next_command, ap_commit_helper.get( ) );
+                        transaction_log_command( next_command );
                      }
                   }
 
@@ -5039,20 +4469,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file( name + ".tlg." + osstr.str( ) );
          }
       }
-      else if( command == c_cmd_ciyam_session_storage_rewind )
-      {
-         uint64_t block_height( from_string< uint64_t >(
-          get_parm_val( parameters, c_cmd_ciyam_session_storage_rewind_block_height ) ) );
-
-         string blockchain( storage_identity( ) );
-         string::size_type pos = blockchain.find( ':' );
-         if( pos == string::npos )
-            throw runtime_error( "current storage does not have a blockchain" );
-
-         blockchain.erase( 0, pos + 1 );
-
-         perform_storage_rewind( blockchain, block_height );
-      }
       else if( command == c_cmd_ciyam_session_storage_comment )
       {
          string text( get_parm_val( parameters, c_cmd_ciyam_session_storage_comment_text ) );
@@ -5089,9 +4505,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          string backup_sql_name( name + ".backup.sql" );
 
-         bool is_blockchain_app = false;
-         auto_ptr< temporary_session_variable > ap_blockchain;
-
          vector< string > module_list;
          string module_list_name( name + ".modules.lst" );
 
@@ -5101,17 +4514,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "need '" + module_list_name + "' to perform a rebuild" );
 
             buffer_file_lines( module_list_name, module_list );
-
-            if( !module_list.empty( ) && !module_list[ 0 ].empty( )
-             && module_list[ 0 ][ 0 ] >= '0' && module_list[ 0 ][ 0 ] <= '9' )
-            {
-               is_blockchain_app = true;
-
-               ap_blockchain.reset( new temporary_session_variable(
-                get_special_var_name( e_special_var_blockchain ), module_list[ 0 ] ) );
-
-               module_list.erase( module_list.begin( ) );
-            }
          }
 
          if( !rebuild && !partial && !exists_file( name + ".backup.bun.gz" ) )
@@ -5189,9 +4591,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_files( db_file_names, ' ' );
 
             remove_file( sql_name );
-
-            if( is_blockchain_app )
-               remove_file( undo_name );
          }
          else if( !partial )
          {
@@ -5233,8 +4632,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          try
          {
-            ap_blockchain.reset( );
-
             if( !rebuild && !partial )
                restore_storage( handler );
 
@@ -5485,9 +4882,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
                      }
                   }
-
-                  if( is_blockchain_app )
-                     storage_comment( "block 0" );
 
                   session_skip_fk_fetches( old_skip_fetches );
                }
