@@ -352,4 +352,3 @@ inline bool check_equal( const Meta_Type& c, const char* p ) { return c.get_key(
 inline bool check_not_equal( const Meta_Type& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

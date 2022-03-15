@@ -316,4 +316,3 @@ inline bool check_equal( const Meta_Procedure_Arg& c, const char* p ) { return c
 inline bool check_not_equal( const Meta_Procedure_Arg& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

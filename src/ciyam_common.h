@@ -161,11 +161,7 @@ enum special_var
    e_special_var_extra_field_values,
    e_special_var_file_info_buffered,
    e_special_var_blockchain_is_owner,
-   e_special_var_blockchain_head_hash,
-   e_special_var_blockchain_info_hash,
-   e_special_var_locally_minted_block,
    e_special_var_secondary_validation,
-   e_special_var_skip_blockchain_lock,
    e_special_var_package_install_extra,
    e_special_var_peer_is_synchronising,
    e_special_var_blockchain_is_fetching,
@@ -239,4 +235,3 @@ enum sql_optimisation
 };
 
 #endif
-

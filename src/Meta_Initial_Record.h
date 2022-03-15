@@ -288,4 +288,3 @@ inline bool check_equal( const Meta_Initial_Record& c, const char* p ) { return 
 inline bool check_not_equal( const Meta_Initial_Record& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

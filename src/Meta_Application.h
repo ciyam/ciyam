@@ -443,4 +443,3 @@ inline bool check_equal( const Meta_Application& c, const char* p ) { return c.g
 inline bool check_not_equal( const Meta_Application& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

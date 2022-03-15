@@ -303,4 +303,3 @@ inline bool check_equal( const Meta_Global_Peerchain_Entry& c, const char* p ) {
 inline bool check_not_equal( const Meta_Global_Peerchain_Entry& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

@@ -50,7 +50,7 @@ namespace
 
 #include "ciyam_constants.h"
 
-const unsigned int c_max_core_line_size = 200000;
+const unsigned int c_max_core_line_size = 1000;
 
 struct data_info
 {

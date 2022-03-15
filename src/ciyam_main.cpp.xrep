@@ -185,4 +185,3 @@ void obtain_module_commands(
    p_definitions = `{`$model_name`}_command_definitions;
    *p_num_commands = ARRAY_SIZE( `{`$model_name`}_command_definitions );
 }
-

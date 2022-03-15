@@ -191,17 +191,9 @@ void process_core_file( const string& hash, const string& blockchain )
    vector< string > info_parts;
    split( file_info, info_parts, ' ' );
 
-   string last_blockchain_info(
-    get_raw_session_variable( get_special_var_name( e_special_var_blockchain_info_hash ) ) );
-
    // NOTE: A core file will return three parts in the form of: <type> <hash> <core_type>
    // (as non-core files don't have a "core type" only two parts will be found for them).
-   // If the hash is the same as the "blockchain info" file that was previously processed
-   // then just delete the file and if the file has any tags then it is assumed that this
-   // file was already processed by another peer session.
-   if( hash.substr( 0, pos ) == last_blockchain_info )
-      delete_file( hash.substr( 0, pos ), false );
-   else if( info_parts.size( ) == 3 && get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
+   if( info_parts.size( ) == 3 && get_hash_tags( hash.substr( 0, pos ) ).empty( ) )
    {
       string core_type( info_parts[ 2 ] );
 
@@ -1165,8 +1157,6 @@ class socket_command_handler : public command_handler
 
    bool get_is_test_session( ) const { return is_local && is_responder && blockchain.empty( ); }
 
-   pair< string, string >& get_blockchain_info( ) { return blockchain_info; }
-
    string& prior_put( ) { return prior_put_hash; }
 
    void get_hello( );
@@ -1575,7 +1565,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       bool has_issued_chk = false;
 
-      if( !is_for_support && blockchain.find( c_bc_prefix ) == 0 )
+      if( !is_for_support && !blockchain.empty( ) )
       {
          string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
@@ -2026,7 +2016,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          // that are not intended for their discovery).
          if( !blockchain.empty( )
           && ( tag_or_hash.find( blockchain ) != 0 )
-          && ( tag_or_hash.find( "c" + blockchain ) != 0 )
           && ( tag_or_hash.length( ) != ( c_sha256_digest_size * 2 ) ) )
             throw runtime_error( "invalid non-blockchain prefixed tag" );
 
@@ -2130,27 +2119,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                {
                   socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
-                  if( tag_or_hash.find( c_bc_prefix ) == 0 )
-                  {
-                     string zenith_height( get_session_variable(
-                      get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
+                  string zenith_height( get_session_variable(
+                   get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
 
-                     if( zenith_height.empty( )
-                      && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
-                        process_block_for_height( blockchain, hash, blockchain_height );
-                  }
-                  else if( !socket_handler.get_is_for_support( ) )
-                  {
-                     string all_tags( get_hash_tags( hash ) );
-
-                     set< string > tags;
-                     split( all_tags, tags, '\n' );
-
-                     string tag( "c" + blockchain + ".head" );
-
-                     if( !tags.count( tag ) )
-                        throw runtime_error( "blockchain " + blockchain + " was not found" );
-                  }
+                  if( zenith_height.empty( )
+                   && get_block_height_from_tags( blockchain, hash, blockchain_height ) )
+                     process_block_for_height( blockchain, hash, blockchain_height );
                }
             }
             else if( !socket_handler.get_is_for_support( ) && ( tag_or_hash.find( c_bc_prefix ) == 0 ) )
@@ -2185,17 +2159,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
          }
 
-         if( has && !blockchain.empty( ) && ( tag_or_hash == "c" + blockchain + ".info" ) )
-         {
-            if( !socket_handler.get_blockchain_info( ).second.empty( ) )
-               file_remove( socket_handler.get_blockchain_info( ).second );
-
-            socket_handler.get_blockchain_info( ).first = hash;
-            socket_handler.get_blockchain_info( ).second = "~" + uuid( ).as_string( );
-
-            copy_raw_file( hash, socket_handler.get_blockchain_info( ).second );
-         }
-
          if( !was_initial_state && socket_handler.get_is_responder( ) )
          {
             handler.issue_command_response( response, true );
@@ -2224,22 +2187,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
-         if( hash != socket_handler.get_blockchain_info( ).first )
-         {
-            fetch_file( hash, socket, p_progress );
-            increment_peer_files_uploaded( file_bytes( hash ) );
-         }
-         else
-         {
-            socket_handler.get_blockchain_info( ).first.erase( );
-
-            fetch_temp_file( socket_handler.get_blockchain_info( ).second, socket, p_progress );
-            increment_peer_files_uploaded( file_size( socket_handler.get_blockchain_info( ).second ) );
-
-            file_remove( socket_handler.get_blockchain_info( ).second );
-
-            socket_handler.get_blockchain_info( ).second.erase( );
-         }
+         fetch_file( hash, socket, p_progress );
+         increment_peer_files_uploaded( file_bytes( hash ) );
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_put;
 
@@ -2716,8 +2665,7 @@ peer_session::peer_session( bool is_responder,
    if( ip_addr == c_local_ip_addr || ip_addr == c_local_ip_addr_for_ipv6 )
       is_local = true;
 
-   if( !is_responder
-    && !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
+   if( !is_responder && !blockchain.empty( )
     && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
       is_owner = true;
 
@@ -2777,7 +2725,7 @@ peer_session::peer_session( bool is_responder,
          pid.erase( pos );
       }
 
-      if( !blockchain.empty( ) && ( blockchain.find( c_bc_prefix ) == 0 )
+      if( !blockchain.empty( )
        && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
          is_owner = true;
 
@@ -2961,7 +2909,7 @@ void peer_session::on_start( )
 
       cmd_handler.prior_put( ) = hello_hash;
 
-      if( blockchain.find( c_bc_prefix ) == 0 )
+      if( !blockchain.empty( ) )
       {
          if( has_tag( blockchain + c_zenith_suffix ) )
          {
@@ -2982,26 +2930,21 @@ void peer_session::on_start( )
       {
          string hash_or_tag;
 
-         if( !is_for_support && !blockchain.empty( ) )
+         if( !is_for_support && ( blockchain.find( c_bc_prefix ) == 0 ) )
          {
-            if( blockchain.find( c_bc_prefix ) == 0 )
-            {
-               string identity( blockchain.substr( strlen( c_bc_prefix ) ) );
+            string identity( blockchain.substr( strlen( c_bc_prefix ) ) );
 
-               set_session_variable( identity, c_true_value );
-               set_session_variable( get_special_var_name( e_special_var_identity ), identity );
+            set_session_variable( identity, c_true_value );
+            set_session_variable( get_special_var_name( e_special_var_identity ), identity );
 
-               hash_or_tag = blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
+            hash_or_tag = blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
 
-               // NOTE: In case the responder does not have the genesis block include
-               // its hash as a dummy "nonce" (to be used by the responder for "get").
-               string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
+            // NOTE: In case the responder does not have the genesis block include
+            // its hash as a dummy "nonce" (to be used by the responder for "get").
+            string genesis_block_tag( blockchain + ".0" + string( c_blk_suffix ) );
 
-               if( has_tag( genesis_block_tag ) )
-                  hash_or_tag += ' ' + tag_file_hash( genesis_block_tag );
-            }
-            else
-               hash_or_tag = string( "c" + blockchain + ".head" );
+            if( has_tag( genesis_block_tag ) )
+               hash_or_tag += ' ' + tag_file_hash( genesis_block_tag );
          }
 
          if( hash_or_tag.empty( ) )
@@ -3014,25 +2957,12 @@ void peer_session::on_start( )
 
          if( !blockchain.empty( ) )
          {
-            if( blockchain.find( c_bc_prefix ) == 0 )
-            {
-               string block_hash;
+            string block_hash;
 
-               if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-                  okay = false;
-               else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
-                  add_peer_file_hash_for_get( block_hash );
-            }
-            else
-            {
-               string blockchain_head_hash;
-
-               if( ap_socket->read_line( blockchain_head_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
-                  okay = false;
-
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_head_hash ), blockchain_head_hash );
-            }
+            if( ap_socket->read_line( block_hash, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
+               okay = false;
+            else if( !is_for_support && ( block_hash != string( c_response_not_found ) ) )
+               add_peer_file_hash_for_get( block_hash );
          }
       }
 
