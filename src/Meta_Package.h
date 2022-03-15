@@ -334,4 +334,3 @@ inline bool check_equal( const Meta_Package& c, const char* p ) { return c.get_k
 inline bool check_not_equal( const Meta_Package& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

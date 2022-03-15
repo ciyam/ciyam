@@ -301,4 +301,3 @@ inline bool check_equal( const Meta_Specification_Field_Action& c, const char* p
 inline bool check_not_equal( const Meta_Specification_Field_Action& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

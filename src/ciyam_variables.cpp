@@ -151,11 +151,7 @@ const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
 const char* const c_special_variable_file_info_buffered = "@file_info_buffered";
 const char* const c_special_variable_blockchain_is_owner = "@blockchain_is_owner";
-const char* const c_special_variable_blockchain_head_hash = "@blockchain_head_hash";
-const char* const c_special_variable_blockchain_info_hash = "@blockchain_info_hash";
-const char* const c_special_variable_locally_minted_block = "@locally_minted_block";
 const char* const c_special_variable_secondary_validation = "@secondary_validation";
-const char* const c_special_variable_skip_blockchain_lock = "@skip_blockchain_lock";
 const char* const c_special_variable_package_install_extra = "@package_install_extra";
 const char* const c_special_variable_peer_is_synchronising = "@peer_is_synchronising";
 const char* const c_special_variable_blockchain_is_fetching = "@blockchain_is_fetching";
@@ -624,24 +620,8 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_blockchain_is_owner );
       break;
 
-      case e_special_var_blockchain_head_hash:
-      s = string( c_special_variable_blockchain_head_hash );
-      break;
-
-      case e_special_var_blockchain_info_hash:
-      s = string( c_special_variable_blockchain_info_hash );
-      break;
-
-      case e_special_var_locally_minted_block:
-      s = string( c_special_variable_locally_minted_block );
-      break;
-
       case e_special_var_secondary_validation:
       s = string( c_special_variable_secondary_validation );
-      break;
-
-      case e_special_var_skip_blockchain_lock:
-      s = string( c_special_variable_skip_blockchain_lock );
       break;
 
       case e_special_var_package_install_extra:

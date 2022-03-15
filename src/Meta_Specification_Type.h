@@ -764,4 +764,3 @@ inline bool check_equal( const Meta_Specification_Type& c, const char* p ) { ret
 inline bool check_not_equal( const Meta_Specification_Type& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

@@ -371,4 +371,3 @@ inline bool check_equal( const `{`$full_class_name`}& c, const char* p ) { retur
 inline bool check_not_equal( const `{`$full_class_name`}& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

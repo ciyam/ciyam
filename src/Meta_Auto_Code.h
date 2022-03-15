@@ -265,4 +265,3 @@ inline bool check_equal( const Meta_Auto_Code& c, const char* p ) { return c.get
 inline bool check_not_equal( const Meta_Auto_Code& c, const char* p ) { return !( c.get_key( ) == p ); }
 
 #endif
-

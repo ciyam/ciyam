@@ -104,4 +104,3 @@ void obtain_module_commands(
    p_definitions = Meta_command_definitions;
    *p_num_commands = ARRAY_SIZE( Meta_command_definitions );
 }
-
