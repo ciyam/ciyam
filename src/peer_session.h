@@ -27,15 +27,24 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+enum peer_extra
+{
+   e_peer_extra_none,
+   e_peer_extra_primary,
+   e_peer_extra_secondary
+};
+
 class CIYAM_BASE_DECL_SPEC peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
    peer_session( bool is_responder,
-    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false );
+    std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 );
 #  else
    peer_session( bool is_responder,
-    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info, bool is_for_support = false );
+    std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
+    bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 );
 #  endif
 
    ~peer_session( );
@@ -50,6 +59,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    private:
    bool is_local;
    bool is_owner;
+
    bool is_responder;
    bool is_for_support;
 
@@ -59,6 +69,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    std::string port;
    std::string ip_addr;
+   std::string identity;
 
    std::string blockchain;
 
@@ -91,7 +102,7 @@ class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
 
    void on_start( );
 
-   void start_peer_session( const std::string& peer_info );
+   void start_peer_session( const std::string& peer_info, bool is_secondary = false );
 };
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );
@@ -102,7 +113,7 @@ std::string CIYAM_BASE_DECL_SPEC unprefixed_blockchains( const std::string& bloc
 void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchains );
 
 void CIYAM_BASE_DECL_SPEC create_peer_initiator( const std::string& blockchain,
- const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0 );
+ const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0, bool is_secondary = false );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 

@@ -1016,6 +1016,38 @@ bool set_system_variable( const string& name, const string& value, const string&
    return retval;
 }
 
+bool set_variable_checker::can_set( ) const
+{
+   bool retval = false;
+
+   if( check_type == e_variable_check_type_no_session_has )
+      retval = !has_any_session_variable( variable_name );
+   else if( check_type == e_variable_check_type_any_session_has )
+      retval = has_any_session_variable( variable_name );
+   else if( check_type == e_variable_check_type_has_other_system )
+      retval = !get_raw_system_variable( variable_name ).empty( );
+   else if( check_type == e_variable_check_type_not_has_other_system )
+      retval = get_raw_system_variable( variable_name ).empty( );
+
+   if( retval && p_additional_check )
+      retval = p_additional_check->can_set( );
+
+   return retval;
+}
+
+bool set_system_variable( const string& name,
+ const string& value, set_variable_checker& checker, bool is_init, progress* p_progress )
+{
+   guard g( g_mutex );
+
+   if( !checker.can_set( ) )
+      return false;
+
+   set_system_variable( name, value, is_init, p_progress );
+
+   return true;
+}
+
 void list_mutex_lock_ids_for_ciyam_variables( ostream& outs )
 {
    outs << "ciyam_variables::g_mutex = " << g_mutex.get_lock_id( ) << '\n';

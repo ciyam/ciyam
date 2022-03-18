@@ -20,7 +20,7 @@ file_relegate "relegate one or more files from the files area to the archives" <
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 peer_listen "add/remove peer blockchain listeners" <val//port>[<opt/-remove/remove>]<val//blockchains>
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
-peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain>[<val//host_and_or_port>]
+peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain><val//host_and_or_port>
 peer_persist_file "create/decrypt a peer repository file request/response" [<val/-dh=/dest_hash>][<val/-k=/pubkey>]<val//tag_or_hash><val//password>
 crypto_addr "output an address for a secret" <val//extkey>[<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>]<val//secret>
 crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<opt/-hex/hex_decode>][<opt/-file/data_from_file>]<oval//data_or_filename>[<val/-s=/data_suffix_text>]
