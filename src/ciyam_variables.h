@@ -42,6 +42,36 @@ void CIYAM_BASE_DECL_SPEC set_system_variable(
 bool CIYAM_BASE_DECL_SPEC set_system_variable(
  const std::string& name, const std::string& value, const std::string& current, progress* p_progress = 0 );
 
+enum variable_check_type
+{
+   e_variable_check_type_no_session_has,
+   e_variable_check_type_any_session_has,
+   e_variable_check_type_has_other_system,
+   e_variable_check_type_not_has_other_system
+};
+
+struct set_variable_checker
+{
+   set_variable_checker( variable_check_type check_type,
+    const std::string& variable_name, set_variable_checker* p_additional_check = 0 )
+    :
+    check_type( check_type ),
+    variable_name( variable_name ),
+    p_additional_check( p_additional_check )
+   {
+   }
+
+   bool can_set( ) const;
+
+   std::string variable_name;
+   variable_check_type check_type;
+   set_variable_checker* p_additional_check;
+};
+
+bool CIYAM_BASE_DECL_SPEC set_system_variable(
+ const std::string& name, const std::string& value,
+ set_variable_checker& checker, bool is_init = false, progress* p_progress = 0 );
+
 struct temporary_system_variable
 {
    temporary_system_variable( const std::string& name, const std::string& value )

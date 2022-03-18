@@ -7168,6 +7168,39 @@ bool has_any_session_variable( const string& name, const string& value )
    return false;
 }
 
+size_t num_have_session_variable( const string& name )
+{
+   guard g( g_mutex );
+
+   size_t total = 0;
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name ) )
+         ++total;
+   }
+
+   return total;
+}
+
+size_t num_have_session_variable( const string& name, const string& value )
+{
+   guard g( g_mutex );
+
+   size_t total = 0;
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ]
+       && g_sessions[ i ]->variables.count( name )
+       && g_sessions[ i ]->variables[ name ] == value )
+         ++total;
+   }
+
+   return total;
+}
+
 bool is_first_using_session_variable( const string& name )
 {
    guard g( g_mutex );

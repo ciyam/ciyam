@@ -2336,25 +2336,36 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    handler.issue_command_response( response, !send_okay_response );
 
-   // NOTE: If a disconnect has been actioned for an initiator then issue a "bye" after
-   // condemning the session.
-   if( !socket_handler.get_is_responder( ) && !socket_handler.get_is_for_support( ) )
+   bool has_issued_bye = false;
+
+   // NOTE: If a disconnect has been actioned for the identity then issue a "bye" after
+   // condemning this session and (unless still connecting) do the same if the matching
+   // identity session is not found.
+   if( !socket_handler.get_is_for_support( ) )
    {
       string identity( get_session_variable(
        get_special_var_name( e_special_var_identity ) ) );
 
-      if( !get_system_variable( '~' + identity ).empty( ) )
+      if( !identity.empty( ) && get_system_variable( identity ).empty( ) )
       {
-         if( !is_condemned_session( ) )
+         bool is_only_session = ( num_have_session_variable( identity ) < 2 );
+         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+
+         if( is_only_session || is_disconnecting )
          {
-            condemn_this_session( );
-
-            if( !is_captured_session( ) )
-               handler.set_finished( );
-
             set_session_variable( identity, "" );
 
-            socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+            if( !is_condemned_session( ) )
+            {
+               condemn_this_session( );
+
+               if( !is_captured_session( ) )
+                  handler.set_finished( );
+
+               socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
+
+               has_issued_bye = true;
+            }
          }
       }
    }
@@ -2365,7 +2376,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
       if( !is_captured_session( ) )
       {
-         if( is_condemned_session( ) && socket_handler.get_is_responder( ) )
+         if( is_condemned_session( ) && !has_issued_bye )
             socket.write_line( c_cmd_peer_session_bye, c_request_timeout, p_progress );
 
          handler.set_finished( );
@@ -2547,9 +2558,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       }
       else
       {
-         // NOTE: If disconnecting then clear identity session variable immediately.
-         if( !get_system_variable( '~' + identity ).empty( ) )
-            set_session_variable( identity, "" );
+         if( g_server_shutdown )
+            condemn_this_session( );
 
          if( is_condemned_session( ) && !socket_handler.get_is_for_support( ) )
             condemn_matching_sessions( );
@@ -2584,11 +2594,13 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-peer_session* construct_session( bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support = false )
+peer_session* construct_session(
+ bool is_responder, auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
+ bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
 #else
-peer_session* construct_session( bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support = false )
+peer_session* construct_session(
+ bool is_responder, auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
+ bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
 #endif
 {
    peer_session* p_session = 0;
@@ -2614,7 +2626,7 @@ peer_session* construct_session( bool is_responder,
    if( is_for_support || !already_has_session 
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
-      p_session = new peer_session( is_responder, ap_socket, addr_info, is_for_support );
+      p_session = new peer_session( is_responder, ap_socket, addr_info, is_for_support, extra, p_identity );
 
    return p_session;
 }
@@ -2622,11 +2634,13 @@ peer_session* construct_session( bool is_responder,
 }
 
 #ifdef SSL_SUPPORT
-peer_session::peer_session( bool is_responder,
- auto_ptr< ssl_socket >& ap_socket, const string& addr_info, bool is_for_support )
+peer_session::peer_session(
+ bool is_responder, auto_ptr< ssl_socket >& ap_socket,
+ const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
 #else
-peer_session::peer_session( bool is_responder,
- auto_ptr< tcp_socket >& ap_socket, const string& addr_info, bool is_for_support )
+peer_session::peer_session(
+ bool is_responder, auto_ptr< tcp_socket >& ap_socket,
+ const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
 #endif
  :
  is_local( false ),
@@ -2641,6 +2655,9 @@ peer_session::peer_session( bool is_responder,
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
+
+   if( p_identity )
+      identity = string( p_identity );
 
    string::size_type pos = addr_info.find( '=' );
    if( pos != string::npos )
@@ -2683,13 +2700,22 @@ peer_session::peer_session( bool is_responder,
    // purpose client can be used to connect as a peer (for interactive testing).
    string pid( c_dummy_peer_tag );
 
+   bool needs_initiator = false;
+
    if( !is_responder )
    {
       if( is_for_support )
          pid = string( c_dummy_support_tag );
 
       if( !blockchain.empty( ) )
+      {
          pid += ':' + blockchain;
+
+         if( extra == e_peer_extra_primary )
+            pid += '>';
+         else if( extra == e_peer_extra_secondary )
+            pid += '<';
+      }
 
       if( is_owner && !is_for_support )
          pid += '!';
@@ -2719,6 +2745,21 @@ peer_session::peer_session( bool is_responder,
 
          blockchain = pid.substr( pos + 1 );
 
+         string::size_type spos = blockchain.find_first_of( "><" );
+
+         if( spos != string::npos )
+         {
+            if( blockchain[ spos ] == '>' )
+               needs_initiator = true;
+
+            blockchain.erase( spos );
+
+            identity = replaced( blockchain, c_bc_prefix, "" );
+
+            if( !needs_initiator && !num_have_session_variable( identity ) )
+               throw runtime_error( "initiator session for '" + identity + "' is inactive" );
+         }
+
          if( !blockchains.count( blockchain ) )
             throw runtime_error( "unsupported blockchain '" + blockchain + "' for peer listener" );
 
@@ -2746,6 +2787,12 @@ peer_session::peer_session( bool is_responder,
    //  whether it is actually a support session is only knowable after the first line has been read.
    if( !this->is_for_support && has_session_with_ip_addr( ip_addr, blockchain ) )
       throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
+
+   if( needs_initiator )
+   {
+      set_system_variable( identity, c_true_value );
+      set_system_variable( get_special_var_name( e_special_var_queue_peers ), identity + '*' );
+   }
 
    increment_session_count( );
 }
@@ -2924,19 +2971,17 @@ void peer_session::on_start( )
                 e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
             }
          }
+
+         set_session_variable( identity, c_true_value );
+         set_session_variable( get_special_var_name( e_special_var_identity ), identity );
       }
 
       if( !is_responder )
       {
          string hash_or_tag;
 
-         if( !is_for_support && ( blockchain.find( c_bc_prefix ) == 0 ) )
+         if( !is_for_support && !blockchain.empty( ) )
          {
-            string identity( blockchain.substr( strlen( c_bc_prefix ) ) );
-
-            set_session_variable( identity, c_true_value );
-            set_session_variable( get_special_var_name( e_special_var_identity ), identity );
-
             hash_or_tag = blockchain + '.' + to_string( blockchain_height ) + string( c_blk_suffix );
 
             // NOTE: In case the responder does not have the genesis block include
@@ -3015,10 +3060,12 @@ void peer_session::on_start( )
       }
    }
 
-   if( has_terminated && !is_for_support && !blockchain.empty( ) )
+   if( has_terminated && !is_for_support && !identity.empty( ) )
    {
-      if( blockchain.find( c_bc_prefix ) == 0 )
-         set_system_variable( '~' + blockchain.substr( strlen( c_bc_prefix ) ), "" );
+      set_variable_checker check_no_other_session(
+       e_variable_check_type_no_session_has, identity );
+
+      set_system_variable( '~' + identity, "", check_no_other_session );
    }
 
    delete this;
@@ -3251,7 +3298,7 @@ void create_peer_listener( int port, const string& blockchains )
 }
 
 void create_peer_initiator( const string& blockchain,
- const string& host_and_or_port, bool force, size_t num_for_support )
+ const string& host_and_or_port, bool force, size_t num_for_support, bool is_secondary )
 {
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
@@ -3285,6 +3332,23 @@ void create_peer_initiator( const string& blockchain,
 
    string ip_addr( address.get_addr_string( ) );
 
+   string own_identity( get_system_variable(
+    get_special_var_name( e_special_var_blockchain ) ) );
+
+   bool has_separate_identity = false;
+
+   if( !own_identity.empty( ) && identity != own_identity )
+      has_separate_identity = true;
+
+   string session_blockchain( c_bc_prefix );
+
+   if( !has_separate_identity )
+      session_blockchain += identity;
+   else
+      session_blockchain += own_identity;
+
+   date_time dtm( date_time::local( ) );
+
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
    for( size_t i = 0; i < total_to_create; i++ )
@@ -3304,8 +3368,17 @@ void create_peer_initiator( const string& blockchain,
 
          if( ap_socket->connect( address, ( i == 0 ) ? c_initial_timeout : c_support_timeout ) )
          {
+            const char* p_identity = 0;
+            peer_extra extra = e_peer_extra_none;
+
+            if( i == 0 && has_separate_identity )
+            {
+               p_identity = identity.c_str( );
+               extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
+            }
+
             peer_session* p_session = construct_session( false, ap_socket,
-             ip_addr + "=" + blockchain + ":" + to_string( port ), i > 0 );
+             ip_addr + "=" + session_blockchain + ":" + to_string( port ), i > 0, extra, p_identity );
 
             if( !p_session )
                break;
@@ -3337,6 +3410,36 @@ void create_peer_initiator( const string& blockchain,
    // been constructed if no support session was constructed then start now.
    if( p_main_session && ( total_to_create > 1 ) && !num_supporters_created )
       p_main_session->start( );
+
+   // NOTE: Assuming there is a separate system identity wait the same number
+   // of seconds already elapsed for the corresponding listener session to be
+   // created and disconnect if it was not found.
+   if( has_separate_identity )
+   {
+      date_time now( date_time::local( ) );
+
+      uint64_t elapsed = seconds_between( dtm, now );
+
+      if( ++elapsed > 10 )
+         elapsed = 10;
+
+      size_t quarter_seconds = ( elapsed * 4 );
+
+      bool okay = false;
+      for( size_t i = 0; i < quarter_seconds; i++ )
+      {
+         if( num_have_session_variable( identity ) > 1 )
+         {
+            okay = true;
+            break;
+         }
+
+         msleep( 250 );
+      }
+
+      if( !okay )
+         set_system_variable( '~' + identity, c_true_value );
+   }
 }
 
 peer_session_starter::peer_session_starter( )
@@ -3377,6 +3480,7 @@ void peer_session_starter::on_start( )
          else
          {
             bool is_listener = false;
+            bool is_secondary = false;
 
             // NOTE: If identity is prefixed with '!' then will always start a listener.
             if( identity[ 0 ] == '!' )
@@ -3385,12 +3489,19 @@ void peer_session_starter::on_start( )
                identity.erase( 0, 1 );
             }
 
+            // NOTE: If identity is suffixed with '*' then will assume it is secondary.
+            if( !identity.empty( ) && identity[ identity.length( ) - 1 ] == '*' )
+            {
+               is_secondary = true;
+               identity.erase( identity.length( ) - 1 );
+            }
+
             string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
 
             if( !peer_info.empty( ) )
             {
                if( !is_listener )
-                  start_peer_session( peer_info );
+                  start_peer_session( peer_info, is_secondary );
                else
                {
                   string::size_type pos = peer_info.find( '=' );
@@ -3422,7 +3533,7 @@ void peer_session_starter::on_start( )
    delete this;
 }
 
-void peer_session_starter::start_peer_session( const string& peer_info )
+void peer_session_starter::start_peer_session( const string& peer_info, bool is_secondary )
 {
    string info( peer_info );
 
@@ -3442,7 +3553,7 @@ void peer_session_starter::start_peer_session( const string& peer_info )
       blockchain.erase( pos );
    }
 
-   create_peer_initiator( blockchain, info, false, num_for_support );
+   create_peer_initiator( blockchain, info, false, num_for_support, is_secondary );
 }
 
 void init_peer_sessions( int start_listeners )

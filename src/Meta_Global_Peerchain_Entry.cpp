@@ -710,8 +710,12 @@ void Meta_Global_Peerchain_Entry::impl::impl_Connect( )
 
    // [<start Connect_impl>]
 //nyi
-   set_system_variable( get_special_var_name( e_special_var_queue_peers ), get_obj( ).Identity( ) );
-   msleep( c_peer_sleep_time );
+   set_variable_checker check_not_has(
+    e_variable_check_type_not_has_other_system, '~' + get_obj( ).Identity( ) );
+
+   if( set_system_variable( get_special_var_name(
+    e_special_var_queue_peers ), get_obj( ).Identity( ), check_not_has ) )
+      msleep( c_peer_sleep_time );
    // [<finish Connect_impl>]
 }
 
@@ -722,8 +726,11 @@ void Meta_Global_Peerchain_Entry::impl::impl_Disconnect( )
 
    // [<start Disconnect_impl>]
 //nyi
-   set_system_variable( '~' + get_obj( ).Identity( ), c_true_value );
-   msleep( c_peer_sleep_time );
+   set_variable_checker check_not_has(
+    e_variable_check_type_not_has_other_system, get_obj( ).Identity( ) );
+
+   if( set_system_variable( '~' + get_obj( ).Identity( ), c_true_value, check_not_has ) )
+      msleep( c_peer_sleep_time );
    // [<finish Disconnect_impl>]
 }
 
