@@ -1091,19 +1091,23 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket, peer_state session_state,
+   socket_command_handler(
+    ssl_socket& socket, peer_state session_state, int64_t time_val,
     bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #else
-   socket_command_handler( tcp_socket& socket, peer_state session_state,
+   socket_command_handler(
+    tcp_socket& socket, peer_state session_state, int64_t time_val,
     bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #endif
     :
     socket( socket ),
     is_local( is_local ),
     is_owner( is_owner ),
+    time_val( time_val ),
     blockchain( blockchain ),
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
+    is_time_for_check( false ),
     is_for_support( is_for_support ),
     session_state( session_state ),
     session_op_state( session_state ),
@@ -1133,6 +1137,19 @@ class socket_command_handler : public command_handler
 #else
    tcp_socket& get_socket( ) { return socket; }
 #endif
+
+   bool get_is_time_for_check( )
+   {
+      if( is_time_for_check )
+         return true;
+
+      int64_t current = unix_timestamp( date_time::local( ) );
+
+      if( current >= time_val )
+         is_time_for_check = true;
+
+      return is_time_for_check;
+   }
 
    const string& get_last_command( ) { return last_command; }
    const string& get_next_command( ) { return next_command; }
@@ -1225,7 +1242,10 @@ class socket_command_handler : public command_handler
    bool is_responder;
    bool is_for_support;
 
+   bool is_time_for_check;
    bool last_issued_was_put;
+
+   int64_t time_val;
 
    string blockchain;
    pair< string, string > blockchain_info;
@@ -2348,7 +2368,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
       if( !identity.empty( ) && get_system_variable( identity ).empty( ) )
       {
-         bool is_only_session = ( num_have_session_variable( identity ) < 2 );
+         bool is_only_session = false;
+
+         if( socket_handler.get_is_time_for_check( ) )
+            is_only_session = ( num_have_session_variable( identity ) < 2 );
+
          bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
 
          if( is_only_session || is_disconnecting )
@@ -2594,11 +2618,11 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 }
 
 #ifdef SSL_SUPPORT
-peer_session* construct_session(
+peer_session* construct_session( const date_time& dtm,
  bool is_responder, auto_ptr< ssl_socket >& ap_socket, const string& addr_info,
  bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
 #else
-peer_session* construct_session(
+peer_session* construct_session( const date_time& dtm,
  bool is_responder, auto_ptr< tcp_socket >& ap_socket, const string& addr_info,
  bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 )
 #endif
@@ -2626,7 +2650,8 @@ peer_session* construct_session(
    if( is_for_support || !already_has_session 
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
-      p_session = new peer_session( is_responder, ap_socket, addr_info, is_for_support, extra, p_identity );
+      p_session = new peer_session( unix_timestamp( dtm ),
+       is_responder, ap_socket, addr_info, is_for_support, extra, p_identity );
 
    return p_session;
 }
@@ -2634,11 +2659,11 @@ peer_session* construct_session(
 }
 
 #ifdef SSL_SUPPORT
-peer_session::peer_session(
+peer_session::peer_session( int64_t time_val,
  bool is_responder, auto_ptr< ssl_socket >& ap_socket,
  const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
 #else
-peer_session::peer_session(
+peer_session::peer_session( int64_t time_val,
  bool is_responder, auto_ptr< tcp_socket >& ap_socket,
  const string& addr_info, bool is_for_support, peer_extra extra, const char* p_identity )
 #endif
@@ -2646,6 +2671,7 @@ peer_session::peer_session(
  is_local( false ),
  is_owner( false ),
  ip_addr( addr_info ),
+ time_val( time_val ),
  ap_socket( ap_socket ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
@@ -2711,10 +2737,13 @@ peer_session::peer_session(
       {
          pid += ':' + blockchain;
 
-         if( extra == e_peer_extra_primary )
-            pid += '>';
-         else if( extra == e_peer_extra_secondary )
-            pid += '<';
+         if( extra != e_peer_extra_none )
+         {
+            string own_identity( get_system_variable(
+             get_special_var_name( e_special_var_blockchain ) ) );
+
+            pid += '@' + own_identity;
+         }
       }
 
       if( is_owner && !is_for_support )
@@ -2745,19 +2774,13 @@ peer_session::peer_session(
 
          blockchain = pid.substr( pos + 1 );
 
-         string::size_type spos = blockchain.find_first_of( "><" );
+         string::size_type spos = blockchain.find( '@' );
 
          if( spos != string::npos )
          {
-            if( blockchain[ spos ] == '>' )
-               needs_initiator = true;
+            identity = blockchain.substr( spos + 1 );
 
             blockchain.erase( spos );
-
-            identity = replaced( blockchain, c_bc_prefix, "" );
-
-            if( !needs_initiator && !num_have_session_variable( identity ) )
-               throw runtime_error( "initiator session for '" + identity + "' is inactive" );
          }
 
          if( !blockchains.count( blockchain ) )
@@ -2788,12 +2811,6 @@ peer_session::peer_session(
    if( !this->is_for_support && has_session_with_ip_addr( ip_addr, blockchain ) )
       throw runtime_error( "cannot create a non-support peer when has an existing non-support peer session" );
 
-   if( needs_initiator )
-   {
-      set_system_variable( identity, c_true_value );
-      set_system_variable( get_special_var_name( e_special_var_queue_peers ), identity + '*' );
-   }
-
    increment_session_count( );
 }
 
@@ -2808,10 +2825,16 @@ void peer_session::on_start( )
    bool has_terminated = false;
    bool was_initialised = false;
 
+   peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
+
+   int64_t current = unix_timestamp( date_time::local( ) );
+
+   int64_t difference = ( current - time_val ) + 1;
+
    try
    {
-      socket_command_handler cmd_handler( *ap_socket,
-       is_responder ? e_peer_state_responder : e_peer_state_initiator, is_local, is_owner, blockchain, is_for_support );
+      socket_command_handler cmd_handler( *ap_socket, state,
+       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
@@ -2972,8 +2995,11 @@ void peer_session::on_start( )
             }
          }
 
-         set_session_variable( identity, c_true_value );
-         set_session_variable( get_special_var_name( e_special_var_identity ), identity );
+         if( !identity.empty( ) )
+         {
+            set_session_variable( identity, c_true_value );
+            set_session_variable( get_special_var_name( e_special_var_identity ), identity );
+         }
       }
 
       if( !is_responder )
@@ -3182,6 +3208,8 @@ void peer_listener::on_start( )
                   }
                }
 
+               date_time dtm( date_time::local( ) );
+
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
                auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
@@ -3197,7 +3225,7 @@ void peer_listener::on_start( )
                   // determine if it actually is or not).
                   try
                   {
-                     p_session = construct_session(
+                     p_session = construct_session( dtm,
                       true, ap_socket, address.get_addr_string( ) + '=' + blockchains, true );
                   }
                   catch( exception& x )
@@ -3337,7 +3365,7 @@ void create_peer_initiator( const string& blockchain,
 
    bool has_separate_identity = false;
 
-   if( !own_identity.empty( ) && identity != own_identity )
+   if( !is_secondary && !own_identity.empty( ) && ( identity != own_identity ) )
       has_separate_identity = true;
 
    string session_blockchain( c_bc_prefix );
@@ -3371,13 +3399,13 @@ void create_peer_initiator( const string& blockchain,
             const char* p_identity = 0;
             peer_extra extra = e_peer_extra_none;
 
-            if( i == 0 && has_separate_identity )
+            if( i == 0 && ( is_secondary || has_separate_identity ) )
             {
                p_identity = identity.c_str( );
                extra = ( !is_secondary ? e_peer_extra_primary : e_peer_extra_secondary );
             }
 
-            peer_session* p_session = construct_session( false, ap_socket,
+            peer_session* p_session = construct_session( dtm, false, ap_socket,
              ip_addr + "=" + session_blockchain + ":" + to_string( port ), i > 0, extra, p_identity );
 
             if( !p_session )
@@ -3410,36 +3438,6 @@ void create_peer_initiator( const string& blockchain,
    // been constructed if no support session was constructed then start now.
    if( p_main_session && ( total_to_create > 1 ) && !num_supporters_created )
       p_main_session->start( );
-
-   // NOTE: Assuming there is a separate system identity wait the same number
-   // of seconds already elapsed for the corresponding listener session to be
-   // created and disconnect if it was not found.
-   if( has_separate_identity )
-   {
-      date_time now( date_time::local( ) );
-
-      uint64_t elapsed = seconds_between( dtm, now );
-
-      if( ++elapsed > 10 )
-         elapsed = 10;
-
-      size_t quarter_seconds = ( elapsed * 4 );
-
-      bool okay = false;
-      for( size_t i = 0; i < quarter_seconds; i++ )
-      {
-         if( num_have_session_variable( identity ) > 1 )
-         {
-            okay = true;
-            break;
-         }
-
-         msleep( 250 );
-      }
-
-      if( !okay )
-         set_system_variable( '~' + identity, c_true_value );
-   }
 }
 
 peer_session_starter::peer_session_starter( )
@@ -3487,13 +3485,6 @@ void peer_session_starter::on_start( )
             {
                is_listener = true;
                identity.erase( 0, 1 );
-            }
-
-            // NOTE: If identity is suffixed with '*' then will assume it is secondary.
-            if( !identity.empty( ) && identity[ identity.length( ) - 1 ] == '*' )
-            {
-               is_secondary = true;
-               identity.erase( identity.length( ) - 1 );
             }
 
             string peer_info( get_peerchain_info( identity, is_listener ? 0 : &is_listener ) );
@@ -3553,7 +3544,9 @@ void peer_session_starter::start_peer_session( const string& peer_info, bool is_
       blockchain.erase( pos );
    }
 
-   create_peer_initiator( blockchain, info, false, num_for_support, is_secondary );
+   // NOTE: Create sessions for both the local and hosted blockchains.
+   create_peer_initiator( blockchain, info, false, num_for_support );
+   create_peer_initiator( blockchain, info, false, num_for_support, true );
 }
 
 void init_peer_sessions( int start_listeners )
