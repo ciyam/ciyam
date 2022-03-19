@@ -38,11 +38,11 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 {
    public:
 #  ifdef SSL_SUPPORT
-   peer_session( bool is_responder,
+   peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< ssl_socket >& ap_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 );
 #  else
-   peer_session( bool is_responder,
+   peer_session( int64_t time_val, bool is_responder,
     std::auto_ptr< tcp_socket >& ap_socket, const std::string& addr_info,
     bool is_for_support = false, peer_extra extra = e_peer_extra_none, const char* p_identity = 0 );
 #  endif
@@ -66,6 +66,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool peer_is_owner;
    bool has_support_sessions;
    bool has_found_both_are_owners;
+
+   int64_t time_val;
 
    std::string port;
    std::string ip_addr;
