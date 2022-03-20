@@ -4929,7 +4929,7 @@
     <extra>global:peer!
     <specifications/>
      <specification/>
-      <id>600098b
+      <id>600098a
       <item>class
      </specification>
      <specification/>
@@ -4961,7 +4961,7 @@
       <item>class
      </specification>
      <specification/>
-      <id>600898a
+      <id>600898b
       <item>class
      </specification>
      <specification/>
@@ -5043,7 +5043,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600898a
+        <id>600898b
         <item>field
        </specification>
        <specification/>
@@ -5061,7 +5061,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145300
+        <id>145301
         <affect>relegate;view
        </modifier>
        <modifier/>
@@ -5090,7 +5090,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145300
+        <id>145301
         <affect>relegate
        </modifier>
        <modifier/>
@@ -5157,7 +5157,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145300
+        <id>145301
         <affect>relegate
        </modifier>
        <modifier/>
@@ -5201,10 +5201,6 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>145301
-        <affect>extralight1;view
-       </modifier>
-       <modifier/>
         <id>145302
         <affect>extralight1;view
        </modifier>
@@ -5219,7 +5215,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600098b
+        <id>600098a
         <item>field
        </specification>
        <specification/>
@@ -5265,7 +5261,7 @@
     </indexes>
     <modifiers/>
      <modifier/>
-      <id>145301
+      <id>145302
       <name>Is_Connected
       <affect>extralight1;list
      </modifier>
@@ -5280,12 +5276,12 @@
       <affect>extralight;list
      </modifier>
      <modifier/>
-      <id>145302
-      <name>Is_Listening
-      <affect>extralight1;list
+      <id>145300
+      <name>Is_Inactive
+      <affect>lowlight
      </modifier>
      <modifier/>
-      <id>145300
+      <id>145301
       <name>Is_Local_Only
      </modifier>
      <modifier/>
@@ -5295,6 +5291,14 @@
     </modifiers>
     <procedures/>
      <procedure/>
+      <id>145430
+      <name>Activate
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
       <id>145410
       <name>Connect
       <specifications/>
@@ -5303,24 +5307,16 @@
       </args>
      </procedure>
      <procedure/>
+      <id>145440
+      <name>Deactivate
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
       <id>145420
       <name>Disconnect
-      <specifications/>
-      </specifications>
-      <args/>
-      </args>
-     </procedure>
-     <procedure/>
-      <id>145440
-      <name>Finish_Listening
-      <specifications/>
-      </specifications>
-      <args/>
-      </args>
-     </procedure>
-     <procedure/>
-      <id>145430
-      <name>Start_Listening
       <specifications/>
       </specifications>
       <args/>
@@ -32049,12 +32045,12 @@
     </data>
    </specification>
    <specification/>
-    <id>600098b
+    <id>600098c
     <name>{Global_Peerchain_Entry}_Is_Connected
     <type>modifier_field_value
     <data/>
      <class_id>145100
-     <modifier_id>145301
+     <modifier_id>145302
      <enum_id>955
      <field_id>145107
      <field_value>Connected
@@ -32080,7 +32076,7 @@
     <type>state_protect
     <data/>
      <protect_spec>protect_equal.spec.xrep
-     <protect_value>1
+     <protect_value>3
      <is_changing>true
     </data>
    </specification>
@@ -32108,25 +32104,23 @@
     </data>
    </specification>
    <specification/>
-    <id>600098c
-    <name>{Global_Peerchain_Entry}_Is_Listening
-    <type>modifier_field_value
-    <data/>
-     <class_id>145100
-     <modifier_id>145302
-     <enum_id>955
-     <field_id>145107
-     <field_value>Listening
-     <enum_value_name>Listening
-    </data>
-   </specification>
-   <specification/>
-    <id>600898a
-    <name>{Global_Peerchain_Entry}_Is_Local_Only
+    <id>600098a
+    <name>{Global_Peerchain_Entry}_Is_Inactive
     <type>modifier_field_value
     <data/>
      <class_id>145100
      <modifier_id>145300
+     <field_id>145107
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
+    <id>600898b
+    <name>{Global_Peerchain_Entry}_Is_Local_Only
+    <type>modifier_field_value
+    <data/>
+     <class_id>145100
+     <modifier_id>145301
      <field_id>145108
      <field_value>1
     </data>
@@ -39410,7 +39404,7 @@
     <id>955
     <name>peerchain_status
     <type>int
-    <key_values>0=Inactive,1=Connecting,2=Connected,3=Listening,4=Disconnecting
+    <key_values>0=Inactive,1=Activated,2=Connected,3=Connecting,4=Disconnecting
    </user_defined_enum>
    <user_defined_enum/>
     <id>500

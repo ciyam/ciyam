@@ -1592,7 +1592,7 @@
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_status_connecting
+     <name>enum_peerchain_status_activated
     </value>
     <value/>
      <data>2
@@ -1600,7 +1600,7 @@
     </value>
     <value/>
      <data>3
-     <name>enum_peerchain_status_listening
+     <name>enum_peerchain_status_connecting
     </value>
     <value/>
      <data>4
@@ -3547,7 +3547,7 @@
    <name>603970_name
    <type>admin
    <extra>
-   <modifiers>
+   <modifiers>800:lowlight
    <class>Global_Peerchain_Entry
    <bclass>
    <module>Meta
@@ -3630,7 +3630,7 @@
      <ftype>int
      <extra>no_edit+enum=955
      <mandatory>true
-     <modifiers>100:extralight1,800:extralight1,200:extralight,400:extralight
+     <modifiers>100:extralight1,200:extralight,400:extralight
     </field>
     <field/>
      <name>field_global_peerchain_entry_actions
@@ -8945,7 +8945,7 @@
    <type>admin
    <extra>
    <actions>
-   <modifiers>100:extralight1,800:extralight1,200:extralight,400:extralight
+   <modifiers>800:lowlight,100:extralight1,200:extralight,400:extralight
    <view>603970
    <class>Global_Peerchain_Entry
    <bclass>

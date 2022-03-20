@@ -58,7 +58,7 @@
 `{`$enum_orientation`=`'0=landscape 1=portrait 2=neither`'`}
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
 `{`$enum_peerchain_entry_type`=`'0=Hosted 1=Local_Only`'`}
-`{`$enum_peerchain_status`=`'0=Inactive 1=Connecting 2=Connected 3=Listening 4=Disconnecting`'`}
+`{`$enum_peerchain_status`=`'0=Inactive 1=Activated 2=Connected 3=Connecting 4=Disconnecting`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
 `{`$enum_procedure_arg_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 99=Any_Primitive`'`}
 `{`$enum_procedure_arg_type`=`'0=in 1=out 99=Any_Type`'`}
@@ -1159,7 +1159,7 @@
 `{`$specification_Global_Peerchain_Entry_list_name`=`'Global_Peerchain_Entries`'`}
 `{`$specification_Global_Peerchain_Entry_list_type`=`'admin`'`}
 `{`$specification_Global_Peerchain_Entry_list_acts`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_list_mods`=`'100:extralight1,800:extralight1,200:extralight,400:extralight`'`}
+`{`$specification_Global_Peerchain_Entry_list_mods`=`'800:lowlight,100:extralight1,200:extralight,400:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_list_extra`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_list_order`=`'forward`'`}
 `{`$specification_Global_Peerchain_Entry_list_binfo`=`'`'`}
@@ -1204,7 +1204,7 @@
 `{`$specification_Global_Peerchain_Entry_view_name`=`'Global_Peerchain_Entry`'`}
 `{`$specification_Global_Peerchain_Entry_view_type`=`'admin`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra`=`'`'`}
-`{`$specification_Global_Peerchain_Entry_view_mods`=`'`'`}
+`{`$specification_Global_Peerchain_Entry_view_mods`=`'800:lowlight`'`}
 `{`$specification_Global_Peerchain_Entry_view_binfo`=`'`'`}
 `{`$specification_Global_Peerchain_Entry_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010`'`}
 `{`$specification_Global_Peerchain_Entry_view_field000`=`'@key`'`}
@@ -1264,7 +1264,7 @@
 `{`$specification_Global_Peerchain_Entry_view_field009`=`'145107`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype009`=`'int`'`}
 `{`$specification_Global_Peerchain_Entry_view_extra009`=`'no_edit+enum=955`'`}
-`{`$specification_Global_Peerchain_Entry_view_fmods009`=`'100:extralight1,800:extralight1,200:extralight,400:extralight`'`}
+`{`$specification_Global_Peerchain_Entry_view_fmods009`=`'100:extralight1,200:extralight,400:extralight`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname009`=`'field_global_peerchain_entry_status`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand009`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field010`=`'145110`'`}
