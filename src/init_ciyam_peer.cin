@@ -8,8 +8,12 @@ PEER_PORT=$OUTPUT
 @ifeq "$PEER_PORT" ""
 #Error: Found empty '@peer_port' system variable value.
 @else
+@ifneq "$1" ""
+BLOCKCHAIN=$1
+@else
 .system_variable @blockchain
 BLOCKCHAIN=$OUTPUT
+@endif
 @ifeq "$BLOCKCHAIN" ""
 #Error: Found empty '@blockchain' system variable value.
 @else
