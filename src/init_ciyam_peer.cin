@@ -22,7 +22,7 @@ BLOCKCHAIN=$OUTPUT
 .storage_init Meta
 .pc sys @now Meta Global_Peerchain_Entry %BLOCKCHAIN% "Auto_Start=1,Description=Local,Entry_Type=1,Local_Port=$PEER_PORT"
 @ifndef $ERROR
-#Created listener and global peerchain entry for blockchain '$BLOCKCHAIN'.
+#Created listener and global peerchain entry for identity '$BLOCKCHAIN'.
 @endif
 .storage_term
 @endif

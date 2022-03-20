@@ -4905,13 +4905,11 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
       string local_port( ap_sio_reader->read_attribute( c_peerchain_attribute_local_port ) );
       string num_helpers( ap_sio_reader->read_attribute( c_peerchain_attribute_num_helpers ) );
 
-      if( ( host_name == string( c_local_host ) )
-       && ( !auto_start_only || ( auto_start == c_true_value ) ) )
-      {
-         int port = atoi( local_port.c_str( ) );
+      int port = atoi( local_port.c_str( ) );
 
+      if( ( port > 0 )
+       && ( !auto_start_only || ( auto_start == c_true_value ) ) )
          peerchain_listeners.insert( make_pair( port, identity ) );
-      }
    }
 }
 
