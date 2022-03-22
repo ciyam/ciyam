@@ -5277,7 +5277,7 @@
      </modifier>
      <modifier/>
       <id>145300
-      <name>Is_Inactive
+      <name>Is_Halted
       <affect>lowlight
      </modifier>
      <modifier/>
@@ -5286,18 +5286,10 @@
      </modifier>
      <modifier/>
       <id>145305
-      <name>Not_Is_Inactive
+      <name>Not_Is_Halted
      </modifier>
     </modifiers>
     <procedures/>
-     <procedure/>
-      <id>145430
-      <name>Activate
-      <specifications/>
-      </specifications>
-      <args/>
-      </args>
-     </procedure>
      <procedure/>
       <id>145410
       <name>Connect
@@ -5307,16 +5299,24 @@
       </args>
      </procedure>
      <procedure/>
-      <id>145440
-      <name>Deactivate
+      <id>145420
+      <name>Disconnect
       <specifications/>
       </specifications>
       <args/>
       </args>
      </procedure>
      <procedure/>
-      <id>145420
-      <name>Disconnect
+      <id>145430
+      <name>Initiate
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
+      <id>145440
+      <name>Terminate
       <specifications/>
       </specifications>
       <args/>
@@ -32105,7 +32105,7 @@
    </specification>
    <specification/>
     <id>600098a
-    <name>{Global_Peerchain_Entry}_Is_Inactive
+    <name>{Global_Peerchain_Entry}_Is_Halted
     <type>modifier_field_value
     <data/>
      <class_id>145100
@@ -32127,7 +32127,7 @@
    </specification>
    <specification/>
     <id>600098h
-    <name>{Global_Peerchain_Entry}_Not_Is_Inactive
+    <name>{Global_Peerchain_Entry}_Not_Is_Halted
     <type>modifier_field_value
     <data/>
      <class_id>145100
@@ -32139,7 +32139,7 @@
    </specification>
    <specification/>
     <id>600098i
-    <name>{Global_Peerchain_Entry}_Not_Is_Inactive_protect
+    <name>{Global_Peerchain_Entry}_Not_Is_Halted_protect
     <type>state_protect
     <data/>
      <protect_spec>protect_not_equal.spec.xrep
@@ -39404,7 +39404,7 @@
     <id>955
     <name>peerchain_status
     <type>int
-    <key_values>0=Inactive,1=Activated,2=Connected,3=Connecting,4=Disconnecting
+    <key_values>0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
    </user_defined_enum>
    <user_defined_enum/>
     <id>500
