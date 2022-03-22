@@ -75,13 +75,13 @@ class META_GLOBAL_PEERCHAIN_ENTRY_DECL_SPEC Meta_Global_Peerchain_Entry : public
    int Status( ) const;
    void Status( int Status );
 
-   virtual void Activate( );
-
    virtual void Connect( );
 
-   virtual void Deactivate( );
-
    virtual void Disconnect( );
+
+   virtual void Initiate( );
+
+   virtual void Terminate( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );

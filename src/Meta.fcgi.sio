@@ -1588,11 +1588,11 @@
    <values/>
     <value/>
      <data>0
-     <name>enum_peerchain_status_inactive
+     <name>enum_peerchain_status_halted
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_status_activated
+     <name>enum_peerchain_status_waiting
     </value>
     <value/>
      <data>2
