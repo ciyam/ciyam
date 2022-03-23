@@ -4340,11 +4340,21 @@ bool has_registered_listener( int port )
    return g_listeners.count( port );
 }
 
-bool has_registered_listener( int port, const string& id )
+bool has_registered_listener_id( const string& id, int* p_port )
 {
    guard g( g_mutex );
 
-   return g_listeners.count( port ) && g_listener_ids.count( id );
+   bool retval = false;
+
+   if( g_listener_ids.count( id ) )
+   {
+      retval = true;
+
+      if( p_port )
+         *p_port = g_listener_ids[ id ];
+   }
+
+   return retval;
 }
 
 void list_listeners( ostream& os )

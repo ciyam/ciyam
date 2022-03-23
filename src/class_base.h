@@ -1547,6 +1547,11 @@ inline std::string get_mnemonics_or_hex_seed( const std::string& mnemonics_or_he
    return s;
 }
 
+void CIYAM_BASE_DECL_SPEC use_peerchain( const std::string& identity, bool no_delay = false );
+void CIYAM_BASE_DECL_SPEC disuse_peerchain( const std::string& identity, bool no_delay = false );
+void CIYAM_BASE_DECL_SPEC connect_peerchain( const std::string& identity, bool no_delay = false );
+void CIYAM_BASE_DECL_SPEC disconnect_peerchain( const std::string& identity, bool no_delay = false );
+
 bool CIYAM_BASE_DECL_SPEC active_external_service( const std::string& ext_key );
 
 std::string CIYAM_BASE_DECL_SPEC get_external_extra( const std::string& ext_key, const std::string& extra );

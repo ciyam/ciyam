@@ -1999,13 +1999,30 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove ) );
          string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
+         if( port.empty( ) )
+            port = to_string( c_default_ciyam_peer_port );
+
+         vector< string > all_blockchains;
+         split( blockchains, all_blockchains );
+
+         for( size_t i = 0; i < all_blockchains.size( ); i++ )
+         {
+            string next( unprefixed_blockchains( all_blockchains[ i ] ) );
+
+            if( remove )
+            {
+               int port_num = 0;
+
+               if( has_registered_listener_id( next, &port_num ) )
+                  set_system_variable( '@' + to_string( port_num ), '~' + unprefixed_blockchains( next ) );
+
+            }
+            else if( has_registered_listener_id( next ) )
+               throw runtime_error( "blockchain identity '" + next + "' already has a listener" );
+         }
+
          if( !remove )
             create_peer_listener( atoi( port.c_str( ) ), unprefixed_blockchains( blockchains ) );
-         else
-         {
-            if( has_registered_listener( atoi( port.c_str( ) ) ) )
-               set_system_variable( '@' + port, '~' + unprefixed_blockchains( blockchains ) );
-         }
       }
       else if( command == c_cmd_ciyam_session_peer_reject )
       {

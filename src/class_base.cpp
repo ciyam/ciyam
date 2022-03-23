@@ -5586,6 +5586,63 @@ void get_mnemonics_or_hex_seed( string& s, const string& mnemonics_or_hex_seed )
    }
 }
 
+void use_peerchain( const string& identity, bool no_delay )
+{
+   guard g( g_mutex );
+
+   set_system_variable( get_special_var_name(
+    e_special_var_queue_peers ), '!' + identity );
+
+   if( !no_delay )
+      msleep( c_peer_sleep_time );
+}
+
+void disuse_peerchain( const string& identity, bool no_delay )
+{
+   guard g( g_mutex );
+
+   int port = 0;
+
+   if( has_registered_listener_id( identity, &port ) )
+   {
+      set_system_variable( '@' + to_string( port ), '~' + identity );
+
+      if( !no_delay )
+         msleep( c_peer_sleep_time );
+   }
+}
+
+void connect_peerchain( const string& identity, bool no_delay )
+{
+   set_variable_checker check_not_has(
+    e_variable_check_type_no_session_has, identity );
+
+   set_variable_checker check_not_has_either(
+    e_variable_check_type_not_has_other_system, '~' + identity, &check_not_has );
+
+   if( set_system_variable( get_special_var_name(
+    e_special_var_queue_peers ), identity, check_not_has_either ) )
+   {
+      if( !no_delay )
+         msleep( c_peer_sleep_time * 2 );
+   }
+}
+
+void disconnect_peerchain( const string& identity, bool no_delay )
+{
+   set_variable_checker check_has(
+    e_variable_check_type_any_session_has, identity );
+
+   set_variable_checker check_not_has(
+    e_variable_check_type_not_has_other_system, identity, &check_has );
+
+   if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
+   {
+      if( !no_delay )
+         msleep( c_peer_sleep_time * 2 );
+   }
+}
+
 bool active_external_service( const string& ext_key )
 {
    // FUTURE: To avoid unnecessary repeated calls it might be useful to keep the timestamp
