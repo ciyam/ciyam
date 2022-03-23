@@ -1028,6 +1028,11 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_ofield=$specification_\\0_ofield arg_reverse=$specification_\\0_reverse arg_else_break=$specification_\\0_else_break\
  arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
+`@eq`(`'\\1`'`,`'for_function`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_function.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_procedure=$specification_\\0_procedure\
+ arg_field=$specification_\\0_field arg_func_name=$specification_\\0_func_name`}\
+`,\
 `@eq`(`'\\1`'`,`'for_move_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_move_children.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
  arg_id=$specification_\\0_id arg_children=$specification_\\0_children arg_cpfield=$specification_\\0_cpfield\

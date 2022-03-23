@@ -122,7 +122,7 @@ class CIYAM_BASE_DECL_SPEC listener_registration
 };
 
 bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port );
-bool CIYAM_BASE_DECL_SPEC has_registered_listener( int port, const std::string& id );
+bool CIYAM_BASE_DECL_SPEC has_registered_listener_id( const std::string& id, int* p_port = 0 );
 
 void CIYAM_BASE_DECL_SPEC list_listeners( std::ostream& os );
 

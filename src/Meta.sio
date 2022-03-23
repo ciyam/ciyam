@@ -5307,16 +5307,16 @@
       </args>
      </procedure>
      <procedure/>
-      <id>145430
-      <name>Initiate
+      <id>145440
+      <name>Finish
       <specifications/>
       </specifications>
       <args/>
       </args>
      </procedure>
      <procedure/>
-      <id>145440
-      <name>Terminate
+      <id>145430
+      <name>Start
       <specifications/>
       </specifications>
       <args/>
@@ -39404,7 +39404,7 @@
     <id>955
     <name>peerchain_status
     <type>int
-    <key_values>0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
+    <key_values>0=Halted,1=Started,2=Connected,3=Connecting,4=Disconnecting
    </user_defined_enum>
    <user_defined_enum/>
     <id>500

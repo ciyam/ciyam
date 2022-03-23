@@ -5,5 +5,5 @@ set "set field value" <val//field_name>[<oval//field_value>]
 cmd "call field command" <val//field_name><val//cmd_and_args>
 Connect "Connect procedure"
 Disconnect "Disconnect procedure"
-Initiate "Initiate procedure"
-Terminate "Terminate procedure"
+Finish "Finish procedure"
+Start "Start procedure"
