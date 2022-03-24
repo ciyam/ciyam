@@ -99,6 +99,11 @@
   <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port
  </script>
  <script/>
+  <name>destroy_peerchain_entry
+  <filename>*script*
+  <arguments>destroy_peerchain_entry.cin @identity
+ </script>
+ <script/>
   <name>install_application_script
   <filename>*script*
   <arguments>install_application_script.cin @storage @key @name @fields_and_values @package_install_extra
