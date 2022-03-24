@@ -1,0 +1,23 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "1"
+#NOTE: This script requires an identity.
+@else
+;
+IDENTITY=$1
+;
+.storage_init Meta
+.pd sys @now Meta Global_Peerchain_Entry $IDENTITY
+@ifndef $ERROR
+#Deleted global peerchain entry for identity '$IDENTITY'.
+@endif
+.storage_term
+@endif
