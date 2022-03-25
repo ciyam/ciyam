@@ -104,7 +104,7 @@ class CIYAM_BASE_DECL_SPEC peer_session_starter : public thread
 
    void on_start( );
 
-   void start_peer_session( const std::string& peer_info, bool is_secondary = false );
+   void start_peer_session( const std::string& peer_info );
 };
 
 void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_peer_session( std::ostream& outs );
@@ -114,8 +114,9 @@ std::string CIYAM_BASE_DECL_SPEC unprefixed_blockchains( const std::string& bloc
 
 void CIYAM_BASE_DECL_SPEC create_peer_listener( int port, const std::string& blockchains );
 
-void CIYAM_BASE_DECL_SPEC create_peer_initiator( const std::string& blockchain,
- const std::string& host_and_or_port, bool force = false, size_t num_for_support = 0, bool is_secondary = false );
+void CIYAM_BASE_DECL_SPEC create_peer_initiator(
+ const std::string& blockchain, const std::string& host_and_or_port,
+ bool force = false, size_t num_for_support = 0, bool is_interactive = true, bool is_secondary = false );
 
 void CIYAM_BASE_DECL_SPEC create_initial_peer_sessions( );
 

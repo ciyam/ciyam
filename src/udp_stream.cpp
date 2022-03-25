@@ -174,7 +174,7 @@ void udp_stream_session::on_start( )
 
                   string ip_addr( addr.get_addr_string( ) );
 
-                  bool is_null = ( ip_addr == c_null_ip_addr );
+                  bool is_null = ( ip_addr == c_null_ip_addr || ip_addr == c_null_ip_addr_for_ipv6 );
 
                   if( is_null || ( ip_addr == c_local_ip_addr_for_ipv6 ) )
                   {

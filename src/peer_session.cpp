@@ -72,6 +72,8 @@ const char c_blob_separator = '&';
 const char c_reprocess_prefix = '*';
 const char c_repository_suffix = '!';
 
+const char c_error_message_prefix = '#';
+
 const char* const c_hello = "hello";
 const char* const c_bc_prefix = "bc.";
 const char* const c_blk_suffix = ".blk";
@@ -2847,6 +2849,9 @@ void peer_session::on_start( )
          p_progress = &progress;
 #endif
 
+      string unprefixed_blockchain( blockchain );
+      replace( unprefixed_blockchain, c_bc_prefix, "" );
+
       if( is_responder )
       {
          string extra( to_string( get_files_area_item_max_size( ) ) );
@@ -2863,11 +2868,15 @@ void peer_session::on_start( )
 
          if( ap_socket->read_line( greeting, c_request_timeout, c_max_greeting_size, p_progress ) <= 0 )
          {
+            // FUTURE: This message should be handled as a server string message.
             string error;
             if( ap_socket->had_timeout( ) )
-               error = "timeout occurred trying to connect to peer";
+               error = "Timeout occurred trying to connect to peer.";
             else
-               error = "peer has terminated this connection";
+               error = "Peer has terminated this connection (check identity).";
+
+            if( !unprefixed_blockchain.empty( ) )
+               set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
 
             ap_socket->close( );
             throw runtime_error( error );
@@ -2878,6 +2887,9 @@ void peer_session::on_start( )
          {
             ap_socket->close( );
 
+            if( !unprefixed_blockchain.empty( ) )
+               set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
+
             throw runtime_error( greeting );
          }
 
@@ -2885,8 +2897,14 @@ void peer_session::on_start( )
          {
             ap_socket->close( );
 
-            throw runtime_error( "incompatible protocol version "
-             + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
+            // FUTURE: This message should be handled as a server string message.
+            string error( "Incompatible protocol version "
+             + ver_info.ver + " (was expecting " + string( c_protocol_version ) + ")." );
+
+            if( !unprefixed_blockchain.empty( ) )
+               set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
+
+            throw runtime_error( error );
          }
 
          if( !ver_info.extra.empty( ) )
@@ -2905,13 +2923,16 @@ void peer_session::on_start( )
             {
                ap_socket->close( );
 
-               throw runtime_error( "unexpected files area item max size mismatch" );
+               // FUTURE: This message should be handled as a server string message.
+               string error( "Unexpected files area item size mismatch." );
+
+               if( !unprefixed_blockchain.empty( ) )
+                  set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
+
+               throw runtime_error( error );
             }
          }
       }
-
-      string unprefixed_blockchain( blockchain );
-      replace( unprefixed_blockchain, c_bc_prefix, "" );
 
       init_session( cmd_handler, true, &ip_addr, &unprefixed_blockchain, from_string< int >( port ), is_for_support );
 
@@ -3180,6 +3201,8 @@ void peer_listener::on_start( )
                            {
                               registration.remove_id( next );
                               existing_blockchains.erase( next );
+
+                              set_system_variable( c_error_message_prefix + next, "" );
                            }
                         }
                         else
@@ -3188,6 +3211,8 @@ void peer_listener::on_start( )
                            {
                               registration.insert_id( next );
                               existing_blockchains.insert( next );
+
+                              set_system_variable( c_error_message_prefix + next, "" );
                            }
                         }
                      }
@@ -3248,6 +3273,18 @@ void peer_listener::on_start( )
          {
             s.close( );
             issue_error( "unexpected socket error" );
+
+            if( !unprefixed_blockchains.empty( ) )
+            {
+               vector< string > identities;
+               split( unprefixed_blockchains, identities );
+
+               // FUTURE: This message should be handled as a server string message.
+               string error( "Unable to start peerchain using port " + to_string( port ) + "." );
+
+               for( size_t i = 0; i < identities.size( ); i++ )
+                  set_system_variable( c_error_message_prefix + identities[ i ], error );
+            }
          }
       }
    }
@@ -3325,14 +3362,18 @@ void create_peer_listener( int port, const string& blockchains )
    }
 }
 
-void create_peer_initiator( const string& blockchain,
- const string& host_and_or_port, bool force, size_t num_for_support, bool is_secondary )
+void create_peer_initiator(
+ const string& blockchain, const string& host_and_or_port,
+ bool force, size_t num_for_support, bool is_interactive, bool is_secondary )
 {
+   if( g_server_shutdown )
+      return;
+
    if( blockchain.empty( ) )
       throw runtime_error( "create_peer_initiator called with empty blockchain identity" );
 
-   if( g_server_shutdown || has_max_peers( ) )
-      throw runtime_error( "server is shutting down or has reached its maximum peer limit" );
+   if( has_max_peers( ) )
+      throw runtime_error( "server has reached its maximum peer limit" );
 
    if( num_for_support > c_max_num_for_support )
       throw runtime_error( "cannot create " + to_string( num_for_support )
@@ -3356,9 +3397,26 @@ void create_peer_initiator( const string& blockchain,
    string identity( blockchain );
    replace( identity, c_bc_prefix, "" );
 
+   if( !is_interactive )
+      set_system_variable( c_error_message_prefix + identity, "" );
+
    ip_address address( host.c_str( ), port );
 
    string ip_addr( address.get_addr_string( ) );
+
+   if( ip_addr == c_null_ip_addr || ip_addr == c_null_ip_addr_for_ipv6 )
+   {
+      // FUTURE: This message should be handled as a server string message.
+      string error( "Unable to determine address for domain name '" + host + "'." );
+
+      if( is_interactive )
+         throw runtime_error( error );
+      else
+      {
+         set_system_variable( c_error_message_prefix + identity, error );
+         return;
+      }
+   }
 
    string own_identity( get_system_variable(
     get_special_var_name( e_special_var_blockchain ) ) );
@@ -3392,7 +3450,18 @@ void create_peer_initiator( const string& blockchain,
          if( force )
             remove_peer_ip_addr_from_rejection( ip_addr );
          else if( !get_is_accepted_peer_ip_addr( ip_addr ) )
-            throw runtime_error( "ip address " + ip_addr + " is not permitted" );
+         {
+            // FUTURE: This message should be handled as a server string message.
+            string error( "Host '" + host + "' address " + ip_addr + " is not permitted." );
+
+            if( is_interactive )
+               throw runtime_error( error );
+            else
+            {
+               set_system_variable( c_error_message_prefix + identity, error );
+               return;
+            }
+         }
 
          if( ap_socket->connect( address, ( i == 0 ) ? c_initial_timeout : c_support_timeout ) )
          {
@@ -3429,6 +3498,20 @@ void create_peer_initiator( const string& blockchain,
 
                if( i > 0 )
                   ++num_supporters_created;
+            }
+         }
+         else if( i == 0 )
+         {
+            // FUTURE: This message should be handled as a server string message.
+            string error( "Timed out trying to connect to '"
+             + host + "' using port " + to_string( port ) + "." );
+
+            if( is_interactive )
+               throw runtime_error( error );
+            else
+            {
+               set_system_variable( c_error_message_prefix + identity, error );
+               return;
             }
          }
       }
@@ -3492,7 +3575,7 @@ void peer_session_starter::on_start( )
             if( !peer_info.empty( ) )
             {
                if( !is_listener )
-                  start_peer_session( peer_info, is_secondary );
+                  start_peer_session( peer_info );
                else
                {
                   string::size_type pos = peer_info.find( '=' );
@@ -3524,7 +3607,7 @@ void peer_session_starter::on_start( )
    delete this;
 }
 
-void peer_session_starter::start_peer_session( const string& peer_info, bool is_secondary )
+void peer_session_starter::start_peer_session( const string& peer_info )
 {
    string info( peer_info );
 
@@ -3544,9 +3627,17 @@ void peer_session_starter::start_peer_session( const string& peer_info, bool is_
       blockchain.erase( pos );
    }
 
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+   temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
+
    // NOTE: Create sessions for both the local and hosted blockchains.
-   create_peer_initiator( blockchain, info, false, num_for_support );
-   create_peer_initiator( blockchain, info, false, num_for_support, true );
+   create_peer_initiator( blockchain, info, false, num_for_support, false );
+   create_peer_initiator( blockchain, info, false, num_for_support, false, true );
+
+   // KLUDGE: A connection can be made but then immediately die in "on_start"
+   // (so delay a little here to prevent confusion about whether successful).
+   msleep( c_request_timeout );
 }
 
 void init_peer_sessions( int start_listeners )
@@ -3566,6 +3657,8 @@ void init_peer_sessions( int start_listeners )
       for( multimap< int, string >::iterator i = peerchain_listeners.begin( ); i != peerchain_listeners.end( ); ++i )
       {
          string next_blockchain( c_bc_prefix + i->second );
+
+         set_system_variable( c_error_message_prefix + i->second, "" );
 
          string::size_type pos = next_blockchain.find( '_' );
 
