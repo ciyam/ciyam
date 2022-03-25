@@ -3079,7 +3079,6 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    if( size_limit < 0 )
       throw runtime_error( "unexpected negative size_limit provided to add_file_archive" );
 
-   string cwd( get_cwd( ) );
    string tmp_file_name( "~" + uuid( ).as_string( ) );
 
    if( path.empty( )
