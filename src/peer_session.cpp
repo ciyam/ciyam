@@ -2376,8 +2376,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             is_only_session = ( num_have_session_variable( identity ) < 2 );
 
          bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
+         bool had_connect_error = !get_system_variable( c_error_message_prefix + identity ).empty( );
 
-         if( is_only_session || is_disconnecting )
+         if( is_only_session || is_disconnecting || had_connect_error )
          {
             set_session_variable( identity, "" );
 
@@ -2882,7 +2883,7 @@ void peer_session::on_start( )
             if( ap_socket->had_timeout( ) )
                error = "Timeout occurred trying to connect to peer.";
             else
-               error = "Peer has terminated this connection (check identity).";
+               error = "Peer has unexpectedly terminated this connection.";
 
             if( !unprefixed_blockchain.empty( ) )
                set_system_variable( c_error_message_prefix + unprefixed_blockchain, error );
@@ -3650,15 +3651,23 @@ void peer_session_starter::start_peer_session( const string& peer_info )
 
    string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
+   set_system_variable( c_error_message_prefix + identity, "" );
+
    temporary_system_variable tmp_blockchain_connect( identity, c_true_value );
 
    // NOTE: Create sessions for both the local and hosted blockchains.
    create_peer_initiator( blockchain, info, false, num_for_support, false );
    create_peer_initiator( blockchain, info, false, num_for_support, false, true );
 
-   // KLUDGE: A connection can be made but then immediately die in "on_start"
-   // (so delay a little here to prevent confusion about whether successful).
-   msleep( c_request_timeout );
+   // NOTE: As connections are handled by separate threads need to wait some time
+   // here to determine whether both connections have been created successfully.
+   for( size_t i = 0; i < 10; i++ )
+   {
+      msleep( c_peer_sleep_time );
+
+      if( !has_any_session_variable( identity ) )
+         break;
+   }
 }
 
 void init_peer_sessions( int start_listeners )
