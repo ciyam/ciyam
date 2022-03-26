@@ -2786,7 +2786,16 @@ peer_session::peer_session( int64_t time_val,
          }
 
          if( !blockchains.count( blockchain ) )
-            throw runtime_error( "unsupported blockchain '" + blockchain + "' for peer listener" );
+         {
+            string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
+            // FUTURE: This message should be handled as a server string message.
+            string error( "Unsupported peerchain identity '" + identity + "'." );
+
+            this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
+
+            throw runtime_error( error );
+         }
 
          pid.erase( pos );
       }
@@ -2880,6 +2889,18 @@ void peer_session::on_start( )
 
             ap_socket->close( );
             throw runtime_error( error );
+         }
+
+         if( greeting.find( c_response_error_prefix ) == 0 )
+         {
+            ap_socket->close( );
+
+            greeting.erase( 0, strlen( c_response_error_prefix ) );
+
+            if( !unprefixed_blockchain.empty( ) )
+               set_system_variable( c_error_message_prefix + unprefixed_blockchain, greeting );
+
+            throw runtime_error( greeting );
          }
 
          version_info ver_info;
