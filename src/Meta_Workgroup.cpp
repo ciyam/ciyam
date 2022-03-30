@@ -777,6 +777,9 @@ void Meta_Workgroup::impl::impl_Get_Acyclic_Package_Type_List( )
       {
          string next( packages[ i ] );
 
+         if( !next.empty( ) && next[ 0 ] == '#' )
+            continue;
+
          if( reference_counted_packages.find( next ) == reference_counted_packages.end( ) )
             reference_counted_packages[ next ] = 999;
 

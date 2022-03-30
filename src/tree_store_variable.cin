@@ -23,7 +23,13 @@ BRANCH=$2
 VARIABLE=$3
 VAR_DATA=$4
 ;
-VTRUNK=Variables
+TRUNK=Variables
+;
+@ifeq "$BRANCH" "."
+TRUNK_AND_BRANCH=$TRUNK
+@else
+TRUNK_AND_BRANCH=$TRUNK:$BRANCH
+@endif
 ;
 @ifndef $VAR_DATA
 .file_hash "$VARIABLE"
@@ -32,7 +38,7 @@ VTRUNK=Variables
 @endif
 ;
 @ifndef $ERROR
-.file_list -a=?$VARIABLE -d=$VARIABLE -sort $TREE:$VTRUNK:$BRANCH !$TREE
+.file_list -a=?$VARIABLE -d=$VARIABLE -sort $TREE:$TRUNK_AND_BRANCH !$TREE
 @ifdef $VAR_DATA
 .file_tag -remove $VARIABLE
 @endif
