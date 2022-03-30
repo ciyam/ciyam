@@ -9,7 +9,7 @@ if [ $# -lt 1 ]; then
 else
  [ -f packages.lst ] ||
  {
-  touch packages.lst
+  ./xrep @unix_time.xrep >packages.lst
  }
 
  ./xrep @install_package.xrep name=$1 packages=@packages.lst >packages.lst.new

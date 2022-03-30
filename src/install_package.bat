@@ -6,8 +6,10 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-if not exist "packages.lst" call touch.bat packages.lst
+if exist "packages.lst" goto next
+xrep @unix_time.xrep >packages.lst
 
+:next
 xrep @install_package.xrep name=%1 packages=@packages.lst >packages.lst.new
 if errorlevel 1 goto end
 

@@ -69,7 +69,6 @@ mutex g_mutex;
 
 const char c_blob_separator = '&';
 
-const char c_reprocess_prefix = '*';
 const char c_repository_suffix = '!';
 
 const char c_error_message_prefix = '#';
@@ -1714,12 +1713,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       string next_hash( next_hash_to_get );
 
-      if( !next_hash.empty( ) && next_hash[ 0 ] == c_reprocess_prefix )
-      {
-         process_core_file( next_hash.substr( 1 ), blockchain );
-         next_hash.erase( );
-      }
-
       while( !next_hash.empty( ) && has_file( next_hash.substr( 0, next_hash.find( ':' ) ) ) )
       {
          pop_next_peer_file_hash_to_get( );
@@ -2385,6 +2378,12 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             if( !is_condemned_session( ) )
             {
                condemn_this_session( );
+
+               if( is_only_session )
+               {
+                  TRACE_LOG( TRACE_SESSIONS, "Ending session for identity '"
+                   + identity + "' due to matching session not being found." );
+               }
 
                if( !is_captured_session( ) )
                   handler.set_finished( );

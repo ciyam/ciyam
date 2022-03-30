@@ -615,6 +615,8 @@ void add_date_variables( xrep_info& xi )
    xi.set_variable( "d", to_string( p_t->tm_mday ) );
    xi.set_variable( "m", to_string( p_t->tm_mon + 1 ) );
    xi.set_variable( "y", to_string( p_t->tm_year + 1900 ) );
+
+   xi.set_variable( "ut", to_string( t ) );
 }
 
 struct lexer
@@ -3668,7 +3670,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "xrep v0.1t\n";
+               cout << "xrep v0.1u\n";
                cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       If the -x option is used then each line is executed as a system command.\n";
