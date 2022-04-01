@@ -2384,6 +2384,9 @@ void crypt_file( const string& tag_or_hash, const string& password,
 
    string file_name( construct_file_name_from_hash( hash ) );
 
+   if( !file_exists( file_name ) && recurse && has_file_been_archived( hash ) )
+      retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
+
    if( !file_exists( file_name ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( hash + " was not found." );

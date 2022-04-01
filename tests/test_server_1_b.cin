@@ -146,6 +146,22 @@ file_kill -p=ts*
 file_archive -destroy test1
 file_archive -destroy test2
 file_archive -destroy test3
+file_archive -add test1 10MiB test1
+file_archives
+file_raw -text blob "Hello World!"
+file_raw -text blob "This is a test."
+file_raw -text list "2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8 hello\n90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 test" root
+file_info -recurse -d=2 root
+file_crypt -recurse -blobs_only root password
+file_info -recurse -d=2 root
+file_relegate -n=2
+file_stats
+file_archives
+file_crypt -recurse -blobs_only root password
+file_info -recurse -d=2 root
+file_stats
+file_kill -recurse root
+file_archive -destroy test1
 file_archives
 #~rmdir test1
 ~rmdir test1
