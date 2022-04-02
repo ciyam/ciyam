@@ -5118,7 +5118,13 @@ string crypto_lamport( const string& filename,
          sha256 hash_a( to_comparable_string( i, false, 3 ) + "A" + seed + extra );
          sha256 hash_b( to_comparable_string( i, false, 3 ) + "B" + seed + extra );
 
-         outf_key << hash_a.get_digest_as_string( ) << ' ' << hash_b.get_digest_as_string( ) << '\n';
+         string hash_a_hex( hash_a.get_digest_as_string( ) );
+         string hash_b_hex( hash_b.get_digest_as_string( ) );
+
+         string hash_a_b64( base64::encode( hex_decode( hash_a_hex ) ) );
+         string hash_b_b64( base64::encode( hex_decode( hash_b_hex ) ) );
+
+         outf_key << hash_a_b64 << ' ' << hash_b_b64 << '\n';
 
          unsigned char buf_a[ c_sha256_digest_size ];
          hash_a.copy_digest_to_buffer( buf_a );
@@ -5129,7 +5135,13 @@ string crypto_lamport( const string& filename,
          hash_a.update( buf_a, c_sha256_digest_size );
          hash_b.update( buf_b, c_sha256_digest_size );
 
-         outf_pub << hash_a.get_digest_as_string( ) << ' ' << hash_b.get_digest_as_string( ) << '\n';
+         hash_a_hex = hash_a.get_digest_as_string( );
+         hash_b_hex = hash_b.get_digest_as_string( );
+
+         hash_a_b64 = base64::encode( hex_decode( hash_a_hex ) );
+         hash_b_b64 = base64::encode( hex_decode( hash_b_hex ) );
+
+         outf_pub << hash_a_b64 << ' ' << hash_b_b64 << '\n';
       }
    }
    else if( is_sign )
@@ -5187,7 +5199,7 @@ string crypto_lamport( const string& filename,
             if( hashes.size( ) != 2 )
                throw runtime_error( "unexpected key pair '" + next_pair + "'" );
 
-            if( hashes[ 0 ].size( ) != 64 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
+            if( hashes[ 0 ].size( ) != 44 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
                throw runtime_error( "unexpected key pair '" + next_pair + "'" );
 
             if( nibble & bit )
@@ -5264,22 +5276,23 @@ string crypto_lamport( const string& filename,
          if( hashes.size( ) != 2 )
             throw runtime_error( "unexpected pub pair '" + next_pair + "'" );
 
-         if( hashes[ 0 ].size( ) != 64 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
+         if( hashes[ 0 ].size( ) != 44 || ( hashes[ 0 ].size( ) != hashes[ 1 ] .size( ) ) )
             throw runtime_error( "unexpected pub pair '" + next_pair + "'" );
 
          string sig_hash( sig_lines[ i ] );
 
          unsigned char buf[ c_sha256_digest_size ];
-
-         hex_decode( sig_hash, buf, c_sha256_digest_size );
+         base64::decode( sig_hash, buf, c_sha256_digest_size );
 
          sha256 hash( buf, c_sha256_digest_size );
-         string hash_str( hash.get_digest_as_string( ) );
 
-         if( hash_str != hashes[ 0 ] && hash_str != hashes[ 1 ] )
+         string hash_hex( hash.get_digest_as_string( ) );
+         string hash_b64( base64::encode( hex_decode( hash_hex ) ) );
+
+         if( hash_b64 != hashes[ 0 ] && hash_b64 != hashes[ 1 ] )
             throw runtime_error( "invalid sig hash '" + sig_hash + "' for pub pair '" + next_pair + "'" );
 
-         if( hash_str == hashes[ 1 ] )
+         if( hash_b64 == hashes[ 1 ] )
             bits[ i ] = 1;
       }
 

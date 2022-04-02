@@ -18,7 +18,7 @@ ERROR=1
 IDENT=$1
 HEIGHT=$2
 ;
-@ifneq "$IDENT" "da667b8c4"
+@ifneq "$IDENT" "bc139fc15"
 UTIME=@unix:
 @else
 HRS_01=3600

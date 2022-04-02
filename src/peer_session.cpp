@@ -97,9 +97,9 @@ const size_t c_max_put_blob_size = 256;
 
 const size_t c_num_signature_lines = 256;
 const size_t c_num_public_key_lines = 256;
-const size_t c_key_pair_separator_pos = 64;
 
-const size_t c_num_hexadecimal_key_chars = 64;
+const size_t c_num_base64_key_chars = 44;
+const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_sleep_time = 250;
 
@@ -904,10 +904,17 @@ void validate_signature_file( const string& file_data )
 
       bool is_invalid = false;
 
-      if( next_line.size( ) != c_num_hexadecimal_key_chars )
+      if( next_line.size( ) != c_num_base64_key_chars )
          is_invalid = true;
-      else  if( !are_hex_nibbles( next_line ) )
-         is_invalid = true;
+      else
+      {
+         bool rc = false;
+
+         base64::validate( next_line, &rc );
+
+         if( !rc )
+            is_invalid = true;
+      }
 
       if( is_invalid )
          throw runtime_error( "unexpected invalid signature line: " + next_line );
@@ -949,11 +956,25 @@ void validate_public_key_file( const string& file_data )
          string pair_0( next_line.substr( 0, pos ) );
          string pair_1( next_line.substr( pos + 1 ) );
 
-         if( ( pair_0.size( ) != c_num_hexadecimal_key_chars )
-          || ( pair_1.size( ) != c_num_hexadecimal_key_chars ) )
+         if( ( pair_0.size( ) != c_num_base64_key_chars )
+          || ( pair_1.size( ) != c_num_base64_key_chars ) )
             is_invalid = true;
-         else  if( !are_hex_nibbles( pair_0 ) || !are_hex_nibbles( pair_1 ) )
-            is_invalid = true;
+         else
+         {
+            bool rc = 0;
+
+            base64::validate( pair_0, &rc );
+
+            if( !rc )
+               is_invalid = true;
+            else
+            {
+               base64::validate( pair_1, &rc );
+
+               if( !rc )
+                  is_invalid = true;
+            }
+         }
       }
 
       if( is_invalid )

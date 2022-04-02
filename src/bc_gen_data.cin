@@ -20,7 +20,7 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
-@ifneq "$IDENT" "da667b8c4"
+@ifneq "$IDENT" "bc139fc15"
 UTIME=@unix:
 @else
 HRS_01=3600
