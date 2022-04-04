@@ -1138,12 +1138,12 @@ class socket_command_handler : public command_handler
 
    void set_lock_expires( unsigned int seconds )
    {
-      lock_expires = unix_timestamp( ) + seconds;
+      lock_expires = unix_time_stamp( ) + seconds;
    }
 
    void check_lock_expiry( )
    {
-      if( lock_expires && unix_timestamp( ) > lock_expires )
+      if( lock_expires && unix_time_stamp( ) > lock_expires )
       {
          locked_rpc = true;
          lock_expires = 0;
@@ -1970,7 +1970,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !size_limit.empty( ) )
                size = unformat_bytes( size_limit );
 
-            response = relegate_time_stamped_files( hash, archive, num, size );
+            response = relegate_one_or_num_oldest_files( hash, archive, num, size );
          }
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )

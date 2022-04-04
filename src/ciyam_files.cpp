@@ -72,6 +72,7 @@ const char* const c_file_archive_size_limit = "size_limit";
 const char* const c_file_archive_status_info = "status_info";
 
 const char* const c_folder_archive_files_folder = "files";
+const char* const c_folder_archive_times_folder = "times";
 
 const char* const c_file_archive_status_is_full = "is full";
 const char* const c_file_archive_status_bad_write = "bad write";
@@ -101,7 +102,7 @@ string unique_time_stamp_tag( const string& prefix, const date_time& dt )
    // NOTE: To ensure that the tag is unique try multiple variations (changing the final digits).
    for( int i = 0; i < 10000; i++ )
    {
-      string next( formatted_time + to_comparable_string( i, false, 6 ) );
+      string next( formatted_time + to_comparable_string( i, false, 5 ) );
 
       if( !has_tag( prefix + next ) )
       {
@@ -301,6 +302,39 @@ bool path_already_used_in_archive( const string& path )
    return retval;
 }
 
+void add_archive_file( ods_file_system& ods_fs, const string& hash )
+{
+   int64_t time_stamp = unix_time_stamp( );
+
+   ods_fs.set_folder( c_folder_archive_times_folder );
+
+   string last_time( ods_fs.last_file_name_with_prefix( to_string( time_stamp ) ) );
+
+   string::size_type pos = last_time.find( '.' );
+
+   if( pos != string::npos )
+      last_time.erase( pos );
+
+   if( last_time.empty( ) )
+      time_stamp *= 100000;
+   else
+      time_stamp = from_string< int64_t >( last_time ) + 1;
+
+   string time_and_hash( to_string( time_stamp ) + '.' + hash );
+
+   ods_fs.add_file( time_and_hash, c_file_zero_length );
+
+   ods_fs.set_folder( ".." );
+
+   ods_fs.set_folder( c_folder_archive_files_folder );
+
+   string hash_and_time( hash + '.' + to_string( time_stamp ) );
+
+   ods_fs.add_file( hash_and_time, c_file_zero_length );
+
+   ods_fs.set_folder( ".." );
+}
+
 bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_archive = 0 )
 {
    bool retval = false;
@@ -331,7 +365,7 @@ bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_a
       ods_fs.set_folder( archive );
       ods_fs.set_folder( c_folder_archive_files_folder );
 
-      if( ods_fs.has_file( hash ) )
+      if( ods_fs.has_file( hash, true ) )
       {
          retval = true;
 
@@ -541,12 +575,12 @@ string current_time_stamp_tag( bool truncated, size_t days_ahead )
 
    string retval( c_time_stamp_tag_prefix );
 
-   string dummy_timestamp( get_session_variable( get_special_var_name( e_special_var_dummy_timestamp ) ) );
+   string dummy_time_stamp( get_session_variable( get_special_var_name( e_special_var_dummy_time_stamp ) ) );
 
-   if( !dummy_timestamp.empty( ) )
+   if( !dummy_time_stamp.empty( ) )
    {
-      retval += dummy_timestamp;
-      set_session_variable( get_special_var_name( e_special_var_dummy_timestamp ), "" );
+      retval += dummy_time_stamp;
+      set_session_variable( get_special_var_name( e_special_var_dummy_time_stamp ), "" );
    }
    else
    {
@@ -785,12 +819,22 @@ string file_type_info( const string& tag_or_hash,
          file_name = construct_file_name_from_hash( hash, false, false );
    }
 
-   if( !file_exists( file_name ) && indent && has_file_been_archived( hash ) )
-      retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
+   string archive;
+   bool has_been_archived = false;
 
    if( !file_exists( file_name ) )
+      has_been_archived = has_file_been_archived( hash, &archive );
+
+   if( indent && has_been_archived )
+      retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
+
+   if( !file_exists( file_name ) && !has_been_archived )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "File '" + tag_or_hash + "' was not found." );
+
+   if( !indent && has_been_archived )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "File '" + tag_or_hash + "' is in archive '" + archive + "'." );
 
    size_t file_size = 0;
    size_t max_to_buffer = 0;
@@ -1251,6 +1295,10 @@ string create_raw_file( const string& data, bool compress,
          throw runtime_error( "unable to create output file '" + file_name + "'" );
 
       outf << final_data;
+
+      outf.flush( );
+      if( !outf.good( ) )
+         throw runtime_error( "unexpected bad output stream creating output file '" + file_name + "'" );
 
       ++g_total_files;
       g_total_bytes += final_data.size( );
@@ -2758,7 +2806,7 @@ bool store_file( const string& hash,
             if( !existing && !is_in_blacklist && g_total_files >= get_files_area_item_max_num( ) )
             {
                // NOTE: First attempt to relegate an existing file in order to make room.
-               relegate_time_stamped_files( "", "", 1, 0, true );
+               relegate_one_or_num_oldest_files( "", "", 1, 0, true );
 
                if( g_total_files >= get_files_area_item_max_num( ) )
                   // FUTURE: This message should be handled as a server string message.
@@ -3122,6 +3170,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
    ods_fs.store_as_text_file( c_file_archive_status_info, status_info, c_status_info_pad_len );
 
    ods_fs.add_folder( c_folder_archive_files_folder );
+   ods_fs.add_folder( c_folder_archive_times_folder );
 
    ods_tx.commit( );
 }
@@ -3165,7 +3214,16 @@ void remove_file_archive( const string& name, bool destroy_files )
             ods_fs.list_files( file_names );
 
             for( size_t i = 0; i < file_names.size( ); i++ )
-               file_remove( path + '/' + file_names[ i ] );
+            {
+               string next( file_names[ i ] );
+
+               string::size_type pos = next.find( '.' );
+
+               if( pos != string::npos )
+                  next.erase( pos );
+
+               file_remove( path + '/' + next );
+            }
 
             ods_fs.set_root_folder( c_file_archives_folder );
          }
@@ -3215,9 +3273,10 @@ void repair_file_archive( const string& name )
       if( new_status_info == string( c_okay ) )
       {
          ods_fs.remove_folder( c_folder_archive_files_folder, 0, true );
+         ods_fs.remove_folder( c_folder_archive_times_folder, 0, true );
 
          ods_fs.add_folder( c_folder_archive_files_folder );
-         ods_fs.set_folder( c_folder_archive_files_folder );
+         ods_fs.add_folder( c_folder_archive_times_folder );
 
          // NOTE: Iterate through the files in the path adding all
          // that have names that appear to be valid SHA256 hashes.
@@ -3231,12 +3290,10 @@ void repair_file_archive( const string& name )
 
             if( expr.search( name ) == 0 )
             {
-               ods_fs.add_file( name, c_file_zero_length );
+               add_archive_file( ods_fs, name );
                size_used += file_size( fs.get_full_name( ) );
             }
          }
-
-         ods_fs.set_folder( ".." );
 
          if( size_used > size_limit )
             size_limit = size_used;
@@ -3375,7 +3432,7 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-string relegate_time_stamped_files( const string& hash,
+string relegate_one_or_num_oldest_files( const string& hash,
  const string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always )
 {
    guard g( g_mutex );
@@ -3391,10 +3448,10 @@ string relegate_time_stamped_files( const string& hash,
       file_hashes.push_back( hash );
    else
    {
-      string timestamp_expr( c_time_stamp_tag_prefix );
-      timestamp_expr += "*";
+      string time_stamp_expr( c_time_stamp_tag_prefix );
+      time_stamp_expr += "*";
 
-      string all_tags( list_file_tags( timestamp_expr, 0, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
+      string all_tags( list_file_tags( time_stamp_expr, 0, max_files, max_bytes, &min_bytes, &file_hashes, false ) );
 
       if( !all_tags.empty( ) )
       {
@@ -3473,15 +3530,13 @@ string relegate_time_stamped_files( const string& hash,
                avail -= num_bytes;
                ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
 
-               ods_fs.set_folder( c_folder_archive_files_folder );
+               add_archive_file( ods_fs, next_hash );
 
-               ods_fs.add_file( next_hash, c_file_zero_length );
                delete_file( next_hash, true );
-
-               ods_fs.set_folder( ".." );
 
                if( !retval.empty( ) )
                   retval += '\n';
+
                retval += next_hash + ' ' + next_archive;
 
                file_hashes.pop_front( );
@@ -3507,7 +3562,7 @@ string relegate_time_stamped_files( const string& hash,
    return retval;
 }
 
-bool has_file_been_archived( const string& hash )
+bool has_file_been_archived( const string& hash, string* p_archive_name )
 {
    guard g( g_mutex );
 
@@ -3538,9 +3593,13 @@ bool has_file_been_archived( const string& hash )
          ods_fs.set_folder( archive );
          ods_fs.set_folder( c_folder_archive_files_folder );
 
-         if( ods_fs.has_file( hash ) )
+         if( ods_fs.has_file( hash, true ) )
          {
             retval = true;
+
+            if( p_archive_name )
+               *p_archive_name = archive;
+
             break;
          }
       }
@@ -3583,7 +3642,7 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
             ods_fs.set_folder( archive );
             ods_fs.set_folder( c_folder_archive_files_folder );
 
-            if( ods_fs.has_file( hash ) )
+            if( ods_fs.has_file( hash, true ) )
             {
                retval = archive;
 
@@ -3665,9 +3724,20 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
          ods_fs.set_folder( c_folder_archive_files_folder );
 
-         if( ods_fs.has_file( hash ) )
+         string suffix;
+
+         if( ods_fs.has_file( hash, true, &suffix ) )
          {
-            ods_fs.remove_file( hash );
+            ods_fs.remove_file( hash, 0, 0, true );
+
+            if( suffix.length( ) > 1 )
+            {
+               ods_fs.set_folder( ".." );
+               ods_fs.set_folder( c_folder_archive_times_folder );
+
+               ods_fs.remove_file( suffix.substr( 1 ), 0, 0, true );
+            }
+
             string src_file( paths[ i ] + "/" + hash );
 
             if( file_exists( src_file ) )
@@ -3676,7 +3746,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
                file_remove( src_file );
 
                if( avail > limit )
-                  avail = 0;
+                  avail = limit;
 
                ods_fs.set_folder( ".." );
                ods_fs.store_as_text_file( c_file_archive_size_avail, avail );

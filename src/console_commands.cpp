@@ -84,7 +84,7 @@ const char c_environment_variable_marker_2 = '%';
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
-const char* const c_unix_timestamp = "unix";
+const char* const c_unix_time_stamp = "unix";
 
 const char* const c_function_file = "file";
 const char* const c_function_files = "files";
@@ -2499,8 +2499,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
          // to the file's content or even to the output of a system call using VAR=@file:~<cmd> (with
          // both the stdout and stderr output being redirected to a temporary file). Another usage is
          // VAR=@<expression>[:+-*/] where the expression can be a special symbol (such as "unix" for
-         // unix timestamp) or a single simple math operation between two numbers. This is useful for
-         // working out the unix timestamp value one hour from the current time with the following:
+         // unix time stamp) or a single simple math operation between two numbers. This is useful to
+         // work out the unix time stamp value one hour from the current time with the following:
          //
          // TIME=@unix+3600
          //
@@ -2592,8 +2592,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      memcpy( &lhs[ 0 ], &str[ 0 ], pos );
                   }
 
-                  if( lhs == string( c_unix_timestamp ) )
-                     val = unix_timestamp( );
+                  if( lhs == string( c_unix_time_stamp ) )
+                     val = unix_time_stamp( );
 
                   if( pos != string::npos )
                   {

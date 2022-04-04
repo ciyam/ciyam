@@ -2503,9 +2503,9 @@ date_time::date_time( julian j )
    construct_from_julian( j );
 }
 
-date_time::date_time( int64_t unix_timestamp )
+date_time::date_time( int64_t unix_time_stamp )
 {
-   julian j = ( unix_timestamp / ( julian )c_seconds_per_day ) + c_unix_epoch;
+   julian j = ( unix_time_stamp / ( julian )c_seconds_per_day ) + c_unix_epoch;
 
    construct_from_julian( j );
 }
@@ -3236,12 +3236,12 @@ void convert_julian_to_calendar( julian jdt,
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
 }
 
-int64_t unix_timestamp( const date_time& dt )
+int64_t unix_time_stamp( const date_time& dt )
 {
    julian j( dt );
 
    if( j < c_unix_epoch )
-      throw runtime_error( "unix_timestamp is not valid before the unix epoch" );
+      throw runtime_error( "unix_time_stamp is not valid before the unix epoch" );
 
    return ( int64_t )( ( j - c_unix_epoch ) * ( julian )c_seconds_per_day );
 }

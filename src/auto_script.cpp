@@ -57,7 +57,7 @@ const char* const c_attribute_finish = "finish";
 const char* const c_attribute_exclude = "exclude";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_arguments = "arguments";
-const char* const c_attribute_timestamp = "timestamp";
+const char* const c_attribute_time_stamp = "time_stamp";
 
 const int c_min_cycle_seconds_for_logging = 3600;
 
@@ -208,7 +208,7 @@ void read_script_info( )
 
             info.filename = reader.read_attribute( c_attribute_filename );
             info.arguments = reader.read_opt_attribute( c_attribute_arguments );
-            info.tsfilename = reader.read_opt_attribute( c_attribute_timestamp );
+            info.tsfilename = reader.read_opt_attribute( c_attribute_time_stamp );
 
             if( file_exists( info.tsfilename ) )
                info.last_mod = last_modification_time( info.tsfilename );

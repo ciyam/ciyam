@@ -194,7 +194,9 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       get_file( name, "", &os, true, p_progress );
    }
 
-   bool has_file( const std::string& name );
+   bool has_file( const std::string& name, bool is_prefix = false, std::string* p_suffix = 0 );
+
+   std::string last_file_name_with_prefix( const std::string& prefix );
 
    void link_file( const std::string& name, const std::string& source, std::ostream* p_os = 0 );
 
@@ -214,7 +216,8 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
       store_file( name, "", p_os, p_is, p_progress );
    }
 
-   void remove_file( const std::string& name, std::ostream* p_os = 0, progress* p_progress = 0 );
+   void remove_file( const std::string& name,
+    std::ostream* p_os = 0, progress* p_progress = 0, bool is_prefix = false );
 
    void replace_file( const std::string& name,
     const std::string& source, std::ostream* p_os = 0, std::istream* p_is = 0, progress* p_progress = 0 );
@@ -282,7 +285,7 @@ class ODS_FILE_SYSTEM_DECL_SPEC ods_file_system
    bool move_files_and_folders( const std::string& source,
     const std::string& destination, bool src_is_root, bool dest_is_root, bool replace_existing = false );
 
-   bool remove_items_for_file( const std::string& name, std::ostream* p_os = 0 );
+   bool remove_items_for_file( const std::string& name, std::ostream* p_os = 0, bool is_prefix = false );
    bool remove_items_for_folder( const std::string& name, std::ostream* p_os = 0 );
 
    private:
