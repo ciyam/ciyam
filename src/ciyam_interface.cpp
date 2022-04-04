@@ -485,7 +485,7 @@ string get_unique( const string& id, const string& ip_addr )
 
    // FUTURE: If a huge number of connections are made from different IP addresses that
    // never perform a successful login then the map being used could chew up very large
-   // amounts of memory (perhaps also need an IP address to timestamp map so that those
+   // amounts of memory (perhaps also use an IP address to time stamp map so that those
    // unsuccessful IP address entries that are older can be removed periodically).
    if( !g_uuid_for_ip_addr.count( ip_addr ) )
       g_uuid_for_ip_addr.insert( make_pair( ip_addr, uuid( ).as_string( ) ) );
@@ -2165,7 +2165,7 @@ void request_handler::process_request( )
                if( p_session_info->needs_pin )
                   cmd = c_cmd_home;
                else if( p_session_info->change_pwd_tm
-                && ( unix_timestamp( ) >= p_session_info->change_pwd_tm ) )
+                && ( unix_time_stamp( ) >= p_session_info->change_pwd_tm ) )
                   cmd = c_cmd_pwd;
             }
 

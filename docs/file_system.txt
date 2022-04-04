@@ -367,7 +367,7 @@ file_put mnenomics.txt
 
 Now if the command "file_tags ts.*" is issued the output would look something like this:
 
-ts.20181230184049987000
+ts.2018123018404900000
 
 As the tag is based upon the current time when multiple such tags are found they will be output in order from
 oldest to most recently added. This is then used to determine which files to automatically archive (or simply

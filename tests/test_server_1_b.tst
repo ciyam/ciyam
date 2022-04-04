@@ -258,13 +258,13 @@ file_archives -status_update
 test1 [okay      ] (0 B/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
-session_variable @dummy_timestamp 20170313080001
+session_variable @dummy_time_stamp 20170313080001
 file_put test1.jpg
-session_variable @dummy_timestamp 20170313080002
+session_variable @dummy_time_stamp 20170313080002
 session_variable @last_file_put
 b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
 file_put test2.jpg
-session_variable @dummy_timestamp 20170313080000
+session_variable @dummy_time_stamp 20170313080000
 session_variable @last_file_put
 efeee26ad65084462385b362e873f64fa22cd11b7f1e3d21ba0c3b5e4db8d92f
 file_put test.jpg
@@ -289,7 +289,7 @@ file_archive -remove test1
 file_archives
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
-session_variable @dummy_timestamp 20170313080003
+session_variable @dummy_time_stamp 20170313080003
 file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 Error: Unable to retrieve file a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 from archival.
 file_archive -add test1 10MiB test1
@@ -302,7 +302,7 @@ file_archives
 test1 [okay      ] (6.5 kB/10.5 MB) test1
 test2 [okay      ] (0 B/10.5 MB) test2
 test3 [okay      ] (0 B/10.5 MB) test3
-session_variable @dummy_timestamp 20170313080003
+session_variable @dummy_time_stamp 20170313080003
 file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 test1
 file_tags ts.*
@@ -325,14 +325,14 @@ file_archives
 test1 [okay      ] (6.5 kB/10.5 MB) test1
 test2 [okay      ] (8.1 kB/10.5 MB) test2
 test3 [okay      ] (6.5 kB/10.5 MB) test3
-session_variable @dummy_timestamp 20170313080000
+session_variable @dummy_time_stamp 20170313080000
 file_retrieve a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753
 test1
-session_variable @dummy_timestamp 20170313080001
+session_variable @dummy_time_stamp 20170313080001
 file_retrieve b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
 test2
 file_get a5ab1c26e5253fb7316b51e7f40687183714e0d683034954e1e8fc67bca42753 ~test.jpg
-session_variable @dummy_timestamp 20170313080002
+session_variable @dummy_time_stamp 20170313080002
 file_put ~test.jpg
 file_tags ts.*
 ts.20170313080001

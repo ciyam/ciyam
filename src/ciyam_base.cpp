@@ -7279,8 +7279,8 @@ size_t elapsed_since_last_recv( const date_time& dtm, const date_time* p_dtm )
 
    if( gtp_session )
    {
-      int64_t secs_1 = unix_timestamp( dtm );
-      int64_t secs_2 = unix_timestamp( p_dtm ? *p_dtm : gtp_session->dtm_last_recv );
+      int64_t secs_1 = unix_time_stamp( dtm );
+      int64_t secs_2 = unix_time_stamp( p_dtm ? *p_dtm : gtp_session->dtm_last_recv );
 
       millisecond ms1 = dtm.get_millisecond( );
       millisecond ms2 = ( p_dtm ? p_dtm->get_millisecond( ) : gtp_session->dtm_last_recv.get_millisecond( ) );

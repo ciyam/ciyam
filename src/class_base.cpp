@@ -2767,13 +2767,13 @@ string get_random_hash( )
    return "0" + hash.get_digest_as_string( ).substr( 1 );
 }
 
-int64_t get_unix_timestamp( bool use_dtm )
+int64_t get_unix_time_stamp( bool use_dtm )
 {
    string dtm( get_dtm( ) );
 
    date_time dt( use_dtm && !dtm.empty( ) ? date_time( dtm ) : date_time::standard( ) );
 
-   return unix_timestamp( dt );
+   return unix_time_stamp( dt );
 }
 
 string get_ext( const string& filename )
@@ -3626,9 +3626,9 @@ string valid_non_utf8_filename( const string& str )
    return search_replace( valid_file_name( str ), " ", "_" );
 }
 
-string unix_to_locktime( const numeric& unix_timestamp )
+string unix_to_locktime( const numeric& unix_time_stamp )
 {
-   int64_t val( unix_timestamp.as_int64_t( ) );
+   int64_t val( unix_time_stamp.as_int64_t( ) );
 
    string str( hex_encode( ( const unsigned char* )&val, sizeof( val ) ) );
 
@@ -3639,9 +3639,9 @@ string unix_to_locktime( const numeric& unix_timestamp )
    return str.substr( 0, 8 );
 }
 
-string unix_to_datetime( const numeric& unix_timestamp )
+string unix_to_datetime( const numeric& unix_time_stamp )
 {
-   int64_t val( unix_timestamp.as_int64_t( ) );
+   int64_t val( unix_time_stamp.as_int64_t( ) );
 
    return date_time( val ).as_string( );
 }
@@ -5658,9 +5658,9 @@ void disconnect_peerchain( const string& identity, bool no_delay )
 
 bool active_external_service( const string& ext_key )
 {
-   // FUTURE: To avoid unnecessary repeated calls it might be useful to keep the timestamp
+   // FUTURE: To avoid unnecessary repeated calls it might be handy to keep the time stamp
    // of the last time the service was found to be active and assuming that the last check
-   // was within a reasonable number of seconds from the current timestamp then can assume
+   // was within a reasonable range of seconds from the current time stamp then can assume
    // that the service is still active (also add a "force_check" to never skip the check).
    external_client client_info;
    get_external_client_info( ext_key, client_info );

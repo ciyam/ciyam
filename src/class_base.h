@@ -1154,7 +1154,7 @@ uint32_t CIYAM_BASE_DECL_SPEC get_random( );
 
 std::string CIYAM_BASE_DECL_SPEC get_random_hash( );
 
-int64_t CIYAM_BASE_DECL_SPEC get_unix_timestamp( bool use_dtm = true );
+int64_t CIYAM_BASE_DECL_SPEC get_unix_time_stamp( bool use_dtm = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_ext( const std::string& filename );
 std::string CIYAM_BASE_DECL_SPEC get_path( const std::string& filename );
@@ -1291,8 +1291,8 @@ std::string CIYAM_BASE_DECL_SPEC totp_secret( const std::string& unique );
 std::string CIYAM_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CIYAM_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 
-std::string CIYAM_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_timestamp );
-std::string CIYAM_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_timestamp );
+std::string CIYAM_BASE_DECL_SPEC unix_to_locktime( const numeric& unix_time_stamp );
+std::string CIYAM_BASE_DECL_SPEC unix_to_datetime( const numeric& unix_time_stamp );
 
 std::string CIYAM_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CIYAM_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );

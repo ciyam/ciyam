@@ -702,8 +702,10 @@ void ods_file_system::get_file( const string& name,
    }
 }
 
-bool ods_file_system::has_file( const string& name )
+bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_suffix )
 {
+   bool retval = false;
+
    btree_type& bt( p_impl->bt );
 
    string value( current_folder );
@@ -723,7 +725,71 @@ bool ods_file_system::has_file( const string& name )
 
    tmp_item.val = value;
 
-   return bt.find( tmp_item ) != bt.end( );
+   if( !is_prefix )
+      retval = bt.find( tmp_item ) != bt.end( );
+   else
+   {
+      btree_type::iterator i = bt.lower_bound( tmp_item );
+
+      if( i != bt.end( ) && ( i->val.find( value ) == 0 ) )
+      {
+         if( p_suffix )
+            *p_suffix = i->val.substr( value.length( ) );
+
+         retval = true;
+      }
+   }
+
+   return retval;
+}
+
+string ods_file_system::last_file_name_with_prefix( const string& prefix )
+{
+   string retval;
+
+   btree_type& bt( p_impl->bt );
+
+   string value( current_folder );
+
+   replace( value, c_folder_separator, c_pipe_separator );
+
+   value += string( c_folder_separator );
+
+   size_t path_length = value.length( );
+
+   value += prefix;
+
+   auto_ptr< ods::bulk_read > ap_bulk;
+
+   if( !o.is_bulk_locked( ) )
+      ap_bulk.reset( new ods::bulk_read( o ) );
+
+   o >> bt;
+
+   btree_type::item_type tmp_item;
+
+   tmp_item.val = value;
+
+   btree_type::iterator i = bt.lower_bound( tmp_item );
+
+   if( i != bt.end( ) && ( i->val.find( value ) == 0 ) )
+   {
+      while( true )
+      {
+         retval = i->val.substr( path_length );
+
+         btree_type::iterator j = ++i;
+
+         if( j == bt.end( ) )
+            break;
+         else if( j->val.find( value ) != 0 )
+            break;
+
+         i = j;
+      }
+   }
+
+   return retval;
 }
 
 void ods_file_system::link_file( const string& name, const string& source, ostream* p_os )
@@ -1013,7 +1079,7 @@ void ods_file_system::store_file( const string& name,
       replace_file( name, source, p_os, p_is, p_progress );
 }
 
-void ods_file_system::remove_file( const string& name, ostream* p_os, progress* p_progress )
+void ods_file_system::remove_file( const string& name, ostream* p_os, progress* p_progress, bool is_prefix )
 {
    btree_type& bt( p_impl->bt );
 
@@ -1030,7 +1096,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
 
    btree_trans_type bt_tx( bt );
 
-   if( remove_items_for_file( name, p_os ) )
+   if( remove_items_for_file( name, p_os, is_prefix ) )
    {
       bt_tx.commit( );
 
@@ -2413,7 +2479,7 @@ bool ods_file_system::move_files_and_folders( const string& source,
    return true;
 }
 
-bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os )
+bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os, bool is_prefix )
 {
    bool okay = true;
 
@@ -2439,7 +2505,15 @@ bool ods_file_system::remove_items_for_file( const string& name, ostream* p_os )
          tmp_item.val = c_pipe + tmp_item.val;
    }
 
-   tmp_iter = bt.find( tmp_item );
+   if( !is_prefix )
+      tmp_iter = bt.find( tmp_item );
+   else
+   {
+      tmp_iter = bt.lower_bound( tmp_item );
+
+      if( tmp_iter->val.find( tmp_item.val ) != 0 )
+         tmp_iter = bt.end( );
+   }
 
    if( tmp_iter == bt.end( ) )
    {

@@ -136,11 +136,11 @@ const char* const c_special_variable_files_area_dir = "@files_area_dir";
 const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
-const char* const c_special_variable_unix_timestamp = "@unix_timestamp";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
-const char* const c_special_variable_dummy_timestamp = "@dummy_timestamp";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
+const char* const c_special_variable_unix_time_stamp = "@unix_time_stamp";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
+const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
@@ -560,24 +560,24 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_peer_responder );
       break;
 
-      case e_special_var_unix_timestamp:
-      s = string( c_special_variable_unix_timestamp );
-      break;
-
       case e_special_var_ciyam_list_hash:
       s = string( c_special_variable_ciyam_list_hash );
-      break;
-
-      case e_special_var_dummy_timestamp:
-      s = string( c_special_variable_dummy_timestamp );
       break;
 
       case e_special_var_row_cache_limit:
       s = string( c_special_variable_row_cache_limit );
       break;
 
+      case e_special_var_unix_time_stamp:
+      s = string( c_special_variable_unix_time_stamp );
+      break;
+
       case e_special_var_check_if_changed:
       s = string( c_special_variable_check_if_changed );
+      break;
+
+      case e_special_var_dummy_time_stamp:
+      s = string( c_special_variable_dummy_time_stamp );
       break;
 
       case e_special_var_skip_after_fetch:
@@ -750,7 +750,7 @@ string get_raw_system_variable( const string& name )
    if( g_variables.count( c_special_variable_sys_var_prefix ) )
       sys_var_prefix = g_variables[ c_special_variable_sys_var_prefix ];
 
-   g_variables[ to_string( c_special_variable_unix_timestamp ) ] = to_string( unix_timestamp( ) ); 
+   g_variables[ to_string( c_special_variable_unix_time_stamp ) ] = to_string( unix_time_stamp( ) ); 
 
    // NOTE: One or more persistent variables can have their values
    // either stored or restored depending upon the prefix used and
