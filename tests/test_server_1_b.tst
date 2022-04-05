@@ -407,6 +407,27 @@ file_stats
 file_kill -recurse root
 file_archive -destroy test1
 file_archives
+file_archive -add test1 1MB test1
+file_archives
+test1 [okay      ] (0 B/1.0 MB) test1
+file_raw -text blob 999999 test1:xxxx
+ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30
+file_archives
+test1 [okay      ] (1.0 MB/1.0 MB) test1
+file_kill xxxx
+file_retrieve $FILE_HASH xxxx
+test1
+file_info xxxx
+[blob] ce1c6591009b0d60009de10e9b0da944897ea5dd1bc6edb1a930aa0065631c30 (1.0 MB)
+file_kill xxxx
+file_raw -text blob "This is a test..." test1:xxxx
+ca0fd64a906ba4fe821ca0c290b4777e26ac8f7afc9fa47ba332e97d2cc7654f
+file_archives
+test1 [okay      ] (18 B/1.0 MB) test1
+file_info xxxx
+[blob] ca0fd64a906ba4fe821ca0c290b4777e26ac8f7afc9fa47ba332e97d2cc7654f (18 B)
+file_kill xxxx
+file_archive -destroy test1
 ~rmdir test1
 ~rmdir test2
 ~rmdir test3
