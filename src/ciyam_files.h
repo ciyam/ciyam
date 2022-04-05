@@ -156,6 +156,9 @@ bool CIYAM_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );
 std::string CIYAM_BASE_DECL_SPEC list_file_archives( bool minimal = false,
  std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );
 
+void CIYAM_BASE_DECL_SPEC create_raw_file_in_archive(
+ const std::string& archive, const std::string& hash, const std::string& file_data );
+
 std::string CIYAM_BASE_DECL_SPEC relegate_one_or_num_oldest_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 

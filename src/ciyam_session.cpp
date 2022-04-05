@@ -1479,6 +1479,34 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string data( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_data ) );
          string tag( get_parm_val( parameters, c_cmd_ciyam_session_file_raw_tag ) );
 
+         string archive;
+
+         string::size_type pos = tag.find( ':' );
+
+         // NOTE: If a tag is in the form "xxx:yyy" then "xxx" is assumed to be an
+         // archive name for the purposes of creating test raw files in an archive
+         // and if data is just digits then will instead be a considered as a size
+         // for a string of dots.
+         if( pos != string::npos )
+         {
+            archive = tag.substr( 0, pos );
+            tag.erase( 0, pos + 1 );
+
+            bool is_size = true;
+
+            for( size_t i = 0; i < data.size( ); i++ )
+            {
+               if( ( data[ i ] < '0' ) || ( data[ i ] > '9' ) )
+               {
+                  is_size = false;
+                  break;
+               }
+            }
+
+            if( is_size )
+               data = string( from_string< size_t >( data ), '.' );
+         }
+
          check_not_possible_protocol_response( tag );
 
          // NOTE: A list can be constructed with a comma separated list of existing tags.
@@ -1547,7 +1575,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          response = create_raw_file_with_extras(
-          is_core && !extras.empty( ) ? "" : data, extras, !is_text, tag.c_str( ) );
+          ( is_core && !extras.empty( ) ? "" : data ), extras, !is_text, tag.c_str( ) );
+
+         if( !archive.empty( ) )
+            create_raw_file_in_archive( archive, response, data );
       }
       else if( command == c_cmd_ciyam_session_file_hash )
       {
@@ -1751,10 +1782,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
       }
-      else if( command == c_cmd_ciyam_session_file_test_udp )
+      else if( command == c_cmd_ciyam_session_file_test )
       {
-         bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_content ) );
-         string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_udp_num_packets ) );
+         bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_test_content ) );
+         string num_packets( get_parm_val( parameters, c_cmd_ciyam_session_file_test_num_packets ) );
 
          size_t num = from_string< size_t >( num_packets );
 

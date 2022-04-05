@@ -3141,7 +3141,7 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "An archive with the path '" + path + "' already exists." );
 
-   int64_t min_limit = get_files_area_item_max_size( ) * 10;
+   int64_t min_limit = get_files_area_item_max_size( );
 
    if( size_limit < min_limit )
       // FUTURE: This message should be handled as a server string message.
@@ -3430,6 +3430,106 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    }
 
    return retval;
+}
+
+void create_raw_file_in_archive( const string& archive, const string& hash, const string& file_data )
+{
+   guard g( g_mutex );
+
+   vector< string > paths;
+   vector< string > archives;
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !system_ods_instance( ).is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   bool found = false;
+
+   if( !all_archives.empty( ) )
+   {
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         string next_archive( archives[ i ] );
+
+         if( archive != next_archive )
+            continue;
+
+         found = true;
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( next_archive );
+
+         int64_t avail = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+         int64_t limit = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+
+         while( avail < file_data.size( ) )
+         {
+            ods_fs.set_folder( c_folder_archive_times_folder );
+
+            stringstream ss;
+            ods_fs.list_files( "", ss, "", ods_file_system::e_list_style_brief, true, 1 );
+
+            string file_name( ss.str( ) );
+
+            replace( file_name, "\n", "" );
+
+            if( file_name.empty( ) )
+               throw runtime_error( "unexpected empty file list in 'create_raw_file_in_archive'" );
+
+            ods_fs.remove_file( file_name );
+
+            string::size_type pos = file_name.find( '.' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected time file name '" + file_name + "' in 'create_raw_file_in_archive'" );
+
+            file_name.erase( 0, pos + 1 );
+
+            string file_path( paths[ i ] + "/" + file_name );
+            avail += file_size( file_path );
+
+            file_remove( file_path );
+
+            ods_fs.set_folder( ".." );
+            ods_fs.set_folder( c_folder_archive_files_folder );
+
+            ods_fs.remove_file( file_name, 0, 0, true );
+
+            ods_fs.set_folder( ".." );
+         }
+
+         avail -= file_data.size( );
+
+         add_archive_file( ods_fs, hash );
+
+         write_file( paths[ i ] + "/" + hash, file_data );
+
+         ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
+      }
+   }
+
+   if( !found )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "File archive '" + archive + "' was not found." );
+
+   if( ap_ods_tx.get( ) )
+      ap_ods_tx->commit( );
 }
 
 string relegate_one_or_num_oldest_files( const string& hash,

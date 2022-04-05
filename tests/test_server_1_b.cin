@@ -163,6 +163,20 @@ file_stats
 file_kill -recurse root
 file_archive -destroy test1
 file_archives
+file_archive -add test1 1MB test1
+file_archives
+file_raw -text blob 999999 test1:xxxx
+FILE_HASH=$OUTPUT
+file_archives
+file_kill xxxx
+file_retrieve $FILE_HASH xxxx
+file_info xxxx
+file_kill xxxx
+file_raw -text blob "This is a test..." test1:xxxx
+file_archives
+file_info xxxx
+file_kill xxxx
+file_archive -destroy test1
 #~rmdir test1
 ~rmdir test1
 #~rmdir test2

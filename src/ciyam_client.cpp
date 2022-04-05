@@ -94,7 +94,7 @@ const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
 
 const char* const c_udp_msg_cancel = "XXX";
 
-const char* const c_file_test_udp_cmd = "file_test";
+const char* const c_file_test_cmd = "file_test";
 
 const char* const c_not_found_output = "Not Found";
 const char* const c_error_output_prefix = "Error: ";
@@ -638,8 +638,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          size_t num_datagrams = 0;
          bool has_sent_datagrams = false;
 
-         if( ( str.find( c_file_test_udp_cmd ) == 0 ) 
-          && ( str.length( ) > strlen( c_file_test_udp_cmd ) + 1 ) )
+         if( ( str.find( c_file_test_cmd ) == 0 ) 
+          && ( str.length( ) > strlen( c_file_test_cmd ) + 1 ) )
          {
             string::size_type pos = str.rfind( ' ' );
 

@@ -45,7 +45,7 @@ to_store       Create        Create       This function is available to provide 
                                           the record should be valid for storing.
 
 post_init      Create        Create       This function is available to provide values for fields that depend
-                                          upon other field values (second call for "to_store" side-affects).
+                                          upon other field values (second call for "to_store" side-effects).
 
 validate       Create        Create       Prior to any attempt to store the record in the DB this function is
                                           called to perform all record validation and to provide feedback for
@@ -69,7 +69,7 @@ after_store    Update        <none>       Assuming no error has occurred previou
 -------------------------------------------------------------------------------------------------------------
 
 Passing " " as the key (to automatically create a key) should never be performed in rules code as a generated
-key will contain the current timestamp (this is okay for protocol as the timestamp is stored in the log). For
+key will contain the current time stamp (for the protocol command " " is replaced prior to being logged). For
 record creation in rules keys should constructed from a known key with a suffix (e.g. <key>_X or <key>_000001
 where <key> already exists and with the latter pattern applicable when needing to create multiple records).
 
@@ -108,7 +108,7 @@ to_store       Update        Update       This function is available to provide 
                                           the record should be valid for storing.
 
 post_init      Update        Update       This function is available to provide values for fields that depend
-                                          upon other field values (second call for "to_store" side-affects).
+                                          upon other field values (second call for "to_store" side-effects).
 
 validate       Update        Update       Prior to any attempt to store the record in the DB this function is
                                           called to perform all record validation and to provide feedback for
@@ -209,7 +209,7 @@ after_fetch    Review        Review       This method of fetching a record is av
                                           already mentioned.
 
                                           (finish_review)
-n/a            Review        <none>       This will release the lock (with no other side affects).
+n/a            Review        <none>       This will release the lock (with no other side-effects).
 -------------------------------------------------------------------------------------------------------------
 
 5) Fetching multiple existing records:
