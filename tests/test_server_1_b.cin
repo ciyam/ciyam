@@ -173,9 +173,17 @@ file_retrieve $FILE_HASH xxxx
 file_info xxxx
 file_kill xxxx
 file_raw -text blob "This is a test..." test1:xxxx
+FILE_HASH=$OUTPUT
 file_archives
 file_info xxxx
 file_kill xxxx
+file_raw -text blob 499999 test1:xxxx
+file_archives
+file_kill xxxx
+file_raw -text blob 499998 test1:xxxx
+file_archives
+file_kill xxxx
+file_retrieve $FILE_HASH
 file_archive -destroy test1
 #~rmdir test1
 ~rmdir test1

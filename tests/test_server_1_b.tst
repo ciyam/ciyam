@@ -427,6 +427,18 @@ test1 [okay      ] (18 B/1.0 MB) test1
 file_info xxxx
 [blob] ca0fd64a906ba4fe821ca0c290b4777e26ac8f7afc9fa47ba332e97d2cc7654f (18 B)
 file_kill xxxx
+file_raw -text blob 499999 test1:xxxx
+107cd8b8d036231f7c3b7bb8df745bd0d98d248a4bfdfba49db9ae1d46398b83
+file_archives
+test1 [okay      ] (500.0 kB/1.0 MB) test1
+file_kill xxxx
+file_raw -text blob 499998 test1:xxxx
+258831a6dfd1d0b3558763e338cecf65c7b2a5402230c746e4dbf9e5fc84fc46
+file_archives
+test1 [okay      ] (1.0 MB/1.0 MB) test1
+file_kill xxxx
+file_retrieve $FILE_HASH
+Error: Unable to retrieve file ca0fd64a906ba4fe821ca0c290b4777e26ac8f7afc9fa47ba332e97d2cc7654f from archival.
 file_archive -destroy test1
 ~rmdir test1
 ~rmdir test2

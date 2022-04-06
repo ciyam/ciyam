@@ -164,6 +164,7 @@ enum special_var
    e_special_var_secondary_validation,
    e_special_var_package_install_extra,
    e_special_var_peer_is_synchronising,
+   e_special_var_blockchain_has_archive,
    e_special_var_blockchain_is_fetching,
    e_special_var_blockchain_zenith_hash,
    e_special_var_blockchain_peer_is_owner,
