@@ -279,7 +279,14 @@ void process_repository_file( const string& blockchain,
 
    unsigned char type_and_extra = '\0';
 
+   bool has_archive = false;
    bool was_extracted = false;
+
+   string archive( replaced( blockchain, c_bc_prefix, "" ) );
+
+   if( !get_session_variable( get_special_var_name(
+    e_special_var_blockchain_has_archive ) ).empty( ) )
+      has_archive = true;
 
    string file_data, file_content;
 
@@ -339,7 +346,10 @@ void process_repository_file( const string& blockchain,
             if( file_data.empty( ) )
                file_data = ( char )type_and_extra + file_content;
 
-            create_raw_file( file_data, true, 0, 0, src_hash.c_str( ), true, true );
+            if( has_archive )
+               create_raw_file_in_archive( archive, src_hash, file_data );
+            else
+               create_raw_file( file_data, true, 0, 0, src_hash.c_str( ), true, true );
          }
          else
          {
@@ -406,7 +416,12 @@ void process_repository_file( const string& blockchain,
          if( was_extracted )
             delete_file( src_hash );
 
-         string local_hash( create_raw_file( file_data, false, 0, 0, 0, false ) );
+         string local_hash;
+
+         if( !has_archive )
+            local_hash = create_raw_file( file_data, false, 0, 0, 0, false );
+         else
+            create_raw_file_in_archive( archive, "", file_data, &local_hash );
 
          store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }
@@ -540,14 +555,28 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
    }
 }
 
-void process_list_items( const string& hash, bool recurse, bool check_for_supporters )
+void process_list_items( const string& hash, bool recurse,
+ bool check_for_supporters, string* p_blob_data = 0, string* p_file_data = 0 )
 {
-   string all_list_items( extract_file( hash, "" ) );
+   string all_list_items;
+
+   if( !p_file_data )
+      all_list_items = extract_file( hash, "" );
+   else
+      all_list_items = p_file_data->substr( 1 );
 
    vector< string > list_items;
    split( all_list_items, list_items, '\n' );
 
    string file_data( c_file_type_str_blob );
+
+   bool new_blob = false;
+
+   if( !p_blob_data )
+   {
+      new_blob = true;
+      p_blob_data = &file_data;
+   }
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
@@ -560,14 +589,14 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
-      if( file_data.size( ) >= max_blob_file_data )
+      if( p_blob_data->size( ) >= max_blob_file_data )
       {
-         string file_hash( create_raw_file( file_data ) );
+         string file_hash( create_raw_file( *p_blob_data ) );
 
          set_session_variable( file_hash, c_true_value );
          add_peer_file_hash_for_put( file_hash, check_for_supporters );
 
-         file_data = string( c_file_type_str_blob );
+         *p_blob_data = string( c_file_type_str_blob );
       }
 
       string next_item( list_items[ i ] );
@@ -594,16 +623,21 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                if( get_session_variable( blockchain_is_fetching_name ).empty( )
                 && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
                {
-                  if( file_data.size( ) > 1 )
-                     file_data += c_blob_separator;
+                  if( p_blob_data->size( ) > 1 )
+                     *p_blob_data += c_blob_separator;
 
-                  file_data += create_peer_repository_entry_pull_info(
+                  *p_blob_data += create_peer_repository_entry_pull_info(
                    next_hash, local_hash, local_public_key, master_public_key, false );
                }
             }
          }
          else if( recurse && is_list_file( next_hash ) )
-            process_list_items( next_hash, recurse, check_for_supporters );
+         {
+            process_list_items( next_hash, recurse, check_for_supporters, p_blob_data );
+
+            // NOTE: Recursive processing may have already located this.
+            first_hash_to_get = get_session_variable( first_hash_name );
+         }
          else if( recurse )
          {
             bool has_repository_entry = false;
@@ -630,10 +664,10 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
                      string password;
                      get_identity( password, false, true );
 
-                     if( file_data.size( ) > 1 )
-                        file_data += c_blob_separator;
+                     if( p_blob_data->size( ) > 1 )
+                        *p_blob_data += c_blob_separator;
 
-                     file_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
+                     *p_blob_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
 
                      clear_key( password );
                   }
@@ -646,9 +680,9 @@ void process_list_items( const string& hash, bool recurse, bool check_for_suppor
       }
    }
 
-   if( file_data.size( ) > 1 )
+   if( new_blob && p_blob_data->size( ) > 1 )
    {
-      string file_hash( create_raw_file( file_data ) );
+      string file_hash( create_raw_file( *p_blob_data ) );
 
       set_session_variable( file_hash, c_true_value );
       add_peer_file_hash_for_put( file_hash, check_for_supporters );
@@ -1130,6 +1164,7 @@ class socket_command_handler : public command_handler
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
     is_time_for_check( false ),
+    has_identity_archive( false ),
     is_for_support( is_for_support ),
     session_state( session_state ),
     session_op_state( session_state ),
@@ -1145,13 +1180,13 @@ class socket_command_handler : public command_handler
       if( get_is_test_session( ) )
          want_to_do_op( e_op_init );
 
-      last_issued_was_put = !is_responder;
-   }
+      if( !blockchain.empty( ) )
+      {
+         identity = replaced( blockchain, c_bc_prefix, "" );
+         has_identity_archive = has_file_archive( identity );
+      }
 
-   ~socket_command_handler( )
-   {
-      if( !blockchain_info.second.empty( ) )
-         file_remove( blockchain_info.second );
+      last_issued_was_put = !is_responder;
    }
 
 #ifdef SSL_SUPPORT
@@ -1266,11 +1301,12 @@ class socket_command_handler : public command_handler
 
    bool is_time_for_check;
    bool last_issued_was_put;
+   bool has_identity_archive;
 
    int64_t time_val;
 
+   string identity;
    string blockchain;
-   pair< string, string > blockchain_info;
 
    size_t blockchain_height;
    size_t blockchain_height_pending;
@@ -1285,6 +1321,7 @@ class socket_command_handler : public command_handler
 
    peer_state session_state;
    peer_state session_op_state;
+
    peer_trust_level session_trust_level;
 };
 
@@ -1390,7 +1427,11 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
       if( is_list_file( file_data[ 0 ] ) )
       {
          is_list = true;
-         create_raw_file( file_data, true, 0, 0, 0, true, true );
+
+         if( !has_identity_archive )
+            create_raw_file( file_data, true, 0, 0, 0, true, true );
+         else
+            create_raw_file_in_archive( identity, hash, file_data );
       }
    }
 
@@ -1412,7 +1453,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
        e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
          check_for_supporters = true;
 
-      process_list_items( hash, false, check_for_supporters );
+      process_list_items( hash, false, check_for_supporters, 0, p_file_data );
    }
 
    increment_peer_files_downloaded( num_bytes );
@@ -3014,6 +3055,10 @@ void peer_session::on_start( )
 
       set_session_variable(
        get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
+
+      if( has_file_archive( unprefixed_blockchain ) )
+         set_session_variable( get_special_var_name(
+          e_special_var_blockchain_has_archive ), c_true_value );
 
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true_value );

@@ -3373,6 +3373,24 @@ bool file_has_been_blacklisted( const string& hash )
    return retval;
 }
 
+bool has_file_archive( const string& archive )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   string all_file_archives( list_file_archives( true ) );
+
+   set< string > file_archives;
+
+   split( all_file_archives, file_archives, '\n' );
+
+   if( file_archives.count( archive ) )
+      retval = true;
+
+   return retval;
+}
+
 string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_avail, bool stop_after_first )
 {
    guard g( g_mutex );
@@ -3432,12 +3450,22 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    return retval;
 }
 
-void create_raw_file_in_archive( const string& archive, const string& hash, const string& file_data )
+void create_raw_file_in_archive( const string& archive, const string& hash, const string& file_data, string* p_hash )
 {
    guard g( g_mutex );
 
    vector< string > paths;
    vector< string > archives;
+
+   string file_hash( hash );
+
+   if( file_hash.empty( ) )
+   {
+      file_hash = sha256( file_data ).get_digest_as_string( );
+
+      if( p_hash )
+         *p_hash = file_hash;
+   }
 
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !system_ods_instance( ).is_bulk_locked( ) )
@@ -3516,9 +3544,9 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
          avail -= file_data.size( );
 
-         add_archive_file( ods_fs, hash );
+         add_archive_file( ods_fs, file_hash );
 
-         write_file( paths[ i ] + "/" + hash, file_data );
+         write_file( paths[ i ] + "/" + file_hash, file_data );
 
          ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
       }
