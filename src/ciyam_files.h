@@ -153,7 +153,7 @@ void CIYAM_BASE_DECL_SPEC archives_status_update( const std::string& name );
 
 bool CIYAM_BASE_DECL_SPEC file_has_been_blacklisted( const std::string& hash );
 
-bool CIYAM_BASE_DECL_SPEC has_file_archive( const std::string& archive );
+bool CIYAM_BASE_DECL_SPEC has_file_archive( const std::string& archive, std::string* p_path = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC list_file_archives( bool minimal = false,
  std::vector< std::string >* p_paths = 0, int64_t min_avail = 0, bool stop_after_first = false );

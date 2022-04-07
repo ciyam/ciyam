@@ -285,7 +285,7 @@ void process_repository_file( const string& blockchain,
    string archive( replaced( blockchain, c_bc_prefix, "" ) );
 
    if( !get_session_variable( get_special_var_name(
-    e_special_var_blockchain_has_archive ) ).empty( ) )
+    e_special_var_blockchain_archive_path ) ).empty( ) )
       has_archive = true;
 
    string file_data, file_content;
@@ -555,15 +555,10 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
    }
 }
 
-void process_list_items( const string& hash, bool recurse,
- bool check_for_supporters, string* p_blob_data = 0, string* p_file_data = 0 )
+void process_list_items( const string& hash,
+ bool recurse, bool check_for_supporters, string* p_blob_data = 0 )
 {
-   string all_list_items;
-
-   if( !p_file_data )
-      all_list_items = extract_file( hash, "" );
-   else
-      all_list_items = p_file_data->substr( 1 );
+   string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
    split( all_list_items, list_items, '\n' );
@@ -1453,7 +1448,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
        e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
          check_for_supporters = true;
 
-      process_list_items( hash, false, check_for_supporters, 0, p_file_data );
+      process_list_items( hash, false, check_for_supporters );
    }
 
    increment_peer_files_downloaded( num_bytes );
@@ -3056,9 +3051,13 @@ void peer_session::on_start( )
       set_session_variable(
        get_special_var_name( e_special_var_pubkeyx ), pubkeyx );
 
-      if( has_file_archive( unprefixed_blockchain ) )
+      string archive_path;
+
+      if( has_file_archive( unprefixed_blockchain, &archive_path ) )
+      {
          set_session_variable( get_special_var_name(
-          e_special_var_blockchain_has_archive ), c_true_value );
+          e_special_var_blockchain_archive_path ), archive_path );
+      }
 
       if( is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_is_owner ), c_true_value );

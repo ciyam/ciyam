@@ -133,7 +133,7 @@ void create_directory_if_not_exists( const string& dir_name )
 }
 
 string construct_file_name_from_hash( const string& hash,
- bool create_directory = false, bool check_hash_pattern = true )
+ bool create_directory = false, bool check_hash_pattern = true, string* p_alt_path = 0 )
 {
    if( hash.length( ) < 3 )
       return string( );
@@ -144,6 +144,18 @@ string construct_file_name_from_hash( const string& hash,
 
       if( expr.search( hash ) == string::npos )
          throw runtime_error( "unexpected hash '" + hash + "'" );
+   }
+
+   if( p_alt_path )
+   {
+      string file_name( *p_alt_path );
+
+      file_name += '/';
+
+      file_name += hash;
+
+      if( file_exists( file_name ) )
+         return file_name;
    }
 
    string file_name( get_files_area_dir( ) );
@@ -345,34 +357,37 @@ bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_a
 
    string all_archives( list_file_archives( true, &paths ) );
 
-   string archive;
-   vector< string > archives;
-
-   split( all_archives, archives, '\n' );
-
-   if( paths.size( ) != archives.size( ) )
-      throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
-
-   for( size_t i = 0; i < archives.size( ); i++ )
+   if( !all_archives.empty( ) )
    {
-      archive = archives[ i ];
+      string archive;
+      vector< string > archives;
 
-      if( p_archive && !p_archive->empty( ) && archive != *p_archive )
-         continue;
+      split( all_archives, archives, '\n' );
 
-      ods_fs.set_root_folder( c_file_archives_folder );
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      ods_fs.set_folder( archive );
-      ods_fs.set_folder( c_folder_archive_files_folder );
-
-      if( ods_fs.has_file( hash, true ) )
+      for( size_t i = 0; i < archives.size( ); i++ )
       {
-         retval = true;
+         archive = archives[ i ];
 
-         if( p_archive )
-            *p_archive = archive;
+         if( p_archive && !p_archive->empty( ) && archive != *p_archive )
+            continue;
 
-         break;
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( archive );
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         if( ods_fs.has_file( hash, true ) )
+         {
+            retval = true;
+
+            if( p_archive )
+               *p_archive = archive;
+
+            break;
+         }
       }
    }
 
@@ -646,7 +661,11 @@ bool has_file( const string& hash, bool check_is_hash )
       return false;
    else
    {
-      string file_name( construct_file_name_from_hash( hash, false, check_is_hash ) );
+      string archive_path( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+      string file_name( construct_file_name_from_hash(
+       hash, false, check_is_hash, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
       return file_exists( file_name );
    }
@@ -663,7 +682,11 @@ bool is_list_file( const string& hash )
 {
    guard g( g_mutex );
 
-   string file_name( construct_file_name_from_hash( hash ) );
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
    string data( buffer_file( file_name, 1 ) );
 
@@ -676,7 +699,11 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
 {
    guard g( g_mutex );
 
-   string file_name( construct_file_name_from_hash( hash ) );
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
    size_t file_size = 0;
 
@@ -2639,7 +2666,12 @@ void crypt_file( const string& tag_or_hash, const string& password,
 void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 {
    string tmp_file_name( "~" + uuid( ).as_string( ) );
-   string file_name( construct_file_name_from_hash( hash, false, false ) );
+
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
    try
    {
@@ -3062,7 +3094,11 @@ string extract_file( const string& hash,
 {
    guard g( g_mutex );
 
-   string file_name( construct_file_name_from_hash( hash ) );
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+   string file_name( construct_file_name_from_hash(
+    hash, false, archive_path.empty( ), ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
    string data( buffer_file( file_name ) );
 
@@ -3373,20 +3409,39 @@ bool file_has_been_blacklisted( const string& hash )
    return retval;
 }
 
-bool has_file_archive( const string& archive )
+bool has_file_archive( const string& archive, string* p_path )
 {
    guard g( g_mutex );
 
    bool retval = false;
 
-   string all_file_archives( list_file_archives( true ) );
+   vector< string > paths;
 
-   set< string > file_archives;
+   string all_archives( list_file_archives( true, &paths ) );
 
-   split( all_file_archives, file_archives, '\n' );
+   if( !all_archives.empty( ) )
+   {
+      vector< string > archives;
 
-   if( file_archives.count( archive ) )
-      retval = true;
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         string next( archives[ i ] );
+
+         if( next == archive )
+         {
+            if( p_path )
+               *p_path = paths[ i ];
+
+            retval = true;
+            break;
+         }
+      }
+   }
 
    return retval;
 }
