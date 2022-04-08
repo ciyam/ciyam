@@ -60,7 +60,7 @@ TARGET_XREP = xrep
 TARGET_XVARS = xvars
 
 # Source and object files
-TARGET_BASE_CPPS = console.cpp sio.cpp utilities.cpp
+TARGET_BASE_CPPS = console.cpp numeric.cpp sio.cpp utilities.cpp
 TARGET_BASE_OBJS = $(TARGET_BASE_CPPS:.cpp=.o)
 
 TARGET_XREP_CPPS = xrep.cpp

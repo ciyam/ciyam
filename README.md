@@ -74,6 +74,16 @@ copy libfcgi\Release\libfcgi.dll <dest directory>
 copy libfcgi\Release\libfcgi.lib <dest directory>
 ```
 
+NOTE: If you get error messages about undefined EOF then modify include/fcgio.h as follows:
+
+```
+ #include <iostream>
++#include <stdio.h>
+
+ #include "fcgiapp.h"
+
+```
+
 Haru PDF Library
 ----------------
 http://libharu.org

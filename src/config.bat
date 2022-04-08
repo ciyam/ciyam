@@ -19,8 +19,13 @@ call make.bat xrep xvars
 :has_tools
 if not exist salt.h xrep @salt.h.xrep >salt.h
 
+if exist ciyam_server.sid goto skip
+xrep @ciyam_server.sid.bat.xrep > ~config.bat
+call ~config.bat
+rm ~config.bat
+
+:skip
 xrep @config.h.xrep >config.h.new
 call update.bat config.h config.h.new
 
 call genmake.bat
-
