@@ -424,7 +424,10 @@ void console_progress::output_progress( const string& message, unsigned long num
    }
 
    if( output_length > new_length )
+   {
       cout << string( output_length - new_length, ' ' );
+      cout << string( output_length - new_length, '\b' );
+   }
 
    if( !message.length( ) )
    {

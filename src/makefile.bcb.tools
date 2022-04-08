@@ -141,7 +141,7 @@ LINK_DYNAMIC=$(LINK_DYNAMIC_DRTL_MT)
 !endif
 
 TARGET_BASE=base.lib
-TARGET_BASE_OBJECTS=console.obj sio.obj utilities.obj
+TARGET_BASE_OBJECTS=console.obj numeric.obj sio.obj utilities.obj
 TARGET_BASE_ERRFILE=base.err
 
 TARGET_XREP=xrep.exe
