@@ -102,7 +102,7 @@ CPP_DYNAMIC=$(CPP_DYNAMIC_DRTL_MT)
 
 TARGET_BASE=base.lib
 TARGET_BASE_INCLUDE=base.inc
-TARGET_BASE_OBJECTS=console.obj sio.obj utilities.obj
+TARGET_BASE_OBJECTS=console.obj numeric.obj sio.obj utilities.obj
 
 TARGET_XREP=xrep.exe
 TARGET_XREP_INCLUDE=xrep.inc
