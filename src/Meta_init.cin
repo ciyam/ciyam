@@ -5,7 +5,10 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifdef %CIYAM_TEST_STORAGE%
+SQL_FILE=@files::ciyam.sql
+@ifdef $SQL_FILE
 ~rm ciyam.sql
+@endif
 @endif
 storage_init -admin %CIYAM_STORAGE%
 module_load Meta
