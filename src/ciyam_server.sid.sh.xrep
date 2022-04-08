@@ -1,0 +1,1 @@
+echo -n "`{`$uu`}" >ciyam_server.sid

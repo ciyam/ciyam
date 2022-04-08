@@ -617,6 +617,7 @@ void add_date_variables( xrep_info& xi )
    xi.set_variable( "y", to_string( p_t->tm_year + 1900 ) );
 
    xi.set_variable( "ut", to_string( t ) );
+   xi.set_variable( "uu", uuid( ).as_string( ) );
 }
 
 struct lexer
