@@ -2305,7 +2305,7 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
 void hex_decode( const string& data, unsigned char* p_data, size_t len )
 {
    if( data.length( ) % 2 != 0 )
-      throw runtime_error( "incorrect hex for decoding (add a trailing zero?)" );
+      throw runtime_error( "incorrect hex for decoding (add a leading zero?)" );
 
    if( len < data.length( ) / 2 )
       throw runtime_error( "data buffer is " + to_string( len )
