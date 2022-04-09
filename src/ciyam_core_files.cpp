@@ -89,7 +89,7 @@ void verify_data( const string& content,
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty data content" );
 
-   string identity, last_data_hash, public_key_hash, tree_root_hash;
+   string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
 
    uint64_t data_height = 0;
    uint64_t unix_time_stamp = 0;
@@ -166,7 +166,21 @@ void verify_data( const string& content,
 
       bool found = false;
 
-      if( data_height > 1 && last_data_hash.empty( ) )
+      if( hind_hash.empty( ) )
+      {
+         size_t len = strlen( c_file_type_core_data_detail_hind_hash_prefix );
+
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_hind_hash_prefix ) )
+            throw runtime_error( "invalid data hind hash attribute '" + next_attribute + "'" );
+
+         next_attribute.erase( 0, len );
+
+         hind_hash = hex_encode( base64::decode( next_attribute ) );
+
+         found = true;
+      }
+
+      if( !found && ( data_height > 1 && last_data_hash.empty( ) ) )
       {
          size_t len = strlen( c_file_type_core_data_detail_last_hash_prefix );
 

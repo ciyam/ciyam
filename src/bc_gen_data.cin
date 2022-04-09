@@ -50,19 +50,25 @@ LAST=@$HEIGHT-1
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
 ;
+.crypto_hash @sid -s=#%HEIGHT%
+.crypto_chain 1440 -b64 $OUTPUT
+HIND_HASH_ENC=%OUTPUT:1440%
+;
 @ifeq "$LAST" "0"
 @ifndef $TREE
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @else
 .file_hash $TREE
 @ifndef $ERROR
 .encode $OUTPUT
-TREE_HASH_ENC=$OUTPUT
+TREE_ROOT_HASH_ENC=$OUTPUT
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
-t:$TREE_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @endif
 @endif
@@ -74,6 +80,7 @@ LAST_HASH_ENC=$OUTPUT
 ;
 @ifndef $TREE
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
@@ -81,12 +88,13 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 .file_hash $TREE
 @ifndef $ERROR
 .encode $OUTPUT
-TREE_HASH_ENC=$OUTPUT
+TREE_ROOT_HASH_ENC=$OUTPUT
 ;
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
-t:$TREE_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
 @endif
 @endif
