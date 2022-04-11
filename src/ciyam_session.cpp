@@ -2024,6 +2024,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw;
          }
       }
+      else if( command == c_cmd_ciyam_session_file_repo_entry )
+      {
+         string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_hash ) );
+
+         string local_hash, local_public_key, master_public_key;
+
+         if( fetch_repository_entry_record( hash,
+          local_hash, local_public_key, master_public_key, false ) )
+         {
+            response = "repo_hash: " + hash
+             + "\nlocal_hash: " + local_hash
+             + "\nlocal_public_key: " + local_public_key
+             + "\nmaster_public_key: " + master_public_key;
+         }
+      }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
          string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );

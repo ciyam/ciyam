@@ -719,6 +719,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         appending = true;
                      else if( filename[ 0 ] == '*' )
                      {
+                        chunk = 0;
+
                         append_chunks = true;
                         append_filename = filename.substr( 1 );
 
@@ -894,6 +896,10 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         if( append_last_name != name_without_chunk_ext )
                         {
                            file_remove( prefixed_append_name );
+
+                           if( !has_option_no_progress( ) )
+                              progress.output_progress( "" );
+
                            handle_command_response( prefixed_append_name );
                         }
 
