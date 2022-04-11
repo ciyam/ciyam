@@ -374,9 +374,15 @@ void process_repository_file( const string& blockchain,
    }
    else
    {
-      string dummy;
+      string dummy, local_hash;
 
-      if( fetch_repository_entry_record( src_hash, dummy, dummy, dummy, false ) )
+      bool has_local_file = false;
+      bool has_repo_entry = fetch_repository_entry_record( src_hash, local_hash, dummy, dummy, false );
+
+      if( has_repo_entry && has_file( local_hash ) )
+         has_local_file = true;
+
+      if( has_repo_entry && has_local_file )
       {
          if( was_extracted )
             delete_file( src_hash );
@@ -415,8 +421,6 @@ void process_repository_file( const string& blockchain,
 
          if( was_extracted )
             delete_file( src_hash );
-
-         string local_hash;
 
          if( !has_archive )
             local_hash = create_raw_file( file_data, false, 0, 0, 0, false );
