@@ -1684,13 +1684,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             output_total_blob_size = true;
          }
 
+         date_time dtm( date_time::local( ) );
+
          for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
          {
             if( i > 0 )
                response += '\n';
 
-            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val,
-             0, true, ( prefix.empty( ) ? 0 : prefix.c_str( ) ), allow_all_after, output_total_blob_size );
+            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val, 0, true,
+             ( prefix.empty( ) ? 0 : prefix.c_str( ) ), allow_all_after, output_total_blob_size, 0, &dtm );
          }
       }
       else if( command == c_cmd_ciyam_session_file_kill )

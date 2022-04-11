@@ -672,7 +672,7 @@ void process_list_items( const string& hash,
                   }
 
                   if( !has_repository_entry )
-                     store_repository_entry_record( next_hash, local_hash, master_public_key, master_public_key );
+                     store_repository_entry_record( next_hash, "", master_public_key, master_public_key );
                }
             }
          }

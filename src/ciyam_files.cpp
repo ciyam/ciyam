@@ -782,13 +782,19 @@ string file_type_info( const string& tag_or_hash,
    string use_tag_or_hash( tag_or_hash );
    string files_area_dir( get_files_area_dir( ) );
 
-   if( p_dtm && p_progress )
+   if( p_dtm )
    {
       date_time now( date_time::local( ) );
 
       uint64_t elapsed = seconds_between( *p_dtm, now );
 
-      if( elapsed >= 1 )
+      if( !p_progress )
+      {
+         if( elapsed > 30 )
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Timed out trying to process list items." );
+      }
+      else if( elapsed >= 1 )
       {
          if( !p_total )
             p_progress->output_progress( "." );
@@ -1183,7 +1189,6 @@ string file_type_info( const string& tag_or_hash,
                      retval += additional;
                   }
                }
-
             }
          }
 
