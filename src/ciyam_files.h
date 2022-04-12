@@ -67,6 +67,10 @@ std::string CIYAM_BASE_DECL_SPEC file_type_info(
  bool allow_all_after = true, bool output_total_blob_size = false,
  progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
 
+void CIYAM_BASE_DECL_SPEC file_list_item_pos(
+ const std::string& tag_or_hash, size_t& total, const std::string& item_hash,
+ size_t& item_pos, bool recurse = false, progress* p_progress = 0, date_time* p_dtm = 0 );
+
 std::string CIYAM_BASE_DECL_SPEC create_raw_file(
  const std::string& data, bool compress = true, const char* p_tag = 0,
  bool* p_is_existing = 0, const char* p_hash = 0, bool allow_uncompress = true, bool allow_missing_items = false );

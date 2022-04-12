@@ -1639,60 +1639,97 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          bool content( has_parm_val( parameters, c_cmd_ciyam_session_file_info_content ) );
          bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_info_recurse ) );
+         bool total_items( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_items ) );
          string depth( get_parm_val( parameters, c_cmd_ciyam_session_file_info_depth ) );
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_info_prefix ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_info_pat_or_hash ) );
 
          possibly_expected_error = true;
 
-         int depth_val = c_cmd_ciyam_session_file_info_depth_default;
-         if( !depth.empty( ) )
-            depth_val = atoi( depth.c_str( ) );
-
-         file_expansion expansion = e_file_expansion_none;
-
-         if( content )
-            expansion = e_file_expansion_content;
-         else if( recurse )
+         if( total_items )
          {
-            if( depth_val != 0 )
-               expansion = e_file_expansion_recursive;
+            date_time dtm( date_time::local( ) );
+
+            size_t total = 0;
+            size_t item_pos = 0;
+
+            bool recurse = true;
+
+            string item_hash;
+
+            string::size_type pos = pat_or_hash.find( ':' );
+
+            if( pos != string::npos )
+            {
+               item_hash = pat_or_hash.substr( pos + 1 );
+
+               if( item_hash[ item_hash.length( ) - 1 ] == '!' )
+               {
+                  recurse = false;
+                  item_hash.erase( item_hash.length( ) - 1 );
+               }
+            }
+
+            string tag_or_hash( pat_or_hash.substr( 0, pos ) );
+
+            file_list_item_pos( tag_or_hash, total, item_hash, item_pos, recurse, &handler, &dtm );
+
+            if( item_hash.empty( ) )
+               response = to_string( total );
             else
-               expansion = e_file_expansion_recursive_hashes;
+               response = to_string( item_pos ) + '/' + to_string( total );
          }
-
-         deque< string > tags_or_hashes;
-
-         if( pat_or_hash.find_first_of( "?*" ) == string::npos )
-            tags_or_hashes.push_back( pat_or_hash );
          else
-            list_file_tags( pat_or_hash, 0, 0, 0, 0, &tags_or_hashes );
-
-         bool allow_all_after = false;
-
-         if( !prefix.empty( ) && prefix[ prefix.length( ) - 1 ] == '*' )
          {
-            allow_all_after = true;
-            prefix.erase( prefix.length( ) - 1 );
-         }
+            int depth_val = c_cmd_ciyam_session_file_info_depth_default;
+            if( !depth.empty( ) )
+               depth_val = atoi( depth.c_str( ) );
 
-         bool output_total_blob_size = false;
+            file_expansion expansion = e_file_expansion_none;
 
-         if( !prefix.empty( ) && prefix[ 0 ] == '?' )
-         {
-            prefix.erase( 0, 1 );
-            output_total_blob_size = true;
-         }
+            if( content )
+               expansion = e_file_expansion_content;
+            else if( recurse )
+            {
+               if( depth_val != 0 )
+                  expansion = e_file_expansion_recursive;
+               else
+                  expansion = e_file_expansion_recursive_hashes;
+            }
 
-         date_time dtm( date_time::local( ) );
+            deque< string > tags_or_hashes;
 
-         for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
-         {
-            if( i > 0 )
-               response += '\n';
+            if( pat_or_hash.find_first_of( "?*" ) == string::npos )
+               tags_or_hashes.push_back( pat_or_hash );
+            else
+               list_file_tags( pat_or_hash, 0, 0, 0, 0, &tags_or_hashes );
 
-            response += file_type_info( tags_or_hashes[ i ], expansion, depth_val, 0, true,
-             ( prefix.empty( ) ? 0 : prefix.c_str( ) ), allow_all_after, output_total_blob_size, 0, &dtm );
+            bool allow_all_after = false;
+
+            if( !prefix.empty( ) && prefix[ prefix.length( ) - 1 ] == '*' )
+            {
+               allow_all_after = true;
+               prefix.erase( prefix.length( ) - 1 );
+            }
+
+            bool output_total_blob_size = false;
+
+            if( !prefix.empty( ) && prefix[ 0 ] == '?' )
+            {
+               prefix.erase( 0, 1 );
+               output_total_blob_size = true;
+            }
+
+            date_time dtm( date_time::local( ) );
+
+            for( size_t i = 0; i < tags_or_hashes.size( ); i++ )
+            {
+               if( i > 0 )
+                  response += '\n';
+
+               response += file_type_info( tags_or_hashes[ i ], expansion, depth_val, 0, true,
+                ( prefix.empty( ) ? 0 : prefix.c_str( ) ), allow_all_after, output_total_blob_size, 0, &dtm );
+            }
          }
       }
       else if( command == c_cmd_ciyam_session_file_kill )
