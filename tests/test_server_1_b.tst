@@ -68,6 +68,22 @@ file_info -recurse -d=-2 root
 [list] f0e0bbbf3321c7e483e3f7b4072e87791e1ec3cb74c3d4ac0db4faa765f12e32 (134 B)
 000000 fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 0 (8 B)
 000001 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 1 (8 B)
+file_info -total_items root
+6
+file_info -total_items root:xxx
+0/6
+file_info -total_items root:c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1
+1/6
+file_info -total_items root:2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8
+2/6
+file_info -total_items root:90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3
+3/6
+file_info -total_items root:f0e0bbbf3321c7e483e3f7b4072e87791e1ec3cb74c3d4ac0db4faa765f12e32
+4/6
+file_info -total_items root:fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25
+5/6
+file_info -total_items root:055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08
+6/6
 file_tag fb9677b46fbcd4bb532d10d305a5d8ebe90c9f252d655747a406ba1e7a859e25 test0
 file_tag 055ab3dc27be99b17779d4e5087c559f0f8743d5ac8575c5e340936b6d34ab08 test1
 file_raw list test0,test1 testx

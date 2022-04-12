@@ -792,7 +792,7 @@ string file_type_info( const string& tag_or_hash,
       {
          if( elapsed > 30 )
             // FUTURE: This message should be handled as a server string message.
-            throw runtime_error( "Timed out trying to process list items." );
+            throw runtime_error( "Exceeded time limit for processing list items." );
       }
       else if( elapsed >= 1 )
       {
@@ -1202,6 +1202,60 @@ string file_type_info( const string& tag_or_hash,
    }
 
    return retval;
+}
+
+void file_list_item_pos( const string& tag_or_hash, size_t& total,
+ const string& item_hash, size_t& item_pos, bool recurse, progress* p_progress, date_time* p_dtm )
+{
+   guard g( g_mutex );
+
+   string hash( tag_or_hash );
+
+   if( has_tag( tag_or_hash ) )
+      hash = tag_file_hash( tag_or_hash );
+
+   if( is_list_file( hash ) )
+   {
+      string all_list_items( extract_file( hash, "" ) );
+
+      vector< string > list_items;
+      split( all_list_items, list_items, '\n' );
+
+      for( size_t i = 0; i < list_items.size( ); i++ )
+      {
+         if( p_dtm && p_progress )
+         {
+            date_time now( date_time::local( ) );
+            uint64_t elapsed = seconds_between( *p_dtm, now );
+
+            if( elapsed >= 1 )
+            {
+               *p_dtm = now;
+
+               // FUTURE: This message should be handled as a server string message.
+               p_progress->output_progress( "Processed " + to_string( total ) + " items..." );
+            }
+         }
+
+         string next_item( list_items[ i ] );
+
+         if( !next_item.empty( ) )
+         {
+            ++total;
+
+            string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+
+            if( next_hash == item_hash )
+               item_pos = total;
+
+            if( !recurse )
+               continue;
+
+            if( is_list_file( next_hash ) )
+               file_list_item_pos( next_hash, total, item_hash, item_pos, recurse, p_progress, p_dtm );
+         }
+      }
+   }
 }
 
 string create_raw_file( const string& data, bool compress,
