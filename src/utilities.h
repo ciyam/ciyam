@@ -327,8 +327,12 @@ inline bool file_rename( const std::string& old_name, const std::string& new_nam
    return file_rename( old_name.c_str( ), new_name.c_str( ) );
 }
 
-int64_t file_size( const char* p_name );
-inline int64_t file_size( const std::string& name ) { return file_size( name.c_str( ) ); }
+int64_t file_size( const char* p_name, unsigned char* p_hdr = 0, size_t hdr_size = 0 );
+
+inline int64_t file_size( const std::string& name, unsigned char* p_hdr = 0, size_t hdr_size = 0 )
+{
+   return file_size( name.c_str( ), p_hdr, hdr_size );
+}
 
 std::string file_perms( const char* p_name );
 inline std::string file_perms( const std::string& name ) { return file_perms( name.c_str( ) ); }

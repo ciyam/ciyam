@@ -15,6 +15,7 @@ file_info -recurse -d=0 root
 file_info -recurse -d=-1 root
 file_info -recurse -d=-2 root
 file_info -total_items root
+file_info -total_items root:!
 file_info -total_items root:xxx
 file_info -total_items root:c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1
 file_info -total_items root:2ccdb4c72e6c263e1dc3e5c6617bad479d267546ced55f88d6b6e4527d2e8da8
