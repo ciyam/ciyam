@@ -458,7 +458,7 @@ bool file_rename( const char* p_old_name, const char* p_new_name )
    return ::rename( p_old_name, p_new_name ) == 0;
 }
 
-int64_t file_size( const char* p_name )
+int64_t file_size( const char* p_name, unsigned char* p_hdr, size_t hdr_size )
 {
    int64_t retval;
 
@@ -468,6 +468,16 @@ int64_t file_size( const char* p_name )
 
    if( hFile == INVALID_HANDLE_VALUE )
       throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
+
+   if( p_hdr && hdr_size )
+   {
+      size_t num = 0;
+
+      ::ReadFile( hFile, p_hdr, hdr_size, &num, 0 );
+
+      if( num != hdr_size )
+         memset( p_hdr, '\0', hdr_size );
+   }
 
    LARGE_INTEGER pos, npos;
    pos.QuadPart = INT64_C( 0 );
@@ -482,6 +492,12 @@ int64_t file_size( const char* p_name )
    int fd = _open( p_name, O_RDONLY );
    if( fd <= 0 )
       throw runtime_error( "unable to open file '" + string( p_name ) + "' for input in file_size" );
+
+   if( p_hdr && hdr_size )
+   {
+      if( read( fd, p_hdr, hdr_size ) != hdr_size )
+         memset( p_hdr, '\0', hdr_size );
+   }
 
    retval = lseek64( fd, INT64_C( 0 ), SEEK_END );
    if( retval < 0 )

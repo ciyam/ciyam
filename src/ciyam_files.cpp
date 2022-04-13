@@ -85,8 +85,78 @@ const char* const c_file_archive_status_status_bad_create = "bad create";
 
 mutex g_mutex;
 
-map< string, string > g_tag_hashes;
-multimap< string, string > g_hash_tags;
+class file_hash_info
+{
+   public:
+   file_hash_info( )
+    :
+    type( 0 )
+   {
+      memset( data, '\0', sizeof( data ) );
+   }
+
+   file_hash_info( const string& hash, unsigned char type = 0 )
+    :
+    type( type )
+   {
+      string encoded( hash );
+
+      size_t num_hex_chars = ( c_sha256_digest_size * 2 );
+
+      if( encoded.length( ) < num_hex_chars )
+         encoded += string( num_hex_chars - hash.length( ), '0' );
+
+      hex_decode( encoded, data, sizeof( data ) );
+   }
+
+   bool operator <( const file_hash_info& o ) const
+   {
+      return memcmp( data, o.data, sizeof( data ) ) < 0;
+   }
+
+   bool operator ==( const file_hash_info& o ) const
+   {
+      return memcmp( data, o.data, sizeof( data ) ) == 0;
+   }
+
+   bool operator !=( const file_hash_info& o ) const
+   {
+      return memcmp( data, o.data, sizeof( data ) ) != 0;
+   }
+
+   unsigned char get_type( ) const { return type; }
+
+   string get_hash_string( ) const
+   {
+      return hex_encode( data, sizeof( data ) );
+   }
+
+   private:
+   unsigned char type;
+   unsigned char data[ c_sha256_digest_size ];
+};
+
+map< string, file_hash_info > g_tag_hashes;
+multimap< file_hash_info, string > g_hash_tags;
+
+unsigned char get_file_type_and_extra( const string& hash, const char* p_file_name = 0 )
+{
+   unsigned char file_type_and_extra = '\0';
+
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   if( i == g_hash_tags.end( ) || ( hash != i->first.get_hash_string( ) ) )
+   {
+      if( !p_file_name )
+         throw runtime_error( "unexpected hash tag for " + hash + " not found" );
+
+      file_size( p_file_name, &file_type_and_extra, sizeof( file_type_and_extra ) );
+   }
+   else
+      file_type_and_extra = i->first.get_type( );
+
+   return file_type_and_extra;
+}
 
 size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
@@ -505,39 +575,54 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
                }
                else
                {
-                  g_hash_tags.insert( make_pair( data, fs.get_name( ) ) );
-                  g_tag_hashes.insert( make_pair( fs.get_name( ), data ) );
+                  unsigned char file_type_and_extra = '\0';
+                  file_size( file_name, &file_type_and_extra, sizeof( file_type_and_extra ) );
+
+                  file_hash_info hash_info( data, file_type_and_extra );
+
+                  g_hash_tags.insert( make_pair( hash_info, fs.get_name( ) ) );
+                  g_tag_hashes.insert( make_pair( fs.get_name( ), hash_info ) );
                }
             }
             else
             {
                string file_path( fs.get_full_name( ) );
 
-               if( file_size( file_path ) > max_size )
-                  files_to_delete.push_back( file_path );
-               else if( g_total_files >= max_num )
+               if( g_total_files >= max_num )
                   files_to_delete.push_back( file_path );
                else
                {
-                  ++g_total_files;
-                  g_total_bytes += file_size( file_path );
+                  unsigned char file_type_and_extra = '\0';
 
-                  string hash( dfsi.get_name( ) + fs.get_name( ) );
+                  int64_t next_size = file_size( file_path, &file_type_and_extra, sizeof( file_type_and_extra ) );
 
-                  // NOTE: If the file has no persistent tags then add
-                  // a time-stamp tag for it.
-                  if( !g_hash_tags.count( hash ) )
+                  if( next_size > max_size )
+                     files_to_delete.push_back( file_path );
+                  else
                   {
-                     date_time dt( last_modification_time( file_path ) );
+                     ++g_total_files;
 
-                     dt += ( seconds )secs_diff;
+                     g_total_bytes += next_size;
 
-                     string tag_name( c_time_stamp_tag_prefix );
+                     string hash( dfsi.get_name( ) + fs.get_name( ) );
 
-                     tag_name += unique_time_stamp_tag( tag_name, dt );
+                     // NOTE: If the file has no persistent tags then add
+                     // a time-stamp tag for it.
+                     if( !g_hash_tags.count( hash ) )
+                     {
+                        date_time dt( last_modification_time( file_path ) );
 
-                     g_hash_tags.insert( make_pair( hash, tag_name ) );
-                     g_tag_hashes.insert( make_pair( tag_name, hash ) );
+                        dt += ( seconds )secs_diff;
+
+                        string tag_name( c_time_stamp_tag_prefix );
+
+                        tag_name += unique_time_stamp_tag( tag_name, dt );
+
+                        file_hash_info hash_info( hash, file_type_and_extra );
+
+                        g_hash_tags.insert( make_pair( hash_info, tag_name ) );
+                        g_tag_hashes.insert( make_pair( tag_name, hash_info ) );
+                     }
                   }
                }
             }
@@ -621,7 +706,7 @@ bool has_tag( const string& name, file_type type )
       return false;
 
    string::size_type pos = name.rfind( '*' );
-   map< string, string >::iterator i = ( pos == 0 ? g_tag_hashes.end( ) : g_tag_hashes.lower_bound( name.substr( 0, pos ) ) );
+   map< string, file_hash_info >::iterator i = ( pos == 0 ? g_tag_hashes.end( ) : g_tag_hashes.lower_bound( name.substr( 0, pos ) ) );
 
    if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
       return false;
@@ -634,12 +719,9 @@ bool has_tag( const string& name, file_type type )
          string hash( tag_file_hash( name ) );
          string file_name( construct_file_name_from_hash( hash ) );
 
-         string data( buffer_file( file_name, 1 ) );
-         
-         if( data.empty( ) )
-            throw runtime_error( "unexpected empty file '" + name + "'" );
+         unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
 
-         unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+         unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
          if( file_type != c_file_type_val_blob && file_type != c_file_type_val_list )
             throw runtime_error( "invalid file type '0x" + hex_encode( &file_type, 1 ) + "' found in has_tag" );
@@ -682,15 +764,17 @@ bool is_list_file( const string& hash )
 {
    guard g( g_mutex );
 
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
    string archive_path( get_session_variable(
     get_special_var_name( e_special_var_blockchain_archive_path ) ) );
 
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-   string data( buffer_file( file_name, 1 ) );
+   unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
 
-   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+   unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
    return ( file_type == c_file_type_val_list );
 }
@@ -705,21 +789,21 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
    string file_name( construct_file_name_from_hash(
     hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-   size_t file_size = 0;
+   unsigned char file_type_and_extra = '\0';
 
-   string data( buffer_file( file_name, 1, &file_size ) );
+   int64_t size = file_size( file_name.c_str( ), &file_type_and_extra, sizeof( file_type_and_extra ) );
 
-   unsigned char file_type = ( data[ 0 ] & c_file_type_val_mask );
+   unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
-   bool is_encrypted = ( data[ 0 ] & c_file_type_val_encrypted );
-   bool is_compressed = ( data[ 0 ] & c_file_type_val_compressed );
+   bool is_encrypted = ( file_type_and_extra & c_file_type_val_encrypted );
+   bool is_compressed = ( file_type_and_extra & c_file_type_val_compressed );
 
    if( blobs_for_lists && file_type == c_file_type_val_list )
-      file_size = 0;
+      size = 0;
 
    if( !is_encrypted && blobs_for_lists && file_type == c_file_type_val_list )
    {
-      data = buffer_file( file_name );
+      string data( buffer_file( file_name ) );
 
       string increment_special( get_special_var_name( e_special_var_increment ) );
       string buffered_var_name( get_special_var_name( e_special_var_file_info_buffered ) );
@@ -757,12 +841,12 @@ int64_t file_bytes( const string& hash, bool blobs_for_lists )
             string next( list_items[ i ] );
             string::size_type pos = next.find( ' ' );
 
-            file_size += file_bytes( next.substr( 0, pos ), true );
+            size += file_bytes( next.substr( 0, pos ), true );
          }
       }
    }
 
-   return file_size;
+   return size;
 }
 
 string file_type_info( const string& tag_or_hash,
@@ -1911,14 +1995,14 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
 
       if( g_tag_hashes.count( name ) )
       {
-         string hash = g_tag_hashes[ name ];
+         file_hash_info hash_info = g_tag_hashes[ name ];
          g_tag_hashes.erase( name );
 
          // NOTE: Need to also remove the matching entry in the hash tags multimap.
-         multimap< string, string >::iterator i;
-         for( i = g_hash_tags.lower_bound( hash ); i != g_hash_tags.end( ); ++i )
+         multimap< file_hash_info, string >::iterator i;
+         for( i = g_hash_tags.lower_bound( hash_info ); i != g_hash_tags.end( ); ++i )
          {
-            if( i->first != hash )
+            if( i->first != hash_info )
                break;
 
             if( i->second == name )
@@ -1928,10 +2012,10 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
             }
          }
 
-         if( unlink && !g_hash_tags.count( hash ) )
-            delete_file( hash );
-         else if( auto_tag_with_time && !g_hash_tags.count( hash ) )
-            tag_file( current_time_stamp_tag( ), hash, true );
+         if( unlink && !g_hash_tags.count( hash_info ) )
+            delete_file( hash_info.get_hash_string( ) );
+         else if( auto_tag_with_time && !g_hash_tags.count( hash_info ) )
+            tag_file( current_time_stamp_tag( ), hash_info.get_hash_string( ), true );
       }
    }
    else
@@ -1940,7 +2024,7 @@ void tag_del( const string& name, bool unlink, bool auto_tag_with_time )
          throw runtime_error( "invalid attempt to delete all file system tags (use ** if really wanting to do this)" );
 
       string prefix( name.substr( 0, pos ) );
-      map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
+      map< string, file_hash_info >::iterator i = g_tag_hashes.lower_bound( prefix );
 
       vector< string > matching_tag_names;
       for( ; i != g_tag_hashes.end( ); ++i )
@@ -2068,8 +2152,12 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
          // file has any existing persistent tags.
          if( insert_tag )
          {
-            g_hash_tags.insert( make_pair( hash, tag_name ) );
-            g_tag_hashes.insert( make_pair( tag_name, hash ) );
+            unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
+
+            file_hash_info hash_info( hash, file_type_and_extra );
+
+            g_hash_tags.insert( make_pair( hash_info, tag_name ) );
+            g_tag_hashes.insert( make_pair( tag_name, hash_info ) );
          }
 
          if( !ts_tag_to_remove.empty( ) )
@@ -2086,23 +2174,25 @@ string get_hash( const string& prefix )
 
    string::size_type pos = prefix.find_first_of( "?*" );
 
-   multimap< string, string >::iterator i = g_hash_tags.lower_bound( prefix.substr( 0, pos ) );
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( prefix.substr( 0, pos ) );
 
    while( i != g_hash_tags.end( ) )
    {
+      string next_hash( i->first.get_hash_string( ) );
+
       if( pos == string::npos )
       {
-         if( i->first.find( prefix ) == 0 )
-            retval = i->first;
+         if( next_hash.find( prefix ) == 0 )
+            retval = next_hash;
          break;
       }
       else
       {
-         if( wildcard_match( prefix, i->first ) )
+         if( wildcard_match( prefix, next_hash ) )
          {
             if( !retval.empty( ) )
                retval += '\n';
-            retval += i->first;
+            retval += next_hash;
 
             ++i;
          }
@@ -2121,11 +2211,11 @@ string get_hash_tags( const string& hash )
    string retval;
    set< string > tags_found;
 
-   multimap< string, string >::iterator i = g_hash_tags.lower_bound( hash );
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
 
    for( ; i != g_hash_tags.end( ); ++i )
    {
-      if( i->first != hash )
+      if( i->first.get_hash_string( ) != hash )
          break;
 
       tags_found.insert( i->second );
@@ -2154,8 +2244,8 @@ string tag_file_hash( const string& name, bool* p_rc )
    {
       set< string > hashes;
 
-      for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
-         hashes.insert( i->second );
+      for( map< string, file_hash_info >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
+         hashes.insert( i->second.get_hash_string( ) );
 
       for( set< string >::iterator i = hashes.begin( ); i != hashes.end( ); ++i )
       {
@@ -2167,7 +2257,7 @@ string tag_file_hash( const string& name, bool* p_rc )
    else
    {
       string::size_type pos = name.rfind( '*' );
-      map< string, string >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
+      map< string, file_hash_info >::iterator i = g_tag_hashes.lower_bound( name.substr( 0, pos ) );
 
       if( i == g_tag_hashes.end( ) || ( pos == string::npos && i->first != name ) )
       {
@@ -2184,7 +2274,7 @@ string tag_file_hash( const string& name, bool* p_rc )
       if( p_rc )
          *p_rc = true;
 
-      retval = i->second;
+      retval = i->second.get_hash_string( );
    }
 
    return retval;
@@ -2328,7 +2418,7 @@ string list_file_tags(
       string::size_type pos = pat.find_first_of( "*?" );
       string prefix = pat.substr( 0, pos );
 
-      map< string, string >::iterator i = g_tag_hashes.lower_bound( prefix );
+      map< string, file_hash_info >::iterator i = g_tag_hashes.lower_bound( prefix );
 
       for( ; i != g_tag_hashes.end( ); ++i )
       {
@@ -2371,7 +2461,7 @@ string list_file_tags(
             // NOTE: Skip matching tags for files that have more than one tag.
             if( !include_multiples )
             {
-               multimap< string, string >::iterator j = g_hash_tags.lower_bound( i->second );
+               multimap< file_hash_info, string >::iterator j = g_hash_tags.lower_bound( i->second );
 
                if( j != g_hash_tags.end( ) && ++j != g_hash_tags.end( ) )
                {
@@ -2380,7 +2470,7 @@ string list_file_tags(
                }
             }
 
-            int64_t next_bytes = file_bytes( i->second );
+            int64_t next_bytes = file_bytes( i->second.get_hash_string( ) );
 
             if( max_bytes && num_bytes + next_bytes > max_bytes )
                continue;
@@ -2397,7 +2487,7 @@ string list_file_tags(
             retval += i->first;
 
             if( p_hashes )
-               p_hashes->push_back( i->second );
+               p_hashes->push_back( i->second.get_hash_string( ) );
          }
 
          if( max_tags && num_tags >= max_tags )
@@ -2409,7 +2499,7 @@ string list_file_tags(
    }
    else
    {
-      for( map< string, string >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
+      for( map< string, file_hash_info >::iterator i = g_tag_hashes.begin( ); i != g_tag_hashes.end( ); ++i )
       {
          ++pcount;
 
@@ -2439,7 +2529,7 @@ string list_file_tags(
          // NOTE: Skip matching tags for files that have more than one tag.
          if( !include_multiples )
          {
-            multimap< string, string >::iterator j = g_hash_tags.lower_bound( i->second );
+            multimap< file_hash_info, string >::iterator j = g_hash_tags.lower_bound( i->second );
 
             if( j != g_hash_tags.end( ) && ++j != g_hash_tags.end( ) )
             {
@@ -2451,7 +2541,7 @@ string list_file_tags(
          if( is_excluded )
             continue;
 
-         int64_t next_bytes = file_bytes( i->second );
+         int64_t next_bytes = file_bytes( i->second.get_hash_string( ) );
 
          if( max_bytes && num_bytes + next_bytes > max_bytes )
             break;
@@ -2468,7 +2558,7 @@ string list_file_tags(
          retval += i->first;
 
          if( p_hashes )
-            p_hashes->push_back( i->second );
+            p_hashes->push_back( i->second.get_hash_string( ) );
 
          if( max_tags && num_tags >= max_tags )
             break;
