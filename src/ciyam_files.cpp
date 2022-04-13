@@ -547,6 +547,10 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
 
       do
       {
+         // NOTE: Skip directories that might be archives.
+         if( !is_first && dfsi.get_name( ).length( ) > 2 )
+            continue;
+
          file_filter ff;
          fs_iterator fs( dfsi.get_path_name( ), &ff );
 
