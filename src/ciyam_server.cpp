@@ -725,9 +725,7 @@ int main( int argc, char* argv[ ] )
                   if( !is_update && !g_server_shutdown && file_exists( c_update_signal_file ) )
                   {
                      is_update = true;
-
                      ++g_server_shutdown;
-                     shutdown_reason = "due to update file";
                   }
 
                   if( g_server_shutdown && !reported_shutdown )
