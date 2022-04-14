@@ -91,6 +91,8 @@ void verify_data( const string& content,
 
    string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
 
+   size_t num_tree_items = 0;
+
    uint64_t data_height = 0;
    uint64_t unix_time_stamp = 0;
 
@@ -107,6 +109,7 @@ void verify_data( const string& content,
 
       bool has_height = false;
       bool has_identity = false;
+      bool has_num_tree_items = false;
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
@@ -141,12 +144,29 @@ void verify_data( const string& content,
             identity = next_attribute.substr(
              string( c_file_type_core_data_header_identity_prefix ).length( ) );
          }
+         else if( !has_num_tree_items )
+         {
+            if( next_attribute.find( c_file_type_core_data_header_num_tree_items_prefix ) != 0 )
+               throw runtime_error( "unexpected missing num tree items attribute in data header '" + header + "'" );
+
+            has_num_tree_items = true;
+
+            num_tree_items = from_string< size_t >( next_attribute.substr(
+             string( c_file_type_core_data_header_num_tree_items_prefix ).length( ) ) );
+
+            if( !p_data_info )
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
+         }
          else
             throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
       }
 
       if( !has_identity )
          throw runtime_error( "unexpected missing identity attribute in data header '" + header + "'" );
+
+      if( !p_data_info && !has_num_tree_items )
+         set_session_variable( get_special_var_name( e_special_var_blockchain_num_tree_items ), "" );
    }
 
    data_info info;
@@ -272,6 +292,12 @@ void verify_data( const string& content,
       if( !found )
          throw runtime_error( "unexpected extraneous data attribute '" + next_attribute + "'" );
    }
+
+   if( !num_tree_items && !tree_root_hash.empty( ) )
+      throw runtime_error( "unexpected missing num tree items header attribute" );
+
+   if( num_tree_items && tree_root_hash.empty( ) )
+      throw runtime_error( "unexpected missing tree root hash attribute" );
 
    if( public_key_hash.empty( ) )
       throw runtime_error( "unexpected missing public key hash attribute" );

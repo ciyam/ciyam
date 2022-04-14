@@ -146,6 +146,7 @@ const char* const c_file_type_core_block_object = "blk";
 
 const char* const c_file_type_core_data_header_height_prefix = "h=";
 const char* const c_file_type_core_data_header_identity_prefix = "i=";
+const char* const c_file_type_core_data_header_num_tree_items_prefix = "n=";
 
 const char* const c_file_type_core_data_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";

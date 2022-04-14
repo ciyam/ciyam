@@ -65,7 +65,10 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 @ifndef $ERROR
 .encode $OUTPUT
 TREE_ROOT_HASH_ENC=$OUTPUT
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+.file_info -total_items $TREE
+NUM_TREE_ITEMS=$OUTPUT
+;
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS\n\
 h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_ROOT_HASH_ENC\n\
@@ -89,8 +92,10 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 @ifndef $ERROR
 .encode $OUTPUT
 TREE_ROOT_HASH_ENC=$OUTPUT
+.file_info -total_items $TREE
+NUM_TREE_ITEMS=$OUTPUT
 ;
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
