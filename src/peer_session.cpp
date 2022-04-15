@@ -72,6 +72,7 @@ const char c_blob_separator = '&';
 const char c_repository_suffix = '!';
 
 const char c_error_message_prefix = '#';
+const char c_ignore_all_puts_prefix = '$';
 
 const char* const c_hello = "hello";
 const char* const c_bc_prefix = "bc.";
@@ -560,7 +561,7 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
 }
 
 void process_list_items( const string& hash,
- bool recurse, bool check_for_supporters, string* p_blob_data = 0 )
+ bool recurse, bool check_for_supporters, string* p_blob_data = 0, size_t* p_num_items_found = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -632,7 +633,10 @@ void process_list_items( const string& hash,
          }
          else if( recurse && is_list_file( next_hash ) )
          {
-            process_list_items( next_hash, recurse, check_for_supporters, p_blob_data );
+            if( p_num_items_found )
+               ++( *p_num_items_found );
+
+            process_list_items( next_hash, recurse, check_for_supporters, p_blob_data, p_num_items_found );
 
             // NOTE: Recursive processing may have already located this.
             first_hash_to_get = get_session_variable( first_hash_name );
@@ -688,7 +692,7 @@ void process_list_items( const string& hash,
    }
 }
 
-void process_data_file( const string& blockchain, const string& hash, size_t height )
+void process_data_file( const string& blockchain, const string& hash, size_t height, size_t* p_num_items_found = 0 )
 {
    guard g( g_mutex );
 
@@ -751,7 +755,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                if( first_hash_to_get == tree_root_hash )
                   set_session_variable( first_hash_name, "" );
 
-               process_list_items( tree_root_hash, true, check_for_supporters );
+               process_list_items( tree_root_hash, true, check_for_supporters, 0, p_num_items_found );
 
                if( top_next_peer_file_hash_to_get( ).empty( ) )
                   tag_new_zenith = true;
@@ -1015,7 +1019,8 @@ void validate_public_key_file( const string& file_data )
    }
 }
 
-bool process_block_for_height( const string& blockchain, const string& hash, size_t height )
+bool process_block_for_height( const string& blockchain,
+ const string& hash, size_t height, size_t* p_num_items_found = 0 )
 {
    bool retval = false;
 
@@ -1098,7 +1103,11 @@ bool process_block_for_height( const string& blockchain, const string& hash, siz
          else if( !waiting_for_pubkey && !waiting_for_signature )
          {
             retval = true;
-            process_data_file( blockchain, data_file_hash, height );
+
+            if( !first_hash_to_get.empty( ) )
+               set_system_variable( c_ignore_all_puts_prefix + replaced( blockchain, c_bc_prefix, "" ), "" );
+
+            process_data_file( blockchain, data_file_hash, height, p_num_items_found );
          }
       }
    }
@@ -1220,6 +1229,7 @@ class socket_command_handler : public command_handler
    bool get_last_issued_was_put( ) const { return last_issued_was_put; }
    void set_last_issued_was_put( bool val ) { last_issued_was_put = val; }
 
+   const string& get_identity( ) const { return identity; }
    const string& get_blockchain( ) const { return blockchain; }
 
    size_t get_blockchain_height( ) const { return blockchain_height; }
@@ -1607,6 +1617,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
       prior_put( ).erase( );
 
+   bool ignore_blockchain_puts = false;
+
+   if( !identity.empty( )
+    && !get_system_variable( c_ignore_all_puts_prefix + identity ).empty( ) )
+      ignore_blockchain_puts = true;
+
    bool any_supporter_has_top_get = false;
    bool any_supporter_has_top_put = false;
 
@@ -1618,8 +1634,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       next_hash_to_get = top_next_peer_file_hash_to_get(
        ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_get : 0 );
 
-      next_hash_to_put = top_next_peer_file_hash_to_put(
-       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
+      if( !ignore_blockchain_puts )
+         next_hash_to_put = top_next_peer_file_hash_to_put(
+          ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
 
       if( is_for_support
        && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
@@ -1704,7 +1721,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                       get_special_var_name( e_special_var_blockchain_is_fetching ), c_true_value );
                   }
 
-                  bool has_block_data = process_block_for_height( blockchain, next_block_hash, blockchain_height + 1 );
+                  size_t num_items_found = 0;
+
+                  bool has_block_data = process_block_for_height(
+                   blockchain, next_block_hash, blockchain_height + 1, &num_items_found );
 
                   if( !need_to_check && has_block_data )
                      blockchain_height = ++blockchain_height_pending;
@@ -1718,7 +1738,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // file to be fetched (so that pull requests will start
                         // from the correct point).
                         if( !file_hash.empty( ) )
-                           next_block_tag += " @" + file_hash;
+                        {
+                           next_block_tag += string( " " ) + '@' + file_hash;
+
+                           num_tree_item = num_items_found;
+                        }
 
                         chk_file( next_block_tag, &next_block_hash );
                         has_issued_chk = true;
@@ -2068,6 +2092,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    set_last_session_cmd( command );
 
+   string identity( socket_handler.get_identity( ) );
    string blockchain( socket_handler.get_blockchain( ) );
 
    size_t blockchain_height = socket_handler.get_blockchain_height( );
@@ -2236,6 +2261,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
 
+                  set_system_variable( c_ignore_all_puts_prefix + identity, c_true_value );
+
                   if( socket_handler.get_is_responder( ) )
                   {
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
@@ -2280,6 +2307,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             hash = tag_file_hash( tag_or_hash );
 
          socket.set_delay( );
+
+         if( !identity.empty( ) )
+         {
+            if( !get_system_variable( c_ignore_all_puts_prefix + identity ).empty( ) )
+            {
+               if( get_hash_tags( hash ).find( c_dat_suffix ) != string::npos )
+                  set_system_variable( c_ignore_all_puts_prefix + identity, "" );
+            }
+         }
 
          fetch_file( hash, socket, p_progress );
          increment_peer_files_uploaded( file_bytes( hash ) );
