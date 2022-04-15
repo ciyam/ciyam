@@ -1160,6 +1160,7 @@ class socket_command_handler : public command_handler
     is_owner( is_owner ),
     time_val( time_val ),
     blockchain( blockchain ),
+    num_tree_item( 0 ),
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
     is_time_for_check( false ),
@@ -1306,6 +1307,8 @@ class socket_command_handler : public command_handler
 
    string identity;
    string blockchain;
+
+   size_t num_tree_item;
 
    size_t blockchain_height;
    size_t blockchain_height_pending;
@@ -1787,6 +1790,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          get_file( next_hash, &file_data );
          pop_next_peer_file_hash_to_get( );
 
+         string num_tree_items( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+         if( num_tree_item )
+         {
+            set_session_progress_output( "Processing "
+             + to_string( num_tree_item++ ) + '/' + num_tree_items + " tree items..." );
+         }
+
          bool is_list = false;
 
          if( file_data.empty( ) )
@@ -1814,11 +1826,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             process_data_file( blockchain, data_file_hash, blockchain_height_pending );
 
-            string zenith_height( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_zenith_height ) ) );
+            string num_tree_items( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
-            if( from_string< size_t >( zenith_height ) == blockchain_height_pending )
-               blockchain_height = blockchain_height_pending;
+            if( !num_tree_items.empty( ) )
+               num_tree_item = 1;
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
@@ -1919,6 +1931,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( set_new_zenith )
    {
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
+
+      num_tree_item = 0;
+      set_session_progress_output( "" );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_num_tree_items ), "" );
 
       blockchain_height = blockchain_height_pending;
 
