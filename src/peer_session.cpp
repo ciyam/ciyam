@@ -3646,9 +3646,16 @@ void create_peer_initiator(
          }
          else if( i == 0 )
          {
-            // FUTURE: This message should be handled as a server string message.
-            string error( "Timed out trying to connect to '"
-             + host + "' using port " + to_string( port ) + "." );
+            string error;
+
+            if( !ap_socket->had_timeout( ) )
+               // FUTURE: This message should be handled as a server string message.
+               error = "Failed trying to connect to '"
+                + host + "' using port " + to_string( port ) + ".";
+            else
+               // FUTURE: This message should be handled as a server string message.
+               error = "Timed out trying to connect to '"
+                + host + "' using port " + to_string( port ) + ".";
 
             if( is_interactive )
                throw runtime_error( error );
