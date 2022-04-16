@@ -154,9 +154,8 @@ void verify_data( const string& content,
             num_tree_items = from_string< size_t >( next_attribute.substr(
              string( c_file_type_core_data_header_num_tree_items_prefix ).length( ) ) );
 
-            if( !p_data_info )
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
+            set_session_variable(
+             get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items ) );
          }
          else
             throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );

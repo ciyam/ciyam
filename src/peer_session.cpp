@@ -541,8 +541,8 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
                            else
                               target_hash = hex_encode( base64::decode( target_hash ) );
 
-                           // NOTE: Pull information will be pushed at the front and target (if queued) will be removed.
-                           add_peer_file_hash_for_get( hash_info, false, true, target_hash.empty( ) ? 0 : &target_hash );
+                           // NOTE: Pull information target (if had already been queued) will first be removed.
+                           add_peer_file_hash_for_get( hash_info, false, false, target_hash.empty( ) ? 0 : &target_hash );
                         }
                         else
                            process_repository_file( blockchain,
@@ -645,6 +645,9 @@ void process_list_items( const string& hash,
          {
             bool has_repository_entry = false;
             bool put_info_and_store_repository_entry = false;
+
+            if( p_num_items_found )
+               ++( *p_num_items_found );
 
             if( fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
@@ -1819,8 +1822,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
          if( num_tree_item )
          {
-            set_session_progress_output( "Processing "
-             + to_string( num_tree_item++ ) + '/' + num_tree_items + " tree items..." );
+            string progress_message( "Processing " + to_string( num_tree_item++ ) );
+
+            if( !num_tree_items.empty( ) )
+               progress_message += '/' + num_tree_items;
+
+            progress_message += " tree items...";
+
+            set_session_progress_output( progress_message );
          }
 
          bool is_list = false;

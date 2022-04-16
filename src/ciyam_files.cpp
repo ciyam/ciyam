@@ -923,10 +923,14 @@ string file_type_info( const string& tag_or_hash,
 
    bool rc = false;
 
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
    hash = tag_file_hash( use_tag_or_hash, &rc );
 
    if( rc )
-      file_name = construct_file_name_from_hash( hash );
+      file_name = construct_file_name_from_hash( hash,
+       false, false, ( archive_path.empty( ) ? 0 : &archive_path ) );
    else
    {
       bool is_base64 = false;
@@ -937,7 +941,8 @@ string file_type_info( const string& tag_or_hash,
       hash = !is_base64 ? use_tag_or_hash : base64_to_hex( use_tag_or_hash );
 
       if( hash.length( ) == c_num_digest_characters )
-         file_name = construct_file_name_from_hash( hash, false, false );
+         file_name = construct_file_name_from_hash( hash,
+          false, false, ( archive_path.empty( ) ? 0 : &archive_path ) );
    }
 
    string archive;
