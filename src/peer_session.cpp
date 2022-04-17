@@ -12,6 +12,7 @@
 #  include <cstring>
 #  include <csignal>
 #  include <cstdlib>
+#  include <set>
 #  include <deque>
 #  include <memory>
 #  include <sstream>
@@ -168,6 +169,29 @@ void decrement_active_listeners( )
 {
    guard g( g_mutex );
    --g_active_listeners;
+}
+
+map< string, size_t > g_blockchain_tree_item;
+
+size_t get_blockchain_tree_item( const string& blockchain )
+{
+   guard g( g_mutex );
+
+   return g_blockchain_tree_item[ blockchain ];
+}
+
+void set_blockchain_tree_item( const string& blockchain, size_t num )
+{
+   guard g( g_mutex );
+
+   g_blockchain_tree_item[ blockchain ] = num;
+}
+
+void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
+{
+   guard g( g_mutex );
+
+   g_blockchain_tree_item[ blockchain ] += num_to_add;
 }
 
 string get_hello_data( string& hello_hash )
@@ -474,10 +498,13 @@ string get_file_hash_from_put_data( const string& encoded_master,
 }
 #endif
 
-void process_put_file( const string& blockchain, const string& file_data, bool is_test_session )
+size_t process_put_file( const string& blockchain,
+ const string& file_data, bool check_for_supporters, bool is_test_session, set< string >& list_items_to_ignore )
 {
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
+
+   size_t num_skipped = 0;
 
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
@@ -541,8 +568,16 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
                            else
                               target_hash = hex_encode( base64::decode( target_hash ) );
 
-                           // NOTE: Pull information target (if had already been queued) will first be removed.
-                           add_peer_file_hash_for_get( hash_info, false, false, target_hash.empty( ) ? 0 : &target_hash );
+                           if( has_file( target_hash ) )
+                              ++num_skipped;
+                           else
+                           {
+                              list_items_to_ignore.insert( target_hash );
+
+                              // NOTE: Pull information target (if had already been queued) will be removed.
+                              add_peer_file_hash_for_get(
+                               hash_info, check_for_supporters, false, target_hash.empty( ) ? 0 : &target_hash );
+                           }
                         }
                         else
                            process_repository_file( blockchain,
@@ -558,10 +593,12 @@ void process_put_file( const string& blockchain, const string& file_data, bool i
             throw runtime_error( "invalid file content for put" );
       }
    }
+
+   return num_skipped;
 }
 
-void process_list_items( const string& hash,
- bool recurse, bool check_for_supporters, string* p_blob_data = 0, size_t* p_num_items_found = 0 )
+void process_list_items( const string& hash, bool recurse,
+ string* p_blob_data = 0, size_t* p_num_items_found = 0, set< string >* p_list_items_to_ignore = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -594,7 +631,7 @@ void process_list_items( const string& hash,
          string file_hash( create_raw_file( *p_blob_data ) );
 
          set_session_variable( file_hash, c_true_value );
-         add_peer_file_hash_for_put( file_hash, check_for_supporters );
+         add_peer_file_hash_for_put( file_hash );
 
          *p_blob_data = string( c_file_type_str_blob );
       }
@@ -604,6 +641,9 @@ void process_list_items( const string& hash,
       if( !next_item.empty( ) )
       {
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+
+         if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
+            continue;
 
          string local_hash, local_public_key, master_public_key;
 
@@ -617,7 +657,7 @@ void process_list_items( const string& hash,
          {
             if( !fetch_repository_entry_record( next_hash,
              local_hash, local_public_key, master_public_key, false ) )
-               add_peer_file_hash_for_get( next_hash, check_for_supporters );
+               add_peer_file_hash_for_get( next_hash );
             else if( first_hash_to_get.empty( ) && ( local_public_key != master_public_key ) )
             {
                if( get_session_variable( blockchain_is_fetching_name ).empty( )
@@ -636,7 +676,7 @@ void process_list_items( const string& hash,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            process_list_items( next_hash, recurse, check_for_supporters, p_blob_data, p_num_items_found );
+            process_list_items( next_hash, recurse, p_blob_data, p_num_items_found, p_list_items_to_ignore );
 
             // NOTE: Recursive processing may have already located this.
             first_hash_to_get = get_session_variable( first_hash_name );
@@ -691,7 +731,7 @@ void process_list_items( const string& hash,
       string file_hash( create_raw_file( *p_blob_data ) );
 
       set_session_variable( file_hash, c_true_value );
-      add_peer_file_hash_for_put( file_hash, check_for_supporters );
+      add_peer_file_hash_for_put( file_hash );
    }
 }
 
@@ -749,16 +789,10 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                if( is_blockchain_owner )
                   tag_file( c_ciyam_tag, tree_root_hash );
 
-               bool check_for_supporters = false;
-
-               if( !get_session_variable( get_special_var_name(
-                e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
-                  check_for_supporters = true;
-
                if( first_hash_to_get == tree_root_hash )
                   set_session_variable( first_hash_name, "" );
 
-               process_list_items( tree_root_hash, true, check_for_supporters, 0, p_num_items_found );
+               process_list_items( tree_root_hash, true, 0, p_num_items_found );
 
                if( top_next_peer_file_hash_to_get( ).empty( ) )
                   tag_new_zenith = true;
@@ -1171,8 +1205,8 @@ class socket_command_handler : public command_handler
     is_local( is_local ),
     is_owner( is_owner ),
     time_val( time_val ),
+    last_num_tree_item( 0 ),
     blockchain( blockchain ),
-    num_tree_item( 0 ),
     blockchain_height( 0 ),
     blockchain_height_pending( 0 ),
     is_time_for_check( false ),
@@ -1194,6 +1228,9 @@ class socket_command_handler : public command_handler
 
       if( !blockchain.empty( ) )
       {
+         if( !is_for_support )
+            set_blockchain_tree_item( blockchain, 0 );
+
          identity = replaced( blockchain, c_bc_prefix, "" );
          has_identity_archive = has_file_archive( identity );
       }
@@ -1241,6 +1278,8 @@ class socket_command_handler : public command_handler
    {
       blockchain_height_pending = blockchain_height = new_height;
    }
+
+   set< string >& get_list_items_to_ignore( ) { return list_items_to_ignore; }
 
    bool get_is_test_session( ) const { return is_local && is_responder && blockchain.empty( ); }
 
@@ -1316,12 +1355,14 @@ class socket_command_handler : public command_handler
    bool last_issued_was_put;
    bool has_identity_archive;
 
+   set< string > list_items_to_ignore;
+
    int64_t time_val;
+
+   size_t last_num_tree_item;
 
    string identity;
    string blockchain;
-
-   size_t num_tree_item;
 
    size_t blockchain_height;
    size_t blockchain_height_pending;
@@ -1462,13 +1503,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-      bool check_for_supporters = false;
-
-      if( !get_session_variable( get_special_var_name(
-       e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
-         check_for_supporters = true;
-
-      process_list_items( hash, false, check_for_supporters );
+      process_list_items( hash, false, 0, 0, &list_items_to_ignore );
    }
 
    increment_peer_files_downloaded( num_bytes );
@@ -1631,6 +1666,28 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
+   if( !is_for_support )
+   {
+      size_t num_tree_item = get_blockchain_tree_item( blockchain );
+
+      if( num_tree_item != last_num_tree_item )
+      {
+         last_num_tree_item = num_tree_item;
+
+         string num_tree_items( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+         string progress_message( "Processing " + to_string( num_tree_item ) );
+
+         if( !num_tree_items.empty( ) )
+            progress_message += '/' + num_tree_items;
+
+         progress_message += " tree items...";
+
+         set_session_progress_output( progress_message );
+      }
+   }
+
    // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
    for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
    {
@@ -1744,7 +1801,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         {
                            next_block_tag += string( " " ) + '@' + file_hash;
 
-                           num_tree_item = num_items_found;
+                           set_blockchain_tree_item( blockchain, num_items_found );
                         }
 
                         chk_file( next_block_tag, &next_block_hash );
@@ -1817,27 +1874,15 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          get_file( next_hash, &file_data );
          pop_next_peer_file_hash_to_get( );
 
-         string num_tree_items( get_session_variable(
-          get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
-
-         if( num_tree_item )
-         {
-            string progress_message( "Processing " + to_string( num_tree_item++ ) );
-
-            if( !num_tree_items.empty( ) )
-               progress_message += '/' + num_tree_items;
-
-            progress_message += " tree items...";
-
-            set_session_progress_output( progress_message );
-         }
+         if( is_for_support || last_num_tree_item )
+            add_to_blockchain_tree_item( blockchain, 1 );
 
          bool is_list = false;
 
-         if( file_data.empty( ) )
-            is_list = is_list_file( next_hash );
-         else
+         if( !file_data.empty( ) )
             is_list = is_list_file( file_data[ 0 ] ); 
+         else
+            is_list = is_list_file( next_hash.substr( 0, next_hash.find( ':' ) ) );
 
          string data_file_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_data_file_hash ) ) );
@@ -1863,7 +1908,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
              get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
             if( !num_tree_items.empty( ) )
-               num_tree_item = 1;
+               set_blockchain_tree_item( blockchain, 1 );
 
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_data_file_hash ), "" );
@@ -1965,7 +2010,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    {
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
 
-      num_tree_item = 0;
+      last_num_tree_item = 0;
+      set_blockchain_tree_item( blockchain, 0 );
+
+      list_items_to_ignore.clear( );
+
       set_session_progress_output( "" );
 
       set_session_variable( get_special_var_name(
@@ -2372,7 +2421,14 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             bytes = file_data.length( );
 
             if( hash != hello_hash )
-               process_put_file( blockchain, file_data.substr( 1 ), socket_handler.get_is_test_session( ) );
+            {
+               size_t num_skipped = process_put_file(
+                blockchain, file_data.substr( 1 ), check_for_supporters,
+                socket_handler.get_is_test_session( ), socket_handler.get_list_items_to_ignore( ) );
+
+               if( num_skipped )
+                  add_to_blockchain_tree_item( blockchain, num_skipped );
+            }
          }
          else
          {
@@ -3242,6 +3298,9 @@ void peer_session::on_start( )
 
       if( was_initialised )
       {
+         if( !is_for_support && !blockchain.empty( ) )
+            condemn_matching_sessions( );
+
          term_session( );
          has_terminated = true;
       }
@@ -3255,6 +3314,9 @@ void peer_session::on_start( )
 
       if( was_initialised )
       {
+         if( !is_for_support && !blockchain.empty( ) )
+            condemn_matching_sessions( );
+
          term_session( );
          has_terminated = true;
       }
@@ -3635,19 +3697,12 @@ void create_peer_initiator(
             else
             {
                if( !p_main_session && total_to_create > 1 )
-                  p_main_session = p_session;
-               else
                {
-                  // NOTE: The main session start is delayed in order to
-                  // be sure it should be checking for support sessions.
-                  if( p_main_session )
-                  {
-                     p_main_session->set_has_support_sessions( );
-                     p_main_session->start( );
-                  }
-
-                  p_session->start( );
+                  p_main_session = p_session;
+                  p_main_session->set_has_support_sessions( );
                }
+
+               p_session->start( );
 
                if( i > 0 )
                   ++num_supporters_created;
@@ -3676,11 +3731,6 @@ void create_peer_initiator(
          }
       }
    }
-
-   // NOTE: As main session start is delayed until first support session has
-   // been constructed if no support session was constructed then start now.
-   if( p_main_session && ( total_to_create > 1 ) && !num_supporters_created )
-      p_main_session->start( );
 }
 
 peer_session_starter::peer_session_starter( )
