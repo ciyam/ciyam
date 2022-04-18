@@ -74,6 +74,7 @@ const char c_repository_suffix = '!';
 
 const char c_error_message_prefix = '#';
 const char c_ignore_all_puts_prefix = '$';
+const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
 const char* const c_bc_prefix = "bc.";
@@ -1677,7 +1678,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          string num_tree_items( get_session_variable(
           get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
-         string progress_message( "Processing " + to_string( num_tree_item ) );
+         // FUTURE: This message should be handled as a server string message.
+         string progress_message( "Processed " + to_string( num_tree_item - 1 ) );
 
          if( !num_tree_items.empty( ) )
             progress_message += '/' + num_tree_items;
@@ -1685,6 +1687,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          progress_message += " tree items...";
 
          set_session_progress_output( progress_message );
+         set_system_variable( c_progress_output_prefix + identity, progress_message );
       }
    }
 
@@ -1796,12 +1799,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                         // NOTE: Use the "nonce" argument to indicate the first
                         // file to be fetched (so that pull requests will start
-                        // from the correct point).
+                        // from the correct point). An additional amount of two
+                        // is due to counting starting from the ".dat" file and
+                        // needing to include the tree root file itself.
                         if( !file_hash.empty( ) )
                         {
                            next_block_tag += string( " " ) + '@' + file_hash;
 
-                           set_blockchain_tree_item( blockchain, num_items_found );
+                           set_blockchain_tree_item( blockchain, num_items_found + 2 );
                         }
 
                         chk_file( next_block_tag, &next_block_hash );
@@ -2015,12 +2020,16 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       list_items_to_ignore.clear( );
 
-      set_session_progress_output( "" );
-
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), "" );
 
       blockchain_height = blockchain_height_pending;
+
+      // FUTURE: This message should be handled as a server string message.
+      string progress_message( "Synchronised at height " + to_string( blockchain_height ) + "." );
+
+      set_session_progress_output( progress_message );
+      set_system_variable( c_progress_output_prefix + identity, progress_message );
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
@@ -3229,6 +3238,15 @@ void peer_session::on_start( )
          {
             set_session_variable( identity, c_true_value );
             set_session_variable( get_special_var_name( e_special_var_identity ), identity );
+
+            if( !is_for_support )
+            {
+               // FUTURE: This message should be handled as a server string message.
+               string progress_message( "Synchronising..." );
+
+               set_session_progress_output( progress_message );
+               set_system_variable( c_progress_output_prefix + identity, progress_message );
+            }
          }
       }
 
