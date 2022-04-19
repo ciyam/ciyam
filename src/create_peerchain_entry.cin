@@ -19,9 +19,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $6
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "5"
-#NOTE: This script requires an identity, auto-start, description, host name and port number.
+@ifneq "$NUM_ARGS" "6"
+#NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
 ;
 IDENTITY=$1
@@ -29,6 +32,7 @@ AUTO_START=$2
 DESCRIPTION=$3
 HOST_NAME=$4
 HOST_PORT=$5
+NUM_HELPERS=$6
 ;
 .system_variable @peer_port
 PEER_PORT=$OUTPUT
@@ -37,7 +41,7 @@ PEER_PORT=$OUTPUT
 @else
 .peer_listen $PEER_PORT $IDENTITY
 .storage_init Meta
-.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Entry_Type=0,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT"
+.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Entry_Type=0,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS"
 @ifndef $ERROR
 #Created listener and global peerchain entry for identity '$IDENTITY'.
 @endif

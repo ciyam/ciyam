@@ -184,7 +184,7 @@ domain_string_max_size< 100 > g_Host_Name_domain;
 domain_int_range< 0, 65535 > g_Host_Port_domain;
 domain_string_max_size< 50 > g_Identity_domain;
 domain_int_range< 0, 65535 > g_Local_Port_domain;
-domain_int_range< 0, 9 > g_Num_Helpers_domain;
+domain_int_range< 0, 99 > g_Num_Helpers_domain;
 
 string g_order_field_name;
 string g_owner_field_name;
@@ -237,7 +237,7 @@ string g_default_Host_Name = string( );
 int g_default_Host_Port = int( 0 );
 string g_default_Identity = string( );
 int g_default_Local_Port = int( 0 );
-int g_default_Num_Helpers = int( 0 );
+int g_default_Num_Helpers = int( 3 );
 string g_default_Port_Numbers = string( );
 int g_default_Status = int( 0 );
 

@@ -5150,9 +5150,9 @@
      <field/>
       <id>145109
       <name>Num_Helpers
-      <type>1026
+      <type>1027
       <mandatory>true
-      <default_value>0
+      <default_value>3
       <indexes/>
       </indexes>
       <modifiers/>

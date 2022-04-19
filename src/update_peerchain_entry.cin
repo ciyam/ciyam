@@ -19,9 +19,12 @@ NUM_ARGS=@$NUM_ARGS+1
 @ifdef $5
 NUM_ARGS=@$NUM_ARGS+1
 @endif
+@ifdef $6
+NUM_ARGS=@$NUM_ARGS+1
+@endif
 ;
-@ifneq "$NUM_ARGS" "5"
-#NOTE: This script requires an identity, auto-start, description, host name and port number.
+@ifneq "$NUM_ARGS" "6"
+#NOTE: This script requires an identity, auto-start, description, host name, port number and number of helpers.
 @else
 ;
 IDENTITY=$1
@@ -29,9 +32,10 @@ AUTO_START=$2
 DESCRIPTION=$3
 HOST_NAME=$4
 HOST_PORT=$5
+NUM_HELPERS=$6
 ;
 .storage_init Meta
-.pu sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT"
+.pu sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Num_Helpers=$NUM_HELPERS"
 @ifndef $ERROR
 #Updated global peerchain entry for identity '$IDENTITY'.
 @endif

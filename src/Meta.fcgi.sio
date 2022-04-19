@@ -3612,7 +3612,7 @@
      <name>field_global_peerchain_entry_num_helpers
      <field>145109
      <ftype>int
-     <extra>range=0..9
+     <extra>range=0..99
      <mandatory>true
      <modifiers>1000:relegate,2000:protect
     </field>

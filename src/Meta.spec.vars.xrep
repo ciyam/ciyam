@@ -1251,7 +1251,7 @@
 `{`$specification_Global_Peerchain_Entry_view_fmand006`=`'true`'`}
 `{`$specification_Global_Peerchain_Entry_view_field007`=`'145109`'`}
 `{`$specification_Global_Peerchain_Entry_view_ftype007`=`'int`'`}
-`{`$specification_Global_Peerchain_Entry_view_extra007`=`'range=0..9`'`}
+`{`$specification_Global_Peerchain_Entry_view_extra007`=`'range=0..99`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmods007`=`'1000:relegate,2000:protect`'`}
 `{`$specification_Global_Peerchain_Entry_view_fname007`=`'field_global_peerchain_entry_num_helpers`'`}
 `{`$specification_Global_Peerchain_Entry_view_fmand007`=`'true`'`}
