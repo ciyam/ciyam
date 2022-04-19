@@ -91,7 +91,7 @@ const char* const c_dummy_support_tag = "support";
 const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
-const int c_max_num_for_support = 9;
+const int c_max_num_for_support = 11;
 const int c_min_block_wait_passes = 8;
 
 const size_t c_max_pubkey_size = 256;
@@ -596,6 +596,41 @@ size_t process_put_file( const string& blockchain,
    }
 
    return num_skipped;
+}
+
+bool has_all_list_items( const string& hash, bool recurse )
+{
+   string all_list_items( extract_file( hash, "" ) );
+
+   vector< string > list_items;
+   split( all_list_items, list_items, '\n' );
+
+   bool retval = true;
+
+   for( size_t i = 0; i < list_items.size( ); i++ )
+   {
+      string next_item( list_items[ i ] );
+
+      if( !next_item.empty( ) )
+      {
+         string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
+
+         if( !has_file( next_hash ) )
+         {
+            retval = false;
+            break;
+         }
+         else if( recurse && is_list_file( next_hash ) )
+         {
+            retval = has_all_list_items( next_hash, recurse );
+
+            if( !retval )
+               break;
+         }
+      }
+   }
+
+   return retval;
 }
 
 void process_list_items( const string& hash, bool recurse,

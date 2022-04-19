@@ -91,12 +91,12 @@
  <script/>
   <name>create_peerchain_entry
   <filename>*script*
-  <arguments>create_peerchain_entry.cin @identity @auto_start @description @host_name @host_port
+  <arguments>create_peerchain_entry.cin @identity @auto_start @description @host_name @host_port @num_helpers
  </script>
  <script/>
   <name>update_peerchain_entry
   <filename>*script*
-  <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port
+  <arguments>update_peerchain_entry.cin @identity @auto_start @description @host_name @host_port @num_helpers
  </script>
  <script/>
   <name>destroy_peerchain_entry
