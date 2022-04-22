@@ -1,3 +1,17 @@
+system_variable @queue_test abc
+system_variable @queue_test def
+system_variable @queue_test ghi
+system_variable @queue_test
+system_variable @queue_test
+system_variable @queue_test
+system_variable @queue_test
+session_variable @queue_test abc
+session_variable @queue_test def
+session_variable @queue_test ghi
+session_variable @queue_test
+session_variable @queue_test
+session_variable @queue_test
+session_variable @queue_test
 system_variable @sys_var_prefix test
 system_variable >test_a aaa
 system_variable >test_b bbb

@@ -190,4 +190,6 @@ const char* const c_response_not_found = "(not found)";
 const char* const c_response_error_prefix = "(error)";
 const char* const c_response_message_prefix = "(message)";
 
+const char* const c_special_variable_queue_prefix = "@queue_";
+
 #endif
