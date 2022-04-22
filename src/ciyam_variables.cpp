@@ -38,8 +38,6 @@ const int c_lock_attempt_sleep_time = 200;
 const char c_persist_variable_prefix = '>';
 const char c_restore_variable_prefix = '<';
 
-const char* const c_special_variable_queue_prefix = "@queue_";
-
 const char* const c_special_variable_bh = "@bh";
 const char* const c_special_variable_id = "@id";
 const char* const c_special_variable_os = "@os";
@@ -146,6 +144,7 @@ const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
+const char* const c_special_variable_queue_touch_files = "@queue_touch_files";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
@@ -167,6 +166,7 @@ const char* const c_special_variable_blockchain_tree_root_hash = "@blockchain_tr
 const char* const c_special_variable_blockchain_both_are_owners = "@blockchain_both_are_owners";
 const char* const c_special_variable_blockchain_height_processed = "@blockchain_height_processed";
 const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
+const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_zenith_tree_hash";
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
@@ -604,6 +604,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_package_type_path );
       break;
 
+      case e_special_var_queue_touch_files:
+      s = string( c_special_variable_queue_touch_files );
+      break;
+
       case e_special_var_attached_file_path:
       s = string( c_special_variable_attached_file_path );
       break;
@@ -686,6 +690,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_total_child_field_in_parent:
       s = string( c_special_variable_total_child_field_in_parent );
+      break;
+
+      case e_special_var_blockchain_zenith_tree_hash:
+      s = string( c_special_variable_blockchain_zenith_tree_hash );
       break;
 
       case e_special_var_blockchain_peer_has_supporters:

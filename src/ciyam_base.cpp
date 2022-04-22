@@ -6559,6 +6559,19 @@ string get_raw_session_variable( const string& name )
       {
          found = true;
          retval = gtp_session->variables[ name ];
+
+         if( name.find( c_special_variable_queue_prefix ) == 0 )
+         {
+            string::size_type pos = retval.find( ',' );
+ 
+            if( pos == string::npos )
+               gtp_session->variables.erase( name );
+            else
+            {
+               gtp_session->variables[ name ] = retval.substr( pos + 1 );
+               retval.erase( pos );
+            }
+         }
       }
       else if( name.find_first_of( "?*" ) != string::npos )
       {
@@ -6697,6 +6710,10 @@ void set_session_variable( const string& name,
       string old_val;
       if( gtp_session->variables.count( name ) )
          old_val = gtp_session->variables[ name ];
+
+      if( !val.empty( ) && !old_val.empty( )
+       && ( name.find( c_special_variable_queue_prefix ) == 0 ) )
+         val = old_val + ',' + val;
 
       if( val == get_special_var_name( e_special_var_increment )
        || val == get_special_var_name( e_special_var_decrement ) )

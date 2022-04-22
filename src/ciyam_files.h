@@ -44,7 +44,7 @@ std::string CIYAM_BASE_DECL_SPEC current_time_stamp_tag( bool truncated = false,
 
 bool CIYAM_BASE_DECL_SPEC has_tag( const std::string& name, file_type type = e_file_type_any );
 
-bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true );
+bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash = true, bool* p_is_in_archive = 0 );
 
 bool CIYAM_BASE_DECL_SPEC is_list_file( unsigned char ch );
 
@@ -89,6 +89,9 @@ void CIYAM_BASE_DECL_SPEC tag_del(
 
 void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name,
  const std::string& hash, bool skip_tag_del = false, bool is_external = false );
+
+void CIYAM_BASE_DECL_SPEC touch_file( const std::string& hash,
+ const std::string& archive, bool set_archive_path = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash( const std::string& prefix );
 
@@ -172,6 +175,8 @@ bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash, std::
 
 std::string CIYAM_BASE_DECL_SPEC retrieve_file_from_archive(
  const std::string& hash, const std::string& tag, size_t days_ahead = 0 );
+
+void CIYAM_BASE_DECL_SPEC touch_file_in_archive( const std::string& hash, const std::string& archive );
 
 void CIYAM_BASE_DECL_SPEC delete_file_from_archive(
  const std::string& hash, const std::string& archive, bool add_to_blacklist = false );

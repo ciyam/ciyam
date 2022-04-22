@@ -739,13 +739,13 @@ bool has_tag( const string& name, file_type type )
    }
 }
 
-bool has_file( const string& hash, bool check_is_hash )
+bool has_file( const string& hash, bool check_is_hash, bool* p_is_in_archive )
 {
    guard g( g_mutex );
 
-   if( hash.empty( ) )
-      return false;
-   else
+   bool retval = false;
+
+   if( !hash.empty( ) )
    {
       string archive_path( get_session_variable(
        get_special_var_name( e_special_var_blockchain_archive_path ) ) );
@@ -753,8 +753,18 @@ bool has_file( const string& hash, bool check_is_hash )
       string file_name( construct_file_name_from_hash(
        hash, false, check_is_hash, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
-      return file_exists( file_name );
+      retval = file_exists( file_name );
+
+      if( p_is_in_archive )
+      {
+         if( !retval || archive_path.empty( ) )
+            *p_is_in_archive = false;
+         else
+            *p_is_in_archive = ( file_name.find( archive_path ) == 0 );
+      }
    }
+
+   return retval;
 }
 
 bool is_list_file( unsigned char ch )
@@ -2124,6 +2134,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
          if( !all_tags.empty( ) )
          {
             split( all_tags, tags, '\n' );
+
             if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
                ts_tag_to_remove = tags[ 0 ];
          }
@@ -2173,6 +2184,53 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
             tag_del( ts_tag_to_remove, false, false );
       }
    }
+}
+
+void touch_file( const string& hash, const string& archive, bool set_archive_path )
+{
+   guard g( g_mutex );
+
+   string old_archive_path;
+
+   if( set_archive_path )
+   {
+      string archive_path;
+
+      old_archive_path = get_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ) );
+
+      if( has_file_archive( archive, &archive_path ) )
+      {
+         set_session_variable( get_special_var_name(
+          e_special_var_blockchain_archive_path ), archive_path );
+      }
+   }
+
+   bool is_in_archive = false;
+
+   if( has_file( hash, false, &is_in_archive ) )
+   {
+      if( is_in_archive )
+         touch_file_in_archive( hash, archive );
+      else
+      {
+         string all_tags( get_hash_tags( hash ) );
+
+         if( !all_tags.empty( ) )
+         {
+            vector< string > tags;
+
+            split( all_tags, tags, '\n' );
+
+            if( tags.size( ) == 1 && tags[ 0 ].find( c_time_stamp_tag_prefix ) == 0 )
+               tag_file( current_time_stamp_tag( ), hash, true );
+         }
+      }
+   }
+
+   if( set_archive_path )
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_archive_path ), old_archive_path );
 }
 
 string get_hash( const string& prefix )
@@ -4012,6 +4070,71 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
    }
 
    return retval;
+}
+
+void touch_file_in_archive( const string& hash, const string& archive )
+{
+   guard g( g_mutex );
+
+   regex expr( c_regex_hash_256 );
+
+   if( expr.search( hash ) == string::npos )
+      // FUTURE: This message should be handled as a server string message.
+      throw runtime_error( "Invalid file hash '" + hash + "'." );
+
+   vector< string > paths;
+   vector< string > archives;
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !system_ods_instance( ).is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   if( !all_archives.empty( ) )
+   {
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         string next_archive( archives[ i ] );
+
+         if( !archive.empty( ) && archive != next_archive )
+            continue;
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( next_archive );
+         ods_fs.set_folder( c_folder_archive_files_folder );
+
+         string suffix;
+
+         if( ods_fs.has_file( hash, true, &suffix ) )
+         {
+            ods_fs.remove_file( hash, 0, 0, true );
+
+            if( suffix.length( ) > 1 )
+            {
+               ods_fs.set_folder( ".." );
+               ods_fs.set_folder( c_folder_archive_times_folder );
+
+               ods_fs.remove_file( suffix.substr( 1 ), 0, 0, true );
+            }
+
+            ods_fs.set_folder( ".." );
+            add_archive_file( ods_fs, hash );
+         }
+      }
+   }
 }
 
 void delete_file_from_archive( const string& hash, const string& archive, bool add_to_blacklist )
