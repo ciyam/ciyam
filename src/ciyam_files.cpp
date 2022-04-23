@@ -2186,7 +2186,8 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
    }
 }
 
-void touch_file( const string& hash, const string& archive, bool set_archive_path )
+void touch_file( const string& hash,
+ const string& archive, bool set_archive_path, bool* p_has_updated_archive )
 {
    guard g( g_mutex );
 
@@ -2207,11 +2208,12 @@ void touch_file( const string& hash, const string& archive, bool set_archive_pat
    }
 
    bool is_in_archive = false;
+   bool updated_archive = false;
 
    if( has_file( hash, false, &is_in_archive ) )
    {
       if( is_in_archive )
-         touch_file_in_archive( hash, archive );
+         updated_archive = touch_file_in_archive( hash, archive );
       else
       {
          string all_tags( get_hash_tags( hash ) );
@@ -2227,6 +2229,68 @@ void touch_file( const string& hash, const string& archive, bool set_archive_pat
          }
       }
    }
+
+   if( updated_archive && p_has_updated_archive )
+      *p_has_updated_archive = true;
+
+   if( set_archive_path )
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_archive_path ), old_archive_path );
+}
+
+void touch_queued_files( const string& queue_var_name,
+ const string& archive, size_t max_seconds, bool set_archive_path )
+{
+   string old_archive_path;
+
+   date_time dtm( date_time::local( ) );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   auto_ptr< ods::transaction > ap_ods_tx;
+   if( !system_ods_instance( ).is_in_transaction( ) )
+      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   if( set_archive_path )
+   {
+      string archive_path;
+
+      old_archive_path = get_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ) );
+
+      if( has_file_archive( archive, &archive_path ) )
+      {
+         set_session_variable( get_special_var_name(
+          e_special_var_blockchain_archive_path ), archive_path );
+      }
+   }
+
+   bool has_updated_archive = false;
+
+   while( true )
+   {
+      string next_hash( get_session_variable( queue_var_name ) );
+
+      if( next_hash.empty( ) )
+         break;
+
+      touch_file( next_hash, archive, false, &has_updated_archive );
+
+      if( max_seconds )
+      {
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( dtm, now );
+
+         if( elapsed >= max_seconds )
+            break;
+      }
+   }
+
+   if( has_updated_archive && ap_ods_tx.get( ) )
+      ap_ods_tx->commit( );
 
    if( set_archive_path )
       set_session_variable( get_special_var_name(
@@ -3744,11 +3808,11 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
    string all_archives( list_file_archives( true, &paths ) );
 
-   ods_file_system& ods_fs( system_ods_file_system( ) );
-
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !system_ods_instance( ).is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    bool found = false;
 
@@ -4072,9 +4136,11 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
    return retval;
 }
 
-void touch_file_in_archive( const string& hash, const string& archive )
+bool touch_file_in_archive( const string& hash, const string& archive )
 {
    guard g( g_mutex );
+
+   bool retval = false;
 
    regex expr( c_regex_hash_256 );
 
@@ -4085,17 +4151,17 @@ void touch_file_in_archive( const string& hash, const string& archive )
    vector< string > paths;
    vector< string > archives;
 
-   string all_archives( list_file_archives( true, &paths ) );
-
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !system_ods_instance( ).is_bulk_locked( ) )
       ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-   ods_file_system& ods_fs( system_ods_file_system( ) );
+   string all_archives( list_file_archives( true, &paths ) );
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !system_ods_instance( ).is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    if( !all_archives.empty( ) )
    {
@@ -4132,9 +4198,16 @@ void touch_file_in_archive( const string& hash, const string& archive )
 
             ods_fs.set_folder( ".." );
             add_archive_file( ods_fs, hash );
+
+            retval = true;
          }
       }
    }
+
+   if( retval && ap_ods_tx.get( ) )
+      ap_ods_tx->commit( );
+
+   return retval;
 }
 
 void delete_file_from_archive( const string& hash, const string& archive, bool add_to_blacklist )
@@ -4150,17 +4223,17 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    vector< string > paths;
    vector< string > archives;
 
-   string all_archives( list_file_archives( true, &paths ) );
-
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !system_ods_instance( ).is_bulk_locked( ) )
       ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-   ods_file_system& ods_fs( system_ods_file_system( ) );
+   string all_archives( list_file_archives( true, &paths ) );
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !system_ods_instance( ).is_in_transaction( ) )
       ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
 
    if( !all_archives.empty( ) )
    {

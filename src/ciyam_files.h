@@ -91,7 +91,10 @@ void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name,
  const std::string& hash, bool skip_tag_del = false, bool is_external = false );
 
 void CIYAM_BASE_DECL_SPEC touch_file( const std::string& hash,
- const std::string& archive, bool set_archive_path = true );
+ const std::string& archive, bool set_archive_path = true, bool* p_has_updated_archive = 0 );
+
+void CIYAM_BASE_DECL_SPEC touch_queued_files( const std::string& queue_var_name,
+ const std::string& archive, size_t max_seconds, bool set_archive_path = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash( const std::string& prefix );
 
@@ -176,7 +179,7 @@ bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash, std::
 std::string CIYAM_BASE_DECL_SPEC retrieve_file_from_archive(
  const std::string& hash, const std::string& tag, size_t days_ahead = 0 );
 
-void CIYAM_BASE_DECL_SPEC touch_file_in_archive( const std::string& hash, const std::string& archive );
+bool CIYAM_BASE_DECL_SPEC touch_file_in_archive( const std::string& hash, const std::string& archive );
 
 void CIYAM_BASE_DECL_SPEC delete_file_from_archive(
  const std::string& hash, const std::string& archive, bool add_to_blacklist = false );

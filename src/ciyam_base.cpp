@@ -7164,6 +7164,18 @@ bool set_session_variable( const string& name, const string& value, const string
    return retval;
 }
 
+bool has_session_variable( const string& name )
+{
+   guard g( g_mutex );
+
+   bool retval = false;
+
+   if( gtp_session && gtp_session->variables.count( name ) )
+      retval = true;
+
+   return retval;
+}
+
 bool has_any_session_variable( const string& name )
 {
    guard g( g_mutex );
