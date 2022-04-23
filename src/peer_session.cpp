@@ -108,7 +108,7 @@ const size_t c_key_pair_separator_pos = 44;
 const size_t c_sleep_time = 250;
 
 const size_t c_initial_timeout = 8000;
-const size_t c_request_timeout = 3000;
+const size_t c_request_timeout = 5000;
 const size_t c_support_timeout = 3000;
 
 const size_t c_main_session_sleep_time = 150;
@@ -1806,33 +1806,13 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
          else
          {
-            string file_hash_to_touch( get_session_variable(
-             get_special_var_name( e_special_var_queue_touch_files ) ) );
+            string queue_touch_files_name(
+             get_special_var_name( e_special_var_queue_touch_files ) );
 
-            if( !file_hash_to_touch.empty( ) )
-            {
-               date_time dtm( date_time::local( ) );
-
-               while( true )
-               {
-                  touch_file( file_hash_to_touch, identity, false );
-
-                  file_hash_to_touch = get_session_variable(
-                   get_special_var_name( e_special_var_queue_touch_files ) );
-
-                  if( file_hash_to_touch.empty( ) )
-                     break;
-
-                  date_time now( date_time::local( ) );
-
-                  uint64_t elapsed = seconds_between( dtm, now );
-
-                  // NOTE: Touch as many files as possible within two seconds
-                  // so as to ensure that the connected peer doesn't time out.
-                  if( elapsed >= 2 )
-                     break;
-               }
-            }
+            // NOTE: Touch as many files as possible within two seconds
+            // so as to ensure that the connected peer doesn't time out.
+            if( has_session_variable( queue_touch_files_name ) )
+               touch_queued_files( queue_touch_files_name, identity, 2, false );
             else
             {
                // NOTE: Check whether a new block has been created either locally or remotely.
@@ -2509,7 +2489,9 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
 
          fetch_file( hash, socket, p_progress );
-         increment_peer_files_uploaded( file_bytes( hash ) );
+
+         if( hash != hello_hash )
+            increment_peer_files_uploaded( file_bytes( hash ) );
 
          socket_handler.op_state( ) = e_peer_state_waiting_for_put;
 
@@ -3422,16 +3404,11 @@ void peer_session::on_start( )
 
       ap_socket->close( );
 
-      while( true )
-      {
-         string file_hash_to_touch( get_session_variable(
-          get_special_var_name( e_special_var_queue_touch_files ) ) );
+      string queue_touch_files_name(
+       get_special_var_name( e_special_var_queue_touch_files ) );
 
-         if( file_hash_to_touch.empty( ) )
-            break;
-
-         touch_file( file_hash_to_touch, identity, false );
-      }
+      if( has_session_variable( queue_touch_files_name ) )
+         touch_queued_files( queue_touch_files_name, identity, 0, false );
 
       if( was_initialised )
       {
