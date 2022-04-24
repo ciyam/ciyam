@@ -637,7 +637,7 @@ bool has_all_list_items( const string& hash, bool recurse, bool touch_all_lists 
          }
          else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
          {
-            retval = has_all_list_items( next_hash, recurse );
+            retval = has_all_list_items( next_hash, recurse, touch_all_lists );
 
             if( !retval )
                break;
@@ -1363,7 +1363,8 @@ class socket_command_handler : public command_handler
    {
       if( !is_captured_session( ) )
          set_finished( );
-      else if( !is_condemned_session( ) )
+
+      if( !is_condemned_session( ) )
          condemn_this_session( );
    }
 
@@ -2618,10 +2619,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_peer_session_bye )
       {
-         if( !is_captured_session( ) )
-            handler.set_finished( );
-         else if( !is_condemned_session( ) )
-            condemn_this_session( );
+         socket_handler.kill_session( );
 
          return;
       }
@@ -2703,7 +2701,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          handler.set_finished( );
       }
-      else if( !is_condemned_session( ) )
+
+      if( !is_condemned_session( ) )
          condemn_this_session( );
    }
    else if( !socket_handler.get_is_responder( ) && !g_server_shutdown
@@ -2722,10 +2721,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.close( );
 
-         if( !is_captured_session( ) )
-            handler.set_finished( );
-         else if( !is_condemned_session( ) )
-            condemn_this_session( );
+         socket_handler.kill_session( );
 
          throw runtime_error( error );
       }
@@ -2734,10 +2730,7 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
       {
          socket.close( );
 
-         if( !is_captured_session( ) )
-            handler.set_finished( );
-         else if( !is_condemned_session( ) )
-            condemn_this_session( );
+         socket_handler.kill_session( );
 
          throw runtime_error( "unexpected non-okay response from peer" );
       }
@@ -3412,6 +3405,9 @@ void peer_session::on_start( )
 
       if( was_initialised )
       {
+         if( !is_for_support && !blockchain.empty( ) )
+            condemn_matching_sessions( );
+
          term_session( );
          has_terminated = true;
       }
