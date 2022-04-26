@@ -406,12 +406,11 @@ bool dir_exists( const char* p_name, bool check_link_target )
 
 bool file_touch( const char* p_name, time_t* p_tm )
 {
+   struct _utimbuf ut;
    struct _utimbuf* p_ut = 0;
 
    if( p_tm )
    {
-      struct _utimbuf ut;
-
       ut.actime = *p_tm;
       ut.modtime = *p_tm;
 
