@@ -55,6 +55,7 @@ namespace
 {
 
 const int c_status_info_pad_len = 10;
+const int c_yyyymmmddhhmmss_len = 14;
 
 const int c_min_size_to_compress = 33;
 
@@ -160,6 +161,21 @@ unsigned char get_file_type_and_extra( const string& hash, const char* p_file_na
 
 size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
+
+int64_t local_secs_diff( )
+{
+   date_time local( date_time::local( ) );
+   date_time standard( date_time::standard( ) );
+
+   int64_t secs_diff = seconds_between( standard, local );
+
+   if( ( secs_diff % 60 ) == 1 )
+      --secs_diff;
+   else if( ( secs_diff % 60 ) == 59 )
+      ++secs_diff;
+
+   return secs_diff;
+}
 
 string unique_time_stamp_tag( const string& prefix, const date_time& dt )
 {
@@ -384,11 +400,13 @@ bool path_already_used_in_archive( const string& path )
    return retval;
 }
 
-void add_archive_file( ods_file_system& ods_fs, const string& hash )
+time_t add_archive_file( ods_file_system& ods_fs, const string& hash )
 {
-   int64_t time_stamp = unix_time_stamp( );
+   time_t tm = unix_time_stamp( );
 
    ods_fs.set_folder( c_folder_archive_times_folder );
+
+   int64_t time_stamp = tm;
 
    string last_time( ods_fs.last_file_name_with_prefix( to_string( time_stamp ) ) );
 
@@ -415,6 +433,8 @@ void add_archive_file( ods_file_system& ods_fs, const string& hash )
    ods_fs.add_file( hash_and_time, c_file_zero_length );
 
    ods_fs.set_folder( ".." );
+
+   return tm;
 }
 
 bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_archive = 0 )
@@ -537,10 +557,7 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
       size_t max_num = get_files_area_item_max_num( );
       size_t max_size = get_files_area_item_max_size( );
 
-      date_time local( date_time::local( ) );
-      date_time standard( date_time::standard( ) );
-
-      int64_t secs_diff = seconds_between( standard, local );
+      int64_t secs_diff = local_secs_diff( );
 
       string ciyam_prefix( c_ciyam_tag );
       ciyam_prefix += '_';
@@ -2143,15 +2160,26 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
 
          string prefix( get_files_area_dir( ) );
 
-         // NOTE: If the tag name is time-stamp prefixed then it is assumed to be
-         // the current time and so the file is touched so it should have roughly
-         // the same tag when the files area is resynced/initialised.
+         // NOTE: If the tag name is time-stamp prefixed then will "touch" the
+         // file so it will have the same tag prefix (to the same second) when
+         // the files area is initialised or resynchronised.
          if( tag_name.find( c_time_stamp_tag_prefix ) == 0 )
          {
             if( tags.size( ) && ts_tag_to_remove.empty( ) )
                insert_tag = false;
             else
-               file_touch( file_name );
+            {
+               date_time dtm( tag_name.substr(
+                strlen( c_time_stamp_tag_prefix ), c_yyyymmmddhhmmss_len ) );
+
+               int64_t secs_diff = local_secs_diff( );
+
+               dtm -= ( seconds )secs_diff;
+
+               time_t tm = unix_time_stamp( dtm );
+
+               file_touch( file_name, &tm );
+            }
          }
          else
          {
@@ -4197,7 +4225,10 @@ bool touch_file_in_archive( const string& hash, const string& archive )
             }
 
             ods_fs.set_folder( ".." );
-            add_archive_file( ods_fs, hash );
+
+            time_t tm = add_archive_file( ods_fs, hash );
+
+            file_touch( paths[ i ] + '/' + hash, &tm );
 
             retval = true;
          }

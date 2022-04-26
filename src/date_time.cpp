@@ -402,6 +402,7 @@ inline void millisecond_to_components(
 inline millisecond components_to_millisecond( second sc, tenth te, hundredth hd, thousandth th )
 {
    millisecond ms = 0;
+
    ms += sc * 1000;
    ms += te * 100;
    ms += hd * 10;
@@ -901,8 +902,8 @@ mtime::mtime( const std::string& s )
 
       verify_time( hr, mn, sc, te, hd, th );
 
-      ms = hr * c_milliseconds_per_hour;
-      ms += mn * c_milliseconds_per_minute;
+      ms = ( hr * c_milliseconds_per_hour );
+      ms += ( mn * c_milliseconds_per_minute );
       ms += components_to_millisecond( sc, te, hd, th );
    }
 }
@@ -976,12 +977,14 @@ mtime::mtime( const mtime& src )
 mtime& mtime::operator =( const mtime& src )
 {
    ms = src.ms;
+
    return *this;
 }
 
 mtime& mtime::operator =( const string& s )
 {
    *this = mtime( s );
+
    return *this;
 }
 
@@ -991,6 +994,7 @@ mtime& mtime::operator ++( )
       throw runtime_error( "time out of range" );
 
    ++ms;
+
    return *this;
 }
 
@@ -999,6 +1003,7 @@ mtime mtime::operator ++( int )
    mtime mt( *this );
 
    ++*this;
+
    return mt;
 }
 
@@ -1008,6 +1013,7 @@ mtime& mtime::operator --( )
       throw runtime_error( "time out of range" );
 
    --ms;
+
    return *this;
 }
 
@@ -1016,6 +1022,7 @@ mtime mtime::operator --( int )
    mtime mt( *this );
 
    --*this;
+
    return mt;
 }
 
@@ -1067,6 +1074,7 @@ mtime& mtime::operator +=( milliseconds m )
       throw runtime_error( "time out of range" );
 
    ms = ( millisecond )nms;
+
    return *this;
 }
 
@@ -1082,6 +1090,7 @@ mtime& mtime::operator -=( milliseconds m )
       throw runtime_error( "time out of range" );
 
    ms = ( millisecond )nms;
+
    return *this;
 }
 
@@ -1299,6 +1308,7 @@ ostream& operator <<( ostream& os, const mtime& src )
    thousandth th;
 
    millisecond_to_components( src.ms, hr, mn, sc, te, hd, th );
+
    char buf[ 13 ] = "00:00:00.000";
 
    buf[ 0 ] = '0' + ( hr / 10 );
@@ -1527,6 +1537,7 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
 
          ymd.dy = d;
          int num = ( ( int )occ - ( int )e_occurrence_last ) + 1;
+
          while( true )
          {
             bool done = false;
@@ -1554,6 +1565,7 @@ udate::udate( year yr, month mo, day_type dt, occurrence occ )
             --*this;
          }
       }
+
       break;
    }
 }
@@ -1602,6 +1614,7 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
             ++*this;
          }
       }
+
       break;
 
       case e_occurrence_last:
@@ -1637,6 +1650,7 @@ udate::udate( year yr, month mo, day dy, day_type dt, occurrence occ )
             --*this;
          }
       }
+
       break;
    }
 }
@@ -3225,6 +3239,7 @@ void convert_julian_to_calendar( julian jdt,
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
 
    secs = sc;
+
    secs += ( te * 0.1 );
    secs += ( hd * 0.01 );
    secs += ( th * 0.001 );
@@ -3243,7 +3258,7 @@ int64_t unix_time_stamp( const date_time& dt )
    if( j < c_unix_epoch )
       throw runtime_error( "unix_time_stamp is not valid before the unix epoch" );
 
-   return ( int64_t )( ( j - c_unix_epoch ) * ( julian )c_seconds_per_day );
+   return ( int64_t )( ( ( j - c_unix_epoch ) * ( julian )c_seconds_per_day ) + 0.5 );
 }
 
 int64_t seconds_between( const date_time& lhs, const date_time& rhs )
@@ -3492,4 +3507,3 @@ string format_date_time( const date_time& dt, const string& dmask, const string&
 {
    return format_udate( dt.get_date( ), dmask ) + format_mtime( dt.get_time( ), tmask );
 }
-

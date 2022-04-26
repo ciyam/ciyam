@@ -581,9 +581,21 @@ size_t process_put_file( const string& blockchain,
                            {
                               list_items_to_ignore.insert( target_hash );
 
-                              // NOTE: Pull information target (if had already been queued) will be removed.
-                              add_peer_file_hash_for_get(
-                               hash_info, check_for_supporters, false, target_hash.empty( ) ? 0 : &target_hash );
+                              string dummy, local_hash;
+
+                              bool has_repo_entry = fetch_repository_entry_record( target_hash, local_hash, dummy, dummy, false );
+
+                              if( has_repo_entry && has_file( local_hash ) )
+                              {
+                                 ++num_skipped;
+
+                                 set_session_variable( get_special_var_name(
+                                  e_special_var_queue_touch_files ), local_hash );
+                              }
+                              else
+                                 // NOTE: Pull information target (if had already been queued) will be removed.
+                                 add_peer_file_hash_for_get(
+                                  hash_info, check_for_supporters, false, target_hash.empty( ) ? 0 : &target_hash );
                            }
                         }
                         else
