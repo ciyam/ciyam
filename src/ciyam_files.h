@@ -130,8 +130,8 @@ void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& tag_or_hash,
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
 bool CIYAM_BASE_DECL_SPEC store_file( const std::string& hash,
- tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0,
- bool allow_core_file = true, size_t max_bytes = 0, bool allow_missing_items = false, std::string* p_file_data = 0 );
+ tcp_socket& socket, const char* p_tag = 0, progress* p_progress = 0, bool allow_core_file = true,
+ size_t max_bytes = 0, bool allow_missing_items = false, std::string* p_file_data = 0, size_t* p_total_bytes = 0 );
 
 void CIYAM_BASE_DECL_SPEC delete_file( const std::string& hash, bool even_if_tagged = true, bool ignore_not_found = false );
 

@@ -3012,8 +3012,8 @@ void fetch_file( const string& hash, tcp_socket& socket, progress* p_progress )
 }
 
 bool store_file( const string& hash,
- tcp_socket& socket, const char* p_tag, progress* p_progress,
- bool allow_core_file, size_t max_bytes, bool allow_missing_items, string* p_file_data )
+ tcp_socket& socket, const char* p_tag, progress* p_progress, bool allow_core_file,
+ size_t max_bytes, bool allow_missing_items, string* p_file_data, size_t* p_total_bytes )
 {
    string tmp_file_name;
 
@@ -3059,6 +3059,9 @@ bool store_file( const string& hash,
        c_file_transfer_initial_timeout, c_file_transfer_line_timeout,
        c_file_transfer_max_line_size, 0, file_buffer.get_buffer( ), file_buffer.get_size( ),
        p_progress, ( !existing ? 0 : c_response_okay_skip ), ap_udp_stream_helper.get( ) );
+
+      if( p_total_bytes )
+         *p_total_bytes = total_bytes;
 
       if( !existing )
       {
