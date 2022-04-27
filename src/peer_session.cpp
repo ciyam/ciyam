@@ -1580,11 +1580,9 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
    {
       string file_data;
 
-      store_file( hash, socket, 0, p_progress, true, 0, true, &file_data );
+      store_file( hash, socket, 0, p_progress, true, 0, true, &file_data, &num_bytes );
 
       *p_file_data = file_data;
-
-      num_bytes = file_data.size( );
 
       if( is_list_file( file_data[ 0 ] ) )
       {
@@ -2614,15 +2612,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
          socket.set_delay( );
 
-         int64_t bytes = 0;
+         size_t num_bytes = 0;
 
          if( !has_file( hash ) )
          {
             string file_data;
 
-            store_file( hash, socket, 0, p_progress, false, 0, false, &file_data );
-
-            bytes = file_data.length( );
+            store_file( hash, socket, 0, p_progress, false, 0, false, &file_data, &num_bytes );
 
             if( hash != hello_hash && !get_session_variable(
              get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
@@ -2637,13 +2633,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          }
          else
          {
-            bytes = file_bytes( hash );
+            num_bytes = file_bytes( hash );
 
             store_temp_file( "", socket, p_progress, true );
          }
 
          if( hash != hello_hash )
-            increment_peer_files_downloaded( bytes );
+            increment_peer_files_downloaded( num_bytes );
 
          if( has_file( hash ) )
          {
