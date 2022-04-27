@@ -886,9 +886,6 @@ void process_data_file( const string& blockchain,
       string first_hash_name( get_special_var_name( e_special_var_hash ) );
       string first_hash_to_get( get_session_variable( first_hash_name ) );
 
-      bool is_blockchain_owner = !get_session_variable(
-       get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
-
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
@@ -909,9 +906,6 @@ void process_data_file( const string& blockchain,
             }
             else
             {
-               if( is_blockchain_owner )
-                  tag_file( c_ciyam_tag, tree_root_hash );
-
                if( first_hash_to_get == tree_root_hash )
                   set_session_variable( first_hash_name, "" );
 
@@ -919,11 +913,12 @@ void process_data_file( const string& blockchain,
                 e_special_var_blockchain_skip_blob_puts ) ).empty( ) )
                   get_tree_items = has_all_list_items( tree_root_hash, true );
 
-               if( get_tree_items
-                && !last_data_tree_is_identical( blockchain, height - 1 ) )
+               if( get_tree_items )
                {
                   need_to_tag_zenith = is_new_height;
-                  process_list_items( tree_root_hash, true, 0, p_num_items_found );
+
+                  if( !last_data_tree_is_identical( blockchain, height - 1 ) )
+                     process_list_items( tree_root_hash, true, 0, p_num_items_found );
                }
 
                set_session_variable(
@@ -1897,19 +1892,19 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      // NOTE: If zenith height is not greater than the blockchain height
                      // then block was not created locally and will assume that fetching
                      // must have not been previously completed.
-                     string zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
+                     string current_zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
 
-                     size_t zenith_height = 0;
+                     size_t current_zenith_height = 0;
 
-                     if( !get_block_height_from_tags( blockchain, zenith_hash, zenith_height ) )
-                        throw runtime_error( "unexpected error determining zenith height" );
+                     if( !get_block_height_from_tags( blockchain, current_zenith_hash, current_zenith_height ) )
+                        throw runtime_error( "unexpected error determining current zenith height" );
 
                      temporary_session_variable temp_skip_blob_puts(
                       get_special_var_name( e_special_var_blockchain_skip_blob_puts ), c_true_value );
 
                      bool need_to_check = false;
 
-                     if( zenith_height > blockchain_height )
+                     if( current_zenith_height > blockchain_height )
                         set_session_variable(
                          get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
                      else
@@ -1925,7 +1920,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                      bool has_block_data = process_block_for_height(
                       blockchain, next_block_hash, blockchain_height + 1, &num_items_found );
 
-                     if( !need_to_check && has_block_data )
+                     if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
                      {
                         blockchain_height = ++blockchain_height_pending;
 
@@ -1936,6 +1931,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                            set_new_zenith = true;
                         else
                            throw runtime_error( "unexpected new block height with no new zenith hash" );
+
+                        set_session_variable(
+                         get_special_var_name( e_special_var_blockchain_is_fetching ), "" );
                      }
                      else
                      {
@@ -2208,9 +2206,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !zenith_tree_hash.empty( ) )
       {
-         // NOTE: Will touch all tree lists iff has the tree root.
          if( has_file( zenith_tree_hash ) )
+         {
+            // NOTE: Will touch all tree lists iff has the tree root.
             has_all_list_items( zenith_tree_hash, true, true );
+
+            if( !get_session_variable(
+             get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( )
+             && !get_session_variable(
+             get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( ) )
+               tag_file( c_ciyam_tag, zenith_tree_hash );
+         }
 
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
