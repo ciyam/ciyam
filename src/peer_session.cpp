@@ -895,14 +895,16 @@ void process_data_file( const string& blockchain,
       string blockchain_height_processed( get_session_variable(
        get_special_var_name( e_special_var_blockchain_height_processed ) ) );
 
-      if( get_tree_items || blockchain_height_processed.empty( )
-       || ( from_string< size_t >( blockchain_height_processed ) < height ) )
+      bool is_new_height = ( blockchain_height_processed.empty( )
+       || ( from_string< size_t >( blockchain_height_processed ) < height ) );
+
+      if( is_new_height || get_tree_items )
       {
          if( get_tree_items && !tree_root_hash.empty( ) )
          {
             if( !has_file( tree_root_hash ) )
             {
-               need_to_tag_zenith = true;
+               need_to_tag_zenith = is_new_height;
                add_peer_file_hash_for_get( tree_root_hash );
             }
             else
@@ -920,7 +922,7 @@ void process_data_file( const string& blockchain,
                if( get_tree_items
                 && !last_data_tree_is_identical( blockchain, height - 1 ) )
                {
-                  need_to_tag_zenith = true;
+                  need_to_tag_zenith = is_new_height;
                   process_list_items( tree_root_hash, true, 0, p_num_items_found );
                }
 
@@ -929,7 +931,7 @@ void process_data_file( const string& blockchain,
             }
          }
          else
-            need_to_tag_zenith = true;
+            need_to_tag_zenith = is_new_height;
 
          if( need_to_tag_zenith )
          {
@@ -3407,6 +3409,9 @@ void peer_session::on_start( )
 
                set_session_variable( get_special_var_name(
                 e_special_var_blockchain_zenith_height ), to_string( blockchain_height ) );
+
+               set_session_variable( get_special_var_name(
+                e_special_var_blockchain_height_processed ), to_string( blockchain_height ) );
             }
          }
 
