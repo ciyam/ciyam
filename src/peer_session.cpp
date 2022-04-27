@@ -895,8 +895,8 @@ void process_data_file( const string& blockchain,
       string blockchain_height_processed( get_session_variable(
        get_special_var_name( e_special_var_blockchain_height_processed ) ) );
 
-      if( blockchain_height_processed.empty( )
-       || from_string< size_t >( blockchain_height_processed ) < height )
+      if( get_tree_items || blockchain_height_processed.empty( )
+       || ( from_string< size_t >( blockchain_height_processed ) < height ) )
       {
          if( get_tree_items && !tree_root_hash.empty( ) )
          {
@@ -1924,7 +1924,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                       blockchain, next_block_hash, blockchain_height + 1, &num_items_found );
 
                      if( !need_to_check && has_block_data )
+                     {
                         blockchain_height = ++blockchain_height_pending;
+
+                        zenith_hash = get_session_variable(
+                         get_special_var_name( e_special_var_blockchain_zenith_hash ) );
+
+                        if( !zenith_hash.empty( ) )
+                           set_new_zenith = true;
+                        else
+                           throw runtime_error( "unexpected new block height with no new zenith hash" );
+                     }
                      else
                      {
                         if( need_to_check )
@@ -2196,7 +2206,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       if( !zenith_tree_hash.empty( ) )
       {
-         has_all_list_items( zenith_tree_hash, true, true );
+         // NOTE: Will touch all tree lists iff has the tree root.
+         if( has_file( zenith_tree_hash ) )
+            has_all_list_items( zenith_tree_hash, true, true );
 
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
