@@ -1354,7 +1354,7 @@ class socket_command_handler : public command_handler
       if( is_time_for_check )
          return true;
 
-      int64_t current = unix_time_stamp( date_time::local( ) );
+      int64_t current = unix_time( date_time::local( ) );
 
       if( current >= time_val )
          is_time_for_check = true;
@@ -3021,7 +3021,7 @@ peer_session* construct_session( const date_time& dtm,
    if( is_for_support || !already_has_session 
     || addr_info.substr( 0, pos ) == c_local_ip_addr
     || addr_info.substr( 0, pos ) == c_local_ip_addr_for_ipv6 )
-      p_session = new peer_session( unix_time_stamp( dtm ),
+      p_session = new peer_session( unix_time( dtm ),
        is_responder, ap_socket, addr_info, is_for_support, extra, p_identity );
 
    return p_session;
@@ -3207,7 +3207,7 @@ void peer_session::on_start( )
 
    peer_state state = ( is_responder ? e_peer_state_responder : e_peer_state_initiator );
 
-   int64_t current = unix_time_stamp( date_time::local( ) );
+   int64_t current = unix_time( date_time::local( ) );
 
    int64_t difference = ( current - time_val ) + 1;
 

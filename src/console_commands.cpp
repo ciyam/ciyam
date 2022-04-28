@@ -84,7 +84,7 @@ const char c_environment_variable_marker_2 = '%';
 
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
-const char* const c_unix_time_stamp = "unix";
+const char* const c_unix_time = "unix";
 
 const char* const c_function_file = "file";
 const char* const c_function_files = "files";
@@ -2592,8 +2592,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                      memcpy( &lhs[ 0 ], &str[ 0 ], pos );
                   }
 
-                  if( lhs == string( c_unix_time_stamp ) )
-                     val = unix_time_stamp( );
+                  if( lhs == string( c_unix_time ) )
+                     val = unix_time( );
 
                   if( pos != string::npos )
                   {

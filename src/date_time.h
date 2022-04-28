@@ -484,7 +484,7 @@ class DATE_TIME_DECL_SPEC date_time
    date_time( ) { }
 
    explicit date_time( julian j );
-   explicit date_time( int64_t unix_time_stamp );
+   explicit date_time( int64_t unix_time );
 
    void construct_from_julian( julian j );
 
@@ -774,8 +774,8 @@ void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
 void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th );
 
-int64_t DATE_TIME_DECL_SPEC unix_time_stamp( const date_time& dt );
-inline int64_t DATE_TIME_DECL_SPEC unix_time_stamp( ) { return unix_time_stamp( date_time::standard( ) ); }
+int64_t DATE_TIME_DECL_SPEC unix_time( const date_time& dt );
+inline int64_t DATE_TIME_DECL_SPEC unix_time( ) { return unix_time( date_time::standard( ) ); }
 
 int64_t DATE_TIME_DECL_SPEC seconds_between( const date_time& lhs, const date_time& rhs );
 

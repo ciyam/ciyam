@@ -2165,7 +2165,7 @@ void request_handler::process_request( )
                if( p_session_info->needs_pin )
                   cmd = c_cmd_home;
                else if( p_session_info->change_pwd_tm
-                && ( unix_time_stamp( ) >= p_session_info->change_pwd_tm ) )
+                && ( unix_time( ) >= p_session_info->change_pwd_tm ) )
                   cmd = c_cmd_pwd;
             }
 

@@ -1138,12 +1138,12 @@ class socket_command_handler : public command_handler
 
    void set_lock_expires( unsigned int seconds )
    {
-      lock_expires = unix_time_stamp( ) + seconds;
+      lock_expires = unix_time( ) + seconds;
    }
 
    void check_lock_expiry( )
    {
-      if( lock_expires && unix_time_stamp( ) > lock_expires )
+      if( lock_expires && unix_time( ) > lock_expires )
       {
          locked_rpc = true;
          lock_expires = 0;
@@ -5571,6 +5571,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          date_time utc( local_to_utc( date_time( local_time ), tz_name ) );
 
          response = utc.as_string( e_time_format_hhmm, true );
+      }
+      else if( command == c_cmd_ciyam_session_utc_to_unix_time )
+      {
+         string utc_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_to_unix_time_utc_time ) );
+
+         date_time utc( utc_time );
+
+         response = to_string( unix_time( utc ) );
+      }
+      else if( command == c_cmd_ciyam_session_utc_from_unix_time )
+      {
+         string unix_time( get_parm_val( parameters, c_cmd_ciyam_session_utc_from_unix_time_unix_time ) );
+
+         date_time utc( from_string< int64_t >( unix_time ) );
+
+         response = utc.as_string( e_time_format_hhmmss, true );
       }
       else if( command == c_cmd_ciyam_session_wait )
       {

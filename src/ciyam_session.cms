@@ -121,6 +121,8 @@ utc_now "get the current UTC time"
 utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>
 utc_to_local "convert UTC to local for a timezone" <val//tz_name><val//utc_time>
 utc_from_local "convert local to UTC for a timezone" <val//tz_name><val//local_time>
+utc_to_unix_time "convert UTC to unix time" <val//utc_time>
+utc_from_unix_time "convert unix time to UTC" <val//unix_time>
 wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
 test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 quit "terminate session"
