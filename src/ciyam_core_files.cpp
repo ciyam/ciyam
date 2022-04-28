@@ -54,20 +54,21 @@ const unsigned int c_max_core_line_size = 1000;
 
 struct data_info
 {
-   data_info( ) : unix_time_stamp( 0 ) { }
+   data_info( ) : unix_time_value( 0 ) { }
 
    string public_key_hash;
-   uint64_t unix_time_stamp;
+
+   uint64_t unix_time_value;
 };
 
 struct block_info
 {
-   block_info( ) : unix_time_stamp( 0 ) { }
+   block_info( ) : unix_time_value( 0 ) { }
 
    string data_file_hash;
    string public_key_hash;
 
-   uint64_t unix_time_stamp;
+   uint64_t unix_time_value;
 };
 
 void verify_data( const string& content,
@@ -94,7 +95,7 @@ void verify_data( const string& content,
    size_t num_tree_items = 0;
 
    uint64_t data_height = 0;
-   uint64_t unix_time_stamp = 0;
+   uint64_t unix_time_value = 0;
 
    string header( lines[ 0 ] );
    if( header.empty( ) )
@@ -269,22 +270,22 @@ void verify_data( const string& content,
          }
       }
 
-      if( !found && !unix_time_stamp )
+      if( !found && !unix_time_value )
       {
-         size_t len = strlen( c_file_type_core_data_detail_unix_time_stamp_prefix );
+         size_t len = strlen( c_file_type_core_data_detail_unix_data_time_value_prefix );
 
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_unix_time_stamp_prefix ) )
-            throw runtime_error( "invalid data unix time stamp attribute '" + next_attribute + "'" );
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_unix_data_time_value_prefix ) )
+            throw runtime_error( "invalid unix data time value attribute '" + next_attribute + "'" );
 
          next_attribute.erase( 0, len );
 
-         unix_time_stamp = from_string< uint64_t >( next_attribute );
+         unix_time_value = from_string< uint64_t >( next_attribute );
 
          if( p_data_info )
-            p_data_info->unix_time_stamp = unix_time_stamp;
+            p_data_info->unix_time_value = unix_time_value;
 
-         if( check_sigs && ( data_height > 1 && unix_time_stamp <= info.unix_time_stamp ) )
-            throw runtime_error( "invalid unix data time stamp not more recent than last" );
+         if( check_sigs && ( data_height > 1 && unix_time_value <= info.unix_time_value ) )
+            throw runtime_error( "invalid unix data time value not more recent than last" );
 
          found = true;
       }
@@ -309,8 +310,8 @@ void verify_data( const string& content,
    if( data_height > 1 && last_data_hash.empty( ) )
       throw runtime_error( "unexpected missing data last data hash attribute" );
 
-   if( !unix_time_stamp )
-      throw runtime_error( "unexpected missing unix data time stamp attribute" );
+   if( !unix_time_value )
+      throw runtime_error( "unexpected missing unix data time value attribute" );
 }
 
 void verify_block( const string& content,
@@ -329,7 +330,7 @@ void verify_block( const string& content,
    string identity;
 
    uint64_t block_height = 0;
-   uint64_t unix_time_stamp = 0;
+   uint64_t unix_time_value = 0;
 
    string header( lines[ 0 ] );
 
@@ -547,32 +548,32 @@ void verify_block( const string& content,
                }
             }
          }
-         else if( !unix_time_stamp )
+         else if( !unix_time_value )
          {
-            size_t len = strlen( c_file_type_core_block_detail_unix_block_time_stamp_prefix );
+            size_t len = strlen( c_file_type_core_block_detail_unix_block_time_value_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_unix_block_time_stamp_prefix ) )
-               throw runtime_error( "invalid unix block time stamp attribute '" + next_attribute + "'" );
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_unix_block_time_value_prefix ) )
+               throw runtime_error( "invalid unix block time value attribute '" + next_attribute + "'" );
 
             next_attribute.erase( 0, len );
 
-            unix_time_stamp = from_string< uint64_t >( next_attribute );
+            unix_time_value = from_string< uint64_t >( next_attribute );
 
             if( p_block_info )
-               p_block_info->unix_time_stamp = unix_time_stamp;
+               p_block_info->unix_time_value = unix_time_value;
 
-            if( check_sigs && block_height > 1 && ( unix_time_stamp <= info.unix_time_stamp ) )
-               throw runtime_error( "invalid unix block time stamp not more recent than last" );
+            if( check_sigs && block_height > 1 && ( unix_time_value <= info.unix_time_value ) )
+               throw runtime_error( "invalid unix block time value not more recent than last" );
 
-            if( check_sigs && ( unix_time_stamp < data.unix_time_stamp ) )
-               throw runtime_error( "invalid unix block time stamp older than unix data time stamp" );
+            if( check_sigs && ( unix_time_value < data.unix_time_value ) )
+               throw runtime_error( "invalid unix block time value older than unix data time value" );
          }
          else
             throw runtime_error( "unexpected extraneous block attribute '" + next_attribute + "'" );
       }
    }
 
-   if( block_height && !unix_time_stamp )
+   if( block_height && !unix_time_value )
       throw runtime_error( "unexpected missing unix block time stamp attribute" );
 
    if( !block_height )

@@ -296,4 +296,14 @@ utc_from_local AEDT "2014-04-06 02:00"
 utc_to_local AEST "2014-04-05 16:00"
 utc_to_local AEST+ "2014-04-05 16:00"
 utc_from_local AEST "2014-04-06 02:00"
+utc_from_unix_time 0
+utc_to_unix_time "1970-01-01 00:00:00"
+utc_from_unix_time 631152000
+utc_to_unix_time "1990-01-01 00:00:00"
+utc_from_unix_time 946684800
+utc_to_unix_time "2000-01-01 00:00:00"
+utc_from_unix_time 1000000000
+utc_to_unix_time "2001-09-09 01:46:40"
+utc_from_unix_time 1320195610
+utc_to_unix_time "2011-11-02 01:00:10"
 .quit

@@ -2767,13 +2767,13 @@ string get_random_hash( )
    return "0" + hash.get_digest_as_string( ).substr( 1 );
 }
 
-int64_t get_unix_time_stamp( bool use_dtm )
+int64_t get_unix_time( bool use_dtm )
 {
    string dtm( get_dtm( ) );
 
    date_time dt( use_dtm && !dtm.empty( ) ? date_time( dtm ) : date_time::standard( ) );
 
-   return unix_time_stamp( dt );
+   return unix_time( dt );
 }
 
 string get_ext( const string& filename )
@@ -3626,9 +3626,9 @@ string valid_non_utf8_filename( const string& str )
    return search_replace( valid_file_name( str ), " ", "_" );
 }
 
-string unix_to_locktime( const numeric& unix_time_stamp )
+string unix_to_locktime( const numeric& unix_time )
 {
-   int64_t val( unix_time_stamp.as_int64_t( ) );
+   int64_t val( unix_time.as_int64_t( ) );
 
    string str( hex_encode( ( const unsigned char* )&val, sizeof( val ) ) );
 
@@ -3639,9 +3639,9 @@ string unix_to_locktime( const numeric& unix_time_stamp )
    return str.substr( 0, 8 );
 }
 
-string unix_to_datetime( const numeric& unix_time_stamp )
+string unix_to_datetime( const numeric& unix_time )
 {
-   int64_t val( unix_time_stamp.as_int64_t( ) );
+   int64_t val( unix_time.as_int64_t( ) );
 
    return date_time( val ).as_string( );
 }

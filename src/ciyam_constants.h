@@ -152,7 +152,7 @@ const char* const c_file_type_core_data_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";
 const char* const c_file_type_core_data_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
-const char* const c_file_type_core_data_detail_unix_time_stamp_prefix = "u:";
+const char* const c_file_type_core_data_detail_unix_data_time_value_prefix = "u:";
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
@@ -162,7 +162,7 @@ const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_block_detail_primary_pubkey_prefix = "p:";
 const char* const c_file_type_core_block_detail_secondary_pubkey_prefix = "s:";
 const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
-const char* const c_file_type_core_block_detail_unix_block_time_stamp_prefix = "u:";
+const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";
 
 const char* const c_sys = "sys";
 const char* const c_auto = "auto";

@@ -402,7 +402,7 @@ bool path_already_used_in_archive( const string& path )
 
 time_t add_archive_file( ods_file_system& ods_fs, const string& hash )
 {
-   time_t tm = unix_time_stamp( );
+   time_t tm = unix_time( );
 
    ods_fs.set_folder( c_folder_archive_times_folder );
 
@@ -2176,7 +2176,7 @@ void tag_file( const string& name, const string& hash, bool skip_tag_del, bool i
 
                dtm -= ( seconds )secs_diff;
 
-               time_t tm = unix_time_stamp( dtm );
+               time_t tm = unix_time( dtm );
 
                file_touch( file_name, &tm );
             }
