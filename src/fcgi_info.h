@@ -349,7 +349,7 @@ struct module_info
    std::string sys_vendor_field_id;
    std::string sys_actions_field_id;
    std::string sys_message_field_id;
-   std::string sys_reference_field_id;
+   std::string sys_identity_field_id;
 
    std::string user_class_id;
    std::string user_class_name;

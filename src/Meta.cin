@@ -99,7 +99,7 @@ user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Up
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_enum_add -id=907 app_type bool 0=Blockchain,1=Traditional
 user_defined_enum_add -id=950 archive_standard_size numeric 100000000000=100\\_GB,300000000000=300\\_GB,500000000000=500\\_GB
-user_defined_enum_add -id=955 peerchain_status int 0=Halted,1=Started,2=Connected,3=Connecting,4=Disconnecting
+user_defined_enum_add -id=955 peerchain_status int 0=Halted,1=Waiting,2=Connected,3=Connecting,4=Disconnecting
 user_defined_enum_add -id=960 peerchain_entry_type int 0=Hosted,1=Local_Only
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"

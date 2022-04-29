@@ -2607,7 +2607,8 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                               else
                                  value.erase( );
                            }
-                           else if( get_obj( ).child_Package_Option( ).Name( ) == "@use_peerchains" )
+                           else if( get_obj( ).child_Package_Option( ).Name( ) == "@has_blockchain"
+                            || get_obj( ).child_Package_Option( ).Name( ) == "@use_peerchains" )
                            {
                               if( !get_obj( ).Model( ).Type( ) )
                                  value = "1";

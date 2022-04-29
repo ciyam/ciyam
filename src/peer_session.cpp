@@ -1044,6 +1044,8 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
       tag_file( blockchain + c_zenith_suffix, block_hash );
 
+      output_synchronised_progress_message( replaced( blockchain, c_bc_prefix, "" ), height );
+
       TRACE_LOG( TRACE_PEER_OPS, "::: new zenith hash: "
        + block_hash + " height: " + to_string( height ) );
 
@@ -3424,11 +3426,16 @@ void peer_session::on_start( )
 
             if( !is_for_support )
             {
-               // FUTURE: This message should be handled as a server string message.
-               string progress_message( "Synchronising..." );
+               if( has_zenith )
+                  output_synchronised_progress_message( identity, blockchain_height );
+               else
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  string progress_message( "Synchronising..." );
 
-               set_session_progress_output( progress_message );
-               set_system_variable( c_progress_output_prefix + identity, progress_message );
+                  set_session_progress_output( progress_message );
+                  set_system_variable( c_progress_output_prefix + identity, progress_message );
+               }
             }
          }
       }

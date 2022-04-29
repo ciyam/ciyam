@@ -4707,7 +4707,7 @@ void set_identity( const string& info, const char* p_encrypted_sid )
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
          if( get_system_variable(
-          get_special_var_name( e_special_var_identity ) ).empty( ) )
+          get_special_var_name( e_special_var_blockchain ) ).empty( ) )
          {
             string sid_name( get_special_var_name( e_special_var_sid ) );
 
