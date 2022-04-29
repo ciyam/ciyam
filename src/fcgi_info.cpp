@@ -571,7 +571,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          info.sys_vendor_field_id = fields[ 1 ];
          info.sys_actions_field_id = fields[ 2 ];
          info.sys_message_field_id = fields[ 3 ];
-         info.sys_reference_field_id = fields[ 4 ];
+         info.sys_identity_field_id = fields[ 4 ];
       }
 
       string user_info = reader.read_attribute( c_attribute_user_info );

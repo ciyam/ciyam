@@ -1592,7 +1592,7 @@
     </value>
     <value/>
      <data>1
-     <name>enum_peerchain_status_started
+     <name>enum_peerchain_status_waiting
     </value>
     <value/>
      <data>2

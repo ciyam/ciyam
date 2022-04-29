@@ -264,7 +264,7 @@ string get_enum_string_peerchain_entry_type( int val )
 }
 
 const int c_enum_peerchain_status_Halted( 0 );
-const int c_enum_peerchain_status_Started( 1 );
+const int c_enum_peerchain_status_Waiting( 1 );
 const int c_enum_peerchain_status_Connected( 2 );
 const int c_enum_peerchain_status_Connecting( 3 );
 const int c_enum_peerchain_status_Disconnecting( 4 );
@@ -278,7 +278,7 @@ string get_enum_string_peerchain_status( int val )
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_peerchain_status_Halted";
    else if( to_string( val ) == to_string( "1" ) )
-      string_name = "enum_peerchain_status_Started";
+      string_name = "enum_peerchain_status_Waiting";
    else if( to_string( val ) == to_string( "2" ) )
       string_name = "enum_peerchain_status_Connected";
    else if( to_string( val ) == to_string( "3" ) )
@@ -1268,7 +1268,7 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
 
       if( has_registered_listener_id( get_obj( ).Identity( ) ) )
       {
-         get_obj( ).Status( c_enum_peerchain_status_Started );
+         get_obj( ).Status( c_enum_peerchain_status_Waiting );
          get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) );
       }
       else
@@ -1294,7 +1294,7 @@ void Meta_Global_Peerchain_Entry::impl::after_fetch( )
       {
          if( has_registered_listener_id( get_obj( ).Identity( ) ) )
          {
-            get_obj( ).Status( c_enum_peerchain_status_Started );
+            get_obj( ).Status( c_enum_peerchain_status_Waiting );
 
             get_obj( ).Actions( '<' + string( c_procedure_id_Finish ) + ",<" + string( c_procedure_id_Connect ) );
          }

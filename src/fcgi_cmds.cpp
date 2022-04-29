@@ -2049,7 +2049,7 @@ void fetch_sys_record( const string& module_id, const module_info& mod_info, ses
    field_list += "," + mod_info.sys_vendor_field_id;
    field_list += "," + mod_info.sys_actions_field_id;
    field_list += "," + mod_info.sys_message_field_id;
-   field_list += "," + mod_info.sys_reference_field_id;
+   field_list += "," + mod_info.sys_identity_field_id;
 
    // NOTE: It is being assumed that the System Information singleton's key is "system".
    string key_info( "system" );

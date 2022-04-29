@@ -106,7 +106,6 @@ const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_increment = "@increment";
 const char* const c_special_variable_list_hash = "@list_hash";
 const char* const c_special_variable_peer_port = "@peer_port";
-const char* const c_special_variable_unix_time = "@unix_time";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_blockchain = "@blockchain";
 const char* const c_special_variable_extra_info = "@extra_info";
@@ -456,10 +455,6 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_peer_port );
       break;
 
-      case e_special_var_unix_time:
-      s = string( c_special_variable_unix_time );
-      break;
-
       case e_special_var_val_error:
       s = string( c_special_variable_val_error );
       break;
@@ -777,8 +772,6 @@ string get_raw_system_variable( const string& name )
 
    if( g_variables.count( c_special_variable_sys_var_prefix ) )
       sys_var_prefix = g_variables[ c_special_variable_sys_var_prefix ];
-
-   g_variables[ to_string( c_special_variable_unix_time ) ] = to_string( unix_time( ) ); 
 
    // NOTE: One or more persistent variables can have their values
    // either stored or restored depending upon the prefix used and
