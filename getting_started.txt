@@ -124,7 +124,8 @@ Creating an Application
 
 Once you have logged in click on "Models" (in the navigation sidebar) and then click "Create New" in order to
 begin the application creation process. The "New Model" form will require a Name to be entered (for this test
-the name "Sample" should be used).
+the name "Sample" should be used). Set "Use_Package_Demo_Data" on so that a user (other than "admin") will be
+automatically created for testing purposes (if not then use "!admin" instead of "!guest" to login).
 
 The "Add Packages" drop list will default to the value "Standard User" which is fine (along with the defaults
 for the other fields) so now simply click "Save Details" to create the new Model. After saving the "Standard"
@@ -135,7 +136,7 @@ To install the "User" package click on the greyed out "User" list item then from
 click on the "Install" button. You might notice from the "Package" view form that there are a number of child
 "Package Options" present. These "options" allow customisation of a package prior to installation. Because of
 the fact that the "User" package has such options it is not automatically installed as the "Standard" package
-was (the "Standard" package has no installation options).
+was (the "Standard" package has no installation options beyond the defaulted "@has_blockchain" one).
 
 For the purposes of creating a test "demonstration" Application the "User" package should simply be installed
 with the "Package Options" as they are by default. After the "User" package has been installed (assuming that

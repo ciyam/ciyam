@@ -141,6 +141,7 @@ const char* const c_attribute_storage_name = "storage_name";
 const char* const c_attribute_user_tz_name = "user_tz_name";
 const char* const c_attribute_module_prefix = "module_prefix";
 const char* const c_attribute_user_has_auth = "user_has_auth";
+const char* const c_attribute_view_show_key = "view_show_key";
 const char* const c_attribute_checkbox_bools = "checkbox_bools";
 const char* const c_attribute_filesize_limit = "filesize_limit";
 const char* const c_attribute_user_pin_value = "user_pin_value";
@@ -268,6 +269,7 @@ storage_info::storage_info( )
  image_height( c_default_image_height ),
  embed_images( c_default_embed_images ),
  encrypt_data( c_default_encrypt_data ),
+ view_show_key( c_default_view_show_key ),
  checkbox_bools( c_default_checkbox_bools ),
  filesize_limit( c_default_filesize_limit ),
  quick_link_limit( c_default_quick_link_limit )
@@ -290,6 +292,7 @@ void storage_info::clear( )
    embed_images = c_default_embed_images;
    encrypt_data = c_default_encrypt_data;
 
+   view_show_key = c_default_view_show_key;
    checkbox_bools = c_default_checkbox_bools;
 
    filesize_limit = c_default_filesize_limit;
@@ -362,6 +365,7 @@ session_info::session_info( storage_info& si )
  print_limit( si.print_limit ),
  image_width( si.image_width ),
  image_height( si.image_height ),
+ view_show_key( si.view_show_key ),
  checkbox_bools( si.checkbox_bools ),
  print_list_opts( si.print_list_opts ),
  quick_link_limit( si.quick_link_limit ),
@@ -467,6 +471,10 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
          info.encrypt_data = ( encrypt_data == c_true );
 
       info.rpc_password = reader.read_opt_attribute( c_attribute_rpc_password );
+
+      string view_show_key = reader.read_opt_attribute( c_attribute_view_show_key );
+      if( !view_show_key.empty( ) )
+         info.view_show_key = ( view_show_key == c_true );
 
       string checkbox_bools = reader.read_opt_attribute( c_attribute_checkbox_bools );
       if( !checkbox_bools.empty( ) )

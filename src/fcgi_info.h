@@ -456,6 +456,7 @@ struct storage_info
    bool use_tls;
    bool embed_images;
    bool encrypt_data;
+   bool view_show_key;
    bool checkbox_bools;
 
    size_t filesize_limit;
@@ -577,6 +578,7 @@ struct session_info
    int image_width;
    int image_height;
 
+   bool view_show_key;
    bool checkbox_bools;
 
    std::string print_list_opts;
