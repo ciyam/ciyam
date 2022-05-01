@@ -2644,6 +2644,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          mclass = get_class_id_for_id_or_name( module, mclass );
 
+         // NOTE: For usage with the "getmeta" script.
+         if( module == "Meta" && fields == "@all" )
+            fields = get_meta_class_field_list( mclass );
+
          string parent_key;
          bool found_parent_key = false;
 

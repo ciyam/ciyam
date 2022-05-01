@@ -18,6 +18,8 @@
 #     define CIYAM_BASE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+std::string CIYAM_BASE_DECL_SPEC get_meta_class_field_list( const std::string& mclass );
+
 void CIYAM_BASE_DECL_SPEC export_package(
  const std::string& module, const std::string& mclass,
  const std::string& key, const std::string& exclude_info, const std::string& skip_field_info,

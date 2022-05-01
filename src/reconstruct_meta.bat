@@ -10,7 +10,13 @@ if not exist packages.lst goto skip
 construct @packages.lst ciyam_class.cpp.xrep
 
 :skip
-call destroy_apps_and_models.bat %1
+call destroy_apps_and_models.bat %1 ~reconstruct_meta
+
+if not exist ~reconstruct_meta goto next
+del ~reconstruct_meta
+goto end
+
+:next
 call reinstall_packages.bat %1
 call install_packages_list.bat %1
 call install.bat Meta meta

@@ -4,8 +4,8 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -ne 1 ]; then
- echo Usage: destroy_apps_and_models [okay]
+if [ ! "$1" = "okay" ]; then
+ echo Usage: destroy_apps_and_models [okay] [[error file]]
 else
- ./ciyam_client -quiet -no_prompt < destroy_apps_and_models.cin
+ ./ciyam_client -quiet -no_prompt -vars=ERROR_FILE=$2 < destroy_apps_and_models.cin
 fi

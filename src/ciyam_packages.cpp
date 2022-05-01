@@ -599,6 +599,46 @@ void create_new_package_file( const string& module_id, const string& filename,
 
 }
 
+string get_meta_class_field_list( const string& mclass )
+{
+   string module_id( loaded_module_id( c_meta_model_name ) );
+
+   string skip_field_info( "@" + string( c_meta_model_name )
+    + "_" + string( c_meta_class_name_class ) + ".skips.lst" );
+
+   map< string, map< string, string > > skip_fields;
+   read_skip_fields( module_id, skip_field_info, skip_fields );
+
+   size_t handle = create_object_instance( module_id, mclass, 0, false );
+
+   string field_list( "@key" );
+   vector< string > field_names;
+
+   get_all_field_names( handle, "", field_names, false );
+
+   map< string, string > field_skip_values;
+
+   for( size_t i = 0; i < field_names.size( ); i++ )
+   {
+      string sfield( resolve_field_id( module_id, mclass, field_names[ i ], "" ) );
+
+      if( skip_fields.count( mclass ) && skip_fields[ mclass ].count( sfield ) )
+      {
+         field_names.erase( field_names.begin( ) + i );
+         --i;
+      }
+      else
+      {
+         if( !field_list.empty( ) )
+            field_list += ',';
+
+         field_list += field_names[ i ];
+      }
+   }
+
+   return field_list;
+}
+
 void export_package( const string& module, const string& mclass,
  const string& keys, const string& exclude_info, const string& skip_field_info,
  const string& test_info, const string& include_info, const string& filename )
@@ -1378,7 +1418,7 @@ void update_package( const string& name )
          create_new_package_file( module_id, specs_sio_file );
 
       string skip_field_info( "@" + string( c_meta_model_name )
-      + "_" + string( c_meta_class_name_class ) + ".skips.lst" );
+       + "_" + string( c_meta_class_name_class ) + ".skips.lst" );
 
       map< string, map< string, string > > skip_fields;
       read_skip_fields( module_id, skip_field_info, skip_fields );
@@ -1478,4 +1518,3 @@ void update_package( const string& name )
       }
    }
 }
-

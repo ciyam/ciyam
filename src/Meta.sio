@@ -11100,7 +11100,7 @@
       <type>bool
       <mandatory>true
       <enum_id>850
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
@@ -11121,7 +11121,7 @@
       <name>Use_Package_Demo_Data
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
