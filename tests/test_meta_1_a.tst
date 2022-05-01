@@ -3,7 +3,7 @@ session_variable @attached_file_path .
 pc guest 20120102 100 105100 guest_model "105101=Sample,300500=guests,105102=0.1,105103=2012,105104=M001,105112=0"
 guest_model
 pf 100 105100 guest_model "105101,105102,105103,105104,105105,105106,105107,105108,105109,105110,105111,105112,105113,105114"
-[guest_model =1.0 512 100:105100] Sample,0.1,2012,M001,M001C100,M001S1000,M001L100,M001V100,,,,2,0,
+[guest_model =1.0 768 100:105100] Sample,0.1,2012,M001,M001C100,M001S1000,M001L100,M001V100,,,,2,0,
 pc guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=Standard,302800=guest_model"
 guest_standard
 pe guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
@@ -13,6 +13,7 @@ pe guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Information,System_Information,M001C100
 User,User,M001C101
+User_Peerchain,User_Peerchains,M001C102
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Vendor,M001C100F101
@@ -52,6 +53,16 @@ Must_Change_Password,M001C101F129
 No_Email,M001C101F130
 No_Email_Padding,M001C101F131
 Read_Access_Only,M001C101F132
+Actions,M001C102F100
+Active,M001C102F101
+Identity,M001C102F102
+Description,M001C102F103
+Error,M001C102F104
+Host_Domain,M001C102F105
+Port_Number,M001C102F106
+Connection_Type,M001C102F107
+Status,M001C102F108
+Synchronisation,M001C102F109
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
@@ -67,7 +78,9 @@ Day_Of_Week,E108
 Minutes,E109
 Occurrence,E110
 Orientation,E111
-Change_Password_Seconds,E112
+User_Peerchain_Connection,E112
+User_Peerchain_Status,E113
+Change_Password_Seconds,E114
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000

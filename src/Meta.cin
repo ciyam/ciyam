@@ -229,10 +229,10 @@ field_add -id=105111 Model Commands_File string opt -x=flink
 field_add -id=105112 Model Add_Packages int mand -def=2 -e=add_packages -transient
 field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
-field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=1
+field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=0
 field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=1
 field_add -id=105117 Model Home_Title str100 opt
-field_add -id=105118 Model Type bool mand -def=1 -e=model_type
+field_add -id=105118 Model Type bool mand -def=0 -e=model_type
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module

@@ -6,11 +6,10 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if not '%1' == 'okay' goto usage
 
-ciyam_client -quiet -no_prompt < destroy_apps_and_models.cin
+ciyam_client -quiet -no_prompt -vars=ERROR_FILE=%2 < destroy_apps_and_models.cin
 goto end
 
 :usage
-echo Usage: destroy_apps_and_models [okay]
+echo Usage: destroy_apps_and_models [okay] [[error file]]
 
 :end
-

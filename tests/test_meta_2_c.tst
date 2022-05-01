@@ -2,6 +2,7 @@ storage_init ciyam
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Information,System_Information,M001C100
 User,User,M001C101
+User_Peerchain,User_Peerchains,M001C102
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Vendor,M001C100F101
@@ -41,6 +42,16 @@ Must_Change_Password,M001C101F129
 No_Email,M001C101F130
 No_Email_Padding,M001C101F131
 Read_Access_Only,M001C101F132
+Actions,M001C102F100
+Active,M001C102F101
+Identity,M001C102F102
+Description,M001C102F103
+Error,M001C102F104
+Host_Domain,M001C102F105
+Port_Number,M001C102F106
+Connection_Type,M001C102F107
+Status,M001C102F108
+Synchronisation,M001C102F109
 pf 100 103100 "103104 " 103101,103104 -min
 primitive,E000
 primitive,E000
@@ -56,7 +67,9 @@ Day_Of_Week,E108
 Minutes,E109
 Occurrence,E110
 Orientation,E111
-Change_Password_Seconds,E112
+User_Peerchain_Connection,E112
+User_Peerchain_Status,E113
+Change_Password_Seconds,E114
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
 string,T000
