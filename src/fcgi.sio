@@ -7,6 +7,7 @@
  <row_limit>10
  <embed_images>true
  <encrypt_data>true
+ <view_show_key>false
  <checkbox_bools>true
  <storage_name>Meta
  <module_prefix>

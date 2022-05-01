@@ -1109,6 +1109,15 @@ bool output_view_form( ostream& os, const string& act,
                }
             }
 
+            // NOTE: In order to improve package maintenance productivity
+            // can display the record key in order to more easily copy it
+            // to the clipboard.
+            if( !is_in_edit && sess_info.view_show_key )
+            {
+               string::size_type pos = source.key_info.find( ' ' );
+               os << source.key_info.substr( 0, pos ) << "&nbsp;";
+            }
+
             os << "<a href=\"" << get_module_page_name( source.module_ref )
              << "?cmd=" << c_cmd_pview << "&data=" << data << "&ident=" << source.vici->second->id;
 

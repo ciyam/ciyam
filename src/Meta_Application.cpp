@@ -1760,10 +1760,6 @@ void Meta_Application::impl::impl_Generate( )
    if( storage_locked_for_admin( ) )
       return;
 
-   if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
-      throw runtime_error( get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Blockchain_Id ) ) ) );
-
    set_system_variable( "@" + storage_name( ) + "_protect", "1" );
 
    // NOTE: The UI allows this to be set so use this as the value during
@@ -2069,6 +2065,10 @@ void Meta_Application::impl::impl_Generate( )
          outs << '\n';
 
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
+
+      // NOTE: If no blockchain identity exists then create one for testing.
+      if( !get_obj( ).Type( ) && is_null( get_obj( ).Blockchain_Id( ) ) )
+         outss1 << "<bc139fc15.bc_init.cin\n";
 
       outss1 << "storage_init " << storage_name( ) << "\n";
       outss1 << "pe sys 20080101 " << get_obj( ).get_module_id( )

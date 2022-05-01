@@ -195,7 +195,7 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
 void output_synchronised_progress_message( const string& identity, size_t blockchain_height )
 {
    // FUTURE: This message should be handled as a server string message.
-   string progress_message( "Synchronised at height " + to_string( blockchain_height ) + "." );
+   string progress_message( "Synchronised at height " + to_string( blockchain_height ) );
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -1807,7 +1807,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !num_tree_items.empty( ) )
             progress_message += '/' + num_tree_items;
 
-         progress_message += ")...";
+         progress_message += ')';
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
