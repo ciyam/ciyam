@@ -1,0 +1,34 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+NUM_ARGS=0
+@ifdef $1
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+@ifdef $2
+NUM_ARGS=@$NUM_ARGS+1
+@endif
+;
+@ifneq "$NUM_ARGS" "2"
+#NOTE: This script requires an identity and description.
+@else
+;
+IDENTITY=$1
+DESCRIPTION=$2
+;
+.system_variable @peer_port
+PEER_PORT=$OUTPUT
+@ifeq "$PEER_PORT" ""
+#Error: Found empty '@peer_port' system variable value.
+@else
+.peer_listen $PEER_PORT $IDENTITY
+.storage_init Meta
+.pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=1,Description=$DESCRIPTION,Entry_Type=1,Local_Port=$PEER_PORT"
+@ifndef $ERROR
+#Created listener and global peerchain entry for identity '$IDENTITY'.
+@endif
+.storage_term
+@endif
+@endif
