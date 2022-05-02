@@ -3,11 +3,12 @@ Linux OpenSUSE Specific Instructions
 
 zypper install git-core
 
+zypper install apache2
 zypper install gcc-c++
+zypper install mariadb
 zypper install png++-devel
 zypper install libharu-devel
 zypper install readline-devel
-zypper install mariadb
 zypper install libmariadb-devel
 
 Installing "systemd" Service

@@ -32,6 +32,17 @@ NOTE: In order for this second init to work the user must have "rwx" permissions
 ./create_db Meta
 ./init Meta Meta
 
+************************ Alternative DB creation for storage hubs with no web server ************************
+
+export WEBDIR=.
+export CIYAM_TEST_STORAGE=1
+./create_db Meta
+./init Meta Meta
+export CIYAM_TEST_STORAGE=
+export WEBDIR=
+
+*************************************************************************************************************
+
 The next step is to make sure that the web server's FCGI is installed and operating. Run the following batch/
 script to install the FCGI testbed:
 

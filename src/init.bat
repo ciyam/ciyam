@@ -31,4 +31,3 @@ echo Usage: init [model name] [[app name]]
 
 :end
 endlocal
-
