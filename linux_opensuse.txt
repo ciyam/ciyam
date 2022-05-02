@@ -1,26 +1,30 @@
 Linux OpenSUSE Specific Instructions
 ====================================
 
-zypper install git-core
+sudo zypper install gcc-c++
+sudo zypper install mariadb
+sudo zypper install git-core
+sudo zypper install png++-devel
+sudo zypper install libharu-devel
+sudo zypper install readline-devel
+sudo zypper install libmariadb-devel
+sudo zypper install apache2 apache2-mod_fcgid
 
-zypper install apache2
-zypper install gcc-c++
-zypper install mariadb
-zypper install png++-devel
-zypper install libharu-devel
-zypper install readline-devel
-zypper install libmariadb-devel
+sudo a2enmod fcgid
 
-Installing "systemd" Service
-----------------------------
+Installing the CIYAM "systemd" Service
+--------------------------------------
 
-cp ciyamd.service /etc/systemd/system
+NOTE: Do this after the CIYAM application server has been
+successfully built and after the Meta DB has been created.
 
-vi /etc/systemd/system/ciyamd.service
-(edit ciyamd.service file to change "tux" if required)
+sudo cp ciyamd.service /etc/systemd/system
 
-systemctl daemon-reload
-systemctl enable ciyamd
+sudo vi /etc/systemd/system/ciyamd.service
+(edit ciyamd.service file to change "tux" to the appropriate user)
+
+sudo systemctl daemon-reload
+sudo systemctl enable ciyamd
 
 service ciyamd start
 service ciyamd status
