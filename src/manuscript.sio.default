@@ -104,6 +104,11 @@
   <arguments>destroy_peerchain_entry.cin @identity
  </script>
  <script/>
+  <name>create_peerchain_listener
+  <filename>*script*
+  <arguments>create_peerchain_listener.cin @identity @description
+ </script>
+ <script/>
   <name>install_application_script
   <filename>*script*
   <arguments>install_application_script.cin @storage @key @name @fields_and_values @package_install_extra

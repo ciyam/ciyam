@@ -49,6 +49,7 @@
 //nyi
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
+#include "Meta_User.h"
 #include "Meta_Field.h"
 #include "Meta_Index.h"
 #include "Meta_Modifier.h"
@@ -406,6 +407,10 @@ string get_enum_string_model_type( bool val )
 
 // [<start anonymous>]
 //nyi
+
+const char* const c_admin_password = "@admin_password";
+const char* const c_admin_user_hash = "@admin_user_hash";
+
 string get_mapped_id( const string& model, const string& id )
 {
    static map< string, string > ids;
@@ -6049,6 +6054,18 @@ void Meta_Model::impl::impl_Generate( )
                      }
 
                      string next_value( initial_Record.child_Initial_Record_Value( ).Value( ) );
+
+                     // NOTE: Default the "admin" login credentials to be the same as those for Meta.
+                     if( ( next_value == c_admin_password ) || ( next_value == c_admin_user_hash ) )
+                     {
+                        Meta_User user;
+                        user.perform_fetch( "admin" );
+
+                        if( next_value == c_admin_password )
+                           next_value = user.Password( );
+                        else
+                           next_value = user.User_Hash( );
+                     }
 
                      if( !next_value.empty( ) )
                         any_non_empty_values[ field_name ] = true;

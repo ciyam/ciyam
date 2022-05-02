@@ -125,7 +125,7 @@ Creating an Application
 Once you have logged in click on "Models" (in the navigation sidebar) and then click "Create New" in order to
 begin the application creation process. The "New Model" form will require a Name to be entered (for this test
 the name "Sample" should be used). Set "Use_Package_Demo_Data" on so that a user (other than "admin") will be
-automatically created for testing purposes (if not then use "!admin" instead of "!guest" to login).
+automatically created for testing purposes (if not then later use "!admin" instead of "!guest" to login).
 
 The "Add Packages" drop list will default to the value "Standard User" which is fine (along with the defaults
 for the other fields) so now simply click "Save Details" to create the new Model. After saving the "Standard"
