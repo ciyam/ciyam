@@ -11,38 +11,41 @@ FCGI servers are started when Apache itself starts and a re-started automaticall
 Notes for using mod_fcgid with Apache 2.2
 -----------------------------------------
 
-1) Copy mod_fcgid.so into Apache's modules directory (for Windows - otherwise install the "mod_fcgid" package
-for Linux).
+1) Install the FCGI Apache module ("a2enmod fcgid" for Linux or for Windows copy "mod_fcgid.so" into Apache's
+modules directory).
 
 2) Make the following changes to "default-server.conf" (or if no such file then change "httpd.conf" instead):
+(the + prefix indicates all lines that need to be added and each + must be removed after copying and pasting)
+
+sudo vi /etc/apache2/default-server.conf
+
 ...
-LoadModule fcgid_module modules/mod_fcgid.so ### (NOTE: only add this if there are other LoadModule's around)
+### NOTE: This line is for Windows iff there are other LoadModule's present.
++LoadModule fcgid_module modules/mod_fcgid.so
 ...
-#
-# This should be changed to whatever you set DocumentRoot to.
-#
+### NOTE: These additions are for both Windows and Linux operating systems.
 <Directory "/srv/www/htdocs">
 ...
-    Options ExecCGI FollowSymLinks
-    AddHandler fcgid-script .fcgi
++    Options ExecCGI FollowSymLinks
++    AddHandler fcgid-script .fcgi
 ...
-    AllowOverride All
++    AllowOverride All
 ...
 </Directory>
 ...
-<IfModule fcgid_module>
-   MaxProcessCount               10
-   MaxRequestLen                 10485760
-   IdleTimeOut                   3600
-   IPCConnectTimeout             20
-   IPCCommTimeout                300
-   DefaultMaxClassProcessCount   1
-   DefaultMinClassProcessCount   1
-</IfModule>
++<IfModule fcgid_module>
++   MaxProcessCount               10
++   MaxRequestLen                 10485760
++   IdleTimeOut                   3600
++   IPCConnectTimeout             20
++   IPCCommTimeout                300
++   DefaultMaxClassProcessCount   1
++   DefaultMinClassProcessCount   1
++</IfModule>
 ...
 
-3) For some versions of Linux the "LoadModule" line might not be applicable and activating the module (after
-it has been installed) might instead require the use of a script (such as "a2enmod fcgid" with OpenSUSE).
+Also the name of the module for the "IfModule" test above might be "mod_fcgid" rather than "fcgid_module".
 
-Also the name of the module for the "IfModule" test might be "mod_fcgid" rather than "fcgid_module".
+Once the changes have been made restart the apache2 web service:
 
+sudo service apache2 restart

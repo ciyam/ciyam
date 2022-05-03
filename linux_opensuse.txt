@@ -26,5 +26,5 @@ sudo vi /etc/systemd/system/ciyamd.service
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
 
-service ciyamd start
-service ciyamd status
+sudo service ciyamd start
+sudo service ciyamd status

@@ -64,8 +64,8 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
    bool is_for_support;
 
    bool peer_is_owner;
+   bool both_are_owners;
    bool has_support_sessions;
-   bool has_found_both_are_owners;
 
    int64_t time_val;
 
