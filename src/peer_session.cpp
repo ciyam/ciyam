@@ -192,10 +192,14 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
    g_blockchain_tree_item[ blockchain ] += num_to_add;
 }
 
-void output_synchronised_progress_message( const string& identity, size_t blockchain_height )
+void output_synchronised_progress_message(
+ const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
    // FUTURE: This message should be handled as a server string message.
    string progress_message( "Synchronised at height " + to_string( blockchain_height ) );
+
+   if( blockchain_height_other > blockchain_height )
+      progress_message += " (...)";
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -1316,6 +1320,7 @@ class socket_command_handler : public command_handler
     last_num_tree_item( 0 ),
     blockchain( blockchain ),
     blockchain_height( 0 ),
+    blockchain_height_other( 0 ),
     blockchain_height_pending( 0 ),
     is_time_for_check( false ),
     has_identity_archive( false ),
@@ -1381,10 +1386,16 @@ class socket_command_handler : public command_handler
    const string& get_blockchain( ) const { return blockchain; }
 
    size_t get_blockchain_height( ) const { return blockchain_height; }
+   size_t get_blockchain_height_other( ) const { return blockchain_height_other; }
 
    void set_blockchain_height( size_t new_height )
    {
       blockchain_height_pending = blockchain_height = new_height;
+   }
+
+   void set_blockchain_height_other( size_t new_height )
+   {
+      blockchain_height_other = new_height;
    }
 
    set< string >& get_list_items_to_ignore( ) { return list_items_to_ignore; }
@@ -1474,6 +1485,7 @@ class socket_command_handler : public command_handler
    string blockchain;
 
    size_t blockchain_height;
+   size_t blockchain_height_other;
    size_t blockchain_height_pending;
 
    string last_command;
@@ -2197,7 +2209,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       blockchain_height = blockchain_height_pending;
 
-      output_synchronised_progress_message( identity, blockchain_height );
+      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
@@ -2306,11 +2318,16 @@ class peer_session_command_functor : public command_functor
     : command_functor( handler ),
     socket_handler( dynamic_cast< socket_command_handler& >( handler ) )
    {
+      blockchain_is_fetching_name = get_special_var_name( e_special_var_blockchain_is_fetching );
+      blockchain_peer_has_supporters_name = get_special_var_name( e_special_var_blockchain_peer_has_supporters );
    }
 
    void operator ( )( const string& command, const parameter_info& parameters );
 
    socket_command_handler& socket_handler;
+
+   string blockchain_is_fetching_name;
+   string blockchain_peer_has_supporters_name;
 };
 
 command_functor* peer_session_command_functor_factory( const string& /*name*/, command_handler& handler )
@@ -2349,13 +2366,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    string blockchain( socket_handler.get_blockchain( ) );
 
    size_t blockchain_height = socket_handler.get_blockchain_height( );
-
-   string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
+   size_t blockchain_height_other = socket_handler.get_blockchain_height_other( );
 
    bool check_for_supporters = false;
 
-   if( !get_session_variable( get_special_var_name(
-    e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
+   if( !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
       check_for_supporters = true;
 
    try
@@ -2402,6 +2417,21 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          if( !has )
          {
             response = c_response_not_found;
+
+            if( tag_or_hash.find( blockchain ) == 0 )
+            {
+               string height( tag_or_hash.substr( blockchain.length( ) + 1 ) );
+
+               string::size_type pos = height.find( c_blk_suffix );
+
+               if( pos != string::npos && height != string( "0" ) )
+               {
+                  height.erase( pos );
+
+                  blockchain_height_other = from_string< size_t >( height ) - 1;
+                  socket_handler.set_blockchain_height_other( blockchain_height_other );
+               }
+            }
 
             socket_handler.set_dtm_sent_not_found( date_time::standard( ) );
 
@@ -2888,6 +2918,9 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    string identity( get_session_variable(
     get_special_var_name( e_special_var_identity ) ) );
 
+   string blockchain_peer_has_supporters_name(
+    get_special_var_name( e_special_var_blockchain_peer_has_supporters ) );
+
    string ip_addr( get_session_variable( get_special_var_name( e_special_var_ip_addr ) ) );
 
    while( true )
@@ -2898,8 +2931,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
       if( get_trace_flags( ) & TRACE_SOCK_OPS )
          p_progress = &progress;
 
-      if( !check_for_supporters && !get_session_variable(
-       get_special_var_name( e_special_var_blockchain_peer_has_supporters ) ).empty( ) )
+      if( !check_for_supporters
+       && !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
          check_for_supporters = true;
 
       if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
@@ -3049,8 +3082,8 @@ peer_session::peer_session( int64_t time_val,
  is_responder( is_responder ),
  is_for_support( is_for_support ),
  peer_is_owner( false ),
- has_support_sessions( false ),
- has_found_both_are_owners( false )
+ both_are_owners( false ),
+ has_support_sessions( false )
 {
    if( !( *this->ap_socket ) )
       throw runtime_error( "unexpected invalid socket in peer_session::peer_session" );
@@ -3176,7 +3209,7 @@ peer_session::peer_session( int64_t time_val,
          is_owner = true;
 
       if( is_owner && peer_is_owner )
-         has_found_both_are_owners = true;
+         both_are_owners = true;
 
       if( pid == string( c_dummy_support_tag ) )
          this->is_for_support = true;
@@ -3308,7 +3341,7 @@ void peer_session::on_start( )
                ver_info.extra.erase( pos );
 
                if( is_owner )
-                  has_found_both_are_owners = true;
+                  both_are_owners = true;
             }
 
             if( from_string< size_t >( ver_info.extra ) != get_files_area_item_max_size( ) )
@@ -3330,6 +3363,9 @@ void peer_session::on_start( )
 
       string slot_and_pubkey( get_session_variable( get_special_var_name( e_special_var_slot ) ) );
       slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
+
+      if( has_support_sessions )
+         slot_and_pubkey += '+';
 
       string slotx, pubkeyx, slotx_and_pubkeyx;
 
@@ -3359,6 +3395,14 @@ void peer_session::on_start( )
       if( slotx.empty( ) )
          slotx = string( c_none );
 
+      pos = pubkeyx.find( '+' );
+
+      if( pos != string::npos )
+      {
+         pubkeyx.erase( pos );
+         has_support_sessions = true;
+      }
+
       set_session_variable(
        get_special_var_name( e_special_var_slotx ), slotx );
 
@@ -3379,10 +3423,10 @@ void peer_session::on_start( )
       if( peer_is_owner )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_is_owner ), c_true_value );
 
-      if( has_found_both_are_owners )
+      if( both_are_owners )
          set_session_variable( get_special_var_name( e_special_var_blockchain_both_are_owners ), c_true_value );
 
-      if( is_for_support || has_support_sessions )
+      if( has_support_sessions )
          set_session_variable( get_special_var_name( e_special_var_blockchain_peer_has_supporters ), c_true_value );
 
       okay = true;
@@ -3431,7 +3475,7 @@ void peer_session::on_start( )
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Synchronising..." );
+                  string progress_message( "Synchronising (...)" );
 
                   set_session_progress_output( progress_message );
                   set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -3596,6 +3640,34 @@ void peer_listener::on_start( )
          if( okay )
          {
             TRACE_LOG( TRACE_ANYTHING, "peer listener started on tcp port " + to_string( port ) );
+
+            if( !blockchains.empty( ) )
+            {
+               vector< string > all_identities;
+               vector< string > all_blockchains;
+
+               split( blockchains, all_blockchains );
+               split( unprefixed_blockchains, all_identities );
+
+               if( all_identities.size( ) != all_blockchains.size( ) )
+                  throw runtime_error( "unexpected all_identities.size( ) != all_blockchains.size( )" );
+
+               for( size_t i = 0; i < all_identities.size( ); i++ )
+               {
+                  string next_identity( all_identities[ i ] );
+                  string next_blockchain( all_blockchains[ i ] );
+
+                  if( has_tag( next_blockchain + c_zenith_suffix ) )
+                  {
+                     string zenith_hash( tag_file_hash( next_blockchain + c_zenith_suffix ) );
+
+                     size_t blockchain_height = 0;
+
+                     if( get_block_height_from_tags( next_blockchain, zenith_hash, blockchain_height ) )
+                        output_synchronised_progress_message( next_identity, blockchain_height );
+                  }
+               }
+            }
 
             while( s && !g_server_shutdown )
             {
