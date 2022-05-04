@@ -12,11 +12,21 @@ sudo zypper install apache2 apache2-mod_fcgid
 
 sudo a2enmod fcgid
 
+Ensure that WEBDIR is exported now and for future terminal sesisons
+-------------------------------------------------------------------
+sudo export WEBDIR=/srv/www/htdocs
+sudo echo "export WEBDIR=/srv/www/htdocs" >> /etc/profile.d/envvars.sh                                                                                                                                                                                                              
+
+Add the "www" group for your user and make it the default
+---------------------------------------------------------
+sudo usermod -a -G www <user>
+sudo usermod -g www <user>
+
 Installing the CIYAM "systemd" Service
 --------------------------------------
 
-NOTE: Do this after the CIYAM application server has been
-successfully built and after the Meta DB has been created.
+NOTE: Do this *only after* the CIYAM application server has been built and
+the Meta DB has been created.
 
 sudo cp ciyamd.service /etc/systemd/system
 
