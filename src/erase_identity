@@ -1,0 +1,18 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ "$WEBDIR" = "" ]; then
+  echo "Error: Missing environment variable 'WEBDIR'."
+else
+ if [ ! -f ciyam_server.sid.sav ]; then
+  echo "Error: Saved identity not found (try running 'save_identity' first)."
+ else
+  rm -f ciyam_server.sid
+  rm -f $WEBDIR/meta/identity.txt
+  rm -f $WEBDIR/meta/encrypted.txt
+  echo "NOTE: Will need to restart both the application and HTTP server."
+ fi
+fi

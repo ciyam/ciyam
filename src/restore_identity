@@ -1,0 +1,30 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ "$WEBDIR" = "" ]; then
+  echo Error: Missing environment variable 'WEBDIR'.
+else
+ export RESTORED=
+
+ if [ -f ciyam_server.sid.sav ]; then
+  export RESTORED=1
+  mv ciyam_server.sid.sav ciyam_server.sid
+ fi
+
+ if [ -f $WEBDIR/meta/identity.txt.sav ]; then
+  export RESTORED=1
+  mv $WEBDIR/meta/identity.txt.sav $WEBDIR/meta/identity.txt
+ fi
+
+ if [ -f $WEBDIR/meta/encrypted.txt.sav ]; then
+  export RESTORED=1
+  mv $WEBDIR/meta/encrypted.txt.sav $WEBDIR/meta/encrypted.txt
+ fi
+
+ if [ "$RESTORED" = "1" ]; then
+  echo "NOTE: Will need to restart both the application and HTTP server."
+ fi
+fi
