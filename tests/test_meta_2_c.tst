@@ -2,7 +2,7 @@ storage_init ciyam
 pf 100 106100 "106104 " 106101,106102,106104 -min
 System_Information,System_Information,M001C100
 User,User,M001C101
-User_Peerchain,User_Peerchains,M001C102
+Peerchain,Peerchains,M001C102
 pf 100 107100 "107110 " 107101,107110 -min
 Name,M001C100F100
 Vendor,M001C100F101
@@ -67,8 +67,8 @@ Day_Of_Week,E108
 Minutes,E109
 Occurrence,E110
 Orientation,E111
-User_Peerchain_Connection,E112
-User_Peerchain_Status,E113
+Peerchain_Connection,E112
+Peerchain_Status,E113
 Change_Password_Seconds,E114
 pf 100 102100 "102111 " 102101,102111 -min
 string,T000
