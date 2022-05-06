@@ -9,16 +9,20 @@ if [ $# -ne 1 ]; then
  echo ""
  echo "WARNING: APPLICATIONS AND MODEL ARTIFACTS WILL BE DESTROYED."
 else
- if [ -f packages.lst ]; then
-  ./construct @packages.lst ciyam_class.cpp.xrep
- fi
- ./destroy_apps_and_models $1 ~reconstruct_meta
- 
- if [ -f ~reconstruct_meta ]; then
-  rm ~reconstruct_meta
+ if [ ! "$1" = "okay" ]; then
+  echo "Error: Invalid argument '$1' for 'reconstruct_meta'."
  else
-  ./reinstall_packages $1
-  ./install_packages_list $1
-  ./install Meta meta
+  if [ -f packages.lst ]; then
+   ./construct @packages.lst ciyam_class.cpp.xrep
+  fi
+  ./destroy_apps_and_models $1 ~reconstruct_meta
+ 
+  if [ -f ~reconstruct_meta ]; then
+   rm ~reconstruct_meta
+  else
+   ./reinstall_packages $1
+   ./install_packages_list $1
+   ./install Meta meta
+  fi
  fi
 fi
