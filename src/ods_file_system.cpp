@@ -52,8 +52,6 @@ const char c_pipe = '|';
 const char c_colon = ':';
 const char c_folder = '/';
 
-const char* const c_ods_prefix = "ODS ";
-
 const char* const c_root_folder = "/";
 const char* const c_parent_folder = "..";
 
@@ -65,20 +63,102 @@ const unsigned char c_ofs_items_per_node = 255;
 
 uint16_t c_ofs_object_flag_type_file = 0x8000;
 uint16_t c_ofs_object_flag_type_link = 0x4000;
+uint16_t c_ofs_object_flag_type_perm = 0x2000;
 
-uint16_t c_ofs_object_flag_type_vals = 0xc000;
+uint16_t c_ofs_object_flag_type_vals = 0xe000;
 
-uint16_t c_ofs_object_maxiumum_val_size = 0x3fff;
+uint16_t c_ofs_object_maxiumum_val_size = 0x1fff;
+
+const size_t c_rwx_perms_size = 9;
+
+enum rwx_perm
+{
+   e_rwx_perm_read = 1,
+   e_rwx_perm_write = 2,
+   e_rwx_perm_execute = 4
+};
+
+string value_to_perms( uint32_t value )
+{
+   string retval;
+
+   for( size_t i = 0; i < 3; i++ )
+   {
+      string next;
+
+      unsigned char val = ( value & 0x0f );
+
+      if( val & e_rwx_perm_read )
+         next += 'r';
+      else
+         next += '-';
+
+      if( val & e_rwx_perm_write )
+         next += 'w';
+      else
+         next += '-';
+
+      if( val & e_rwx_perm_execute )
+         next += 'x';
+      else
+         next += '-';
+
+      retval = next + retval;
+
+      value >>= 4;
+   }
+
+   return retval;
+}
+
+uint32_t perms_to_value( const string& perms )
+{
+   uint32_t retval = 0;
+
+   if( perms.length( ) && ( perms.length( ) != c_rwx_perms_size ) )
+      throw runtime_error( "unexpected perms value '" + perms + "'" );
+
+   for( size_t i = 0; i < perms.length( ); i++ )
+   {
+      unsigned char next = perms[ i ];
+
+      if( i && ( i % 3 == 0 ) )
+         retval <<= 4;
+
+      switch( next )
+      {
+         case '-':
+         break;
+
+         case 'r':
+         retval += e_rwx_perm_read;
+         break;
+
+         case 'w':
+         retval += e_rwx_perm_write;
+         break;
+
+         case 'x':
+         retval += e_rwx_perm_execute;
+         break;
+      }
+   }
+
+   return retval;
+}
 
 struct ofs_object
 {
-   ofs_object( ) : is_link( false ) { }
+   ofs_object( ) : is_link( false ), perm_val( 0 ) { }
 
    string& str( ) { return val; }
    const string& const_str( ) const { return val; }
 
    bool get_is_link( ) const { return is_link; }
    void set_is_link( ) { is_link = true; }
+
+   string get_perms( ) const { return value_to_perms( perm_val ); }
+   void set_perms( const string& perms ) { perm_val = perms_to_value( perms ); }
 
    oid_pointer< storable_file >& get_file( ) { return o_file; }
    const oid_pointer< storable_file >& get_file( ) const { return o_file; }
@@ -96,7 +176,10 @@ struct ofs_object
    friend ostream& operator <<( ostream& outf, const ofs_object& t );
 
    string val;
+
    bool is_link;
+
+   uint32_t perm_val;
 
    oid_pointer< storable_file > o_file;
 };
@@ -106,7 +189,13 @@ int64_t size_of( const ofs_object& o )
    if( o.val.length( ) > c_ofs_object_maxiumum_val_size )
       throw runtime_error( "maximum object length exceeded with ofs_object '" + o.val + "'" );
 
-   return sizeof( uint16_t ) + o.val.length( ) + ( o.o_file.get_id( ).is_new( ) ? 0 : sizeof( oid ) );
+   size_t extra = 0;
+
+   if( o.perm_val )
+      extra += sizeof( uint32_t );
+
+   return sizeof( uint16_t ) + o.val.length( )
+    + extra + ( o.o_file.get_id( ).is_new( ) ? 0 : sizeof( oid ) );
 }
 
 read_stream& operator >>( read_stream& rs, ofs_object& o )
@@ -116,6 +205,7 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
    rs >> size;
 
    bool has_file = false;
+   bool has_perm = false;
 
    o.is_link = false;
 
@@ -126,6 +216,9 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
       if( size & c_ofs_object_flag_type_link )
          o.is_link = true;
 
+      if( size & c_ofs_object_flag_type_perm )
+         has_perm = true;
+
       size &= ~c_ofs_object_flag_type_vals;
    }
 
@@ -133,6 +226,9 @@ read_stream& operator >>( read_stream& rs, ofs_object& o )
 
    for( uint16_t i = 0; i < size; i++ )
       rs >> o.val[ i ];
+
+   if( has_perm )
+      rs >> o.perm_val;
 
    if( has_file )
       rs >> o.o_file;
@@ -147,6 +243,7 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
    uint16_t size = o.val.length( );
 
    bool has_file = false;
+   bool has_perm = false;
 
    if( !o.o_file.get_id( ).is_new( ) )
    {
@@ -155,6 +252,12 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
 
       if( o.is_link )
          size |= c_ofs_object_flag_type_link;
+
+      if( o.perm_val )
+      {
+         has_perm = true;
+         size |= c_ofs_object_flag_type_perm;
+      }
    }
 
    ws << size;
@@ -163,6 +266,9 @@ write_stream& operator <<( write_stream& ws, const ofs_object& o )
 
    for( uint16_t i = 0; i < size; i++ )
       ws << o.val[ i ];
+
+   if( has_perm )
+      ws << o.perm_val;
 
    if( has_file )
       ws << o.o_file;
@@ -617,7 +723,10 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
                if( file_name == "*" || ( file_exists( file_name ) && !file_size( file_name ) ) )
                   tmp_item.o_file.set_id( 0 );
                else
+               {
+                  tmp_item.set_perms( file_perms( file_name ) );
                   tmp_item.get_file( new storable_file_extra( file_name, 0, p_progress ) ).store( );
+               }
             }
             else
             {
@@ -699,6 +808,9 @@ void ods_file_system::get_file( const string& name,
 
       scoped_ods_instance so( o );
       *tmp_item.get_file( new storable_file_extra( file_name, output_to_stream ? p_os : 0, p_progress ) );
+
+      if( tmp_item.perm_val )
+         file_perms( file_name, tmp_item.get_perms( ) );
    }
 }
 
@@ -1181,6 +1293,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
                tmp_item.get_file( ).set_id( id );
             }
 
+            tmp_item.set_perms( file_perms( file_name ) );
             tmp_item.get_file(
              new storable_file_extra( file_name, 0, p_progress ) ).store( e_oid_pointer_opt_force_write_skip_read );
          }
@@ -2648,4 +2761,3 @@ bool ods_file_system::remove_items_for_folder( const string& name, ostream* p_os
 
    return okay;
 }
-
