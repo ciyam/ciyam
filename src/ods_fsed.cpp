@@ -80,16 +80,26 @@ string application_title( app_info_request request )
    }
 }
 
-void export_objects( ods_file_system& ofs )
+void export_objects( ods_file_system& ofs, const string& directory, ostream* p_os = 0, progress* p_progress = 0, int level = 0 )
 {
    vector< string > files;
+
+   if( p_os && level )
+      *p_os << directory << ofs.get_folder( ) << endl;
 
    ofs.list_files( files, false );
 
    for( size_t i = 0; i < files.size( ); i++ )
    {
       string next( files[ i ] );
-      ofs.get_file( next, next );
+
+      if( p_os )
+         *p_os << directory << ofs.get_folder( ) << '/' << next;
+
+      ofs.get_file( next, next, p_os, false, p_progress );
+
+      if( p_os )
+         *p_os << endl;
    }
 
    vector< string > folders;
@@ -114,7 +124,7 @@ void export_objects( ods_file_system& ofs )
       string folder( ofs.get_folder( ) );
 
       ofs.set_folder( next );
-      export_objects( ofs );
+      export_objects( ofs, directory, p_os, p_progress, level + 1 );
 
       ofs.set_folder( folder );
 
@@ -122,7 +132,7 @@ void export_objects( ods_file_system& ofs )
    }
 }
 
-void import_objects( ods_file_system& ofs, const string& directory )
+void import_objects( ods_file_system& ofs, const string& directory, ostream* p_os = 0, progress* p_progress = 0 )
 {
    string cwd( get_cwd( ) );
 
@@ -179,16 +189,33 @@ void import_objects( ods_file_system& ofs, const string& directory )
 
       vector< pair< string, string > > all_files;
 
+      string next_folder( all_folders[ i ] );
+
+      if( next_folder.find( directory ) == 0 )
+         next_folder.erase( 0, directory.length( ) );
+
+      if( !next_folder.empty( ) && next_folder[ 0 ] == '/' )
+         next_folder.erase( 0, 1 );
+
+      if( p_os && ( i > 0 ) )
+         *p_os << next_folder << endl;
+
       file_filter ff;
       fs_iterator ffsi( all_folders[ i ], &ff );
 
       while( ffsi.has_next( ) )
          all_files.push_back( make_pair( ffsi.get_name( ), ffsi.get_full_name( ) ) );
 
-      set_cwd( cwd );
-
       for( size_t j = 0; j < all_files.size( ); j++ )
-         ofs.store_file( all_files[ j ].first, all_files[ j ].second );
+      {
+         if( p_os )
+            *p_os << next_folder << '/' << all_files[ j ].first;
+
+         ofs.store_file( all_files[ j ].first, all_files[ j ].second, 0, 0, p_progress );
+
+         if( p_os )
+            *p_os << endl;
+      }
    }
 
    ofs.set_folder( folder );
@@ -511,7 +538,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          set_cwd( directory );
       }
 
-      export_objects( *ap_ofs );
+      console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+      ods::bulk_read bulk( *ap_ods );
+
+      export_objects( *ap_ofs, directory, ods_fsed_handler.get_std_out( ), p_progress );
 
       set_cwd( cwd );
    }
@@ -519,9 +551,14 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    {
       string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
 
+      console_progress progress;
+      console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
+
+      ods::bulk_write bulk( *ap_ods, p_progress );
+
       ods::transaction tx( *ap_ods );
 
-      import_objects( *ap_ofs, directory );
+      import_objects( *ap_ofs, directory, ods_fsed_handler.get_std_out( ), p_progress );
 
       tx.commit( );
    }
