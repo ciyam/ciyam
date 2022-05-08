@@ -895,6 +895,8 @@ string get_raw_system_variable( const string& name )
             }
          }
       }
+      else if( var_name == string( c_special_variable_files_area_dir ) )
+         retval = string( c_files_directory );
    }
 
    return retval;
@@ -951,6 +953,9 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          val = old_value + ',' + val;
    }
 
+   if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
+      val = string( c_files_directory );
+
    if( !val.empty( ) )
       g_variables[ var_name ] = val;
    else
@@ -959,26 +964,24 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          g_variables.erase( var_name );
    }
 
+   // NOTE: Do not allow "@os" or "@peer_port" to be persisted.
+   if( ( var_name == string( c_special_variable_os ) )
+    || ( var_name == string( c_special_variable_peer_port ) ) )
+      persist = false;
+
    if( var_name == string( c_special_variable_files_area_dir ) )
    {
-      string from( get_files_area_dir( ) );
-
-      if( val.empty( ) )
-         val = string( c_files_directory );
+      // NOTE: It makes no sense to persist "@files_area_dir"
+      // as application server files are being stored there.
+      persist = false;
 
       if( !is_init )
       {
-         // NOTE: It makes no sense to persist "@files_area_dir"
-         // as application server files are being stored there.
-         persist = false;
-
          TRACE_LOG( TRACE_ANYTHING, "*** switched files area across to: " + val + " ***" );
-      }
 
-      set_files_area_dir( val );
+         string from( get_files_area_dir( ) );
+         set_files_area_dir( val );
 
-      if( !is_init )
-      {
          resync_files_area( p_progress );
          resync_system_ods( p_progress );
  

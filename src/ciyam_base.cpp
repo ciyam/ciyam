@@ -1501,6 +1501,19 @@ void init_system_ods( )
 
 void term_system_ods( )
 {
+   if( gap_ofs.get( ) )
+   {
+      // NOTE: Clear all persistent system variable values.
+      vector< string > variable_files;
+
+      gap_ofs->set_root_folder( c_system_variables_folder );
+
+      gap_ofs->list_files( variable_files );
+
+      for( size_t i = 0; i < variable_files.size( ); i++ )
+         set_system_variable( variable_files[ i ], "" );
+   }
+
    gap_ofs.reset( );
    gap_ods.reset( );
 }
@@ -4944,6 +4957,8 @@ void set_files_area_dir( const char* p_files_area_dir )
 {
    guard g( g_mutex );
 
+   bool was_first = false;
+
    if( p_files_area_dir )
    {
       string files_area_dir( p_files_area_dir );
@@ -4953,16 +4968,25 @@ void set_files_area_dir( const char* p_files_area_dir )
          g_files_area_dir = files_area_dir;
 
          if( g_files_area_dir_default.empty( ) )
+         {
+            was_first = true;
             g_files_area_dir_default = g_files_area_dir;
+         }
       }
       else
       {
          if( g_files_area_dir_default.empty( ) )
+         {
+            was_first = true;
             g_files_area_dir_default = string( c_files_directory );
+         }
 
          g_files_area_dir = g_files_area_dir_default;
       }
    }
+
+   if( was_first )
+      set_system_variable( get_special_var_name( e_special_var_files_area_dir ), g_files_area_dir, true );
 }
 
 size_t get_files_area_item_max_num( )
