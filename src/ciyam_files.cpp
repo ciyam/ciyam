@@ -3833,97 +3833,104 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
          *p_hash = file_hash;
    }
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+   string archive_found;
 
-   string all_archives( list_file_archives( true, &paths ) );
-
-   auto_ptr< ods::transaction > ap_ods_tx;
-   if( !system_ods_instance( ).is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
-
-   ods_file_system& ods_fs( system_ods_file_system( ) );
-
-   bool found = false;
-
-   if( !all_archives.empty( ) )
+   if( has_file_been_archived( file_hash, &archive_found ) && archive == archive_found )
+      touch_file_in_archive( file_hash, archive );
+   else
    {
-      split( all_archives, archives, '\n' );
+      auto_ptr< ods::bulk_write > ap_bulk_write;
+      if( !system_ods_instance( ).is_bulk_locked( ) )
+         ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-      if( paths.size( ) != archives.size( ) )
-         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+      string all_archives( list_file_archives( true, &paths ) );
 
-      for( size_t i = 0; i < archives.size( ); i++ )
+      auto_ptr< ods::transaction > ap_ods_tx;
+      if( !system_ods_instance( ).is_in_transaction( ) )
+         ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
+
+      ods_file_system& ods_fs( system_ods_file_system( ) );
+
+      bool found = false;
+
+      if( !all_archives.empty( ) )
       {
-         string next_archive( archives[ i ] );
+         split( all_archives, archives, '\n' );
 
-         if( archive != next_archive )
-            continue;
+         if( paths.size( ) != archives.size( ) )
+            throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-         found = true;
-
-         ods_fs.set_root_folder( c_file_archives_folder );
-
-         ods_fs.set_folder( next_archive );
-
-         int64_t avail = 0;
-         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
-
-         int64_t limit = 0;
-         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
-
-         while( avail < file_data.size( ) )
+         for( size_t i = 0; i < archives.size( ); i++ )
          {
-            ods_fs.set_folder( c_folder_archive_times_folder );
+            string next_archive( archives[ i ] );
 
-            stringstream ss;
-            ods_fs.list_files( "", ss, "", ods_file_system::e_list_style_brief, true, 1 );
+            if( archive != next_archive )
+               continue;
 
-            string file_name( ss.str( ) );
+            found = true;
 
-            replace( file_name, "\n", "" );
+            ods_fs.set_root_folder( c_file_archives_folder );
 
-            if( file_name.empty( ) )
-               throw runtime_error( "unexpected empty file list in 'create_raw_file_in_archive'" );
+            ods_fs.set_folder( next_archive );
 
-            ods_fs.remove_file( file_name );
+            int64_t avail = 0;
+            ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
 
-            string::size_type pos = file_name.find( '.' );
-            if( pos == string::npos )
-               throw runtime_error( "unexpected time file name '" + file_name + "' in 'create_raw_file_in_archive'" );
+            int64_t limit = 0;
+            ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
 
-            file_name.erase( 0, pos + 1 );
+            while( avail < file_data.size( ) )
+            {
+               ods_fs.set_folder( c_folder_archive_times_folder );
 
-            string file_path( paths[ i ] + "/" + file_name );
-            avail += file_size( file_path );
+               stringstream ss;
+               ods_fs.list_files( "", ss, "", ods_file_system::e_list_style_brief, true, 1 );
 
-            file_remove( file_path );
+               string file_name( ss.str( ) );
 
-            ods_fs.set_folder( ".." );
-            ods_fs.set_folder( c_folder_archive_files_folder );
+               replace( file_name, "\n", "" );
 
-            ods_fs.remove_file( file_name, 0, 0, true );
+               if( file_name.empty( ) )
+                  throw runtime_error( "unexpected empty file list in 'create_raw_file_in_archive'" );
 
-            ods_fs.set_folder( ".." );
+               ods_fs.remove_file( file_name );
+
+               string::size_type pos = file_name.find( '.' );
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected time file name '" + file_name + "' in 'create_raw_file_in_archive'" );
+
+               file_name.erase( 0, pos + 1 );
+
+               string file_path( paths[ i ] + "/" + file_name );
+               avail += file_size( file_path );
+
+               file_remove( file_path );
+
+               ods_fs.set_folder( ".." );
+               ods_fs.set_folder( c_folder_archive_files_folder );
+
+               ods_fs.remove_file( file_name, 0, 0, true );
+
+               ods_fs.set_folder( ".." );
+            }
+
+            avail -= file_data.size( );
+
+            add_archive_file( ods_fs, file_hash );
+
+            write_file( paths[ i ] + "/" + file_hash, file_data );
+
+            ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
          }
-
-         avail -= file_data.size( );
-
-         add_archive_file( ods_fs, file_hash );
-
-         write_file( paths[ i ] + "/" + file_hash, file_data );
-
-         ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
       }
+
+      if( !found )
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "File archive '" + archive + "' was not found." );
+
+      if( ap_ods_tx.get( ) )
+         ap_ods_tx->commit( );
    }
-
-   if( !found )
-      // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "File archive '" + archive + "' was not found." );
-
-   if( ap_ods_tx.get( ) )
-      ap_ods_tx->commit( );
 }
 
 string relegate_one_or_num_oldest_files( const string& hash,

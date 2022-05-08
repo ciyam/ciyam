@@ -43,8 +43,14 @@ PEER_PORT=$OUTPUT
 .storage_init Meta
 .pc sys @now Meta Global_Peerchain_Entry $IDENTITY "Auto_Start=$AUTO_START,Description=$DESCRIPTION,Entry_Type=0,Host_Name=$HOST_NAME,Host_Port=$HOST_PORT,Local_Port=$PEER_PORT,Num_Helpers=$NUM_HELPERS"
 @ifndef $ERROR
-#Created listener and global peerchain entry for identity '$IDENTITY'.
-@endif
 .storage_term
+;
+.system_variable @files_area_dir
+FILES_AREA_DIR=$OUTPUT
+;
+~mkdir $FILES_AREA_DIR/$IDENTITY
+.file_archive -add $FILES_AREA_DIR/$IDENTITY 100GB $IDENTITY
+@endif
+#Created listener, global peerchain entry and file archive for identity '$IDENTITY'.
 @endif
 @endif

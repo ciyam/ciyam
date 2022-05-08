@@ -596,7 +596,11 @@ int main( int argc, char* argv[ ] )
          if( g_has_flags )
             ( *fp_trace_flags_func )( g_flags );
 
-         if( !g_files_directory.empty( ) )
+         // NOTE: Always set the files area even if to an empty string to ensure that the
+         // "@files_area_dir" system variable is being defaulted for its usage in scripts.
+         if( g_files_directory.empty( ) )
+            ( *fp_set_files_area_dir_func )( "" );
+         else
             ( *fp_set_files_area_dir_func )( g_files_directory.c_str( ) );
 
          int use_udp = 0;
