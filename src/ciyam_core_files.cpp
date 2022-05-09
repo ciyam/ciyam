@@ -92,9 +92,13 @@ void verify_data( const string& content,
 
    string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
 
+   uint64_t data_height = 0;
+
+   size_t major_version = 0;
+   size_t minor_version = 0;
+
    size_t num_tree_items = 0;
 
-   uint64_t data_height = 0;
    uint64_t unix_time_value = 0;
 
    string header( lines[ 0 ] );
@@ -123,8 +127,7 @@ void verify_data( const string& content,
             if( next_attribute.find( c_file_type_core_data_header_height_prefix ) != 0 )
                throw runtime_error( "unexpected missing height attribute in data header '" + header + "'" );
 
-            string value( next_attribute.substr(
-             string( c_file_type_core_data_header_height_prefix ).length( ) ) );
+            string value( next_attribute.substr( strlen( c_file_type_core_data_header_height_prefix ) ) );
 
             regex expr( c_regex_integer );
 
@@ -142,8 +145,7 @@ void verify_data( const string& content,
 
             has_identity = true;
 
-            identity = next_attribute.substr(
-             string( c_file_type_core_data_header_identity_prefix ).length( ) );
+            identity = next_attribute.substr( strlen( c_file_type_core_data_header_identity_prefix ) );
          }
          else if( !has_num_tree_items )
          {
@@ -153,12 +155,26 @@ void verify_data( const string& content,
             has_num_tree_items = true;
 
             num_tree_items = from_string< size_t >( next_attribute.substr(
-             string( c_file_type_core_data_header_num_tree_items_prefix ).length( ) ) );
+             strlen( c_file_type_core_data_header_num_tree_items_prefix ) ) );
 
             // NOTE: The total tree items attribute does not include the tree root itself but in order to match
             // the number of files being processed in a peer session the value is being incremented by one here.
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
+         }
+         else if( !major_version )
+         {
+            if( next_attribute.find( c_file_type_core_data_header_version_number_prefix ) != 0 )
+               throw runtime_error( "unexpected missing version number attribute in data header '" + header + "'" );
+
+            string version( next_attribute.substr( strlen( c_file_type_core_data_header_version_number_prefix ) ) );
+
+            string::size_type pos = version.find( '.' );
+
+            if( pos != string::npos )
+               minor_version = from_string< size_t >( version.substr( pos + 1 ) );
+
+            major_version = from_string< size_t >( version.substr( 0, pos ) );
          }
          else
             throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
@@ -329,6 +345,9 @@ void verify_block( const string& content,
 
    string identity;
 
+   size_t major_version = 0;
+   size_t minor_version = 0;
+
    uint64_t block_height = 0;
    uint64_t unix_time_value = 0;
 
@@ -358,8 +377,7 @@ void verify_block( const string& content,
             if( next_attribute.find( c_file_type_core_block_header_height_prefix ) != 0 )
                throw runtime_error( "unexpected missing height attribute in block header '" + header + "'" );
 
-            string value( next_attribute.substr(
-             string( c_file_type_core_block_header_height_prefix ).length( ) ) );
+            string value( next_attribute.substr( strlen( c_file_type_core_block_header_height_prefix ) ) );
 
             regex expr( c_regex_integer );
 
@@ -381,8 +399,21 @@ void verify_block( const string& content,
 
             has_identity = true;
 
-            identity = next_attribute.substr(
-             string( c_file_type_core_block_header_identity_prefix ).length( ) );
+            identity = next_attribute.substr( strlen( c_file_type_core_block_header_identity_prefix ) );
+         }
+         else if( !major_version )
+         {
+            if( next_attribute.find( c_file_type_core_block_header_version_number_prefix ) != 0 )
+               throw runtime_error( "unexpected missing version number attribute in block header '" + header + "'" );
+
+            string version( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
+
+            string::size_type pos = version.find( '.' );
+
+            if( pos != string::npos )
+               minor_version = from_string< size_t >( version.substr( pos + 1 ) );
+
+            major_version = from_string< size_t >( version.substr( 0, pos ) );
          }
          else
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
