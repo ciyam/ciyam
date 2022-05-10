@@ -72,7 +72,7 @@ SIG_HASH=$OUTPUT
 .encode $SIG_HASH
 SIG_HASH_ENC=$OUTPUT
 ;
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=0.1\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 s:$SIG_HASH_ENC\n\
