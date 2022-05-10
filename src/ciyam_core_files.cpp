@@ -54,7 +54,10 @@ const unsigned int c_max_core_line_size = 1000;
 
 struct data_info
 {
-   data_info( ) : unix_time_value( 0 ) { }
+   data_info( ) : major_version( 0 ), minor_version( 0 ), unix_time_value( 0 ) { }
+
+   size_t major_version;
+   size_t minor_version;
 
    string public_key_hash;
 
@@ -63,7 +66,10 @@ struct data_info
 
 struct block_info
 {
-   block_info( ) : unix_time_value( 0 ) { }
+   block_info( ) : major_version( 0 ), minor_version( 0 ), unix_time_value( 0 ) { }
+
+   size_t major_version;
+   size_t minor_version;
 
    string data_file_hash;
    string public_key_hash;
@@ -175,6 +181,12 @@ void verify_data( const string& content,
                minor_version = from_string< size_t >( version.substr( pos + 1 ) );
 
             major_version = from_string< size_t >( version.substr( 0, pos ) );
+
+            if( p_data_info )
+            {
+               p_data_info->major_version = major_version;
+               p_data_info->minor_version = minor_version;
+            }
          }
          else
             throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
@@ -257,7 +269,7 @@ void verify_data( const string& content,
 
          public_key_hash = hex_encode( base64::decode( next_attribute ) );
 
-         if( !has_file( public_key_hash ) )
+         if( check_sigs && !has_file( public_key_hash ) )
             throw runtime_error( "public key file '" + public_key_hash + "' not found" );
 
          if( p_data_info )
@@ -300,8 +312,18 @@ void verify_data( const string& content,
          if( p_data_info )
             p_data_info->unix_time_value = unix_time_value;
 
-         if( check_sigs && ( data_height > 1 && unix_time_value <= info.unix_time_value ) )
-            throw runtime_error( "invalid unix data time value not more recent than last" );
+         if( check_sigs && ( data_height > 1 ) )
+         {
+            if( major_version < info.major_version )
+               throw runtime_error( "invalid major data version value is less than last" );
+
+            if( ( major_version == info.major_version )
+             && ( minor_version < info.minor_version ) )
+               throw runtime_error( "invalid minor data version value is less than last" );
+
+            if( unix_time_value <= info.unix_time_value )
+               throw runtime_error( "invalid unix data time value not more recent than last" );
+         }
 
          found = true;
       }
@@ -414,6 +436,12 @@ void verify_block( const string& content,
                minor_version = from_string< size_t >( version.substr( pos + 1 ) );
 
             major_version = from_string< size_t >( version.substr( 0, pos ) );
+
+            if( p_block_info )
+            {
+               p_block_info->major_version = major_version;
+               p_block_info->minor_version = minor_version;
+            }
          }
          else
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
@@ -573,9 +601,6 @@ void verify_block( const string& content,
                      throw runtime_error( "unexpected invalid data info in verify_block" );
 
                   verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
-
-                  if( public_key_hash != data.public_key_hash )
-                     throw runtime_error( "unexpected public key hash does not match data info" );
                }
             }
          }
@@ -593,11 +618,21 @@ void verify_block( const string& content,
             if( p_block_info )
                p_block_info->unix_time_value = unix_time_value;
 
-            if( check_sigs && block_height > 1 && ( unix_time_value <= info.unix_time_value ) )
-               throw runtime_error( "invalid unix block time value not more recent than last" );
+            if( check_sigs && block_height > 1 )
+            {
+               if( major_version < info.major_version )
+                  throw runtime_error( "invalid major block version value is less than last" );
 
-            if( check_sigs && ( unix_time_value < data.unix_time_value ) )
-               throw runtime_error( "invalid unix block time value older than unix data time value" );
+               if( ( major_version == info.major_version )
+                && ( minor_version < info.minor_version ) )
+                  throw runtime_error( "invalid minor block version value is less than last" );
+
+               if( unix_time_value < data.unix_time_value )
+                  throw runtime_error( "invalid unix block time value older than unix data time" );
+
+               if( unix_time_value <= info.unix_time_value )
+                  throw runtime_error( "invalid unix block time value not more recent than last" );
+            }
          }
          else
             throw runtime_error( "unexpected extraneous block attribute '" + next_attribute + "'" );
