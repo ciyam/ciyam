@@ -65,7 +65,7 @@ SECONDARY_PRIVKEY_HASH=$OUTPUT
 .encode $OUTPUT
 SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-.file_raw -core blob blk:h=0,i=$IDENT,v=0.1\n\
+.file_raw -core blob blk:h=0,i=$IDENT\n\
 p:$PRIMARY_PUBKEY_HASH_ENC\n\
 s:$SECONDARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 ;
