@@ -6883,7 +6883,7 @@ void set_session_variable( const string& name,
             }
             else if( val.substr( 0, pos ) == "train" )
             {
-               p_command_handler->output_progress( "training..." );
+               p_command_handler->output_progress( tmp_cube.type_key( ) + " training..." );
                tmp_cube.train( val.substr( pos + 1 ) );
 
                val.erase( );
