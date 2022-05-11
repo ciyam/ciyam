@@ -56,7 +56,7 @@ HIND_HASH_ENC=%OUTPUT:1440%
 ;
 @ifeq "$LAST" "0"
 @ifndef $TREE
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=0.1\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=1\n\
 h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
@@ -68,7 +68,7 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=0.1\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
 h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_ROOT_HASH_ENC\n\
@@ -82,7 +82,7 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 LAST_HASH_ENC=$OUTPUT
 ;
 @ifndef $TREE
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=0.1\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
@@ -95,7 +95,7 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=0.1\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\

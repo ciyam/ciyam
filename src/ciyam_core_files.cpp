@@ -54,10 +54,9 @@ const unsigned int c_max_core_line_size = 1000;
 
 struct data_info
 {
-   data_info( ) : major_version( 0 ), minor_version( 0 ), unix_time_value( 0 ) { }
+   data_info( ) : version( 0 ), unix_time_value( 0 ) { }
 
-   size_t major_version;
-   size_t minor_version;
+   size_t version;
 
    string public_key_hash;
 
@@ -66,10 +65,9 @@ struct data_info
 
 struct block_info
 {
-   block_info( ) : major_version( 0 ), minor_version( 0 ), unix_time_value( 0 ) { }
+   block_info( ) : version( 0 ), unix_time_value( 0 ) { }
 
-   size_t major_version;
-   size_t minor_version;
+   size_t version;
 
    string data_file_hash;
    string public_key_hash;
@@ -98,10 +96,9 @@ void verify_data( const string& content,
 
    string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
 
-   uint64_t data_height = 0;
+   size_t version = 0;
 
-   size_t major_version = 0;
-   size_t minor_version = 0;
+   uint64_t data_height = 0;
 
    size_t num_tree_items = 0;
 
@@ -168,25 +165,17 @@ void verify_data( const string& content,
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
          }
-         else if( !major_version )
+         else if( !version )
          {
             if( next_attribute.find( c_file_type_core_data_header_version_number_prefix ) != 0 )
                throw runtime_error( "unexpected missing version number attribute in data header '" + header + "'" );
 
-            string version( next_attribute.substr( strlen( c_file_type_core_data_header_version_number_prefix ) ) );
+            string version_str( next_attribute.substr( strlen( c_file_type_core_data_header_version_number_prefix ) ) );
 
-            string::size_type pos = version.find( '.' );
-
-            if( pos != string::npos )
-               minor_version = from_string< size_t >( version.substr( pos + 1 ) );
-
-            major_version = from_string< size_t >( version.substr( 0, pos ) );
+            version = from_string< size_t >( version_str );
 
             if( p_data_info )
-            {
-               p_data_info->major_version = major_version;
-               p_data_info->minor_version = minor_version;
-            }
+               p_data_info->version = version;
          }
          else
             throw runtime_error( "unexpected extraneous attribute in data header '" + header + "'" );
@@ -314,12 +303,8 @@ void verify_data( const string& content,
 
          if( check_sigs && ( data_height > 1 ) )
          {
-            if( major_version < info.major_version )
-               throw runtime_error( "invalid major data version value is less than last" );
-
-            if( ( major_version == info.major_version )
-             && ( minor_version < info.minor_version ) )
-               throw runtime_error( "invalid minor data version value is less than last" );
+            if( version < info.version )
+               throw runtime_error( "invalid data version value is less than last" );
 
             if( unix_time_value <= info.unix_time_value )
                throw runtime_error( "invalid unix data time value not more recent than last" );
@@ -367,8 +352,7 @@ void verify_block( const string& content,
 
    string identity;
 
-   size_t major_version = 0;
-   size_t minor_version = 0;
+   size_t version = 0;
 
    uint64_t block_height = 0;
    uint64_t unix_time_value = 0;
@@ -423,25 +407,17 @@ void verify_block( const string& content,
 
             identity = next_attribute.substr( strlen( c_file_type_core_block_header_identity_prefix ) );
          }
-         else if( !major_version )
+         else if( !version )
          {
             if( next_attribute.find( c_file_type_core_block_header_version_number_prefix ) != 0 )
                throw runtime_error( "unexpected missing version number attribute in block header '" + header + "'" );
 
-            string version( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
+            string version_str( next_attribute.substr( strlen( c_file_type_core_block_header_version_number_prefix ) ) );
 
-            string::size_type pos = version.find( '.' );
-
-            if( pos != string::npos )
-               minor_version = from_string< size_t >( version.substr( pos + 1 ) );
-
-            major_version = from_string< size_t >( version.substr( 0, pos ) );
+            version = from_string< size_t >( version_str );
 
             if( p_block_info )
-            {
-               p_block_info->major_version = major_version;
-               p_block_info->minor_version = minor_version;
-            }
+               p_block_info->version = version;
          }
          else
             throw runtime_error( "unexpected extraneous attribute in block header '" + header + "'" );
@@ -620,12 +596,8 @@ void verify_block( const string& content,
 
             if( check_sigs && block_height > 1 )
             {
-               if( major_version < info.major_version )
-                  throw runtime_error( "invalid major block version value is less than last" );
-
-               if( ( major_version == info.major_version )
-                && ( minor_version < info.minor_version ) )
-                  throw runtime_error( "invalid minor block version value is less than last" );
+               if( version < info.version )
+                  throw runtime_error( "invalid block version value is less than last" );
 
                if( unix_time_value < data.unix_time_value )
                   throw runtime_error( "invalid unix block time value older than unix data time" );
