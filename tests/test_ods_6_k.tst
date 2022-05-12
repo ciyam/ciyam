@@ -40,7 +40,7 @@ No freelist entries.
 ** Transaction Log Info
 version = 1.0 (encrypted)
 sequence = 1
-val_hash = 458211235
+val_hash = 2177926815
 entry_offs = 218
 append_offs = 699
 
