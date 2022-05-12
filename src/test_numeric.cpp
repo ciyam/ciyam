@@ -242,7 +242,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
                   indent = ( 5 - lines[ i ].length( ) );
 
-                  if( indent )
+                  if( indent > 0 )
                      lines[ i ] += string( indent, ' ' );
 
                   if( n >= 0.0 )
@@ -256,7 +256,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
                   indent = ( 10 - lines[ i ].length( ) );
 
-                  if( indent )
+                  if( indent > 0 )
                      lines[ i ] += string( indent, ' ' );
 
                   if( n >= 0.0 )
@@ -270,7 +270,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
                   indent = ( 17 - lines[ i ].length( ) );
 
-                  if( indent )
+                  if( indent > 0 )
                      lines[ i ] += string( indent, ' ' );
 
                   if( n >= 0.0 )
@@ -284,7 +284,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
                   indent = ( 25 - lines[ i ].length( ) );
 
-                  if( indent )
+                  if( indent > 0 )
                      lines[ i ] += string( indent, ' ' );
 
                   if( n >= 0.0 )
