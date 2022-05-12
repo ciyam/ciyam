@@ -3,8 +3,8 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef ARRAY_H
-#  define ARRAY_H
+#ifndef CHAR_ARRAY_H
+#  define CHAR_ARRAY_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <iosfwd>
@@ -15,18 +15,18 @@
 
 #  ifdef CIYAM_BASE_LIB
 #     ifdef CIYAM_BASE_IMPL
-#        define ARRAY_DECL_SPEC DYNAMIC_EXPORT
+#        define CHAR_ARRAY_DECL_SPEC DYNAMIC_EXPORT
 #     else
-#        define ARRAY_DECL_SPEC DYNAMIC_IMPORT
+#        define CHAR_ARRAY_DECL_SPEC DYNAMIC_IMPORT
 #     endif
 #  else
-#     define ARRAY_DECL_SPEC
+#     define CHAR_ARRAY_DECL_SPEC
 #  endif
 
-class ARRAY_DECL_SPEC array
+class CHAR_ARRAY_DECL_SPEC char_array
 {
    public:
-   array( const std::string& type_and_or_state );
+   char_array( const std::string& type_and_or_state );
 
    std::string get_state( ) const { return ch + type + ':' + data; }
 

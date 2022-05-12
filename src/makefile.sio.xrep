@@ -10,9 +10,9 @@
    <lib/>
     <name>base
     <cpp_files/>
-     <filename>array.cpp
      <filename>base32.cpp
      <filename>base64.cpp
+     <filename>char_array.cpp
      <filename>clz.cpp
      <filename>console.cpp
      <filename>console_commands.cpp
@@ -90,7 +90,7 @@
     <cpp_files/>
      <filename>auto_script.cpp
      <filename>ciyam_base.cpp
-     <filename>ciyam_base_array.cpp
+     <filename>ciyam_base_char_array.cpp
      <filename>ciyam_base_command_handler.cpp
      <filename>ciyam_base_cube.cpp
      <filename>ciyam_base_date_time.cpp

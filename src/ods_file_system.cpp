@@ -558,7 +558,7 @@ void ods_file_system::list_folders( const string& expr, ostream& os,
    string entity_expr( current_folder );
    bool had_wildcard = ( expr.find_first_of( "?*" ) != string::npos );
 
-   expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? '\0' : c_folder_separator );
+   expand_entity_expression( expr, had_wildcard, entity_expr, had_wildcard ? "\0" : c_folder_separator );
 
    if( expr.empty( ) && current_folder != string( c_root_folder ) )
       entity_expr += string( c_folder_separator );
@@ -2087,7 +2087,7 @@ void ods_file_system::get_child_folders(
 
    string folder_expr( current_folder );
 
-   expand_entity_expression( expr, had_wildcard, folder_expr, had_wildcard ? '\0' : c_folder_separator );
+   expand_entity_expression( expr, had_wildcard, folder_expr, had_wildcard ? "\0" : c_folder_separator );
 
    if( expr.empty( ) && current_folder != string( c_root_folder ) )
       folder_expr += string( c_folder_separator );

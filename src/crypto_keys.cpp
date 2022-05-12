@@ -24,6 +24,15 @@
 #include <openssl/ripemd.h>
 #include <openssl/obj_mac.h>
 
+// KLUDGE: Work-around for OpenSSL 1.1 changes.
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+typedef struct ECDSA_SIG_st
+{
+   BIGNUM *r;
+   BIGNUM *s;
+} ECDSA_SIG;
+#endif
+
 #include "crypto_keys.h"
 
 #include "base64.h"
@@ -131,20 +140,25 @@ string base58_encode( const unsigned char* p_buf, size_t len )
    if( !p_ctx )
       throw runtime_error( "unexpected BN_CTX_new failure in base58_encode" );
 
-   BIGNUM bn0;
-   BIGNUM bn58;
+   BIGNUM* p_bn0;
+   BIGNUM* p_bn58;
 
-   BN_init( &bn0 );
-   BN_init( &bn58 );
+   p_bn0 = BN_new( );
+   p_bn58 = BN_new( );
 
-   BN_set_word( &bn0, 0 );
-   BN_set_word( &bn58, 58 );
+   BN_init( p_bn0 );
+   BN_init( p_bn58 );
+
+   BN_set_word( p_bn0, 0 );
+   BN_set_word( p_bn58, 58 );
 
    vector< unsigned char > temp_buf( len + 1, 0 );
    reverse_copy( p_buf, p_buf + len, temp_buf.begin( ) );
 
-   BIGNUM bn;
-   BN_init( &bn );
+   BIGNUM* p_bn;
+   p_bn = BN_new( );
+
+   BN_init( p_bn );
 
    vector< unsigned char > temp_buf2( temp_buf.size( ) + 4, 0 );
    unsigned int size = temp_buf.size( );
@@ -155,39 +169,50 @@ string base58_encode( const unsigned char* p_buf, size_t len )
    temp_buf2[ 3 ] = ( size >> 0 ) & 0xff;
 
    reverse_copy( temp_buf.begin( ), temp_buf.end( ), temp_buf2.begin( ) + 4 );
-   BN_mpi2bn( &temp_buf2[ 0 ], temp_buf2.size( ), &bn );
+   BN_mpi2bn( &temp_buf2[ 0 ], temp_buf2.size( ), p_bn );
 
    str.reserve( len * 138 / 100 + 1 );
 
-   BIGNUM dv;
-   BIGNUM rem;
+   BIGNUM* p_dv;
+   BIGNUM* p_rem;
 
-   BN_init( &dv );
-   BN_init( &rem );
+   p_dv = BN_new( );
+   p_rem = BN_new( );
 
-   while( BN_cmp( &bn, &bn0 ) > 0 )
+   BN_init( p_dv );
+   BN_init( p_rem );
+
+   while( BN_cmp( p_bn, p_bn0 ) > 0 )
    {
-      if( !BN_div( &dv, &rem, &bn, &bn58, p_ctx ) )
+      if( !BN_div( p_dv, p_rem, p_bn, p_bn58, p_ctx ) )
          throw runtime_error( "unexpected BN_div failure in base58_encode" );
 
-      BN_copy( &bn, &dv );
-      unsigned int c = BN_get_word( &rem );
+      BN_copy( p_bn, p_dv );
+      unsigned int c = BN_get_word( p_rem );
 
       str += gp_base58[ c ];
    }
 
-   BN_clear_free( &rem );
-   BN_clear_free( &dv );
+   BN_clear_free( p_rem );
+   BN_clear_free( p_dv );
+
+   BN_free( p_rem );
+   BN_free( p_dv );
 
    for( const unsigned char* p = p_buf; p < p_buf + len && *p == 0; p++ )
       str += gp_base58[ 0 ];
 
    reverse( str.begin( ), str.end( ) );
 
-   BN_clear_free( &bn );
+   BN_clear_free( p_bn );
 
-   BN_clear_free( &bn58 );
-   BN_clear_free( &bn0 );
+   BN_clear_free( p_bn58 );
+   BN_clear_free( p_bn0 );
+
+   BN_free( p_bn );
+
+   BN_free( p_bn0 );
+   BN_free( p_bn58 );
 
    BN_CTX_free( p_ctx );
 
@@ -201,16 +226,20 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    if( !p_ctx )
       throw runtime_error( "unexpected BN_CTX_new failure in base58_decode" );
 
-   BIGNUM bn;
-   BIGNUM bn58;
-   BIGNUM bnchar;
+   BIGNUM* p_bn;
+   BIGNUM* p_bn58;
+   BIGNUM* p_bnchar;
 
-   BN_init( &bn );
-   BN_init( &bn58 );
-   BN_init( &bnchar );
+   p_bn = BN_new( );
+   p_bn58 = BN_new( );
+   p_bnchar = BN_new( );
 
-   BN_set_word( &bn, 0 );
-   BN_set_word( &bn58, 58 );
+   BN_init( p_bn );
+   BN_init( p_bn58 );
+   BN_init( p_bnchar );
+
+   BN_set_word( p_bn, 0 );
+   BN_set_word( p_bn58, 58 );
 
    string error;
 
@@ -222,21 +251,21 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
          if( !pc )
             throw runtime_error( "invalid base58 encoded input '" + encoded + "'" );
 
-         BN_set_word( &bnchar, pc - gp_base58 );
+         BN_set_word( p_bnchar, pc - gp_base58 );
 
-         if( !BN_mul( &bn, &bn, &bn58, p_ctx ) )
+         if( !BN_mul( p_bn, p_bn, p_bn58, p_ctx ) )
             throw runtime_error( "unexpected BN_mul failure in base58_decode" );
 
-         BN_add( &bn, &bn, &bnchar );
+         BN_add( p_bn, p_bn, p_bnchar );
       }
 
       vector< unsigned char > temp_buf;
 
-      unsigned int size = BN_bn2mpi( &bn, 0 );
+      unsigned int size = BN_bn2mpi( p_bn, 0 );
       if( size > 4 )
       {
          temp_buf.resize( size );
-         BN_bn2mpi( &bn, &temp_buf[ 0 ] );
+         BN_bn2mpi( p_bn, &temp_buf[ 0 ] );
          temp_buf.erase( temp_buf.begin( ), temp_buf.begin( ) + 4 );
          reverse( temp_buf.begin( ), temp_buf.end( ) );
       }
@@ -265,9 +294,13 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
       error = "unexpected unknown exception occurred in base58_decode";
    }
 
-   BN_clear_free( &bnchar );
-   BN_clear_free( &bn58 );
-   BN_clear_free( &bn );
+   BN_clear_free( p_bnchar );
+   BN_clear_free( p_bn58 );
+   BN_clear_free( p_bn );
+
+   BN_free( p_bnchar );
+   BN_free( p_bn58 );
+   BN_free( p_bn );
 
    BN_CTX_free( p_ctx );
 
@@ -525,17 +558,22 @@ struct private_key::impl
    void set_secret_bytes( const unsigned char bytes[ c_num_secret_bytes ] )
    {
       bool rc;
-      BIGNUM bn;
-      BN_init( &bn );
+      BIGNUM* p_bn;
 
-      rc = BN_bin2bn( bytes, c_num_secret_bytes, &bn );
+      p_bn = BN_new( );
+
+      BN_init( p_bn );
+
+      rc = BN_bin2bn( bytes, c_num_secret_bytes, p_bn );
       if( !rc )
          throw runtime_error( "unexpected failure for BN_bin2bn in set_secret_bytes" );
 
-      if( !EC_KEY_regenerate_key( p_pub_impl->p_key, &bn ) )
+      if( !EC_KEY_regenerate_key( p_pub_impl->p_key, p_bn ) )
          throw runtime_error( "unexpected failure for EC_KEY_regenerate_key in set_secret_byts" );
 
-      BN_clear_free( &bn );
+      BN_clear_free( p_bn );
+
+      BN_free( p_bn );
    }
 
    // NOTE: This function was sourced from the Bitcoin project.
@@ -1106,4 +1144,3 @@ string construct_raw_transaction(
 
    return replaced( raw_transaction, c_sig_script_marker, c_empty_sig_script );
 }
-

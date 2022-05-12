@@ -35,7 +35,6 @@
 #include "cube.h"
 #include "salt.h"
 #include "sha1.h"
-#include "array.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -44,6 +43,7 @@
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "char_array.h"
 #include "class_base.h"
 #include "ciyam_files.h"
 #ifdef SSL_SUPPORT
@@ -6987,7 +6987,7 @@ void set_session_variable( const string& name,
          {
             new_array = true;
 
-            array tmp_array( val );
+            char_array tmp_array( val );
             val = tmp_array.get_state( );
          }
 
@@ -6995,7 +6995,7 @@ void set_session_variable( const string& name,
          {
             string::size_type pos = val.find( ' ' );
 
-            array tmp_array( old_val );
+            char_array tmp_array( old_val );
 
             if( val == "show" )
             {

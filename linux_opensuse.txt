@@ -1,6 +1,9 @@
 Linux OpenSUSE Specific Instructions
 ====================================
 
+https://get.opensuse.org/tumbleweed
+
+sudo zypper install make
 sudo zypper install gcc-c++
 sudo zypper install mariadb
 sudo zypper install git-core
@@ -14,8 +17,10 @@ sudo a2enmod fcgid
 
 Ensure that WEBDIR is exported now and for future terminal sesisons
 -------------------------------------------------------------------
-sudo export WEBDIR=/srv/www/htdocs
-sudo echo "export WEBDIR=/srv/www/htdocs" >> /etc/profile.d/envvars.sh                                                                                                                                                                                                              
+export WEBDIR=/srv/www/htdocs
+sudo su
+echo "export WEBDIR=/srv/www/htdocs" >> /etc/profile.d/envvars.sh                                                                                                                                                                                                              
+exit
 
 Add the "www" group for your user and make it the default
 ---------------------------------------------------------

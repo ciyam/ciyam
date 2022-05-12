@@ -3559,7 +3559,7 @@ void console_command_handler::handle_extraneous_custom_option( const string& opt
 
 bool console_command_processor::is_still_processing( )
 {
-   return cin;
+   return bool( cin );
 }
 
 void console_command_processor::get_cmd_and_args( string& cmd_and_args )

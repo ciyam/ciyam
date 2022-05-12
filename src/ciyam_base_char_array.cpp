@@ -13,5 +13,5 @@
 
 #include "macros.h"
 
-#include "array.cpp"
+#include "char_array.cpp"
 
