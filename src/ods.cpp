@@ -411,7 +411,7 @@ struct log_info
    int16_t version;
    int16_t sequence;
 
-   int32_t val_hash;
+   uint32_t val_hash;
 
    int64_t init_time;
 
@@ -2666,7 +2666,7 @@ ods::ods(
    if( p_impl->is_encrypted )
    {
       tranlog_info.version |= c_encrypted_flag;
-      tranlog_info.val_hash = *( ( int32_t* )( p_impl->pwd_hash.data( ) + ( c_sha256_digest_size / 2 ) ) );
+      tranlog_info.val_hash = *( ( uint32_t* )( p_impl->pwd_hash.data( ) ) );
    }
 
    if( p_impl->is_new )
@@ -2680,7 +2680,7 @@ ods::ods(
 
          tranlog_info.read( inpf );
 
-         if( tranlog_info.val_hash != *( ( int32_t* )( p_impl->pwd_hash.data( ) + c_sha256_digest_size / 2 ) ) )
+         if( tranlog_info.val_hash != *( ( uint32_t* )( p_impl->pwd_hash.data( ) ) ) )
             THROW_ODS_ERROR( "incorrect password" );
 
          using_tranlog = true;
