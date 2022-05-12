@@ -15,7 +15,7 @@
 #  include <stdexcept>
 #endif
 
-#include "array.h"
+#include "char_array.h"
 
 #include "utilities.h"
 
@@ -26,12 +26,12 @@ using namespace std;
 namespace
 {
 
-const size_t c_max_array_width = 1000;
-const size_t c_max_array_height = 1000;
+const size_t c_max_char_array_width = 1000;
+const size_t c_max_char_array_height = 1000;
 
 }
 
-array::array( const string& type_and_or_state )
+char_array::char_array( const string& type_and_or_state )
 {
    ch = '*';
    type = type_and_or_state;
@@ -49,16 +49,16 @@ array::array( const string& type_and_or_state )
 
    pos = type.find( 'x' );
    if( pos == string::npos )
-      throw runtime_error( "unexpected array type info '" + type_and_or_state + "'" );
+      throw runtime_error( "unexpected char_array type info '" + type_and_or_state + "'" );
 
    width = from_string< size_t >( type.substr( 0, pos ) );
    height = from_string< size_t >( type.substr( pos + 1 ) );
 
-   if( width < 2 || width > c_max_array_width )
-      throw runtime_error( "array width " + to_string( width ) + " not permitted" );
+   if( width < 2 || width > c_max_char_array_width )
+      throw runtime_error( "char_array width " + to_string( width ) + " not permitted" );
 
-   if( height < 2 || height > c_max_array_height )
-      throw runtime_error( "array height " + to_string( height ) + " not permitted" );
+   if( height < 2 || height > c_max_char_array_height )
+      throw runtime_error( "char_array height " + to_string( height ) + " not permitted" );
 
    if( data.empty( ) )
       data = string( width * height, '.' );
@@ -71,7 +71,7 @@ array::array( const string& type_and_or_state )
    }
 }
 
-void array::output_data( ostream& os )
+void char_array::output_data( ostream& os )
 {
    size_t offset = 0;
 
@@ -85,7 +85,7 @@ void array::output_data( ostream& os )
    }
 }
 
-void array::place_chars( const string& chars )
+void char_array::place_chars( const string& chars )
 {
    for( size_t i = 0; i < chars.length( ); i++ )
       data[ rand( ) % data.size( ) ] = chars[ i ];
@@ -94,7 +94,7 @@ void array::place_chars( const string& chars )
       ch = chars[ 0 ];
 }
 
-size_t array::get_ch_pos( )
+size_t char_array::get_ch_pos( )
 {
    size_t pos = string::npos;
 
@@ -110,7 +110,7 @@ size_t array::get_ch_pos( )
    return pos;
 }
 
-void array::move_up( )
+void char_array::move_up( )
 {
    size_t pos = get_ch_pos( );
 
@@ -124,7 +124,7 @@ void array::move_up( )
    }
 }
 
-void array::move_down( )
+void char_array::move_down( )
 {
    size_t pos = get_ch_pos( );
 
@@ -138,7 +138,7 @@ void array::move_down( )
    }
 }
 
-void array::move_left( )
+void char_array::move_left( )
 {
    size_t pos = get_ch_pos( );
 
@@ -152,7 +152,7 @@ void array::move_left( )
    }
 }
 
-void array::move_right( )
+void char_array::move_right( )
 {
    size_t pos = get_ch_pos( );
 
@@ -166,7 +166,7 @@ void array::move_right( )
    }
 }
 
-void array::rotate_forwards( )
+void char_array::rotate_forwards( )
 {
    char last_ch = data[ data.size( ) - 1 ];
 
@@ -176,7 +176,7 @@ void array::rotate_forwards( )
    data[ 0 ] = last_ch;
 }
 
-void array::rotate_backwards( )
+void char_array::rotate_backwards( )
 {
    char first_ch = data[ 0 ];
 
@@ -186,7 +186,7 @@ void array::rotate_backwards( )
    data[ data.size( ) - 1 ] = first_ch;
 }
 
-void array::perform_moves( const string& moves )
+void char_array::perform_moves( const string& moves )
 {
    string all_moves( moves );
 

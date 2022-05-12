@@ -163,9 +163,9 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
       bool okay = true;
 
       if( !sf.p_istream )
-         okay = ap_inpf->read( ( char* )&data[ 0 ], bytes );
+         okay = ( bool )ap_inpf->read( ( char* )&data[ 0 ], bytes );
       else
-         okay = sf.p_istream->read( ( char* )&data[ 0 ], bytes );
+         okay = ( bool )sf.p_istream->read( ( char* )&data[ 0 ], bytes );
 
       if( !okay )
          throw runtime_error( "unexpected error reading '" + sf.file_name + "' for write_stream output" );
@@ -192,4 +192,3 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
 
    return ws;
 }
-
