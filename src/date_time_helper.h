@@ -25,7 +25,8 @@ inline size_t size_determiner( const date_time* ) { return sizeof( date_time ); 
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option push -w-8027
 #  endif
-inline std::string to_string( const julian& j )
+// KLUDGE: Extra boolean arg is to avoid overload ambiguity.
+inline std::string to_string( const julian& j, bool )
 {
    std::ostringstream oss;
    oss << ffmt( 6, 6 ) << j;

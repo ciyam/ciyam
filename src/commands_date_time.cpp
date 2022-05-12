@@ -108,7 +108,7 @@ void date_time_command_functor::operator ( )( const string& command, const param
    else if( command == c_cmd_date_time_raw )
       cmd_handler.retval = cmd_handler.p_date_time->as_string( );
    else if( command == c_cmd_date_time_julian )
-      cmd_handler.retval = to_string( ( julian )*cmd_handler.p_date_time );
+      cmd_handler.retval = to_string( ( julian )*cmd_handler.p_date_time, true );
    else if( command == c_cmd_date_time_weekday )
       cmd_handler.retval = to_string( cmd_handler.p_date_time->weekday_name( ) );
 }

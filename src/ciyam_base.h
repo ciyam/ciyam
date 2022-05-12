@@ -52,7 +52,7 @@ struct progress;
 #  define TRACE_CORE_FLS   0x00001000
 #  define TRACE_SYNC_OPS   0x00002000
 #  define TRACE_PEER_OPS   0x00004000
-#  define TRACE_ANYTHING   0xffffffff
+#  define TRACE_ANYTHING   0x7fffffff
 
 #  define IF_IS_TRACING( flags )\
 if( get_trace_flags( ) & ( flags ) )

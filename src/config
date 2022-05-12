@@ -30,18 +30,22 @@ if [ ! -f xrep ]; then
  make xrep xvars
 fi
 
-if [ ! -f salt.h ]; then
- ./xrep @salt.h.xrep >salt.h
+if [ ! -f xrep ]; then
+ echo "Error: Project tool 'xrep' was not found."
+else
+ if [ ! -f salt.h ]; then
+  ./xrep @salt.h.xrep >salt.h
+ fi
+
+ if [ ! -f ciyam_server.sid ]; then
+  ./xrep @ciyam_server.sid.sh.xrep >~config.sh
+  chmod a+x ~config.sh
+  ./~config.sh
+  rm ~config.sh
+ fi
+
+ ./xrep @config.h.xrep >config.h.new
+ ./update config.h config.h.new
+
+ ./genmake
 fi
-
-if [ ! -f ciyam_server.sid ]; then
- ./xrep @ciyam_server.sid.sh.xrep >~config.sh
- chmod a+x ~config.sh
- ./~config.sh
- rm ~config.sh
-fi
-
-./xrep @config.h.xrep >config.h.new
-./update config.h config.h.new
-
-./genmake
