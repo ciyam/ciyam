@@ -231,39 +231,65 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
             for( int m = 0; m < 4; m++ )
             {
+               int indent = 0;
+
                numeric n( values[ i ] );
 
                switch( m )
                {
                   case 0:
                   n.round( 0, numeric::e_round_method_up );
-                  lines[ i ] += string( ( 5 - lines[ i ].length( ) ), ' ' );
+
+                  indent = ( 5 - lines[ i ].length( ) );
+
+                  if( indent )
+                     lines[ i ] += string( indent, ' ' );
+
                   if( n >= 0.0 )
                      lines[ i ] += ' ';
+
                   lines[ i ] += to_string( n );
                   break;
 
                   case 1:
                   n.round( 0, numeric::e_round_method_down );
-                  lines[ i ] += string( ( 10 - lines[ i ].length( ) ), ' ' );
+
+                  indent = ( 10 - lines[ i ].length( ) );
+
+                  if( indent )
+                     lines[ i ] += string( indent, ' ' );
+
                   if( n >= 0.0 )
                      lines[ i ] += ' ';
+
                   lines[ i ] += to_string( n );
                   break;
 
                   case 2:
                   n.round( 0, numeric::e_round_method_normal );
-                  lines[ i ] += string( ( 17 - lines[ i ].length( ) ), ' ' );
+
+                  indent = ( 17 - lines[ i ].length( ) );
+
+                  if( indent )
+                     lines[ i ] += string( indent, ' ' );
+
                   if( n >= 0.0 )
                      lines[ i ] += ' ';
+
                   lines[ i ] += to_string( n );
                   break;
 
                   case 3:
                   n.round( 0, numeric::e_round_method_bankers );
-                  lines[ i ] += string( ( 25 - lines[ i ].length( ) ), ' ' );
+
+                  indent = ( 25 - lines[ i ].length( ) );
+
+                  if( indent )
+                     lines[ i ] += string( indent, ' ' );
+
                   if( n >= 0.0 )
                      lines[ i ] += ' ';
+
                   lines[ i ] += to_string( n );
                   break;
                }

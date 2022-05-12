@@ -4938,7 +4938,7 @@ void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool
 
 bool get_use_udp( )
 {
-   g_use_udp;
+   return g_use_udp;
 }
 
 bool get_using_ssl( )

@@ -180,6 +180,8 @@ void* signal_handler( void* id )
    sigwait( &sig_set, &sig );
 
    ++g_server_shutdown;
+
+   return id;
 }
 #endif
 
