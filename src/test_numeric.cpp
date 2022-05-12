@@ -16,6 +16,7 @@
 #  include <stdexcept>
 #endif
 
+#include "format.h"
 #include "macros.h"
 #include "numeric.h"
 #include "utilities.h"
@@ -227,7 +228,10 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
             if( values[ i ] >= 0 )
                lines[ i ] = ' ';
 
-            lines[ i ] += to_string( values[ i ] );
+            ostringstream oss;
+            oss << ffmt( 1, 1 ) << values[ i ];
+
+            lines[ i ] += oss.str( );
 
             for( int m = 0; m < 4; m++ )
             {
