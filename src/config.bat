@@ -16,6 +16,8 @@ if not exist makefile.bcb copy makefile.bcb.tools makefile.bcb
 if not exist makefile.mvc copy makefile.mvc.tools makefile.mvc
 call make.bat xrep xvars
 
+if not exist xrep.exe goto error1
+
 :has_tools
 if not exist salt.h xrep @salt.h.xrep >salt.h
 
@@ -29,3 +31,9 @@ xrep @config.h.xrep >config.h.new
 call update.bat config.h config.h.new
 
 call genmake.bat
+goto end
+
+:error1
+echo Error: Project tool 'xrep.exe' was not found.
+
+:end

@@ -153,13 +153,14 @@ void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length
       p_ivec = buffer + 32;
    }
 
-   EVP_CIPHER_CTX ctx;
-   EVP_CIPHER_CTX_init( &ctx );
+   EVP_CIPHER_CTX* p_ctx = EVP_CIPHER_CTX_new( );
+
+   EVP_CIPHER_CTX_init( p_ctx );
 
    if( op == e_crypt_op_encrypt )
-      EVP_EncryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_EncryptInit_ex( p_ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
    else
-      EVP_DecryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_DecryptInit_ex( p_ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
 
    int num = 0;
 
@@ -172,10 +173,10 @@ void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length
       int next = min( ( size_t )128, remaining );
 
       if( op == e_crypt_op_encrypt )
-         EVP_EncryptUpdate( &ctx, p_output + output_offset,
+         EVP_EncryptUpdate( p_ctx, p_output + output_offset,
           &num, ( const unsigned char* )s.data( ) + input_offset, next );
       else
-         EVP_DecryptUpdate( &ctx, p_output + output_offset,
+         EVP_DecryptUpdate( p_ctx, p_output + output_offset,
           &num, ( const unsigned char* )s.data( ) + input_offset, next );
 
       input_offset += next;
@@ -189,11 +190,13 @@ void aes_crypt( string& o, const string& s, const char* p_key, size_t key_length
 
    int tlen = 0;
    if( op == e_crypt_op_encrypt )
-      EVP_EncryptFinal_ex( &ctx, p_output + output_offset, &tlen );
+      EVP_EncryptFinal_ex( p_ctx, p_output + output_offset, &tlen );
    else
-      EVP_DecryptFinal_ex( &ctx, p_output + output_offset, &tlen );
+      EVP_DecryptFinal_ex( p_ctx, p_output + output_offset, &tlen );
 
-   EVP_CIPHER_CTX_cleanup( &ctx );
+   EVP_CIPHER_CTX_cleanup( p_ctx );
+
+   EVP_CIPHER_CTX_free( p_ctx );
 
    memset( buffer, '\0', sizeof( buffer ) );
 
