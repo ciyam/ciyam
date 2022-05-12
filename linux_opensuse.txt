@@ -2,6 +2,7 @@ Linux OpenSUSE Specific Instructions
 ====================================
 
 https://get.opensuse.org/tumbleweed
+(download the .ISO image to use with VirtualBox as the install CD/DVD)
 
 sudo zypper install make
 sudo zypper install gcc-c++
@@ -14,6 +15,13 @@ sudo zypper install libmariadb-devel
 sudo zypper install apache2 apache2-mod_fcgid
 
 sudo a2enmod fcgid
+
+git clone https://github.com/ciyam/fcgi.git
+
+cd fcgi
+./configure
+make
+sudo make install
 
 Ensure that WEBDIR is exported now and for future terminal sesisons
 -------------------------------------------------------------------

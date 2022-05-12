@@ -51,7 +51,7 @@ class CIYAM_BASE_DECL_SPEC peer_session : public thread
 
    void on_start( );
 
-   bool set_has_support_sessions( ) { has_support_sessions = true; }
+   void set_has_support_sessions( ) { has_support_sessions = true; }
 
    static void increment_session_count( );
    static void decrement_session_count( );
