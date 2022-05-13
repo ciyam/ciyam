@@ -8284,7 +8284,7 @@ string Meta_Class::static_get_sql_columns( )
     "C_Source_Class VARCHAR(75) NOT NULL,"
     "C_Source_File VARCHAR(200) NOT NULL,"
     "C_Source_Model VARCHAR(75) NOT NULL,"
-    "C_Static_Instance_Key VARCHAR(200) NOT NULL,"
+    "C_Static_Instance_Key VARCHAR(256) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

@@ -8807,9 +8807,9 @@ string Meta_List::static_get_sql_columns( )
     "C_Sort_Rows_In_UI INTEGER NOT NULL,"
     "C_Style INTEGER NOT NULL,"
     "C_Text_Match_Highlight INTEGER NOT NULL,"
-    "C_Title VARCHAR(200) NOT NULL,"
-    "C_Type VARCHAR(75) NOT NULL,"
-    "C_Variation_Name VARCHAR(200) NOT NULL,"
+    "C_Title VARCHAR(256) NOT NULL,"
+    "C_Type VARCHAR(256) NOT NULL,"
+    "C_Variation_Name VARCHAR(256) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

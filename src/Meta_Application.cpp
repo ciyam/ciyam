@@ -6676,7 +6676,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Print_Lists_With_Check_Boxes INTEGER NOT NULL,"
     "C_Print_Lists_With_Row_Numbers INTEGER NOT NULL,"
-    "C_Registration_Key VARCHAR(200) NOT NULL,"
+    "C_Registration_Key VARCHAR(256) NOT NULL,"
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"
@@ -6684,7 +6684,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Use_TLS_Sessions INTEGER NOT NULL,"
     "C_Use_URL_Checksum INTEGER NOT NULL,"
     "C_Use_Vertical_Menu INTEGER NOT NULL,"
-    "C_Version VARCHAR(200) NOT NULL,"
+    "C_Version VARCHAR(256) NOT NULL,"
     "C_Workgroup VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
