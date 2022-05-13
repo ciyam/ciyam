@@ -23,9 +23,10 @@
 #include <openssl/ecdsa.h>
 #include <openssl/ripemd.h>
 #include <openssl/obj_mac.h>
+#include <openssl/opensslv.h>
 
 // KLUDGE: Work-around for OpenSSL 1.1 changes.
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if LIBRESSL_VERSION_NUMBER >= 0x30000000L
 typedef struct ECDSA_SIG_st
 {
    BIGNUM *r;
