@@ -1705,7 +1705,7 @@ void CIYAM_BASE_DECL_SPEC meta_relationship_child_name( std::string& name,
  const std::string& child_name, const std::string& parent_name, const std::string& separator );
 
 const int c_sql_std_char_size = 100;
-const int c_sql_large_char_size = 200;
+const int c_sql_large_char_size = 256;
 const int c_sql_small_char_size = 30;
 
 enum sql_char_type

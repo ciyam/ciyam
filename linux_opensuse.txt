@@ -6,15 +6,17 @@ https://get.opensuse.org/tumbleweed
 
 sudo zypper install make
 sudo zypper install gcc-c++
-sudo zypper install mariadb
 sudo zypper install git-core
 sudo zypper install png++-devel
 sudo zypper install libharu-devel
 sudo zypper install readline-devel
-sudo zypper install libmariadb-devel
+sudo zypper install mariadb libmariadb-devel
 sudo zypper install apache2 apache2-mod_fcgid
 
 sudo a2enmod fcgid
+
+sudo service mysql restart
+sudo service apache2 restart
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -22,18 +24,32 @@ cd fcgi
 ./configure
 make
 sudo make install
+cd ..
+
+sudo mysql
+SET PASSWORD FOR 'root'@localhost = PASSWORD("password");
+exit
 
 Ensure that WEBDIR is exported now and for future terminal sesisons
 -------------------------------------------------------------------
 export WEBDIR=/srv/www/htdocs
-sudo su
-echo "export WEBDIR=/srv/www/htdocs" >> /etc/profile.d/envvars.sh                                                                                                                                                                                                              
-exit
+echo "export WEBDIR=/srv/www/htdocs" >> .bashrc
+echo "export WEBDIR=/srv/www/htdocs" >> .profile
 
 Add the "www" group for your user and make it the default
 ---------------------------------------------------------
 sudo usermod -a -G www <user>
 sudo usermod -g www <user>
+newgrp - www
+
+sudo chmod g+w /srv/www/htdocs
+sudo chown wwwrun:www /srv/www/htdocs
+
+git clone https://github.com/ciyam/ciyam
+
+cd ciyam/src
+
+***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
 
 Installing the CIYAM "systemd" Service
 --------------------------------------
@@ -44,7 +60,8 @@ the Meta DB has been created.
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service
-(edit ciyamd.service file to change "tux" to the appropriate user)
+(edit "ciyamd.service" file to change "tux" to the appropriate user and to
+ensure that the "Environment" value matches the WEBDIR export value above)
 
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd

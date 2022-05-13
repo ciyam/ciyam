@@ -136,7 +136,7 @@ inline bool is_customised_raw_type( const string& raw_type )
 }
 
 string get_sql_type( const string& type, bool is_mandatory,
- bool is_foreign_key, bool* p_is_sql_numeric = 0, bool is_large_text = false )
+ bool is_foreign_key, bool* p_is_sql_numeric = 0, bool is_large_text = false, bool is_large_table = false )
 {
    string sql_type;
    bool is_sql_numeric = false;
@@ -161,10 +161,12 @@ string get_sql_type( const string& type, bool is_mandatory,
    {
       if( is_large_text )
          sql_type = "TEXT";
-      else if( is_foreign_key )
+      else if( is_foreign_key && !is_large_table )
          sql_type = "VARCHAR(" + to_string( c_max_key_length ) + ")";
-      else
+      else if( !is_large_table )
          sql_type = "VARCHAR(200)";
+      else
+         sql_type = "VARCHAR(256)";
    }
 
    // NOTE: As '' is used rather than NULL by the server (and the server does not support NULL for numeric
@@ -1193,17 +1195,35 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                            sql_columns += ",\nC_";
 
                         bool is_large_text = false;
+
                         if( base_field_data[ i ].extra.find( "text" ) != string::npos
                          || base_field_data[ i ].extra.find( "notes" ) != string::npos
                          || base_field_data[ i ].extra.find( "content" ) != string::npos
                          || base_field_data[ i ].extra.find( "user_perms" ) != string::npos )
                            is_large_text = true;
 
+                        // KLUDGE: Due to limits in different versions of MariaDB row sizes
+                        // can exceed the maxiumum permitted so use VARCHAR(256) where it's
+                        // possible for tables with a large number of columns.
+                        bool is_large_table = false;
+
+                        if( ( i > 25 )
+                         && ( field_name.find( "Name" ) != 0 )
+                         && ( field_name.find( "View" ) != 0 )
+                         && ( field_name.find( "Model" ) != 0 )
+                         && ( field_name.find( "Order" ) != 0 )
+                         && ( field_name.find( "Parent" ) != 0 )
+                         && ( field_name.find( "Package" ) != 0 )
+                         && ( field_name.find( "Workgroup" ) != 0 )
+                         && ( field_name.find( "Specification" ) != 0 ) )
+                           is_large_table = true;
+
                         bool is_sql_numeric;
+
                         sql_columns += field_name;
                         sql_columns += " " + get_sql_type(
                          base_field_data[ i ].sys_type, base_field_data[ i ].is_mandatory,
-                         base_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text );
+                         base_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text, is_large_table );
                      }
                   }
                }
@@ -1241,11 +1261,26 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                       || all_field_data[ i ].extra.find( "user_perms" ) != string::npos )
                         is_large_text = true;
 
+                     // KLUDGE: (see above)
+                     bool is_large_table = false;
+
+                     if( ( i > 25 )
+                      && ( field_name.find( "Name" ) != 0 )
+                      && ( field_name.find( "View" ) != 0 )
+                      && ( field_name.find( "Model" ) != 0 )
+                      && ( field_name.find( "Order" ) != 0 )
+                      && ( field_name.find( "Parent" ) != 0 )
+                      && ( field_name.find( "Package" ) != 0 )
+                      && ( field_name.find( "Workgroup" ) != 0 )
+                      && ( field_name.find( "Specification" ) != 0 ) )
+                        is_large_table = true;
+
                      bool is_sql_numeric;
+
                      sql_columns += field_name;
                      sql_columns += " " + get_sql_type(
                       all_field_data[ i ].sys_type, all_field_data[ i ].is_mandatory,
-                      all_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text );
+                      all_field_data[ i ].is_foreign_key, &is_sql_numeric, is_large_text, is_large_table );
 
                      if( is_sql_numeric )
                         sql_numeric_fields.push_back( field_name );

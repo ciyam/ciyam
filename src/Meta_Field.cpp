@@ -8325,12 +8325,12 @@ string Meta_Field::static_get_sql_columns( )
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Parent_Class VARCHAR(75) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
-    "C_Source_Field VARCHAR(75) NOT NULL,"
+    "C_Source_Field VARCHAR(256) NOT NULL,"
     "C_Transient INTEGER NOT NULL,"
-    "C_Type VARCHAR(75) NOT NULL,"
+    "C_Type VARCHAR(256) NOT NULL,"
     "C_UOM INTEGER NOT NULL,"
-    "C_UOM_Name VARCHAR(200) NOT NULL,"
-    "C_UOM_Symbol VARCHAR(200) NOT NULL,"
+    "C_UOM_Name VARCHAR(256) NOT NULL,"
+    "C_UOM_Symbol VARCHAR(256) NOT NULL,"
     "C_Use_In_Text_Search INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
