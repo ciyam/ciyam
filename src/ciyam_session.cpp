@@ -2040,7 +2040,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !size_limit.empty( ) )
                size = unformat_bytes( size_limit );
 
-            response = relegate_one_or_num_oldest_files( hash, archive, num, size );
+            bool delete_always = false;
+
+            if( archive == "*" )
+            {
+               archive.erase( );
+               delete_always = true;
+            }
+
+            response = relegate_one_or_num_oldest_files( hash, archive, num, size, delete_always );
          }
       }
       else if( command == c_cmd_ciyam_session_file_retrieve )

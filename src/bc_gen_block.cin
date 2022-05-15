@@ -59,6 +59,9 @@ DATA_HASH=$OUTPUT
 .encode $DATA_HASH
 DATA_HASH_ENC=$OUTPUT
 ;
+.file_hash bc.$IDENT.p$LAST.key
+@ifndef $ERROR
+;
 .file_crypt bc.$IDENT.p$LAST.key @sid
 .file_get bc.$IDENT.p$LAST.key ~$UUID.key
 .file_crypt bc.$IDENT.p$LAST.key @sid
@@ -87,6 +90,7 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 ~shred ~$UUID.key
 @endif
 ~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+@endif
 @endif
 @endif
 @endif

@@ -107,9 +107,9 @@ const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_sleep_time = 250;
 
-const size_t c_initial_timeout = 8000;
-const size_t c_request_timeout = 5000;
-const size_t c_support_timeout = 3000;
+const size_t c_initial_timeout = 10000;
+const size_t c_request_timeout = 8000;
+const size_t c_support_timeout = 4000;
 
 const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
@@ -707,8 +707,9 @@ bool last_data_tree_is_identical( const string& blockchain, size_t previous_heig
    return retval;
 }
 
-void process_list_items( const string& hash, bool recurse,
- string* p_blob_data = 0, size_t* p_num_items_found = 0, set< string >* p_list_items_to_ignore = 0 )
+void process_list_items( const string& hash,
+ bool recurse, string* p_blob_data = 0, size_t* p_num_items_found = 0,
+ set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -734,6 +735,30 @@ void process_list_items( const string& hash, bool recurse,
 
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
+
+   if( p_dtm && p_progress )
+   {
+      date_time now( date_time::local( ) );
+
+      uint64_t elapsed = seconds_between( *p_dtm, now );
+
+      bool is_first = false;
+
+      if( p_num_items_found && ( *p_num_items_found == 0 ) )
+         is_first = true;
+
+      if( is_first || ( elapsed >= 2 ) )
+      {
+         string progress;
+
+         if( !p_num_items_found )
+            progress = "Processing: " + hash;
+         else
+            progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+
+         p_progress->output_progress( progress );
+      }
+   }
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -789,7 +814,7 @@ void process_list_items( const string& hash, bool recurse,
                ++( *p_num_items_found );
 
             process_list_items( next_hash, recurse,
-             p_blob_data, p_num_items_found, p_list_items_to_ignore );
+             p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
 
             // NOTE: Recursive processing may have already located this.
             first_hash_to_get = get_session_variable( first_hash_name );
@@ -843,7 +868,7 @@ void process_list_items( const string& hash, bool recurse,
             // that all blob items will be "touched" need to do this anyway.
             if( is_list_file( next_hash ) )
                process_list_items( next_hash, false,
-                p_blob_data, 0, p_list_items_to_ignore );
+                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress );
             else
                set_session_variable( get_special_var_name(
                 e_special_var_queue_touch_files ), next_hash );
@@ -860,8 +885,8 @@ void process_list_items( const string& hash, bool recurse,
    }
 }
 
-void process_data_file( const string& blockchain,
- const string& hash, size_t height, size_t* p_num_items_found = 0, bool get_tree_items = true )
+void process_data_file( const string& blockchain, const string& hash, size_t height,
+ size_t* p_num_items_found = 0, bool get_tree_items = true, progress* p_progress = 0 )
 {
    guard g( g_mutex );
 
@@ -922,7 +947,11 @@ void process_data_file( const string& blockchain,
                   need_to_tag_zenith = is_new_height;
 
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( tree_root_hash, true, 0, p_num_items_found );
+                  {
+                     date_time dtm( date_time::local( ) );
+
+                     process_list_items( tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
+                  }
                }
 
                set_session_variable(
@@ -1169,7 +1198,7 @@ void validate_public_key_file( const string& file_data )
 }
 
 bool process_block_for_height( const string& blockchain,
- const string& hash, size_t height, size_t* p_num_items_found = 0 )
+ const string& hash, size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0 )
 {
    bool retval = false;
 
@@ -1256,7 +1285,7 @@ bool process_block_for_height( const string& blockchain,
             if( !first_hash_to_get.empty( ) )
                set_system_variable( c_ignore_all_puts_prefix + replaced( blockchain, c_bc_prefix, "" ), "" );
 
-            process_data_file( blockchain, data_file_hash, height, p_num_items_found );
+            process_data_file( blockchain, data_file_hash, height, p_num_items_found, true, p_progress );
          }
       }
    }
@@ -1368,6 +1397,27 @@ class socket_command_handler : public command_handler
          is_time_for_check = true;
 
       return is_time_for_check;
+   }
+
+   void output_progress( const string& message, unsigned long num = 0, unsigned long total = 0 )
+   {
+      progress* p_progress = 0;
+      trace_progress progress( TRACE_SOCK_OPS );
+
+      if( get_trace_flags( ) & TRACE_SOCK_OPS )
+         p_progress = &progress;
+
+      string extra;
+
+      if( num || total )
+      {
+         extra += to_string( num );
+
+         if( total )
+            extra += '/' + to_string( total );
+      }
+
+      socket.write_line( string( c_response_message_prefix ) + message + extra, c_request_timeout, p_progress );
    }
 
    const string& get_last_command( ) { return last_command; }
@@ -1700,27 +1750,40 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    }
 
    string response;
-   if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+   while( true )
    {
-      string error;
+      if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
+      {
+         string error;
 
-      if( !socket.had_timeout( ) )
-         error = "peer has terminated this connection";
-      else
-         error = "timeout occurred getting peer response";
+         if( !socket.had_timeout( ) )
+            error = "peer has terminated this connection";
+         else
+            error = "timeout occurred getting peer response";
 
-      socket.close( );
-      throw runtime_error( error );
+         socket.close( );
+         throw runtime_error( error );
+      }
+
+      string::size_type pos = response.find( c_response_message_prefix );
+
+      if( pos == 0 )
+      {
+         set_session_progress_output( response.substr( strlen( c_response_message_prefix ) ) );
+         continue;
+      }
+
+      if( !response.empty( ) && response[ response.length( ) - 1 ] == c_tree_files_suffix )
+      {
+         has_extra = true;
+         response.erase( response.length( ) - 1 );
+      }
+
+      if( response == string( c_response_not_found ) )
+         response.erase( );
+
+      break;
    }
-
-   if( !response.empty( ) && response[ response.length( ) - 1 ] == c_tree_files_suffix )
-   {
-      has_extra = true;
-      response.erase( response.length( ) - 1 );
-   }
-
-   if( response == string( c_response_not_found ) )
-      response.erase( );
 
    if( p_response )
       *p_response = response;
@@ -2555,13 +2618,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
                         socket_handler.set_blockchain_height( blockchain_height );
 
-                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found );
+                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
                   }
                   else
                   {
                      if( !first_item_hash.empty( )
                       || get_session_variable( blockchain_is_fetching_name ).empty( ) )
-                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found );
+                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
                   }
                }
             }
