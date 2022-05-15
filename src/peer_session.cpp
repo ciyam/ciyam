@@ -760,6 +760,10 @@ void process_list_items( const string& hash,
 
             *p_dtm = now;
 
+            // NOTE: Give up some CPU time so that any other
+            // peer sessions will be less likely to time out.
+            msleep( c_sleep_time );
+
             p_progress->output_progress( progress );
          }
       }
