@@ -736,32 +736,34 @@ void process_list_items( const string& hash,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
-   if( p_dtm && p_progress )
-   {
-      date_time now( date_time::local( ) );
-
-      uint64_t elapsed = seconds_between( *p_dtm, now );
-
-      bool is_first = false;
-
-      if( p_num_items_found && ( *p_num_items_found == 0 ) )
-         is_first = true;
-
-      if( is_first || ( elapsed >= 2 ) )
-      {
-         string progress;
-
-         if( !p_num_items_found )
-            progress = "Processing: " + hash;
-         else
-            progress = "Processed " + to_string( *p_num_items_found ) + " items...";
-
-         p_progress->output_progress( progress );
-      }
-   }
-
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
+      if( p_dtm && p_progress )
+      {
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         bool is_first = false;
+
+         if( p_num_items_found && ( *p_num_items_found == 0 ) )
+            is_first = true;
+
+         if( is_first || ( elapsed >= 2 ) )
+         {
+            string progress;
+
+            if( !p_num_items_found )
+               progress = "Processing: " + hash;
+            else
+               progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+
       if( p_blob_data->size( ) >= max_blob_file_data )
       {
          string file_hash( create_raw_file( *p_blob_data ) );
@@ -1750,8 +1752,11 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
    }
 
    string response;
+
    while( true )
    {
+      response.erase( );
+
       if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
       {
          string error;
