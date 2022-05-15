@@ -21,10 +21,6 @@ SEED=$1
 IDENT=$2
 HEIGHT=$3
 ;
-@ifeq "$HEIGHT" "0"
-#Error: Height must be greater than zero.
-@else
-;
 .crypto_hash $SEED -s=-$HEIGHT
 ENTROPY_HASH_PN=$OUTPUT
 ;
@@ -40,5 +36,4 @@ ENTROPY_HASH_PN=$OUTPUT
 ~shred new_primary.key
 @endif
 ~rm new_primary.key new_primary.pub
-@endif
 @endif

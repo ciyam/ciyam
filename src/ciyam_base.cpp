@@ -100,6 +100,8 @@ const int c_loop_variable_digits = 8;
 
 const int c_storable_file_pad_len = 32;
 
+const int c_minimum_encrypted_password_size = 10;
+
 // NOTE: Limit the buffer to twice the maximum file size (if a compression
 // call returns buffer too small then the file can be stored uncompressed).
 const int c_max_file_buffer_expansion = 2;
@@ -6190,16 +6192,34 @@ bool get_script_reconfig( )
    return g_script_reconfig;
 }
 
+string get_gpg_password( )
+{
+   guard g( g_mutex );
+
+   if( g_gpg_password.length( ) < c_minimum_encrypted_password_size )
+      return g_gpg_password;
+   else
+      return decrypt_data( g_gpg_password );
+}
+
 string get_pem_password( )
 {
    guard g( g_mutex );
-   return decrypt_data( g_pem_password );
+
+   if( g_pem_password.length( ) < c_minimum_encrypted_password_size )
+      return g_pem_password;
+   else
+      return decrypt_data( g_pem_password );
 }
 
 string get_rpc_password( )
 {
    guard g( g_mutex );
-   return decrypt_data( g_rpc_password );
+
+   if( g_rpc_password.length( ) < c_minimum_encrypted_password_size )
+      return g_rpc_password;
+   else
+      return decrypt_data( g_rpc_password );
 }
 
 string get_sql_password( )
@@ -6213,6 +6233,8 @@ string get_sql_password( )
    {
       if( g_sql_password.empty( ) )
          pwd = "."; // i.e. used to give batch scripts a non-empty password argument
+      else if( g_sql_password.length( ) < c_minimum_encrypted_password_size )
+         pwd = g_sql_password;
       else
          pwd = decrypt_data( g_sql_password );
    }
