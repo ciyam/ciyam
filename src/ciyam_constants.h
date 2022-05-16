@@ -85,8 +85,8 @@ const char* const c_application_script_prefix = "app_script:";
 
 const size_t c_peer_sleep_time = 500; // i.e. 0.5 secs
 
-const size_t c_file_transfer_line_timeout = 5000; // i.e. 5 secs
-const size_t c_file_transfer_initial_timeout = 20000; // i.e. 20 secs
+const size_t c_file_transfer_line_timeout = 10000; // i.e. 10 secs
+const size_t c_file_transfer_initial_timeout = 15000; // i.e. 15 secs
 
 const size_t c_file_transfer_max_line_size = 100000; // i.e. 100K
 

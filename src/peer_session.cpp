@@ -106,9 +106,9 @@ const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_sleep_time = 250;
-const size_t c_start_sleep_time = 2000;
+const size_t c_start_sleep_time = 2500;
 
-const size_t c_initial_timeout = 10000;
+const size_t c_initial_timeout = 15000;
 const size_t c_request_timeout = 10000;
 const size_t c_support_timeout = 5000;
 
