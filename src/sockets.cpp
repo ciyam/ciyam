@@ -1029,7 +1029,7 @@ size_t file_transfer(
             s.read_line( next, initial_timeout, max_line_size, p_progress );
 
             if( s.had_timeout( ) )
-               throw runtime_error( "timeout occurred reading headerline for file transfer" );
+               throw runtime_error( "timeout occurred reading header line for file transfer" );
 
             // NOTE: If "Error/error" is found in the message then just throw it as is.
             if( lower( next ).find( "error" ) != string::npos )
