@@ -108,7 +108,7 @@ const size_t c_key_pair_separator_pos = 44;
 const size_t c_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
-const size_t c_initial_timeout = 15000;
+const size_t c_initial_timeout = 25000;
 const size_t c_request_timeout = 10000;
 const size_t c_support_timeout = 5000;
 
@@ -518,7 +518,34 @@ size_t process_put_file( const string& blockchain,
 
    size_t num_skipped = 0;
 
-   vector< string > file_info_to_get;
+   set< string > target_hashes;
+
+   deque< string > repo_files_to_get;
+   deque< string > non_repo_files_to_get;
+
+   // NOTE: Extract non-repo files from the session to ensure
+   // that none of them will be attempted to be fetched prior
+   // to a later put.
+   while( true )
+   {
+      string next( top_next_peer_file_hash_to_get( ) );
+
+      if( next.empty( ) )
+         break;
+
+      if( next.find( c_repository_suffix ) != string::npos )
+         repo_files_to_get.push_back( next );
+      else
+         non_repo_files_to_get.push_back( next );
+
+      pop_next_peer_file_hash_to_get( );
+   }
+
+   if( !repo_files_to_get.empty( ) )
+   {
+      for( size_t i = 0; i < repo_files_to_get.size( ); i++ )
+         add_peer_file_hash_for_get( repo_files_to_get[ i ] );
+   }
 
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
@@ -583,7 +610,10 @@ size_t process_put_file( const string& blockchain,
                               target_hash = hex_encode( base64::decode( target_hash ) );
 
                            if( has_file( target_hash ) )
+                           {
                               ++num_skipped;
+                              target_hashes.insert( target_hash );
+                           }
                            else
                            {
                               list_items_to_ignore.insert( target_hash );
@@ -600,7 +630,12 @@ size_t process_put_file( const string& blockchain,
                                   e_special_var_queue_touch_files ), local_hash );
                               }
                               else
-                                 file_info_to_get.push_back( hash_info + '=' + target_hash );
+                              {
+                                 if( !target_hash.empty( ) )
+                                    target_hashes.insert( target_hash );
+
+                                 add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                              }
                            }
                         }
                         else
@@ -618,34 +653,16 @@ size_t process_put_file( const string& blockchain,
       }
    }
 
-   // NOTE: Ensure that some files are handled by the main
-   // session in case further "put" files are yet to come.
-   size_t num_for_main = 2;
-
-   for( size_t i = file_info_to_get.size( ) - 1; i > 0; i-- )
+   // NOTE: Now append previous non-repo files to get (that were not target hashes).
+   if( !non_repo_files_to_get.empty( ) )
    {
-      string hash_info( file_info_to_get[ i ] );
-      string target_hash;
-
-      string::size_type pos = hash_info.find( '=' );
-
-      if( pos != string::npos )
+      for( size_t i = 0; i < non_repo_files_to_get.size( ); i++ )
       {
-         target_hash = hash_info.substr( pos + 1 );
-         hash_info.erase( pos );
+         string next( non_repo_files_to_get[ i ] );
+
+         if( !target_hashes.count( next ) )
+            add_peer_file_hash_for_get( next );
       }
-
-      bool can_check_for_supporters = false;
-
-      if( num_for_main )
-         --num_for_main;
-      else
-         can_check_for_supporters = check_for_supporters;
-      
-      // NOTE: Pull information target (if had already been queued) will be removed and
-      // new items are pushed at the front of the deque.
-      add_peer_file_hash_for_get(
-       hash_info, can_check_for_supporters, true, target_hash.empty( ) ? 0 : &target_hash );
    }
 
    return num_skipped;
