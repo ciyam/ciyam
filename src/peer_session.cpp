@@ -106,10 +106,11 @@ const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_sleep_time = 250;
+const size_t c_start_sleep_time = 2000;
 
 const size_t c_initial_timeout = 10000;
-const size_t c_request_timeout = 8000;
-const size_t c_support_timeout = 4000;
+const size_t c_request_timeout = 10000;
+const size_t c_support_timeout = 5000;
 
 const size_t c_main_session_sleep_time = 150;
 const size_t c_support_session_sleep_time = 100;
@@ -3437,7 +3438,12 @@ void peer_session::on_start( )
       slot_and_pubkey += '-' + get_session_variable( get_special_var_name( e_special_var_pubkey ) );
 
       if( has_support_sessions )
+      {
          slot_and_pubkey += '+';
+
+         // NOTE: Give up some CPU time for starting the support sessions.
+         msleep( c_start_sleep_time );
+      }
 
       string slotx, pubkeyx, slotx_and_pubkeyx;
 
