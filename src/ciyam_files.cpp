@@ -1480,7 +1480,11 @@ string create_raw_file( const string& data, bool compress,
    {
       if( p_is_existing )
          *p_is_existing = false;
-         
+
+      if( g_total_files >= get_files_area_item_max_num( ) )
+         // NOTE: First attempt to relegate an existing file in order to make room.
+         relegate_one_or_num_oldest_files( "", "", 1, 0, true );
+
       if( g_total_files >= get_files_area_item_max_num( ) )
          throw runtime_error( "maximum file area item limit has been reached" );
 
