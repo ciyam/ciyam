@@ -518,6 +518,8 @@ size_t process_put_file( const string& blockchain,
 
    size_t num_skipped = 0;
 
+   vector< string > file_info_to_get;
+
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
       string next_blob( blobs[ i ] );
@@ -598,9 +600,7 @@ size_t process_put_file( const string& blockchain,
                                   e_special_var_queue_touch_files ), local_hash );
                               }
                               else
-                                 // NOTE: Pull information target (if had already been queued) will be removed.
-                                 add_peer_file_hash_for_get(
-                                  hash_info, check_for_supporters, false, target_hash.empty( ) ? 0 : &target_hash );
+                                 file_info_to_get.push_back( hash_info + '=' + target_hash );
                            }
                         }
                         else
@@ -616,6 +616,36 @@ size_t process_put_file( const string& blockchain,
          if( !okay )
             throw runtime_error( "invalid file content for put" );
       }
+   }
+
+   // NOTE: Ensure that some files are handled by the main
+   // session in case further "put" files are yet to come.
+   size_t num_for_main = 2;
+
+   for( size_t i = file_info_to_get.size( ) - 1; i > 0; i-- )
+   {
+      string hash_info( file_info_to_get[ i ] );
+      string target_hash;
+
+      string::size_type pos = hash_info.find( '=' );
+
+      if( pos != string::npos )
+      {
+         target_hash = hash_info.substr( pos + 1 );
+         hash_info.erase( pos );
+      }
+
+      bool can_check_for_supporters = false;
+
+      if( num_for_main )
+         --num_for_main;
+      else
+         can_check_for_supporters = check_for_supporters;
+      
+      // NOTE: Pull information target (if had already been queued) will be removed and
+      // new items are pushed at the front of the deque.
+      add_peer_file_hash_for_get(
+       hash_info, can_check_for_supporters, true, target_hash.empty( ) ? 0 : &target_hash );
    }
 
    return num_skipped;
