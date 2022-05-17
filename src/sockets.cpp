@@ -473,10 +473,10 @@ tcp_socket::tcp_socket( SOCKET socket )
 
 bool tcp_socket::open( )
 {
-   // NOTE: In order to stop connections from taking too long a 10 second timeout is specified
+   // NOTE: In order to stop connections from taking too long a 20 second timeout is specified
    // (other later operations such as sends and receives can have specific timeouts provided).
    struct timeval tv;
-   tv.tv_sec = 10; // i.e. 10 seconds
+   tv.tv_sec = 20; // i.e. 20 seconds
 
    ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
    ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
@@ -1026,9 +1026,9 @@ size_t file_transfer(
          {
             scoped_empty_file_delete delete_empty_file( name );
 
-            s.read_line( next, initial_timeout, max_line_size, p_progress );
+            int received = s.read_line( next, initial_timeout, max_line_size, p_progress );
 
-            if( s.had_timeout( ) )
+            if( !received || s.had_timeout( ) )
                throw runtime_error( "timeout occurred reading header line for file transfer" );
 
             // NOTE: If "Error/error" is found in the message then just throw it as is.
