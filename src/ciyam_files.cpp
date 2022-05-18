@@ -96,6 +96,13 @@ class file_hash_info
       memset( data, '\0', sizeof( data ) );
    }
 
+   file_hash_info( const file_hash_info& src )
+    :
+    type( src.type )
+   {
+      memcpy( data, src.data, c_sha256_digest_size );
+   }
+
    file_hash_info( const string& hash, unsigned char type = 0 )
     :
     type( type )
@@ -157,6 +164,37 @@ unsigned char get_file_type_and_extra( const string& hash, const char* p_file_na
       file_type_and_extra = i->first.get_type( );
 
    return file_type_and_extra;
+}
+
+void set_file_type_and_extra( const string& hash, unsigned char file_type_and_extra )
+{
+   multimap< file_hash_info, string >::iterator i = g_hash_tags.lower_bound( hash );
+
+   if( i == g_hash_tags.end( ) || ( hash != i->first.get_hash_string( ) ) )
+      throw runtime_error( "unable to find " + hash + " in 'set_file_type_and_extra'" );
+   else 
+   {
+      vector< string > tags;
+
+      file_hash_info info( i->first.get_hash_string( ), file_type_and_extra );
+
+      while( true )
+      {
+         tags.push_back( i->second );
+
+         g_hash_tags.erase( i );
+
+         i = g_hash_tags.lower_bound( hash );
+
+         if( i == g_hash_tags.end( ) || hash != i->first.get_hash_string( ) )
+            break;
+      }
+
+      // NOTE: Only replace "g_hash_tags" items as "type" in the "file_hash_info"
+      // used in "g_tag_hashes" is not used (only the hash itself is being used).
+      for( size_t n = 0; n < tags.size( ); n++ )
+         g_hash_tags.insert( make_pair( info, tags[ n ] ) );
+   }
 }
 
 size_t g_total_files = 0;
@@ -788,7 +826,9 @@ bool is_list_file( unsigned char ch )
 {
    unsigned char file_type = ( ch & c_file_type_val_mask );
 
-   return ( file_type == c_file_type_val_list );
+   bool is_encrypted = ( ch & c_file_type_val_encrypted );
+
+   return ( !is_encrypted && ( file_type == c_file_type_val_list ) );
 }
 
 bool is_list_file( const string& hash, bool* p_is_encrypted )
@@ -807,10 +847,12 @@ bool is_list_file( const string& hash, bool* p_is_encrypted )
 
    unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
 
-   if( p_is_encrypted )
-      *p_is_encrypted = ( file_type_and_extra & c_file_type_val_encrypted );
+   bool is_encrypted = ( file_type_and_extra & c_file_type_val_encrypted );
 
-   return ( file_type == c_file_type_val_list );
+   if( p_is_encrypted )
+      *p_is_encrypted = is_encrypted;
+
+   return ( !is_encrypted && ( file_type == c_file_type_val_list ) );
 }
 
 int64_t file_bytes( const string& hash, bool blobs_for_lists )
@@ -2871,6 +2913,8 @@ void crypt_file( const string& tag_or_hash,
          new_file_data[ 0 ] |= c_file_type_val_encrypted;
 
          write_file( file_name, new_file_data );
+
+         set_file_type_and_extra( hash, ( unsigned char )new_file_data[ 0 ] );
       }
 
       if( ( file_type == c_file_type_val_blob )
@@ -2970,6 +3014,8 @@ void crypt_file( const string& tag_or_hash,
       }
 
       write_file( file_name, file_data );
+
+      set_file_type_and_extra( hash, ( unsigned char )file_data[ 0 ] );
 
       if( recurse && file_type == c_file_type_val_list )
       {

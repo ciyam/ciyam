@@ -6390,7 +6390,10 @@ void add_peer_file_hash_for_get( const string& hash,
 void store_repository_entry_record( const string& key,
  const string& local_hash, const string& local_public_key, const string& master_public_key )
 {
-   ods::bulk_write bulk_write( *gap_ods );
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( c_file_repository_folder );
@@ -6410,7 +6413,10 @@ void store_repository_entry_record( const string& key,
 bool fetch_repository_entry_record( const string& key,
  string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {
-   ods::bulk_read bulk_read( *gap_ods );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( c_file_repository_folder );
@@ -6428,6 +6434,22 @@ bool fetch_repository_entry_record( const string& key,
    master_public_key = reader.read_attribute( c_attribute_master_public_key );
 
    return true;
+}
+
+bool destroy_repository_entry_record( const string& key, bool must_exist )
+{
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   if( !must_exist && !gap_ofs->has_file( key ) )
+      return false;
+
+   gap_ofs->remove_file( key );
 }
 
 string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
