@@ -2074,16 +2074,35 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_file_repo_entry )
       {
          string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_hash ) );
+         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_remove ) );
 
          string local_hash, local_public_key, master_public_key;
 
-         if( fetch_repository_entry_record( hash,
-          local_hash, local_public_key, master_public_key, false ) )
+         if( !remove )
          {
-            response = "repo_hash: " + hash
-             + "\nlocal_hash: " + local_hash
-             + "\nlocal_public_key: " + local_public_key
-             + "\nmaster_public_key: " + master_public_key;
+            if( fetch_repository_entry_record( hash,
+             local_hash, local_public_key, master_public_key, false ) )
+            {
+               response = "repo_hash: " + hash
+                + "\nlocal_hash: " + local_hash
+                + "\nlocal_public_key: " + local_public_key
+                + "\nmaster_public_key: " + master_public_key;
+            }
+         }
+         else
+         {
+            auto_ptr< ods::bulk_write > ap_bulk_write;
+            if( !system_ods_instance( ).is_bulk_locked( ) )
+               ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+            if( fetch_repository_entry_record( hash,
+             local_hash, local_public_key, master_public_key, false ) )
+            {
+               destroy_repository_entry_record( hash );
+
+               if( !local_hash.empty( ) )
+                  delete_file_from_archive( local_hash, "" );
+            }
          }
       }
       else if( command == c_cmd_ciyam_session_peer_listen )

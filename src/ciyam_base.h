@@ -412,6 +412,8 @@ void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
 bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& key,
  std::string& local_hash, std::string& local_public_key, std::string& master_public_key, bool must_exist = true );
 
+bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record( const std::string& key, bool must_exist = true );
+
 std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( bool* p_any_supporter_has = 0 );
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
 
