@@ -549,6 +549,28 @@ ods CIYAM_BASE_DECL_SPEC& system_ods_instance( );
 
 ods_file_system CIYAM_BASE_DECL_SPEC& system_ods_file_system( );
 
+class CIYAM_BASE_DECL_SPEC system_ods_bulk_read
+{
+   public:
+   system_ods_bulk_read( );
+   ~system_ods_bulk_read( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
+
+class CIYAM_BASE_DECL_SPEC system_ods_bulk_write
+{
+   public:
+   system_ods_bulk_write( );
+   ~system_ods_bulk_write( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
+
 std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0, bool append_slot_num = true );
 
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );

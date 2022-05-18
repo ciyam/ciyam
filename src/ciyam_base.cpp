@@ -8662,6 +8662,48 @@ ods_file_system& system_ods_file_system( )
    return *gap_ofs;
 }
 
+struct system_ods_bulk_read::impl
+{
+   impl( )
+   {
+      if( !gap_ods->is_bulk_locked( ) )
+         ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+   }
+
+   auto_ptr< ods::bulk_read > ap_ods_bulk_read;
+};
+
+system_ods_bulk_read::system_ods_bulk_read( )
+{
+   p_impl = new impl;
+}
+
+system_ods_bulk_read::~system_ods_bulk_read( )
+{
+   delete p_impl;
+}
+
+struct system_ods_bulk_write::impl
+{
+   impl( )
+   {
+      if( !gap_ods->is_bulk_locked( ) )
+         ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+   }
+
+   auto_ptr< ods::bulk_write > ap_ods_bulk_write;
+};
+
+system_ods_bulk_write::system_ods_bulk_write( )
+{
+   p_impl = new impl;
+}
+
+system_ods_bulk_write::~system_ods_bulk_write( )
+{
+   delete p_impl;
+}
+
 string gen_key( const char* p_suffix, bool append_slot_num )
 {
    string key;
