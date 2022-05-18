@@ -506,3 +506,47 @@ file_stats
 file_kill -recurse test
 file_stats
 [0/100000]0 B/100.0 GB:0 tag(s)
+file_raw -text blob hello hello
+cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef
+file_raw -text blob goodbye goodbye
+21578622bd4e3ef48ae79c5c6ed2f4e86968ad2fcf06f82a4b1cdbf476152264
+file_raw -text list "cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef hello\ncceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef hello" test
+2d6b1cdc3136db447df3b2873b223090ad5952f90153c53da1f92c459ad296f4
+file_list -a=goodbye test test old_test
+3d9d4f6bc07a8aaf61004949848cd8742e0d5ec9cee5dd9a9289e8de16be89e3
+file_info -recurse -d=2 test
+[list] 3d9d4f6bc07a8aaf61004949848cd8742e0d5ec9cee5dd9a9289e8de16be89e3 (117 B)
+hello
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
+hello
+hello
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
+hello
+goodbye
+ [blob] 21578622bd4e3ef48ae79c5c6ed2f4e86968ad2fcf06f82a4b1cdbf476152264 (8 B) [utf8]
+goodbye
+file_crypt -recurse test abc
+file_info -content test
+[list] 3d9d4f6bc07a8aaf61004949848cd8742e0d5ec9cee5dd9a9289e8de16be89e3 (117 B) [***]
+file_info -content hello
+[blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [***]
+file_info -content goodbye
+[blob] 21578622bd4e3ef48ae79c5c6ed2f4e86968ad2fcf06f82a4b1cdbf476152264 (8 B) [***]
+file_crypt -recurse test abc
+file_info -recurse -d=2 test
+[list] 3d9d4f6bc07a8aaf61004949848cd8742e0d5ec9cee5dd9a9289e8de16be89e3 (117 B)
+hello
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
+hello
+hello
+ [blob] cceeb7a985ecc3dabcb4c8f666cd637f16f008e3c963db6aa6f83a7b288c54ef (6 B) [utf8]
+hello
+goodbye
+ [blob] 21578622bd4e3ef48ae79c5c6ed2f4e86968ad2fcf06f82a4b1cdbf476152264 (8 B) [utf8]
+goodbye
+file_kill test
+file_kill old_test
+file_kill goodbye
+file_kill hello
+file_stats
+[0/100000]0 B/100.0 GB:0 tag(s)

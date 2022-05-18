@@ -791,7 +791,7 @@ bool is_list_file( unsigned char ch )
    return ( file_type == c_file_type_val_list );
 }
 
-bool is_list_file( const string& hash )
+bool is_list_file( const string& hash, bool* p_is_encrypted )
 {
    guard g( g_mutex );
 
@@ -806,6 +806,9 @@ bool is_list_file( const string& hash )
    unsigned char file_type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ) );
 
    unsigned char file_type = ( file_type_and_extra & c_file_type_val_mask );
+
+   if( p_is_encrypted )
+      *p_is_encrypted = ( file_type_and_extra & c_file_type_val_encrypted );
 
    return ( file_type == c_file_type_val_list );
 }
@@ -2761,8 +2764,9 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void crypt_file( const string& tag_or_hash, const string& password,
- bool recurse, crypt_target target, progress* p_progress, date_time* p_dtm, size_t* p_total, bool recrypt )
+void crypt_file( const string& tag_or_hash,
+ const string& password, bool recurse, crypt_target target, progress* p_progress,
+ date_time* p_dtm, size_t* p_total, bool recrypt, set< string >* p_files_processed )
 {
    string hash( tag_or_hash );
 
@@ -2798,6 +2802,16 @@ void crypt_file( const string& tag_or_hash, const string& password,
    if( recrypt && recurse && ( target == e_crypt_target_all ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
+
+   auto_ptr< set< string > > ap_files_processed;
+
+   if( !p_files_processed )
+   {
+      ap_files_processed.reset( new set< string >( ) );
+      p_files_processed = ap_files_processed.get( );
+   }
+
+   p_files_processed->insert( hash );
 
    if( p_total )
       ++*p_total;
@@ -2884,8 +2898,12 @@ void crypt_file( const string& tag_or_hash, const string& password,
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password,
-                recurse, target, p_progress, p_dtm, p_total, recrypt );
+               if( pos != string::npos )
+                  next.erase( pos );
+
+               if( !p_files_processed->count( next ) )
+                  crypt_file( next, password, recurse, target,
+                   p_progress, p_dtm, p_total, recrypt, p_files_processed );
             }
          }
       }
@@ -2967,8 +2985,12 @@ void crypt_file( const string& tag_or_hash, const string& password,
                string next( list_items[ i ] );
                string::size_type pos = next.find( ' ' );
 
-               crypt_file( next.substr( 0, pos ), password,
-                recurse, target, p_progress, p_dtm, p_total, recrypt );
+               if( pos != string::npos )
+                  next.erase( pos );
+
+               if( !p_files_processed->count( next ) )
+                  crypt_file( next, password, recurse, target,
+                   p_progress, p_dtm, p_total, recrypt, p_files_processed );
             }
          }
       }

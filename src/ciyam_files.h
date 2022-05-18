@@ -48,7 +48,7 @@ bool CIYAM_BASE_DECL_SPEC has_file( const std::string& hash, bool check_is_hash 
 
 bool CIYAM_BASE_DECL_SPEC is_list_file( unsigned char ch );
 
-bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash );
+bool CIYAM_BASE_DECL_SPEC is_list_file( const std::string& hash, bool* p_is_encrypted = 0 );
 
 int64_t CIYAM_BASE_DECL_SPEC file_bytes( const std::string& hash, bool blobs_for_lists = false );
 
@@ -123,9 +123,10 @@ enum crypt_target
    e_crypt_target_blobs_only_repo
 };
 
-void CIYAM_BASE_DECL_SPEC crypt_file( const std::string& tag_or_hash,
- const std::string& password, bool recurse = false, crypt_target target = e_crypt_target_all,
- progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0, bool recrypt = false );
+void CIYAM_BASE_DECL_SPEC crypt_file(
+ const std::string& tag_or_hash, const std::string& password, bool recurse = false,
+ crypt_target target = e_crypt_target_all, progress* p_progress = 0, date_time* p_dtm = 0,
+ size_t* p_total = 0, bool recrypt = false, std::set< std::string >* p_files_processed = 0 );
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
