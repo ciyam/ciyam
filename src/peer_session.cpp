@@ -774,6 +774,8 @@ void process_list_items( const string& hash,
       p_blob_data = &file_data;
    }
 
+   system_ods_bulk_write ods_bulk_write;
+
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
 
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
@@ -786,6 +788,12 @@ void process_list_items( const string& hash,
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
+      if( g_server_shutdown )
+         throw runtime_error( "peer server is being shutdown" );
+
+      if( is_condemned_session( ) )
+         throw runtime_error( "peer session has been condemned" );
+
       if( p_dtm && p_progress )
       {
          date_time now( date_time::local( ) );
@@ -1826,6 +1834,12 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
 
       if( pos == 0 )
       {
+         if( g_server_shutdown )
+            throw runtime_error( "peer server is being shutdown" );
+
+         if( is_condemned_session( ) )
+            throw runtime_error( "peer session has been condemned" );
+
          set_session_progress_output( response.substr( strlen( c_response_message_prefix ) ) );
          continue;
       }
@@ -2055,8 +2069,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                      size_t num_items_found = 0;
 
-                     bool has_block_data = process_block_for_height(
-                      blockchain, next_block_hash, blockchain_height + 1, &num_items_found );
+                     bool has_block_data = process_block_for_height( blockchain,
+                      next_block_hash, blockchain_height + 1, &num_items_found, this );
 
                      if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
                      {
@@ -3120,6 +3134,22 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
          if( cmd_and_args == c_response_okay || cmd_and_args == c_response_okay_more )
             cmd_and_args = "bye";
+
+         if( !g_server_shutdown )
+         {
+            string::size_type pos = cmd_and_args.find( c_response_message_prefix );
+
+            if( pos == 0 )
+            {
+               if( g_server_shutdown )
+                  throw runtime_error( "peer server is being shutdown" );
+
+               set_session_progress_output( cmd_and_args.substr( strlen( c_response_message_prefix ) ) );
+
+               cmd_and_args.erase( );
+               continue;
+            }
+         }
 
          break;
       }
