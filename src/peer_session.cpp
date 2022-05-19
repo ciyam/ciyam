@@ -511,7 +511,8 @@ string get_file_hash_from_put_data( const string& encoded_master,
 #endif
 
 size_t process_put_file( const string& blockchain,
- const string& file_data, bool check_for_supporters, bool is_test_session, set< string >& list_items_to_ignore )
+ const string& file_data, bool check_for_supporters, bool is_test_session,
+ set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
@@ -547,6 +548,8 @@ size_t process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ] );
    }
 
+   system_ods_bulk_write ods_bulk_write;
+
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
       string next_blob( blobs[ i ] );
@@ -555,6 +558,34 @@ size_t process_put_file( const string& blockchain,
       split( next_blob, lines, '\n' );
 
       bool okay = false;
+
+      if( g_server_shutdown )
+         throw runtime_error( "peer server is being shutdown" );
+
+      if( is_condemned_session( ) )
+         throw runtime_error( "peer session has been condemned" );
+
+      if( p_dtm && p_progress )
+      {
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( i == 0 || ( elapsed >= 2 ) )
+         {
+            string progress;
+
+            progress = "Processed " + to_string( i ) + " files...";
+
+            *p_dtm = now;
+
+            // NOTE: Give up some CPU time so that any other
+            // peer sessions will be less likely to time out.
+            msleep( c_sleep_time );
+
+            p_progress->output_progress( progress );
+         }
+      }
 
       if( lines.size( ) >= 3 )
       {
@@ -2789,9 +2820,10 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             if( hash != hello_hash && !get_session_variable(
              get_special_var_name( e_special_var_blockchain_get_tree_files ) ).empty( ) )
             {
-               size_t num_skipped = process_put_file(
-                blockchain, file_data.substr( 1 ), check_for_supporters,
-                socket_handler.get_is_test_session( ), socket_handler.get_list_items_to_ignore( ) );
+               date_time dtm( date_time::local( ) );
+
+               size_t num_skipped = process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
+                socket_handler.get_is_test_session( ), socket_handler.get_list_items_to_ignore( ), &dtm, &socket_handler );
 
                if( num_skipped )
                   add_to_blockchain_tree_item( blockchain, num_skipped );
@@ -3074,10 +3106,20 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          if( socket_handler.op_state( ) == e_peer_state_waiting_for_put )
          {
             string response;
+
             if( socket.read_line( response, c_request_timeout, 0, p_progress ) <= 0 )
             {
                cmd_and_args = "bye";
                break;
+            }
+
+            string::size_type pos = response.find( c_response_message_prefix );
+
+            if( pos == 0 )
+            {
+               set_session_progress_output( response.substr( strlen( c_response_message_prefix ) ) );
+
+               continue;
             }
 
             if( response != string( c_response_okay ) )
@@ -3141,8 +3183,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             if( pos == 0 )
             {
-               if( g_server_shutdown )
-                  throw runtime_error( "peer server is being shutdown" );
+               if( is_condemned_session( ) )
+                  throw runtime_error( "peer session has been condemned" );
 
                set_session_progress_output( cmd_and_args.substr( strlen( c_response_message_prefix ) ) );
 
