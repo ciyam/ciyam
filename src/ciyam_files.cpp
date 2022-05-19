@@ -3793,7 +3793,11 @@ bool file_has_been_blacklisted( const string& hash )
 
    bool retval = false;
 
-   ods::bulk_read bulk_read( system_ods_instance( ) );
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_blacklist_folder );
@@ -3848,10 +3852,10 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    string retval;
    vector< string > names;
 
-   auto_ptr< ods::bulk_read > ap_bulk;
+   auto_ptr< ods::bulk_read > ap_bulk_read;
 
    if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk.reset( new ods::bulk_read( system_ods_instance( ) ) );
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4166,7 +4170,11 @@ bool has_file_been_archived( const string& hash, string* p_archive_name )
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      ods::bulk_read bulk_read( system_ods_instance( ) );
+      auto_ptr< ods::bulk_read > ap_bulk_read;
+
+      if( !system_ods_instance( ).is_bulk_locked( ) )
+         ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
       ods_file_system& ods_fs( system_ods_file_system( ) );
 
       for( size_t i = 0; i < archives.size( ); i++ )
@@ -4215,7 +4223,11 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
          if( paths.size( ) != archives.size( ) )
             throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-         ods::bulk_read bulk_read( system_ods_instance( ) );
+         auto_ptr< ods::bulk_read > ap_bulk_read;
+
+         if( !system_ods_instance( ).is_bulk_locked( ) )
+            ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
          ods_file_system& ods_fs( system_ods_file_system( ) );
 
          for( size_t i = 0; i < archives.size( ); i++ )

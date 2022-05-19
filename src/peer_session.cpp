@@ -571,17 +571,13 @@ size_t process_put_file( const string& blockchain,
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
-         if( i == 0 || ( elapsed >= 2 ) )
+         if( elapsed >= 2 )
          {
             string progress;
 
             progress = "Processed " + to_string( i ) + " files...";
 
             *p_dtm = now;
-
-            // NOTE: Give up some CPU time so that any other
-            // peer sessions will be less likely to time out.
-            msleep( c_sleep_time );
 
             p_progress->output_progress( progress );
          }
@@ -831,12 +827,7 @@ void process_list_items( const string& hash,
 
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
-         bool is_first = false;
-
-         if( p_num_items_found && ( *p_num_items_found == 0 ) )
-            is_first = true;
-
-         if( is_first || ( elapsed >= 2 ) )
+         if( elapsed >= 2 )
          {
             string progress;
 
@@ -846,10 +837,6 @@ void process_list_items( const string& hash,
                progress = "Processed " + to_string( *p_num_items_found ) + " items...";
 
             *p_dtm = now;
-
-            // NOTE: Give up some CPU time so that any other
-            // peer sessions will be less likely to time out.
-            msleep( c_sleep_time );
 
             p_progress->output_progress( progress );
          }
@@ -3079,6 +3066,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
    string blockchain( socket_handler.get_blockchain( ) );
 
+   bool has_issued_command = false;
    bool check_for_supporters = false;
 
    string identity( get_session_variable(
@@ -3101,7 +3089,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
        && !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
          check_for_supporters = true;
 
-      if( !is_responder && !g_server_shutdown && !is_condemned_session( ) )
+      if( !is_responder && !has_issued_command && !g_server_shutdown && !is_condemned_session( ) )
       {
          if( socket_handler.op_state( ) == e_peer_state_waiting_for_put )
          {
@@ -3134,6 +3122,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                socket_handler.state( ) = e_peer_state_waiting_for_get_or_put;
 
             socket_handler.issue_cmd_for_peer( check_for_supporters );
+
+            has_issued_command = true;
          }
       }
 
