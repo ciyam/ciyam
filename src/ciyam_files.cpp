@@ -2344,6 +2344,8 @@ void touch_queued_files( const string& queue_var_name,
       }
    }
 
+   size_t num = 0;
+
    bool has_updated_archive = false;
 
    while( true )
@@ -2353,16 +2355,26 @@ void touch_queued_files( const string& queue_var_name,
       if( next_hash.empty( ) )
          break;
 
+      date_time now( date_time::local( ) );
+
+      uint64_t elapsed = seconds_between( dtm, now );
+
       touch_file( next_hash, archive, false, &has_updated_archive );
+
+      ++num;
 
       if( max_seconds )
       {
-         date_time now( date_time::local( ) );
-
-         uint64_t elapsed = seconds_between( dtm, now );
-
          if( elapsed >= max_seconds )
             break;
+      }
+      else
+      {
+         if( elapsed >= 2 )
+         {
+            dtm = now;
+            set_session_progress_output( "Touched " + to_string( num ) + " files..." );
+         }
       }
    }
 

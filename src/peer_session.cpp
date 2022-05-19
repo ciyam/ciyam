@@ -3137,6 +3137,8 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          }
       }
 
+      cmd_and_args.erase( );
+
       if( socket.read_line( cmd_and_args, c_request_timeout, c_max_line_length, p_progress ) <= 0 )
       {
          if( !is_captured_session( )
