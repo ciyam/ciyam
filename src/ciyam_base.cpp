@@ -6398,16 +6398,27 @@ void store_repository_entry_record( const string& key,
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
-   stringstream sio_data;
-   sio_writer writer( sio_data );
+   try
+   {
+      stringstream sio_data;
+      sio_writer writer( sio_data );
 
-   writer.write_attribute( c_attribute_local_hash, local_hash );
-   writer.write_attribute( c_attribute_local_public_key, local_public_key );
-   writer.write_attribute( c_attribute_master_public_key, master_public_key );
+      writer.write_attribute( c_attribute_local_hash, local_hash );
+      writer.write_attribute( c_attribute_local_public_key, local_public_key );
+      writer.write_attribute( c_attribute_master_public_key, master_public_key );
 
-   writer.finish_sections( );
+      writer.finish_sections( );
 
-   gap_ofs->store_file( key, 0, &sio_data );
+      gap_ofs->store_file( key, 0, &sio_data );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " when storing " ) + key );
+   }
+   catch( ... )
+   {
+      throw runtime_error( "unexpected error occurred when storing " + key );
+   }
 }
 
 bool fetch_repository_entry_record( const string& key,
@@ -6424,14 +6435,25 @@ bool fetch_repository_entry_record( const string& key,
    if( !must_exist && !gap_ofs->has_file( key ) )
       return false;
 
-   stringstream sio_data;
-   gap_ofs->get_file( key, &sio_data, true );
+   try
+   {
+      stringstream sio_data;
+      gap_ofs->get_file( key, &sio_data, true );
 
-   sio_reader reader( sio_data );
+      sio_reader reader( sio_data );
 
-   local_hash = reader.read_attribute( c_attribute_local_hash );
-   local_public_key = reader.read_attribute( c_attribute_local_public_key );
-   master_public_key = reader.read_attribute( c_attribute_master_public_key );
+      local_hash = reader.read_attribute( c_attribute_local_hash );
+      local_public_key = reader.read_attribute( c_attribute_local_public_key );
+      master_public_key = reader.read_attribute( c_attribute_master_public_key );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " when fetching " ) + key );
+   }
+   catch( ... )
+   {
+      throw runtime_error( "unexpected error occurred when fetching " + key );
+   }
 
    return true;
 }
