@@ -695,7 +695,8 @@ size_t process_put_file( const string& blockchain,
    return num_skipped;
 }
 
-bool has_all_list_items( const string& hash, bool recurse, bool touch_all_lists = false )
+bool has_all_list_items( const string& hash, bool recurse,
+ bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -707,6 +708,22 @@ bool has_all_list_items( const string& hash, bool recurse, bool touch_all_lists 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       string next_item( list_items[ i ] );
+
+      if( p_dtm && p_progress )
+      {
+         date_time now( date_time::local( ) );
+
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= 2 )
+         {
+            string progress( "Processed " + to_string( i ) + " items..." );
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
 
       if( !next_item.empty( ) )
       {
@@ -728,7 +745,7 @@ bool has_all_list_items( const string& hash, bool recurse, bool touch_all_lists 
          }
          else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
          {
-            retval = has_all_list_items( next_hash, recurse, touch_all_lists );
+            retval = has_all_list_items( next_hash, recurse, touch_all_lists, p_dtm, p_progress );
 
             if( !retval )
                break;
@@ -1008,6 +1025,8 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
       {
          if( get_tree_items && !tree_root_hash.empty( ) )
          {
+            date_time dtm( date_time::local( ) );
+
             if( !has_file( tree_root_hash ) )
             {
                need_to_tag_zenith = is_new_height;
@@ -1020,18 +1039,14 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
                if( get_session_variable( get_special_var_name(
                 e_special_var_blockchain_skip_blob_puts ) ).empty( ) )
-                  get_tree_items = has_all_list_items( tree_root_hash, true );
+                  get_tree_items = has_all_list_items( tree_root_hash, true, false, &dtm, p_progress );
 
                if( get_tree_items )
                {
                   need_to_tag_zenith = is_new_height;
 
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                  {
-                     date_time dtm( date_time::local( ) );
-
                      process_list_items( tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
-                  }
                }
 
                set_session_variable(
@@ -2373,8 +2388,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          if( has_file( zenith_tree_hash ) )
          {
+            date_time dtm( date_time::local( ) );
+
             // NOTE: Will touch all tree lists iff has the tree root.
-            has_all_list_items( zenith_tree_hash, true, true );
+            has_all_list_items( zenith_tree_hash, true, true, &dtm, this );
 
             if( !get_session_variable( blockchain_is_owner_name ).empty( )
              && !get_session_variable( blockchain_is_fetching_name ).empty( ) )
