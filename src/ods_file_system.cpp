@@ -336,9 +336,11 @@ typedef bt_transaction< ofs_object, less< ofs_object >, btree_node_type, btree_n
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ) { }
+   impl( ods& o ) : bt( o ), last_tran_id( 0 ) { }
 
    btree_type bt;
+
+   int64_t last_tran_id;
 };
 
 ods_file_system::ods_file_system( ods& o, int64_t i )
@@ -354,11 +356,15 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
    {
       bt.set_id( i );
       o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
    }
    else
    {
       bt.set_items_per_node( c_ofs_items_per_node );
       o << bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
    }
 }
 
@@ -451,10 +457,13 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
          auto_ptr< ods::bulk_read > ap_bulk;
 
          if( !o.is_bulk_locked( ) )
-         {
             ap_bulk.reset( new ods::bulk_read( o ) );
 
+         if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+         {
             o >> bt;
+
+            p_impl->last_tran_id = bt.get_last_tran_id( );
          }
 
          btree_type::item_type tmp_item;
@@ -678,7 +687,12 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      o >> bt;
+      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      {
+         o >> bt;
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
+      }
 
       auto_ptr< ods::transaction > ap_ods_tx;
       if( !o.is_in_transaction( ) )
@@ -760,6 +774,8 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
             if( ap_ods_tx.get( ) )
                ap_ods_tx->commit( );
+
+            p_impl->last_tran_id = bt.get_last_tran_id( );
          }
       }
    }
@@ -786,7 +802,12 @@ void ods_file_system::get_file( const string& name,
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
@@ -831,7 +852,12 @@ bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_su
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::item_type tmp_item;
 
@@ -876,7 +902,12 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::item_type tmp_item;
 
@@ -928,7 +959,12 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      o >> bt;
+      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      {
+         o >> bt;
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
+      }
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -1020,6 +1056,8 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
 
                if( ap_ods_tx.get( ) )
                   ap_ods_tx->commit( );
+
+               p_impl->last_tran_id = bt.get_last_tran_id( );
             }
          }
       }
@@ -1050,7 +1088,12 @@ void ods_file_system::move_file( const string& name, const string& destination, 
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      o >> bt;
+      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      {
+         o >> bt;
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
+      }
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -1168,6 +1211,8 @@ void ods_file_system::move_file( const string& name, const string& destination, 
 
                   if( ap_ods_tx.get( ) )
                      ap_ods_tx->commit( );
+
+                  p_impl->last_tran_id = bt.get_last_tran_id( );
                }
             }
          }
@@ -1200,7 +1245,12 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !o.is_in_transaction( ) )
@@ -1214,6 +1264,8 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
 
       if( ap_ods_tx.get( ) )
          ap_ods_tx->commit( );
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
    }
 }
 
@@ -1231,7 +1283,12 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
@@ -1336,6 +1393,8 @@ void ods_file_system::replace_file( const string& name, const string& source, os
 
       if( ap_ods_tx.get( ) )
          ap_ods_tx->commit( );
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
    }
 }
 
@@ -1414,7 +1473,12 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      o >> bt;
+      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      {
+         o >> bt;
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
+      }
 
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
@@ -1512,6 +1576,8 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
 
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
       }
    }
 }
@@ -1525,7 +1591,12 @@ bool ods_file_system::has_folder( const string& name )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    string full_name( current_folder );
 
@@ -1560,7 +1631,12 @@ void ods_file_system::move_folder( const string& name, const string& destination
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::iterator tmp_iter;
    btree_type::item_type tmp_item;
@@ -1653,6 +1729,8 @@ void ods_file_system::move_folder( const string& name, const string& destination
 
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
       }
    }
 }
@@ -1668,7 +1746,12 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !o.is_in_transaction( ) )
@@ -1731,6 +1814,8 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
 
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
+
+         p_impl->last_tran_id = bt.get_last_tran_id( );
       }
    }
 }
@@ -1744,12 +1829,20 @@ void ods_file_system::rebuild_index( )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
+
    ods::transaction tx( o );
 
-   o >> bt;
    bt.build_index_nodes( );
 
    tx.commit( );
+
+   p_impl->last_tran_id = bt.get_last_tran_id( );
 }
 
 void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
@@ -1761,7 +1854,12 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    if( file_name.length( ) )
    {
@@ -1795,7 +1893,12 @@ void ods_file_system::perform_match(
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   o >> bt;
+   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   {
+      o >> bt;
+
+      p_impl->last_tran_id = bt.get_last_tran_id( );
+   }
 
    btree_type::iterator match_iter;
    btree_type::item_type match_item;
@@ -1816,8 +1919,7 @@ void ods_file_system::perform_match(
       ap_regex.reset( new regex( regexpr ) );
 
 #ifdef USE_BULK_PAUSE
-   int count = 0;
-   int last_tran_id = ap_btree->get_last_tran_id( );
+   size_t iterations = 0;
 #endif
 
    if( p_range && !p_range->first.empty( ) )
@@ -1875,7 +1977,6 @@ void ods_file_system::perform_match(
       compare_less.use_truncated_comparison( false );
 
    size_t count = 0;
-   size_t iterations = 0;
 
    if( match_iter != bt.end( ) )
    {
@@ -1890,20 +1991,20 @@ void ods_file_system::perform_match(
             break;
 
 #ifdef USE_BULK_PAUSE
-         if( ++iterations % 5000 == 0 )
+         if( ap_bulk.get( ) && ( ++iterations % 5000 == 0 ) )
          {
             btree_type::item_type tmp_item;
             tmp_item.val = match_iter->val;
 
-            bulk.pause( );
+            ap_bulk->pause( );
 
-            if( last_tran_id != ap_btree->get_last_tran_id( ) )
+            if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
             {
                o >> bt;
-               last_tran_id = ap_btree->get_last_tran_id( );
+               p_impl->last_tran_id = bt.get_last_tran_id( );
 
-               match_iter = ap_btree->lower_bound( tmp_item );
-               if( match_iter == ap_btree->end( ) )
+               match_iter = bt.lower_bound( tmp_item );
+               if( match_iter == bt.end( ) )
                   break;
             }
          }
