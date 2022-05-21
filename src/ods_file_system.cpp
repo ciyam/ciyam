@@ -336,11 +336,11 @@ typedef bt_transaction< ofs_object, less< ofs_object >, btree_node_type, btree_n
 
 struct ods_file_system::impl
 {
-   impl( ods& o ) : bt( o ), last_tran_id( 0 ) { }
+   impl( ods& o ) : bt( o ), next_transaction_id( 0 ) { }
 
    btree_type bt;
 
-   int64_t last_tran_id;
+   int64_t next_transaction_id;
 };
 
 ods_file_system::ods_file_system( ods& o, int64_t i )
@@ -357,14 +357,14 @@ ods_file_system::ods_file_system( ods& o, int64_t i )
       bt.set_id( i );
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
    else
    {
       bt.set_items_per_node( c_ofs_items_per_node );
       o << bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 }
 
@@ -459,11 +459,11 @@ string ods_file_system::determine_folder( const string& folder, ostream* p_os, b
          if( !o.is_bulk_locked( ) )
             ap_bulk.reset( new ods::bulk_read( o ) );
 
-         if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+         if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
          {
             o >> bt;
 
-            p_impl->last_tran_id = bt.get_last_tran_id( );
+            p_impl->next_transaction_id = o.get_next_transaction_id( );
          }
 
          btree_type::item_type tmp_item;
@@ -687,11 +687,11 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
       btree_type::iterator tmp_iter;
       btree_type::item_type tmp_item;
 
-      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
       {
          o >> bt;
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
 
       auto_ptr< ods::transaction > ap_ods_tx;
@@ -775,7 +775,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
             if( ap_ods_tx.get( ) )
                ap_ods_tx->commit( );
 
-            p_impl->last_tran_id = bt.get_last_tran_id( );
+            p_impl->next_transaction_id = o.get_next_transaction_id( );
          }
       }
    }
@@ -802,11 +802,11 @@ void ods_file_system::get_file( const string& name,
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::iterator tmp_iter;
@@ -852,11 +852,11 @@ bool ods_file_system::has_file( const string& name, bool is_prefix, string* p_su
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::item_type tmp_item;
@@ -902,11 +902,11 @@ string ods_file_system::last_file_name_with_prefix( const string& prefix )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::item_type tmp_item;
@@ -959,11 +959,11 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
       {
          o >> bt;
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
 
       btree_type::iterator tmp_iter;
@@ -1057,7 +1057,7 @@ void ods_file_system::link_file( const string& name, const string& source, ostre
                if( ap_ods_tx.get( ) )
                   ap_ods_tx->commit( );
 
-               p_impl->last_tran_id = bt.get_last_tran_id( );
+               p_impl->next_transaction_id = o.get_next_transaction_id( );
             }
          }
       }
@@ -1088,11 +1088,11 @@ void ods_file_system::move_file( const string& name, const string& destination, 
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
       {
          o >> bt;
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
 
       btree_type::iterator tmp_iter;
@@ -1212,7 +1212,7 @@ void ods_file_system::move_file( const string& name, const string& destination, 
                   if( ap_ods_tx.get( ) )
                      ap_ods_tx->commit( );
 
-                  p_impl->last_tran_id = bt.get_last_tran_id( );
+                  p_impl->next_transaction_id = o.get_next_transaction_id( );
                }
             }
          }
@@ -1245,11 +1245,11 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    auto_ptr< ods::transaction > ap_ods_tx;
@@ -1265,7 +1265,7 @@ void ods_file_system::remove_file( const string& name, ostream* p_os, progress* 
       if( ap_ods_tx.get( ) )
          ap_ods_tx->commit( );
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 }
 
@@ -1283,11 +1283,11 @@ void ods_file_system::replace_file( const string& name, const string& source, os
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o, p_progress ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::iterator tmp_iter;
@@ -1394,7 +1394,7 @@ void ods_file_system::replace_file( const string& name, const string& source, os
       if( ap_ods_tx.get( ) )
          ap_ods_tx->commit( );
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 }
 
@@ -1473,11 +1473,11 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
       if( !o.is_bulk_locked( ) )
          ap_bulk.reset( new ods::bulk_write( o ) );
 
-      if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+      if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
       {
          o >> bt;
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
 
       btree_type::iterator tmp_iter;
@@ -1577,7 +1577,7 @@ void ods_file_system::add_folder( const string& name, ostream* p_os )
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
    }
 }
@@ -1591,11 +1591,11 @@ bool ods_file_system::has_folder( const string& name )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    string full_name( current_folder );
@@ -1631,11 +1631,11 @@ void ods_file_system::move_folder( const string& name, const string& destination
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::iterator tmp_iter;
@@ -1730,7 +1730,7 @@ void ods_file_system::move_folder( const string& name, const string& destination
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
    }
 }
@@ -1746,11 +1746,11 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    auto_ptr< ods::transaction > ap_ods_tx;
@@ -1815,7 +1815,7 @@ void ods_file_system::remove_folder( const string& name, ostream* p_os, bool rem
          if( ap_ods_tx.get( ) )
             ap_ods_tx->commit( );
 
-         p_impl->last_tran_id = bt.get_last_tran_id( );
+         p_impl->next_transaction_id = o.get_next_transaction_id( );
       }
    }
 }
@@ -1829,11 +1829,11 @@ void ods_file_system::rebuild_index( )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_write( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    ods::transaction tx( o );
@@ -1842,7 +1842,7 @@ void ods_file_system::rebuild_index( )
 
    tx.commit( );
 
-   p_impl->last_tran_id = bt.get_last_tran_id( );
+   p_impl->next_transaction_id = o.get_next_transaction_id( );
 }
 
 void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
@@ -1854,11 +1854,11 @@ void ods_file_system::dump_node_data( const string& file_name, ostream* p_os )
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    if( file_name.length( ) )
@@ -1893,11 +1893,11 @@ void ods_file_system::perform_match(
    if( !o.is_bulk_locked( ) )
       ap_bulk.reset( new ods::bulk_read( o ) );
 
-   if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+   if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
    {
       o >> bt;
 
-      p_impl->last_tran_id = bt.get_last_tran_id( );
+      p_impl->next_transaction_id = o.get_next_transaction_id( );
    }
 
    btree_type::iterator match_iter;
@@ -1998,10 +1998,10 @@ void ods_file_system::perform_match(
 
             ap_bulk->pause( );
 
-            if( p_impl->last_tran_id != bt.get_last_tran_id( ) )
+            if( p_impl->next_transaction_id != o.get_next_transaction_id( ) )
             {
                o >> bt;
-               p_impl->last_tran_id = bt.get_last_tran_id( );
+               p_impl->next_transaction_id = o.get_next_transaction_id( );
 
                match_iter = bt.lower_bound( tmp_item );
                if( match_iter == bt.end( ) )

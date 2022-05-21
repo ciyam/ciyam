@@ -326,6 +326,8 @@ template< typename T, typename L > read_stream& operator >>( read_stream& rs, st
     >> s.state.root_node >> s.state.lft_leaf_node >> s.state.rgt_leaf_node
     >> s.state.free_list_node >> s.state.first_append_node >> s.state.current_append_node;
 
+   s.get_node_manager( ).reset( );
+
    s.get_node_manager( ).set_items_per_node( items_per_node );
 
    return rs;
