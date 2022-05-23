@@ -3988,7 +3988,7 @@ bool timezones_file_has_changed( )
    return changed;
 }
 
-size_t g_trace_flags;
+unsigned g_trace_flags;
 
 string instance_op_name( instance_op op )
 {
@@ -4052,12 +4052,12 @@ string instance_op_name( class_base::op_type op )
 
 }
 
-size_t get_trace_flags( )
+unsigned get_trace_flags( )
 {
    return g_trace_flags;
 }
 
-void set_trace_flags( size_t flags )
+void set_trace_flags( unsigned flags )
 {
    g_trace_flags = flags;
 }
@@ -4086,7 +4086,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "peer_ops" ); // TRACE_PEER_OPS
 }
 
-void log_trace_message( int flag, const string& message )
+void log_trace_message( unsigned flag, const string& message )
 {
    guard g( g_trace_mutex );
 
@@ -4167,7 +4167,7 @@ void log_trace_message( int flag, const string& message )
     << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
 }
 
-void log_trace_string( int flag, const char* p_message )
+void log_trace_string( unsigned flag, const char* p_message )
 {
    log_trace_message( flag, p_message );
 }
@@ -6387,38 +6387,17 @@ void add_peer_file_hash_for_get( const string& hash,
    }
 }
 
-void store_repository_entry_record( const string& key,
- const string& local_hash, const string& local_public_key, const string& master_public_key )
+bool has_repository_entry_record( const string& key )
 {
-   auto_ptr< ods::bulk_write > ap_bulk_write;
+   auto_ptr< ods::bulk_read > ap_bulk_read;
    if( !gap_ods->is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+      ap_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
 
    scoped_ods_instance ods_instance( *gap_ods );
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
-   try
-   {
-      stringstream sio_data;
-      sio_writer writer( sio_data );
-
-      writer.write_attribute( c_attribute_local_hash, local_hash );
-      writer.write_attribute( c_attribute_local_public_key, local_public_key );
-      writer.write_attribute( c_attribute_master_public_key, master_public_key );
-
-      writer.finish_sections( );
-
-      gap_ofs->store_file( key, 0, &sio_data );
-   }
-   catch( exception& x )
-   {
-      throw runtime_error( x.what( ) + string( " when storing " ) + key );
-   }
-   catch( ... )
-   {
-      throw runtime_error( "unexpected error occurred when storing " + key );
-   }
+   return gap_ofs->has_file( key );
 }
 
 bool fetch_repository_entry_record( const string& key,
@@ -6458,6 +6437,40 @@ bool fetch_repository_entry_record( const string& key,
    return true;
 }
 
+void store_repository_entry_record( const string& key,
+ const string& local_hash, const string& local_public_key, const string& master_public_key )
+{
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   try
+   {
+      stringstream sio_data;
+      sio_writer writer( sio_data );
+
+      writer.write_attribute( c_attribute_local_hash, local_hash );
+      writer.write_attribute( c_attribute_local_public_key, local_public_key );
+      writer.write_attribute( c_attribute_master_public_key, master_public_key );
+
+      writer.finish_sections( );
+
+      gap_ofs->store_file( key, 0, &sio_data );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " when storing " ) + key );
+   }
+   catch( ... )
+   {
+      throw runtime_error( "unexpected error occurred when storing " + key );
+   }
+}
+
 bool destroy_repository_entry_record( const string& key, bool must_exist )
 {
    auto_ptr< ods::bulk_write > ap_bulk_write;
@@ -6472,6 +6485,8 @@ bool destroy_repository_entry_record( const string& key, bool must_exist )
       return false;
 
    gap_ofs->remove_file( key );
+
+   return true;
 }
 
 string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
