@@ -1421,7 +1421,7 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total,
             if( !recurse )
                continue;
 
-            if( !has_repository_entry_record( next_hash ) && is_list_file( next_hash ) )
+            if( has_file( next_hash ) && is_list_file( next_hash ) )
                file_list_item_pos( next_hash, total, item_hash, item_pos, recurse, p_progress, p_dtm );
          }
       }
