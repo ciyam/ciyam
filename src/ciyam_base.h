@@ -37,22 +37,22 @@ class ods_file_system;
 
 struct progress;
 
-#  define TRACE_COMMANDS   0x00000001
-#  define TRACE_SQLSTMTS   0x00000002
-#  define TRACE_CLASSOPS   0x00000004
-#  define TRACE_MODS_GEN   0x00000008
-#  define TRACE_SQLCLSET   0x00000010
-#  define TRACE_FLD_VALS   0x00000020
-#  define TRACE_LOCK_OPS   0x00000040
-#  define TRACE_CTR_DTRS   0x00000080
-#  define TRACE_SESSIONS   0x00000100
-#  define TRACE_MAIL_OPS   0x00000200
-#  define TRACE_PDF_VALS   0x00000400
-#  define TRACE_SOCK_OPS   0x00000800
-#  define TRACE_CORE_FLS   0x00001000
-#  define TRACE_SYNC_OPS   0x00002000
-#  define TRACE_PEER_OPS   0x00004000
-#  define TRACE_ANYTHING   0x7fffffff
+#  define TRACE_COMMANDS   0x00000001U
+#  define TRACE_SQLSTMTS   0x00000002U
+#  define TRACE_CLASSOPS   0x00000004U
+#  define TRACE_MODS_GEN   0x00000008U
+#  define TRACE_SQLCLSET   0x00000010U
+#  define TRACE_FLD_VALS   0x00000020U
+#  define TRACE_LOCK_OPS   0x00000040U
+#  define TRACE_CTR_DTRS   0x00000080U
+#  define TRACE_SESSIONS   0x00000100U
+#  define TRACE_MAIL_OPS   0x00000200U
+#  define TRACE_PDF_VALS   0x00000400U
+#  define TRACE_SOCK_OPS   0x00000800U
+#  define TRACE_CORE_FLS   0x00001000U
+#  define TRACE_SYNC_OPS   0x00002000U
+#  define TRACE_PEER_OPS   0x00004000U
+#  define TRACE_ANYTHING   0xffffffffU
 
 #  define IF_IS_TRACING( flags )\
 if( get_trace_flags( ) & ( flags ) )
@@ -63,8 +63,8 @@ if( ( flag == TRACE_ANYTHING ) || ( get_trace_flags( ) & flag ) )\
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_ANYTHING, message )
 
-size_t CIYAM_BASE_DECL_SPEC get_trace_flags( );
-void CIYAM_BASE_DECL_SPEC set_trace_flags( size_t flags );
+unsigned CIYAM_BASE_DECL_SPEC get_trace_flags( );
+void CIYAM_BASE_DECL_SPEC set_trace_flags( unsigned flags );
 
 extern "C" void CIYAM_BASE_DECL_SPEC trace_flags( unsigned flags );
 
@@ -72,11 +72,11 @@ typedef void ( *fp_trace_flags )( unsigned );
 
 void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_names );
 
-void CIYAM_BASE_DECL_SPEC log_trace_message( int flag, const std::string& message );
+void CIYAM_BASE_DECL_SPEC log_trace_message( unsigned flag, const std::string& message );
 
-extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( int flag, const char* p_message );
+extern "C" void CIYAM_BASE_DECL_SPEC log_trace_string( unsigned flag, const char* p_message );
 
-typedef void ( *fp_log_trace_string )( int, const char* );
+typedef void ( *fp_log_trace_string )( unsigned, const char* );
 
 class CIYAM_BASE_DECL_SPEC trace_mutex : public mutex
 {
@@ -406,11 +406,13 @@ void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash,
  bool check_for_supporters = false, bool add_at_front = false, const std::string* p_hash_to_remove = 0 );
 
-void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
- const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
+bool CIYAM_BASE_DECL_SPEC has_repository_entry_record( const std::string& key );
 
 bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& key,
  std::string& local_hash, std::string& local_public_key, std::string& master_public_key, bool must_exist = true );
+
+void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
+ const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
 
 bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record( const std::string& key, bool must_exist = true );
 

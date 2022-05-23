@@ -1379,6 +1379,11 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total,
    if( has_tag( tag_or_hash ) )
       hash = tag_file_hash( tag_or_hash );
 
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
    if( is_list_file( hash ) )
    {
       string all_list_items( extract_file( hash, "" ) );
@@ -1416,7 +1421,7 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total,
             if( !recurse )
                continue;
 
-            if( is_list_file( next_hash ) )
+            if( !has_repository_entry_record( next_hash ) && is_list_file( next_hash ) )
                file_list_item_pos( next_hash, total, item_hash, item_pos, recurse, p_progress, p_dtm );
          }
       }
