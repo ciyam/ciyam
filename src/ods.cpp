@@ -3924,6 +3924,32 @@ void ods::truncate_log( const char* p_ext )
    p_impl->force_write_header_file_info( );
 }
 
+void ods::clear_cache_statistics( )
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   p_impl->rp_ods_data_cache_buffer->clear_statistics( );
+   p_impl->rp_ods_index_cache_buffer->clear_statistics( );
+}
+
+string ods::get_cache_hit_ratios( ) const
+{
+   guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
+
+   string retval( "data: " );
+   retval += to_string( p_impl->rp_ods_data_cache_buffer->get_item_hit_ratio( ) * 100.0 ) + "%";
+
+   retval += ", index: " + to_string( p_impl->rp_ods_index_cache_buffer->get_item_hit_ratio( ) * 100.0 ) + "%";
+
+   return retval;
+}
+
 void ods::dump_file_info( ostream& os, bool omit_dtms ) const
 {
    guard lock_impl( *p_impl->rp_impl_lock );
@@ -3971,6 +3997,9 @@ void ods::dump_file_info( ostream& os, bool omit_dtms ) const
 void ods::dump_free_list( ostream& os )
 {
    guard lock_impl( *p_impl->rp_impl_lock );
+
+   if( !okay )
+      THROW_ODS_ERROR( "database instance in bad state" );
 
    ods_index_entry index_entry;
 
