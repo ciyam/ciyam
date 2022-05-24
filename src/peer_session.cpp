@@ -1873,7 +1873,11 @@ bool socket_command_handler::chk_file( const string& hash_or_tag, string* p_resp
          if( is_condemned_session( ) )
             throw runtime_error( "peer session has been condemned" );
 
-         set_session_progress_output( response.substr( strlen( c_response_message_prefix ) ) );
+         response.erase( 0, strlen( c_response_message_prefix ) );
+
+         if( response != "." )
+            set_session_progress_output( response );
+
          continue;
       }
 
@@ -1962,6 +1966,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
+   string queue_touch_files_name( get_special_var_name( e_special_var_queue_touch_files ) );
+
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_zenith_hash_name( get_special_var_name( e_special_var_blockchain_zenith_hash ) );
@@ -1993,6 +1999,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
    }
 
+   bool touched_support_files = false;
+
+   if( is_for_support && has_session_variable( queue_touch_files_name ) )
+   {
+      touched_support_files = true;
+      touch_queued_files( queue_touch_files_name, identity, 1, false );
+   }
+
    // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
    for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
    {
@@ -2003,11 +2017,12 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          next_hash_to_put = top_next_peer_file_hash_to_put(
           ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
 
-      if( is_for_support
+      if( is_for_support && !touched_support_files
        && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
          msleep( c_support_session_sleep_time );
 
-      if( !is_for_support || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
+      if( !is_for_support || touched_support_files
+       || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
          break;
    }
 
@@ -2048,9 +2063,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
          else
          {
-            string queue_touch_files_name(
-             get_special_var_name( e_special_var_queue_touch_files ) );
-
             // NOTE: Touch as many files as possible within two seconds
             // so as to ensure that the connected peer doesn't time out.
             if( has_session_variable( queue_touch_files_name ) )
@@ -3122,7 +3134,10 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
 
             if( pos == 0 )
             {
-               set_session_progress_output( response.substr( strlen( c_response_message_prefix ) ) );
+               response.erase( 0, strlen( c_response_message_prefix ) );
+
+               if( response != "." )
+                  set_session_progress_output( response );
 
                continue;
             }
@@ -3195,7 +3210,10 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
                if( is_condemned_session( ) )
                   throw runtime_error( "peer session has been condemned" );
 
-               set_session_progress_output( cmd_and_args.substr( strlen( c_response_message_prefix ) ) );
+               cmd_and_args.erase( 0, strlen( c_response_message_prefix ) );
+
+               if( cmd_and_args != "." )
+                  set_session_progress_output( cmd_and_args );
 
                cmd_and_args.erase( );
                continue;
@@ -3744,8 +3762,8 @@ void peer_session::on_start( )
       string queue_touch_files_name(
        get_special_var_name( e_special_var_queue_touch_files ) );
 
-      if( has_session_variable( queue_touch_files_name ) )
-         touch_queued_files( queue_touch_files_name, identity, 0, false );
+      while( has_session_variable( queue_touch_files_name ) )
+         touch_queued_files( queue_touch_files_name, identity, 3, false );
 
       if( was_initialised )
       {

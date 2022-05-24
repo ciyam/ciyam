@@ -1965,6 +1965,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_stats )
          response = get_file_stats( );
+      else if( command == c_cmd_ciyam_session_file_touch )
+      {
+         string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_touch_hash ) );
+         string archive( get_parm_val( parameters, c_cmd_ciyam_session_file_touch_archive ) );
+
+         touch_file( hash, archive, !archive.empty( ) );
+      }
       else if( command == c_cmd_ciyam_session_file_resync )
       {
          bool remove_invalid_tags( has_parm_val( parameters, c_cmd_ciyam_session_file_resync_remove_invalid_tags ) );

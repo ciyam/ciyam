@@ -2323,6 +2323,8 @@ void touch_file( const string& hash,
 void touch_queued_files( const string& queue_var_name,
  const string& archive, size_t max_seconds, bool set_archive_path )
 {
+   guard g( g_mutex );
+
    string old_archive_path;
 
    date_time dtm( date_time::local( ) );
@@ -3884,9 +3886,14 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
       int64_t limit = 0;
       string status_info;
 
-      ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
-      ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
-      ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+      if( !minimal || min_avail )
+         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+      if( !minimal )
+      {
+         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+         ods_fs.fetch_from_text_file( c_file_archive_status_info, status_info );
+      }
 
       if( min_avail <= 0 || avail >= min_avail )
       {
@@ -3928,7 +3935,7 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
    string archive_found;
 
-   if( has_file_been_archived( file_hash, &archive_found ) && archive == archive_found )
+   if( has_file_been_archived( file_hash, &archive_found ) && ( archive == archive_found ) )
       touch_file_in_archive( file_hash, archive );
    else
    {
@@ -4281,12 +4288,6 @@ bool touch_file_in_archive( const string& hash, const string& archive )
 
    bool retval = false;
 
-   regex expr( c_regex_hash_256 );
-
-   if( expr.search( hash ) == string::npos )
-      // FUTURE: This message should be handled as a server string message.
-      throw runtime_error( "Invalid file hash '" + hash + "'." );
-
    vector< string > paths;
    vector< string > archives;
 
@@ -4294,7 +4295,25 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    if( !system_ods_instance( ).is_bulk_locked( ) )
       ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-   string all_archives( list_file_archives( true, &paths ) );
+   string all_archives;
+
+   if( !archive.empty( ) )
+   {
+      // NOTE: If "@blockchain_archive_path" has been set then can avoid
+      // calling "list_file_archives" to provide significant performance
+      // improvement for "touch_queued_files".
+      string archive_path( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ) ) );
+
+      if( !archive_path.empty( ) )
+      {
+         all_archives = archive;
+         paths.push_back( archive_path );
+      }
+   }
+
+   if( all_archives.empty( ) )
+      all_archives = list_file_archives( true, &paths );
 
    auto_ptr< ods::transaction > ap_ods_tx;
    if( !system_ods_instance( ).is_in_transaction( ) )

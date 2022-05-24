@@ -13,6 +13,7 @@ file_tags "extract tags from a list tree or list files area tags for either mult
 file_test "send/recv a number of test datagrams" [<opt/-content/content>]<val//num_packets>
 file_crypt "encrypt/decrypt one or more files in the files area" [<opt/-recrypt/recrypt>][<opt/-recurse/recurse>[<opt/-blobs_only/blobs_only>|<opt/-blobs_only_repo/blobs_only_repo>]]<val//tag_or_hash><val//password>[<val/-k=/pubkey>]
 file_stats "get files area stats"
+file_touch "touch a file in the files area or in an archive" <val//hash>[<val//archive>]
 file_resync "resync files area info" [<opt/-remove_invalid_tags/remove_invalid_tags>]
 file_archive "add/remove/repair/destroy a file archive" {<opt/-add/add><val//path><val//size_limit>}|<opt/-remove/remove>|<opt/-repair/repair>|<opt/-destroy/destroy><val//name>
 file_archives "list file archives and optionally update status information" [<opt/-min/minimal>|{<opt/-status_update/update_status>[<val//name>]}]
