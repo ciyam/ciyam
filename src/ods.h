@@ -650,6 +650,10 @@ class ODS_DECL_SPEC ods
 
    void truncate_log( const char* p_ext = 0 );
 
+   void clear_cache_statistics( );
+
+   std::string get_cache_hit_ratios( ) const;
+
    void dump_file_info( std::ostream& os, bool omit_dtms = false ) const;
 
    void dump_free_list( std::ostream& os );

@@ -94,7 +94,12 @@ void export_objects( ods_file_system& ofs, const string& directory, ostream* p_o
       string next( files[ i ] );
 
       if( p_os )
-         *p_os << directory << ofs.get_folder( ) << '/' << next;
+      {
+         if( !level )
+            *p_os << directory << '/' << next;
+         else
+            *p_os << directory << ofs.get_folder( ) << '/' << next;
+      }
 
       ofs.get_file( next, next, p_os, false, p_progress );
 

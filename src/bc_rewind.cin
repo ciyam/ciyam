@@ -1,0 +1,67 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+ERROR=
+@ifeq "$1" ""
+ERROR=1
+@endif
+@ifeq "$2" ""
+ERROR=1
+@endif
+;
+@ifeq "$ERROR" "1"
+#Usage: bc_rewind.cin <ident> <height>
+@else
+IDENT=$1
+HEIGHT=$2
+;
+.file_info -content bc.$IDENT.zenith
+@ifndef $ERROR
+BLK_HDR=%OUTPUT:2%
+BLK_INFO=@repstr:,i=$IDENT/:$BLK_HDR
+INFO_LINES=@repstr:,/\n:$BLK_INFO
+HEIGHT_INFO=%INFO_LINES:1%
+BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
+;
+.file_info -content bc.$IDENT.$HEIGHT.blk
+@ifndef $ERROR
+;
+@:LOOP
+;
+@label NEXT
+@ifeq $BLK_HEIGHT $HEIGHT
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+@label NEXT2
+LAST_HEIGHT=$BLK_HEIGHT
+BLK_HEIGHT=@$BLK_HEIGHT-1
+.file_hash bc.$IDENT.$BLK_HEIGHT.blk 
+@ifdef $ERROR
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT2
+.file_tag $OUTPUT bc.$IDENT.zenith
+;
+.file_kill bc.$IDENT.$LAST_HEIGHT.blk
+.file_kill bc.$IDENT.$LAST_HEIGHT.dat
+.file_kill bc.$IDENT.p$LAST_HEIGHT.pub
+;
+.file_kill -q bc.$IDENT.$BLK_HEIGHT.sig
+.file_kill -q bc.$IDENT.p$LAST_HEIGHT.key
+;
+!!@:LOOP
+;
+@:DONE
+;
+@endif
+@endif
+@endif
