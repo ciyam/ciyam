@@ -461,6 +461,15 @@ file_archive -destroy test1
 ~rmdir test1
 ~rmdir test2
 ~rmdir test3
+session_variable @dummy_time_stamp 20170313080010
+file_put test1.jpg
+session_variable @dummy_time_stamp 20170313080011
+file_hash ts.20170313080010
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
+file_touch $OUTPUT
+file_hash ts.20170313080011
+b789eb5b80f6a8fbe9659c8d6ed04222280aa790efb7fe9e972ef8f1ede08cc9
+file_kill $OUTPUT
 file_put test1.jpg test1.jpg
 file_put test2.jpg test2.jpg
 file_raw list test1.jpg,test2.jpg test.1
