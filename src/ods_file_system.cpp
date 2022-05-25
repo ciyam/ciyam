@@ -830,7 +830,7 @@ void ods_file_system::get_file( const string& name,
       scoped_ods_instance so( o );
       *tmp_item.get_file( new storable_file_extra( file_name, output_to_stream ? p_os : 0, p_progress ) );
 
-      if( tmp_item.perm_val )
+      if( !output_to_stream && tmp_item.perm_val )
          file_perms( file_name, tmp_item.get_perms( ) );
    }
 }
