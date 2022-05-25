@@ -417,6 +417,7 @@ struct session
    deque< string > deque_items;
 
    map< string, string > variables;
+   map< string, deque< string > > deque_variables;
 
    deque< string > file_hashes_to_get;
    deque< string > file_hashes_to_put;
@@ -6660,27 +6661,29 @@ string get_raw_session_variable( const string& name )
 
    if( gtp_session )
    {
-      if( gtp_session->variables.count( name ) )
+      if( name.find( c_special_variable_queue_prefix ) == 0 )
+      {
+         if( gtp_session->deque_variables.count( name ) )
+         {
+            if( gtp_session->deque_variables[ name ].size( ) )
+            {
+               retval = gtp_session->deque_variables[ name ].front( );
+               gtp_session->deque_variables[ name ].pop_front( );
+            }
+
+            if( !gtp_session->deque_variables[ name ].size( ) )
+               gtp_session->deque_variables.erase( name );
+         }
+      }
+      else if( gtp_session->variables.count( name ) )
       {
          found = true;
          retval = gtp_session->variables[ name ];
-
-         if( name.find( c_special_variable_queue_prefix ) == 0 )
-         {
-            string::size_type pos = retval.find( ',' );
- 
-            if( pos == string::npos )
-               gtp_session->variables.erase( name );
-            else
-            {
-               gtp_session->variables[ name ] = retval.substr( pos + 1 );
-               retval.erase( pos );
-            }
-         }
       }
       else if( name.find_first_of( "?*" ) != string::npos )
       {
          found = true;
+
          map< string, string >::const_iterator ci;
          for( ci = gtp_session->variables.begin( ); ci != gtp_session->variables.end( ); ++ci )
          {
@@ -6689,6 +6692,21 @@ string get_raw_session_variable( const string& name )
                if( !retval.empty( ) )
                   retval += "\n";
                retval += ci->first + ' ' + ci->second;
+            }
+         }
+
+         map< string, deque< string > >::const_iterator dci;
+         for( dci = gtp_session->deque_variables.begin( ); dci != gtp_session->deque_variables.end( ); ++dci )
+         {
+            if( wildcard_match( name, dci->first ) )
+            {
+               if( !retval.empty( ) )
+                  retval += "\n";
+
+               retval += dci->first + ' ' + dci->second.front( );
+
+               if( dci->second.size( ) > 1 )
+                  retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
             }
          }
       }
@@ -6816,10 +6834,6 @@ void set_session_variable( const string& name,
       if( gtp_session->variables.count( name ) )
          old_val = gtp_session->variables[ name ];
 
-      if( !val.empty( ) && !old_val.empty( )
-       && ( name.find( c_special_variable_queue_prefix ) == 0 ) )
-         val = old_val + ',' + val;
-
       if( val == get_special_var_name( e_special_var_increment )
        || val == get_special_var_name( e_special_var_decrement ) )
       {
@@ -6837,11 +6851,11 @@ void set_session_variable( const string& name,
             val = to_string( num_value );
       }
 
-      bool skip_actual_variable = false;
+      bool skip_standard_variable = false;
 
       if( name == get_special_var_name( e_special_var_set ) )
       {
-         skip_actual_variable = true;
+         skip_standard_variable = true;
 
          if( val.empty( ) )
             gtp_session->set_items.clear( );
@@ -7105,7 +7119,7 @@ void set_session_variable( const string& name,
       }
       else if( name == get_special_var_name( e_special_var_deque ) )
       {
-         skip_actual_variable = true;
+         skip_standard_variable = true;
 
          if( val.empty( ) )
             gtp_session->deque_items.clear( );
@@ -7219,8 +7233,17 @@ void set_session_variable( const string& name,
                gtp_session->deque_items.push_front( val.substr( pos + 1 ) );
          }
       }
+      else if( name.find( c_special_variable_queue_prefix ) == 0 )
+      {
+         skip_standard_variable = true;
 
-      if( !skip_actual_variable )
+         if( val.empty( ) )
+            gtp_session->deque_variables.erase( name );
+         else
+            gtp_session->deque_variables[ name ].push_back( val );
+      }
+
+      if( !skip_standard_variable )
       {
          if( val.empty( ) )
          {

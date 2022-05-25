@@ -696,7 +696,7 @@ size_t process_put_file( const string& blockchain,
 }
 
 bool has_all_list_items( const string& hash, bool recurse,
- bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0 )
+ bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_total_processed = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -704,6 +704,13 @@ bool has_all_list_items( const string& hash, bool recurse,
    split( all_list_items, list_items, '\n' );
 
    bool retval = true;
+
+   size_t total_processed = 0;
+
+   if( !p_total_processed )
+      p_total_processed = &total_processed;
+
+   system_ods_bulk_read ods_bulk_read;
 
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
@@ -717,13 +724,15 @@ bool has_all_list_items( const string& hash, bool recurse,
 
          if( elapsed >= 2 )
          {
-            string progress( "Processed " + to_string( i ) + " items..." );
+            string progress( "Processed " + to_string( *p_total_processed ) + " items..." );
 
             *p_dtm = now;
 
             p_progress->output_progress( progress );
          }
       }
+
+      ++( *p_total_processed );
 
       if( !next_item.empty( ) )
       {
@@ -733,10 +742,7 @@ bool has_all_list_items( const string& hash, bool recurse,
          bool has_next_repo_entry = false;
 
          if( !has_next_file )
-         {
-            string dummy;
-            has_next_repo_entry = fetch_repository_entry_record( next_hash, dummy, dummy, dummy, false );
-         }
+            has_next_repo_entry = has_repository_entry_record( next_hash );
 
          if( !has_next_file && !has_next_repo_entry )
          {
@@ -745,7 +751,7 @@ bool has_all_list_items( const string& hash, bool recurse,
          }
          else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
          {
-            retval = has_all_list_items( next_hash, recurse, touch_all_lists, p_dtm, p_progress );
+            retval = has_all_list_items( next_hash, recurse, touch_all_lists, p_dtm, p_progress, p_total_processed );
 
             if( !retval )
                break;
@@ -3762,8 +3768,16 @@ void peer_session::on_start( )
       string queue_touch_files_name(
        get_special_var_name( e_special_var_queue_touch_files ) );
 
-      while( has_session_variable( queue_touch_files_name ) )
-         touch_queued_files( queue_touch_files_name, identity, 3, false );
+      if( has_session_variable( queue_touch_files_name ) )
+      {
+         if( !is_for_support && !has_support_sessions )
+            touch_queued_files( queue_touch_files_name, identity, 0, false );
+         else
+         {
+            while( has_session_variable( queue_touch_files_name ) )
+               touch_queued_files( queue_touch_files_name, identity, 3, false );
+         }
+      }
 
       if( was_initialised )
       {

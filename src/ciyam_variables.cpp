@@ -9,6 +9,8 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
+#  include <deque>
 #  include <iostream>
 #endif
 
@@ -175,6 +177,7 @@ const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockc
 mutex g_mutex;
 
 map< string, string > g_variables;
+map< string, deque< string > > g_deque_variables;
 
 }
 
@@ -877,29 +880,44 @@ string get_raw_system_variable( const string& name )
          {
             if( !retval.empty( ) )
                retval += "\n";
+
             retval += ci->first + ' ' + ci->second;
+         }
+      }
+
+      map< string, deque< string > >::const_iterator dci;
+      for( dci = g_deque_variables.begin( ); dci != g_deque_variables.end( ); ++dci )
+      {
+         if( wildcard_match( var_name, dci->first ) )
+         {
+            if( !retval.empty( ) )
+               retval += "\n";
+
+            retval += dci->first + ' ' + dci->second.front( );
+
+            if( dci->second.size( ) > 1 )
+               retval += " (+" + to_string( dci->second.size( ) - 1 ) + ")";
          }
       }
    }
    else
    {
-      if( g_variables.count( var_name ) )
+      if( var_name.find( c_special_variable_queue_prefix ) == 0 )
       {
-         retval = g_variables[ var_name ];
-
-         if( var_name.find( c_special_variable_queue_prefix ) == 0 )
+         if( g_deque_variables.count( var_name ) )
          {
-            string::size_type pos = retval.find( ',' );
- 
-            if( pos == string::npos )
-               g_variables.erase( var_name );
-            else
+            if( g_deque_variables[ var_name ].size( ) )
             {
-               g_variables[ var_name ] = retval.substr( pos + 1 );
-               retval.erase( pos );
+               retval = g_deque_variables[ var_name ].front( );
+               g_deque_variables[ var_name ].pop_front( );
             }
+
+            if( !g_deque_variables[ var_name ].size( ) )
+               g_deque_variables.erase( var_name );
          }
       }
+      else if( g_variables.count( var_name ) )
+         retval = g_variables[ var_name ];
       else if( var_name == string( c_special_variable_files_area_dir ) )
          retval = string( c_files_directory );
       else if( var_name == string( c_special_variable_ods_cache_hit_ratios ) )
@@ -952,23 +970,30 @@ void set_system_variable( const string& name, const string& value, bool is_init,
          val = to_string( num_value );
    }
 
-   if( !val.empty( ) && ( var_name.find( c_special_variable_queue_prefix ) == 0 ) )
+   // NOTE: All "@queue_" prefixed variables are handled with
+   // deques and their values cannot currently be persisted.
+   if( var_name.find( c_special_variable_queue_prefix ) == 0 )
    {
-      string old_value( g_variables[ var_name ] );
+      if( persist )
+         throw runtime_error( "cannot persist '" + string( c_special_variable_queue_prefix ) + "' prefixed variables" );
 
-      if( !old_value.empty( ) )
-         val = old_value + ',' + val;
+      if( val.empty( ) )
+         g_deque_variables.erase( var_name );
+      else
+         g_deque_variables[ var_name ].push_back( val );
    }
-
-   if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
-      val = string( c_files_directory );
-
-   if( !val.empty( ) )
-      g_variables[ var_name ] = val;
    else
    {
-      if( g_variables.count( var_name ) )
-         g_variables.erase( var_name );
+      if( val.empty( ) && var_name == string( c_special_variable_files_area_dir ) )
+         val = string( c_files_directory );
+
+      if( !val.empty( ) )
+         g_variables[ var_name ] = val;
+      else
+      {
+         if( g_variables.count( var_name ) )
+            g_variables.erase( var_name );
+      }
    }
 
    // NOTE: Do not allow "@os" or "@peer_port" to be persisted.
