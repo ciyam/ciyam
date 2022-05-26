@@ -354,4 +354,3 @@ template< typename T, typename L >
 }
 
 #endif
-
