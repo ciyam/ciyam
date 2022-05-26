@@ -496,12 +496,14 @@ template< typename T > void cache_base< T >::put(
 
    if( temp_read_num == num )
       temp_read_num = c_npos;
+
    if( temp_write_num == num )
       temp_write_num = c_npos;
 
    if( !was_retained || !allow_lazy_writes || prevent_lazy_write )
    {
       perform_store( ap_temp_item->data, num );
+
       if( index != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags &= ~c_flag_for_changed;
    }
@@ -565,6 +567,7 @@ template< typename T > void cache_base< T >::flush( bool mark_as_most_recent )
             ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_unchanged_link = next_used_link;
          }
       }
+
       ( *ap_cache_regions )[ i ].most_recently_unchanged = ( *ap_cache_regions )[ i ].most_recently_used;
       ( *ap_cache_regions )[ i ].least_recently_unchanged = ( *ap_cache_regions )[ i ].least_recently_used;
    }
@@ -643,6 +646,7 @@ template< typename T > void cache_base< T >::set_max_cache_items( unsigned new_m
       char* p_new_buffer = new char[ sizeof( cache_item< T > ) * new_max_cache_items ];
 
       cache_item< T >* p_item = reinterpret_cast< cache_item< T >* >( p_new_buffer );
+
       for( unsigned i = 0; i < regions_in_cache; i++ )
       {
          for( unsigned j = 0; j < items_per_region; j++ )
@@ -781,12 +785,11 @@ template< typename T > void cache_base< T >::unlink_cached_item(
       unsigned prev_used_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link;
       unsigned next_used_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link;
 
-      if( prev_used_link != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          prev_used_link ]->next_used_link = next_used_link;
-      if( next_used_link != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          next_used_link ]->prev_used_link = prev_used_link;
+      if( prev_used_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_used_link ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_used_link ]->next_used_link = next_used_link;
+
+      if( next_used_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_used_link ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_used_link ]->prev_used_link = prev_used_link;
 
       ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link = c_npos;
       ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link = c_npos;
@@ -798,17 +801,14 @@ template< typename T > void cache_base< T >::unlink_cached_item(
          ( *ap_cache_regions )[ index ].least_recently_used = next_used_link;
    }
 
-   unsigned prev_changed_link = ( *( *ap_cache_regions )[
-    index ].ap_cache_items )[ offset ]->prev_changed_link;
-   unsigned next_changed_link = ( *( *ap_cache_regions )[
-    index ].ap_cache_items )[ offset ]->next_changed_link;
+   unsigned prev_changed_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link;
+   unsigned next_changed_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link;
 
-   if( prev_changed_link != c_npos )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       prev_changed_link ]->next_changed_link = next_changed_link;
-   if( next_changed_link != c_npos )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       next_changed_link ]->prev_changed_link = prev_changed_link;
+   if( prev_changed_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_changed_link ] )
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_changed_link ]->next_changed_link = next_changed_link;
+
+   if( next_changed_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_changed_link ] )
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_changed_link ]->prev_changed_link = prev_changed_link;
 
    ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link = c_npos;
    ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link = c_npos;
@@ -819,17 +819,14 @@ template< typename T > void cache_base< T >::unlink_cached_item(
    if( offset == ( *ap_cache_regions )[ index ].least_recently_changed )
       ( *ap_cache_regions )[ index ].least_recently_changed = next_changed_link;
 
-   unsigned prev_unchanged_link = ( *( *ap_cache_regions )[
-    index ].ap_cache_items )[ offset ]->prev_unchanged_link;
-   unsigned next_unchanged_link = ( *( *ap_cache_regions )[
-    index ].ap_cache_items )[ offset ]->next_unchanged_link;
+   unsigned prev_unchanged_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link;
+   unsigned next_unchanged_link = ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link;
 
-   if( prev_unchanged_link != c_npos )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       prev_unchanged_link ]->next_unchanged_link = next_unchanged_link;
-   if( next_unchanged_link != c_npos )
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       next_unchanged_link ]->prev_unchanged_link = prev_unchanged_link;
+   if( prev_unchanged_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_unchanged_link ] )
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ prev_unchanged_link ]->next_unchanged_link = next_unchanged_link;
+
+   if( next_unchanged_link != c_npos && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_unchanged_link ] )
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ next_unchanged_link ]->prev_unchanged_link = prev_unchanged_link;
 
    ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link = c_npos;
    ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link = c_npos;
@@ -848,11 +845,14 @@ template< typename T > void cache_base< T >::link_item_as_most_recent(
    {
       unsigned most_recently_used = ( *ap_cache_regions )[ index ].most_recently_used;
 
-      if( most_recently_used != c_npos )
+      if( most_recently_used != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_used ] )
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_used ]->next_used_link = offset;
+
       ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_used_link = most_recently_used;
 
       ( *ap_cache_regions )[ index ].most_recently_used = offset;
+
       if( ( *ap_cache_regions )[ index ].least_recently_used == c_npos )
          ( *ap_cache_regions )[ index ].least_recently_used = offset;
    }
@@ -865,27 +865,27 @@ template< typename T > void cache_base< T >::link_item_as_most_recent(
 
    if( changed )
    {
-      if( most_recently_changed != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          most_recently_changed ]->next_changed_link = offset;
+      if( most_recently_changed != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_changed ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_changed ]->next_changed_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       offset ]->prev_changed_link = most_recently_changed;
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_changed_link = most_recently_changed;
 
       ( *ap_cache_regions )[ index ].most_recently_changed = offset;
+
       if( ( *ap_cache_regions )[ index ].least_recently_changed == c_npos )
          ( *ap_cache_regions )[ index ].least_recently_changed = offset;
    }
    else
    {
-      if( most_recently_unchanged != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          most_recently_unchanged ]->next_unchanged_link = offset;
+      if( most_recently_unchanged != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_unchanged ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ most_recently_unchanged ]->next_unchanged_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       offset ]->prev_unchanged_link = most_recently_unchanged;
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->prev_unchanged_link = most_recently_unchanged;
 
       ( *ap_cache_regions )[ index ].most_recently_unchanged = offset;
+
       if( ( *ap_cache_regions )[ index ].least_recently_unchanged == c_npos )
          ( *ap_cache_regions )[ index ].least_recently_unchanged = offset;
    }
@@ -898,12 +898,14 @@ template< typename T > void cache_base< T >::link_item_as_least_recent(
    {
       unsigned least_recently_used = ( *ap_cache_regions )[ index ].least_recently_used;
 
-      if( least_recently_used != c_npos )
+      if( least_recently_used != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_used ] )
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_used ]->prev_used_link = offset;
 
       ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_used_link = least_recently_used;
 
       ( *ap_cache_regions )[ index ].least_recently_used = offset;
+
       if( ( *ap_cache_regions )[ index ].most_recently_used == c_npos )
          ( *ap_cache_regions )[ index ].most_recently_used = offset;
    }
@@ -916,27 +918,27 @@ template< typename T > void cache_base< T >::link_item_as_least_recent(
 
    if( changed )
    {
-      if( least_recently_changed != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          least_recently_changed ]->prev_changed_link = offset;
+      if( least_recently_changed != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_changed ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_changed ]->prev_changed_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       offset ]->next_changed_link = least_recently_changed;
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_changed_link = least_recently_changed;
 
       ( *ap_cache_regions )[ index ].least_recently_changed = offset;
+
       if( ( *ap_cache_regions )[ index ].most_recently_changed == c_npos )
          ( *ap_cache_regions )[ index ].most_recently_changed = offset;
    }
    else
    {
-      if( least_recently_unchanged != c_npos )
-         ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-          least_recently_unchanged ]->prev_unchanged_link = offset;
+      if( least_recently_unchanged != c_npos
+       && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_unchanged ] )
+         ( *( *ap_cache_regions )[ index ].ap_cache_items )[ least_recently_unchanged ]->prev_unchanged_link = offset;
 
-      ( *( *ap_cache_regions )[ index ].ap_cache_items )[
-       offset ]->next_unchanged_link = least_recently_unchanged;
+      ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->next_unchanged_link = least_recently_unchanged;
 
       ( *ap_cache_regions )[ index ].least_recently_unchanged = offset;
+
       if( ( *ap_cache_regions )[ index ].most_recently_unchanged == c_npos )
          ( *ap_cache_regions )[ index ].most_recently_unchanged = offset;
    }
@@ -957,6 +959,7 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
       {
          unsigned j = ( *ap_cache_regions )[ i ].least_recently_changed;
          unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+
          if( counter < least_recently_changed_counter )
          {
             least_recently_changed_index = i;
@@ -969,6 +972,7 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
       {
          unsigned j = ( *ap_cache_regions )[ i ].least_recently_unchanged;
          unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+
          if( counter < least_recently_unchanged_counter )
          {
             least_recently_unchanged_index = i;
@@ -984,8 +988,7 @@ template< typename T > void cache_base< T >::free_least_costly_item( )
       free_cache_item( least_recently_changed_index, least_recently_changed_offset );
 }
 
-template< typename T > void cache_base< T >::free_cache_item(
- unsigned index, unsigned offset, bool discard_changes )
+template< typename T > void cache_base< T >::free_cache_item( unsigned index, unsigned offset, bool discard_changes )
 {
    if( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] )
    {
@@ -1021,8 +1024,7 @@ template< typename T > void cache_base< T >::free_cache_item(
    }
 }
 
-template< typename T > bool cache_base< T >::retain_item_in_cache(
- const cache_item< T >& item, unsigned num )
+template< typename T > bool cache_base< T >::retain_item_in_cache( const cache_item< T >& item, unsigned num )
 {
    if( max_cache_items == 0 || items_per_region == 0 || regions_in_cache == 0 )
       return false;
@@ -1032,7 +1034,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
 
    unsigned index = locate_region( region );
 
-   bool region_was_in_cache = index != c_npos;
+   bool region_was_in_cache = ( index != c_npos );
 
    bool is_cached = region_was_in_cache && ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
 
@@ -1041,6 +1043,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
    {
       unsigned region_item_index = c_npos;
       unsigned region_flush_index = c_npos;
+
       unsigned least_region_item_cost = c_mask_for_counter;
       unsigned least_region_flush_cost = c_mask_for_counter;
       unsigned least_region_item_total = c_mask_for_counter;
@@ -1050,6 +1053,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
       unsigned least_recently_changed_offset = c_npos;
       unsigned least_recently_unchanged_index = c_npos;
       unsigned least_recently_unchanged_offset = c_npos;
+
       unsigned least_recently_changed_counter = c_mask_for_counter;
       unsigned least_recently_unchanged_counter = c_mask_for_counter;
 
@@ -1093,8 +1097,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
             if( ( *ap_cache_regions )[ i ].least_recently_changed != c_npos )
             {
                unsigned j = ( *ap_cache_regions )[ i ].least_recently_changed;
-               unsigned counter = ( *( *ap_cache_regions )[
-                i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+               unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
 
                if( counter < least_recently_changed_counter )
                {
@@ -1107,8 +1110,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
             if( ( *ap_cache_regions )[ i ].least_recently_unchanged != c_npos )
             {
                unsigned j = ( *ap_cache_regions )[ i ].least_recently_unchanged;
-               unsigned counter = ( *( *ap_cache_regions )[
-                i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
+               unsigned counter = ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
 
                if( counter < least_recently_unchanged_counter )
                {
@@ -1167,6 +1169,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
    if( ( *ap_cache_regions )[ index ].counter_total + counter + 1 & c_flag_for_changed )
    {
       counter /= 2;
+
       for( unsigned i = 0; i < regions_in_cache; i++ )
       {
          for( unsigned j = 0; j < items_per_region; j++ )
@@ -1179,8 +1182,9 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
                unsigned val = ( *( *ap_cache_regions )[
                 i ].ap_cache_items )[ j ]->flags & c_mask_for_counter;
 
-               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags = val / 2;
+               ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags = ( val / 2 );
                ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags |= changed_flag;
+
                ( *ap_cache_regions )[ i ].counter_total -= val - ( val / 2 );
             }
          }
@@ -1191,15 +1195,13 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
 
    if( is_cached )
    {
-      if( changed_flag && !( ( *( *ap_cache_regions )[
-       index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed ) )
+      if( changed_flag && !( ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed ) )
          ++( *ap_cache_regions )[ index ].flush_cost;
 
       ( *ap_cache_regions )[ index ].counter_total
        -= ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_mask_for_counter;
 
-      changed_flag |= ( *( *ap_cache_regions )[
-       index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed;
+      changed_flag |= ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->flags & c_flag_for_changed;
 
       if( use_placement_new )
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ]->data = item.data;
@@ -1207,10 +1209,10 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
       {
          std::auto_ptr< cache_item< T > > temp_cache_item( new cache_item< T >( item ) );
 
-         temp_cache_item->copy_flags_and_links( *( *( *ap_cache_regions )[
-          index ].ap_cache_items )[ offset ] );
+         temp_cache_item->copy_flags_and_links( *( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] );
 
          delete ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ];
+
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] = temp_cache_item.release( );
       }
    }
@@ -1231,6 +1233,7 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
          ( *( *ap_cache_regions )[ index ].ap_cache_items )[ offset ] = new cache_item< T >( item );
 
       ++( *ap_cache_regions )[ index ].item_cost;
+
       if( changed_flag )
          ++( *ap_cache_regions )[ index ].flush_cost;
    }
@@ -1253,15 +1256,19 @@ template< typename T > bool cache_base< T >::retain_item_in_cache(
 template< typename T > void cache_base< T >::push_item_on_free_list( cache_item< T >* p_item )
 {
    free_list* p_old_free_list = p_free_list;
+
    p_free_list = reinterpret_cast< free_list* >( p_item );
+
    p_free_list->p_next_link = p_old_free_list;
 }
 
 template< typename T > cache_item< T >* cache_base< T >::pop_item_from_free_list( )
 {
    free_list* p_old_free_list = p_free_list;
+
    if( p_old_free_list )
       p_free_list = p_old_free_list->p_next_link;
+
    return reinterpret_cast< cache_item< T >* >( p_old_free_list );
 }
 
@@ -1390,4 +1397,3 @@ template< typename T > void cache_base< T >::dump_cached_item_info( std::ostream
 #  endif
 
 #endif
-

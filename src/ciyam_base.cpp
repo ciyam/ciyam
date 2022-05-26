@@ -7298,7 +7298,9 @@ bool has_session_variable( const string& name )
 
    bool retval = false;
 
-   if( gtp_session && gtp_session->variables.count( name ) )
+   if( gtp_session
+    && ( ( gtp_session->variables.count( name ) )
+    || ( gtp_session->deque_variables.count( name ) ) ) )
       retval = true;
 
    return retval;
@@ -7311,7 +7313,8 @@ bool has_any_session_variable( const string& name )
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ]
-       && g_sessions[ i ]->variables.count( name ) )
+       && ( ( g_sessions[ i ]->variables.count( name ) )
+       || ( g_sessions[ i ]->variables.count( name ) ) ) )
          return true;
    }
 
@@ -7342,7 +7345,8 @@ size_t num_have_session_variable( const string& name )
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ]
-       && g_sessions[ i ]->variables.count( name ) )
+       && ( ( g_sessions[ i ]->variables.count( name ) )
+       || ( g_sessions[ i ]->deque_variables.count( name ) ) ) )
          ++total;
    }
 

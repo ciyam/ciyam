@@ -664,6 +664,7 @@ void ods_file_system::add_file( const string& name, const string& source, ostrea
 
    btree_type& bt( p_impl->bt );
 
+
    if( valid_file_name( name ) != name )
    {
       if( p_os )
