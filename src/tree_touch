@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 1 ]; then
+ echo "Usage: tree_touch [tag or hash]"
+else
+ echo "<<tree_touch.cin $1" >~tree_touch
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_touch
+ rm ~tree_touch
+fi

@@ -17,6 +17,7 @@ ERROR=1
 @ifeq "$ERROR" "1"
 #Usage: bc_gen_keys.cin <seed> <ident> <height>
 @else
+;
 SEED=$1
 IDENT=$2
 HEIGHT=$3
@@ -26,6 +27,7 @@ ENTROPY_HASH_PN=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH_PN
 ;
+.file_kill -q bc.$IDENT.p$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.p$HEIGHT.key
 .file_crypt bc.$IDENT.p$HEIGHT.key @sid
 ;

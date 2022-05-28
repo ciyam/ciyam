@@ -12,10 +12,11 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_rewind.cin <ident> <height>
+#Usage: bc_rewind.cin <ident> <height> [<seed>]
 @else
 IDENT=$1
 HEIGHT=$2
+SEED=$3
 ;
 .file_info -content bc.$IDENT.zenith
 @ifndef $ERROR
@@ -61,6 +62,12 @@ BLK_HEIGHT=@$BLK_HEIGHT-1
 !!@:LOOP
 ;
 @:DONE
+;
+@ifndef $ERROR
+@ifneq "$SEED" ""
+<<bc_gen_keys.cin $SEED $IDENT $HEIGHT
+@endif
+@endif
 ;
 @endif
 @endif

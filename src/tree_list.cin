@@ -4,10 +4,10 @@
 ; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 ;
 @ifndef $1
-#NOTE: The script requires the tag name of the "tree of lists" that is to be recursed.
+#NOTE: This script requires the tag or hash of the "tree list" that is to be recursed.
 @else
 ;
-TAG=$1
+TREE=$1
 DEPTH=$2
 PREFIX=$3
 ;
@@ -16,9 +16,9 @@ DEPTH=2
 @endif
 ;
 @ifndef $PREFIX
-.file_info -recurse -d=$DEPTH $TAG
+.file_info -recurse -d=$DEPTH $TREE
 @else
-.file_info -recurse -d=$DEPTH -p=$PREFIX $TAG
+.file_info -recurse -d=$DEPTH -p=$PREFIX $TREE
 @endif
 ;
 #$OUTPUT
