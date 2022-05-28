@@ -173,13 +173,13 @@ Along with conditional statements the '@' prefix can also be used to identify a 
 to be skipped until a label has been reached. Along with an "execute all history starting from label" command
 this allows CIYAM scripts to perform looping (which can be nested).
 
-The following is an example of a simple loop that will output X, then XX and finally XXX:
+The following is an example of a simple loop that will output the numbers 0 to 9:
 
-I=X
+I=0
 @:LOOP
 ;
 @label NEXT
-@ifeq "$I" "XXXX"
+@ifeq $I 10
 @label DONE
 @endif
 ;
@@ -187,7 +187,7 @@ I=X
 ;
 @:NEXT
 #$I
-I=%I%X
+I=@$I+1
 !!@:LOOP
 ;
 @:DONE
@@ -195,5 +195,5 @@ I=%I%X
 The "@label" command is what determines which commands are skipped over when the "@skip" command is executed.
 And the "!!@:LOOP" special history execute command will scan backwards for the "@:LOOP" label to then execute
 all of the history (including the actual !!@:LOOP command itself) only stopping when the "@skip" command will
-cause the commands to no longer be issued (which is the case when "$I" equals "XXXX" with "@label DONE" being
+cause the commands to no longer be repeated (which is the case when "$I" equals "10" with "@label DONE" being
 conditionally executed causing the "@skip" to ignore the loop waiting for the "@:DONE" label to be reached).
