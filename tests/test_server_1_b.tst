@@ -166,6 +166,12 @@ file_info -recurse -d=999 test
  [blob] 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 (1.0 kB)
 ~test.jpg.000006
  [blob] 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 (715 B)
+file_info -total_blobs test
+7
+file_info -total_items test
+7
+file_info -total_encrypted test
+0
 file_crypt 8f23a8e586d7975095e740da1d43f95cfa057816e1cabddd9e627541a0b6b59d abc
 file_crypt cd60cc9598f0831062978f58f3b2f04582c2a2b7efa7876dd03dcd058f2d8b74 abc
 file_crypt e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 abc
@@ -199,6 +205,12 @@ e60982ce0b124d64f4f8c8cd2ab2b8fd9bd46c1f022aa43f4afd4618bdd056e7 ~test.jpg.00000
 579ad8961e4dc03ebf3965de840ff2eac2b500fde9a144d4f8d67c77ae01e686 ~test.jpg.000004
 096b48069f1b3d0dc3a2b650661e6bbf94a5afe3a1c6694745c4505fcee8e1c2 ~test.jpg.000005
 15515fff444eb94e0d3e0074f4c772a8bed8ec9a01bc40c691122e812adedea7 ~test.jpg.000006
+file_info -total_blobs test
+7
+file_info -total_items test
+7
+file_info -total_encrypted test
+7
 file_crypt -recrypt -recurse -blobs_only test xxx
 file_crypt -recrypt -recurse -blobs_only test xxx
 file_crypt -recurse -blobs_only test abc
