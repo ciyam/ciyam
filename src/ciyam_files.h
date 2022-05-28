@@ -67,8 +67,16 @@ std::string CIYAM_BASE_DECL_SPEC file_type_info(
  bool allow_all_after = true, bool output_total_blob_size = false,
  progress* p_progress = 0, date_time* p_dtm = 0, size_t* p_total = 0 );
 
+enum file_total_type
+{
+   e_file_total_type_all_items,
+   e_file_total_type_blobs_only,
+   e_file_total_type_encrypted_only
+};
+
 void CIYAM_BASE_DECL_SPEC file_list_item_pos(
- const std::string& tag_or_hash, size_t& total, const std::string& item_hash,
+ const std::string& tag_or_hash, size_t& total,
+ file_total_type total_type, const std::string& item_hash,
  size_t& item_pos, bool recurse = false, progress* p_progress = 0, date_time* p_dtm = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC create_raw_file(

@@ -1369,7 +1369,7 @@ string file_type_info( const string& tag_or_hash,
    return retval;
 }
 
-void file_list_item_pos( const string& tag_or_hash, size_t& total,
+void file_list_item_pos( const string& tag_or_hash, size_t& total, file_total_type total_type,
  const string& item_hash, size_t& item_pos, bool recurse, progress* p_progress, date_time* p_dtm )
 {
    guard g( g_mutex );
@@ -1411,7 +1411,8 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total,
 
          if( !next_item.empty( ) )
          {
-            ++total;
+            if( total_type == e_file_total_type_all_items )
+               ++total;
 
             string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
@@ -1421,8 +1422,20 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total,
             if( !recurse )
                continue;
 
-            if( has_file( next_hash ) && is_list_file( next_hash ) )
-               file_list_item_pos( next_hash, total, item_hash, item_pos, recurse, p_progress, p_dtm );
+            bool is_encrypted = false;
+
+            if( has_file( next_hash ) )
+            {
+               if( is_list_file( next_hash, &is_encrypted ) )
+                  file_list_item_pos( next_hash, total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm );
+               else if( total_type != e_file_total_type_all_items )
+               {
+                  if( total_type == e_file_total_type_blobs_only )
+                     ++total;
+                  else if( is_encrypted )
+                     ++total;
+               }
+            }
          }
       }
    }
