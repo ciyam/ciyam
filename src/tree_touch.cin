@@ -1,0 +1,38 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifndef $1
+#NOTE: This script requires the tag or hash of the "tree list" that is to be recursed.
+@else
+;
+TREE=$1
+;
+.file_info -recurse -d=0 $TREE
+@ifndef $ERROR
+;
+session_variable @deque "~$OUTPUT"
+@:LOOP
+;
+@label NEXT
+.session_variable @deque back
+@ifeq "$OUTPUT" ""
+@label DONE
+@endif
+;
+@skip
+;
+@:NEXT
+NEXT_HASH=$OUTPUT
+#$NEXT_HASH
+.file_touch $NEXT_HASH
+;
+session_variable @deque pop_back
+!!@:LOOP
+;
+@:DONE
+;
+@endif
+;
+@endif

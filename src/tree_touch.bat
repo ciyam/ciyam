@@ -1,18 +1,18 @@
 @echo off
-REM Copyright (c) 2019-2022 CIYAM Developers
+REM Copyright (c) 2022 CIYAM Developers
 REM
 REM Distributed under the MIT/X11 software license, please refer to the file license.txt
 REM in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if '%1' == '' goto usage
 
-echo ^<^<tree_list.cin %1 %2 %3 >~tree_list
-ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_list
+echo ^<^<tree_touch.cin %1 >~tree_touch
+ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_touch
 
-del ~tree_list
+del ~tree_touch
 goto end
 
 :usage
-echo Usage: tree_list [tag or hash] [[depth [prefix]]]
+echo Usage: tree_touch [tag or hash]
 
 :end
