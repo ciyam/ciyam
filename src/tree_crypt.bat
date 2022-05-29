@@ -13,6 +13,6 @@ del ~tree_crypt
 goto end
 
 :usage
-echo Usage: tree_crypt [[-repo]] [tag or hash] [[password]]
+echo Usage: tree_crypt [[-repo]|[-repo_decrypt]|[-repo_encrypt]] [tag or hash] [[password]]
 
 :end

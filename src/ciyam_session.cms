@@ -11,7 +11,7 @@ file_kill "remove one or more files from the files area" [<opt/-q/quiet>]<val/-p
 file_list "add or remove items to/from a list file in the files area" [<list/-a=/add_tags>][<list/-d=/del_items>][<opt/-sort/sort>]<val//tag_or_hash>[<val//new_tag>[<val//old_tag>]]
 file_tags "extract tags from a list tree or list files area tags for either multiple wildcard patterns or for a single wildcard pattern or file hash" [{<opt/-extract/extract>[<val/-d=1/depth>][<val/-p=/prefix>]<val//tag_or_hash>}|{<list/-i=/includes>[<list/-x=/excludes>]}|<val//pat_or_hash>]
 file_test "send/recv a number of test datagrams" [<opt/-content/content>]<val//num_packets>
-file_crypt "encrypt/decrypt one or more files in the files area" [<opt/-recrypt/recrypt>][<opt/-recurse/recurse>[<opt/-blobs_only/blobs_only>|<opt/-blobs_only_repo/blobs_only_repo>]]<val//tag_or_hash><val//password>[<val/-k=/pubkey>]
+file_crypt "decrypt/encrypt/recrypt one or more files in the files area" [<opt/-decrypt/decrypt>|<opt/-encrypt/encrypt>|<opt/-recrypt/recrypt>][<opt/-recurse/recurse>[<opt/-blobs_only/blobs_only>|<opt/-blobs_only_repo/blobs_only_repo>]]<val//tag_or_hash><val//password>[<val/-k=/pubkey>]
 file_stats "get files area stats"
 file_touch "touch a file in the files area or in an archive" <val//hash>[<val//archive>]
 file_resync "resync files area info" [<opt/-remove_invalid_tags/remove_invalid_tags>]
