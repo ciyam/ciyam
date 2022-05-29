@@ -1932,6 +1932,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_crypt )
       {
+         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_decrypt ) );
+         bool encrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_encrypt ) );
          bool recrypt( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recrypt ) );
          bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse ) );
          bool blobs_only( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only ) );
@@ -1955,13 +1957,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             date_time dtm( date_time::local( ) );
 
             crypt_target target = e_crypt_target_all;
+            crypt_operation operation = e_crypt_operation_reverse;
+
+            if( decrypt )
+               operation = e_crypt_operation_decrypt;
+            else if( encrypt )
+               operation = e_crypt_operation_encrypt;
+            else if( recrypt )
+               operation = e_crypt_operation_recrypt;
 
             if( blobs_only )
                target = e_crypt_target_blobs_only;
             else if( blobs_only_repo )
                target = e_crypt_target_blobs_only_repo;
 
-            crypt_file( tag_or_hash, password, recurse, target, &handler, &dtm, &total, recrypt );
+            crypt_file( tag_or_hash, password, recurse, target, &handler, &dtm, &total, operation );
          }
          catch( ... )
          {

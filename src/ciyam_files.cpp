@@ -2840,7 +2840,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
 
 void crypt_file( const string& tag_or_hash,
  const string& password, bool recurse, crypt_target target, progress* p_progress,
- date_time* p_dtm, size_t* p_total, bool recrypt, set< string >* p_files_processed )
+ date_time* p_dtm, size_t* p_total, crypt_operation operation, set< string >* p_files_processed )
 {
    string hash( tag_or_hash );
 
@@ -2873,7 +2873,7 @@ void crypt_file( const string& tag_or_hash,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to encrypt file flagged with 'no encrypt'." );
 
-   if( recrypt && recurse && ( target == e_crypt_target_all ) )
+   if( recurse && ( target == e_crypt_target_all ) && ( operation == e_crypt_operation_recrypt ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( "Attempt to recrypt recursively when not 'blobs only'." );
 
@@ -2927,9 +2927,10 @@ void crypt_file( const string& tag_or_hash,
       }
 #endif
 
-      if( ( target == e_crypt_target_all ) || ( file_type == c_file_type_val_blob ) )
+      if( ( operation != e_crypt_operation_decrypt )
+       && ( ( target == e_crypt_target_all ) || ( file_type == c_file_type_val_blob ) ) )
       {
-         if( recrypt )
+         if( operation == e_crypt_operation_recrypt )
             // FUTURE: This message should be handled as a server string message.
             throw runtime_error( "Cannot recrypt the unencrypted file '" + tag_or_hash + "'." );
 
@@ -2952,12 +2953,13 @@ void crypt_file( const string& tag_or_hash,
       if( ( file_type == c_file_type_val_blob )
        && ( target == e_crypt_target_blobs_only_repo ) )
       {
-         string dummy, pub_key;
+         if( !has_repository_entry_record( hash ) )
+         {
+            string pub_key;
+            create_peer_repository_entry_push_info( hash, password, &pub_key, false );
 
-         create_peer_repository_entry_push_info( hash, password, &pub_key, false );
-
-         if( !fetch_repository_entry_record( hash, dummy, dummy, dummy, false ) )
             store_repository_entry_record( hash, "", pub_key, pub_key );
+         }
       }
 
       if( recurse && file_type == c_file_type_val_list )
@@ -2979,75 +2981,82 @@ void crypt_file( const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( next, password, recurse, target,
-                   p_progress, p_dtm, p_total, recrypt, p_files_processed );
+                   p_progress, p_dtm, p_total, operation, p_files_processed );
             }
          }
       }
    }
    else
    {
-      if( recurse && recrypt && ( file_type == c_file_type_val_list ) )
+      if( recurse && ( file_type == c_file_type_val_list ) && ( operation == e_crypt_operation_recrypt ) )
          // FUTURE: This message should be handled as a server string message.
          throw runtime_error( "Invalid recrypt attempted on encrypted list file '" + tag_or_hash + "'" );
 
-      stringstream ss( file_data.substr( 1 ) );
+      string uncompressed_data;
 
-      // NOTE: Use the file content hash as salt.
-      crypt_stream( ss, password + hash );
-
-      file_data.erase( 1 );
-      file_data += ss.str( );
-
-      file_data[ 0 ] &= ~c_file_type_val_encrypted;
-
-      string uncompressed_data( file_data );
-
-      // FUTURE: This message should be handled as a server string message.
-      string bad_hash_error( "Invalid password to decrypt file '" + tag_or_hash + "'." );
-
-      try
+      if( ( file_type == c_file_type_val_list ) || ( operation != e_crypt_operation_encrypt ) )
       {
-#ifdef ZLIB_SUPPORT
-         if( ( is_compressed && file_data.size( ) > 1 ) )
+         stringstream ss( file_data.substr( 1 ) );
+
+         // NOTE: Use the file content hash as salt.
+         crypt_stream( ss, password + hash );
+
+         file_data.erase( 1 );
+         file_data += ss.str( );
+
+         file_data[ 0 ] &= ~c_file_type_val_encrypted;
+
+         uncompressed_data = file_data;
+
+         // FUTURE: This message should be handled as a server string message.
+         string bad_hash_error( "Invalid password to decrypt file '" + tag_or_hash + "'." );
+
+         bool recrypt = ( operation == e_crypt_operation_recrypt );
+
+         try
          {
-            session_file_buffer_access file_buffer;
+#ifdef ZLIB_SUPPORT
+            if( ( is_compressed && file_data.size( ) > 1 ) )
+            {
+               session_file_buffer_access file_buffer;
 
-            unsigned long size = file_data.size( ) - 1;
-            unsigned long usize = file_buffer.get_size( ) - size;
+               unsigned long size = file_data.size( ) - 1;
+               unsigned long usize = file_buffer.get_size( ) - size;
 
-            if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&file_data[ 1 ], size ) != Z_OK )
-               throw runtime_error( bad_hash_error ); // NOTE: Assume it is a bad password rather than a bad uncompress.
+               if( uncompress( ( Bytef * )file_buffer.get_buffer( ), &usize, ( Bytef * )&file_data[ 1 ], size ) != Z_OK )
+                  throw runtime_error( bad_hash_error ); // NOTE: Assume it is a bad password rather than a bad uncompress.
 
-            uncompressed_data = file_data.substr( 0, 1 );
-            uncompressed_data += string( ( const char* )file_buffer.get_buffer( ), usize );
+               uncompressed_data = file_data.substr( 0, 1 );
+               uncompressed_data += string( ( const char* )file_buffer.get_buffer( ), usize );
 
-            validate_hash_with_uncompressed_content( hash,
-             ( unsigned char* )uncompressed_data.data( ), uncompressed_data.length( ), bad_hash_error.c_str( ) );
-         }
+               validate_hash_with_uncompressed_content( hash,
+                ( unsigned char* )uncompressed_data.data( ), uncompressed_data.length( ), bad_hash_error.c_str( ) );
+            }
 #endif
 
-         if( !is_compressed )
-            validate_hash_with_uncompressed_content( hash,
-             ( unsigned char* )file_data.data( ), file_data.length( ), bad_hash_error.c_str( ) );
+            if( !is_compressed )
+               validate_hash_with_uncompressed_content( hash,
+                ( unsigned char* )file_data.data( ), file_data.length( ), bad_hash_error.c_str( ) );
 
-         if( recrypt )
-         {
-            recrypt = false;
-            throw runtime_error( "unexpected recrypt has decrypted (same password as when encrypted?)" );
+            if( operation == e_crypt_operation_recrypt )
+            {
+               recrypt = false;
+               throw runtime_error( "unexpected recrypt has decrypted (same password as when encrypted?)" );
+            }
          }
+         catch( ... )
+         {
+            if( !recrypt )
+               throw;
+
+            // NOTE: Rather than throw the encryption bit is set back on for a recrypt.
+            file_data[ 0 ] |= c_file_type_val_encrypted;
+         }
+
+         write_file( file_name, file_data );
+
+         set_file_type_and_extra( hash, ( unsigned char )file_data[ 0 ] );
       }
-      catch( ... )
-      {
-         if( !recrypt )
-            throw;
-
-         // NOTE: Rather than throw the encryption bit is set back on for a recrypt.
-         file_data[ 0 ] |= c_file_type_val_encrypted;
-      }
-
-      write_file( file_name, file_data );
-
-      set_file_type_and_extra( hash, ( unsigned char )file_data[ 0 ] );
 
       if( recurse && file_type == c_file_type_val_list )
       {
@@ -3068,7 +3077,7 @@ void crypt_file( const string& tag_or_hash,
 
                if( !p_files_processed->count( next ) )
                   crypt_file( next, password, recurse, target,
-                   p_progress, p_dtm, p_total, recrypt, p_files_processed );
+                   p_progress, p_dtm, p_total, operation, p_files_processed );
             }
          }
       }

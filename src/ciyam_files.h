@@ -131,10 +131,18 @@ enum crypt_target
    e_crypt_target_blobs_only_repo
 };
 
+enum crypt_operation
+{
+   e_crypt_operation_decrypt,
+   e_crypt_operation_encrypt,
+   e_crypt_operation_recrypt,
+   e_crypt_operation_reverse
+};
+
 void CIYAM_BASE_DECL_SPEC crypt_file(
  const std::string& tag_or_hash, const std::string& password, bool recurse = false,
  crypt_target target = e_crypt_target_all, progress* p_progress = 0, date_time* p_dtm = 0,
- size_t* p_total = 0, bool recrypt = false, std::set< std::string >* p_files_processed = 0 );
+ size_t* p_total = 0, crypt_operation operation = e_crypt_operation_reverse, std::set< std::string >* p_files_processed = 0 );
 
 void CIYAM_BASE_DECL_SPEC fetch_file( const std::string& hash, tcp_socket& socket, progress* p_progress = 0 );
 
