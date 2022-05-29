@@ -1,24 +1,23 @@
 @ifeq "$1" ""
-#Usage: tree_crypt.cin [:]<tag_or_hash> [<password>]
+#Usage: tree_crypt.cin [-repo] <tag_or_hash> [<password>]
 @else
-@ifneq "$2" ""
+;
+ARGS=
+@ifneq "$1" "-repo"
+TAG_OR_HASH=$1
 ARGS=$2
+OPT=-blobs_only
 @else
+TAG_OR_HASH=$2
+ARGS=$3
+OPT=-blobs_only_repo
+@endif
+;
+@ifeq "$ARGS" ""
 .session_variable @pubkey
 EXT_PUBKEY=$OUTPUT
 DATA_AND_PUBKEY=@password:Enter Password:$EXT_PUBKEY
 ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
-@endif
-;
-TAG_OR_HASH=$1
-;
-PREFIX=@substr:0,1:$TAG_OR_HASH
-;
-@ifneq "$PREFIX" ":"
-OPT=-blobs_only
-@else
-OPT=-blobs_only_repo
-TAG_OR_HASH=@substr:1:$TAG_OR_HASH
 @endif
 ;
 @ifdef $ARGS

@@ -6,13 +6,13 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-echo ^<^<tree_crypt.cin %1 %2 >~tree_crypt
+echo ^<^<tree_crypt.cin %1 %2 %3 >~tree_crypt
 ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_crypt
 
 del ~tree_crypt
 goto end
 
 :usage
-echo Usage: tree_crypt [[:]tag or hash] [[password]]]
+echo Usage: tree_crypt [[-repo]] [tag or hash] [[password]]
 
 :end
