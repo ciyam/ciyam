@@ -36,9 +36,13 @@ std::string CIYAM_BASE_DECL_SPEC get_file_stats( );
 
 void CIYAM_BASE_DECL_SPEC init_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 
+void CIYAM_BASE_DECL_SPEC term_files_area( );
+
 void CIYAM_BASE_DECL_SPEC resync_files_area( progress* p_progress = 0, bool remove_invalid_tags = false );
 
-void CIYAM_BASE_DECL_SPEC term_files_area( );
+void CIYAM_BASE_DECL_SPEC init_archive_info( progress* p_progress = 0 );
+
+void CIYAM_BASE_DECL_SPEC resync_archive_info( progress* p_progress = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC current_time_stamp_tag( bool truncated = false, size_t days_ahead = 0 );
 
@@ -191,7 +195,8 @@ void CIYAM_BASE_DECL_SPEC create_raw_file_in_archive(
 std::string CIYAM_BASE_DECL_SPEC relegate_one_or_num_oldest_files( const std::string& hash,
  const std::string& archive, uint32_t max_files, int64_t max_bytes, bool delete_files_always = false );
 
-bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash, std::string* p_archive_name = 0 );
+bool CIYAM_BASE_DECL_SPEC has_file_been_archived( const std::string& hash,
+ std::string* p_archive_name = 0, bool in_specific_archive_only = false );
 
 std::string CIYAM_BASE_DECL_SPEC retrieve_file_from_archive(
  const std::string& hash, const std::string& tag, size_t days_ahead = 0 );

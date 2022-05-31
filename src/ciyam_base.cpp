@@ -4427,6 +4427,8 @@ void init_globals( const char* p_sid, int* p_use_udp )
       init_files_area( );
       init_system_ods( );
 
+      init_archive_info( );
+
       check_timezone_info( );
 
 #ifndef _WIN32
