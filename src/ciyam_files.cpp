@@ -72,9 +72,6 @@ const char* const c_file_archive_size_avail = "size_avail";
 const char* const c_file_archive_size_limit = "size_limit";
 const char* const c_file_archive_status_info = "status_info";
 
-const char* const c_folder_archive_files_folder = "files";
-const char* const c_folder_archive_times_folder = "times";
-
 const char* const c_file_archive_status_is_full = "is full";
 const char* const c_file_archive_status_bad_write = "bad write";
 const char* const c_file_archive_status_bad_access = "bad access";
@@ -146,6 +143,77 @@ class file_hash_info
 
 map< string, file_hash_info > g_tag_hashes;
 multimap< file_hash_info, string > g_hash_tags;
+
+struct archive_file_info
+{
+   bool has_file( const string& hash ) const;
+
+   void add_file( const string& hash, int64_t time_stamp );
+   void remove_file( const string& hash, bool skip_not_found = false );
+
+   string get_oldest_file( );
+
+   map< file_hash_info, int64_t > hash_times;
+   multimap< int64_t, file_hash_info > time_hashes;
+};
+
+bool archive_file_info::has_file( const string& hash ) const
+{
+   return hash_times.count( hash );
+}
+
+void archive_file_info::add_file( const string& hash, int64_t time_stamp )
+{
+   hash_times.insert( make_pair( hash, time_stamp ) );
+   time_hashes.insert( make_pair( time_stamp, hash ) );
+}
+
+void archive_file_info::remove_file( const string& hash, bool skip_not_found )
+{
+   map< file_hash_info, int64_t >::iterator hi = hash_times.find( hash );
+
+   if( hi != hash_times.end( ) )
+   {
+      multimap< int64_t, file_hash_info >::iterator ti = time_hashes.lower_bound( hi->second );
+
+      while( true )
+      {
+         if( ti->second == hash )
+            break;
+
+         ++ti;
+
+         if( ( ti == time_hashes.end( ) ) || ( ti->first != hi->second ) )
+            break;
+      }
+
+      if( ti == time_hashes.end( ) || ti->second != hash )
+         throw runtime_error( "unexpected time " + to_string( hi->second )
+          + " for file '" + hash + "' not found in archive_file_info::remove_file" );
+
+      hash_times.erase( hi );
+      time_hashes.erase( ti );
+   }
+   else
+   {
+      if( !skip_not_found )
+         throw runtime_error( "unexpected file '" + hash + "' not found in archive_file_info::remove_file" );
+   }
+}
+
+string archive_file_info::get_oldest_file( )
+{
+   string retval;
+
+   multimap< int64_t, file_hash_info >::iterator ti = time_hashes.begin( );
+
+   if( ti != time_hashes.end( ) )
+      retval = ti->second.get_hash_string( );
+
+   return retval;
+}
+
+map< string, archive_file_info > g_archive_file_info;
 
 unsigned char get_file_type_and_extra( const string& hash, const char* p_file_name = 0 )
 {
@@ -438,90 +506,6 @@ bool path_already_used_in_archive( const string& path )
    return retval;
 }
 
-time_t add_archive_file( ods_file_system& ods_fs, const string& hash )
-{
-   time_t tm = unix_time( );
-
-   ods_fs.set_folder( c_folder_archive_times_folder );
-
-   int64_t time_stamp = tm;
-
-   string last_time( ods_fs.last_file_name_with_prefix( to_string( time_stamp ) ) );
-
-   string::size_type pos = last_time.find( '.' );
-
-   if( pos != string::npos )
-      last_time.erase( pos );
-
-   if( last_time.empty( ) )
-      time_stamp *= 100000;
-   else
-      time_stamp = from_string< int64_t >( last_time ) + 1;
-
-   string time_and_hash( to_string( time_stamp ) + '.' + hash );
-
-   ods_fs.add_file( time_and_hash, c_file_zero_length );
-
-   ods_fs.set_folder( ".." );
-
-   ods_fs.set_folder( c_folder_archive_files_folder );
-
-   string hash_and_time( hash + '.' + to_string( time_stamp ) );
-
-   ods_fs.add_file( hash_and_time, c_file_zero_length );
-
-   ods_fs.set_folder( ".." );
-
-   return tm;
-}
-
-bool has_archived_file( ods_file_system& ods_fs, const string& hash, string* p_archive = 0 )
-{
-   bool retval = false;
-
-   temporary_set_folder tmp_folder( ods_fs, "/" );
-
-   vector< string > paths;
-
-   string all_archives( list_file_archives( true, &paths ) );
-
-   if( !all_archives.empty( ) )
-   {
-      string archive;
-      vector< string > archives;
-
-      split( all_archives, archives, '\n' );
-
-      if( paths.size( ) != archives.size( ) )
-         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
-
-      for( size_t i = 0; i < archives.size( ); i++ )
-      {
-         archive = archives[ i ];
-
-         if( p_archive && !p_archive->empty( ) && archive != *p_archive )
-            continue;
-
-         ods_fs.set_root_folder( c_file_archives_folder );
-
-         ods_fs.set_folder( archive );
-         ods_fs.set_folder( c_folder_archive_files_folder );
-
-         if( ods_fs.has_file( hash, true ) )
-         {
-            retval = true;
-
-            if( p_archive )
-               *p_archive = archive;
-
-            break;
-         }
-      }
-   }
-
-   return retval;
-}
-
 }
 
 void list_mutex_lock_ids_for_ciyam_files( ostream& outs )
@@ -711,6 +695,11 @@ void init_files_area( progress* p_progress, bool remove_invalid_tags )
    }
 }
 
+void term_files_area( )
+{
+   // FUTURE: Implementation to be added.
+}
+
 void resync_files_area( progress* p_progress, bool remove_invalid_tags )
 {
    guard g( g_mutex );
@@ -723,9 +712,105 @@ void resync_files_area( progress* p_progress, bool remove_invalid_tags )
    init_files_area( p_progress, remove_invalid_tags );
 }
 
-void term_files_area( )
+void init_archive_info( progress* p_progress )
 {
-   // FUTURE: Implementation to be added.
+   guard g( g_mutex );
+
+   vector< string > paths;
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   if( !all_archives.empty( ) )
+   {
+      vector< string > archives;
+
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      ods_file_system& ods_fs( system_ods_file_system( ) );
+
+      size_t total_files = 0;
+
+      date_time dtm( date_time::local( ) );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         string path( paths[ i ] );
+         string archive( archives[ i ] );
+
+         ods_fs.set_root_folder( c_file_archives_folder );
+
+         ods_fs.set_folder( archive );
+
+         int64_t used = 0;
+
+         int64_t avail = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_avail, avail );
+
+         int64_t limit = 0;
+         ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
+
+         // NOTE: Iterate through the files in the path adding all
+         // that have names that appear to be valid SHA256 hashes.
+         file_filter ff;
+         fs_iterator fs( path, &ff );
+
+         regex expr( c_regex_hash_256 );
+
+         g_archive_file_info.insert( make_pair( archive, archive_file_info( ) ) );
+
+         while( fs.has_next( ) )
+         {
+            string name( fs.get_name( ) );
+
+            ++total_files;
+
+            if( expr.search( name ) == 0 )
+            {
+               used += file_size( fs.get_full_name( ) );
+
+               int64_t tm_val = last_modification_time( fs.get_full_name( ) );
+
+               g_archive_file_info[ archive ].add_file( fs.get_name( ), tm_val );
+            }
+
+            if( p_progress )
+            {
+               date_time now( date_time::local( ) );
+
+               uint64_t elapsed = seconds_between( dtm, now );
+
+               if( elapsed >= 1 )
+               {
+                  // FUTURE: This message should be handled as a server string message.
+                  p_progress->output_progress( "Processed " + to_string( total_files ) + " archive files..." );
+
+                  dtm = now;
+               }
+            }
+         }
+
+         if( used != ( limit - avail ) )
+         {
+            // FUTURE: This message should be handled as a server string message.
+            TRACE_LOG( TRACE_ANYTHING, "Archive '" + archive + "' needs to be repaired (incorrect size info)." );
+         }
+      }
+   }
+}
+
+void resync_archive_info( progress* p_progress )
+{
+   g_archive_file_info.clear( );
+
+   init_archive_info( p_progress );
 }
 
 string current_time_stamp_tag( bool truncated, size_t days_ahead )
@@ -3629,10 +3714,9 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    ods_fs.store_as_text_file( c_file_archive_status_info, status_info, c_status_info_pad_len );
 
-   ods_fs.add_folder( c_folder_archive_files_folder );
-   ods_fs.add_folder( c_folder_archive_times_folder );
-
    ods_tx.commit( );
+
+   g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
 }
 
 void remove_file_archive( const string& name, bool destroy_files )
@@ -3668,21 +3752,16 @@ void remove_file_archive( const string& name, bool destroy_files )
 
          if( new_status_info == string( c_okay ) )
          {
-            ods_fs.set_folder( c_folder_archive_files_folder );
-
-            vector< string > file_names;
-            ods_fs.list_files( file_names );
-
-            for( size_t i = 0; i < file_names.size( ); i++ )
+            while( true )
             {
-               string next( file_names[ i ] );
+               string next( g_archive_file_info[ name ].get_oldest_file( ) );
 
-               string::size_type pos = next.find( '.' );
-
-               if( pos != string::npos )
-                  next.erase( pos );
+               if( next.empty( ) )
+                  break;
 
                file_remove( path + '/' + next );
+
+               g_archive_file_info[ name ].remove_file( next );
             }
 
             ods_fs.set_root_folder( c_file_archives_folder );
@@ -3693,11 +3772,16 @@ void remove_file_archive( const string& name, bool destroy_files )
 
       ods_tx.commit( );
    }
+
+   g_archive_file_info.erase( name );
 }
 
 void repair_file_archive( const string& name )
 {
    guard g( g_mutex );
+
+   g_archive_file_info.erase( name );
+   g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
 
    ods::bulk_write bulk_write( system_ods_instance( ) );
    ods_file_system& ods_fs( system_ods_file_system( ) );
@@ -3732,26 +3816,24 @@ void repair_file_archive( const string& name )
 
       if( new_status_info == string( c_okay ) )
       {
-         ods_fs.remove_folder( c_folder_archive_files_folder, 0, true );
-         ods_fs.remove_folder( c_folder_archive_times_folder, 0, true );
-
-         ods_fs.add_folder( c_folder_archive_files_folder );
-         ods_fs.add_folder( c_folder_archive_times_folder );
-
          // NOTE: Iterate through the files in the path adding all
          // that have names that appear to be valid SHA256 hashes.
          file_filter ff;
          fs_iterator fs( path, &ff );
 
+         regex expr( c_regex_hash_256 );
+
          while( fs.has_next( ) )
          {
-            string name( fs.get_name( ) );
-            regex expr( c_regex_hash_256 );
+            string file_name( fs.get_name( ) );
 
-            if( expr.search( name ) == 0 )
+            if( expr.search( file_name ) == 0 )
             {
-               add_archive_file( ods_fs, name );
                size_used += file_size( fs.get_full_name( ) );
+
+               int64_t tm_val = last_modification_time( fs.get_full_name( ) );
+
+               g_archive_file_info[ name ].add_file( file_name, tm_val );
             }
          }
 
@@ -3906,6 +3988,7 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
 
       int64_t avail = 0;
       int64_t limit = 0;
+
       string status_info;
 
       if( !minimal || min_avail )
@@ -4003,44 +4086,24 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
 
             while( avail < file_data.size( ) )
             {
-               ods_fs.set_folder( c_folder_archive_times_folder );
+               string next_hash( g_archive_file_info[ next_archive ].get_oldest_file( ) );
 
-               stringstream ss;
-               ods_fs.list_files( "", ss, "", ods_file_system::e_list_style_brief, true, 1 );
+               string file_path( paths[ i ] + "/" + next_hash );
 
-               string file_name( ss.str( ) );
-
-               replace( file_name, "\n", "" );
-
-               if( file_name.empty( ) )
-                  throw runtime_error( "unexpected empty file list in 'create_raw_file_in_archive'" );
-
-               ods_fs.remove_file( file_name );
-
-               string::size_type pos = file_name.find( '.' );
-               if( pos == string::npos )
-                  throw runtime_error( "unexpected time file name '" + file_name + "' in 'create_raw_file_in_archive'" );
-
-               file_name.erase( 0, pos + 1 );
-
-               string file_path( paths[ i ] + "/" + file_name );
                avail += file_size( file_path );
 
                file_remove( file_path );
 
-               ods_fs.set_folder( ".." );
-               ods_fs.set_folder( c_folder_archive_files_folder );
-
-               ods_fs.remove_file( file_name, 0, 0, true );
-
-               ods_fs.set_folder( ".." );
+               g_archive_file_info[ next_archive ].remove_file( next_hash );
             }
 
             avail -= file_data.size( );
 
-            add_archive_file( ods_fs, file_hash );
-
             write_file( paths[ i ] + "/" + file_hash, file_data );
+
+            int64_t tm_val = last_modification_time( paths[ i ] + "/" + file_hash );
+
+            g_archive_file_info[ archive ].add_file( file_hash, tm_val );
 
             ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
          }
@@ -4121,7 +4184,7 @@ string relegate_one_or_num_oldest_files( const string& hash,
          {
             string next_hash( file_hashes.front( ) );
 
-            if( has_archived_file( ods_fs, next_hash, &next_archive ) )
+            if( has_file_been_archived( next_hash, &next_archive, true ) )
             {
                delete_file( next_hash, true );
 
@@ -4143,6 +4206,8 @@ string relegate_one_or_num_oldest_files( const string& hash,
 
             copy_raw_file( next_hash, dest );
 
+            int64_t tm_val = last_modification_time( dest );
+
             if( !temp_file_is_identical( dest, next_hash ) )
             {
                file_remove( dest );
@@ -4153,7 +4218,7 @@ string relegate_one_or_num_oldest_files( const string& hash,
                avail -= num_bytes;
                ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
 
-               add_archive_file( ods_fs, next_hash );
+               g_archive_file_info[ next_archive ].add_file( next_hash, tm_val );
 
                delete_file( next_hash, true );
 
@@ -4185,51 +4250,37 @@ string relegate_one_or_num_oldest_files( const string& hash,
    return retval;
 }
 
-bool has_file_been_archived( const string& hash, string* p_archive_name )
+bool has_file_been_archived( const string& hash, string* p_archive_name, bool in_specific_archive_only )
 {
    guard g( g_mutex );
 
    bool retval = false;
-   vector< string > paths;
-
-   string all_archives( list_file_archives( true, &paths ) );
 
    string archive;
-   vector< string > archives;
+   map< string, archive_file_info >::const_iterator ci = g_archive_file_info.begin( );
 
-   if( !all_archives.empty( ) )
+   while( ci != g_archive_file_info.end( ) )
    {
-      split( all_archives, archives, '\n' );
+      bool check = true;
 
-      if( paths.size( ) != archives.size( ) )
-         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+      archive = ci->first;
 
-      auto_ptr< ods::bulk_read > ap_bulk_read;
-
-      if( !system_ods_instance( ).is_bulk_locked( ) )
-         ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
-
-      ods_file_system& ods_fs( system_ods_file_system( ) );
-
-      for( size_t i = 0; i < archives.size( ); i++ )
+      if( p_archive_name && in_specific_archive_only )
       {
-         archive = archives[ i ];
-
-         ods_fs.set_root_folder( c_file_archives_folder );
-
-         ods_fs.set_folder( archive );
-         ods_fs.set_folder( c_folder_archive_files_folder );
-
-         if( ods_fs.has_file( hash, true ) )
-         {
-            retval = true;
-
-            if( p_archive_name )
-               *p_archive_name = archive;
-
-            break;
-         }
+         if( archive != *p_archive_name )
+            check = false;
       }
+
+      if( check && ci->second.has_file( hash ) )
+      {
+         if( p_archive_name && !in_specific_archive_only )
+            *p_archive_name = archive;
+
+         retval = true;
+         break;
+      }
+
+      ++ci;
    }
 
    return retval;
@@ -4257,23 +4308,11 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
          if( paths.size( ) != archives.size( ) )
             throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-         auto_ptr< ods::bulk_read > ap_bulk_read;
-
-         if( !system_ods_instance( ).is_bulk_locked( ) )
-            ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
-
-         ods_file_system& ods_fs( system_ods_file_system( ) );
-
          for( size_t i = 0; i < archives.size( ); i++ )
          {
             archive = archives[ i ];
 
-            ods_fs.set_root_folder( c_file_archives_folder );
-
-            ods_fs.set_folder( archive );
-            ods_fs.set_folder( c_folder_archive_files_folder );
-
-            if( ods_fs.has_file( hash, true ) )
+            if( g_archive_file_info[ archive ].has_file( hash ) )
             {
                retval = archive;
 
@@ -4313,10 +4352,6 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    vector< string > paths;
    vector< string > archives;
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
-
    string all_archives;
 
    if( !archive.empty( ) )
@@ -4337,12 +4372,6 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    if( all_archives.empty( ) )
       all_archives = list_file_archives( true, &paths );
 
-   auto_ptr< ods::transaction > ap_ods_tx;
-   if( !system_ods_instance( ).is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
-
-   ods_file_system& ods_fs( system_ods_file_system( ) );
-
    if( !all_archives.empty( ) )
    {
       split( all_archives, archives, '\n' );
@@ -4357,38 +4386,18 @@ bool touch_file_in_archive( const string& hash, const string& archive )
          if( !archive.empty( ) && archive != next_archive )
             continue;
 
-         ods_fs.set_root_folder( c_file_archives_folder );
-
-         ods_fs.set_folder( next_archive );
-         ods_fs.set_folder( c_folder_archive_files_folder );
-
-         string suffix;
-
-         if( ods_fs.has_file( hash, true, &suffix ) )
+         if( g_archive_file_info[ next_archive ].has_file( hash ) )
          {
-            ods_fs.remove_file( hash, 0, 0, true );
+            file_touch( paths[ i ] + '/' + hash );
+            int64_t tm_val = last_modification_time( paths[ i ] + '/' + hash );
 
-            if( suffix.length( ) > 1 )
-            {
-               ods_fs.set_folder( ".." );
-               ods_fs.set_folder( c_folder_archive_times_folder );
-
-               ods_fs.remove_file( suffix.substr( 1 ), 0, 0, true );
-            }
-
-            ods_fs.set_folder( ".." );
-
-            time_t tm = add_archive_file( ods_fs, hash );
-
-            file_touch( paths[ i ] + '/' + hash, &tm );
+            g_archive_file_info[ next_archive ].remove_file( hash );
+            g_archive_file_info[ next_archive ].add_file( hash, tm_val );
 
             retval = true;
          }
       }
    }
-
-   if( retval && ap_ods_tx.get( ) )
-      ap_ods_tx->commit( );
 
    return retval;
 }
@@ -4442,22 +4451,8 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
          int64_t limit = 0;
          ods_fs.fetch_from_text_file( c_file_archive_size_limit, limit );
 
-         ods_fs.set_folder( c_folder_archive_files_folder );
-
-         string suffix;
-
-         if( ods_fs.has_file( hash, true, &suffix ) )
+         if( g_archive_file_info[ next_archive ].has_file( hash ) )
          {
-            ods_fs.remove_file( hash, 0, 0, true );
-
-            if( suffix.length( ) > 1 )
-            {
-               ods_fs.set_folder( ".." );
-               ods_fs.set_folder( c_folder_archive_times_folder );
-
-               ods_fs.remove_file( suffix.substr( 1 ), 0, 0, true );
-            }
-
             string src_file( paths[ i ] + "/" + hash );
 
             if( file_exists( src_file ) )
@@ -4468,9 +4463,10 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
                if( avail > limit )
                   avail = limit;
 
-               ods_fs.set_folder( ".." );
                ods_fs.store_as_text_file( c_file_archive_size_avail, avail );
             }
+
+            g_archive_file_info[ next_archive ].remove_file( hash );
          }
       }
    }

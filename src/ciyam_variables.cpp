@@ -1016,6 +1016,8 @@ void set_system_variable( const string& name, const string& value, bool is_init,
 
          resync_files_area( p_progress );
          resync_system_ods( p_progress );
+
+         resync_archive_info( p_progress );
  
          TRACE_LOG( TRACE_ANYTHING, "*** switched files area over from: " + from + " ***" );
       }
