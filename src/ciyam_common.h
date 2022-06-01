@@ -155,7 +155,6 @@ enum special_var
    e_special_var_blockchain_height,
    e_special_var_fields_and_values,
    e_special_var_package_type_path,
-   e_special_var_queue_touch_files,
    e_special_var_attached_file_path,
    e_special_var_check_script_error,
    e_special_var_extra_field_values,

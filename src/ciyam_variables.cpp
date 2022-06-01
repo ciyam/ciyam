@@ -145,7 +145,6 @@ const char* const c_special_variable_skip_persistance = "@skip_persistance";
 const char* const c_special_variable_blockchain_height = "@blockchain_height";
 const char* const c_special_variable_fields_and_values = "@fields_and_values";
 const char* const c_special_variable_package_type_path = "@package_type_path";
-const char* const c_special_variable_queue_touch_files = "@queue_touch_files";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 const char* const c_special_variable_check_script_error = "@check_script_error";
 const char* const c_special_variable_extra_field_values = "@extra_field_values";
@@ -601,10 +600,6 @@ string get_special_var_name( special_var var )
 
       case e_special_var_package_type_path:
       s = string( c_special_variable_package_type_path );
-      break;
-
-      case e_special_var_queue_touch_files:
-      s = string( c_special_variable_queue_touch_files );
       break;
 
       case e_special_var_attached_file_path:

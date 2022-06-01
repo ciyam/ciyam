@@ -105,9 +105,6 @@ void CIYAM_BASE_DECL_SPEC tag_file( const std::string& name,
 void CIYAM_BASE_DECL_SPEC touch_file( const std::string& hash,
  const std::string& archive, bool set_archive_path = true, bool* p_has_updated_archive = 0 );
 
-void CIYAM_BASE_DECL_SPEC touch_queued_files( const std::string& queue_var_name,
- const std::string& archive, size_t max_seconds, bool set_archive_path = true );
-
 std::string CIYAM_BASE_DECL_SPEC get_hash( const std::string& prefix );
 
 std::string CIYAM_BASE_DECL_SPEC get_hash_tags( const std::string& hash );
