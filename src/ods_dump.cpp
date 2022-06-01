@@ -113,8 +113,16 @@ int main( int argc, char* argv[ ] )
       cout << "** File Info" << endl;
       o.dump_file_info( cout, omit_dtms );
 
+      bool skip_entries = false;
+
       if( !all_entries.empty( ) && o.get_total_entries( ) )
       {
+         if( all_entries == "~" || all_entries == "~all" )
+         {
+            skip_entries = true;
+            all_entries = "all";
+         }
+
          split_and_condense_range_pairs( all_entries, entry_items, o.get_total_entries( ) );
 
          if( all_entries == "*" || all_entries == "all" )
@@ -136,7 +144,7 @@ int main( int argc, char* argv[ ] )
          }
       }
 
-      if( !entry_items.empty( ) )
+      if( !skip_entries && !entry_items.empty( ) )
       {
          int64_t total_entries_dumped = 0;
          cout << "\n** Entry Info for: " << all_entries << endl;
