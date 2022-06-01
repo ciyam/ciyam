@@ -517,6 +517,8 @@ size_t process_put_file( const string& blockchain,
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
 
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
+
    size_t num_skipped = 0;
 
    set< string > target_hashes;
@@ -653,13 +655,11 @@ size_t process_put_file( const string& blockchain,
                               {
                                  ++num_skipped;
 
-                                 set_session_variable( get_special_var_name(
-                                  e_special_var_queue_touch_files ), local_hash );
+                                 touch_file( local_hash, identity, false );
                               }
                               else
                               {
-                                 if( !target_hash.empty( ) )
-                                    target_hashes.insert( target_hash );
+                                 target_hashes.insert( target_hash );
 
                                  add_peer_file_hash_for_get( hash_info, check_for_supporters );
                               }
@@ -695,13 +695,15 @@ size_t process_put_file( const string& blockchain,
    return num_skipped;
 }
 
-bool has_all_list_items( const string& hash, bool recurse,
+bool has_all_list_items( const string& blockchain, const string& hash, bool recurse,
  bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_total_processed = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
    split( all_list_items, list_items, '\n' );
+
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    bool retval = true;
 
@@ -751,7 +753,8 @@ bool has_all_list_items( const string& hash, bool recurse,
          }
          else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
          {
-            retval = has_all_list_items( next_hash, recurse, touch_all_lists, p_dtm, p_progress, p_total_processed );
+            retval = has_all_list_items( blockchain, next_hash,
+             recurse, touch_all_lists, p_dtm, p_progress, p_total_processed );
 
             if( !retval )
                break;
@@ -760,8 +763,7 @@ bool has_all_list_items( const string& hash, bool recurse,
    }
 
    if( touch_all_lists )
-      set_session_variable(
-       get_special_var_name( e_special_var_queue_touch_files ), hash );
+      touch_file( hash, identity, false );
 
    return retval;
 }
@@ -805,7 +807,7 @@ bool last_data_tree_is_identical( const string& blockchain, size_t previous_heig
    return retval;
 }
 
-void process_list_items( const string& hash,
+void process_list_items( const string& identity, const string& hash,
  bool recurse, string* p_blob_data = 0, size_t* p_num_items_found = 0,
  set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
@@ -916,7 +918,7 @@ void process_list_items( const string& hash,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            process_list_items( next_hash, recurse,
+            process_list_items( identity, next_hash, recurse,
              p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
 
             // NOTE: Recursive processing may have already located this.
@@ -969,12 +971,11 @@ void process_list_items( const string& hash,
          {
             // NOTE: Although recursion was not requested in order to ensure
             // that all blob items will be "touched" need to do this anyway.
-            if( is_list_file( next_hash ) )
-               process_list_items( next_hash, false,
-                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress );
+            if( !is_list_file( next_hash ) )
+               touch_file( next_hash, identity, false );
             else
-               set_session_variable( get_special_var_name(
-                e_special_var_queue_touch_files ), next_hash );
+               process_list_items( identity, next_hash, false,
+                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress );
          }
       }
    }
@@ -1015,6 +1016,8 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       bool need_to_tag_zenith = false;
 
+      string archive( replaced( blockchain, c_bc_prefix, "" ) );
+
       string first_hash_name( get_special_var_name( e_special_var_hash ) );
       string first_hash_to_get( get_session_variable( first_hash_name ) );
 
@@ -1045,14 +1048,14 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
                if( get_session_variable( get_special_var_name(
                 e_special_var_blockchain_skip_blob_puts ) ).empty( ) )
-                  get_tree_items = has_all_list_items( tree_root_hash, true, false, &dtm, p_progress );
+                  get_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
 
                if( get_tree_items )
                {
                   need_to_tag_zenith = is_new_height;
 
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
+                     process_list_items( archive, tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
                }
 
                set_session_variable(
@@ -1773,7 +1776,7 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
 
-      process_list_items( hash, false, 0, 0, &list_items_to_ignore );
+      process_list_items( identity, hash, false, 0, 0, &list_items_to_ignore );
    }
 
    increment_peer_files_downloaded( num_bytes );
@@ -1972,8 +1975,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    string next_hash_to_get, next_hash_to_put;
 
-   string queue_touch_files_name( get_special_var_name( e_special_var_queue_touch_files ) );
-
    string blockchain_is_owner_name( get_special_var_name( e_special_var_blockchain_is_owner ) );
    string blockchain_is_fetching_name( get_special_var_name( e_special_var_blockchain_is_fetching ) );
    string blockchain_zenith_hash_name( get_special_var_name( e_special_var_blockchain_zenith_hash ) );
@@ -2005,14 +2006,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       }
    }
 
-   bool touched_support_files = false;
-
-   if( is_for_support && has_session_variable( queue_touch_files_name ) )
-   {
-      touched_support_files = true;
-      touch_queued_files( queue_touch_files_name, identity, 1, false );
-   }
-
    // NOTE: If a support session is not given a file hash to get/put then sleep for a while.
    for( size_t i = 0; i < c_support_session_sleep_repeats; i++ )
    {
@@ -2023,12 +2016,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          next_hash_to_put = top_next_peer_file_hash_to_put(
           ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
 
-      if( is_for_support && !touched_support_files
-       && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
+      if( is_for_support && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
          msleep( c_support_session_sleep_time );
 
-      if( !is_for_support || touched_support_files
-       || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
+      if( !is_for_support || !next_hash_to_get.empty( ) || !next_hash_to_put.empty( ) )
          break;
    }
 
@@ -2069,145 +2060,138 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          }
          else
          {
-            // NOTE: Touch as many files as possible within two seconds
-            // so as to ensure that the connected peer doesn't time out.
-            if( has_session_variable( queue_touch_files_name ) )
-               touch_queued_files( queue_touch_files_name, identity, 2, false );
-            else
+            // NOTE: Check whether a new block has been created either locally or remotely.
+            string next_block_tag( blockchain
+             + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
+
+            bool has_tree_files = false;
+
+            if( has_tag( next_block_tag ) )
             {
-               // NOTE: Check whether a new block has been created either locally or remotely.
-               string next_block_tag( blockchain
-                + '.' + to_string( blockchain_height + 1 ) + c_blk_suffix );
-
-               bool has_tree_files = false;
-
-               if( has_tag( next_block_tag ) )
+               // NOTE: Use "blockchain_height_pending" here to ensure that only
+               // one "process_block_for_height" call will occur for each block.
+               // If all of the block related files were found locally then will
+               // simply increase the height.
+               if( blockchain_height == blockchain_height_pending )
                {
-                  // NOTE: Use "blockchain_height_pending" here to ensure that only
-                  // one "process_block_for_height" call will occur for each block.
-                  // If all of the block related files were found locally then will
-                  // simply increase the height.
-                  if( blockchain_height == blockchain_height_pending )
+                  string next_block_hash( tag_file_hash( next_block_tag ) );
+
+                  // NOTE: If zenith height is not greater than the blockchain height
+                  // then block was not created locally and will assume that fetching
+                  // must have not been previously completed.
+                  string current_zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
+
+                  size_t current_zenith_height = 0;
+
+                  if( !get_block_height_from_tags( blockchain, current_zenith_hash, current_zenith_height ) )
+                     throw runtime_error( "unexpected error determining current zenith height" );
+
+                  temporary_session_variable temp_skip_blob_puts(
+                   get_special_var_name( e_special_var_blockchain_skip_blob_puts ), c_true_value );
+
+                  bool need_to_check = false;
+
+                  if( current_zenith_height > blockchain_height )
                   {
-                     string next_block_hash( tag_file_hash( next_block_tag ) );
-
-                     // NOTE: If zenith height is not greater than the blockchain height
-                     // then block was not created locally and will assume that fetching
-                     // must have not been previously completed.
-                     string current_zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
-
-                     size_t current_zenith_height = 0;
-
-                     if( !get_block_height_from_tags( blockchain, current_zenith_hash, current_zenith_height ) )
-                        throw runtime_error( "unexpected error determining current zenith height" );
-
-                     temporary_session_variable temp_skip_blob_puts(
-                      get_special_var_name( e_special_var_blockchain_skip_blob_puts ), c_true_value );
-
-                     bool need_to_check = false;
-
-                     if( current_zenith_height > blockchain_height )
-                     {
-                        set_session_variable( blockchain_is_fetching_name, "" );
-                        set_session_variable( blockchain_height_processed_name, to_string( current_zenith_height ) );
-                     }
-                     else
-                     {
-                        need_to_check = true;
-
-                        set_session_variable( blockchain_is_fetching_name, c_true_value );
-                     }
-
-                     size_t num_items_found = 0;
-
-                     bool has_block_data = process_block_for_height( blockchain,
-                      next_block_hash, blockchain_height + 1, &num_items_found, this );
-
-                     if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
-                     {
-                        blockchain_height = ++blockchain_height_pending;
-
-                        zenith_hash = get_session_variable( blockchain_zenith_hash_name );
-
-                        if( !zenith_hash.empty( ) )
-                           set_new_zenith = true;
-
-                        set_session_variable( blockchain_is_fetching_name, "" );
-                     }
-                     else
-                     {
-                        if( need_to_check )
-                        {
-                           string file_hash( top_next_peer_file_hash_to_get( ) );
-
-                           // NOTE: Use the "nonce" argument to indicate the first
-                           // file to be fetched (so that pull requests will start
-                           // from the correct point). An additional amount of two
-                           // is due to counting starting from the ".dat" file and
-                           // needing to include the tree root file itself.
-                           if( !file_hash.empty( ) )
-                           {
-                              next_block_tag += string( " " ) + '@' + file_hash;
-
-                              set_blockchain_tree_item( blockchain, num_items_found + 2 );
-                           }
-
-                           has_tree_files = chk_file( next_block_tag, &next_block_hash );
-
-                           has_issued_chk = true;
-                        }
-
-                        blockchain_height_pending = blockchain_height + 1;
-                     }
+                     set_session_variable( blockchain_is_fetching_name, "" );
+                     set_session_variable( blockchain_height_processed_name, to_string( current_zenith_height ) );
                   }
-               }
-               else
-               {
-                  string next_block_hash;
-
-                  has_tree_files = chk_file( next_block_tag, &next_block_hash );
-
-                  has_issued_chk = true;
-
-                  if( next_block_hash.empty( ) )
+                  else
                   {
-                     date_time now( date_time::standard( ) );
-
-                     seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
-
-                     dtm_rcvd_not_found = now;
-
-                     // NOTE: If neither peer has had a new block within one
-                     // second then sleep now to avoid unnecessary CPU usage.
-                     if( elapsed < 1.0 )
-                     {
-                        elapsed = ( seconds )( now - dtm_sent_not_found );
-
-                        if( elapsed < 1.0 )
-                           msleep( c_peer_sleep_time );
-                     }
-                  }
-                  else if( !has_file( next_block_hash ) )
-                  {
-                     if( !zenith_hash.empty( ) )
-                        set_new_zenith = true;
-
-                     add_peer_file_hash_for_get( next_block_hash );
-                     blockchain_height_pending = blockchain_height + 1;
+                     need_to_check = true;
 
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
                   }
-               }
 
-               if( has_issued_chk )
-               {
-                  if( !has_tree_files )
-                     set_session_variable( get_special_var_name(
-                      e_special_var_blockchain_get_tree_files ), "" );
+                  size_t num_items_found = 0;
+
+                  bool has_block_data = process_block_for_height( blockchain,
+                   next_block_hash, blockchain_height + 1, &num_items_found, this );
+
+                  if( has_block_data && top_next_peer_file_hash_to_get( ).empty( ) )
+                  {
+                     blockchain_height = ++blockchain_height_pending;
+
+                     zenith_hash = get_session_variable( blockchain_zenith_hash_name );
+
+                     if( !zenith_hash.empty( ) )
+                        set_new_zenith = true;
+
+                     set_session_variable( blockchain_is_fetching_name, "" );
+                  }
                   else
-                     set_session_variable( get_special_var_name(
-                      e_special_var_blockchain_get_tree_files ), c_true_value );
+                  {
+                     if( need_to_check )
+                     {
+                        string file_hash( top_next_peer_file_hash_to_get( ) );
+
+                        // NOTE: Use the "nonce" argument to indicate the first
+                        // file to be fetched (so that pull requests will start
+                        // from the correct point). An additional amount of two
+                        // is due to counting starting from the ".dat" file and
+                        // needing to include the tree root file itself.
+                        if( !file_hash.empty( ) )
+                        {
+                           next_block_tag += string( " " ) + '@' + file_hash;
+
+                           set_blockchain_tree_item( blockchain, num_items_found + 2 );
+                        }
+
+                        has_tree_files = chk_file( next_block_tag, &next_block_hash );
+
+                        has_issued_chk = true;
+                     }
+
+                     blockchain_height_pending = blockchain_height + 1;
+                  }
                }
+            }
+            else
+            {
+               string next_block_hash;
+
+               has_tree_files = chk_file( next_block_tag, &next_block_hash );
+
+               has_issued_chk = true;
+
+               if( next_block_hash.empty( ) )
+               {
+                  date_time now( date_time::standard( ) );
+
+                  seconds elapsed = ( seconds )( now - dtm_rcvd_not_found );
+
+                  dtm_rcvd_not_found = now;
+
+                  // NOTE: If neither peer has had a new block within one
+                  // second then sleep now to avoid unnecessary CPU usage.
+                  if( elapsed < 1.0 )
+                  {
+                     elapsed = ( seconds )( now - dtm_sent_not_found );
+
+                     if( elapsed < 1.0 )
+                        msleep( c_peer_sleep_time );
+                  }
+               }
+               else if( !has_file( next_block_hash ) )
+               {
+                  if( !zenith_hash.empty( ) )
+                     set_new_zenith = true;
+
+                  add_peer_file_hash_for_get( next_block_hash );
+                  blockchain_height_pending = blockchain_height + 1;
+
+                  set_session_variable( blockchain_is_fetching_name, c_true_value );
+               }
+            }
+
+            if( has_issued_chk )
+            {
+               if( !has_tree_files )
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_get_tree_files ), "" );
+               else
+                  set_session_variable( get_special_var_name(
+                   e_special_var_blockchain_get_tree_files ), c_true_value );
             }
          }
       }
@@ -2409,7 +2393,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             date_time dtm( date_time::local( ) );
 
             // NOTE: Will touch all tree lists iff has the tree root.
-            has_all_list_items( zenith_tree_hash, true, true, &dtm, this );
+            has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this );
 
             if( !get_session_variable( blockchain_is_owner_name ).empty( )
              && !get_session_variable( blockchain_is_fetching_name ).empty( ) )
@@ -3764,20 +3748,6 @@ void peer_session::on_start( )
       }
 
       ap_socket->close( );
-
-      string queue_touch_files_name(
-       get_special_var_name( e_special_var_queue_touch_files ) );
-
-      if( has_session_variable( queue_touch_files_name ) )
-      {
-         if( !is_for_support && !has_support_sessions )
-            touch_queued_files( queue_touch_files_name, identity, 0, false );
-         else
-         {
-            while( has_session_variable( queue_touch_files_name ) )
-               touch_queued_files( queue_touch_files_name, identity, 3, false );
-         }
-      }
 
       if( was_initialised )
       {

@@ -2418,79 +2418,6 @@ void touch_file( const string& hash,
        e_special_var_blockchain_archive_path ), old_archive_path );
 }
 
-void touch_queued_files( const string& queue_var_name,
- const string& archive, size_t max_seconds, bool set_archive_path )
-{
-   guard g( g_mutex );
-
-   string old_archive_path;
-
-   date_time dtm( date_time::local( ) );
-
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
-
-   auto_ptr< ods::transaction > ap_ods_tx;
-   if( !system_ods_instance( ).is_in_transaction( ) )
-      ap_ods_tx.reset( new ods::transaction( system_ods_instance( ) ) );
-
-   if( set_archive_path )
-   {
-      string archive_path;
-
-      old_archive_path = get_session_variable(
-       get_special_var_name( e_special_var_blockchain_archive_path ) );
-
-      if( has_file_archive( archive, &archive_path ) )
-      {
-         set_session_variable( get_special_var_name(
-          e_special_var_blockchain_archive_path ), archive_path );
-      }
-   }
-
-   size_t num = 0;
-
-   bool has_updated_archive = false;
-
-   while( true )
-   {
-      string next_hash( get_session_variable( queue_var_name ) );
-
-      if( next_hash.empty( ) )
-         break;
-
-      date_time now( date_time::local( ) );
-
-      uint64_t elapsed = seconds_between( dtm, now );
-
-      touch_file( next_hash, archive, false, &has_updated_archive );
-
-      ++num;
-
-      if( max_seconds )
-      {
-         if( elapsed >= max_seconds )
-            break;
-      }
-      else
-      {
-         if( elapsed >= 2 )
-         {
-            dtm = now;
-            set_session_progress_output( "Touched " + to_string( num ) + " files..." );
-         }
-      }
-   }
-
-   if( has_updated_archive && ap_ods_tx.get( ) )
-      ap_ods_tx->commit( );
-
-   if( set_archive_path )
-      set_session_variable( get_special_var_name(
-       e_special_var_blockchain_archive_path ), old_archive_path );
-}
-
 string get_hash( const string& prefix )
 {
    guard g( g_mutex );
@@ -4357,8 +4284,7 @@ bool touch_file_in_archive( const string& hash, const string& archive )
    if( !archive.empty( ) )
    {
       // NOTE: If "@blockchain_archive_path" has been set then can avoid
-      // calling "list_file_archives" to provide significant performance
-      // improvement for "touch_queued_files".
+      // calling "list_file_archives".
       string archive_path( get_session_variable(
        get_special_var_name( e_special_var_blockchain_archive_path ) ) );
 
