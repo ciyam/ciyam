@@ -59,7 +59,15 @@ const char* const c_pipe_separator = "|";
 const char* const c_colon_separator = ":";
 const char* const c_folder_separator = "/";
 
-const unsigned char c_ofs_items_per_node = 255;
+// NOTE: Although the number of items could be
+// set to 255 the average node size can end up
+// being rather large (especially if the files
+// are named using hashes) so instead uses the
+// smaller value of 55 to keep the nodes small
+// to avoid tx log bloat when adding files one
+// by one (as each such tx will append both an
+// old and new version of the node object).
+const unsigned char c_ofs_items_per_node = 55;
 
 uint16_t c_ofs_object_flag_type_file = 0x8000;
 uint16_t c_ofs_object_flag_type_link = 0x4000;

@@ -1642,13 +1642,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool total_blobs( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_blobs ) );
          bool total_items( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_items ) );
          bool total_encrypted( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_encrypted ) );
+         bool total_repo_entries( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_repo_entries ) );
          string depth( get_parm_val( parameters, c_cmd_ciyam_session_file_info_depth ) );
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_info_prefix ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_info_pat_or_hash ) );
 
          possibly_expected_error = true;
 
-         if( total_blobs || total_items || total_encrypted )
+         if( total_blobs || total_items || total_encrypted || total_repo_entries )
          {
             date_time dtm( date_time::local( ) );
 
@@ -1680,6 +1681,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                total_type = e_file_total_type_blobs_only;
             else if( total_encrypted )
                total_type = e_file_total_type_encrypted_only;
+            else if( total_repo_entries )
+               total_type = e_file_total_type_repository_entries;
 
             file_list_item_pos( tag_or_hash, total, total_type, item_hash, item_pos, recurse, &handler, &dtm );
 
