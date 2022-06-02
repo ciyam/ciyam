@@ -6392,6 +6392,8 @@ void add_peer_file_hash_for_get( const string& hash,
 
 bool has_repository_entry_record( const string& key )
 {
+   guard g( g_mutex );
+
    auto_ptr< ods::bulk_read > ap_bulk_read;
    if( !gap_ods->is_bulk_locked( ) )
       ap_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
@@ -6406,6 +6408,8 @@ bool has_repository_entry_record( const string& key )
 bool fetch_repository_entry_record( const string& key,
  string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {
+   guard g( g_mutex );
+
    auto_ptr< ods::bulk_read > ap_bulk_read;
    if( !gap_ods->is_bulk_locked( ) )
       ap_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
@@ -6443,6 +6447,8 @@ bool fetch_repository_entry_record( const string& key,
 void store_repository_entry_record( const string& key,
  const string& local_hash, const string& local_public_key, const string& master_public_key )
 {
+   guard g( g_mutex );
+
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !gap_ods->is_bulk_locked( ) )
       ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
@@ -6476,6 +6482,8 @@ void store_repository_entry_record( const string& key,
 
 bool destroy_repository_entry_record( const string& key, bool must_exist )
 {
+   guard g( g_mutex );
+
    auto_ptr< ods::bulk_write > ap_bulk_write;
    if( !gap_ods->is_bulk_locked( ) )
       ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );

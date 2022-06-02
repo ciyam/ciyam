@@ -1509,7 +1509,9 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total, file_total_ty
 
             bool is_encrypted = false;
 
-            if( has_file( next_hash ) )
+            if( ( total_type == e_file_total_type_repository_entries ) && has_repository_entry_record( next_hash ) )
+               ++total;
+            else if( has_file( next_hash ) )
             {
                if( is_list_file( next_hash, &is_encrypted ) )
                   file_list_item_pos( next_hash, total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm );

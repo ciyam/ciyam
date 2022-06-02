@@ -75,7 +75,8 @@ enum file_total_type
 {
    e_file_total_type_all_items,
    e_file_total_type_blobs_only,
-   e_file_total_type_encrypted_only
+   e_file_total_type_encrypted_only,
+   e_file_total_type_repository_entries
 };
 
 void CIYAM_BASE_DECL_SPEC file_list_item_pos(
