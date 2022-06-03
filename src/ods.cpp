@@ -130,8 +130,8 @@ const int c_header_lock_max_attempts = 100;
 const int c_header_lock_attempt_sleep_time = 25;
 
 const int c_data_bytes_per_item = c_ods_page_size;
-const int c_data_max_cache_items = 1000;
-const int c_data_items_per_region = 10000;
+const int c_data_max_cache_items = 5000;
+const int c_data_items_per_region = 50000;
 const int c_data_num_cache_regions = 10;
 
 const int c_index_items_per_item = 128;
@@ -141,8 +141,8 @@ const int c_index_num_cache_regions = 10;
 
 const int c_trans_op_max_cache_items = 1000;
 const int c_trans_op_items_per_region = 10000;
-const int c_trans_data_max_cache_items = 1000;
-const int c_trans_data_items_per_region = 10000;
+const int c_trans_data_max_cache_items = 5000;
+const int c_trans_data_items_per_region = 50000;
 
 mutex g_ods_lock;
 
