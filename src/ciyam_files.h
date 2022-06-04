@@ -88,9 +88,6 @@ std::string CIYAM_BASE_DECL_SPEC create_raw_file(
  const std::string& data, bool compress = true, const char* p_tag = 0,
  bool* p_is_existing = 0, const char* p_hash = 0, bool allow_uncompress = true, bool allow_missing_items = false );
 
-std::string CIYAM_BASE_DECL_SPEC create_raw_file_with_extras( const std::string& data,
- std::vector< std::pair< std::string, std::string > >& extras, bool compress = true, const char* p_tag = 0 );
-
 std::string CIYAM_BASE_DECL_SPEC create_list_file( const std::string& add_tags, const std::string& del_items,
  bool sort_items, const std::string& tag_or_hash, const std::string& new_tag, const std::string& old_tag );
 

@@ -9,7 +9,6 @@
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <iosfwd>
 #     include <string>
-#     include <vector>
 #  endif
 
 #  include "ptypes.h"
@@ -26,8 +25,7 @@ void CIYAM_BASE_DECL_SPEC list_mutex_lock_ids_for_ciyam_core_files( std::ostream
 
 trace_mutex CIYAM_BASE_DECL_SPEC& get_core_files_trace_mutex( );
 
-void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content,
- bool check_sigs = true, std::vector< std::pair< std::string, std::string > >* p_extras = 0 );
+void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_sigs = true );
 
 bool CIYAM_BASE_DECL_SPEC is_block( const std::string& core_type );
 

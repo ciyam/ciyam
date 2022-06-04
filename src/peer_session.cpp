@@ -243,10 +243,7 @@ void process_core_file( const string& hash, const string& blockchain )
 
             string block_content( construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
-            verify_core_file( block_content, false, &extras );
-
-            if( !extras.empty( ) )
-               create_raw_file_with_extras( "", extras );
+            verify_core_file( block_content, false );
 
             string block_height( get_session_variable(
              get_special_var_name( e_special_var_blockchain_height ) ) );

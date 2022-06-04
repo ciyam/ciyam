@@ -1541,8 +1541,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         vector< pair< string, string > > extras;
-
          if( !is_core && !is_mime )
          {
             if( is_blob )
@@ -1564,7 +1562,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
                throw runtime_error( "unexpected unknown core type" );
 
-            verify_core_file( data, true, &extras );
+            verify_core_file( data, true );
          }
          else if( is_mime )
          {
@@ -1574,8 +1572,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                throw runtime_error( "only blob type is supported for MIME" );
          }
 
-         response = create_raw_file_with_extras(
-          ( is_core && !extras.empty( ) ? "" : data ), extras, !is_text, tag.c_str( ) );
+         response = create_raw_file( data, !is_text, tag.c_str( ) );
 
          if( !archive.empty( ) )
             create_raw_file_in_archive( archive, response, data );
