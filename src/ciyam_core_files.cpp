@@ -14,6 +14,7 @@
 #  include <set>
 #  include <deque>
 #  include <limits>
+#  include <vector>
 #  include <fstream>
 #  include <stdexcept>
 #endif
@@ -75,14 +76,11 @@ struct block_info
    uint64_t unix_time_value;
 };
 
-void verify_data( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, data_info* p_data_info = 0 );
+void verify_data( const string& content, bool check_sigs, data_info* p_data_info = 0 );
 
-void verify_block( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info = 0 );
+void verify_block( const string& content, bool check_sigs, block_info* p_block_info = 0 );
 
-void verify_data( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, data_info* p_data_info )
+void verify_data( const string& content, bool check_sigs, data_info* p_data_info )
 {
    guard g( g_mutex, "verify_data" );
 
@@ -241,7 +239,7 @@ void verify_data( const string& content,
             if( pos == string::npos )
                throw runtime_error( "unexpected invalid data info in validate_data" );
 
-            verify_data( last_data_info.substr( pos + 1 ), false, 0, &info );
+            verify_data( last_data_info.substr( pos + 1 ), false, &info );
          }
 
          found = true;
@@ -337,8 +335,7 @@ void verify_data( const string& content,
       throw runtime_error( "unexpected missing unix data time value attribute" );
 }
 
-void verify_block( const string& content,
- bool check_sigs, vector< pair< string, string > >* p_extras, block_info* p_block_info )
+void verify_block( const string& content, bool check_sigs, block_info* p_block_info )
 {
    guard g( g_mutex, "verify_block" );
 
@@ -557,7 +554,7 @@ void verify_block( const string& content,
                if( pos == string::npos )
                   throw runtime_error( "unexpected invalid block info in verify_block" );
 
-               verify_block( last_block_info.substr( pos + 1 ), false, 0, &info );
+               verify_block( last_block_info.substr( pos + 1 ), false, &info );
 
                string file_hash_info( info.public_key_hash + ':' + signature_file_hash );
                string data_file_hash( crypto_lamport( file_hash_info, "", false, true ) );
@@ -576,7 +573,7 @@ void verify_block( const string& content,
                   if( pos == string::npos )
                      throw runtime_error( "unexpected invalid data info in verify_block" );
 
-                  verify_data( data_file_info.substr( pos + 1 ), false, 0, &data );
+                  verify_data( data_file_info.substr( pos + 1 ), false, &data );
                }
             }
          }
@@ -644,7 +641,7 @@ trace_mutex& get_core_files_trace_mutex( )
    return g_mutex;
 }
 
-void verify_core_file( const string& content, bool check_sigs, vector< pair< string, string > >* p_extras )
+void verify_core_file( const string& content, bool check_sigs )
 {
    if( content.empty( ) )
       throw runtime_error( "invalid empty core file content" );
@@ -662,9 +659,9 @@ void verify_core_file( const string& content, bool check_sigs, vector< pair< str
          string type( content.substr( 1, pos - 1 ) );
 
          if( type == string( c_file_type_core_data_object ) )
-            verify_data( content.substr( pos + 1 ), check_sigs, p_extras );
+            verify_data( content.substr( pos + 1 ), check_sigs );
          else if( type == string( c_file_type_core_block_object ) )
-            verify_block( content.substr( pos + 1 ), check_sigs, p_extras );
+            verify_block( content.substr( pos + 1 ), check_sigs );
          else
             throw runtime_error( "unknown type '" + type + "' for core file" );
       }
