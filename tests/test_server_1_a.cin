@@ -249,6 +249,60 @@ PATHS=@paths:..:^.git,^tmp,^files,^bc.bc139fc15
 FILES=@files::test*.jpg
 #$FILES
 ;
+encode -text a
+decode -text $OUTPUT
+encode -text ab
+decode -text $OUTPUT
+encode -text abc
+decode -text $OUTPUT
+encode -text abcd
+decode -text $OUTPUT
+encode -text abcde
+decode -text $OUTPUT
+encode -text abcdef
+decode -text $OUTPUT
+encode -text abcdefg
+decode -text $OUTPUT
+encode -text abcdefg
+decode -text $OUTPUT
+encode -text abcdefgh
+decode -text $OUTPUT
+;
+encode -url -text a
+decode -url -text $OUTPUT
+encode -url -text ab
+decode -url -text $OUTPUT
+encode -url -text abc
+decode -url -text $OUTPUT
+encode -url -text abcd
+decode -url -text $OUTPUT
+encode -url -text abcde
+decode -url -text $OUTPUT
+encode -url -text abcdef
+decode -url -text $OUTPUT
+encode -url -text abcdefg
+decode -url -text $OUTPUT
+encode -url -text abcdefg
+decode -url -text $OUTPUT
+encode -url -text abcdefgh
+decode -url -text $OUTPUT
+;
+crypto_hash hello
+encode $OUTPUT
+decode $OUTPUT
+;
+crypto_hash hello
+encode -url $OUTPUT
+decode -url $OUTPUT
+;
+crypto_hash -512 hello
+encode $OUTPUT
+decode $OUTPUT
+;
+crypto_hash -512 hello
+encode -url $OUTPUT
+decode -url $OUTPUT
+;
 session_variable test (okay)
 session_variable @set aaa
 session_variable @set aaa

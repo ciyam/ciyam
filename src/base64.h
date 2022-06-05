@@ -16,39 +16,50 @@
 class base64
 {
    public:
+   static size_t decode_size( const std::string& input, bool url_encoding = false );
+
+   inline static size_t decode_size( size_t length, bool minimum_possible = false )
+   {
+      return ( ( length / 4 ) * 3 ) - ( minimum_possible ? 2 : 0 );
+   }
+
+   static size_t decode( const std::string& input,
+    unsigned char* p_data, size_t length, bool url_encoding = false );
+
+   inline static std::string decode( const std::string& input, bool url_encoding = false )
+   {
+      std::string str( decode_size( input, url_encoding ), '\0' );
+      decode( input, ( unsigned char* )str.c_str( ), str.length( ), url_encoding );
+
+      return str;
+   }
+
    inline static size_t encode_size( size_t length ) { return ( ( length + 2 ) / 3 ) * 4; }
 
-   static void encode( const unsigned char* p_dat, size_t length, char* p_enc, size_t* p_enc_len = 0 );
+   static void encode( const unsigned char* p_dat, size_t length,
+    char* p_enc, size_t* p_enc_len = 0, bool url_encoding = false );
 
-   inline static std::string encode( const unsigned char* p_dat, size_t length )
+   inline static std::string encode( const unsigned char* p_dat, size_t length, bool url_encoding = false )
    {
       std::string str( encode_size( length ), '\0' );
-      encode( p_dat, length, ( char* )str.data( ) );
 
-      return str;
+      size_t enc_len = 0;
+      encode( p_dat, length, ( char* )str.data( ), &enc_len, url_encoding );
+
+      if( !url_encoding )
+         return str;
+      else
+         return str.substr( 0, enc_len );
    }
 
-   inline static std::string encode( const std::string& input )
+   inline static std::string encode( const std::string& input, bool url_encoding = false )
    {
-      return encode( ( const unsigned char* )input.c_str( ), input.length( ) );
+      return encode( ( const unsigned char* )input.c_str( ), input.length( ), url_encoding );
    }
 
-   static bool valid_characters( const std::string& input );
+   static bool valid_characters( const std::string& input, bool url_encoding = false );
 
-   static void validate( const std::string& input, bool* p_rc = 0 );
-
-   static size_t decode_size( const std::string& input );
-   static size_t decode_size( size_t length, bool minimum_possible = false );
-
-   static size_t decode( const std::string& input, unsigned char* p_data, size_t length );
-
-   inline static std::string decode( const std::string& input )
-   {
-      std::string str( decode_size( input ), '\0' );
-      decode( input, ( unsigned char* )str.c_str( ), str.length( ) );
-
-      return str;
-   }
+   static void validate( const std::string& input, bool* p_rc = 0, bool url_encoding = false );
 };
 
 inline std::string hex_to_base64( const std::string& input ) { return base64::encode( hex_decode( input ) ); }

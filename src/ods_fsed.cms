@@ -12,8 +12,8 @@ file_replace "replace the content of an existing file" <val//name>[<opt/-c/cin>|
 folder_add "add a folder below the current folder" <val//name>
 folder_move "move a child folder below another folder or rename it" [<opt/-o/overwrite>]<val//name><val//destination>
 folder_remove "remove a folder from below the current folder" [<opt/-r/recurse>]<val//name>
-export "export all objects to a directory" <val//directory>
-import "import all objects from a directory" <val//directory>
+export "export all objects to a directory" <val//directory>[<list//rename_exprs>]
+import "import all objects from a directory" <val//directory>[<list//rename_exprs>]
 label "append a transaction log label" <val//name>
 rewind "rewind transactions" <val//label_or_txid>
 rebuild "rebuild index nodes"

@@ -5381,23 +5381,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_decode )
       {
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_decode_data ) );
+         bool url( has_parm_val( parameters, c_cmd_ciyam_session_decode_url ) );
          bool text( has_parm_val( parameters, c_cmd_ciyam_session_decode_text ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_decode_data ) );
 
          if( text )
-            response = base64::decode( data );
+            response = base64::decode( data, url );
          else
-            response = hex_encode( base64::decode( data ) );
+            response = hex_encode( base64::decode( data, url ) );
       }
       else if( command == c_cmd_ciyam_session_encode )
       {
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_encode_data ) );
+         bool url( has_parm_val( parameters, c_cmd_ciyam_session_encode_url ) );
          bool text( has_parm_val( parameters, c_cmd_ciyam_session_encode_text ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_encode_data ) );
 
          if( text )
-            response = base64::encode( data );
+            response = base64::encode( data, url );
          else
-            response = base64::encode( hex_decode( data ) );
+            response = base64::encode( hex_decode( data ), url );
       }
       else if( command == c_cmd_ciyam_session_decrypt )
       {
