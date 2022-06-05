@@ -17,6 +17,7 @@
 #endif
 
 #include "ods.h"
+#include "base64.h"
 #include "console.h"
 #include "progress.h"
 #include "utilities.h"
@@ -43,6 +44,21 @@ const char* const c_cmd_exclusive = "x";
 const char* const c_cmd_use_transaction_log = "tlg";
 const char* const c_cmd_use_synchronised_write = "sync";
 const char* const c_cmd_use_for_regression_tests = "test";
+
+const char* const c_rename_attribute_type_input = "input";
+const char* const c_rename_attribute_type_folder = "folder";
+const char* const c_rename_attribute_type_output = "output";
+const char* const c_rename_attribute_type_prefix = "prefix";
+const char* const c_rename_attribute_type_remove = "remove";
+const char* const c_rename_attribute_type_suffix = "suffix";
+
+const char* const c_rename_attribute_type_input_any = "@any";
+const char* const c_rename_attribute_type_input_hex = "@hex";
+const char* const c_rename_attribute_type_input_b64 = "@b64";
+
+const char* const c_rename_attribute_type_output_any = "@any";
+const char* const c_rename_attribute_type_output_hex = "@hex";
+const char* const c_rename_attribute_type_output_b64 = "@b64";
 
 int64_t g_oid = 0;
 
@@ -80,7 +96,106 @@ string application_title( app_info_request request )
    }
 }
 
-void export_objects( ods_file_system& ofs, const string& directory, ostream* p_os = 0, progress* p_progress = 0, int level = 0 )
+string process_rename_expressions(
+ vector< string >& rename_expressions, const string& folder, const string& input )
+{
+   string output( input );
+
+   for( size_t i = 0; i < rename_expressions.size( ); i++ )
+   {
+      string next_expr( rename_expressions[ i ] );
+
+      // NOTE: All rename expressions are in the form:
+      // <attribute>=<value>[|<attribute>=<value>[...]]
+      vector< string > attributes;
+
+      split( next_expr, attributes, '|' );
+
+      bool rename = true;
+
+      string prefix, suffix, renamed_output( output );
+
+      for( size_t j = 0; j < attributes.size( ); j++ )
+      {
+         string next_attr( attributes[ j ] );
+
+         string::size_type pos = next_attr.find( '=' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unepxected rename expr attribute '" + next_attr + "'" );
+
+         string type( next_attr.substr( 0, pos ) );
+         string value( next_attr.substr( pos + 1 ) );
+
+         if( type == c_rename_attribute_type_input )
+         {
+            if( value == c_rename_attribute_type_input_any )
+               ;
+            else if( value == c_rename_attribute_type_input_hex )
+            {
+               if( !are_hex_nibbles( renamed_output ) )
+                  rename = false;
+               else
+                  renamed_output = hex_decode( renamed_output );
+            }
+            else if( value == c_rename_attribute_type_input_b64 )
+            {
+               bool rc = false;
+
+               base64::validate( renamed_output, &rc, true );
+
+               if( !rc )
+                  rename = false;
+               else
+                  renamed_output = base64::decode( renamed_output, true );
+            }
+            else
+               throw runtime_error( "invalid rename expr attribute input type '" + value + "'" );
+         }
+         else if( type == c_rename_attribute_type_folder )
+         {
+            if( folder != value )
+               rename = false;
+         }
+         else if( type == c_rename_attribute_type_output )
+         {
+            if( value == c_rename_attribute_type_output_any )
+               renamed_output = output;
+            else if( value == c_rename_attribute_type_output_hex )
+            {
+               string data( renamed_output );
+
+               renamed_output = hex_encode( data );
+            }
+            else if( value == c_rename_attribute_type_output_b64 )
+            {
+               string data( renamed_output );
+
+               renamed_output = base64::encode( data, true );
+            }
+            else
+               throw runtime_error( "invalid rename expr attribute output type '" + value + "'" );
+         }
+         else if( type == c_rename_attribute_type_prefix )
+            prefix = value;
+         else if( type == c_rename_attribute_type_remove )
+            renamed_output = replace( renamed_output, value, "" );
+         else if( type == c_rename_attribute_type_suffix )
+            suffix = value;
+
+         if( !rename )
+            break;
+      }
+
+      if( rename && !renamed_output.empty( ) )
+         output = prefix + renamed_output;
+   }
+
+   return output;
+}
+
+void export_objects( ods_file_system& ofs, const string& directory,
+ vector< string >& rename_expressions, ostream* p_os = 0, progress* p_progress = 0, int level = 0 )
 {
    vector< string > files;
 
@@ -92,6 +207,10 @@ void export_objects( ods_file_system& ofs, const string& directory, ostream* p_o
    for( size_t i = 0; i < files.size( ); i++ )
    {
       string next( files[ i ] );
+      string destination( next );
+
+      if( !rename_expressions.empty( ) )
+         destination = process_rename_expressions( rename_expressions, ofs.get_folder( ), next );
 
       if( p_os )
       {
@@ -99,9 +218,12 @@ void export_objects( ods_file_system& ofs, const string& directory, ostream* p_o
             *p_os << directory << '/' << next;
          else
             *p_os << directory << ofs.get_folder( ) << '/' << next;
+
+         if( destination != next )
+            *p_os << " ==> " << destination;
       }
 
-      ofs.get_file( next, next, p_os, false, p_progress );
+      ofs.get_file( next, destination, p_os, false, p_progress );
 
       if( p_os )
          *p_os << endl;
@@ -129,7 +251,7 @@ void export_objects( ods_file_system& ofs, const string& directory, ostream* p_o
       string folder( ofs.get_folder( ) );
 
       ofs.set_folder( next );
-      export_objects( ofs, directory, p_os, p_progress, level + 1 );
+      export_objects( ofs, directory, rename_expressions, p_os, p_progress, level + 1 );
 
       ofs.set_folder( folder );
 
@@ -137,7 +259,8 @@ void export_objects( ods_file_system& ofs, const string& directory, ostream* p_o
    }
 }
 
-void import_objects( ods_file_system& ofs, const string& directory, ostream* p_os = 0, progress* p_progress = 0 )
+void import_objects( ods_file_system& ofs, const string& directory,
+ vector< string >& rename_expressions, ostream* p_os = 0, progress* p_progress = 0 )
 {
    string cwd( get_cwd( ) );
 
@@ -213,10 +336,21 @@ void import_objects( ods_file_system& ofs, const string& directory, ostream* p_o
 
       for( size_t j = 0; j < all_files.size( ); j++ )
       {
+         string name( all_files[ j ].first );
+         string source( all_files[ j ].second );
+
+         if( !rename_expressions.empty( ) )
+            name = process_rename_expressions( rename_expressions, ofs.get_folder( ), name );
+
          if( p_os )
+         {
             *p_os << next_folder << '/' << all_files[ j ].first;
 
-         ofs.store_file( all_files[ j ].first, all_files[ j ].second, 0, 0, p_progress );
+            if( name != all_files[ j ].first )
+               *p_os << " ==> " << name;
+         }
+
+         ofs.store_file( name, source, 0, 0, p_progress );
 
          if( p_os )
             *p_os << endl;
@@ -531,6 +665,12 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_ods_fsed_export )
    {
       string directory( get_parm_val( parameters, c_cmd_ods_fsed_export_directory ) );
+      string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_export_rename_exprs ) );
+
+      vector< string > rename_expressions;
+
+      if( !rename_exprs.empty( ) )
+         split( rename_exprs, rename_expressions );
 
       string cwd( get_cwd( ) );
 
@@ -548,13 +688,19 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
       ods::bulk_read bulk( *ap_ods );
 
-      export_objects( *ap_ofs, directory, ods_fsed_handler.get_std_out( ), p_progress );
+      export_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
 
       set_cwd( cwd );
    }
    else if( command == c_cmd_ods_fsed_import )
    {
       string directory( get_parm_val( parameters, c_cmd_ods_fsed_import_directory ) );
+      string rename_exprs( get_parm_val( parameters, c_cmd_ods_fsed_import_rename_exprs ) );
+
+      vector< string > rename_expressions;
+
+      if( !rename_exprs.empty( ) )
+         split( rename_exprs, rename_expressions );
 
       console_progress progress;
       console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
@@ -563,7 +709,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
 
       ods::transaction tx( *ap_ods );
 
-      import_objects( *ap_ofs, directory, ods_fsed_handler.get_std_out( ), p_progress );
+      import_objects( *ap_ofs, directory, rename_expressions, ods_fsed_handler.get_std_out( ), p_progress );
 
       tx.commit( );
    }

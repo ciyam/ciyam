@@ -173,6 +173,102 @@ tests
 test.jpg
 test1.jpg
 test2.jpg
+encode -text a
+YQ==
+decode -text $OUTPUT
+a
+encode -text ab
+YWI=
+decode -text $OUTPUT
+ab
+encode -text abc
+YWJj
+decode -text $OUTPUT
+abc
+encode -text abcd
+YWJjZA==
+decode -text $OUTPUT
+abcd
+encode -text abcde
+YWJjZGU=
+decode -text $OUTPUT
+abcde
+encode -text abcdef
+YWJjZGVm
+decode -text $OUTPUT
+abcdef
+encode -text abcdefg
+YWJjZGVmZw==
+decode -text $OUTPUT
+abcdefg
+encode -text abcdefg
+YWJjZGVmZw==
+decode -text $OUTPUT
+abcdefg
+encode -text abcdefgh
+YWJjZGVmZ2g=
+decode -text $OUTPUT
+abcdefgh
+encode -url -text a
+YQ
+decode -url -text $OUTPUT
+a
+encode -url -text ab
+YWI
+decode -url -text $OUTPUT
+ab
+encode -url -text abc
+YWJj
+decode -url -text $OUTPUT
+abc
+encode -url -text abcd
+YWJjZA
+decode -url -text $OUTPUT
+abcd
+encode -url -text abcde
+YWJjZGU
+decode -url -text $OUTPUT
+abcde
+encode -url -text abcdef
+YWJjZGVm
+decode -url -text $OUTPUT
+abcdef
+encode -url -text abcdefg
+YWJjZGVmZw
+decode -url -text $OUTPUT
+abcdefg
+encode -url -text abcdefg
+YWJjZGVmZw
+decode -url -text $OUTPUT
+abcdefg
+encode -url -text abcdefgh
+YWJjZGVmZ2g
+decode -url -text $OUTPUT
+abcdefgh
+crypto_hash hello
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+encode $OUTPUT
+LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=
+decode $OUTPUT
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+crypto_hash hello
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+encode -url $OUTPUT
+LPJNul0wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ
+decode -url $OUTPUT
+2cf24dba5d30a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+crypto_hash -512 hello
+9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043
+encode $OUTPUT
+m3HSJL1i83hdltRq0+o9czGb+8KJDKra4t/3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw==
+decode $OUTPUT
+9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043
+crypto_hash -512 hello
+9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043
+encode -url $OUTPUT
+m3HSJL1i83hdltRq00o9czGb08KJDKra4t-3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw
+decode -url $OUTPUT
+9b71d224bd62f3785d96d46ad34a3d73319bd3c2890caadae2dfb72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043
 session_variable test (okay)
 Error: invalid value '(okay)' (could be confused with a protocol response)
 session_variable @set aaa

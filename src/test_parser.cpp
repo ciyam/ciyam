@@ -48,7 +48,7 @@ pat (a regular expression pattern)
 val
 oval (same as val but will permit a blank value)
 list
-olist (same as list but will pemit blank values)
+olist (same as list but will permit blank values)
 
 By default a list will use a comma as the list separator unless a specific separator character
 has been provided. A terminator is only permitted for a list type and a separator provided for
