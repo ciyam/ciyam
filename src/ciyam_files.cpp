@@ -1454,10 +1454,14 @@ string file_type_info( const string& tag_or_hash,
    return retval;
 }
 
-void file_list_item_pos( const string& tag_or_hash, size_t& total, file_total_type total_type,
- const string& item_hash, size_t& item_pos, bool recurse, progress* p_progress, date_time* p_dtm )
+void file_list_item_pos(
+ const string& repository, const string& tag_or_hash,
+ size_t& total, file_total_type total_type, const string& item_hash,
+ size_t& item_pos, bool recurse, progress* p_progress, date_time* p_dtm )
 {
    guard g( g_mutex );
+
+   string archive;
 
    string hash( tag_or_hash );
 
@@ -1509,12 +1513,14 @@ void file_list_item_pos( const string& tag_or_hash, size_t& total, file_total_ty
 
             bool is_encrypted = false;
 
-            if( ( total_type == e_file_total_type_repository_entries ) && has_repository_entry_record( next_hash ) )
+            if( ( total_type == e_file_total_type_repository_entries )
+             && has_repository_entry_record( repository, next_hash ) )
                ++total;
             else if( has_file( next_hash ) )
             {
                if( is_list_file( next_hash, &is_encrypted ) )
-                  file_list_item_pos( next_hash, total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm );
+                  file_list_item_pos( repository, next_hash,
+                   total, total_type, item_hash, item_pos, recurse, p_progress, p_dtm );
                else if( total_type != e_file_total_type_all_items )
                {
                   if( total_type == e_file_total_type_blobs_only )
@@ -2753,7 +2759,7 @@ string hash_with_nonce( const string& hash, const string& nonce )
    return temp_hash.get_digest_as_string( );
 }
 
-void crypt_file( const string& tag_or_hash,
+void crypt_file( const string& repository, const string& tag_or_hash,
  const string& password, bool recurse, crypt_target target, progress* p_progress,
  date_time* p_dtm, size_t* p_total, crypt_operation operation, set< string >* p_files_processed )
 {
@@ -2868,12 +2874,12 @@ void crypt_file( const string& tag_or_hash,
       if( ( file_type == c_file_type_val_blob )
        && ( target == e_crypt_target_blobs_only_repo ) )
       {
-         if( !has_repository_entry_record( hash ) )
+         if( !has_repository_entry_record( repository, hash ) )
          {
             string pub_key;
             create_peer_repository_entry_push_info( hash, password, &pub_key, false );
 
-            store_repository_entry_record( hash, "", pub_key, pub_key );
+            store_repository_entry_record( repository, hash, "", pub_key, pub_key );
          }
       }
 
@@ -2895,7 +2901,7 @@ void crypt_file( const string& tag_or_hash,
                   next.erase( pos );
 
                if( !p_files_processed->count( next ) )
-                  crypt_file( next, password, recurse, target,
+                  crypt_file( repository, next, password, recurse, target,
                    p_progress, p_dtm, p_total, operation, p_files_processed );
             }
          }
@@ -2991,7 +2997,7 @@ void crypt_file( const string& tag_or_hash,
                   next.erase( pos );
 
                if( !p_files_processed->count( next ) )
-                  crypt_file( next, password, recurse, target,
+                  crypt_file( repository, next, password, recurse, target,
                    p_progress, p_dtm, p_total, operation, p_files_processed );
             }
          }

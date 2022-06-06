@@ -406,15 +406,16 @@ void CIYAM_BASE_DECL_SPEC set_session_timeout( unsigned int seconds );
 void CIYAM_BASE_DECL_SPEC add_peer_file_hash_for_get( const std::string& hash,
  bool check_for_supporters = false, bool add_at_front = false, const std::string* p_hash_to_remove = 0 );
 
-bool CIYAM_BASE_DECL_SPEC has_repository_entry_record( const std::string& key );
+bool CIYAM_BASE_DECL_SPEC has_repository_entry_record( const std::string& repository, const std::string& hash );
 
-bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& key,
+bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& repository, const std::string& hash,
  std::string& local_hash, std::string& local_public_key, std::string& master_public_key, bool must_exist = true );
 
-void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& key,
+void CIYAM_BASE_DECL_SPEC store_repository_entry_record( const std::string& repository, const std::string& hash,
  const std::string& local_hash, const std::string& local_public_key, const std::string& master_public_key );
 
-bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record( const std::string& key, bool must_exist = true );
+bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record(
+ const std::string& repository, const std::string& hash, bool must_exist = true );
 
 std::string CIYAM_BASE_DECL_SPEC top_next_peer_file_hash_to_get( bool* p_any_supporter_has = 0 );
 void CIYAM_BASE_DECL_SPEC pop_next_peer_file_hash_to_get( );
