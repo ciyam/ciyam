@@ -23,10 +23,25 @@ namespace
 const char c_fillchar = '=';
 
 const string g_b64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-const string g_b64_url_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890-_";
+const string g_b64_url_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 char get_b64_char_value( char c, bool url_encoding )
 {
+   if( url_encoding )
+   {
+      if( c == '-' )
+         return 62;
+      else if( c == '_' )
+         return 63;
+   }
+   else
+   {
+      if( c == '+' )
+         return 62;
+      else if( c == '/' )
+         return 63;
+   }
+
    if( c >= 'a' )
       return c - 'a' + 26;
 
@@ -36,10 +51,7 @@ char get_b64_char_value( char c, bool url_encoding )
    if( c >= '0' )
       return c - '0' + 52;
 
-   if( url_encoding )
-      return c == '-' ? 62 : 63;
-   else
-      return c == '+' ? 62 : 63;
+   throw runtime_error( "found invalid b64 char '" + to_string( c ) + "'" );
 }
 
 }

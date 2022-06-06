@@ -6390,7 +6390,7 @@ void add_peer_file_hash_for_get( const string& hash,
    }
 }
 
-bool has_repository_entry_record( const string& key )
+bool has_repository_entry_record( const string& repository, const string& hash )
 {
    guard g( g_mutex );
 
@@ -6402,10 +6402,12 @@ bool has_repository_entry_record( const string& key )
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
-   return gap_ofs->has_file( key );
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   return gap_ofs->has_file( file_name );
 }
 
-bool fetch_repository_entry_record( const string& key,
+bool fetch_repository_entry_record( const string& repository, const string& hash,
  string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {
    guard g( g_mutex );
@@ -6418,13 +6420,15 @@ bool fetch_repository_entry_record( const string& key,
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
-   if( !must_exist && !gap_ofs->has_file( key ) )
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   if( !must_exist && !gap_ofs->has_file( file_name ) )
       return false;
 
    try
    {
       stringstream sio_data;
-      gap_ofs->get_file( key, &sio_data, true );
+      gap_ofs->get_file( file_name, &sio_data, true );
 
       sio_reader reader( sio_data );
 
@@ -6434,17 +6438,17 @@ bool fetch_repository_entry_record( const string& key,
    }
    catch( exception& x )
    {
-      throw runtime_error( x.what( ) + string( " when fetching " ) + key );
+      throw runtime_error( x.what( ) + string( " when fetching " ) + file_name );
    }
    catch( ... )
    {
-      throw runtime_error( "unexpected error occurred when fetching " + key );
+      throw runtime_error( "unexpected error occurred when fetching " + file_name );
    }
 
    return true;
 }
 
-void store_repository_entry_record( const string& key,
+void store_repository_entry_record( const string& repository, const string& hash,
  const string& local_hash, const string& local_public_key, const string& master_public_key )
 {
    guard g( g_mutex );
@@ -6457,6 +6461,8 @@ void store_repository_entry_record( const string& key,
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
    try
    {
       stringstream sio_data;
@@ -6468,19 +6474,19 @@ void store_repository_entry_record( const string& key,
 
       writer.finish_sections( );
 
-      gap_ofs->store_file( key, 0, &sio_data );
+      gap_ofs->store_file( file_name, 0, &sio_data );
    }
    catch( exception& x )
    {
-      throw runtime_error( x.what( ) + string( " when storing " ) + key );
+      throw runtime_error( x.what( ) + string( " when storing " ) + file_name );
    }
    catch( ... )
    {
-      throw runtime_error( "unexpected error occurred when storing " + key );
+      throw runtime_error( "unexpected error occurred when storing " + file_name );
    }
 }
 
-bool destroy_repository_entry_record( const string& key, bool must_exist )
+bool destroy_repository_entry_record( const string& repository, const string& hash, bool must_exist )
 {
    guard g( g_mutex );
 
@@ -6492,10 +6498,12 @@ bool destroy_repository_entry_record( const string& key, bool must_exist )
 
    gap_ofs->set_root_folder( c_file_repository_folder );
 
-   if( !must_exist && !gap_ofs->has_file( key ) )
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   if( !must_exist && !gap_ofs->has_file( file_name ) )
       return false;
 
-   gap_ofs->remove_file( key );
+   gap_ofs->remove_file( file_name );
 
    return true;
 }

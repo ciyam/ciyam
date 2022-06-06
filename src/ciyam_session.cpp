@@ -1640,6 +1640,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool total_items( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_items ) );
          bool total_encrypted( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_encrypted ) );
          bool total_repo_entries( has_parm_val( parameters, c_cmd_ciyam_session_file_info_total_repo_entries ) );
+         string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_info_repository ) );
          string depth( get_parm_val( parameters, c_cmd_ciyam_session_file_info_depth ) );
          string prefix( get_parm_val( parameters, c_cmd_ciyam_session_file_info_prefix ) );
          string pat_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_info_pat_or_hash ) );
@@ -1681,7 +1682,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else if( total_repo_entries )
                total_type = e_file_total_type_repository_entries;
 
-            file_list_item_pos( tag_or_hash, total, total_type, item_hash, item_pos, recurse, &handler, &dtm );
+            file_list_item_pos( repository, tag_or_hash, total,
+             total_type, item_hash, item_pos, recurse, &handler, &dtm );
 
             if( item_hash.empty( ) )
                response = to_string( total );
@@ -1938,6 +1940,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool recurse( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_recurse ) );
          bool blobs_only( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only ) );
          bool blobs_only_repo( has_parm_val( parameters, c_cmd_ciyam_session_file_crypt_blobs_only_repo ) );
+         string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_repository ) );
          string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_tag_or_hash ) );
          string password( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_password ) );
          string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_file_crypt_pubkey ) );
@@ -1971,7 +1974,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else if( blobs_only_repo )
                target = e_crypt_target_blobs_only_repo;
 
-            crypt_file( tag_or_hash, password, recurse, target, &handler, &dtm, &total, operation );
+            crypt_file( repository, tag_or_hash, password,
+             recurse, target, &handler, &dtm, &total, operation );
          }
          catch( ... )
          {
@@ -2099,17 +2103,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_file_repo_entry )
       {
-         string hash( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_hash ) );
+         string repository( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_repository ) );
+         string entry_hash( get_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_entry_hash ) );
          bool remove( has_parm_val( parameters, c_cmd_ciyam_session_file_repo_entry_remove ) );
 
          string local_hash, local_public_key, master_public_key;
 
          if( !remove )
          {
-            if( fetch_repository_entry_record( hash,
+            if( fetch_repository_entry_record( repository, entry_hash,
              local_hash, local_public_key, master_public_key, false ) )
             {
-               response = "repo_hash: " + hash
+               response = "entry_hash: " + entry_hash
                 + "\nlocal_hash: " + local_hash
                 + "\nlocal_public_key: " + local_public_key
                 + "\nmaster_public_key: " + master_public_key;
@@ -2121,10 +2126,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( !system_ods_instance( ).is_bulk_locked( ) )
                ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
 
-            if( fetch_repository_entry_record( hash,
+            if( fetch_repository_entry_record( repository, entry_hash,
              local_hash, local_public_key, master_public_key, false ) )
             {
-               destroy_repository_entry_record( hash );
+               destroy_repository_entry_record( repository, entry_hash );
 
                if( !local_hash.empty( ) )
                   delete_file_from_archive( local_hash, "" );

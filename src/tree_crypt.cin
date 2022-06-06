@@ -1,33 +1,42 @@
 @ifeq "$1" ""
-#Usage: tree_crypt.cin [-repo|-repo_decrypt|-repo_encrypt] <tag_or_hash> [<password>]
+#Usage: tree_crypt.cin [-repo|-repo_decrypt|-repo_encrypt <repository>] <tag_or_hash> [<password>]
 @else
 ;
 ARGS=
-REPO=
+OPTS=
+IS_REPO=
 PREFIX=-recurse
+REPOSITORY=
 ;
 @ifeq "$1" "-repo"
-REPO=1
+IS_REPO=1
+REPOSITORY=$2
 @endif
 ;
 @ifeq "$1" "-repo_decrypt"
-REPO=1
+IS_REPO=1
 PREFIX=-decrypt -recurse
+REPOSITORY=$2
 @endif
 ;
 @ifeq "$1" "-repo_encrypt"
-REPO=1
+IS_REPO=1
 PREFIX=-encrypt -recurse
+REPOSITORY=$2
 @endif
 ;
-@ifndef $REPO
+@ifndef $IS_REPO
 TAG_OR_HASH=$1
 ARGS=$2
-OPT=-blobs_only
+OPTS=-blobs_only
 @else
-TAG_OR_HASH=$2
-ARGS=$3
-OPT=-blobs_only_repo
+TAG_OR_HASH=$3
+ARGS=$4
+OPTS=-blobs_only_repo
+@endif
+;
+@ifdef $REPOSITORY
+OPTS=$OPTS $REPOSITORY
 @endif
 ;
 @ifeq "$ARGS" ""
@@ -38,6 +47,6 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 @endif
 ;
 @ifdef $ARGS
- .file_crypt $PREFIX $OPT $TAG_OR_HASH $~ARGS
+ .file_crypt $PREFIX $OPTS $TAG_OR_HASH $~ARGS
 @endif
 @endif

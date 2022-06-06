@@ -316,7 +316,7 @@ void process_repository_file( const string& blockchain,
    bool has_archive = false;
    bool was_extracted = false;
 
-   string archive( replaced( blockchain, c_bc_prefix, "" ) );
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    if( !get_session_variable( get_special_var_name(
     e_special_var_blockchain_archive_path ) ).empty( ) )
@@ -374,14 +374,14 @@ void process_repository_file( const string& blockchain,
 
          if( !is_blockchain_owner )
          {
-            if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
-               store_repository_entry_record( target_hash, src_hash, hex_pub_key, hex_master );
+            if( !fetch_repository_entry_record( identity, target_hash, dummy, dummy, dummy, false ) )
+               store_repository_entry_record( identity, target_hash, src_hash, hex_pub_key, hex_master );
 
             if( file_data.empty( ) )
                file_data = ( char )type_and_extra + file_content;
 
             if( has_archive )
-               create_raw_file_in_archive( archive, src_hash, file_data );
+               create_raw_file_in_archive( identity, src_hash, file_data );
             else
                create_raw_file( file_data, true, 0, 0, src_hash.c_str( ), true, true );
          }
@@ -396,8 +396,8 @@ void process_repository_file( const string& blockchain,
 
             clear_key( password );
 
-            if( !fetch_repository_entry_record( target_hash, dummy, dummy, dummy, false ) )
-               store_repository_entry_record( target_hash, "", hex_master, hex_master );
+            if( !fetch_repository_entry_record( identity, target_hash, dummy, dummy, dummy, false ) )
+               store_repository_entry_record( identity, target_hash, "", hex_master, hex_master );
 
             if( was_extracted )
                delete_file( src_hash );
@@ -411,7 +411,7 @@ void process_repository_file( const string& blockchain,
       string dummy, local_hash;
 
       bool has_local_file = false;
-      bool has_repo_entry = fetch_repository_entry_record( src_hash, local_hash, dummy, dummy, false );
+      bool has_repo_entry = fetch_repository_entry_record( identity, src_hash, local_hash, dummy, dummy, false );
 
       if( has_repo_entry && has_file( local_hash ) )
          has_local_file = true;
@@ -459,9 +459,10 @@ void process_repository_file( const string& blockchain,
          if( !has_archive )
             local_hash = create_raw_file( file_data, false, 0, 0, 0, false );
          else
-            create_raw_file_in_archive( archive, "", file_data, &local_hash );
+            create_raw_file_in_archive( identity, "", file_data, &local_hash );
 
-         store_repository_entry_record( src_hash, local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
+         store_repository_entry_record( identity, src_hash,
+          local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }
    }
 }
@@ -646,7 +647,8 @@ size_t process_put_file( const string& blockchain,
 
                               string dummy, local_hash;
 
-                              bool has_repo_entry = fetch_repository_entry_record( target_hash, local_hash, dummy, dummy, false );
+                              bool has_repo_entry = fetch_repository_entry_record(
+                               identity, target_hash, local_hash, dummy, dummy, false );
 
                               if( has_repo_entry && has_file( local_hash ) )
                               {
@@ -741,7 +743,7 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
          bool has_next_repo_entry = false;
 
          if( !has_next_file )
-            has_next_repo_entry = has_repository_entry_record( next_hash );
+            has_next_repo_entry = has_repository_entry_record( identity, next_hash );
 
          if( !has_next_file && !has_next_repo_entry )
          {
@@ -893,7 +895,7 @@ void process_list_items( const string& identity, const string& hash,
 
          if( !has_file( next_hash ) )
          {
-            if( !fetch_repository_entry_record( next_hash,
+            if( !fetch_repository_entry_record( identity, next_hash,
              local_hash, local_public_key, master_public_key, false ) )
                add_peer_file_hash_for_get( next_hash );
             else if( first_hash_to_get.empty( ) && ( local_public_key != master_public_key ) )
@@ -905,7 +907,7 @@ void process_list_items( const string& identity, const string& hash,
                   if( p_blob_data->size( ) > 1 )
                      *p_blob_data += c_blob_separator;
 
-                  *p_blob_data += create_peer_repository_entry_pull_info(
+                  *p_blob_data += create_peer_repository_entry_pull_info( identity,
                    next_hash, local_hash, local_public_key, master_public_key, false );
                }
             }
@@ -929,7 +931,7 @@ void process_list_items( const string& identity, const string& hash,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( fetch_repository_entry_record( next_hash,
+            if( fetch_repository_entry_record( identity, next_hash,
              local_hash, local_public_key, master_public_key, false ) )
             {
                has_repository_entry = true;
@@ -960,7 +962,7 @@ void process_list_items( const string& identity, const string& hash,
                   }
 
                   if( !has_repository_entry )
-                     store_repository_entry_record( next_hash, "", master_public_key, master_public_key );
+                     store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
                }
             }
          }
@@ -1013,7 +1015,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
       bool need_to_tag_zenith = false;
 
-      string archive( replaced( blockchain, c_bc_prefix, "" ) );
+      string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
       string first_hash_name( get_special_var_name( e_special_var_hash ) );
       string first_hash_to_get( get_session_variable( first_hash_name ) );
@@ -1052,7 +1054,7 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                   need_to_tag_zenith = is_new_height;
 
                   if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( archive, tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
+                     process_list_items( identity, tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
                }
 
                set_session_variable(
@@ -2660,11 +2662,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                string local_hash, local_public_key, master_public_key;
 
-               if( fetch_repository_entry_record( hash,
+               if( fetch_repository_entry_record( identity, hash,
                 local_hash, local_public_key, master_public_key, false ) )
                {
                   string pull_hash(
-                   create_peer_repository_entry_pull_info( hash, local_hash, local_public_key, "" ) );
+                   create_peer_repository_entry_pull_info( identity, hash, local_hash, local_public_key, "" ) );
 
                   add_peer_file_hash_for_put( pull_hash );
 

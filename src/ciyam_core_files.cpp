@@ -680,18 +680,19 @@ string construct_blob_for_block_content( const string& block_content )
    return string( c_file_type_str_core_blob ) + block_content;
 }
 
-string create_peer_repository_entry_pull_info( const string& hash, bool store_as_blob )
+string create_peer_repository_entry_pull_info( const string& repository, const string& hash, bool store_as_blob )
 {
    string retval, local_hash, local_public_key, master_public_key;
 
-   if( fetch_repository_entry_record( hash,
+   if( fetch_repository_entry_record( repository, hash,
     local_hash, local_public_key, master_public_key, false ) && has_file( local_hash ) )
-      retval = create_peer_repository_entry_pull_info( hash, local_hash, local_public_key, master_public_key, store_as_blob );
+      retval = create_peer_repository_entry_pull_info( repository,
+       hash, local_hash, local_public_key, master_public_key, store_as_blob );
 
    return retval;
 }
 
-string create_peer_repository_entry_pull_info( const string& hash,
+string create_peer_repository_entry_pull_info( const string& repository, const string& hash,
  const string& local_hash, const string& local_public_key, const string& master_public_key, bool store_as_blob )
 {
    string retval;
