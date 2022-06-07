@@ -20,6 +20,7 @@ file_archives "list file archives and optionally update status information" [<op
 file_relegate "relegate one or more files from the files area to the archives" <val/-n=/num_files>|<val/-s=/size_limit>|{[<opt/-destroy/destroy>|<opt/-blacklist/blacklist>]<val//hash>}[<val//archive>]
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 file_repo_entry "view/remove global repository entry" [<opt/-remove/remove>]<val//repository><val//entry_hash>
+file_repo_entries "count/remove obsolete repository entries" <opt/-total/total>|<opt/-remove_obsolete/remove_obsolete><val//repository>
 peer_listen "add/remove peer blockchain listeners" <opt/-remove/remove>|<val//port><val//blockchains>
 peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
 peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain><val//host_and_or_port>

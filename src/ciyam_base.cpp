@@ -6508,6 +6508,170 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
    return true;
 }
 
+size_t count_total_repo_entries( const string& repository, date_time* p_dtm, progress* p_progress )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
+
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   size_t total_entries = 0;
+
+   string last_key;
+
+   while( true )
+   {
+      date_time now( date_time::local( ) );
+
+      vector< string > repo_entries;
+      gap_ofs->list_files( repository + '*', repo_entries, false, last_key, false, 1000 );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= 2 )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Processed " + to_string( total_entries ) + " repository entries...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+
+
+      total_entries += repo_entries.size( );
+
+      last_key = repo_entries[ repo_entries.size( ) - 1 ];
+
+      if( repo_entries.size( ) < 1000 )
+         break;
+   }
+
+   return total_entries;
+}
+
+size_t remove_obsolete_repo_entries( const string& repository, date_time* p_dtm, progress* p_progress )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !gap_ods->is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
+
+   scoped_ods_instance ods_instance( *gap_ods );
+
+   gap_ofs->set_root_folder( c_file_repository_folder );
+
+   size_t total_entries = 0;
+
+   string last_key;
+   vector< string > files_to_remove;
+
+   while( true )
+   {
+      date_time now( date_time::local( ) );
+
+      vector< string > repo_entries;
+      gap_ofs->list_files( repository + '*', repo_entries, false, last_key, false, 1000 );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= 2 )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Processed " + to_string( total_entries ) + " repository entries...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+
+      for( size_t i = 0; i < repo_entries.size( ); i++ )
+      {
+         ++total_entries;
+
+         last_key = repo_entries[ i ];
+
+         stringstream sio_data;
+         gap_ofs->get_file( last_key, &sio_data, true );
+
+         sio_reader reader( sio_data );
+
+         string file_hash( last_key );
+         string::size_type pos = file_hash.find( '.' );
+
+         if( pos != string::npos )
+         {
+            file_hash.erase( 0, pos + 1 );
+            file_hash = hex_encode( base64::decode( file_hash, true ) );
+         }
+
+         string local_hash( reader.read_attribute( c_attribute_local_hash ) );
+
+         bool found = true;
+
+         if( local_hash.empty( ) && !has_file( file_hash ) )
+            found = false;
+
+         if( !local_hash.empty( ) && !has_file( local_hash ) )
+            found = false;
+
+         if( !found )
+            files_to_remove.push_back( last_key );
+      }
+
+      if( repo_entries.size( ) < 1000 )
+         break;
+   }
+
+   total_entries = files_to_remove.size( );
+
+   ods::transaction ods_tx( *gap_ods );
+
+   for( size_t i = 0; i < files_to_remove.size( ); i++ )
+   {
+      date_time now( date_time::local( ) );
+
+      gap_ofs->remove_file( files_to_remove[ i ] );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= 2 )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Removed " + to_string( i ) + " obsolete repository entries...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+   }
+
+   ods_tx.commit( );
+
+   return total_entries;
+}
+
 string top_next_peer_file_hash_to_get( bool* p_any_supporter_has )
 {
    guard g( g_mutex );
