@@ -2377,11 +2377,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       blockchain_height = blockchain_height_pending;
 
-      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
-
-      TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
-       + zenith_hash + " height: " + to_string( blockchain_height ) );
-
       string zenith_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_zenith_tree_hash ) ) );
 
@@ -2402,6 +2397,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
       }
+
+      output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
+
+      TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
+       + zenith_hash + " height: " + to_string( blockchain_height ) );
 
       set_session_variable( blockchain_zenith_hash_name, "" );
 
