@@ -6508,7 +6508,8 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
    return true;
 }
 
-size_t count_total_repo_entries( const string& repository, date_time* p_dtm, progress* p_progress )
+size_t count_total_repo_entries( const string& repository,
+ date_time* p_dtm, progress* p_progress, size_t num_seconds )
 {
    guard g( g_mutex );
 
@@ -6535,7 +6536,7 @@ size_t count_total_repo_entries( const string& repository, date_time* p_dtm, pro
       {
          uint64_t elapsed = seconds_between( *p_dtm, now );
 
-         if( elapsed >= 2 )
+         if( elapsed >= num_seconds )
          {
             string progress;
 

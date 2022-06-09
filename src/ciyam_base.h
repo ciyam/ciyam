@@ -418,7 +418,7 @@ bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record(
  const std::string& repository, const std::string& hash, bool must_exist = true );
 
 size_t CIYAM_BASE_DECL_SPEC count_total_repo_entries(
- const std::string& repository, date_time* p_dtm = 0, progress* p_progress = 0 );
+ const std::string& repository, date_time* p_dtm = 0, progress* p_progress = 0, size_t num_seconds = 1 );
 
 size_t CIYAM_BASE_DECL_SPEC remove_obsolete_repo_entries(
  const std::string& repository, date_time* p_dtm = 0, progress* p_progress = 0, size_t num_seconds = 1 );
