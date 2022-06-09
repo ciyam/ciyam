@@ -512,6 +512,10 @@ size_t process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
+   guard g( g_mutex );
+
+   TRACE_LOG( TRACE_PEER_OPS, "(process_put_file) blockchain: " + blockchain );
+
    vector< string > blobs;
    split( file_data, blobs, c_blob_separator );
 
@@ -810,6 +814,10 @@ void process_list_items( const string& identity, const string& hash,
  bool recurse, string* p_blob_data = 0, size_t* p_num_items_found = 0,
  set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
+   guard g( g_mutex );
+
+   TRACE_LOG( TRACE_PEER_OPS, "(process_list_items) hash: " + hash );
+
    string all_list_items( extract_file( hash, "" ) );
 
    vector< string > list_items;
@@ -1759,7 +1767,10 @@ void socket_command_handler::get_file( const string& hash_info, string* p_file_d
          if( !has_identity_archive )
             create_raw_file( file_data, true, 0, 0, 0, true, true );
          else
+         {
+            guard g( g_mutex );
             create_raw_file_in_archive( identity, hash, file_data );
+         }
       }
    }
 
