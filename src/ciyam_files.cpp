@@ -77,6 +77,10 @@ const char* const c_file_archive_status_bad_write = "bad write";
 const char* const c_file_archive_status_bad_access = "bad access";
 const char* const c_file_archive_status_status_bad_create = "bad create";
 
+const char* const c_attribute_local_hash = "local_hash";
+const char* const c_attribute_local_public_key = "local_public_key";
+const char* const c_attribute_master_public_key = "master_public_key";
+
 #include "ciyam_constants.h"
 
 #include "udp_stream_helper.cpp"
@@ -4339,4 +4343,321 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
 
    if( ap_ods_tx.get( ) )
       ap_ods_tx->commit( );
+}
+
+bool has_repository_entry_record( const string& repository, const string& hash )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   return ods_fs.has_file( file_name );
+}
+
+bool fetch_repository_entry_record( const string& repository, const string& hash,
+ string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   if( !must_exist && !ods_fs.has_file( file_name ) )
+      return false;
+
+   try
+   {
+      stringstream sio_data;
+      ods_fs.get_file( file_name, &sio_data, true );
+
+      sio_reader reader( sio_data );
+
+      local_hash = reader.read_attribute( c_attribute_local_hash );
+      local_public_key = reader.read_attribute( c_attribute_local_public_key );
+      master_public_key = reader.read_attribute( c_attribute_master_public_key );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " when fetching " ) + file_name );
+   }
+   catch( ... )
+   {
+      throw runtime_error( "unexpected error occurred when fetching " + file_name );
+   }
+
+   return true;
+}
+
+void store_repository_entry_record( const string& repository, const string& hash,
+ const string& local_hash, const string& local_public_key, const string& master_public_key )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   try
+   {
+      stringstream sio_data;
+      sio_writer writer( sio_data );
+
+      writer.write_attribute( c_attribute_local_hash, local_hash );
+      writer.write_attribute( c_attribute_local_public_key, local_public_key );
+      writer.write_attribute( c_attribute_master_public_key, master_public_key );
+
+      writer.finish_sections( );
+
+      ods_fs.store_file( file_name, 0, &sio_data );
+   }
+   catch( exception& x )
+   {
+      throw runtime_error( x.what( ) + string( " when storing " ) + file_name );
+   }
+   catch( ... )
+   {
+      throw runtime_error( "unexpected error occurred when storing " + file_name );
+   }
+}
+
+bool destroy_repository_entry_record( const string& repository, const string& hash, bool must_exist )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   if( !must_exist && !ods_fs.has_file( file_name ) )
+      return false;
+
+   ods_fs.remove_file( file_name );
+
+   return true;
+}
+
+size_t count_total_repo_entries( const string& repository,
+ date_time* p_dtm, progress* p_progress, size_t num_seconds )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_read > ap_bulk_read;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   size_t total_entries = 0;
+
+   string last_key;
+
+   while( true )
+   {
+      date_time now( date_time::local( ) );
+
+      vector< string > repo_entries;
+      ods_fs.list_files( repository + '*', repo_entries, false, last_key, false, 1000 );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= num_seconds )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Processed " + to_string( total_entries ) + " repository entries...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+
+
+      total_entries += repo_entries.size( );
+
+      last_key = repo_entries[ repo_entries.size( ) - 1 ];
+
+      if( repo_entries.size( ) < 1000 )
+         break;
+   }
+
+   return total_entries;
+}
+
+size_t remove_obsolete_repo_entries( const string& repository,
+ date_time* p_dtm, progress* p_progress, size_t num_seconds )
+{
+   guard g( g_mutex );
+
+   auto_ptr< ods::bulk_write > ap_bulk_write;
+   if( !system_ods_instance( ).is_bulk_locked( ) )
+      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+
+   string archive_path;
+   vector< string > paths;
+
+   string all_archives( list_file_archives( true, &paths ) );
+
+   if( !all_archives.empty( ) )
+   {
+      vector< string > archives;
+
+      split( all_archives, archives, '\n' );
+
+      if( paths.size( ) != archives.size( ) )
+         throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
+
+      for( size_t i = 0; i < archives.size( ); i++ )
+      {
+         if( archives[ i ] == repository )
+         {
+            archive_path = paths[ i ];
+            break;
+         }
+      }
+   }
+
+   auto_ptr< temporary_session_variable > ap_temp_archive_path;
+
+   if( !archive_path.empty( ) )
+      ap_temp_archive_path.reset( new temporary_session_variable(
+       get_special_var_name( e_special_var_blockchain_archive_path ), archive_path ) );
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   size_t total_entries = 0;
+
+   string last_key;
+   vector< string > files_to_remove;
+
+   while( true )
+   {
+      date_time now( date_time::local( ) );
+
+      vector< string > repo_entries;
+      ods_fs.list_files( repository + '*', repo_entries, false, last_key, false, 100 );
+
+      if( p_progress )
+      {
+         uint64_t elapsed = seconds_between( *p_dtm, now );
+
+         if( elapsed >= num_seconds )
+         {
+            string progress;
+
+            // FUTURE: This message should be handled as a server string message.
+            progress = "Processed " + to_string( total_entries ) + " repository entries...";
+
+            *p_dtm = now;
+
+            p_progress->output_progress( progress );
+         }
+      }
+
+      for( size_t i = 0; i < repo_entries.size( ); i++ )
+      {
+         ++total_entries;
+
+         last_key = repo_entries[ i ];
+
+         stringstream sio_data;
+         ods_fs.get_file( last_key, &sio_data, true );
+
+         sio_reader reader( sio_data );
+
+         string file_hash( last_key );
+         string::size_type pos = file_hash.find( '.' );
+
+         if( pos != string::npos )
+         {
+            file_hash.erase( 0, pos + 1 );
+            file_hash = hex_encode( base64::decode( file_hash, true ) );
+         }
+
+         string local_hash( reader.read_attribute( c_attribute_local_hash ) );
+
+         bool found = true;
+
+         if( local_hash.empty( ) && !has_file( file_hash ) )
+            found = false;
+
+         if( !local_hash.empty( ) && !has_file( local_hash ) )
+            found = false;
+
+         if( !found )
+            files_to_remove.push_back( last_key );
+      }
+
+      if( repo_entries.size( ) < 100 )
+         break;
+   }
+
+   total_entries = files_to_remove.size( );
+
+   if( total_entries )
+   {
+      ods::transaction ods_tx( system_ods_instance( ) );
+
+      for( size_t i = 0; i < files_to_remove.size( ); i++ )
+      {
+         date_time now( date_time::local( ) );
+
+         ods_fs.remove_file( files_to_remove[ i ] );
+
+         if( p_progress )
+         {
+            uint64_t elapsed = seconds_between( *p_dtm, now );
+
+            if( elapsed >= num_seconds )
+            {
+               string progress;
+
+               // FUTURE: This message should be handled as a server string message.
+               progress = "Removed " + to_string( i ) + " obsolete repository entries...";
+
+               *p_dtm = now;
+
+               p_progress->output_progress( progress );
+            }
+         }
+      }
+
+      ods_tx.commit( );
+   }
+
+   return total_entries;
 }
