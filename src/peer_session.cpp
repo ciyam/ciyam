@@ -105,8 +105,7 @@ const size_t c_num_public_key_lines = 256;
 const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
 
-const size_t c_sleep_time = 250;
-const size_t c_pause_sleep_time = 500;
+const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
 const size_t c_initial_timeout = 25000;
@@ -513,8 +512,6 @@ size_t process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
-   guard g( g_mutex );
-
    TRACE_LOG( TRACE_PEER_OPS, "(process_put_file) blockchain: " + blockchain );
 
    vector< string > blobs;
@@ -583,12 +580,6 @@ size_t process_put_file( const string& blockchain,
             *p_dtm = now;
 
             p_progress->output_progress( progress );
-
-            // NOTE: If there are support sessions then
-            // pause for a little while in order to let
-            // them have more CPU usage.
-            if( check_for_supporters )
-               msleep( c_pause_sleep_time );
          }
       }
 
@@ -635,6 +626,8 @@ size_t process_put_file( const string& blockchain,
 
                      if( !hash_info.empty( ) )
                      {
+                        guard g( g_mutex );
+
                         okay = true;
                         pos = hash_info.find( ':' );
 
@@ -4279,7 +4272,7 @@ void peer_session_starter::on_start( )
          string identity( get_system_variable( get_special_var_name( e_special_var_queue_peers ) ) );
 
          if( identity.empty( ) )
-            msleep( c_sleep_time );
+            msleep( c_wait_sleep_time );
          else
          {
             bool is_listener = false;
