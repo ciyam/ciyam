@@ -106,6 +106,7 @@ const size_t c_num_base64_key_chars = 44;
 const size_t c_key_pair_separator_pos = 44;
 
 const size_t c_sleep_time = 250;
+const size_t c_pause_sleep_time = 500;
 const size_t c_start_sleep_time = 2500;
 
 const size_t c_initial_timeout = 25000;
@@ -552,8 +553,6 @@ size_t process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ] );
    }
 
-   system_ods_bulk_write ods_bulk_write;
-
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
       string next_blob( blobs[ i ] );
@@ -584,6 +583,12 @@ size_t process_put_file( const string& blockchain,
             *p_dtm = now;
 
             p_progress->output_progress( progress );
+
+            // NOTE: If there are support sessions then
+            // pause for a little while in order to let
+            // them have more CPU usage.
+            if( check_for_supporters )
+               msleep( c_pause_sleep_time );
          }
       }
 
