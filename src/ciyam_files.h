@@ -169,6 +169,17 @@ std::string CIYAM_BASE_DECL_SPEC extract_file( const std::string& hash,
  const std::string& dest_file_name, unsigned char check_file_type_and_extra = '\0',
  bool* p_is_list = 0, unsigned char* p_type_and_extra = 0, bool* p_is_encrypted = 0, bool set_is_encrypted = false );
 
+class CIYAM_BASE_DECL_SPEC system_ods_fs_guard
+{
+   public:
+   system_ods_fs_guard( );
+   ~system_ods_fs_guard( );
+
+   private:
+   struct impl;
+   impl* p_impl;
+};
+
 void CIYAM_BASE_DECL_SPEC add_file_archive(
  const std::string& name, const std::string& path, int64_t size_limit );
 
