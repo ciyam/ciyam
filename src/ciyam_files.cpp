@@ -722,10 +722,7 @@ void init_archive_info( progress* p_progress )
 
    vector< string > paths;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    string all_archives( list_file_archives( true, &paths ) );
 
@@ -1472,10 +1469,7 @@ void file_list_item_pos(
    if( has_tag( tag_or_hash ) )
       hash = tag_file_hash( tag_or_hash );
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    if( is_list_file( hash ) )
    {
@@ -3508,6 +3502,27 @@ string extract_file( const string& hash,
    return data;
 }
 
+struct system_ods_fs_guard::impl
+{
+   impl( )
+    :
+    g( g_mutex )
+   {
+   }
+
+   guard g;
+};
+
+system_ods_fs_guard::system_ods_fs_guard( )
+{
+   p_impl = new impl;
+}
+
+system_ods_fs_guard::~system_ods_fs_guard( )
+{
+   delete p_impl;
+}
+
 void add_file_archive( const string& name, const string& path, int64_t size_limit )
 {
    guard g( g_mutex );
@@ -3534,7 +3549,8 @@ void add_file_archive( const string& name, const string& path, int64_t size_limi
 
    string status_info( get_archive_status( path ) );
 
-   ods::bulk_write bulk_write( system_ods_instance( ) );
+   system_ods_bulk_write ods_bulk_write;
+
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods::transaction ods_tx( system_ods_instance( ) );
@@ -3563,7 +3579,8 @@ void remove_file_archive( const string& name, bool destroy_files )
 {
    guard g( g_mutex );
 
-   ods::bulk_write bulk_write( system_ods_instance( ) );
+   system_ods_bulk_write ods_bulk_write;
+
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
@@ -3623,7 +3640,8 @@ void repair_file_archive( const string& name )
    g_archive_file_info.erase( name );
    g_archive_file_info.insert( make_pair( name, archive_file_info( ) ) );
 
-   ods::bulk_write bulk_write( system_ods_instance( ) );
+   system_ods_bulk_write ods_bulk_write;
+
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
@@ -3694,7 +3712,8 @@ void archives_status_update( const string& name )
 {
    guard g( g_mutex );
 
-   ods::bulk_write bulk_write( system_ods_instance( ) );
+   system_ods_bulk_write ods_bulk_write;
+
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
    ods_fs.set_root_folder( c_file_archives_folder );
@@ -3744,10 +3763,7 @@ bool file_has_been_blacklisted( const string& hash )
 
    bool retval = false;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -3803,10 +3819,7 @@ string list_file_archives( bool minimal, vector< string >* p_paths, int64_t min_
    string retval;
    vector< string > names;
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -3884,9 +3897,7 @@ void create_raw_file_in_archive( const string& archive, const string& hash, cons
       touch_file_in_archive( file_hash, archive );
    else
    {
-      auto_ptr< ods::bulk_write > ap_bulk_write;
-      if( !system_ods_instance( ).is_bulk_locked( ) )
-         ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+      system_ods_bulk_write ods_bulk_write;
 
       string all_archives( list_file_archives( true, &paths ) );
 
@@ -4001,7 +4012,8 @@ string relegate_one_or_num_oldest_files( const string& hash,
       if( paths.size( ) != archives.size( ) )
          throw runtime_error( "unexpected paths.size( ) != archives.size( )" );
 
-      ods::bulk_write bulk_write( system_ods_instance( ) );
+      system_ods_bulk_write ods_bulk_write;
+
       ods_file_system& ods_fs( system_ods_file_system( ) );
 
       ods::transaction ods_tx( system_ods_instance( ) );
@@ -4254,9 +4266,7 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
    vector< string > paths;
    vector< string > archives;
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+   system_ods_bulk_write ods_bulk_write;
 
    string all_archives( list_file_archives( true, &paths ) );
 
@@ -4349,9 +4359,7 @@ bool has_repository_entry_record( const string& repository, const string& hash )
 {
    guard g( g_mutex );
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4367,9 +4375,7 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
 {
    guard g( g_mutex );
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4408,9 +4414,7 @@ void store_repository_entry_record( const string& repository, const string& hash
 {
    guard g( g_mutex );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+   system_ods_bulk_write ods_bulk_write;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4445,9 +4449,7 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 {
    guard g( g_mutex );
 
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+   system_ods_bulk_write ods_bulk_write;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4468,9 +4470,7 @@ size_t count_total_repo_entries( const string& repository,
 {
    guard g( g_mutex );
 
-   auto_ptr< ods::bulk_read > ap_bulk_read;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_read.reset( new ods::bulk_read( system_ods_instance( ) ) );
+   system_ods_bulk_read ods_bulk_read;
 
    ods_file_system& ods_fs( system_ods_file_system( ) );
 
@@ -4519,11 +4519,7 @@ size_t count_total_repo_entries( const string& repository,
 size_t remove_obsolete_repo_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, size_t num_seconds )
 {
-   guard g( g_mutex );
-
-   auto_ptr< ods::bulk_write > ap_bulk_write;
-   if( !system_ods_instance( ).is_bulk_locked( ) )
-      ap_bulk_write.reset( new ods::bulk_write( system_ods_instance( ) ) );
+   system_ods_bulk_write ods_bulk_write;
 
    string archive_path;
    vector< string > paths;
@@ -4590,6 +4586,8 @@ size_t remove_obsolete_repo_entries( const string& repository,
 
       for( size_t i = 0; i < repo_entries.size( ); i++ )
       {
+         guard g( g_mutex );
+
          ++total_entries;
 
          last_key = repo_entries[ i ];
@@ -4630,6 +4628,8 @@ size_t remove_obsolete_repo_entries( const string& repository,
 
    if( total_entries )
    {
+      guard g( g_mutex );
+
       ods::transaction ods_tx( system_ods_instance( ) );
 
       for( size_t i = 0; i < files_to_remove.size( ); i++ )

@@ -2066,6 +2066,8 @@ bool has_instance_in_global_storage( class_base& instance, const string& key )
    string root_child_folder( persistence_extra );
    bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
 
+   system_ods_fs_guard ods_fs_guard;
+
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
@@ -2084,6 +2086,8 @@ void fetch_keys_from_global_storage( class_base& instance,
 
    string root_child_folder( persistence_extra );
    bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
+
+   system_ods_fs_guard ods_fs_guard;
 
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -2118,6 +2122,8 @@ bool fetch_instance_from_global_storage( class_base& instance, const string& key
 
    string root_child_folder( persistence_extra );
    bool is_file_not_folder( global_storage_persistence_is_file( root_child_folder ) );
+
+   system_ods_fs_guard ods_fs_guard;
 
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
@@ -4822,6 +4828,8 @@ string list_peer_ip_addrs_for_rejection( )
 
 string get_peerchain_info( const string& identity, bool* p_is_listener )
 {
+   system_ods_fs_guard ods_fs_guard;
+
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
@@ -4870,6 +4878,8 @@ string get_peerchain_info( const string& identity, bool* p_is_listener )
 
 void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_start_only )
 {
+   system_ods_fs_guard ods_fs_guard;
+
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
@@ -4904,6 +4914,8 @@ void get_peerchain_externals( vector< string >& peerchain_externals, bool auto_s
 
 void get_peerchain_listeners( multimap< int, string >& peerchain_listeners, bool auto_start_only )
 {
+   system_ods_fs_guard ods_fs_guard;
+
    ods::bulk_read bulk_read( *gap_ods );
    scoped_ods_instance ods_instance( *gap_ods );
 
@@ -8627,7 +8639,7 @@ struct system_ods_bulk_read::impl
 {
    impl( )
    {
-      if( !gap_ods->is_bulk_locked( ) )
+      if( !gap_ods->is_bulk_read_locked( ) && !gap_ods->is_bulk_write_locked( ) )
          ap_ods_bulk_read.reset( new ods::bulk_read( *gap_ods ) );
    }
 
@@ -8648,7 +8660,7 @@ struct system_ods_bulk_write::impl
 {
    impl( )
    {
-      if( !gap_ods->is_bulk_locked( ) )
+      if( !gap_ods->is_bulk_write_locked( ) )
          ap_ods_bulk_write.reset( new ods::bulk_write( *gap_ods ) );
    }
 
