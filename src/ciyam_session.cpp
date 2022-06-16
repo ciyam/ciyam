@@ -2145,9 +2145,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          date_time dtm( date_time::local( ) );
 
          if( total )
-            response = to_string( count_total_repo_entries( repository, &dtm, &handler ) );
+            response = to_string( count_total_repository_entries( repository, &dtm, &handler ) );
          else
-            response = "Removed " + to_string( remove_obsolete_repo_entries( repository, &dtm, &handler ) ) + " entries.";
+            response = "Removed " + to_string( remove_obsolete_repository_entries( repository, &dtm, &handler ) ) + " entries.";
       }
       else if( command == c_cmd_ciyam_session_peer_listen )
       {
