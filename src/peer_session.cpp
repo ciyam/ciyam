@@ -465,6 +465,8 @@ void process_repository_file( const string& blockchain,
           local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }
    }
+
+   remove_repository_entry_info( identity, src_hash );
 }
 
 string get_file_hash_from_put_data( const string& encoded_master,
@@ -550,8 +552,12 @@ size_t process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ] );
    }
 
+   size_t order = get_blockchain_tree_item( blockchain );
+
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
+      ++order;
+
       string next_blob( blobs[ i ] );
 
       vector< string > lines;
@@ -662,6 +668,7 @@ size_t process_put_file( const string& blockchain,
                               {
                                  target_hashes.insert( target_hash );
 
+                                 add_repository_entry_info( identity, target_hash, order );
                                  add_peer_file_hash_for_get( hash_info, check_for_supporters );
                               }
                            }
@@ -2140,6 +2147,18 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                         // needing to include the tree root file itself.
                         if( !file_hash.empty( ) )
                         {
+                           pair< string, size_t > repo_entry_info;
+                           repo_entry_info = oldest_repository_entry_info( identity );
+
+                           if( !repo_entry_info.first.empty( ) )
+                           {
+                              if( repo_entry_info.second > num_items_found )
+                              {
+                                 file_hash = repo_entry_info.first;
+                                 num_items_found = repo_entry_info.second;
+                              }
+                           }
+
                            next_block_tag += string( " " ) + '@' + file_hash;
 
                            set_blockchain_tree_item( blockchain, num_items_found + 2 );
@@ -2411,6 +2430,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
+
+      clear_all_repository_entry_info( identity );
 
       set_session_variable( blockchain_zenith_hash_name, "" );
 

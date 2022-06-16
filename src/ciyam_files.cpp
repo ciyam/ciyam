@@ -148,6 +148,55 @@ class file_hash_info
 map< string, file_hash_info > g_tag_hashes;
 multimap< file_hash_info, string > g_hash_tags;
 
+struct repo_entry_info
+{
+   void add_entry( const string& hash, size_t order );
+   void remove_entry( const string& hash, bool skip_not_found = false );
+
+   pair< string, size_t > get_oldest_entry_info( );
+
+   void clear( );
+
+   map< file_hash_info, size_t > hash_for_order;
+   map< size_t, file_hash_info > order_for_hash;
+};
+
+void repo_entry_info::add_entry( const string& hash, size_t order )
+{
+   hash_for_order.insert( make_pair( hash, order ) );
+   order_for_hash.insert( make_pair( order, hash ) );
+}
+
+void repo_entry_info::remove_entry( const string& hash, bool skip_not_found )
+{
+   if( hash_for_order.count( hash ) )
+   {
+      order_for_hash.erase( hash_for_order[ hash ] );
+      hash_for_order.erase( hash );
+   }
+}
+
+pair< string, size_t > repo_entry_info::get_oldest_entry_info( )
+{
+   pair< string, size_t > retval;
+
+   if( !order_for_hash.empty( ) )
+   {
+      retval.first = order_for_hash.begin( )->second.get_hash_string( );
+      retval.second = order_for_hash.begin( )->first;
+   }
+
+   return retval;
+}
+
+void repo_entry_info::clear( )
+{
+   hash_for_order.clear( );
+   order_for_hash.clear( );
+}
+
+map< string, repo_entry_info > g_repo_entry_info;
+
 struct archive_file_info
 {
    bool has_file( const string& hash ) const;
@@ -4355,6 +4404,34 @@ void delete_file_from_archive( const string& hash, const string& archive, bool a
       ap_ods_tx->commit( );
 }
 
+void add_repository_entry_info( const string& repository, const string& hash, size_t order )
+{
+   guard g( g_mutex );
+
+   g_repo_entry_info[ repository ].add_entry( hash, order );
+}
+
+void remove_repository_entry_info( const string& repository, const string& hash )
+{
+   guard g( g_mutex );
+
+   g_repo_entry_info[ repository ].remove_entry( hash );
+}
+
+void clear_all_repository_entry_info( const string& repository )
+{
+   guard g( g_mutex );
+
+   g_repo_entry_info[ repository ].clear( );
+}
+
+pair< string, size_t > oldest_repository_entry_info( const string& repository )
+{
+   guard g( g_mutex );
+
+   return g_repo_entry_info[ repository ].get_oldest_entry_info( );
+}
+
 bool has_repository_entry_record( const string& repository, const string& hash )
 {
    guard g( g_mutex );
@@ -4465,7 +4542,7 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
    return true;
 }
 
-size_t count_total_repo_entries( const string& repository,
+size_t count_total_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, size_t num_seconds )
 {
    guard g( g_mutex );
@@ -4516,7 +4593,7 @@ size_t count_total_repo_entries( const string& repository,
    return total_entries;
 }
 
-size_t remove_obsolete_repo_entries( const string& repository,
+size_t remove_obsolete_repository_entries( const string& repository,
  date_time* p_dtm, progress* p_progress, size_t num_seconds )
 {
    system_ods_bulk_write ods_bulk_write;
