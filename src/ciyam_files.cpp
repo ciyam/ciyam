@@ -2824,18 +2824,13 @@ void crypt_file( const string& repository, const string& tag_or_hash,
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( hash + " was not found." );
 
-   string file_data( buffer_file( file_name ) );
+   unsigned char type_and_extra = get_file_type_and_extra( hash );
 
-   if( file_data.empty( ) )
-      throw runtime_error( "unexpected empty file content for '" + hash + "'" );
+   unsigned char file_type = ( type_and_extra & c_file_type_val_mask );
 
-   unsigned char flags = file_data[ 0 ];
-
-   unsigned char file_type = ( flags & c_file_type_val_mask );
-
-   bool is_encrypted = ( flags & c_file_type_val_encrypted );
-   bool is_compressed = ( flags & c_file_type_val_compressed );
-   bool is_no_encrypt = ( flags & c_file_type_val_no_encrypt );
+   bool is_encrypted = ( type_and_extra & c_file_type_val_encrypted );
+   bool is_compressed = ( type_and_extra & c_file_type_val_compressed );
+   bool is_no_encrypt = ( type_and_extra & c_file_type_val_no_encrypt );
 
    if( is_no_encrypt )
       // FUTURE: This message should be handled as a server string message.
@@ -2875,8 +2870,12 @@ void crypt_file( const string& repository, const string& tag_or_hash,
       }
    }
 
+   string file_data;
+
    if( !is_encrypted )
    {
+      file_data = buffer_file( file_name );
+
       string uncompressed_data( file_data );
 
 #ifdef ZLIB_SUPPORT
@@ -2964,6 +2963,8 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
       if( ( file_type == c_file_type_val_list ) || ( operation != e_crypt_operation_encrypt ) )
       {
+         file_data = buffer_file( file_name );
+
          stringstream ss( file_data.substr( 1 ) );
 
          // NOTE: Use the file content hash as salt.
