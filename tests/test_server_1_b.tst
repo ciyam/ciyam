@@ -423,6 +423,7 @@ file_stats
 [1/100000]141 B/100.0 GB:1 tag(s)
 file_archives
 test1 [okay      ] (29 B/10.5 MB) test1
+session_variable @blockchain_archive_path test1
 file_crypt -recurse -blobs_only root password
 file_info -recurse -d=2 root
 [list] c158947de2088bcacd73ee2d6c5ca30200f1b4d47d409ea015c13777427a9eb1 (141 B)
@@ -433,7 +434,7 @@ test
  [blob] 90a1a46903f42ddf0386a9c12fd67a6c109285bb8b3117ee83ed222fd0040ad3 (16 B) [utf8]
 This is a test.
 file_stats
-[3/100000]170 B/100.0 GB:3 tag(s)
+[1/100000]141 B/100.0 GB:1 tag(s)
 file_kill -recurse root
 file_archive -destroy test1
 file_archives

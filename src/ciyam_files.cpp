@@ -268,7 +268,7 @@ string archive_file_info::get_oldest_file( )
 
 map< string, archive_file_info > g_archive_file_info;
 
-unsigned char get_file_type_and_extra( const string& hash, const char* p_file_name = 0 )
+unsigned char get_file_type_and_extra( const string& hash, const char* p_file_name = 0, bool* p_read_from_file = 0 )
 {
    unsigned char file_type_and_extra = '\0';
 
@@ -280,6 +280,9 @@ unsigned char get_file_type_and_extra( const string& hash, const char* p_file_na
          throw runtime_error( "unexpected hash tag for " + hash + " not found" );
 
       file_size( p_file_name, &file_type_and_extra, sizeof( file_type_and_extra ) );
+
+      if( p_read_from_file )
+         *p_read_from_file = true;
    }
    else
       file_type_and_extra = i->first.get_type( );
@@ -2815,16 +2818,19 @@ void crypt_file( const string& repository, const string& tag_or_hash,
    if( has_tag( tag_or_hash ) )
       hash = tag_file_hash( tag_or_hash );
 
-   string file_name( construct_file_name_from_hash( hash ) );
+   string archive_path( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_archive_path ) ) );
 
-   if( !file_exists( file_name ) && recurse && has_file_been_archived( hash ) )
-      retrieve_file_from_archive( hash, current_time_stamp_tag( ) );
+   string file_name( construct_file_name_from_hash(
+    hash, false, false, ( archive_path.empty( ) ? 0 : &archive_path ) ) );
 
    if( !file_exists( file_name ) )
       // FUTURE: This message should be handled as a server string message.
       throw runtime_error( hash + " was not found." );
 
-   unsigned char type_and_extra = get_file_type_and_extra( hash );
+   bool read_from_file = false;
+
+   unsigned char type_and_extra = get_file_type_and_extra( hash, file_name.c_str( ), &read_from_file );
 
    unsigned char file_type = ( type_and_extra & c_file_type_val_mask );
 
@@ -2914,7 +2920,8 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
          write_file( file_name, new_file_data );
 
-         set_file_type_and_extra( hash, ( unsigned char )new_file_data[ 0 ] );
+         if( !read_from_file )
+            set_file_type_and_extra( hash, ( unsigned char )new_file_data[ 0 ] );
       }
 
       if( ( file_type == c_file_type_val_blob )
@@ -3024,7 +3031,8 @@ void crypt_file( const string& repository, const string& tag_or_hash,
 
          write_file( file_name, file_data );
 
-         set_file_type_and_extra( hash, ( unsigned char )file_data[ 0 ] );
+         if( !read_from_file )
+            set_file_type_and_extra( hash, ( unsigned char )file_data[ 0 ] );
       }
 
       if( recurse && file_type == c_file_type_val_list )
@@ -4194,7 +4202,12 @@ string retrieve_file_from_archive( const string& hash, const string& tag, size_t
 
    string retval;
 
-   if( !has_file( hash ) )
+   // NOTE: Need to use this as "has_file" will return true if the
+   // "@blockchain_archive_path" session variable has been set and
+   // the file is found in that archive.
+   bool is_in_archive = false;
+
+   if( !has_file( hash, false, &is_in_archive ) || is_in_archive )
    {
       vector< string > paths;
 

@@ -172,6 +172,7 @@ file_info -recurse -d=2 root
 file_relegate -n=2
 file_stats
 file_archives
+session_variable @blockchain_archive_path test1
 file_crypt -recurse -blobs_only root password
 file_info -recurse -d=2 root
 file_stats
