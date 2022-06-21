@@ -36,7 +36,7 @@ The following is a sample group:
    <description>Perform command syntax and usage tests.
    <test_step/>
     <name>a
-    <exec>test_parser /test
+    <exec>test_parser -test
     <input>false
     <output>generate
    </test_step>
@@ -71,4 +71,3 @@ empty execs by the previously run program).
 
 Note that by convention each test is named a with a number and test group names are prefixed with "test_" (if
 a specific testing tool exists such as test_program then this would be the preferred group name).
-

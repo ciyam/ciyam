@@ -345,13 +345,13 @@ the archive creation should be a fair bit less than the physical size of the sto
 used are sixty four characters each (and typically an OS uses quite a lot more bytes per file as overhead).
 
 If an archive is removed (by using the "-remove" option with the "file_archive" command) then the files which
-are already in the archive will remain (only the indexing entries are removed from the global ODS DB). If one
+are already in the archive will remain (only size information will be removed from the global ODS DB). If one
 wants to have the archived files removed as well then the "-destroy" option should instead be used. Even when
-using "-destroy" it should be noted that the actual path for the archive will not be removed.
+using "-destroy" it should be noted that the actual directory for the archive will not be removed.
 
 If an archive was unintentionally removed or if it is suspected to be in an inconsistent state then "-repair"
-can be used to rebuild the ODS DB index of files it contains (this command can take some time to execute when
-there are a large number of files in the archive).
+can be used to reconstruct the size information within the ODS DB (this command can take some time to execute
+if there are a very large number of files in the archive).
 
 It would be recommended to use numbers (maybe use year and month created if starting at "001" as above is not
 appealing) so that one can easily see which archives are older. In this way when all of the available storage
