@@ -666,10 +666,13 @@ size_t process_put_file( const string& blockchain,
                               }
                               else
                               {
-                                 target_hashes.insert( target_hash );
+                                 if( !target_hashes.count( target_hash ) )
+                                 {
+                                    target_hashes.insert( target_hash );
 
-                                 add_repository_entry_info( identity, target_hash, order );
-                                 add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                                    add_repository_entry_info( identity, target_hash, order );
+                                    add_peer_file_hash_for_get( hash_info, check_for_supporters );
+                                 }
                               }
                            }
                         }
