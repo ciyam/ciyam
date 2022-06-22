@@ -98,6 +98,10 @@ If you wanted it to instead be called "config" in the ODS FS then use the follow
 
 /> file_add config ciyam_server.sio
 
+Or if it had already been added incorrectly then simply rename it with "file_move" as follows:
+
+/> file_move ciyam_server.sio config
+
 It is also possible to manually type in text file content via the following:
 
 /> file_add config -c
@@ -131,7 +135,7 @@ OID of the file does not change). In particular this can be useful when file lin
 automatically now linked to the new file content).
 
 The "export" command allows the entire ODS FS structure (i.e. files and folders) to be replicated in the host
-OS file system (except "link" files which are simply omitted).
+OS file system (except "link" files which are currently just being omitted).
 
 Using the ODS FS in code
 ------------------------

@@ -4458,7 +4458,7 @@ bool has_repository_entry_record( const string& repository, const string& hash )
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
-   return ods_fs.has_file( file_name );
+   return ods_fs.has_file( file_name, true );
 }
 
 bool fetch_repository_entry_record( const string& repository, const string& hash,
@@ -4474,13 +4474,15 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
-   if( !must_exist && !ods_fs.has_file( file_name ) )
+   string suffix;
+
+   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
       return false;
 
    try
    {
       stringstream sio_data;
-      ods_fs.get_file( file_name, &sio_data, true );
+      ods_fs.get_file( file_name + suffix, &sio_data, true );
 
       sio_reader reader( sio_data );
 
@@ -4512,6 +4514,9 @@ void store_repository_entry_record( const string& repository, const string& hash
    ods_fs.set_root_folder( c_file_repository_folder );
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   if( !local_hash.empty( ) )
+      file_name += '.' + base64::encode( hex_decode( local_hash ), true );
 
    try
    {
@@ -4548,10 +4553,12 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
 
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
-   if( !must_exist && !ods_fs.has_file( file_name ) )
+   string suffix;
+
+   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
       return false;
 
-   ods_fs.remove_file( file_name );
+   ods_fs.remove_file( file_name + suffix );
 
    return true;
 }
@@ -4576,7 +4583,7 @@ size_t count_total_repository_entries( const string& repository,
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
-      ods_fs.list_files( repository + '*', repo_entries, false, last_key, false, 1000 );
+      ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 1000 );
 
       if( p_progress )
       {
@@ -4594,7 +4601,6 @@ size_t count_total_repository_entries( const string& repository,
             p_progress->output_progress( progress );
          }
       }
-
 
       total_entries += repo_entries.size( );
 
@@ -4614,6 +4620,8 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
    string archive_path;
    vector< string > paths;
+
+   vector< pair< string, string > > files_to_suffix;
 
    string all_archives( list_file_archives( true, &paths ) );
 
@@ -4656,7 +4664,7 @@ size_t remove_obsolete_repository_entries( const string& repository,
       date_time now( date_time::local( ) );
 
       vector< string > repo_entries;
-      ods_fs.list_files( repository + '*', repo_entries, false, last_key, false, 100 );
+      ods_fs.list_files( repository + '*', repo_entries, false, last_key, last_key.empty( ), 100 );
 
       if( p_progress )
       {
@@ -4683,32 +4691,47 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
          last_key = repo_entries[ i ];
 
-         stringstream sio_data;
-         ods_fs.get_file( last_key, &sio_data, true );
-
-         sio_reader reader( sio_data );
-
-         string file_hash( last_key );
-         string::size_type pos = file_hash.find( '.' );
-
-         if( pos != string::npos )
+         if( last_key.size( ) > 54 )
          {
-            file_hash.erase( 0, pos + 1 );
-            file_hash = hex_encode( base64::decode( file_hash, true ) );
+            string local_hash( last_key.substr( 54 ) );
+
+            local_hash = hex_encode( base64::decode( local_hash, true ) );
+
+            if( !has_file( local_hash ) )
+               files_to_remove.push_back( last_key );
          }
+         else
+         {
+            stringstream sio_data;
+            ods_fs.get_file( last_key, &sio_data, true );
 
-         string local_hash( reader.read_attribute( c_attribute_local_hash ) );
+            sio_reader reader( sio_data );
 
-         bool found = true;
+            string file_hash( last_key );
+            string::size_type pos = file_hash.find( '.' );
 
-         if( local_hash.empty( ) && !has_file( file_hash ) )
-            found = false;
+            if( pos != string::npos )
+            {
+               file_hash.erase( 0, pos + 1 );
+               file_hash = hex_encode( base64::decode( file_hash, true ) );
+            }
 
-         if( !local_hash.empty( ) && !has_file( local_hash ) )
-            found = false;
+            string local_hash( reader.read_attribute( c_attribute_local_hash ) );
 
-         if( !found )
-            files_to_remove.push_back( last_key );
+            bool found = true;
+
+            if( local_hash.empty( ) && !has_file( file_hash ) )
+               found = false;
+
+            if( !local_hash.empty( ) && !has_file( local_hash ) )
+               found = false;
+
+            if( !found )
+               files_to_remove.push_back( last_key );
+            else
+               files_to_suffix.push_back( make_pair( last_key,
+                base64::encode( hex_decode( local_hash ), true ) ) );
+         }
       }
 
       if( repo_entries.size( ) < 100 )
@@ -4743,6 +4766,34 @@ size_t remove_obsolete_repository_entries( const string& repository,
                *p_dtm = now;
 
                p_progress->output_progress( progress );
+            }
+         }
+      }
+
+      if( !files_to_suffix.empty( ) )
+      {
+         for( size_t i = 0; i < files_to_suffix.size( ); i++ )
+         {
+            date_time now( date_time::local( ) );
+
+            ods_fs.move_file( files_to_suffix[ i ].first,
+             files_to_suffix[ i ].first + '.' + files_to_suffix[ i ].second );
+
+            if( p_progress )
+            {
+               uint64_t elapsed = seconds_between( *p_dtm, now );
+
+               if( elapsed >= num_seconds )
+               {
+                  string progress;
+
+                  // FUTURE: This message should be handled as a server string message.
+                  progress = "Renamed " + to_string( i ) + " non-suffixed repository entries...";
+
+                  *p_dtm = now;
+
+                  p_progress->output_progress( progress );
+               }
             }
          }
       }
