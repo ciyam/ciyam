@@ -4621,8 +4621,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
    string archive_path;
    vector< string > paths;
 
-   vector< pair< string, string > > files_to_suffix;
-
    string all_archives( list_file_archives( true, &paths ) );
 
    if( !all_archives.empty( ) )
@@ -4728,9 +4726,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
 
             if( !found )
                files_to_remove.push_back( last_key );
-            else
-               files_to_suffix.push_back( make_pair( last_key,
-                base64::encode( hex_decode( local_hash ), true ) ) );
          }
       }
 
@@ -4766,34 +4761,6 @@ size_t remove_obsolete_repository_entries( const string& repository,
                *p_dtm = now;
 
                p_progress->output_progress( progress );
-            }
-         }
-      }
-
-      if( !files_to_suffix.empty( ) )
-      {
-         for( size_t i = 0; i < files_to_suffix.size( ); i++ )
-         {
-            date_time now( date_time::local( ) );
-
-            ods_fs.move_file( files_to_suffix[ i ].first,
-             files_to_suffix[ i ].first + '.' + files_to_suffix[ i ].second );
-
-            if( p_progress )
-            {
-               uint64_t elapsed = seconds_between( *p_dtm, now );
-
-               if( elapsed >= num_seconds )
-               {
-                  string progress;
-
-                  // FUTURE: This message should be handled as a server string message.
-                  progress = "Renamed " + to_string( i ) + " non-suffixed repository entries...";
-
-                  *p_dtm = now;
-
-                  p_progress->output_progress( progress );
-               }
             }
          }
       }
