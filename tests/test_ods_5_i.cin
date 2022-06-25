@@ -1,5 +1,5 @@
 list
-rewind yyy
+rewind -last 2
 trans_id
 list
 exit

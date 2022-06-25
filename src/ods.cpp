@@ -203,7 +203,7 @@ const uint64_t c_int_type_hi_bit = UINT64_C( 1 ) << ( numeric_limits< uint64_t >
 const uint64_t c_int_type_low_bits = UINT64_C( -1 ) >> ( numeric_limits< uint64_t >::digits / 2 );
 const uint64_t c_int_type_high_bits = c_int_type_low_bits << ( numeric_limits< uint64_t >::digits / 2 );
 
-const int c_buffer_chunk_size = 1024;
+const int c_buffer_chunk_size = c_ods_page_size;
 
 inline bool is_print( char ch ) { return ch >= ' ' && ch <= '~'; }
 
@@ -2955,7 +2955,8 @@ void ods::reconstruct_database( progress* p_progress )
       restore_from_transaction_log( true, p_progress );
 }
 
-void ods::rewind_transactions( const string& label_or_txid, progress* p_progress )
+void ods::rewind_transactions(
+ const string& label_or_txid, int64_t rewind_value, progress* p_progress )
 {
    guard lock_write( write_lock );
    guard lock_read( read_lock );
@@ -2975,6 +2976,20 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
 
    if( *p_impl->rp_bulk_level && *p_impl->rp_bulk_mode != impl::e_bulk_mode_write )
       THROW_ODS_ERROR( "cannot rewind transactions when bulk locked for dumping or reading" );
+
+   if( !rewind_value && label_or_txid.empty( ) )
+      THROW_ODS_ERROR( "neither id/label or rewind value specifified in rewind_transactions" );
+
+   int64_t rewind_tx_id = 0;
+   int64_t rewind_tx_time = 0;
+
+   if( rewind_value < 0 )
+      rewind_tx_id = p_impl->rp_header_info->transaction_id + rewind_value;
+   else if( rewind_value > 0 )
+      rewind_tx_time = rewind_value;
+
+   if( !label_or_txid.empty( ) && ( rewind_tx_id || rewind_tx_time ) )
+      THROW_ODS_ERROR( "invalid non-empty id/label when rewind value specified in rewind_transactions" );
 
    log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
 
@@ -3017,7 +3032,16 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
             else
                next_label_or_txid = string( tranlog_entry.label );
 
-            if( label_or_txid == next_label_or_txid )
+            bool found = false;
+
+            if( rewind_tx_id )
+               found = ( tx_id == rewind_tx_id );
+            else if( !rewind_tx_time )
+               found = ( label_or_txid == next_label_or_txid );
+            else
+               found = ( tranlog_entry.tx_time > rewind_tx_time );
+
+            if( found )
             {
                if( entry_offset < largest_commit_offs )
                {
@@ -3061,7 +3085,19 @@ void ods::rewind_transactions( const string& label_or_txid, progress* p_progress
       if( !first_entry_offset )
       {
          logf.term( );
-         THROW_ODS_ERROR( "transaction id/label '" + label_or_txid + "' not found for database rewind" );
+
+         string error( "transaction " );
+
+         if( rewind_tx_id )
+            error += "id " + to_string( rewind_tx_id );
+         else if( rewind_tx_time )
+            error += "time " + to_string( rewind_tx_time );
+         else
+            error += "id/label '" + label_or_txid + "'";
+
+         error += " not found for database rewind";
+         
+         THROW_ODS_ERROR( error );
       }
       else if( !tranlog_info.entry_offs )
       {
@@ -5712,6 +5748,11 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                            int64_t chunk = c_buffer_chunk_size;
                            char buffer[ c_buffer_chunk_size ];
 
+                           char key_buffer[ c_buffer_chunk_size * 2 ];
+
+                           int64_t crypt_dpos = tranlog_item.data_pos;
+                           int64_t crypt_opos = tranlog_item.data_opos;
+
                            set_write_data_pos( dpos, is_encrypted, is_encrypted );
 
                            for( int64_t j = 0; j < tranlog_item.data_size; j += chunk )
@@ -5723,24 +5764,35 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
                               // NOTE: If an encrypted item was moved then it first needs to be decrypted
                               // using the old number and offset and then encrypted with both new values.
+                              // As the chunk size plus offset can overrun this key buffer (whether using
+                              // old or new pos assuming that both are not exactly aligned) the buffer is
+                              // twice the size required and "init" is being called for both the page for
+                              // the current pos and the following page).
                               if( commit && is_encrypted && tranlog_item.has_old_pos( ) )
                               {
-                                 init_key_buffer(
-                                  p_impl->data_write_key_buffer.data, c_data_bytes_per_item,
-                                  tranlog_item.data_opos / c_data_bytes_per_item, p_impl->pwd_hash );
+                                 init_key_buffer( key_buffer,
+                                  c_data_bytes_per_item, crypt_opos / c_data_bytes_per_item, p_impl->pwd_hash );
 
-                                 offs = tranlog_item.data_opos % c_data_bytes_per_item;
+                                 init_key_buffer( key_buffer + c_data_bytes_per_item,
+                                  c_data_bytes_per_item, ( crypt_opos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash );
 
-                                 crypt_data_buffer( buffer, p_impl->data_write_key_buffer.data + offs, chunk );
+                                 offs = crypt_opos % c_data_bytes_per_item;
 
-                                 init_key_buffer(
-                                  p_impl->data_write_key_buffer.data, c_data_bytes_per_item,
-                                  tranlog_item.data_pos / c_data_bytes_per_item, p_impl->pwd_hash );
+                                 crypt_data_buffer( buffer, key_buffer + offs, chunk );
 
-                                 offs = tranlog_item.data_pos % c_data_bytes_per_item;
+                                 init_key_buffer( key_buffer,
+                                  c_data_bytes_per_item, crypt_dpos / c_data_bytes_per_item, p_impl->pwd_hash );
 
-                                 crypt_data_buffer( buffer, p_impl->data_write_key_buffer.data + offs, chunk );
+                                 init_key_buffer( key_buffer + c_data_bytes_per_item,
+                                  c_data_bytes_per_item, ( crypt_dpos / c_data_bytes_per_item ) + 1, p_impl->pwd_hash );
+
+                                 offs = crypt_dpos % c_data_bytes_per_item;
+
+                                 crypt_data_buffer( buffer, key_buffer + offs, chunk );
                               }
+
+                              crypt_dpos += chunk;
+                              crypt_opos += chunk;
 
                               write_data_bytes( buffer, chunk, is_encrypted, is_encrypted );
 

@@ -951,12 +951,30 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       handler.issue_command_response( to_string( o.get_transaction_level( ) ) );
    else if( command == c_cmd_test_ods_rewind )
    {
-      string label_or_txid( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_txid ) );
+      bool is_dtm( has_parm_val( parameters, c_cmd_test_ods_rewind_dtm ) );
+      bool is_last( has_parm_val( parameters, c_cmd_test_ods_rewind_last ) );
+      bool is_unix( has_parm_val( parameters, c_cmd_test_ods_rewind_unix ) );
+      string label_or_value( get_parm_val( parameters, c_cmd_test_ods_rewind_label_or_value ) );
+
+      int64_t rewind_value = 0;
+
+      if( is_dtm )
+      {
+         date_time dtm( label_or_value );
+         rewind_value = unix_time( dtm );
+      }
+      else if( is_last )
+         rewind_value = from_string< int64_t >( label_or_value ) * -1;
+      else if( is_unix )
+         rewind_value = from_string< int64_t >( label_or_value );
+
+      if( is_dtm || is_last || is_unix )
+         label_or_value.erase( );
 
       if( g_shared_write )
          handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
       else
-         o.rewind_transactions( label_or_txid );
+         o.rewind_transactions( label_or_value, rewind_value );
    }
    else if( command == c_cmd_test_ods_compress )
    {
