@@ -20,6 +20,7 @@
 #include "base64.h"
 #include "console.h"
 #include "progress.h"
+#include "date_time.h"
 #include "utilities.h"
 #include "fs_iterator.h"
 #include "ods_file_system.h"
@@ -721,7 +722,25 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_ods_fsed_rewind )
    {
-      string label_or_txid( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_txid ) );
+      bool is_dtm( has_parm_val( parameters, c_cmd_ods_fsed_rewind_dtm ) );
+      bool is_last( has_parm_val( parameters, c_cmd_ods_fsed_rewind_last ) );
+      bool is_unix( has_parm_val( parameters, c_cmd_ods_fsed_rewind_unix ) );
+      string label_or_value( get_parm_val( parameters, c_cmd_ods_fsed_rewind_label_or_value ) );
+
+      int64_t rewind_value = 0;
+
+      if( is_dtm )
+      {
+         date_time dtm( label_or_value );
+         rewind_value = unix_time( dtm );
+      }
+      else if( is_last )
+         rewind_value = from_string< int64_t >( label_or_value ) * -1;
+      else if( is_unix )
+         rewind_value = from_string< int64_t >( label_or_value );
+
+      if( is_dtm || is_last || is_unix )
+         label_or_value.erase( );
 
       if( g_shared_write )
          handler.issue_command_response( "*** must be locked for exclusive write to perform this operation ***" );
@@ -730,7 +749,7 @@ void ods_fsed_command_functor::operator ( )( const string& command, const parame
          console_progress progress;
          console_progress* p_progress = console_handler.has_option_no_progress( ) ? 0 : &progress;
 
-         ap_ods->rewind_transactions( label_or_txid, p_progress );
+         ap_ods->rewind_transactions( label_or_value, rewind_value, p_progress );
 
          // NOTE: Need to reconstruct the ODS FS to ensure data integrity.
          ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );
@@ -830,4 +849,3 @@ int main( int argc, char* argv[ ] )
       return 2;
    }
 }
-
