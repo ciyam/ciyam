@@ -4614,7 +4614,7 @@ size_t count_total_repository_entries( const string& repository,
 }
 
 size_t remove_obsolete_repository_entries( const string& repository,
- date_time* p_dtm, progress* p_progress, size_t num_seconds )
+ date_time* p_dtm, progress* p_progress, size_t num_seconds, bool set_session_progress )
 {
    system_ods_bulk_write ods_bulk_write;
 
@@ -4676,6 +4676,13 @@ size_t remove_obsolete_repository_entries( const string& repository,
             progress = "Processed " + to_string( total_entries ) + " repository entries...";
 
             *p_dtm = now;
+
+            if( set_session_progress )
+            {
+               set_session_progress_output( progress );
+
+               progress = ".";
+            }
 
             p_progress->output_progress( progress );
          }
@@ -4759,6 +4766,13 @@ size_t remove_obsolete_repository_entries( const string& repository,
                progress = "Removed " + to_string( i ) + " obsolete repository entries...";
 
                *p_dtm = now;
+
+               if( set_session_progress )
+               {
+                  set_session_progress_output( progress );
+
+                  progress = ".";
+               }
 
                p_progress->output_progress( progress );
             }
