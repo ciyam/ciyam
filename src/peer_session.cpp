@@ -725,6 +725,12 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
 
    system_ods_bulk_read ods_bulk_read;
 
+   string total_tree_items( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+   string blockchain_height_processed( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_processed ) ) );
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       string next_item( list_items[ i ] );
@@ -737,7 +743,21 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
 
          if( elapsed >= 2 )
          {
-            string progress( "Processed " + to_string( *p_total_processed ) + " items..." );
+            string progress;
+
+            if( touch_all_lists )
+            {
+               size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
+
+               progress = "Verifying at height " + to_string( new_height ) + " ("
+                + to_string( *p_total_processed ) + "/" + total_tree_items + ")...";
+
+               set_session_progress_output( progress );
+
+               progress = ".";
+            }
+            else
+               progress = "Processed " + to_string( *p_total_processed ) + " items...";
 
             *p_dtm = now;
 
@@ -2012,7 +2032,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          // FUTURE: This message should be handled as a server string message.
          string progress_message( "Synchronising at height " + to_string( blockchain_height + 1 ) );
 
-         progress_message += " (" + to_string( num_tree_item - 1 );
+         progress_message += " (" + to_string( num_tree_item );
 
          if( !num_tree_items.empty( ) )
             progress_message += '/' + num_tree_items;
@@ -2396,15 +2416,14 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
    if( set_new_zenith )
    {
+      date_time dtm( date_time::local( ) );
+
       tag_file( blockchain + c_zenith_suffix, zenith_hash );
 
       last_num_tree_item = 0;
       set_blockchain_tree_item( blockchain, 0 );
 
       list_items_to_ignore.clear( );
-
-      set_session_variable( get_special_var_name(
-       e_special_var_blockchain_num_tree_items ), "" );
 
       blockchain_height = blockchain_height_pending;
 
@@ -2415,8 +2434,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       {
          if( has_file( zenith_tree_hash ) )
          {
-            date_time dtm( date_time::local( ) );
-
             // NOTE: Will touch all tree lists iff has the tree root.
             has_all_list_items( blockchain, zenith_tree_hash, true, true, &dtm, this );
 
@@ -2428,6 +2445,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          set_session_variable(
           get_special_var_name( e_special_var_blockchain_zenith_tree_hash ), "" );
       }
+
+      remove_obsolete_repository_entries( identity, &dtm, this, 2, true );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_num_tree_items ), "" );
 
       output_synchronised_progress_message( identity, blockchain_height, blockchain_height_other );
 

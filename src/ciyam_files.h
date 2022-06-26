@@ -235,7 +235,7 @@ bool CIYAM_BASE_DECL_SPEC destroy_repository_entry_record(
 size_t CIYAM_BASE_DECL_SPEC count_total_repository_entries(
  const std::string& repository, date_time* p_dtm = 0, progress* p_progress = 0, size_t num_seconds = 1 );
 
-size_t CIYAM_BASE_DECL_SPEC remove_obsolete_repository_entries(
- const std::string& repository, date_time* p_dtm = 0, progress* p_progress = 0, size_t num_seconds = 1 );
+size_t CIYAM_BASE_DECL_SPEC remove_obsolete_repository_entries( const std::string& repository,
+ date_time* p_dtm = 0, progress* p_progress = 0, size_t num_seconds = 1, bool set_session_progress = false );
 
 #endif
