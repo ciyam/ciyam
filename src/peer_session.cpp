@@ -528,6 +528,12 @@ size_t process_put_file( const string& blockchain,
    deque< string > repo_files_to_get;
    deque< string > non_repo_files_to_get;
 
+   string num_tree_items( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
+
+   string blockchain_height_processed( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_processed ) ) );
+
    // NOTE: Extract non-repo files from the session to ensure
    // that none of them will be attempted to be fetched prior
    // to a later put.
@@ -552,11 +558,11 @@ size_t process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ] );
    }
 
-   size_t order = get_blockchain_tree_item( blockchain );
+   size_t num = get_blockchain_tree_item( blockchain );
 
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
-      ++order;
+      ++num;
 
       string next_blob( blobs[ i ] );
 
@@ -579,9 +585,27 @@ size_t process_put_file( const string& blockchain,
 
          if( elapsed >= 2 )
          {
-            string progress;
+            string progress( "." );
 
-            progress = "Processed " + to_string( i ) + " files...";
+            if( num_tree_items.empty( ) || blockchain_height_processed.empty( ) )
+               // FUTURE: This message should be handled as a server string message.
+               progress = "Processed " + to_string( i ) + " files...";
+            else
+            {
+               size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
+
+               // FUTURE: This message should be handled as a server string message.
+               string progress_message( "Synchronising at height " + to_string( new_height ) );
+
+               progress_message += " (" + to_string( num );
+
+               if( !num_tree_items.empty( ) )
+                  progress_message += '/' + num_tree_items;
+
+               progress_message += ')';
+
+               set_session_progress_output( progress_message );
+            }
 
             *p_dtm = now;
 
@@ -670,7 +694,7 @@ size_t process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( target_hash );
 
-                                    add_repository_entry_info( identity, target_hash, order );
+                                    add_repository_entry_info( identity, target_hash, num );
                                     add_peer_file_hash_for_get( hash_info, check_for_supporters );
                                  }
                               }
@@ -725,7 +749,7 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
 
    system_ods_bulk_read ods_bulk_read;
 
-   string total_tree_items( get_session_variable(
+   string num_tree_items( get_session_variable(
     get_special_var_name( e_special_var_blockchain_num_tree_items ) ) );
 
    string blockchain_height_processed( get_session_variable(
@@ -750,7 +774,7 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
                size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
 
                progress = "Verifying at height " + to_string( new_height ) + " ("
-                + to_string( *p_total_processed ) + "/" + total_tree_items + ")...";
+                + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
 
                set_session_progress_output( progress );
 
