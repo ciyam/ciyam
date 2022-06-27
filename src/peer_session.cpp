@@ -558,12 +558,10 @@ size_t process_put_file( const string& blockchain,
          add_peer_file_hash_for_get( repo_files_to_get[ i ] );
    }
 
-   size_t num = get_blockchain_tree_item( blockchain );
+   size_t order = get_blockchain_tree_item( blockchain );
 
    for( size_t i = 0; i < blobs.size( ); i++ )
    {
-      ++num;
-
       string next_blob( blobs[ i ] );
 
       vector< string > lines;
@@ -592,12 +590,12 @@ size_t process_put_file( const string& blockchain,
                progress = "Processed " + to_string( i ) + " files...";
             else
             {
-               size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
+               size_t next_height = from_string< size_t >( blockchain_height_processed );
 
                // FUTURE: This message should be handled as a server string message.
-               string progress_message( "Synchronising at height " + to_string( new_height ) );
+               string progress_message( "Synchronising at height " + to_string( next_height ) );
 
-               progress_message += " (" + to_string( num );
+               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
                if( !num_tree_items.empty( ) )
                   progress_message += '/' + num_tree_items;
@@ -694,7 +692,7 @@ size_t process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( target_hash );
 
-                                    add_repository_entry_info( identity, target_hash, num );
+                                    add_repository_entry_info( identity, target_hash, order++ );
                                     add_peer_file_hash_for_get( hash_info, check_for_supporters );
                                  }
                               }
@@ -771,9 +769,9 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
 
             if( touch_all_lists )
             {
-               size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
+               size_t next_height = from_string< size_t >( blockchain_height_processed );
 
-               progress = "Verifying at height " + to_string( new_height ) + " ("
+               progress = "Verifying at height " + to_string( next_height ) + " ("
                 + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
 
                set_session_progress_output( progress );
@@ -897,6 +895,16 @@ void process_list_items( const string& identity, const string& hash,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
+   bool allow_blob_creation = false;
+
+   if( get_session_variable( blockchain_is_fetching_name ).empty( )
+    && get_session_variable( blockchain_skip_blob_puts_name ).empty( )
+    && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
+      allow_blob_creation = true;
+
+   string blockchain_height_processed( get_session_variable(
+    get_special_var_name( e_special_var_blockchain_height_processed ) ) );
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       if( g_server_shutdown )
@@ -918,7 +926,17 @@ void process_list_items( const string& identity, const string& hash,
             if( !p_num_items_found )
                progress = "Processing: " + hash;
             else
-               progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+            {
+               if( !allow_blob_creation )
+                  progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+               else
+               {
+                  size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
+
+                  progress = "Preparing " + to_string( *p_num_items_found )
+                   + " items for synchronisation at height " + to_string( new_height );
+               }
+            }
 
             *p_dtm = now;
 
@@ -960,9 +978,7 @@ void process_list_items( const string& identity, const string& hash,
                add_peer_file_hash_for_get( next_hash );
             else if( first_hash_to_get.empty( ) && ( local_public_key != master_public_key ) )
             {
-               if( get_session_variable( blockchain_is_fetching_name ).empty( )
-                && get_session_variable( blockchain_skip_blob_puts_name ).empty( )
-                && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
+               if( allow_blob_creation )
                {
                   if( p_blob_data->size( ) > 1 )
                      *p_blob_data += c_blob_separator;
@@ -1004,9 +1020,7 @@ void process_list_items( const string& identity, const string& hash,
 
             if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
             {
-               if( get_session_variable( blockchain_is_fetching_name ).empty( )
-                && get_session_variable( blockchain_skip_blob_puts_name ).empty( )
-                && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
+               if( allow_blob_creation )
                {
                   if( local_hash.empty( ) || !has_file( local_hash ) )
                   {
