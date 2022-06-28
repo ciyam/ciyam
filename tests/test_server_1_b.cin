@@ -278,4 +278,42 @@ file_info -total_items xxx
 file_info -total_encrypted xxx
 file_kill -recurse xxx
 file_stats
+file_raw -text blob aaa aaa
+file_raw -text blob bbb bbb
+file_raw -text blob ccc ccc
+file_raw -text blob ddd ddd
+file_raw -text blob eee eee
+file_list -a=aaa,bbb,ccc list0 !list0
+file_info -content list0
+file_list -a=ddd list0 list1
+file_list -a=ddd list1 list2
+file_list -a=ddd list2 list3
+file_info -content list3
+file_list -a=eee list3 list4
+file_list -a=eee list4 list5
+file_info -content list5
+file_list -d=ddd list5 list6
+file_info -content list6
+file_list -d=ddd* list5 list7
+file_info -content list7
+file_list -d=ddd*2 list5 list8
+file_info -content list8
+file_list -d=bbb,ddd*,eee list5 list9
+file_info -content list9
+file_kill list0
+file_kill list1
+file_kill list2
+file_kill list3
+file_kill list4
+file_kill list5
+file_kill list6
+file_kill list7
+file_kill list8
+file_kill list9
+file_kill aaa
+file_kill bbb
+file_kill ccc
+file_kill ddd
+file_kill eee
+file_stats
 .quit

@@ -1821,7 +1821,7 @@ string create_list_file( const string& add_tags, const string& del_items,
 
          items_to_add.push_back( next_hash + ' ' + ( old_tag.empty( ) ? next_tag : old_tag ) );
 
-         if( hashes_to_add.count( next_hash ) )
+         if( sort_items && hashes_to_add.count( next_hash ) )
             throw runtime_error( "attempt to add '" + next_tag + "' more than once" );
 
          hashes_to_add.insert( next_hash );
@@ -1852,20 +1852,52 @@ string create_list_file( const string& add_tags, const string& del_items,
 
       if( items_to_remove.empty( ) )
       {
-         if( hashes_to_add.count( next_hash ) )
+         if( sort_items && hashes_to_add.count( next_hash ) )
             throw runtime_error( "invalid attempt to add existing list item '" + next_hash + "'" );
 
          new_items.push_back( next );
       }
       else
       {
+         bool was_removed = false;
+
          for( size_t j = 0; j < items_to_remove.size( ); j++ )
          {
             string next_to_remove( items_to_remove[ j ] );
 
-            if( next_hash != next_to_remove && next_name != next_to_remove )
-               new_items.push_back( next );
+            size_t num = 0;
+            bool erase_all = false;
+
+            string::size_type pos = next_to_remove.find( '*' );
+
+            if( pos != string::npos )
+            {
+               num = from_string< size_t >( next_to_remove.substr( pos + 1 ) );
+
+               if( num == 0 )
+                  erase_all = true;
+
+               next_to_remove.erase( pos );
+            }
+
+            if( ( next_hash == next_to_remove ) || ( next_name == next_to_remove ) )
+            {
+               was_removed = true;
+
+               if( !erase_all )
+               {
+                  if( num <= 1 )
+                     items_to_remove.erase( items_to_remove.begin( ) + j );
+                  else
+                     items_to_remove[ j ] = next_to_remove + "*" + to_string( --num );
+               }
+
+               break;
+            }
          }
+
+         if( !was_removed )
+            new_items.push_back( next );
       }
    }
 

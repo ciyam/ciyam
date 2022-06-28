@@ -4,6 +4,11 @@ Linux OpenSUSE Specific Instructions
 https://get.opensuse.org/tumbleweed
 (download the .ISO image to use with VirtualBox as the install CD/DVD)
 
+Create the user "ciyam" when installing then:
+
+[sudo vi /etc/sudoers]
+ciyam ALL=(ALL) NOPASSWD:ALL
+
 sudo zypper install make
 sudo zypper install gcc-c++
 sudo zypper install git-core
@@ -26,9 +31,7 @@ make
 sudo make install
 cd ..
 
-sudo mysql
-SET PASSWORD FOR 'root'@localhost = PASSWORD("password");
-exit
+sudo mysql -e "SET PASSWORD FOR 'root'@localhost = PASSWORD('password');"
 
 Ensure that WEBDIR is exported now and for future terminal sesisons
 -------------------------------------------------------------------
