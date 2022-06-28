@@ -595,7 +595,7 @@ size_t process_put_file( const string& blockchain,
                // FUTURE: This message should be handled as a server string message.
                string progress_message( "Synchronising at height " + to_string( next_height ) );
 
-               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
+               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) + num_skipped );
 
                if( !num_tree_items.empty( ) )
                   progress_message += '/' + num_tree_items;
@@ -669,6 +669,7 @@ size_t process_put_file( const string& blockchain,
                            if( has_file( target_hash ) )
                            {
                               ++num_skipped;
+
                               target_hashes.insert( target_hash );
                            }
                            else
@@ -928,14 +929,12 @@ void process_list_items( const string& identity, const string& hash,
             else
             {
                if( !allow_blob_creation )
+                  // FUTURE: This message should be handled as a server string message.
                   progress = "Processed " + to_string( *p_num_items_found ) + " items...";
                else
-               {
-                  size_t new_height = from_string< size_t >( blockchain_height_processed ) + 1;
-
+                  // FUTURE: This message should be handled as a server string message.
                   progress = "Preparing " + to_string( *p_num_items_found )
-                   + " items for synchronisation at height " + to_string( new_height );
-               }
+                   + " items for synchronisation at height " + blockchain_height_processed;
             }
 
             *p_dtm = now;
@@ -4059,7 +4058,7 @@ void peer_listener::on_start( )
                   }
                   catch( exception& x )
                   {
-                     issue_error( x.what( ) );
+                     issue_error( x.what( ), true );
                   }
                   catch( ... )
                   {
