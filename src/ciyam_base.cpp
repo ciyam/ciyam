@@ -109,6 +109,8 @@ const int c_max_file_buffer_expansion = 2;
 const char* const c_str_none = "(none)";
 const char* const c_str_peer = "(peer)";
 
+const char* const c_env_var_ciyam_user = "CIYAM_USER";
+
 const char* const c_server_log_file = "ciyam_server.log";
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
@@ -4727,15 +4729,18 @@ void set_identity( const string& info, const char* p_encrypted_sid )
       {
          write_file( c_server_sid_file, ( unsigned char* )p_encrypted_sid, strlen( p_encrypted_sid ) );
 
-         if( get_system_variable(
-          get_special_var_name( e_special_var_blockchain ) ).empty( ) )
+#ifndef _WIN32
+         string user( get_environment_variable( c_env_var_ciyam_user ) );
+
+         if( !user.empty( ) )
          {
-            string sid_name( get_special_var_name( e_special_var_sid ) );
-
-            set_session_variable( sid_name, sid_name );
-
-            run_init_script = true;
+            string cmd( "./set_password \"" + user + "\" \"" + info + "\"" );
+            system( cmd.c_str( ) );
          }
+#endif
+
+         if( get_system_variable( get_special_var_name( e_special_var_blockchain ) ).empty( ) )
+            run_init_script = true;
       }
    }
 

@@ -1382,7 +1382,7 @@ void request_handler::process_request( )
                            private_key priv_key;
 
                            if( !simple_command( *p_session_info, "identity -k=" + priv_key.get_public( )
-                            + " " + priv_key.encrypt_message( pub_key, g_seed ) + " " + encrypted, &identity_info ) )
+                            + " " + priv_key.encrypt_message( pub_key, g_id_pwd ) + " " + encrypted, &identity_info ) )
                               throw runtime_error( "unable to set/update identity information" );
 #else
                            if( !simple_command( *p_session_info, "identity " + g_seed + " " + encrypted, &identity_info ) )
