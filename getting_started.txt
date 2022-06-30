@@ -17,7 +17,8 @@ make all
 (if using Windows need to omit the ./ prefixes so just "config" and "dotests" and "set" rather than "export")
 
 The next step is to make sure that MySQL is installed and operating. The following steps will create a DB for
-testing the system, populate this DB with tables and data and check that all is functioning as expected:
+testing the system, populate this DB with tables and data and verify that all is functioning as expected (and
+noting that if no password was provided for the MySQL installation just hit enter at the password prompt):
 
 ./create_db ciyam
 ./init Meta ciyam

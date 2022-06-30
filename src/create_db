@@ -17,6 +17,10 @@ else
   password=$2
  fi
 
+ if [ "$MYSQL_EXEC" = "" ]; then
+  MYSQL_EXEC=mysql
+ fi
+
  echo DROP DATABASE IF EXISTS $db_name\;>~create_db
 
  # NOTE: UTF-8 is not being used for 32 bit systems due to index length issues with older MySQL versions.
@@ -36,9 +40,9 @@ else
  echo quit>>~create_db
 
  if [ "$password" = "." ]; then
-  mysql -uroot<~create_db
+  $MYSQL_EXEC -uroot<~create_db
  else
-  mysql -uroot -p$password<~create_db
+  $MYSQL_EXEC -uroot -p$password<~create_db
  fi
 
  rm ~create_db

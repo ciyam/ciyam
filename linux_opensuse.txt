@@ -4,10 +4,19 @@ Linux OpenSUSE Specific Instructions
 https://get.opensuse.org/tumbleweed
 (download the .ISO image to use with VirtualBox as the install CD/DVD)
 
-Create the user "ciyam" when installing then:
+Create the user "tux" when installing then (firstly for sudo without password):
 
 [sudo vi /etc/sudoers]
-ciyam ALL=(ALL) NOPASSWD:ALL
+tux ALL=(ALL) NOPASSWD:ALL
+
+Change the CD/DVD to Guest Additions then mount, install and reboot:
+
+sudo mount /dev/cdrom /mnt
+cd /mnt
+sudo ./VBoxLinuxAdditions.run 
+sudo reboot
+
+Next install all required packages for CIYAM Software Manufacturing:
 
 sudo zypper install make
 sudo zypper install gcc-c++
@@ -18,10 +27,19 @@ sudo zypper install readline-devel
 sudo zypper install mariadb libmariadb-devel
 sudo zypper install apache2 apache2-mod_fcgid
 
+Next configure and start required services:
+
 sudo a2enmod fcgid
+
+https://ciyam.org/docs/fcgi_configuration.html
+
+sudo systemctl enable mysql
+sudo systemctl enable apache2
 
 sudo service mysql restart
 sudo service apache2 restart
+
+NOTE: Use "yast" to add "http" to the public zone of the firewall.
 
 git clone https://github.com/ciyam/fcgi.git
 
@@ -29,20 +47,32 @@ cd fcgi
 ./configure
 make
 sudo make install
+sudo cp libfcgi/.libs/libfcgi.so /usr/lib64
+sudo ln -s /usr/lib64/libfcgi.so /usr/lib64/libfcgi.so.0
+sudo ln -s /usr/lib64/libfcgi.so /usr/lib64/libfcgi.so.0.0.0
 cd ..
 
-sudo mysql -e "SET PASSWORD FOR 'root'@localhost = PASSWORD('password');"
-
-Ensure that WEBDIR is exported now and for future terminal sesisons
--------------------------------------------------------------------
+Export CIYAM environment variables now and for future sesisons
+--------------------------------------------------------------
 export WEBDIR=/srv/www/htdocs
-echo "export WEBDIR=/srv/www/htdocs" >> .bashrc
-echo "export WEBDIR=/srv/www/htdocs" >> .profile
+echo 'export WEBDIR=/srv/www/htdocs' >> .bashrc
+echo 'export WEBDIR=/srv/www/htdocs' >> .profile
 
-Add the "www" group for your user and make it the default
----------------------------------------------------------
-sudo usermod -a -G www <user>
-sudo usermod -g www <user>
+export MYSQL_EXEC="sudo mysql"
+echo 'export MYSQL_EXEC="sudo mysql"' >> .bashrc
+echo 'export MYSQL_EXEC="sudo mysql"' >> .profile
+
+export CIYAM_USER=tux
+echo 'export CIYAM_USER=tux' >> .bashrc
+echo 'export CIYAM_USER=tux' >> .profile
+
+Add the "vboxsf" and "www" groups for "tux" user and change the default
+-----------------------------------------------------------------------
+sudo usermod -a -G vboxsf tux
+sudo usermod -g vboxsf tux
+newgrp - vboxsf
+sudo usermod -a -G www tux
+sudo usermod -g www tux
 newgrp - www
 
 sudo chmod g+w /srv/www/htdocs
@@ -51,6 +81,8 @@ sudo chown wwwrun:www /srv/www/htdocs
 git clone https://github.com/ciyam/ciyam
 
 cd ciyam/src
+
+Next follow these instructions:
 
 ***** https://github.com/ciyam/ciyam/blob/master/getting_started.txt  *****
 

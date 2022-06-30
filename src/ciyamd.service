@@ -8,6 +8,7 @@ Restart=always
 RestartSec=10
 User=tux
 Environment="WEBDIR=/srv/www/htdocs"
+Environment="CIYAM_USER=tux"
 ExecStartPre=
 ExecStart=/home/tux/ciyam/src/ciyam_server -daemon -chdir=/home/tux/ciyam/src
 ExecStartPost=

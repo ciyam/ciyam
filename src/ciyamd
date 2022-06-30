@@ -33,7 +33,7 @@ test -x $CIYAMD_BIN ||
 case "$1" in
  start)
   echo -n "Starting ciyam_server "
-  /sbin/startproc -u tux -g users $CIYAMD_BIN -daemon -chdir=/home/tux/ciyam/src
+  /sbin/startproc -u tux -g www $CIYAMD_BIN -daemon -chdir=/home/tux/ciyam/src
   rc_status -v
   ;;
 

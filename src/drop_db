@@ -11,10 +11,14 @@ else
  echo DROP DATABASE IF EXISTS $1\;>>~drop_db
  echo quit>>~drop_db
 
+ if [ "$MYSQL_EXEC" = "" ]; then
+  MYSQL_EXEC=mysql
+ fi
+
  if [ "$2" = "." ]; then
-  mysql -uroot<~drop_db
+  $MYSQL_EXEC -uroot<~drop_db
  else
-  mysql -uroot -p$2<~drop_db
+  $MYSQL_EXEC -uroot -p$2<~drop_db
  fi
 
  rm ~drop_db
