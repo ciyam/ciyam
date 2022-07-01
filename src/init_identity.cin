@@ -24,9 +24,10 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -pwd_and_data $ARGS
 ENCRYPTED=$OUTPUT
 ;
-.identity -k=:$DATA_AND_PUBKEY $ENCRYPTED
+.identity $ENCRYPTED
+.identity $ARGS $ENCRYPTED
 IDENT=@substr:0,40:$OUTPUT
-#Encrypted Identity: $ENCRYPTED
+#Identity: $IDENT
 ;
 .system_variable @os
 @ifneq "$OUTPUT" "Linux"
