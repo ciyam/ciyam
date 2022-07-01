@@ -1374,7 +1374,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
        && command != c_cmd_ciyam_session_crypto_seed
        && command != c_cmd_ciyam_session_session_rpc_unlock )
       {
-         if( ( parameters.size( ) == 1 )
+         if( ( parameters.size( ) == 2 )
           && ( ( command == c_cmd_ciyam_session_system_variable )
           || ( command == c_cmd_ciyam_session_session_variable ) ) )
             ;
