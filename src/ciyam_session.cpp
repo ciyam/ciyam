@@ -1368,12 +1368,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
       if( socket_handler.is_locked( )
        && command != c_cmd_ciyam_session_quit
+       && command != c_cmd_ciyam_session_encrypt
        && command != c_cmd_ciyam_session_identity
        && command != c_cmd_ciyam_session_starttls
+       && command != c_cmd_ciyam_session_crypto_seed
        && command != c_cmd_ciyam_session_session_rpc_unlock )
       {
-         // FUTURE: This message should be handled as a server string message.
-         throw runtime_error( "Session RPC access denied." );
+         if( ( parameters.size( ) == 1 )
+          && ( ( command == c_cmd_ciyam_session_system_variable )
+          || ( command == c_cmd_ciyam_session_session_variable ) ) )
+            ;
+         else
+            // FUTURE: This message should be handled as a server string message.
+            throw runtime_error( "Session RPC access denied." );
       }
 
       if( command == c_cmd_ciyam_session_version )
