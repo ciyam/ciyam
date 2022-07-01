@@ -24,7 +24,7 @@ ARGS=@repstr:\:/ -k=:$DATA_AND_PUBKEY
 .encrypt -pwd_and_data $ARGS
 ENCRYPTED=$OUTPUT
 ;
-.identity $ENCRYPTED $ENCRYPTED
+.identity -k=:$DATA_AND_PUBKEY $ENCRYPTED
 IDENT=@substr:0,40:$OUTPUT
 #Encrypted Identity: $ENCRYPTED
 ;
