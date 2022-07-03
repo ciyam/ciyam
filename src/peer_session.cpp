@@ -3544,7 +3544,7 @@ void peer_session::on_start( )
 
    int64_t current = unix_time( date_time::local( ) );
 
-   int64_t difference = ( current - time_val ) + 1;
+   int64_t difference = ( current - time_val ) + 2;
 
    try
    {
