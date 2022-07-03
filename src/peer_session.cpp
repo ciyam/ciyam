@@ -4339,6 +4339,8 @@ void peer_session_starter::on_start( )
 
       get_peerchain_externals( peerchain_externals );
 
+      msleep( c_start_sleep_time );
+
       for( size_t i = 0; i < peerchain_externals.size( ); i++ )
       {
          if( g_server_shutdown || has_max_peers( ) )
