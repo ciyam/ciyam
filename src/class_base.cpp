@@ -5637,7 +5637,7 @@ void connect_peerchain( const string& identity, bool no_delay )
     e_special_var_queue_peers ), identity, check_not_has_either ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * 2 );
+         msleep( c_peer_sleep_time * 10 );
    }
 }
 
@@ -5652,7 +5652,7 @@ void disconnect_peerchain( const string& identity, bool no_delay )
    if( set_system_variable( '~' + identity, c_true_value, check_not_has ) )
    {
       if( !no_delay )
-         msleep( c_peer_sleep_time * 2 );
+         msleep( c_peer_sleep_time * 5 );
    }
 }
 
