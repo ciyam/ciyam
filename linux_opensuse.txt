@@ -39,7 +39,11 @@ sudo systemctl enable apache2
 sudo service mysql restart
 sudo service apache2 restart
 
-NOTE: Use "yast" to add "http" to the public zone of the firewall.
+NOTE: Use "yast" to add "http" and "ssh" to the public zone of the firewall.
+
+sudo vi /usr/etc/ssh/sshd_config
++PasswordAuthentication yes
+sudo service sshd restart
 
 git clone https://github.com/ciyam/fcgi.git
 

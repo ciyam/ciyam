@@ -772,8 +772,8 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
             {
                size_t next_height = from_string< size_t >( blockchain_height_processed );
 
-               progress = "Verifying at height " + to_string( next_height ) + " ("
-                + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
+               progress = "Verifying at height " + to_string( next_height )
+                + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
 
                set_session_progress_output( progress );
 
@@ -933,8 +933,8 @@ void process_list_items( const string& identity, const string& hash,
                   progress = "Processed " + to_string( *p_num_items_found ) + " items...";
                else
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Preparing " + to_string( *p_num_items_found )
-                   + " items for synchronisation at height " + blockchain_height_processed;
+                  progress = "Processing " + to_string( *p_num_items_found )
+                   + " items height " + blockchain_height_processed;
             }
 
             *p_dtm = now;
