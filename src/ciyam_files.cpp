@@ -4493,6 +4493,53 @@ bool has_repository_entry_record( const string& repository, const string& hash )
    return ods_fs.has_file( file_name, true );
 }
 
+bool fetch_repository_entry_record(
+ const string& repository, const string& hash, string& local_hash, bool must_exist )
+{
+   guard g( g_mutex );
+
+   system_ods_bulk_read ods_bulk_read;
+
+   ods_file_system& ods_fs( system_ods_file_system( ) );
+
+   ods_fs.set_root_folder( c_file_repository_folder );
+
+   string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
+
+   string suffix;
+
+   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
+      return false;
+
+   if( suffix.length( ) > 1 )
+   {
+      local_hash = suffix.substr( 1 );
+      local_hash = hex_encode( base64::decode( local_hash, true ) );
+   }
+   else
+   {
+      try
+      {
+         stringstream sio_data;
+         ods_fs.get_file( file_name + suffix, &sio_data, true );
+
+         sio_reader reader( sio_data );
+
+         local_hash = reader.read_attribute( c_attribute_local_hash );
+      }
+      catch( exception& x )
+      {
+         throw runtime_error( x.what( ) + string( " when fetching " ) + file_name );
+      }
+      catch( ... )
+      {
+         throw runtime_error( "unexpected error occurred when fetching " + file_name );
+      }
+   }
+
+   return true;
+}
+
 bool fetch_repository_entry_record( const string& repository, const string& hash,
  string& local_hash, string& local_public_key, string& master_public_key, bool must_exist )
 {

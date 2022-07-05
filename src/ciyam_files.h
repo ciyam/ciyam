@@ -223,6 +223,9 @@ std::pair< std::string, size_t > CIYAM_BASE_DECL_SPEC oldest_repository_entry_in
 
 bool CIYAM_BASE_DECL_SPEC has_repository_entry_record( const std::string& repository, const std::string& hash );
 
+bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record(
+ const std::string& repository, const std::string& hash, std::string& local_hash, bool must_exist = true );
+
 bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record( const std::string& repository, const std::string& hash,
  std::string& local_hash, std::string& local_public_key, std::string& master_public_key, bool must_exist = true );
 
