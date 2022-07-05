@@ -931,7 +931,7 @@ void process_list_items( const string& identity, const string& hash,
                else
                   // FUTURE: This message should be handled as a server string message.
                   progress = "Processing " + to_string( *p_num_items_found )
-                   + " items at height " + blockchain_height_processed;
+                   + " items at height " + blockchain_height_processed + "...";
             }
 
             *p_dtm = now;
@@ -969,12 +969,14 @@ void process_list_items( const string& identity, const string& hash,
 
          if( !has_file( next_hash ) )
          {
-            if( !fetch_repository_entry_record( identity, next_hash,
-             local_hash, local_public_key, master_public_key, false ) )
+            if( !has_repository_entry_record( identity, next_hash ) )
                add_peer_file_hash_for_get( next_hash );
-            else if( first_hash_to_get.empty( ) && ( local_public_key != master_public_key ) )
+            else if( allow_blob_creation && first_hash_to_get.empty( ) )
             {
-               if( allow_blob_creation )
+               fetch_repository_entry_record( identity,
+                next_hash, local_hash, local_public_key, master_public_key );
+
+               if( local_public_key != master_public_key )
                {
                   if( p_blob_data->size( ) > 1 )
                      *p_blob_data += c_blob_separator;
@@ -1003,37 +1005,39 @@ void process_list_items( const string& identity, const string& hash,
             if( p_num_items_found )
                ++( *p_num_items_found );
 
-            if( fetch_repository_entry_record( identity, next_hash,
-             local_hash, local_public_key, master_public_key, false ) )
+            if( has_repository_entry_record( identity, next_hash ) )
             {
                has_repository_entry = true;
 
-               if( local_public_key == master_public_key )
-                  put_info_and_store_repository_entry = true;
+               if( allow_blob_creation )
+               {
+                  fetch_repository_entry_record( identity,
+                   next_hash, local_hash, local_public_key, master_public_key );
+
+                  if( local_public_key == master_public_key )
+                     put_info_and_store_repository_entry = true;
+               }
             }
-            else if( !get_session_variable( blockchain_is_owner_name ).empty( ) )
+            else if( allow_blob_creation && !get_session_variable( blockchain_is_owner_name ).empty( ) )
                put_info_and_store_repository_entry = true;
 
             if( first_hash_to_get.empty( ) && put_info_and_store_repository_entry )
             {
-               if( allow_blob_creation )
+               if( local_hash.empty( ) || !has_file( local_hash ) )
                {
-                  if( local_hash.empty( ) || !has_file( local_hash ) )
-                  {
-                     string password;
-                     get_identity( password, false, true );
+                  string password;
+                  get_identity( password, false, true );
 
-                     if( p_blob_data->size( ) > 1 )
-                        *p_blob_data += c_blob_separator;
+                  if( p_blob_data->size( ) > 1 )
+                     *p_blob_data += c_blob_separator;
 
-                     *p_blob_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
+                  *p_blob_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
 
-                     clear_key( password );
-                  }
-
-                  if( !has_repository_entry )
-                     store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
+                  clear_key( password );
                }
+
+               if( !has_repository_entry )
+                  store_repository_entry_record( identity, next_hash, "", master_public_key, master_public_key );
             }
          }
          else
