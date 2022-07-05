@@ -2325,7 +2325,8 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       set_variable( c_object_variable_skip_fk_handling, "" );
    }
 
-   if( new_key.size( ) > c_max_key_length )
+   if( ( get_persistence_type( ) == 0 ) // i.e. SQL persistence
+    && ( new_key.size( ) > c_max_key_length ) )
       throw runtime_error( new_key + " exceeds max key length of " + to_string( c_max_key_length ) );
 
    if( p_graph_parent && is_singular && !is_fetching && !skip_fk_handling && !graph_parent_fk_field.empty( ) )

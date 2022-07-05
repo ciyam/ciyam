@@ -33,6 +33,7 @@ sudo a2enmod fcgid
 
 https://ciyam.org/docs/fcgi_configuration.html
 
+sudo systemctl enable sshd
 sudo systemctl enable mysql
 sudo systemctl enable apache2
 

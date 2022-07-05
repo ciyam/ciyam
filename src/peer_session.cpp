@@ -367,14 +367,12 @@ void process_repository_file( const string& blockchain,
       }
       else
       {
-         string dummy;
-
          bool is_blockchain_owner = !get_session_variable(
           get_special_var_name( e_special_var_blockchain_is_owner ) ).empty( );
 
          if( !is_blockchain_owner )
          {
-            if( !fetch_repository_entry_record( identity, target_hash, dummy, dummy, dummy, false ) )
+            if( !has_repository_entry_record( identity, target_hash ) )
                store_repository_entry_record( identity, target_hash, src_hash, hex_pub_key, hex_master );
 
             if( file_data.empty( ) )
@@ -396,7 +394,7 @@ void process_repository_file( const string& blockchain,
 
             clear_key( password );
 
-            if( !fetch_repository_entry_record( identity, target_hash, dummy, dummy, dummy, false ) )
+            if( !has_repository_entry_record( identity, target_hash ) )
                store_repository_entry_record( identity, target_hash, "", hex_master, hex_master );
 
             if( was_extracted )
@@ -408,10 +406,10 @@ void process_repository_file( const string& blockchain,
    }
    else
    {
-      string dummy, local_hash;
+      string local_hash;
 
       bool has_local_file = false;
-      bool has_repo_entry = fetch_repository_entry_record( identity, src_hash, local_hash, dummy, dummy, false );
+      bool has_repo_entry = fetch_repository_entry_record( identity, src_hash, local_hash, false );
 
       if( has_repo_entry && has_file( local_hash ) )
          has_local_file = true;
@@ -676,10 +674,9 @@ size_t process_put_file( const string& blockchain,
                            {
                               list_items_to_ignore.insert( target_hash );
 
-                              string dummy, local_hash;
+                              string local_hash;
 
-                              bool has_repo_entry = fetch_repository_entry_record(
-                               identity, target_hash, local_hash, dummy, dummy, false );
+                              bool has_repo_entry = fetch_repository_entry_record( identity, target_hash, local_hash, false );
 
                               if( has_repo_entry && has_file( local_hash ) )
                               {
@@ -934,7 +931,7 @@ void process_list_items( const string& identity, const string& hash,
                else
                   // FUTURE: This message should be handled as a server string message.
                   progress = "Processing " + to_string( *p_num_items_found )
-                   + " items height " + blockchain_height_processed;
+                   + " items at height " + blockchain_height_processed;
             }
 
             *p_dtm = now;
