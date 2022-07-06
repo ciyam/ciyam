@@ -4507,8 +4507,9 @@ bool fetch_repository_entry_record(
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
    string suffix;
+   bool has_file = ods_fs.has_file( file_name, true, &suffix );
 
-   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
+   if( !has_file && !must_exist )
       return false;
 
    if( suffix.length( ) > 1 )
@@ -4554,8 +4555,9 @@ bool fetch_repository_entry_record( const string& repository, const string& hash
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
    string suffix;
+   bool has_file = ods_fs.has_file( file_name, true, &suffix );
 
-   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
+   if( !has_file && !must_exist )
       return false;
 
    try
@@ -4633,8 +4635,9 @@ bool destroy_repository_entry_record( const string& repository, const string& ha
    string file_name( repository + '.' + base64::encode( hex_decode( hash ), true ) );
 
    string suffix;
+   bool has_file = ods_fs.has_file( file_name, true, &suffix );
 
-   if( !must_exist && !ods_fs.has_file( file_name, true, &suffix ) )
+   if( !has_file && !must_exist )
       return false;
 
    ods_fs.remove_file( file_name + suffix );

@@ -200,7 +200,7 @@ void output_synchronised_progress_message(
    string progress_message( "Synchronised at height " + to_string( blockchain_height ) );
 
    if( blockchain_height_other > blockchain_height )
-      progress_message += " (...)";
+      progress_message += " ...";
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -919,19 +919,23 @@ void process_list_items( const string& identity, const string& hash,
 
          if( elapsed >= 2 )
          {
-            string progress;
+            string progress( "." );
 
             if( !p_num_items_found )
                progress = "Processing: " + hash;
             else
             {
+               string progress_message;
+
                if( !allow_blob_creation )
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Processed " + to_string( *p_num_items_found ) + " items...";
+                  progress_message = "Processed " + to_string( *p_num_items_found ) + " items...";
                else
                   // FUTURE: This message should be handled as a server string message.
-                  progress = "Processing " + to_string( *p_num_items_found )
+                  progress_message = "Processing " + to_string( *p_num_items_found )
                    + " items at height " + blockchain_height_processed + "...";
+
+               set_session_progress_output( progress_message );
             }
 
             *p_dtm = now;
@@ -1069,6 +1073,9 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_data_file) hash: " + hash + " height: " + to_string( height ) );
 
+   bool is_fetching = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
+
    try
    {
       string block_tag( blockchain + '.' + to_string( height ) + c_blk_suffix );
@@ -1169,7 +1176,9 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
    }
    catch( ... )
    {
-      delete_file( hash );
+      if( is_fetching )
+         delete_file( hash );
+
       throw;
    }
 }
@@ -1182,6 +1191,9 @@ void process_signature_file( const string& blockchain, const string& hash, size_
 
    if( !height )
       throw runtime_error( "invalid zero height for process_signature_file" );
+
+   bool is_fetching = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
 
    try
    {
@@ -1220,7 +1232,9 @@ void process_signature_file( const string& blockchain, const string& hash, size_
    }
    catch( ... )
    {
-      delete_file( hash );
+      if( is_fetching )
+         delete_file( hash );
+
       throw;
    }
 }
