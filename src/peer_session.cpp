@@ -726,8 +726,9 @@ size_t process_put_file( const string& blockchain,
    return num_skipped;
 }
 
-bool has_all_list_items( const string& blockchain, const string& hash, bool recurse,
- bool touch_all_lists = false, date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_total_processed = 0 )
+bool has_all_list_items( const string& blockchain,
+ const string& hash, bool recurse, bool touch_all_lists = false, date_time* p_dtm = 0,
+ progress* p_progress = 0, size_t* p_total_processed = 0, set< string >* p_blob_hashes = 0 )
 {
    string all_list_items( extract_file( hash, "" ) );
 
@@ -805,11 +806,13 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
          else if( recurse && !has_next_repo_entry && is_list_file( next_hash ) )
          {
             retval = has_all_list_items( blockchain, next_hash,
-             recurse, touch_all_lists, p_dtm, p_progress, p_total_processed );
+             recurse, touch_all_lists, p_dtm, p_progress, p_total_processed, p_blob_hashes );
 
             if( !retval )
                break;
          }
+         else if( p_blob_hashes )
+            p_blob_hashes->insert( next_hash );
       }
    }
 
@@ -819,7 +822,8 @@ bool has_all_list_items( const string& blockchain, const string& hash, bool recu
    return retval;
 }
 
-bool last_data_tree_is_identical( const string& blockchain, size_t previous_height )
+bool last_data_tree_is_identical( const string& blockchain,
+ size_t previous_height, string* p_prior_data_tree_hash = 0 )
 {
    bool retval = false;
 
@@ -847,12 +851,19 @@ bool last_data_tree_is_identical( const string& blockchain, size_t previous_heig
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), num_tree_items );
 
-      if( tree_root_hash == get_session_variable(
-       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) )
+      string prior_data_tree_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+      if( tree_root_hash == prior_data_tree_hash )
          retval = true;
       else
+      {
+         if( p_prior_data_tree_hash )
+            *p_prior_data_tree_hash = prior_data_tree_hash;
+
          set_session_variable( get_special_var_name(
           e_special_var_blockchain_tree_root_hash ), tree_root_hash );
+      }
    }
 
    return retval;
@@ -922,20 +933,17 @@ void process_list_items( const string& identity, const string& hash,
             string progress( "." );
 
             if( !p_num_items_found )
+               // FUTURE: This message should be handled as a server string message.
                progress = "Processing: " + hash;
             else
             {
-               string progress_message;
-
-               if( !allow_blob_creation )
+               if( allow_blob_creation )
                   // FUTURE: This message should be handled as a server string message.
-                  progress_message = "Processed " + to_string( *p_num_items_found ) + " items...";
+                  progress = "Processing " + to_string( *p_num_items_found )
+                   + " items at height " + blockchain_height_processed + "...";
                else
                   // FUTURE: This message should be handled as a server string message.
-                  progress_message = "Processing " + to_string( *p_num_items_found )
-                   + " items at height " + blockchain_height_processed + "...";
-
-               set_session_progress_output( progress_message );
+                  set_session_progress_output( "Processed " + to_string( *p_num_items_found ) + " items..." );
             }
 
             *p_dtm = now;
@@ -1134,8 +1142,21 @@ void process_data_file( const string& blockchain, const string& hash, size_t hei
                {
                   need_to_tag_zenith = is_new_height;
 
-                  if( !last_data_tree_is_identical( blockchain, height - 1 ) )
-                     process_list_items( identity, tree_root_hash, true, 0, p_num_items_found, 0, &dtm, p_progress );
+                  string prior_data_tree_hash;
+
+                  if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
+                  {
+                     set< string > prior_data_tree_blobs;
+
+                     // NOTE: Retrieve all the blob hashes for the prior data tree 
+                     // in order to skip any repeats found in "process_list_items".
+                     if( !prior_data_tree_hash.empty( ) )
+                        has_all_list_items( blockchain, prior_data_tree_hash,
+                         true, false, &dtm, p_progress, 0, &prior_data_tree_blobs );
+
+                     process_list_items( identity, tree_root_hash, true,
+                      0, p_num_items_found, &prior_data_tree_blobs, &dtm, p_progress );
+                  }
                }
 
                set_session_variable(
