@@ -627,6 +627,14 @@ size_t process_put_file( const string& blockchain,
                   string public_key(
                    lines[ 1 ].substr( strlen( c_file_repository_public_key_line_prefix ) ) );
 
+                  pos = public_key.find( ':' );
+
+                  if( pos != string::npos )
+                  {
+                     num_skipped += from_string< size_t >( public_key.substr( pos + 1 ) );
+                     public_key.erase( pos );
+                  }
+
                   pos = public_key.find( '-' );
 
                   if( pos != string::npos )
@@ -869,9 +877,10 @@ bool last_data_tree_is_identical( const string& blockchain,
    return retval;
 }
 
-void process_list_items( const string& identity, const string& hash,
- bool recurse, string* p_blob_data = 0, size_t* p_num_items_found = 0,
- set< string >* p_list_items_to_ignore = 0, date_time* p_dtm = 0, progress* p_progress = 0 )
+void process_list_items( const string& identity,
+ const string& hash, bool recurse, string* p_blob_data = 0,
+ size_t* p_num_items_found = 0, set< string >* p_list_items_to_ignore = 0,
+ date_time* p_dtm = 0, progress* p_progress = 0, size_t* p_num_items_skipped = 0 )
 {
    guard g( g_mutex );
 
@@ -892,6 +901,11 @@ void process_list_items( const string& identity, const string& hash,
       p_blob_data = &file_data;
    }
 
+   size_t num_items_skipped = 0;
+
+   if( !p_num_items_skipped )
+      p_num_items_skipped = &num_items_skipped;
+
    system_ods_bulk_write ods_bulk_write;
 
    size_t max_blob_file_data = get_files_area_item_max_size( ) - c_max_put_blob_size;
@@ -904,9 +918,11 @@ void process_list_items( const string& identity, const string& hash,
    string first_hash_name( get_special_var_name( e_special_var_hash ) );
    string first_hash_to_get( get_session_variable( first_hash_name ) );
 
+   bool is_fetching = !get_session_variable( blockchain_is_fetching_name ).empty( );
+
    bool allow_blob_creation = false;
 
-   if( get_session_variable( blockchain_is_fetching_name ).empty( )
+   if( !is_fetching
     && get_session_variable( blockchain_skip_blob_puts_name ).empty( )
     && get_session_variable( blockchain_both_are_owners_name ).empty( ) )
       allow_blob_creation = true;
@@ -930,7 +946,7 @@ void process_list_items( const string& identity, const string& hash,
 
          if( elapsed >= 2 )
          {
-            string progress( "." );
+            string progress;
 
             if( !p_num_items_found )
                // FUTURE: This message should be handled as a server string message.
@@ -943,10 +959,16 @@ void process_list_items( const string& identity, const string& hash,
                    + " items at height " + blockchain_height_processed + "...";
                else
                   // FUTURE: This message should be handled as a server string message.
-                  set_session_progress_output( "Processed " + to_string( *p_num_items_found ) + " items..." );
+                  progress = "Processed " + to_string( *p_num_items_found ) + " items...";
             }
 
             *p_dtm = now;
+
+            if( is_fetching )
+            {
+               set_session_progress_output( progress );
+               progress = ".";
+            }
 
             p_progress->output_progress( progress );
          }
@@ -969,7 +991,12 @@ void process_list_items( const string& identity, const string& hash,
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
          if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
+         {
+            if( allow_blob_creation && first_hash_to_get.empty( ) )
+               ++( *p_num_items_skipped );
+
             continue;
+         }
 
          string local_hash, local_public_key, master_public_key;
 
@@ -994,7 +1021,9 @@ void process_list_items( const string& identity, const string& hash,
                      *p_blob_data += c_blob_separator;
 
                   *p_blob_data += create_peer_repository_entry_pull_info( identity,
-                   next_hash, local_hash, local_public_key, master_public_key, false );
+                   next_hash, local_hash, local_public_key, master_public_key, false, *p_num_items_skipped );
+
+                  *p_num_items_skipped = 0;
                }
             }
          }
@@ -1004,7 +1033,7 @@ void process_list_items( const string& identity, const string& hash,
                ++( *p_num_items_found );
 
             process_list_items( identity, next_hash, recurse,
-             p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress );
+             p_blob_data, p_num_items_found, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
 
             // NOTE: Recursive processing may have already located this.
             first_hash_to_get = get_session_variable( first_hash_name );
@@ -1043,9 +1072,12 @@ void process_list_items( const string& identity, const string& hash,
                   if( p_blob_data->size( ) > 1 )
                      *p_blob_data += c_blob_separator;
 
-                  *p_blob_data += create_peer_repository_entry_push_info( next_hash, password, &master_public_key, false );
+                  *p_blob_data += create_peer_repository_entry_push_info(
+                   next_hash, password, &master_public_key, false, *p_num_items_skipped );
 
                   clear_key( password );
+
+                  *p_num_items_skipped = 0;
                }
 
                if( !has_repository_entry )
@@ -1060,7 +1092,7 @@ void process_list_items( const string& identity, const string& hash,
                touch_file( next_hash, identity, false );
             else
                process_list_items( identity, next_hash, false,
-                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress );
+                p_blob_data, 0, p_list_items_to_ignore, p_dtm, p_progress, p_num_items_skipped );
          }
       }
    }
