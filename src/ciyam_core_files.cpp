@@ -680,20 +680,22 @@ string construct_blob_for_block_content( const string& block_content )
    return string( c_file_type_str_core_blob ) + block_content;
 }
 
-string create_peer_repository_entry_pull_info( const string& repository, const string& hash, bool store_as_blob )
+string create_peer_repository_entry_pull_info(
+ const string& repository, const string& hash, bool store_as_blob, size_t num_items_skipped )
 {
    string retval, local_hash, local_public_key, master_public_key;
 
    if( fetch_repository_entry_record( repository, hash,
     local_hash, local_public_key, master_public_key, false ) && has_file( local_hash ) )
       retval = create_peer_repository_entry_pull_info( repository,
-       hash, local_hash, local_public_key, master_public_key, store_as_blob );
+       hash, local_hash, local_public_key, master_public_key, store_as_blob, num_items_skipped );
 
    return retval;
 }
 
-string create_peer_repository_entry_pull_info( const string& repository, const string& hash,
- const string& local_hash, const string& local_public_key, const string& master_public_key, bool store_as_blob )
+string create_peer_repository_entry_pull_info( const string& repository,
+ const string& hash, const string& local_hash, const string& local_public_key,
+ const string& master_public_key, bool store_as_blob, size_t num_items_skipped )
 {
    string retval;
 
@@ -711,6 +713,9 @@ string create_peer_repository_entry_pull_info( const string& repository, const s
 
    if( !master_public_key.empty( ) )
       file_data += '-' + base64::encode( hex_decode( master_public_key ) );
+
+   if( num_items_skipped )
+      file_data += ':' + to_string( num_items_skipped );
 
    file_data += '\n';
 
@@ -730,8 +735,9 @@ string create_peer_repository_entry_pull_info( const string& repository, const s
    return retval;
 }
 
-string create_peer_repository_entry_push_info( const string& file_hash,
- const string& password, string* p_pub_key, bool store_as_blob, bool is_for_testing )
+string create_peer_repository_entry_push_info(
+ const string& file_hash, const string& password,
+ string* p_pub_key, bool store_as_blob, bool is_for_testing, size_t num_items_skipped )
 {
    string retval;
 
@@ -762,6 +768,10 @@ string create_peer_repository_entry_push_info( const string& file_hash,
 
    file_data += c_file_repository_public_key_line_prefix;
    file_data += ap_priv_key->get_public( true, true );
+
+   if( num_items_skipped )
+      file_data += ':' + to_string( num_items_skipped );
+
    file_data += '\n';
 
    file_data += c_file_repository_source_hash_line_prefix;

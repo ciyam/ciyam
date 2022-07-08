@@ -32,14 +32,16 @@ bool CIYAM_BASE_DECL_SPEC is_block( const std::string& core_type );
 std::string CIYAM_BASE_DECL_SPEC construct_blob_for_block_content( const std::string& block_content );
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info(
- const std::string& repository, const std::string& hash, bool store_as_blob = true );
+ const std::string& repository, const std::string& hash, bool store_as_blob = true, size_t num_items_skipped = 0 );
 
 std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_pull_info(
  const std::string& repository, const std::string& hash, const std::string& local_hash,
- const std::string& local_public_key, const std::string& master_public_key, bool store_as_blob = true );
+ const std::string& local_public_key, const std::string& master_public_key, bool store_as_blob = true,
+ size_t num_items_skipped = 0 );
 
-std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info( const std::string& file_hash,
- const std::string& password, std::string* p_pub_key = 0, bool store_as_blob = true, bool is_for_testing = false );
+std::string CIYAM_BASE_DECL_SPEC create_peer_repository_entry_push_info(
+ const std::string& file_hash, const std::string& password, std::string* p_pub_key = 0,
+ bool store_as_blob = true, bool is_for_testing = false, size_t num_items_skipped = 0 );
 
 void CIYAM_BASE_DECL_SPEC decrypt_pulled_peer_file(
  const std::string& dest_hash, const std::string& src_hash,
