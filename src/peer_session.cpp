@@ -508,7 +508,7 @@ string get_file_hash_from_put_data( const string& encoded_master,
 }
 #endif
 
-size_t process_put_file( const string& blockchain,
+void process_put_file( const string& blockchain,
  const string& file_data, bool check_for_supporters, bool is_test_session,
  set< string >& list_items_to_ignore, date_time* p_dtm = 0, progress* p_progress = 0 )
 {
@@ -593,7 +593,7 @@ size_t process_put_file( const string& blockchain,
                // FUTURE: This message should be handled as a server string message.
                string progress_message( "Synchronising at height " + to_string( next_height ) );
 
-               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) + num_skipped );
+               progress_message += " (" + to_string( get_blockchain_tree_item( blockchain ) );
 
                if( !num_tree_items.empty( ) )
                   progress_message += '/' + num_tree_items;
@@ -631,8 +631,10 @@ size_t process_put_file( const string& blockchain,
 
                   if( pos != string::npos )
                   {
-                     num_skipped += from_string< size_t >( public_key.substr( pos + 1 ) );
+                     size_t num_skipped = from_string< size_t >( public_key.substr( pos + 1 ) );
                      public_key.erase( pos );
+
+                     add_to_blockchain_tree_item( blockchain, num_skipped );
                   }
 
                   pos = public_key.find( '-' );
@@ -674,7 +676,7 @@ size_t process_put_file( const string& blockchain,
 
                            if( has_file( target_hash ) )
                            {
-                              ++num_skipped;
+                              add_to_blockchain_tree_item( blockchain, 1 );
 
                               target_hashes.insert( target_hash );
                            }
@@ -688,7 +690,7 @@ size_t process_put_file( const string& blockchain,
 
                               if( has_repo_entry && has_file( local_hash ) )
                               {
-                                 ++num_skipped;
+                                 add_to_blockchain_tree_item( blockchain, 1 );
 
                                  touch_file( local_hash, identity, false );
                               }
@@ -730,8 +732,6 @@ size_t process_put_file( const string& blockchain,
             add_peer_file_hash_for_get( next );
       }
    }
-
-   return num_skipped;
 }
 
 bool has_all_list_items( const string& blockchain,
@@ -760,6 +760,9 @@ bool has_all_list_items( const string& blockchain,
    string blockchain_height_processed( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height_processed ) ) );
 
+   bool is_fetching = !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_is_fetching ) ).empty( );
+
    for( size_t i = 0; i < list_items.size( ); i++ )
    {
       string next_item( list_items[ i ] );
@@ -786,7 +789,16 @@ bool has_all_list_items( const string& blockchain,
                progress = ".";
             }
             else
+            {
                progress = "Processed " + to_string( *p_total_processed ) + " items...";
+
+               if( is_fetching )
+               {
+                  set_session_progress_output( progress );
+
+                  progress = ".";
+               }
+            }
 
             *p_dtm = now;
 
@@ -1073,7 +1085,7 @@ void process_list_items( const string& identity,
                      *p_blob_data += c_blob_separator;
 
                   *p_blob_data += create_peer_repository_entry_push_info(
-                   next_hash, password, &master_public_key, false, *p_num_items_skipped );
+                   next_hash, password, &master_public_key, false, false, *p_num_items_skipped );
 
                   clear_key( password );
 
@@ -2987,11 +2999,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             {
                date_time dtm( date_time::local( ) );
 
-               size_t num_skipped = process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
+               process_put_file( blockchain, file_data.substr( 1 ), check_for_supporters,
                 socket_handler.get_is_test_session( ), socket_handler.get_list_items_to_ignore( ), &dtm, &socket_handler );
-
-               if( num_skipped )
-                  add_to_blockchain_tree_item( blockchain, num_skipped );
             }
          }
          else
