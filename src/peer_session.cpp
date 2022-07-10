@@ -463,8 +463,6 @@ void process_repository_file( const string& blockchain,
           local_hash, ap_priv_key->get_public( ), pub_key.get_public( ) );
       }
    }
-
-   remove_repository_entry_info( identity, src_hash );
 }
 
 string get_file_hash_from_put_data( const string& encoded_master,
@@ -700,7 +698,6 @@ void process_put_file( const string& blockchain,
                                  {
                                     target_hashes.insert( target_hash );
 
-                                    add_repository_entry_info( identity, target_hash, order++ );
                                     add_peer_file_hash_for_get( hash_info, check_for_supporters );
                                  }
                               }
@@ -1004,7 +1001,7 @@ void process_list_items( const string& identity,
 
          if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
          {
-            if( allow_blob_creation && first_hash_to_get.empty( ) )
+            if( allow_blob_creation )
                ++( *p_num_items_skipped );
 
             continue;
@@ -2260,6 +2257,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   size_t num_items_found = 0;
 
+                  set_blockchain_tree_item( blockchain, 0 );
+
                   bool has_block_data = process_block_for_height( blockchain,
                    next_block_hash, blockchain_height + 1, &num_items_found, this );
 
@@ -2282,27 +2281,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                         // NOTE: Use the "nonce" argument to indicate the first
                         // file to be fetched (so that pull requests will start
-                        // from the correct point). An additional amount of two
-                        // is due to counting starting from the ".dat" file and
-                        // needing to include the tree root file itself.
+                        // from the correct point).
                         if( !file_hash.empty( ) )
-                        {
-                           pair< string, size_t > repo_entry_info;
-                           repo_entry_info = oldest_repository_entry_info( identity );
-
-                           if( !repo_entry_info.first.empty( ) )
-                           {
-                              if( repo_entry_info.second > num_items_found )
-                              {
-                                 file_hash = repo_entry_info.first;
-                                 num_items_found = repo_entry_info.second;
-                              }
-                           }
-
                            next_block_tag += string( " " ) + '@' + file_hash;
-
-                           set_blockchain_tree_item( blockchain, num_items_found + 2 );
-                        }
 
                         has_tree_files = chk_file( next_block_tag, &next_block_hash );
 
@@ -2572,8 +2553,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
       TRACE_LOG( TRACE_PEER_OPS, "=== new zenith hash: "
        + zenith_hash + " height: " + to_string( blockchain_height ) );
-
-      clear_all_repository_entry_info( identity );
 
       set_session_variable( blockchain_zenith_hash_name, "" );
 
