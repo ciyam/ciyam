@@ -212,15 +212,6 @@ bool CIYAM_BASE_DECL_SPEC touch_file_in_archive( const std::string& hash, const 
 void CIYAM_BASE_DECL_SPEC delete_file_from_archive(
  const std::string& hash, const std::string& archive, bool add_to_blacklist = false );
 
-void CIYAM_BASE_DECL_SPEC add_repository_entry_info(
- const std::string& repository, const std::string& hash, size_t order );
-
-void CIYAM_BASE_DECL_SPEC remove_repository_entry_info( const std::string& repository, const std::string& hash );
-
-void CIYAM_BASE_DECL_SPEC clear_all_repository_entry_info( const std::string& repository );
-
-std::pair< std::string, size_t > CIYAM_BASE_DECL_SPEC oldest_repository_entry_info( const std::string& repository );
-
 bool CIYAM_BASE_DECL_SPEC has_repository_entry_record( const std::string& repository, const std::string& hash );
 
 bool CIYAM_BASE_DECL_SPEC fetch_repository_entry_record(
