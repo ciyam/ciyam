@@ -321,7 +321,11 @@ int main( int argc, char* argv[ ] )
       if( !is_quiet )
          cout << c_app_title << " v" << c_app_version << "\n";
 
+#ifndef ZLIB_SUPPORT
       cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
+#else
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
+#endif
 
       cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
       cout << "  and: -l to list rather than create all matching files and directories" << endl;
