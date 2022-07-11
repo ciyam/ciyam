@@ -68,8 +68,10 @@ const char c_type_directory = 'D';
 
 const int c_buffer_size = 65536;
 
-// const int c_max_bytes_per_line = 57; // (for 76 characters)
 const int c_max_bytes_per_line = 96; // (for 128 characters)
+
+const char* const c_app_title = "bundle";
+const char* const c_app_version = "0.1h";
 
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
@@ -202,19 +204,19 @@ void check_file_header( ifstream& inpf, const string& filename, encoding_type& e
 
 #ifndef ZLIB_SUPPORT
 void output_directory( set< string >& file_names,
- const string& path_name, const string& path_prefix, int level, ofstream& outf )
+ const string& path_name, const string& path_prefix, int level, ostream& os )
 #else
 void output_directory( set< string >& file_names,
- const string& path_name, const string& path_prefix, int level, ofstream& outf, bool use_zlib, gzFile& gzf )
+ const string& path_name, const string& path_prefix, int level, ostream& os, bool use_zlib, gzFile& gzf )
 #endif
 {
    string::size_type pos = path_name.find_last_of( '/' );
    if( level > 1 && pos != string::npos && !g_output_directories.count( path_name.substr( 0, pos ) ) )
    {
 #ifndef ZLIB_SUPPORT
-      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, outf );
+      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, os );
 #else
-      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, outf, use_zlib, gzf );
+      output_directory( file_names, path_name.substr( 0, pos ), path_prefix, level - 1, os, use_zlib, gzf );
 #endif
    }
 
@@ -240,10 +242,10 @@ void output_directory( set< string >& file_names,
       g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
-      outf << osstr.str( ) << '\n';
+      os << osstr.str( ) << '\n';
 #else
       if( !use_zlib )
-         outf << osstr.str( ) << '\n';
+         os << osstr.str( ) << '\n';
       else
          write_zlib_line( gzf, osstr.str( ) );
 #endif
@@ -258,12 +260,12 @@ void output_directory( set< string >& file_names,
 void process_directory( const string& directory, const string& filespec_path,
  const vector< string >& filename_filters, const vector< string >* p_filename_exclusions,
  set< string >& matched_filters, set< string >& file_names, bool recurse,
- bool prune, bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf )
+ bool prune, bool is_quieter, bool is_append, encoding_type encoding, ostream& os )
 #else
 void process_directory( const string& directory, const string& filespec_path,
  const vector< string >& filename_filters, const vector< string >* p_filename_exclusions,
  set< string >& matched_filters, set< string >& file_names, bool recurse, bool prune,
- bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf, bool use_zlib, gzFile& gzf )
+ bool is_quieter, bool is_append, encoding_type encoding, ostream& os, bool use_zlib, gzFile& gzf )
 #endif
 {
    directory_filter df;
@@ -302,9 +304,9 @@ void process_directory( const string& directory, const string& filespec_path,
       {
          has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf );
+         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), os );
 #else
-         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf, use_zlib, gzf );
+         output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), os, use_zlib, gzf );
 #endif
       }
 
@@ -383,9 +385,9 @@ void process_directory( const string& directory, const string& filespec_path,
          {
             has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf );
+            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), os );
 #else
-            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), outf, use_zlib, gzf );
+            output_directory( file_names, path_name, path_prefix, dfsi.get_level( ), os, use_zlib, gzf );
 #endif
          }
 
@@ -487,10 +489,10 @@ void process_directory( const string& directory, const string& filespec_path,
          g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
-         outf << osstr.str( ) << '\n';
+         os << osstr.str( ) << '\n';
 #else
          if( !use_zlib )
-            outf << osstr.str( ) << '\n';
+            os << osstr.str( ) << '\n';
          else
             write_zlib_line( gzf, osstr.str( ) );
 #endif
@@ -533,21 +535,21 @@ void process_directory( const string& directory, const string& filespec_path,
 
 #ifndef ZLIB_SUPPORT
             if( encoding != e_encoding_type_raw )
-               outf << encoded << '\n';
+               os << encoded << '\n';
             else
-               outf.rdbuf( )->sputn( buffer, count );
+               os.rdbuf( )->sputn( buffer, count );
 
-            if( !outf.good( ) )
+            if( !os.good( ) )
                throw runtime_error( "unexpected bad output file stream" );
 #else
             if( !use_zlib )
             {
                if( encoding != e_encoding_type_raw )
-                  outf << encoded << '\n';
+                  os << encoded << '\n';
                else
-                  outf.rdbuf( )->sputn( buffer, count );
+                  os.rdbuf( )->sputn( buffer, count );
 
-               if( !outf.good( ) )
+               if( !os.good( ) )
                   throw runtime_error( "unexpected bad output file stream" );
             }
             else
@@ -571,7 +573,9 @@ void process_directory( const string& directory, const string& filespec_path,
 int main( int argc, char* argv[ ] )
 {
    int first_arg = 0;
+
    bool prune = false;
+   bool is_cout = false;
    bool recurse = false;
    bool invalid = false;
    bool is_quiet = false;
@@ -690,12 +694,11 @@ int main( int argc, char* argv[ ] )
    }
 #endif
 
-   if( !is_quiet )
-      cout << "bundle v0.1g\n";
-
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
+      if( !is_quiet )
+         cout << c_app_title << " v" << c_app_version << "\n";
 #ifndef ZLIB_SUPPORT
       cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
 #else
@@ -735,15 +738,23 @@ int main( int argc, char* argv[ ] )
 
       string filename( argv[ first_arg + 1 ] );
 
-      if( !filename.empty( ) && filename[ 0 ] == '-' )
+      if( filename.length( ) > 1 && filename[ 0 ] == '-' )
          throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
 
-      string ext( c_default_extension );
-      if( use_zlib )
-         ext += c_zlib_extension;
+      if( filename == "-" )
+         is_cout = is_quiet = is_quieter = true;
+      else
+      {
+         if( !is_quiet )
+            cout << c_app_title << " v" << c_app_version << "\n";
 
-      if( filename.find( ext ) == string::npos )
-         filename += ext;
+         string ext( c_default_extension );
+         if( use_zlib )
+            ext += c_zlib_extension;
+
+         if( filename.find( ext ) == string::npos )
+            filename += ext;
+      }
 
       bool get_exclude_filespecs = false;
       string directory = g_cwd.substr( pos + 1 );
@@ -834,7 +845,7 @@ int main( int argc, char* argv[ ] )
       set< string > matched_filters;
 
       bool is_append = false;
-      if( file_exists( filename ) )
+      if( !is_cout && file_exists( filename ) )
          is_append = true;
 
       if( is_delete && first_arg + 2 >= argc )
@@ -849,21 +860,46 @@ int main( int argc, char* argv[ ] )
 
       // NOTE: Empty code block for scope purposes.
       {
+         ostream* p_os = 0;
 #ifndef ZLIB_SUPPORT
-         ofstream outf( output_filename.c_str( ) );
-         if( !outf )
-            throw runtime_error( "unable to open file '" + output_filename + "' for output" );
+         ofstream outf;
+
+         if( is_cout )
+            p_os = &cout;
+         else
+         {
+            outf.open( output_filename.c_str( ) );
+
+            if( !outf )
+               throw runtime_error( "unable to open file '" + output_filename + "' for output" );
+
+            p_os = &outf;
+         }
 #else
          gzFile gzf;
          ofstream outf;
 
          if( !use_zlib )
-            outf.open( output_filename.c_str( ) );
-         else
-            gzf = gzopen( output_filename.c_str( ), open_mode.c_str( ) );
+         {
+            if( is_cout )
+               p_os = &cout;
+            else
+            {
+               outf.open( output_filename.c_str( ) );
 
-         if( ( use_zlib && !gzf ) || ( !use_zlib && !outf ) )
-            throw runtime_error( "unable to open file '" + output_filename + "' for output" );
+               if( !outf )
+                  throw runtime_error( "unable to open file '" + output_filename + "' for output" );
+
+               p_os = &outf;
+            }
+         }
+         else
+         {
+            if( is_cout )
+               gzf = gzdopen( fileno( stdout ), open_mode.c_str( ) );
+            else
+               gzf = gzopen( output_filename.c_str( ), open_mode.c_str( ) );
+         }
 #endif
 
          if( !is_quiet )
@@ -896,10 +932,10 @@ int main( int argc, char* argv[ ] )
          }
 
 #ifndef ZLIB_SUPPORT
-         outf << header << '\n';
+         *p_os << header << '\n';
 #else
          if( !use_zlib )
-            outf << header << '\n';
+            *p_os << header << '\n';
          else
             write_zlib_line( gzf, header );
 #endif
@@ -924,17 +960,17 @@ int main( int argc, char* argv[ ] )
 
 #ifndef ZLIB_SUPPORT
                process_directory( next_directory, filespec_path, filename_filters, p_filename_exclusions,
-                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf );
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, *p_os );
 #else
                process_directory( next_directory, filespec_path, filename_filters, p_filename_exclusions,
-                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf, use_zlib, gzf );
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, *p_os, use_zlib, gzf );
 #endif
                if( !is_quieter )
                {
                   for( size_t i = 0; i < filename_filters.size( ); i++ )
                   {
                      if( matched_filters.count( filename_filters[ i ] ) == 0 )
-                        cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+                        cerr << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
                   }
                }
             }
@@ -1047,15 +1083,15 @@ int main( int argc, char* argv[ ] )
                         }
 
 #ifndef ZLIB_SUPPORT
-                        outf.rdbuf( )->sputn( buffer, count );
-                        if( !outf.good( ) )
+                        p_os->rdbuf( )->sputn( buffer, count );
+                        if( !p_os->good( ) )
                            throw runtime_error( "unexpected bad output file stream" );
 #else
                         if( !use_zlib )
                         {
-                           outf.rdbuf( )->sputn( buffer, count );
+                           p_os->rdbuf( )->sputn( buffer, count );
 
-                           if( !outf.good( ) )
+                           if( !p_os->good( ) )
                               throw runtime_error( "unexpected bad output file stream" );
                         }
                         else if( !gzwrite( gzf, buffer, count ) )
@@ -1134,10 +1170,10 @@ int main( int argc, char* argv[ ] )
                   if( !skip_existing_file )
                   {
 #ifndef ZLIB_SUPPORT
-                     outf << line << '\n';
+                     *p_os << line << '\n';
 #else
                      if( !use_zlib )
-                        outf << next << '\n';
+                        *p_os << next << '\n';
                      else
                         write_zlib_line( gzf, next );
 #endif
@@ -1291,10 +1327,10 @@ int main( int argc, char* argv[ ] )
                      throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
 
 #ifndef ZLIB_SUPPORT
-                  outf << next_line << '\n';
+                  *p_os << next_line << '\n';
 #else
                   if( !use_zlib )
-                     outf << next_line << '\n';
+                     *p_os << next_line << '\n';
                   else
                      write_zlib_line( gzf, next_line );
 #endif
@@ -1314,10 +1350,10 @@ int main( int argc, char* argv[ ] )
          osstr << "C " << ap_digest.get( );
 
 #ifndef ZLIB_SUPPORT
-         outf << osstr.str( ) << '\n';
+         *p_os << osstr.str( ) << '\n';
 #else
          if( !use_zlib )
-            outf << osstr.str( ) << '\n';
+            *p_os << osstr.str( ) << '\n';
          else
             write_zlib_line( gzf, osstr.str( ) );
 #endif
@@ -1329,8 +1365,8 @@ int main( int argc, char* argv[ ] )
 
          if( !use_zlib )
          {
-            outf.flush( );
-            if( !outf.good( ) )
+            p_os->flush( );
+            if( !p_os->good( ) )
                throw runtime_error( "unexpected write failure for output file '" + filename + "'" );
          }
       }
@@ -1360,4 +1396,3 @@ int main( int argc, char* argv[ ] )
 
    return 0;
 }
-
