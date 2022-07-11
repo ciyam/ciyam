@@ -75,6 +75,9 @@ const char c_type_directory = 'D';
 
 const int c_buffer_size = 65536;
 
+const char* const c_app_title = "unbundle";
+const char* const c_app_version = "0.1h";
+
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
 
@@ -147,19 +150,18 @@ bool read_zlib_line( gzFile& gzf, string& s )
 #endif
 
 #ifndef ZLIB_SUPPORT
-void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding )
+void check_file_header( istream& is, const string& filename, encoding_type& encoding, bool use_zlib = false )
 #else
-void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding, bool use_zlib, gzFile& gzf )
+void check_file_header( istream& is, const string& filename, encoding_type& encoding, bool use_zlib, gzFile& gzf )
 #endif
 {
    string header;
+
+   if( !use_zlib )
+      getline( is, header );
 #ifdef ZLIB_SUPPORT
    if( use_zlib )
       read_zlib_line( gzf, header );
-   else
-      getline( inpf, header );
-#else
-   getline( inpf, header );
 #endif
 
    string::size_type pos = header.find( ' ' );
@@ -230,14 +232,17 @@ void create_all_directories( deque< string >& create_directories,
 int main( int argc, char* argv[ ] )
 {
    int first_arg = 0;
+
    bool junk = false;
    bool prune = false;
+   bool is_cin = false;
    bool include = false;
    bool use_zlib = false;
    bool is_quiet = false;
    bool list_only = false;
    bool overwrite = false;
    bool is_quieter = false;
+   bool no_zlib_opt = false;
 
    if( argc > first_arg + 1 )
    {
@@ -299,12 +304,23 @@ int main( int argc, char* argv[ ] )
       }
    }
 
-   if( !is_quiet )
-      cout << "unbundle v0.1g\n";
+#ifdef ZLIB_SUPPORT
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-ngz" )
+      {
+         ++first_arg;
+         no_zlib_opt = true;
+      }
+   }
+#endif
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
+      if( !is_quiet )
+         cout << c_app_title << " v" << c_app_version << "\n";
+
       cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
 
       cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
@@ -312,6 +328,9 @@ int main( int argc, char* argv[ ] )
       cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -x identifies one or more filespecs that are to be excluded" << endl;
+#ifdef ZLIB_SUPPORT
+      cout << "  and: -ngz in order to not preform zlib expansion (for use with '-')" << endl;
+#endif
       cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
    }
@@ -324,7 +343,7 @@ int main( int argc, char* argv[ ] )
    {
       string filename( argv[ first_arg + 1 ] );
 
-      if( !filename.empty( ) && filename[ 0 ] == '-' )
+      if( filename.length( ) > 1 && filename[ 0 ] == '-' )
          throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
 
       if( filename.length( ) > 3
@@ -337,33 +356,67 @@ int main( int argc, char* argv[ ] )
 #endif
       }
 
-      string::size_type pos = filename.find( '.' );
+      ifstream inpf;
+#ifdef ZLIB_SUPPORT
+      gzFile gzf;
+#endif
 
-      if( pos == string::npos || _access( filename.c_str( ), 0 ) != 0 )
-         filename += c_default_extension;
+      istream* p_is = 0;
+
+      if( filename == "-" )
+      {
+         is_cin = is_quiet = is_quieter = true;
+
+         if( no_zlib_opt )
+            p_is = &cin;
+         else
+            use_zlib = true;
 
 #ifdef ZLIB_SUPPORT
-      if( _access( filename.c_str( ), 0 ) != 0 )
+         if( use_zlib )
+         {
+            gzf = gzdopen( fileno( stdin ), "rb" );
+
+            if( !gzf )
+               throw runtime_error( "unable to read input from stdin" );
+         }
+#endif
+      }
+      else
       {
-         use_zlib = true;
-         filename += c_zlib_extension;
+         string::size_type pos = filename.find( '.' );
+
+         if( pos == string::npos || _access( filename.c_str( ), 0 ) != 0 )
+            filename += c_default_extension;
+
+#ifdef ZLIB_SUPPORT
+         if( _access( filename.c_str( ), 0 ) != 0 )
+         {
+            use_zlib = true;
+            filename += c_zlib_extension;
+         }
+
+         if( use_zlib )
+         {
+            gzf = gzopen( filename.c_str( ), "rb" );
+
+            if( !gzf )
+               throw runtime_error( "unable to open file '" + filename + "' for input" );
+         }
+#endif
+
+         if( !use_zlib )
+         {
+            inpf.open( filename.c_str( ) );
+            if( !inpf )
+               throw runtime_error( "unable to open file '" + filename + "' for input" );
+
+            p_is = &inpf;
+         }
       }
 
-      gzFile gzf;
-      ifstream inpf;
-
-      if( !use_zlib )
-         inpf.open( filename.c_str( ) );
-      else
-         gzf = gzopen( filename.c_str( ), "rb" );
-
-      if( ( use_zlib && !gzf ) || ( !use_zlib && !inpf ) )
-         throw runtime_error( "unable to open file '" + filename + "' for input" );
-#else
-      ifstream inpf( filename.c_str( ) );
-      if( !inpf )
-         throw runtime_error( "unable to open file '" + filename + "' for input" );
-#endif
+      if( !is_quiet )
+         cout << c_app_title << " v" << c_app_version << "\n";
 
       if( !is_quiet && !list_only )
          cout << "==> started unbundling '" << filename << "'\n";
@@ -375,6 +428,7 @@ int main( int argc, char* argv[ ] )
 
       vector< string > filename_filters;
       vector< string > exclude_filename_filters;
+
       for( int i = first_arg + 2; i < argc; i++ )
       {
          string next( argv[ i ] );
@@ -458,9 +512,9 @@ int main( int argc, char* argv[ ] )
          prune = true;
 
 #ifndef ZLIB_SUPPORT
-      check_file_header( inpf, filename, encoding );
+      check_file_header( *p_is, filename, encoding );
 #else
-      check_file_header( inpf, filename, encoding, use_zlib, gzf );
+      check_file_header( *p_is, filename, encoding, use_zlib, gzf );
 #endif
 
       while( true )
@@ -509,11 +563,10 @@ int main( int argc, char* argv[ ] )
                      }
                   }
                }
-               else
-                  inpf.seekg( raw_file_size, ios::cur );
-#else
-               inpf.seekg( raw_file_size, ios::cur );
 #endif
+               if( !use_zlib )
+                  p_is->seekg( raw_file_size, ios::cur );
+
                cout << endl;
             }
             else
@@ -528,20 +581,11 @@ int main( int argc, char* argv[ ] )
                      count = raw_file_size;
 
 #ifdef ZLIB_SUPPORT
-                  if( use_zlib )
-                  {
-                     if( !gzread( gzf, buffer, count ) )
-                        throw runtime_error( "reading zlib input" );
-                  }
-                  else
-                  {
-                     if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
-                        throw runtime_error( "reading file input" );
-                  }
-#else
-                  if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
-                     throw runtime_error( "reading file input" );
+                  if( use_zlib && !gzread( gzf, buffer, count ) )
+                     throw runtime_error( "reading zlib input" );
 #endif
+                  if( !use_zlib && p_is->rdbuf( )->sgetn( buffer, count ) != count )
+                     throw runtime_error( "reading file input" );
 
                   if( !is_quieter )
                   {
@@ -587,16 +631,11 @@ int main( int argc, char* argv[ ] )
             }
          }
 
-#ifdef ZLIB_SUPPORT
-         if( use_zlib )
-         {
-            if( !read_zlib_line( gzf, next ) )
-               break;
-         }
-         else if( !getline( inpf, next ) )
+         if( !use_zlib && !getline( *p_is, next ) )
             break;
-#else
-         if( !getline( inpf, next ) )
+
+#ifdef ZLIB_SUPPORT
+         if( use_zlib && !read_zlib_line( gzf, next ) )
             break;
 #endif
          ++line;
@@ -618,13 +657,11 @@ int main( int argc, char* argv[ ] )
             // of this will depend upon how much escaping is being used).
             if( !ap_ofstream.get( ) && line_size && file_data_lines > 1 )
             {
+               if( !use_zlib )
+                  p_is->seekg( line_size - 1, ios::cur );
 #ifdef ZLIB_SUPPORT
                if( use_zlib )
                   gzseek( gzf, line_size - 1, SEEK_CUR );
-               else
-                  inpf.seekg( line_size - 1, ios::cur );
-#else
-               inpf.seekg( line_size - 1, ios::cur );
 #endif
             }
 
@@ -815,6 +852,7 @@ int main( int argc, char* argv[ ] )
                {
                   char ch;
                   string prompt( "File '" + next_file + "' already exists. Replace [y/n/A/N]? " );
+
                   while( true )
                   {
                      ch = get_char( prompt.c_str( ) );
@@ -1007,7 +1045,7 @@ int main( int argc, char* argv[ ] )
       if( use_zlib && !gzeof( gzf ) )
          throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
 #endif
-      if( !use_zlib && !inpf.eof( ) )
+      if( !use_zlib && !p_is->eof( ) )
          throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
 
       if( !is_quiet && !list_only )
