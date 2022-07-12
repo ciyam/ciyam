@@ -200,7 +200,7 @@ void output_synchronised_progress_message(
    string progress_message( "Synchronised at height " + to_string( blockchain_height ) );
 
    if( blockchain_height_other > blockchain_height )
-      progress_message += " ...";
+      progress_message += "...";
 
    set_session_progress_output( progress_message );
    set_system_variable( c_progress_output_prefix + identity, progress_message );
@@ -3235,9 +3235,6 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
    bool has_issued_command = false;
    bool check_for_supporters = false;
 
-   string identity( get_session_variable(
-    get_special_var_name( e_special_var_identity ) ) );
-
    string blockchain_peer_has_supporters_name(
     get_special_var_name( e_special_var_blockchain_peer_has_supporters ) );
 
@@ -3547,10 +3544,10 @@ peer_session::peer_session( int64_t time_val,
 
          if( !blockchains.count( blockchain ) )
          {
-            string identity( replaced( blockchain, c_bc_prefix, "" ) );
+            string unprefixed_blockchain( replaced( blockchain, c_bc_prefix, "" ) );
 
             // FUTURE: This message should be handled as a server string message.
-            string error( "Unsupported peerchain identity '" + identity + "'." );
+            string error( "Unsupported peerchain identity '" + unprefixed_blockchain + "'." );
 
             this->ap_socket->write_line( string( c_response_error_prefix ) + error, c_request_timeout );
 
@@ -3832,14 +3829,14 @@ void peer_session::on_start( )
             if( !is_for_support )
             {
                if( has_zenith )
-                  output_synchronised_progress_message( identity, blockchain_height );
+                  output_synchronised_progress_message( unprefixed_blockchain, blockchain_height );
                else
                {
                   // FUTURE: This message should be handled as a server string message.
-                  string progress_message( "Synchronising (...)" );
+                  string progress_message( "Synchronising..." );
 
                   set_session_progress_output( progress_message );
-                  set_system_variable( c_progress_output_prefix + identity, progress_message );
+                  set_system_variable( c_progress_output_prefix + unprefixed_blockchain, progress_message );
                }
             }
          }
