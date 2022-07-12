@@ -3082,27 +3082,27 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    bool has_issued_bye = false;
 
-   // NOTE: If a disconnect has been actioned for the identity then issue a "bye" after
-   // condemning this session and (unless still connecting) do the same if the matching
-   // identity session is not found.
+   // NOTE: If a disconnect has been actioned for the paired identity then issue
+   // a "bye" after condemning this session and (unless still connecting) do the
+   // same if the matching identity session is not found.
    if( !socket_handler.get_is_for_support( ) )
    {
-      string identity( get_session_variable(
-       get_special_var_name( e_special_var_identity ) ) );
+      string paired_identity( get_session_variable(
+       get_special_var_name( e_special_var_paired_identity ) ) );
 
-      if( !identity.empty( ) && get_system_variable( identity ).empty( ) )
+      if( !paired_identity.empty( ) && get_system_variable( paired_identity ).empty( ) )
       {
          bool is_only_session = false;
 
          if( socket_handler.get_is_time_for_check( ) )
-            is_only_session = ( num_have_session_variable( identity ) < 2 );
+            is_only_session = ( num_have_session_variable( paired_identity ) < 2 );
 
-         bool is_disconnecting = !get_system_variable( '~' + identity ).empty( );
-         bool had_connect_error = !get_system_variable( c_error_message_prefix + identity ).empty( );
+         bool is_disconnecting = !get_system_variable( '~' + paired_identity ).empty( );
+         bool had_connect_error = !get_system_variable( c_error_message_prefix + paired_identity ).empty( );
 
          if( is_only_session || is_disconnecting || had_connect_error )
          {
-            set_session_variable( identity, "" );
+            set_session_variable( paired_identity, "" );
 
             if( !is_condemned_session( ) )
             {
@@ -3110,8 +3110,8 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                if( is_only_session )
                {
-                  TRACE_LOG( TRACE_SESSIONS, "(ending session for identity '"
-                   + identity + "' due to matching session not being found)" );
+                  TRACE_LOG( TRACE_SESSIONS, "(ending session for paired identity '"
+                   + paired_identity + "' due to matching session not being found)" );
                }
 
                if( !is_captured_session( ) )
@@ -3824,7 +3824,7 @@ void peer_session::on_start( )
          if( !identity.empty( ) )
          {
             set_session_variable( identity, c_true_value );
-            set_session_variable( get_special_var_name( e_special_var_identity ), identity );
+            set_session_variable( get_special_var_name( e_special_var_paired_identity ), identity );
 
             if( !is_for_support )
             {
@@ -3840,6 +3840,11 @@ void peer_session::on_start( )
                }
             }
          }
+
+         // NOTE: Initially the identity value is that of the paired initiating session which
+         // will not be the blockchain identity (for the paired session). In order to prevent
+         // mistaken usage set it to be the actual blockchain identity value now.
+         identity = unprefixed_blockchain;
       }
 
       if( !is_responder )

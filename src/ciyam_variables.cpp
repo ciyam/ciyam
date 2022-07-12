@@ -137,6 +137,7 @@ const char* const c_special_variable_peer_initiator = "@peer_initiator";
 const char* const c_special_variable_peer_responder = "@peer_responder";
 const char* const c_special_variable_sys_var_prefix = "@sys_var_prefix";
 const char* const c_special_variable_ciyam_list_hash = "@ciyam_list_hash";
+const char* const c_special_variable_paired_identity = "@paired_identity";
 const char* const c_special_variable_row_cache_limit = "@row_cache_limit";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_dummy_time_stamp = "@dummy_time_stamp";
@@ -568,6 +569,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_ciyam_list_hash:
       s = string( c_special_variable_ciyam_list_hash );
+      break;
+
+      case e_special_var_paired_identity:
+      s = string( c_special_variable_paired_identity );
       break;
 
       case e_special_var_row_cache_limit:
