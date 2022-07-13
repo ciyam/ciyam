@@ -1060,16 +1060,14 @@ int main( int argc, char* argv[ ] )
 
       cmd_handler.init_ods( "test_ods" );
 
-      if( cmd_handler.get_ods( ).is_new( ) && !cmd_handler.get_ods( ).is_corrupt( ) )
+      if( cmd_handler.get_ods( ).is_new( ) )
       {
          outline root( c_root_node_description );
 
          cmd_handler.get_ods( ) << root;
       }
-      else if( !g_shared_write )
-         cmd_handler.get_ods( ).repair_if_corrupt( );
       else if( cmd_handler.get_ods( ).is_corrupt( ) )
-         throw runtime_error( "need to use exclusive write access to repair corrupt DB" );
+         cmd_handler.get_ods( ).repair_corrupt_database( );
 
       cmd_handler.get_node( ).set_id( 0 );
       cmd_handler.get_ods( ) >> cmd_handler.get_node( );

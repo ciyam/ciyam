@@ -1447,7 +1447,7 @@ void init_system_ods( )
    if( gap_ods->is_corrupt( ) )
    {
       trace_progress progress( ods_db_name, true );
-      gap_ods->reconstruct_database( &progress );
+      gap_ods->repair_corrupt_database( &progress );
    }
    else if( gap_ods->is_new( ) )
       was_just_created = true;
