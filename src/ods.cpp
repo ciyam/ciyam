@@ -2803,6 +2803,14 @@ ods::ods(
    ap_impl.release( );
 
    okay = true;
+
+   if( w_mode == e_write_mode_shared )
+   {
+      // NOTE: This is done in order to determine a
+      // corrupted DB when using shared write mode.
+      ods::bulk_read bulk_read( *this );
+   }
+
    permit_copy = true;
 }
 
@@ -2843,7 +2851,7 @@ ods::~ods( )
 
 bool ods::is_new( ) const
 {
-   return p_impl->is_new;
+   return p_impl->is_new && !p_impl->is_corrupt;
 }
 
 bool ods::is_corrupt( ) const
@@ -2936,7 +2944,15 @@ string ods::get_file_names( const char* p_ext, char sep, bool add_tranlog_always
    return ods_file_names( p_impl->name, sep, add_tranlog_always || p_impl->using_tranlog );
 }
 
-void ods::repair_if_corrupt( progress* p_progress )
+void ods::reconstruct_database( progress* p_progress )
+{
+   if( !p_impl->using_tranlog )
+      THROW_ODS_ERROR( "cannot reconstruct database unless using a tranlog" );
+   else
+      restore_from_transaction_log( true, p_progress );
+}
+
+void ods::repair_corrupt_database( progress* p_progress )
 {
    if( p_impl->is_corrupt )
    {
@@ -2945,14 +2961,6 @@ void ods::repair_if_corrupt( progress* p_progress )
       else
          restore_from_transaction_log( false, p_progress );
    }
-}
-
-void ods::reconstruct_database( progress* p_progress )
-{
-   if( !p_impl->using_tranlog )
-      THROW_ODS_ERROR( "cannot reconstruct database unless using a tranlog" );
-   else
-      restore_from_transaction_log( true, p_progress );
 }
 
 void ods::rewind_transactions(
@@ -4644,7 +4652,12 @@ void ods::bulk_operation_open( )
 
       if( !p_impl->is_restoring
        && p_impl->rp_header_info->num_writers && *p_impl->rp_bulk_mode != impl::e_bulk_mode_dump )
-         THROW_ODS_ERROR( "database file corruption detected" );
+      {
+         if( !permit_copy )
+            p_impl->is_corrupt = true;
+         else
+            THROW_ODS_ERROR( "database file corruption detected" );
+      }
    }
    catch( ... )
    {
@@ -4752,9 +4765,7 @@ void ods::transaction_start( const char* p_label )
 
          ++p_impl->rp_header_info->num_trans;
 
-         if( !p_impl->rp_header_file->is_locked_for_exclusive( )
-          && ( !*p_impl->rp_bulk_level || *p_impl->rp_is_in_bulk_pause ) )
-            p_impl->write_header_file_info( );
+         p_impl->write_header_file_info( );
       } // end of file lock section...
    }
 
@@ -5150,9 +5161,7 @@ void ods::transaction_completed( bool keep_buffered )
 
          --p_impl->rp_header_info->num_trans;
 
-         if( !p_impl->rp_header_file->is_locked_for_exclusive( )
-          && ( !*p_impl->rp_bulk_level || *p_impl->rp_is_in_bulk_pause ) )
-            p_impl->write_header_file_info( );
+         p_impl->write_header_file_info( );
       } // end of file lock section...
    }
 
@@ -5618,6 +5627,14 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
    }
 
    int64_t entry_num = 0;
+   int64_t last_tx_id = 0;
+
+   int64_t last_entry_offs = 0;
+   int64_t last_entry_time = 0;
+   int64_t last_append_offs = 0;
+
+   int64_t last_data_transform_id = 0;
+   int64_t last_index_transform_id = 0;
 
    bool had_any_entries = false;
    bool changed_free_list = false;
@@ -5675,6 +5692,17 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
                committed_transactions.insert( tx_id );
 
             int64_t next_offs = tranlog_entry.next_entry_offs;
+
+            last_data_transform_id = tranlog_entry.data_transform_id;
+            last_index_transform_id = tranlog_entry.index_transform_id;
+
+            if( committed_transactions.find( tx_id ) != committed_transactions.end( ) )
+            {
+               last_tx_id = tx_id;
+               last_entry_offs = entry_offset;
+               last_entry_time = tranlog_entry.tx_time;
+               last_append_offs = next_offs;
+            }
 
             if( entry_offset <= tranlog_offset )
             {
@@ -5933,7 +5961,24 @@ void ods::restore_from_transaction_log( bool force_reconstruct, progress* p_prog
 
       p_impl->rp_header_info->num_trans = 0;
       p_impl->rp_header_info->num_writers = 0;
-      p_impl->rp_header_info->tranlog_offset = tranlog_offset;
+
+      if( is_reconstruct )
+         p_impl->rp_header_info->tranlog_offset = tranlog_offset;
+      else
+      {
+         tranlog_info.entry_offs = last_entry_offs;
+         tranlog_info.entry_time = last_entry_time;
+         tranlog_info.append_offs = last_append_offs;
+
+         log_stream logf( p_impl->tranlog_file_name.c_str( ), use_sync_write );
+
+         tranlog_info.write( logf );
+
+         p_impl->rp_header_info->tranlog_offset = last_entry_offs;
+         p_impl->rp_header_info->transaction_id = last_tx_id + 1;
+         p_impl->rp_header_info->data_transform_id = last_data_transform_id;
+         p_impl->rp_header_info->index_transform_id = last_index_transform_id;
+      }
 
       *p_impl->rp_has_changed = true;
       p_impl->write_header_file_info( );

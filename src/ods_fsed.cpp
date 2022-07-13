@@ -451,7 +451,7 @@ void ods_fsed_command_handler::init_ods( const char* p_file_name )
       console_progress progress;
       console_progress* p_progress = has_option_no_progress( ) ? 0 : &progress;
 
-      ap_ods->reconstruct_database( p_progress );
+      ap_ods->repair_corrupt_database( p_progress );
    }
 
    ap_ofs.reset( new ods_file_system( *ap_ods, g_oid ) );

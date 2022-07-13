@@ -635,8 +635,8 @@ class ODS_DECL_SPEC ods
    std::string get_meta( ) const { return meta; }
    void set_meta( const std::string& new_meta ) { meta = new_meta; }
 
-   void repair_if_corrupt( progress* p_progress = 0 );
    void reconstruct_database( progress* p_progress = 0 );
+   void repair_corrupt_database( progress* p_progress = 0 );
 
    void rewind_transactions(
     const std::string& label_or_txid,
