@@ -97,8 +97,8 @@ sudo vi /etc/fstab
 
 sudo mount backup.img backup
 cd backup
-chown tux:www .
-chown tux:www *
+sudo chown tux:www .
+sudo chown tux:www *
 cd ..
 
 sudo umount backup
