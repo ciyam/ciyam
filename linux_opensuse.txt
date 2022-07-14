@@ -83,6 +83,29 @@ newgrp - www
 sudo chmod g+w /srv/www/htdocs
 sudo chown wwwrun:www /srv/www/htdocs
 
+Create backup staging area ext4 file system and automount entry
+---------------------------------------------------------------
+mkdir backup
+
+sudo fallocate -l 10M backup.img
+sudo chown tux:www backup.img
+sudo mkfs.ext4 backup.img
+
+sudo vi /etc/fstab
+...
+/home/tux/backup.img  /home/tux/backup ext4 loop 0 0
+
+sudo mount backup.img backup
+cd backup
+chown tux:www .
+chown tux:www *
+cd ..
+
+sudo umount backup
+
+Clone the CIYAM Software Manufacturing repository
+-------------------------------------------------
+
 git clone https://github.com/ciyam/ciyam
 
 cd ciyam/src
