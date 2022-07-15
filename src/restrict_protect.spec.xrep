@@ -1,6 +1,6 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start restrict_protect)] `{`$arg_id`}
-   if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
+   if( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )`{`!`@eq`(`$arg_func`,`'`'`) )`}\
 `{`!`@eq`(`$arg_admin_always`,`'`'`)
     && !is_admin_uid( )`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)

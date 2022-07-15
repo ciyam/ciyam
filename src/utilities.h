@@ -293,8 +293,14 @@ inline bool dir_exists( const std::string& name, bool check_link_target = true )
    return dir_exists( name.c_str( ), check_link_target );
 }
 
-bool file_touch( const char* p_name, time_t* p_tm = 0 );
-inline bool file_touch( const std::string& name, time_t* p_tm = 0 ) { return file_touch( name.c_str( ), p_tm ); }
+bool file_touch( const char* p_name,
+ time_t* p_tm = 0, bool create_if_not_exists = false );
+
+inline bool file_touch( const std::string& name,
+ time_t* p_tm = 0, bool create_if_not_exists = false )
+{
+   return file_touch( name.c_str( ), p_tm, create_if_not_exists );
+}
 
 bool file_exists( const char* p_name, bool check_link_target = true );
 

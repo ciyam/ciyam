@@ -4,33 +4,61 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-set -e
-
 if [ -f /home/$USER/backup/.backup.time ]; then
  mv /home/$USER/backup/.backup.time .
 elif [ -f .backup.time ]; then
  NOW=`date +%s`
  TIME=`cat .backup.time`
 
+ # NOTE: Allows the use of "touch" to trigger.
+ if [ "$TIME" = "" ]; then
+  TIME=$NOW
+ fi
+
  if [ $NOW -ge $TIME ]; then
-  if mountpoint -q /home/$USER/backup; then
-   sudo umount /home/$USER/backup
+
+  if [ ! -f ~backup_import ]; then
+   date >Backup.txt
+   echo "Preparing for backup..." >>Backup.txt
+
+   # NOTE: If unable to umount will exit (so can call repeatedly until okay).
+   if [ -d /home/$USER/backup ]; then
+    if mountpoint -q /home/$USER/backup; then
+     sudo umount /home/$USER/backup
+     if [ $? -ne 0 ]; then
+      exit
+     fi
+    fi
+   fi
+
+   # NOTE: Use this to prevent accidentally executing the actual backup twice.
+   if [ ! -f ~backup_import ]; then
+    touch ~backup_import
+
+    if [ -d /home/$USER/backup ]; then
+     rm -f /home/$USER/backup/backup.img.*
+    fi
+
+    date >Backup.txt
+    echo "Starting backup..." >>Backup.txt
+
+    if [ -f /home/$USER/backup.img ]; then
+     ./bundle -r -ngz - /home/$USER/backup.img | split --verbose -b10G -d - /home/$USER/backup/backup.img. >>Backup.txt 2>&1
+
+     echo "Importing backup..." >>Backup.txt
+     ./import_files /home/$USER/backup Backup . backup.img. >>Backup.txt 2>&1
+    fi
+
+    echo "Finished backup..." >>Backup.txt
+    date >>Backup.txt
+
+    if [ -f /home/$USER/backup.img ]; then
+     sudo mount /home/$USER/backup.img /home/$USER/backup
+    fi
+
+    rm ~backup_import
+    rm .backup.time
+   fi
   fi
-
-  rm .backup.time
-
-  rm -f /home/$USER/backup/backup.img.*
-
-  date >Backup.txt
-  echo "Starting backup..." >>Backup.txt
-  ./bundle -r -ngz - /home/$USER/backup.img | split --verbose -b10G -d - /home/$USER/backup/backup.img. >>Backup.txt 2>&1
-
-  echo "Importing backup..." >>Backup.txt
-  ./import_files /home/$USER/backup Backup . backup.img. >>Backup.txt 2>&1
-
-  echo "Finished backup..." >>Backup.txt
-  date >>Backup.txt
-
-  sudo mount /home/$USER/backup.img /home/$USER/backup
  fi
 fi

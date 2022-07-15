@@ -61,9 +61,8 @@ const char* const c_attribute_time_stamp = "time_stamp";
 
 const int c_min_cycle_seconds_for_logging = 3600;
 
-// NOTE: This figure will allow an event that recurs every minute to be able to be skipped for max. 10 days.
-// FUTURE: This value should probably be allowed to be overidden by a configuration option.
-const size_t c_max_reschedule_attempts = 15000;
+// NOTE: This figure always allows an event that recurs every second to be rescheduled.
+const size_t c_max_reschedule_attempts = 86400;
 
 enum exclude_type
 {
@@ -402,15 +401,21 @@ void autoscript_session::on_start( )
                bool okay = true;
                time_t mod_time = 0;
 
+               string tsfilename( g_scripts[ j->second ].tsfilename );
+
                // NOTE: If a script is dependent upon file modification then
                // check whether the file's modificaton time has been changed.
-               string tsfilename( g_scripts[ j->second ].tsfilename );
-               if( !tsfilename.empty( ) && file_exists( tsfilename ) )
+               if( !tsfilename.empty( ) )
                {
-                  mod_time = last_modification_time( tsfilename );
-
-                  if( mod_time == g_scripts[ j->second ].last_mod )
+                  if( !file_exists( tsfilename ) )
                      okay = false;
+                  else
+                  {
+                     mod_time = last_modification_time( tsfilename );
+
+                     if( mod_time == g_scripts[ j->second ].last_mod )
+                        okay = false;
+                  }
                }
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
@@ -424,14 +429,7 @@ void autoscript_session::on_start( )
                   int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
 
                   if( !tsfilename.empty( ) )
-                  {
-                     cycle_seconds = mod_time - g_scripts[ j->second ].last_mod;
-
-                     if( cycle_seconds < 0 )
-                        cycle_seconds *= -1;
-
                      g_scripts[ j->second ].last_mod = mod_time;
-                  }
 
                   if( is_script )
                   {
