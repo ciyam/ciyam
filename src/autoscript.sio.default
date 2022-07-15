@@ -6,10 +6,10 @@
 # NOTE: Session variables (apart from @none and @storage) must not be used here.
 <sio/>
 # <script/>
-#  <name>Check and process any email scripts
-#  <time>06:00-20:00
+#  <name>backup_import
+#  <time>00:00-23:59
 #  <cycle>1m
-#  <filename>checkmail
+#  <filename>backup_import
 # </script>
 ### [<start generated>]
 ### [<finish generated>]
