@@ -87,8 +87,11 @@
 `{`@eq`(`$arg_permission_id`,`'`'`)\
 `{`@eq`(`$arg_altfield`,`'`'`)\
 `{`@eq`(`$arg_modifier`,`'`'`)\
-   // NOTE: Empty code block for scope purposes.
+`{`!`@eq`(`$arg_even_when_changing`,`'true`'`)\
+   if( !( state & c_state_is_changing ) )
 `,\
+   // NOTE: Empty code block for scope purposes.
+`}`,\
    if( `{`!`@eq`(`$arg_even_when_changing`,`'true`'`)!( state & c_state_is_changing )
     && `}( state & c_modifier_`{`$arg_modifier`} ) )
 `}`,\

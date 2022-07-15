@@ -70,9 +70,9 @@ const int c_max_pin_time_difference = 30;
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
-const int c_auto_refresh_seconds_hello = 3;
-const int c_auto_refresh_seconds_local = 5;
-const int c_auto_refresh_seconds_remote = 10;
+const int c_auto_refresh_seconds_hello = 2;
+const int c_auto_refresh_seconds_local = 3;
+const int c_auto_refresh_seconds_remote = 5;
 
 const int c_warn_refresh_seconds = c_timeout_seconds / 2;
 

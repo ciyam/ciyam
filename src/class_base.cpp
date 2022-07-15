@@ -2909,6 +2909,11 @@ void save_file( const string& filename, const string& data )
    write_file( filename, data );
 }
 
+void touch_file( const string& filename, bool only_if_exists )
+{
+   file_touch( filename, 0, !only_if_exists );
+}
+
 void read_file_lines( const string& filename, set< string >& lines )
 {
    buffer_file_lines( filename, lines );

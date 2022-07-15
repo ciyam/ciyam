@@ -404,7 +404,7 @@ bool dir_exists( const char* p_name, bool check_link_target )
    return rc;
 }
 
-bool file_touch( const char* p_name, time_t* p_tm )
+bool file_touch( const char* p_name, time_t* p_tm, bool create_if_not_exists )
 {
    struct _utimbuf ut;
    struct _utimbuf* p_ut = 0;
@@ -418,6 +418,18 @@ bool file_touch( const char* p_name, time_t* p_tm )
    }
 
    int rc = _utime( p_name, p_ut );
+
+   if( rc != 0 && create_if_not_exists )
+   {
+      if( !file_exists( p_name ) )
+      {
+         ofstream outf( p_name );
+         outf.close( );
+
+         if( file_exists( p_name ) )
+            rc = 0;
+      }
+   }
 
    return rc == 0;
 }

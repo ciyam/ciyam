@@ -1179,6 +1179,8 @@ std::string CIYAM_BASE_DECL_SPEC load_file( const std::string& filename, bool is
 
 void CIYAM_BASE_DECL_SPEC save_file( const std::string& filename, const std::string& data );
 
+void CIYAM_BASE_DECL_SPEC touch_file( const std::string& filename, bool only_if_exists = false );
+
 void CIYAM_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::set< std::string >& lines );
 void CIYAM_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::vector< std::string >& lines );
 
