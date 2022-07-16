@@ -418,12 +418,17 @@ void autoscript_session::on_start( )
                   }
                }
 
+               string filename( g_scripts[ j->second ].filename );
+               bool is_script = ( filename == c_script_dummy_filename );
+
+               // NOTE: If a file named "~<filename>" exists then assumes
+               // it's running or has crashed and should not be executed.
+               if( !is_script && file_exists( "~" + filename ) )
+                  okay = false;
+
                if( okay && !is_excluded( g_scripts[ j->second ], now )
                 && ( g_scripts[ j->second ].allow_late_exec || ( now - next <= 1.0 ) ) )
                {
-                  string filename( g_scripts[ j->second ].filename );
-                  bool is_script = ( filename == c_script_dummy_filename );
-
                   string arguments( process_script_args( g_scripts[ j->second ].arguments ) );
 
                   int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
