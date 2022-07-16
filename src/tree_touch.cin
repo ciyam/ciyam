@@ -12,7 +12,7 @@ TREE=$1
 .file_info -recurse -d=0 $TREE
 @ifndef $ERROR
 ;
-session_variable @deque "~$OUTPUT"
+.session_variable @deque "~$OUTPUT"
 @:LOOP
 ;
 @label NEXT
@@ -28,7 +28,7 @@ NEXT_HASH=$OUTPUT
 #$NEXT_HASH
 .file_touch $NEXT_HASH
 ;
-session_variable @deque pop_back
+.session_variable @deque pop_back
 !!@:LOOP
 ;
 @:DONE
