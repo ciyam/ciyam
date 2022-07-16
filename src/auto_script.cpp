@@ -329,7 +329,12 @@ void output_schedule( ostream& os )
    {
       os << ( ssci->first ).as_string( true, false ) << ' ' << g_scripts[ ssci->second ].name;
 
-      if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
+      string filename( g_scripts[ ssci->second ].filename );
+      bool is_script = ( filename == c_script_dummy_filename );
+
+      if( !is_script && file_exists( "~" + filename ) )
+         os << " [ *** busy *** ]";
+      else if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
          os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
 
       os << '\n';
@@ -398,14 +403,15 @@ void autoscript_session::on_start( )
 
                date_time next( j->first );
 
-               bool okay = true;
+               bool okay = has_identity( );
+
                time_t mod_time = 0;
 
                string tsfilename( g_scripts[ j->second ].tsfilename );
 
                // NOTE: If a script is dependent upon file modification then
                // check whether the file's modificaton time has been changed.
-               if( !tsfilename.empty( ) )
+               if( okay && !tsfilename.empty( ) )
                {
                   if( !file_exists( tsfilename ) )
                      okay = false;

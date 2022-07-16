@@ -54,6 +54,11 @@
   <arguments>tree_insert_trunk.cin @tree @trunk
  </script>
  <script/>
+  <name>tree_remove_trunk
+  <filename>*script*
+  <arguments>tree_remove_trunk.cin @tree @trunk
+ </script>
+ <script/>
   <name>tree_insert_branch
   <filename>*script*
   <arguments>tree_insert_branch.cin @tree @trunk @branch
