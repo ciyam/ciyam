@@ -109,7 +109,7 @@ const size_t c_wait_sleep_time = 250;
 const size_t c_start_sleep_time = 2500;
 
 const size_t c_initial_timeout = 25000;
-const size_t c_request_timeout = 15000;
+const size_t c_request_timeout = 20000;
 const size_t c_support_timeout = 10000;
 
 const size_t c_main_session_sleep_time = 150;
