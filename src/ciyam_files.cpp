@@ -1130,6 +1130,7 @@ string file_type_info( const string& tag_or_hash,
    if( p_prefix )
       prefix = string( p_prefix );
 
+   bool is_inverted_prefix = false;
    bool is_wildcard_prefix = false;
 
    string::size_type pos = prefix.find( c_prefix_wildcard_separator );
@@ -1167,6 +1168,19 @@ string file_type_info( const string& tag_or_hash,
                break;
          }
       }
+   }
+
+   // NOTE: If the prefix begins with a caret character
+   // then it will be treated inversely (i.e. will only
+   // match items that do not match).
+   if( !prefix.empty( ) && prefix[ 0 ] == '^' )
+   {
+      prefix.erase( 0, 1 );
+      is_inverted_prefix = true;
+
+      // NOTE: Treat ^^ as a ^ without inverting.
+      if( !prefix.empty( ) && prefix[ 0 ] == '^' )
+         is_inverted_prefix = false;
    }
 
    string increment_special( get_special_var_name( e_special_var_increment ) );
@@ -1396,8 +1410,10 @@ string file_type_info( const string& tag_or_hash,
             else
             {
                if( prefix.empty( )
-                || ( !is_wildcard_prefix && prefix.find( next_name ) == 0 )
-                || ( is_wildcard_prefix && wildcard_match( prefix, next_name ) ) )
+                || ( is_inverted_prefix && !is_wildcard_prefix && prefix.find( next_name ) != 0 )
+                || ( !is_inverted_prefix && !is_wildcard_prefix && prefix.find( next_name ) == 0 )
+                || ( is_inverted_prefix && is_wildcard_prefix && !wildcard_match( prefix, next_name ) )
+                || ( !is_inverted_prefix && is_wildcard_prefix && wildcard_match( prefix, next_name ) ) )
                {
                   if( p_prefix )
                      matched_any = true;

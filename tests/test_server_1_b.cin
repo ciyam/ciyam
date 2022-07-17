@@ -10,7 +10,11 @@ file_hash !35ddd
 file_hash !f*
 file_info -content root
 file_info -recurse -d=1 root
+file_info -recurse -d=1 -p=first root
+file_info -recurse -d=1 -p=^first root
 file_info -recurse -d=2 root
+file_info -recurse -d=2 -p=first: root
+file_info -recurse -d=2 -p=^first: root
 file_info -recurse -d=0 root
 file_info -recurse -d=-1 root
 file_info -recurse -d=-2 root

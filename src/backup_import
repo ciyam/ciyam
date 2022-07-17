@@ -43,7 +43,8 @@ elif [ -f .backup.time ]; then
     echo "Starting backup..." >>Backup.txt
 
     if [ -f /home/$USER/backup.img ]; then
-     ./bundle -r -ngz - /home/$USER/backup.img | split --verbose -b10G -d - /home/$USER/backup/backup.img. >>Backup.txt 2>&1
+     echo "Splitting backup..." >>Backup.txt
+     split --verbose -b10G -d /home/$USER/backup.img /home/$USER/backup/backup.img. >>Backup.txt 2>&1
 
      echo "Importing backup..." >>Backup.txt
      ./import_files /home/$USER/backup Backup . backup.img. >>Backup.txt 2>&1
