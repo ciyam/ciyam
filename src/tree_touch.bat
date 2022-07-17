@@ -6,13 +6,13 @@ REM in the root project directory or http://www.opensource.org/licenses/mit-lice
 
 if '%1' == '' goto usage
 
-echo ^<^<tree_touch.cin %1 >~tree_touch
+echo ^<^<tree_touch.cin %1 %2 >~tree_touch
 ciyam_client -echo -quiet -no_prompt -no_stderr < ~tree_touch
 
 del ~tree_touch
 goto end
 
 :usage
-echo Usage: tree_touch [tag or hash]
+echo Usage: tree_touch [tag or hash] [[prefix]]
 
 :end

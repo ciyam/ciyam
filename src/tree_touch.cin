@@ -8,15 +8,20 @@
 @else
 ;
 TREE=$1
+PREFIX=$2
 ;
+@ifeq "$PREFIX" ""
 .file_info -recurse -d=0 $TREE
+@else
+.file_info -recurse -d=0 -p=$PREFIX $TREE
+@endif
 @ifndef $ERROR
 ;
 .session_variable @deque "~$OUTPUT"
 @:LOOP
 ;
 @label NEXT
-.session_variable @deque back
+.session_variable @deque front
 @ifeq "$OUTPUT" ""
 @label DONE
 @endif
@@ -28,7 +33,7 @@ NEXT_HASH=$OUTPUT
 #$NEXT_HASH
 .file_touch $NEXT_HASH
 ;
-.session_variable @deque pop_back
+.session_variable @deque pop_front
 !!@:LOOP
 ;
 @:DONE

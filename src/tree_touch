@@ -5,9 +5,9 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo "Usage: tree_touch [tag or hash]"
+ echo "Usage: tree_touch [tag or hash] [[prefix]]"
 else
- echo "<<tree_touch.cin $1" >~tree_touch
+ echo "<<tree_touch.cin $1 $2" >~tree_touch
  ./ciyam_client -echo -quiet -no_prompt -no_stderr <~tree_touch
  rm ~tree_touch
 fi

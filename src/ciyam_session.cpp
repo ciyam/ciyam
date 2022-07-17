@@ -1724,7 +1724,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             bool allow_all_after = false;
 
-            if( !prefix.empty( ) && prefix[ prefix.length( ) - 1 ] == '*' )
+            if( !prefix.empty( )
+             && ( prefix.find( ':' ) == string::npos )
+             && ( prefix[ prefix.length( ) - 1 ] == '*' ) )
             {
                allow_all_after = true;
                prefix.erase( prefix.length( ) - 1 );
