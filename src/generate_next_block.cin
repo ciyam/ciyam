@@ -1,0 +1,23 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+.system_variable @blockchain
+IDENT=$OUTPUT
+@ifneq "$IDENT" ""
+<tree_crypt.cin -repo_encrypt $IDENT ciyam @sid
+.file_info -content bc.$IDENT.zenith
+@ifndef $ERROR
+BLK_HDR=%OUTPUT:2%
+BLK_INFO=@repstr:,i=$IDENT/:$BLK_HDR
+INFO_LINES=@repstr:,/\n:$BLK_INFO
+HEIGHT_INFO=%INFO_LINES:1%
+BLK_HEIGHT=@repstr:blk\:h=/:$HEIGHT_INFO
+NEW_HEIGHT=@$BLK_HEIGHT+1
+<bc_gen_keys.cin @sid $IDENT $NEW_HEIGHT
+<bc_gen_data.cin $IDENT $NEW_HEIGHT
+<bc_gen_block.cin $IDENT $NEW_HEIGHT
+.file_repo_entries -remove_obsolete $IDENT
+@endif
+@endif

@@ -403,9 +403,36 @@ void autoscript_session::on_start( )
 
                date_time next( j->first );
 
-               bool okay = has_identity( );
+               bool locked = false;
+               bool special = false;
+
+               // NOTE: No script will run if no identity exists.
+               bool okay = has_identity( &locked );
 
                time_t mod_time = 0;
+
+               string name( g_scripts[ j->second ].name );
+
+               // NOTE: Use !<name> for scripts to be run when locked.
+               if( okay && !name.empty( ) && name[ 0 ] == '!' )
+               {
+                  okay = locked;
+                  special = true;
+
+                  name.erase( 0, 1 );
+               }
+
+               // NOTE: Use *<name> for scripts to be run whether locked or not.
+               if( okay && !name.empty( ) && name[ 0 ] == '*' )
+               {
+                  okay = true;
+                  special = true;
+
+                  name.erase( 0, 1 );
+               }
+
+               if( okay && locked && !special )
+                  okay = false;
 
                string tsfilename( g_scripts[ j->second ].tsfilename );
 
@@ -457,7 +484,7 @@ void autoscript_session::on_start( )
 
                      // NOTE: Skip logging for any scripts that cycle too frequently.
                      if( cycle_seconds >= c_min_cycle_seconds_for_logging )
-                        script_args += " " + g_scripts[ j->second ].name;
+                        script_args += " " + name;
 
 #ifdef _WIN32
                      // KLUDGE: For some reason under Windows if multiple scripts need to be run in
@@ -490,7 +517,7 @@ void autoscript_session::on_start( )
                   if( ++count >= c_max_reschedule_attempts )
                   {
                      TRACE_LOG( TRACE_ANYTHING,
-                      "warning: unable to scheule autoscript '" + g_scripts[ j->second ].name + "'" );
+                      "warning: unable to scheule autoscript '" + name + "'" );
 
                      next = date_time::maximum( );
                      break;
