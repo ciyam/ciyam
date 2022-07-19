@@ -43,11 +43,7 @@ elif [ -f .backup.time ]; then
     echo "Starting backup..." >>Backup.txt
 
     if [ -f /home/$USER/backup.img ]; then
-     echo "Splitting up backup image..." >>Backup.txt
-     split --verbose -b10G -d /home/$USER/backup.img /home/$USER/backup/backup.img. >>Backup.txt 2>&1
-
-     echo "Importing split image files..." >>Backup.txt
-     ./import_files /home/$USER/backup Backup . backup.img. >>Backup.txt 2>&1
+     ./import_files /home/$USER/backup Backup . backup.img >>Backup.txt 2>&1
     fi
 
     ./tree_touch ciyam "^Backup:"

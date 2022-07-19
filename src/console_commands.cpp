@@ -26,6 +26,7 @@
 #include "console_commands.h"
 
 #include "config.h"
+#include "format.h"
 #include "macros.h"
 #include "sha256.h"
 #include "console.h"
@@ -2654,6 +2655,8 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                               pos = rhs.find( op );
 
+                              size_t chunk_size = 0;
+
                               // NOTE: Allows for a comma separated list of strings to
                               // act as includes/excludes (prefix with ^ for excludes)
                               // for filtering file names. XX=@files:/path:^.tmp,^.sav
@@ -2661,6 +2664,14 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                               {
                                  string all_extras( rhs.substr( pos + 1 ) );
                                  rhs.erase( pos );
+
+                                 pos = all_extras.find( ':' );
+
+                                 if( pos != string::npos )
+                                 {
+                                    chunk_size = unformat_bytes( all_extras.substr( pos + 1 ) );
+                                    all_extras.erase( pos );
+                                 }
 
                                  if( !all_extras.empty( ) )
                                     split_all_extras( all_extras, includes, excludes );
@@ -2683,7 +2694,33 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                                  if( !should_be_included( next, includes, excludes ) )
                                     continue;
 
-                                 results.insert( next );
+                                 if( chunk_size )
+                                 {
+                                    size_t offset = 0;
+                                    size_t total_bytes = file_size( ffsi.get_full_name( ) );
+
+                                    if( total_bytes <= chunk_size )
+                                       results.insert( next );
+                                    else
+                                    {
+                                       while( total_bytes )
+                                       {
+                                          string next_name( next );
+
+                                          next_name += ':' + to_string( offset );
+                                          size_t next_chunk = min( chunk_size, total_bytes );
+
+                                          next_name += '+' + to_string( next_chunk );
+
+                                          results.insert( next_name );
+
+                                          offset += chunk_size;
+                                          total_bytes -= next_chunk;
+                                       }
+                                    }
+                                 }
+                                 else
+                                    results.insert( next );
                               }
 
                               str = join( results, "\n" );
