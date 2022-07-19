@@ -1,5 +1,5 @@
-CIYAM Software Manufacturing Environment
-========================================
+CIYAM Software Manufacturing
+============================
 
 The following environment variables are required by various scripts:
 

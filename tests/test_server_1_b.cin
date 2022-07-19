@@ -320,4 +320,23 @@ file_kill ccc
 file_kill ddd
 file_kill eee
 file_stats
+file_put 1K*mnemonics.txt x0
+file_info -content x0
+file_kill -recurse x0
+file_put 1K*mnemonics.txt:999 x1
+file_info -content x1
+file_kill -recurse x1
+file_put 1K*mnemonics.txt:1998 x2
+file_info -content x2
+file_kill -recurse x2
+file_put 1K*mnemonics.txt:999+999 x3
+file_info -content x3
+file_kill -recurse x3
+file_put 1K*mnemonics.txt:999+1998 x4
+file_info -content x4
+file_kill -recurse x4
+file_put 1K*mnemonics.txt:1998+1998 x5
+file_info -content x5
+file_kill -recurse x5
+file_stats
 .quit

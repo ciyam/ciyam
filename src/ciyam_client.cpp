@@ -213,8 +213,8 @@ class ciyam_console_command_handler : public console_command_handler
     port( c_default_ciyam_port ),
     host( c_default_ciyam_host ),
     chunk( 0 ),
-    file_pos( 0 ),
     file_bytes( 0 ),
+    file_start( 0 ),
     chunk_size( 0 ),
     total_chunks( 0 ),
     socket( socket ),
@@ -245,8 +245,8 @@ class ciyam_console_command_handler : public console_command_handler
 
    date_time dtm;
 
-   size_t file_pos;
    size_t file_bytes;
+   size_t file_start;
 
    size_t chunk_size;
    size_t total_chunks;
@@ -433,8 +433,24 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      {
                         chunk = 0;
 
-                        file_pos = 0;
                         file_bytes = 0;
+                        file_start = 0;
+
+                        string::size_type spos = put_source_file.find( ':' );
+
+                        if( spos != string::npos )
+                        {
+                           string::size_type lpos = put_source_file.find( '+', spos );
+
+                           if( lpos != string::npos )
+                           {
+                              file_bytes = unformat_bytes( put_source_file.substr( lpos + 1 ) );
+                              put_source_file.erase( lpos );
+                           }
+
+                           file_start = unformat_bytes( put_source_file.substr( spos + 1 ) );
+                           put_source_file.erase( spos );
+                        }
 
                         if( extra.size( ) > 0 )
                            file_extra = extra.substr( 1 );
@@ -486,11 +502,20 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   // NOTE: Allows for the hash, a space, the name plus chunk extension and a LF.
                   int list_items_per_chunk = g_max_file_size / ( 65 + name_length_for_calc + 8 );
-                  int64_t total_file_size = ( list_items_per_chunk * g_max_file_size );
+                  int64_t max_size_using_chunks = ( list_items_per_chunk * g_max_file_size );
 
-                  if( file_size( put_source_file ) > total_file_size )
-                     put_file_error = "File '" + put_source_file
-                      + "' exceeds maximum file size (" + format_bytes( total_file_size ) + ").";
+                  if( file_bytes )
+                  {
+                     if( file_bytes > max_size_using_chunks )
+                        put_file_error = "File '" + put_source_file
+                         + "' exceeds maximum file size (" + format_bytes( max_size_using_chunks ) + ").";
+                  }
+                  else
+                  {
+                     if( file_size( put_source_file ) > max_size_using_chunks )
+                        put_file_error = "File '" + put_source_file
+                         + "' exceeds maximum file size (" + format_bytes( max_size_using_chunks ) + ").";
+                  }
 
                   dtm = date_time::local( );
                   had_chunk_progress = false;
@@ -539,11 +564,23 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                   if( chunk == 0 )
                   {
-                     buffer_file( chunk_data, file_name, chunk_size, &file_bytes );
+                     size_t size_remaining = 0;
+
+                     buffer_file( chunk_data, file_name, chunk_size, &size_remaining, file_start );
+
+                     if( file_start )
+                        size_remaining -= file_start;
+
+                     if( !file_bytes )
+                        file_bytes = size_remaining;
+                     else
+                        file_bytes = min( file_bytes, size_remaining );
+
                      total_chunks = ( file_bytes / chunk_size );
                   }
                   else
-                     buffer_file( chunk_data, file_name, chunk_size, 0, ( chunk * chunk_size ) );
+                     buffer_file( chunk_data, file_name,
+                      min( file_bytes, chunk_size ), 0, file_start + ( chunk * chunk_size ) );
 
                   if( !has_option_no_progress( ) )
                   {
