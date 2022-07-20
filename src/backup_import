@@ -49,7 +49,7 @@ elif [ -f .backup.time ]; then
     ./tree_touch ciyam "^Backup:"
     ./tree_insert_trunk ciyam Backup
 
-    ./generate_next_block
+    ./generate_next_block >>Backup.txt 2>&1
 
     echo "Finished backup..." >>Backup.txt
     date >>Backup.txt
