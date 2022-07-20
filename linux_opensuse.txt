@@ -88,28 +88,31 @@ sudo chown wwwrun:www /srv/www/htdocs
 
 Create backup staging area ext4 file system and automount entry
 ---------------------------------------------------------------
-mkdir backup
-
 sudo fallocate -l 10M backup.img
-sudo chown tux:www backup.img
 sudo mkfs.ext4 backup.img
 
 sudo vi /etc/fstab
 [append the following line]
 /home/tux/backup.img  /home/tux/backup ext4 loop 0 0
 
+sudo mkdir backup
+cd backup
+sudo ln -s ../backup.img backup.img
+cd ..
+
 sudo mount backup.img backup
 cd backup
 sudo chown tux:www .
 sudo chown tux:www *
 cd ..
-
 sudo umount backup
 
 Clone the CIYAM Software Manufacturing repository
 -------------------------------------------------
 
 git clone https://github.com/ciyam/ciyam
+
+sudo cp ciyam/backup_readme.md /home/tux/backup/README.md
 
 cd ciyam/src
 
