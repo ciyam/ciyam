@@ -1,19 +1,19 @@
 `{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_variable)] `{`$arg_id`}
 `{`@eq`(`$arg_system`,`'true`'`)\
-   if( !get_system_variable( "`{`$arg_variable`}" ).empty( ) )
+   if( !get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ).empty( ) )
 `,`@eq`(`$arg_session`,`'true`'`)\
-   if( !get_session_variable( "`{`$arg_variable`}" ).empty( ) )
+   if( !get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ).empty( ) )
 `,\
-   if( !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
+   if( !get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ).empty( ) )
 `}\
       get_obj( ).`{`$arg_field`}( from_string< typeof(
 `{`@eq`(`$arg_system`,`'true`'`)\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_variable`}" ) ) );
+       get_obj( ).`{`$arg_field`}( ) ) >( get_system_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ) ) );
 `,`@eq`(`$arg_session`,`'true`'`)\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_variable`}" ) ) );
+       get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ) ) );
 `,\
-       get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
+       get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}"`{`!`@eq`(`$arg_ofield`,`'`'`) + get_obj( ).`{`$arg_ofield`}( ) `} ) ) );
 `}`{`!`@eq`(`$arg_sfield`,`'`'`)\
    else
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
@@ -24,13 +24,20 @@
    // [(start transient_field_from_variable)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
-`{`@eq`(`$arg_spfield`,`'`'`)\
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+      dependents.insert( "`{`$arg_ofield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
+`{`!`@eq`(`$arg_sfield`,`'`'`)
+`}`}`{`@eq`(`$arg_spfield`,`'`'`)`{`!`@eq`(`$arg_sfield`,`'`'`)\
       dependents.insert( "`{`$arg_sfield`}" );
 
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
-`,\
+`}`,\
       dependents.insert( "`{`$arg_spfield`}" );
 
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )

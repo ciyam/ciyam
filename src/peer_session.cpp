@@ -596,7 +596,7 @@ void process_put_file( const string& blockchain,
                if( !num_tree_items.empty( ) )
                   progress_message += '/' + num_tree_items;
 
-               progress_message += ')';
+               progress_message += ")...";
 
                set_session_progress_output( progress_message );
             }
@@ -779,7 +779,7 @@ bool has_all_list_items( const string& blockchain,
                size_t next_height = from_string< size_t >( blockchain_height_processed );
 
                progress = "Verifying at height " + to_string( next_height )
-                + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")";
+                + " (" + to_string( *p_total_processed ) + "/" + num_tree_items + ")...";
 
                set_session_progress_output( progress );
 
@@ -999,6 +999,18 @@ void process_list_items( const string& identity,
       {
          string next_hash( next_item.substr( 0, next_item.find( ' ' ) ) );
 
+         if( next_hash == first_hash_to_get )
+         {
+            first_hash_to_get.erase( );
+            set_session_variable( first_hash_name, "" );
+
+            // NOTE: If the next hash requested was an item in the previous tree then
+            // will assume that something is wrong at the requesting end and will not
+            // ignore any further items.
+            if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
+               p_list_items_to_ignore = 0;
+         }
+
          if( p_list_items_to_ignore && p_list_items_to_ignore->count( next_hash ) )
          {
             if( allow_blob_creation )
@@ -1008,12 +1020,6 @@ void process_list_items( const string& identity,
          }
 
          string local_hash, local_public_key, master_public_key;
-
-         if( next_hash == first_hash_to_get )
-         {
-            first_hash_to_get.erase( );
-            set_session_variable( first_hash_name, "" );
-         }
 
          if( !has_file( next_hash ) )
          {
@@ -1034,6 +1040,13 @@ void process_list_items( const string& identity,
 
                   *p_num_items_skipped = 0;
                }
+            }
+            else if( !recurse && is_fetching )
+            {
+               // NOTE: For repository entries need to touch the local file.
+               fetch_repository_entry_record( identity, next_hash, local_hash );
+
+               touch_file( local_hash, identity, false );
             }
          }
          else if( recurse && is_list_file( next_hash ) )
@@ -2151,7 +2164,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          if( !num_tree_items.empty( ) )
             progress_message += '/' + num_tree_items;
 
-         progress_message += ')';
+         progress_message += ")...";
 
          set_session_progress_output( progress_message );
          set_system_variable( c_progress_output_prefix + identity, progress_message );
