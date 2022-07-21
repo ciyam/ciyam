@@ -1892,6 +1892,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_bool_contains_other`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
+`{`#transient_field_bool_contains_other.spec.xrep section=after_fetch module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_bool_has_child_for_uid`'`)
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=after_fetch module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ufield=$specification_\0_ufield arg_permission=$specification_\0_permission\
@@ -1971,8 +1975,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_variable.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_variable=$specification_\0_variable\
- arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_variable=$specification_\0_variable arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_session=$specification_\0_session arg_system=$specification_\0_system`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
@@ -2174,6 +2178,10 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod\
  arg_top_level=$specification_\0_top_level arg_top_or_iter=$specification_\0_top_or_iter`}
 `,\
+`@eq`(`'\1`'`,`'transient_field_bool_contains_other`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#transient_field_bool_contains_other.spec.xrep section=after_fetch module_name=$module_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field`}
+`,\
 `@eq`(`'\1`'`,`'transient_field_bool_is_default`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_bool_is_default.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
@@ -2210,8 +2218,8 @@ void `{`$full_class_name`}::impl::post_init( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_variable.spec.xrep section=post_init class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_variable=$specification_\0_variable\
- arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_variable=$specification_\0_variable arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_session=$specification_\0_session arg_system=$specification_\0_system`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
@@ -4325,6 +4333,11 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_bool_contains_other`'`)
+`{`#transient_field_bool_contains_other.spec.xrep section=get_required_field_names\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field\
+ arg_ofield=$specification_\0_ofield arg_o2field=$specification_\0_o2field`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_bool_is_default`'`)
 `{`#transient_field_bool_is_default.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
@@ -4357,9 +4370,10 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
  arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`!`@eq`(`'`'`,`$specification_\0_sfield`)
+`@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_sfield`)`|`!`@eq`(`'`'`,`$specification_\0_ofield`)`)
 `{`#transient_field_from_variable.spec.xrep section=get_required_field_names\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=get_required_field_names\

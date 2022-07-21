@@ -1,0 +1,32 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_bool_contains_other)] `{`$arg_id`}
+   // NOTE: Empty code block for scope purposes.
+   {
+      string check_str( to_string( get_obj( ).`{`$arg_ofield`}( ) ) );
+      string check_val( to_string( get_obj( ).`{`$arg_o2field`}( ) ) );
+
+      if( check_str.find( check_val ) != string::npos )
+         get_obj( ).`{`$arg_field`}( true );
+      else
+         get_obj( ).`{`$arg_field`}( false );
+   }
+   // [(start transient_field_bool_contains_other)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_bool_contains_other)] `{`$arg_id`}
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_ofield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
+
+      dependents.insert( "`{`$arg_o2field`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_o2field`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_o2field`} ) ) )
+         names.insert( "`{`$arg_o2field`}" );
+   }
+   // [(start transient_field_bool_contains_other)] `{`$arg_id`}
+`}
