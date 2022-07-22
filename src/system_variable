@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+if [ $# -lt 2 ]; then
+ echo "Usage: system_variable get|set [name] [[value]]"
+else
+ echo "<<system_variable.cin $1 $2 $3" >~system_variable
+ ./ciyam_client -echo -quiet -no_prompt -no_stderr <~system_variable
+ rm ~system_variable
+fi

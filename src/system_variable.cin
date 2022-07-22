@@ -1,0 +1,26 @@
+; Copyright (c) 2022 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+@ifeq "$1" "get"
+SET=
+NAME=$2
+@else
+@ifeq "$1" "set"
+SET=1
+NAME=$2
+VALUE=$3
+@endif
+@endif
+
+@ifeq "$NAME" ""
+#Usage: system_variable.cin get|set <name> [<value>]
+@else
+@ifeq "$SET" ""
+.system_variable $NAME
+#$OUTPUT
+@else
+.system_variable $NAME "$VALUE"
+@endif
+@endif
