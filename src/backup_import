@@ -73,6 +73,8 @@ elif [ -f $BACKUP_TIME ]; then
     echo "Finished backup..." >>Backup.txt
     date >>Backup.txt
 
+    ./system_variable set @backup_needed ""
+
     if [ -f $BACKUP_IMAGE ]; then
      sudo mount $BACKUP_IMAGE $BACKUP_PATH
      touch $IMPORTED_TIME_FILE
