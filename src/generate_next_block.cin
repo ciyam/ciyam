@@ -19,7 +19,8 @@ NEW_HEIGHT=@$BLK_HEIGHT+1
 <bc_gen_data.cin $IDENT $NEW_HEIGHT
 <bc_gen_block.cin $IDENT $NEW_HEIGHT
 @ifndef $ERROR
-.system_variable %$IDENT "Synchronised at height $NEW_HEIGHT"
+; FUTURE: This message should be handled as a server string.
+.system_variable %$IDENT "Currently at height $NEW_HEIGHT"
 @endif
 .file_repo_entries -remove_obsolete $IDENT
 @endif

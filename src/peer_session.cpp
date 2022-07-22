@@ -196,8 +196,18 @@ void add_to_blockchain_tree_item( const string& blockchain, size_t num_to_add )
 void output_synchronised_progress_message(
  const string& identity, size_t blockchain_height, size_t blockchain_height_other = 0 )
 {
-   // FUTURE: This message should be handled as a server string message.
-   string progress_message( "Synchronised at height " + to_string( blockchain_height ) );
+   string own_identity( get_system_variable(
+    get_special_var_name( e_special_var_blockchain ) ) );
+
+   string progress_message;
+
+   // FUTURE: These messages should be handled as server string messages.
+   if( identity == own_identity )
+      progress_message = "Currently at height ";
+   else
+      progress_message = "Synchronised at height ";
+
+   progress_message += to_string( blockchain_height );
 
    if( blockchain_height_other > blockchain_height )
       progress_message += "...";
