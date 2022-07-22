@@ -4,11 +4,34 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ -f /home/$USER/backup/.backup.time ]; then
- mv /home/$USER/backup/.backup.time .
-elif [ -f .backup.time ]; then
+BACKUP_TIME=.backup.time
+IMPORTED_TIME=.imported.time
+
+BACKUP_PATH=/home/$USER/backup
+BACKUP_IMAGE=/home/$USER/backup.img
+
+BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
+IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
+
+if mountpoint -q $BACKUP_PATH; then
+ if [ ! -f $IMPORTED_TIME_FILE ]; then
+  NEW_FILE=`find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+ else
+  NEW_FILE=`find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type f -print | head -n 1`
+ fi
+
+ if [ "$NEW_FILE" = "" ]; then
+  ./system_variable set @backup_needed ""
+ else
+  ./system_variable set @backup_needed "1"
+ fi
+fi
+
+if [ -f $BACKUP_TIME_FILE ]; then
+ mv $BACKUP_TIME_FILE .
+elif [ -f $BACKUP_TIME ]; then
  NOW=`date +%s`
- TIME=`cat .backup.time`
+ TIME=`cat $BACKUP_TIME`
 
  # NOTE: Allows the use of "touch" to trigger.
  if [ "$TIME" = "" ]; then
@@ -22,9 +45,9 @@ elif [ -f .backup.time ]; then
    echo "Preparing for backup..." >>Backup.txt
 
    # NOTE: If unable to umount will exit (so can call repeatedly until okay).
-   if [ -d /home/$USER/backup ]; then
-    if mountpoint -q /home/$USER/backup; then
-     sudo umount /home/$USER/backup
+   if [ -d $BACKUP_PATH ]; then
+    if mountpoint -q $BACKUP_PATH; then
+     sudo umount $BACKUP_PATH
      if [ $? -ne 0 ]; then
       exit
      fi
@@ -35,15 +58,11 @@ elif [ -f .backup.time ]; then
    if [ ! -f ~backup_import ]; then
     touch ~backup_import
 
-    if [ -d /home/$USER/backup ]; then
-     rm -f /home/$USER/backup/backup.img.*
-    fi
-
     date >Backup.txt
     echo "Starting backup..." >>Backup.txt
 
-    if [ -f /home/$USER/backup.img ]; then
-     ./import_files /home/$USER/backup Backup . backup.img >>Backup.txt 2>&1
+    if [ -f $BACKUP_IMAGE ]; then
+     ./import_files $BACKUP_PATH Backup . backup.img >>Backup.txt 2>&1
     fi
 
     ./tree_touch ciyam "^Backup:"
@@ -54,12 +73,13 @@ elif [ -f .backup.time ]; then
     echo "Finished backup..." >>Backup.txt
     date >>Backup.txt
 
-    if [ -f /home/$USER/backup.img ]; then
-     sudo mount /home/$USER/backup.img /home/$USER/backup
+    if [ -f $BACKUP_IMAGE ]; then
+     sudo mount $BACKUP_IMAGE $BACKUP_PATH
+     touch $IMPORTED_TIME_FILE
     fi
 
     rm ~backup_import
-    rm .backup.time
+    rm $BACKUP_TIME
    fi
   fi
  fi
