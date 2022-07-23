@@ -1,0 +1,72 @@
+#!/bin/sh
+# Copyright (c) 2022 CIYAM Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
+RESTORE_NOW=.restore.now
+
+IMPORTED_TIME=.imported.time
+EXPORTED_HEIGHT=.exported.height
+
+BACKUP_PATH=/home/$USER/backup
+BACKUP_IMAGE=/home/$USER/backup.img
+
+BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
+
+IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
+EXPORTED_HEIGHT_FILE=$BACKUP_PATH/$EXPORTED_HEIGHT
+
+if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
+ if [ ! -f $IMPORTED_TIME_FILE ]; then
+  if [ ! -f $EXPORTED_HEIGHT_FILE ]; then
+   HEIGHT=0
+  else
+   HEIGHT=`cat $EXPORTED_HEIGHT_FILE`
+  fi
+
+  if [ $HEIGHT -ge $BLOCKCHAIN_HEIGHT ]; then
+   ./system_variable set @restore_needed ""
+  else
+   ./system_variable set @restore_needed "1"
+  fi
+ fi
+fi
+
+if [ -f $RESTORE_NOW ]; then
+ if [ ! -f ~backup_export ]; then
+  date >Restore.txt
+  echo "Preparing for restore..." >>Restore.txt
+
+  # NOTE: If unable to umount will exit (so can call repeatedly until okay).
+  if [ -d $BACKUP_PATH ]; then
+   if mountpoint -q $BACKUP_PATH; then
+    sudo umount $BACKUP_PATH
+    if [ $? -ne 0 ]; then
+     exit
+    fi
+   fi
+  fi
+
+  # NOTE: Use this to prevent accidentally executing the actual restore twice.
+  if [ ! -f ~backup_export ]; then
+   touch ~backup_export
+
+   date >Restore.txt
+   echo "Starting restore..." >>Restore.txt
+
+   echo "Finished restore..." >>Restore.txt
+   date >>Restore.txt
+
+   ./system_variable set @restore_needed ""
+
+   if [ -f $BACKUP_IMAGE ]; then
+    sudo mount $BACKUP_IMAGE $BACKUP_PATH
+    echo $BLOCKCHAIN_HEIGHT > $EXPORTED_HEIGHT_FILE
+   fi
+
+   rm ~backup_export
+   rm $RESTORE_NOW
+  fi
+ fi
+fi

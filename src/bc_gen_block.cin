@@ -85,6 +85,11 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
 .file_tag -unlink bc.$IDENT.p$LAST.key
 ;
+.system_variable @blockchain
+@ifeq "$OUTPUT" "$IDENT"
+.system_variable >@blockchain_height $HEIGHT
+@endif
+;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
 ~shred ~$UUID.key

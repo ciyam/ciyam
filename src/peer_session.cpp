@@ -203,7 +203,17 @@ void output_synchronised_progress_message(
 
    // FUTURE: These messages should be handled as server string messages.
    if( identity == own_identity )
+   {
       progress_message = "Currently at height ";
+
+      string current_height( to_string( blockchain_height ) );
+
+      string blockchain_height_name(
+       get_special_var_name( e_special_var_blockchain_height ) );
+
+      if( get_system_variable( blockchain_height_name ) != current_height )
+         set_system_variable( ">" + blockchain_height_name, current_height );
+   }
    else
       progress_message = "Synchronised at height ";
 
@@ -2251,9 +2261,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                {
                   string next_block_hash( tag_file_hash( next_block_tag ) );
 
-                  // NOTE: If zenith height is not greater than the blockchain height
-                  // then block was not created locally and will assume that fetching
-                  // must have not been previously completed.
                   string current_zenith_hash( tag_file_hash( blockchain + c_zenith_suffix ) );
 
                   size_t current_zenith_height = 0;
@@ -2273,6 +2280,9 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                   }
                   else
                   {
+                     // NOTE: If zenith height is not greater than the blockchain height
+                     // then block was not created locally and will assume that fetching
+                     // must have not been previously completed.
                      need_to_check = true;
 
                      set_session_variable( blockchain_is_fetching_name, c_true_value );
