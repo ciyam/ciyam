@@ -15,12 +15,12 @@ IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
 if mountpoint -q $BACKUP_PATH; then
  if [ ! -f $IMPORTED_TIME_FILE ]; then
-  NEW_FILE=`find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
+  NEW_CHANGE=`find $BACKUP_PATH -path lost+found -prune -o -name "*" -type f -print | head -n 1`
  else
-  NEW_FILE=`find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type f -print | head -n 1`
+  NEW_CHANGE=`find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
  fi
 
- if [ "$NEW_FILE" = "" ]; then
+ if [ "$NEW_CHANGE" = "" ]; then
   ./system_variable set @backup_needed ""
  else
   ./system_variable set @backup_needed "1"
