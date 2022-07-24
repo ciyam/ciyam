@@ -317,7 +317,7 @@ string ciyam_console_command_handler::get_additional_command( )
       {
          string::size_type pos = progress.output_prefix.find( ':' );
 
-         // NOTE: Replace the part prefix with spaces when completed.
+         // NOTE: Replace the part suffix with spaces when completed.
          if( pos != string::npos )
          {
             size_t num = progress.output_prefix.length( ) - pos;
@@ -1006,6 +1006,12 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                         if( is_stdout_console( ) )
                         {
+                           // NOTE: Make sure 100% is output before starting next part.
+                           dtm = date_time::local( );
+                           progress.output_progress( " ", total_chunks, total_chunks );
+
+                           progress.previous_num = 0;
+
                            size_t part = 0;
 
                            string::size_type pos = progress.output_prefix.find( ':' );
