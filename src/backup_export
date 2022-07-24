@@ -35,8 +35,8 @@ fi
 
 if [ -f $RESTORE_NOW ]; then
  if [ ! -f ~backup_export ]; then
-  date >Restore.txt
-  echo "Preparing for restore..." >>Restore.txt
+  date >Backup.txt
+  echo "Preparing for restore..." >>Backup.txt
 
   # NOTE: If unable to umount will exit (so can call repeatedly until okay).
   if [ -d $BACKUP_PATH ]; then
@@ -52,11 +52,11 @@ if [ -f $RESTORE_NOW ]; then
   if [ ! -f ~backup_export ]; then
    touch ~backup_export
 
-   date >Restore.txt
-   echo "Starting restore..." >>Restore.txt
+   date >Backup.txt
+   echo "Starting restore..." >>Backup.txt
 
-   echo "Finished restore..." >>Restore.txt
-   date >>Restore.txt
+   echo "Finished restore..." >>Backup.txt
+   date >>Backup.txt
 
    ./system_variable set @restore_needed ""
 

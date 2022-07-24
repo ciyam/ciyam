@@ -293,6 +293,18 @@ string ciyam_console_command_handler::get_additional_command( )
    {
       cmd = additional_commands.front( );
       additional_commands.pop_front( );
+
+      if( !cmd.empty( ) && cmd[ 0 ] >= '0' && cmd[ 0 ] <= '9' )
+      {
+         total_chunks = atoi( cmd.c_str( ) );
+         cmd.erase( );
+
+         if( !additional_commands.empty( ) )
+         {
+            cmd = additional_commands.front( );
+            additional_commands.pop_front( );
+         }
+      }
    }
    else if( had_chunk_progress )
    {
@@ -756,8 +768,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         appending = true;
                      else if( filename[ 0 ] == '*' )
                      {
-                        chunk = 0;
-
                         append_chunks = true;
                         append_filename = filename.substr( 1 );
 
@@ -900,6 +910,12 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                         total_chunks = chunks.size( );
 
+                        // NOTE: If is additional command then need to store the next
+                        // "total_chunks" value as a command so the value is restored
+                        // prior to processing each chunk.
+                        if( is_additional_command( ) )
+                           additional_commands.push_back( to_string( total_chunks ) );
+
                         for( size_t i = 0; i < chunks.size( ); i++ )
                         {
                            string next( chunks[ i ] );
@@ -916,8 +932,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   // then assume it is actually the next chunk that needs to be appended.
                   else if( append_chunks )
                   {
-                     ++chunk;
-
                      delete_after_transfer = true;
 
                      if( append_prefix.empty( ) )
@@ -932,19 +946,35 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                         if( append_last_name != name_without_chunk_ext )
                         {
+                           chunk = 0;
+
                            file_remove( prefixed_append_name );
 
-                           if( !has_option_no_progress( ) )
-                              progress.output_progress( "" );
+                           create_directories( prefixed_append_name );
 
-                           handle_command_response( prefixed_append_name );
+                           if( !has_option_no_progress( ) )
+                           {
+                              // NOTE: Force output here so that every
+                              // separate file has its own output line.
+                              if( !progress.output_prefix.empty( ) )
+                              {
+                                 progress.output_progress( "" );
+                                 cout << progress.output_prefix;
+                              }
+
+                              progress.output_prefix = prefixed_append_name;
+                              progress.output_progress( " " );
+                           }
+                           else
+                              handle_command_response( prefixed_append_name );
                         }
 
                         append_last_name = name_without_chunk_ext;
 
-                        create_directories( prefixed_append_name );
                         file_append( filename, prefixed_append_name );
                      }
+
+                     ++chunk;
 
                      if( !has_option_no_progress( ) )
                      {
