@@ -220,6 +220,7 @@ class ciyam_console_command_handler : public console_command_handler
     socket( socket ),
     usocket( usocket ),
     num_udp_skips( 0 ),
+    file_parts( false ),
     had_message( false ),
     had_chk_command( false ),
     had_chunk_progress( false )
@@ -273,6 +274,8 @@ class ciyam_console_command_handler : public console_command_handler
    udp_socket& usocket;
 
    size_t num_udp_skips;
+
+   bool file_parts;
 
    bool had_message;
    bool had_chk_command;
@@ -921,6 +924,9 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            string next( chunks[ i ] );
                            string::size_type pos = next.find( ' ' );
 
+                           if( next.find( ':' ) != string::npos )
+                              file_parts = true;
+
                            // NOTE: Ensure that the additional command will neither be
                            // included in console history nor sent to standard output.
                            additional_commands.push_back( " .file_get " + next.substr( 0, pos )
@@ -963,6 +969,11 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                               }
 
                               progress.output_prefix = prefixed_append_name;
+
+                              if( file_parts )
+                                 progress.output_prefix += ":0";
+
+                              file_parts = false;
                               progress.output_progress( " " );
                            }
                            else
@@ -975,6 +986,26 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      }
 
                      ++chunk;
+
+                     if( chunk >= total_chunks )
+                     {
+                        chunk = 0;
+
+                        if( is_stdout_console( ) )
+                        {
+                           size_t part = 0;
+
+                           string::size_type pos = progress.output_prefix.find( ':' );
+
+                           if( pos != string::npos )
+                           {
+                              part = from_string< size_t >( progress.output_prefix.substr( pos + 1 ) );
+                              progress.output_prefix.erase( pos );
+                           }
+
+                           progress.output_prefix += ':' + to_string( ++part );
+                        }
+                     }
 
                      if( !has_option_no_progress( ) )
                      {
