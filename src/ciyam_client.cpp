@@ -314,7 +314,20 @@ string ciyam_console_command_handler::get_additional_command( )
       if( !is_stdout_console( ) )
          cout << endl;
       else
+      {
+         string::size_type pos = progress.output_prefix.find( ':' );
+
+         // NOTE: Replace the part prefix with spaces when completed.
+         if( pos != string::npos )
+         {
+            size_t num = progress.output_prefix.length( ) - pos;
+
+            progress.output_prefix.erase( pos );
+            progress.output_prefix += string( num, ' ' );
+         }
+
          progress.output_progress( "" );
+      }
 
       had_chunk_progress = false;
    }
@@ -970,7 +983,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                               progress.output_prefix = prefixed_append_name;
 
-                              if( file_parts )
+                              if( file_parts && is_stdout_console( ) )
                                  progress.output_prefix += ":0";
 
                               file_parts = false;
