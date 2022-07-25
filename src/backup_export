@@ -4,13 +4,16 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+USER_PATH=/home/$USER
+IMAGE_NAME=backup.img
+
 RESTORE_NOW=.restore.now
 
 IMPORTED_TIME=.imported.time
 EXPORTED_HEIGHT=.exported.height
 
-BACKUP_PATH=/home/$USER/backup
-BACKUP_IMAGE=/home/$USER/backup.img
+BACKUP_PATH=$USER_PATH/backup
+BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
 BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
 
@@ -54,6 +57,23 @@ if [ -f $RESTORE_NOW ]; then
 
    date >Backup.txt
    echo "Starting restore..." >>Backup.txt
+
+   BLOCKCHAIN=`./system_variable get @blockchain`
+   BACKUP_LIST=`./tree_list ciyam 0 Backup | tail -n 1`
+
+   ./tree_crypt -repo_decrypt $BLOCKCHAIN ciyam @sid >>Backup.txt
+
+   sudo umount $BACKUP_PATH
+   sudo chown $USER:www $BACKUP_IMAGE
+
+   ./export_files $BACKUP_LIST $USER_PATH >>Backup.txt
+
+   sudo chown root:root $BACKUP_IMAGE
+   sudo mount $BACKUP_IMAGE $BACKUP_PATH
+
+   echo `date +%s` > $IMPORTED_TIME_FILE
+
+   ./tree_crypt -repo_encrypt $BLOCKCHAIN ciyam @sid >>Backup.txt
 
    echo "Finished restore..." >>Backup.txt
    date >>Backup.txt

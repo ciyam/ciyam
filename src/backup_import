@@ -4,11 +4,14 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
+USER_PATH=/home/$USER
+IMAGE_NAME=backup.img
+
 BACKUP_TIME=.backup.time
 IMPORTED_TIME=.imported.time
 
-BACKUP_PATH=/home/$USER/backup
-BACKUP_IMAGE=/home/$USER/backup.img
+BACKUP_PATH=$USER_PATH/backup
+BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
 BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
@@ -62,7 +65,7 @@ elif [ -f $BACKUP_TIME ]; then
     echo "Starting backup..." >>Backup.txt
 
     if [ -f $BACKUP_IMAGE ]; then
-     ./import_files $BACKUP_PATH Backup . backup.img >>Backup.txt 2>&1
+     ./import_files $USER_PATH Backup . $IMAGE_NAME >>Backup.txt 2>&1
     fi
 
     ./tree_touch ciyam "^Backup:"
