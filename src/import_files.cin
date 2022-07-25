@@ -104,7 +104,6 @@ FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH$FILES_EXTRA
 .session_variable @deque "~$FILES"
 ;
 LAST_PREFIX=
-PART_SUFFIX=0
 ;
 @:FILE_LOOP
 @label NEXT_FILE
@@ -127,24 +126,25 @@ IS_FIRST=1
 HAD_ANY_FILES=1
 .session_variable @deque pop_front
 ;
-; NOTE: If file name has an offset and chunk size
-; suffix then remove the chunk size part.
+; NOTE: If file name has had an offset and chunk size
+; appended then separate this into prefix and suffix.
 NEXT_NAME=@repstr:\:/\n:$NEXT_FILE
 NAME_PREFIX=%NEXT_NAME:1%
 NAME_SUFFIX=%NEXT_NAME:2%
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=:$PART_SUFFIX
-@endif
-NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
 ;
-@ifdef $LAST_PREFIX
 @ifneq "$NAME_PREFIX" "$LAST_PREFIX"
 PART_SUFFIX=0
 @else
 PART_SUFFIX=@$PART_SUFFIX+1
 @endif
-@endif
+;
 LAST_PREFIX=$NAME_PREFIX
+;
+@ifneq "$NAME_SUFFIX" ""
+NAME_SUFFIX=:$PART_SUFFIX
+@endif
+;
+NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
 ;
 ; NOTE: The FILE_NAME environment variable is
 ; used by "ciyam_client" for progress output.
