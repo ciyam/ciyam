@@ -213,14 +213,15 @@ class ciyam_console_command_handler : public console_command_handler
     port( c_default_ciyam_port ),
     host( c_default_ciyam_host ),
     chunk( 0 ),
+    next_part( 0 ),
     file_bytes( 0 ),
+    file_parts( 0 ),
     file_start( 0 ),
     chunk_size( 0 ),
     total_chunks( 0 ),
     socket( socket ),
     usocket( usocket ),
     num_udp_skips( 0 ),
-    file_parts( false ),
     had_message( false ),
     had_chk_command( false ),
     had_chunk_progress( false )
@@ -243,10 +244,12 @@ class ciyam_console_command_handler : public console_command_handler
    string chunk_data;
 
    size_t chunk;
+   size_t next_part;
 
    date_time dtm;
 
    size_t file_bytes;
+   size_t file_parts;
    size_t file_start;
 
    size_t chunk_size;
@@ -274,8 +277,6 @@ class ciyam_console_command_handler : public console_command_handler
    udp_socket& usocket;
 
    size_t num_udp_skips;
-
-   bool file_parts;
 
    bool had_message;
    bool had_chk_command;
@@ -314,20 +315,7 @@ string ciyam_console_command_handler::get_additional_command( )
       if( !is_stdout_console( ) )
          cout << endl;
       else
-      {
-         string::size_type pos = progress.output_prefix.find( ':' );
-
-         // NOTE: Replace the part suffix with spaces when completed.
-         if( pos != string::npos )
-         {
-            size_t num = progress.output_prefix.length( ) - pos;
-
-            progress.output_prefix.erase( pos );
-            progress.output_prefix += string( num, ' ' );
-         }
-
          progress.output_progress( "" );
-      }
 
       had_chunk_progress = false;
    }
@@ -551,7 +539,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   if( put_file_error.empty( ) && !has_option_no_progress( ) )
                   {
                      string file_name( get_environment_variable( c_env_var_file_name ) );
-
                      if( !file_name.empty( ) )
                      {
                         cout << file_name;
@@ -938,7 +925,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            string::size_type pos = next.find( ' ' );
 
                            if( next.find( ':' ) != string::npos )
-                              file_parts = true;
+                              ++file_parts;
 
                            // NOTE: Ensure that the additional command will neither be
                            // included in console history nor sent to standard output.
@@ -963,15 +950,21 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         string name_without_chunk_ext( append_filename.substr( 0, pos ) );
                         string prefixed_append_name( append_prefix + '/' + name_without_chunk_ext );
 
+                        string prefix_append_name_for_display( prefixed_append_name );
+
                         if( append_last_name != name_without_chunk_ext )
                         {
                            chunk = 0;
+                           next_part = 0;
 
                            file_remove( prefixed_append_name );
 
                            create_directories( prefixed_append_name );
 
-                           if( !has_option_no_progress( ) )
+                           if( file_parts )
+                              prefix_append_name_for_display += ":0";
+
+                           if( is_stdout_console( ) && !has_option_no_progress( ) )
                            {
                               // NOTE: Force output here so that every
                               // separate file has its own output line.
@@ -981,16 +974,30 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                                  cout << progress.output_prefix;
                               }
 
-                              progress.output_prefix = prefixed_append_name;
+                              progress.output_prefix = prefix_append_name_for_display;
 
-                              if( file_parts && is_stdout_console( ) )
-                                 progress.output_prefix += ":0";
-
-                              file_parts = false;
                               progress.output_progress( " " );
                            }
                            else
-                              handle_command_response( prefixed_append_name );
+                              handle_command_response( prefix_append_name_for_display );
+                        }
+                        else if( chunk == 0 && file_parts )
+                        {
+                           prefix_append_name_for_display += ':' + to_string( ++next_part );
+
+                           if( is_stdout_console( ) && !has_option_no_progress( ) )
+                           {
+                              // NOTE: Force output here so that every
+                              // separate part has its own output line.
+                              progress.output_progress( "" );
+                              progress.output_prefix = prefix_append_name_for_display;
+
+                              progress.output_progress( " " );
+                           }
+                           else
+                              handle_command_response( prefix_append_name_for_display );
+
+                           --file_parts;
                         }
 
                         append_last_name = name_without_chunk_ext;
@@ -1004,24 +1011,8 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      {
                         chunk = 0;
 
-                        if( is_stdout_console( ) )
-                        {
-                           // NOTE: Make sure 100% is output before starting next part.
-                           dtm = date_time::local( );
-                           progress.output_progress( " ", total_chunks, total_chunks );
-
+                        if( is_stdout_console( ) && !has_option_no_progress( ) )
                            progress.previous_num = 0;
-
-                           string::size_type pos = progress.output_prefix.find( ':' );
-
-                           if( pos != string::npos )
-                           {
-                              size_t part = from_string< size_t >( progress.output_prefix.substr( pos + 1 ) );
-                              progress.output_prefix.erase( pos );
-
-                              progress.output_prefix += ':' + to_string( ++part );
-                           }
-                        }
                      }
 
                      if( !has_option_no_progress( ) )
