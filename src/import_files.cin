@@ -41,6 +41,11 @@ START=@fullpath:$1
 .session_variable @uuid
 UUID=$OUTPUT
 ;
+@ifeq "$SUB_DIRECTORY" ":"
+PATHS=.
+SUB_DIRECTORY=
+SUB_DIR_IS_LEAF=1
+@else
 @ifndef $SUB_DIRECTORY
 PATHS=@paths:$START$PATHS_EXTRA
 @else
@@ -63,6 +68,7 @@ SUB_DIRECTORY=@repstr:\n/\/:$OUTPUT
 SUB_DIR_IS_LEAF=1
 PATHS=$SUB_DIRECTORY
 SUB_DIRECTORY=
+@endif
 @endif
 @endif
 @endif
