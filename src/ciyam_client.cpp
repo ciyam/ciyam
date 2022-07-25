@@ -1012,17 +1012,15 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                            progress.previous_num = 0;
 
-                           size_t part = 0;
-
                            string::size_type pos = progress.output_prefix.find( ':' );
 
                            if( pos != string::npos )
                            {
-                              part = from_string< size_t >( progress.output_prefix.substr( pos + 1 ) );
+                              size_t part = from_string< size_t >( progress.output_prefix.substr( pos + 1 ) );
                               progress.output_prefix.erase( pos );
-                           }
 
-                           progress.output_prefix += ':' + to_string( ++part );
+                              progress.output_prefix += ':' + to_string( ++part );
+                           }
                         }
                      }
 
