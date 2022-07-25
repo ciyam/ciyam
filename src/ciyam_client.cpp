@@ -539,6 +539,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   if( put_file_error.empty( ) && !has_option_no_progress( ) )
                   {
                      string file_name( get_environment_variable( c_env_var_file_name ) );
+
                      if( !file_name.empty( ) )
                      {
                         cout << file_name;
@@ -964,19 +965,24 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            if( file_parts )
                               prefix_append_name_for_display += ":0";
 
-                           if( is_stdout_console( ) && !has_option_no_progress( ) )
+                           if( !has_option_no_progress( ) )
                            {
-                              // NOTE: Force output here so that every
-                              // separate file has its own output line.
-                              if( !progress.output_prefix.empty( ) )
+                              if( is_stdout_console( ) )
                               {
-                                 progress.output_progress( "" );
-                                 cout << progress.output_prefix;
+                                 // NOTE: Force output here so that every
+                                 // separate file has its own output line.
+                                 if( !progress.output_prefix.empty( ) )
+                                    progress.output_progress( "" );
+
+                                 progress.output_prefix = prefix_append_name_for_display;
                               }
+                              else if( !append_last_name.empty( ) )
+                                 cout << '\n';
 
-                              progress.output_prefix = prefix_append_name_for_display;
+                              cout << prefix_append_name_for_display;
+                              cout.flush( );
 
-                              progress.output_progress( " " );
+                              had_chunk_progress = true;
                            }
                            else
                               handle_command_response( prefix_append_name_for_display );
@@ -985,14 +991,22 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         {
                            prefix_append_name_for_display += ':' + to_string( ++next_part );
 
-                           if( is_stdout_console( ) && !has_option_no_progress( ) )
+                           if( !has_option_no_progress( ) )
                            {
-                              // NOTE: Force output here so that every
-                              // separate part has its own output line.
-                              progress.output_progress( "" );
-                              progress.output_prefix = prefix_append_name_for_display;
+                              if( is_stdout_console( ) )
+                              {
+                                 // NOTE: Force output here so that every
+                                 // separate part has its own output line.
+                                 progress.output_progress( "" );
+                                 progress.output_prefix = prefix_append_name_for_display;
+                              }
+                              else
+                                 cout << '\n';
 
-                              progress.output_progress( " " );
+                              cout << prefix_append_name_for_display;
+                              cout.flush( );
+
+                              had_chunk_progress = true;
                            }
                            else
                               handle_command_response( prefix_append_name_for_display );
@@ -1006,14 +1020,6 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                      }
 
                      ++chunk;
-
-                     if( chunk >= total_chunks )
-                     {
-                        chunk = 0;
-
-                        if( is_stdout_console( ) && !has_option_no_progress( ) )
-                           progress.previous_num = 0;
-                     }
 
                      if( !has_option_no_progress( ) )
                      {
@@ -1034,6 +1040,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                            dtm = now;
                            had_chunk_progress = true;
                         }
+                     }
+
+                     if( chunk >= total_chunks )
+                     {
+                        chunk = 0;
+
+                        progress.previous_num = 0;
                      }
                   }
 
