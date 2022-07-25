@@ -103,6 +103,9 @@ FILES=@files:$START/$SUB_DIRECTORY/$NEXT_PATH$FILES_EXTRA
 .session_variable @deque ""
 .session_variable @deque "~$FILES"
 ;
+LAST_PREFIX=
+PART_SUFFIX=0
+;
 @:FILE_LOOP
 @label NEXT_FILE
 ;
@@ -124,32 +127,40 @@ IS_FIRST=1
 HAD_ANY_FILES=1
 .session_variable @deque pop_front
 ;
+; NOTE: If file name has an offset and chunk size
+; suffix then remove the chunk size part.
+NEXT_NAME=@repstr:\:/\n:$NEXT_FILE
+NAME_PREFIX=%NEXT_NAME:1%
+NAME_SUFFIX=%NEXT_NAME:2%
+@ifneq "$NAME_SUFFIX" ""
+NAME_SUFFIX=:$PART_SUFFIX
+@endif
+NEXT_NAME=$NAME_PREFIX$NAME_SUFFIX
+;
+@ifdef $LAST_PREFIX
+@ifneq "$NAME_PREFIX" "$LAST_PREFIX"
+PART_SUFFIX=0
+@else
+PART_SUFFIX=@$PART_SUFFIX+1
+@endif
+@endif
+LAST_PREFIX=$NAME_PREFIX
+;
+; NOTE: The FILE_NAME environment variable is
+; used by "ciyam_client" for progress output.
 @ifndef $SUB_DIRECTORY
 @ifeq "." "$NEXT_PATH"
 @ifdef $IS_CURRENT
-FILE_NAME=$NEXT_FILE
+FILE_NAME=$NEXT_NAME
 @else
-FILE_NAME=$1/$NEXT_FILE
-@endif
-@else
-FILE_NAME=$1/$NEXT_PATH/$NEXT_FILE
+FILE_NAME=$1/$NEXT_NAME
 @endif
 @else
-FILE_NAME=$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
+FILE_NAME=$1/$NEXT_PATH/$NEXT_NAME
 @endif
-;
-; NOTE: If file name has an offset and chunk size
-; suffix then remove the chunk size part.
-FILE_NAME=@repstr:\:/\n:$FILE_NAME
-NAME_PREFIX=%FILE_NAME:1%
-NAME_SUFFIX=%FILE_NAME:2%
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=@repstr:+/\n:$NAME_SUFFIX
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=:%NAME_SUFFIX:1%
+@else
+FILE_NAME=$1/$SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
 @endif
-@endif
-FILE_NAME=$NAME_PREFIX$NAME_SUFFIX
 ;
 ; NOTE: Each file is split into MAX_FILE_SIZE chunks and
 ; the UUID variable is used to tag the "list" file which
@@ -166,34 +177,22 @@ ERROR=
 HAD_ANY_FILES=
 @endif
 @else
+;
 ; NOTE: Get the file hash of the tagged "list" of chunks
 ; and append it to a "list" that will be effectively the
 ; list of files that are in a specific directory.
 .file_hash $UUID
 HASH=$OUTPUT
 ;
-; NOTE: If file name has an offset and chunk size
-; suffix then remove the chunk size part.
-NEXT_FILE=@repstr:\:/\n:$NEXT_FILE
-NAME_PREFIX=%NEXT_FILE:1%
-NAME_SUFFIX=%NEXT_FILE:2%
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=@repstr:+/\n:$NAME_SUFFIX
-@ifneq "$NAME_SUFFIX" ""
-NAME_SUFFIX=:%NAME_SUFFIX:1%
-@endif
-@endif
-NEXT_FILE=$NAME_PREFIX$NAME_SUFFIX
-;
 >>~$UUID
 @ifndef $SUB_DIRECTORY
 @ifeq "." "$NEXT_PATH"
-#$HASH $NEXT_FILE
+#$HASH $NEXT_NAME
 @else
-#$HASH $NEXT_PATH/$NEXT_FILE
+#$HASH $NEXT_PATH/$NEXT_NAME
 @endif
 @else
-#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_FILE
+#$HASH $SUB_DIRECTORY/$NEXT_PATH/$NEXT_NAME
 @endif
 >>
 @endif
