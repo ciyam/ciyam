@@ -83,6 +83,8 @@ const char c_pause_message_command_prefix = '^';
 const char c_environment_variable_marker_1 = '$';
 const char c_environment_variable_marker_2 = '%';
 
+const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
+
 const char* const c_non_command_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 
 const char* const c_unix_time = "unix";
@@ -3585,6 +3587,14 @@ void console_command_handler::handle_progress_message( const string& message )
 {
    if( has_option( c_cmd_monitor ) )
       put_line( message );
+   else if( message == "." )
+   {
+      string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
+
+      *p_std_out << progress_prefix << message;
+
+      set_environment_variable( c_env_var_progress_prefix, "" );
+   }
    else
       *p_std_out << message << endl;
 }
