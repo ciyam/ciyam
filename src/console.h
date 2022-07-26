@@ -37,11 +37,11 @@ inline std::string get_password( const std::string& prompt, char* p_buf = 0, siz
    return get_password( prompt.c_str( ) );
 }
 
-void put_line( const char* p_chars, size_t len );
+void put_line( const char* p_chars, size_t len, bool append_lf = true );
 
-inline void put_line( const std::string& str )
+inline void put_line( const std::string& str, bool append_lf = true )
 {
-   put_line( &str[ 0 ], str.length( ) );
+   put_line( &str[ 0 ], str.length( ), append_lf );
 }
 
 #endif

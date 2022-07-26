@@ -3585,18 +3585,20 @@ void console_command_handler::handle_command_response( const string& response, b
 
 void console_command_handler::handle_progress_message( const string& message )
 {
+   string prefix( get_environment_variable( c_env_var_progress_prefix ) );
+
    if( has_option( c_cmd_monitor ) )
-      put_line( message );
-   else if( message == "." )
+      put_line( prefix + message, message.length( ) != 1 );
+   else if( message.length( ) == 1 )
    {
-      string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
+      *p_std_out << prefix << message;
 
-      *p_std_out << progress_prefix << message;
-
-      set_environment_variable( c_env_var_progress_prefix, "" );
+      p_std_out->flush( );
    }
    else
-      *p_std_out << message << endl;
+      *p_std_out << prefix << message << endl;
+
+   set_environment_variable( c_env_var_progress_prefix, "" );
 }
 
 void console_command_handler::handle_extraneous_custom_option( const string& option )

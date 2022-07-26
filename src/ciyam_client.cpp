@@ -225,7 +225,8 @@ class ciyam_console_command_handler : public console_command_handler
     num_udp_skips( 0 ),
     had_message( false ),
     had_chk_command( false ),
-    had_chunk_progress( false )
+    had_chunk_progress( false ),
+    had_single_char_message( false )
    {
       set_custom_startup_options( 1, "[<port> or <host[(:|-)port]>]" );
 
@@ -282,6 +283,7 @@ class ciyam_console_command_handler : public console_command_handler
    bool had_message;
    bool had_chk_command;
    bool had_chunk_progress;
+   bool had_single_char_message;
 
    string get_additional_command( );
 
@@ -1461,11 +1463,14 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
 
                      if( is_stdout_console( ) )
                         progress.output_progress( "" );
+                     else if( had_single_char_message )
+                        handle_progress_message( "" );
                   }
 
                   if( is_message )
                   {
                      had_message = true;
+                     had_single_char_message = ( final_response.length( ) == 1 );
 
                      if( !has_option_no_progress( ) )
                      {
@@ -1512,8 +1517,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                   {
                      had_message = false;
 
-                     if( is_stdout_console( ) && !has_option_no_progress( ) )
-                        progress.output_progress( "" );
+                     if( !has_option_no_progress( ) )
+                     {
+                        if( is_stdout_console( ) )
+                           progress.output_progress( "" );
+                        else if( had_single_char_message )
+                           handle_progress_message( "" );
+                     }
                   }
 #ifdef DEBUG
                   cout << response;
