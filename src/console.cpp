@@ -292,12 +292,14 @@ string get_password( const char* p_prompt, char* p_buf, size_t buflen )
 }
 #endif
 
-void put_line( const char* p_chars, size_t len )
+void put_line( const char* p_chars, size_t len, bool append_lf )
 {
 #ifdef _WIN32
    for( size_t i = 0; i < len; i++ )
       _putch( *( p_chars + i ) );
-   _putch( '\n' );
+
+   if( append_lf )
+      _putch( '\n' );
 #else
   int outfd = STDOUT_FILENO;
 
@@ -317,8 +319,11 @@ void put_line( const char* p_chars, size_t len )
    if( _write( outfd, p_chars, len ) == -1 )
       throw runtime_error( "unexpected put_line write p_chars failure" );
 
-   if( _write( outfd, &ch, 1 ) == -1 )
-      throw runtime_error( "unexpected put_line write line feed failure" );
+   if( append_lf )
+   {
+      if( _write( outfd, &ch, 1 ) == -1 )
+         throw runtime_error( "unexpected put_line write line feed failure" );
+   }
 
    if( outfd != STDOUT_FILENO )
       close( outfd );
