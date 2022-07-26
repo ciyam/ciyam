@@ -33,7 +33,9 @@ fi
 
 if [ -f $BACKUP_TIME_FILE ]; then
  mv $BACKUP_TIME_FILE .
-elif [ -f $BACKUP_TIME ]; then
+fi
+
+if [ -f $BACKUP_TIME ]; then
  NOW=`date +%s`
  TIME=`cat $BACKUP_TIME`
 
