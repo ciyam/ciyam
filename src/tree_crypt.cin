@@ -17,12 +17,16 @@ REPOSITORY=$2
 IS_REPO=1
 PREFIX=-decrypt -recurse
 REPOSITORY=$2
+; FUTURE: This message should be handled as a server string.
+PROGRESS_PREFIX=Decrypting
 @endif
 ;
 @ifeq "$1" "-repo_encrypt"
 IS_REPO=1
 PREFIX=-encrypt -recurse
 REPOSITORY=$2
+; FUTURE: This message should be handled as a server string.
+PROGRESS_PREFIX=Encrypting
 @endif
 ;
 @ifndef $IS_REPO

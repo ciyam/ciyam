@@ -64,6 +64,11 @@ BLK_HEIGHT=@$BLK_HEIGHT-1
 @:DONE
 ;
 @ifndef $ERROR
+.file_hash bc.$IDENT.$HEIGHT.blk
+.file_tag $OUTPUT bc.$IDENT.zenith
+.system_variable @blockchain_height $HEIGHT
+; FUTURE: This message should be handled as a server string.
+.system_variable %$IDENT "Currently at height $HEIGHT"
 @ifneq "$SEED" ""
 <<bc_gen_keys.cin $SEED $IDENT $HEIGHT
 @endif

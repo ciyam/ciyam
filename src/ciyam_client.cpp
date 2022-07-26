@@ -91,6 +91,7 @@ const char* const c_env_var_file_name = "FILE_NAME";
 const char* const c_env_var_local_udp = "LOCAL_UDP";
 const char* const c_env_var_rpc_password = "RPC_PASSWORD";
 const char* const c_env_var_max_file_size = "MAX_FILE_SIZE";
+const char* const c_env_var_progress_prefix = "PROGRESS_PREFIX";
 
 const char* const c_udp_msg_cancel = "XXX";
 
@@ -1471,7 +1472,13 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
                         if( !is_stdout_console( ) )
                            handle_progress_message( final_response );
                         else
-                           progress.output_progress( final_response );
+                        {
+                           string progress_prefix( get_environment_variable( c_env_var_progress_prefix ) );
+
+                           set_environment_variable( c_env_var_progress_prefix, "" );
+
+                           progress.output_progress( progress_prefix + final_response );
+                        }
                      }
                   }
                   else if( !is_message && ( is_error || !get_is_quiet_command( ) || is_redirected_output( ) ) )
