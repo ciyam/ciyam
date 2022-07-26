@@ -2851,6 +2851,16 @@ void crypt_file( const string& repository, const string& tag_or_hash,
    {
       ap_files_processed.reset( new set< string >( ) );
       p_files_processed = ap_files_processed.get( );
+
+      if( p_progress )
+      {
+         if( operation == e_crypt_operation_decrypt )
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Decrypting..." );
+         else if( operation == e_crypt_operation_encrypt )
+            // FUTURE: This message should be handled as a server string message.
+            p_progress->output_progress( "Encrypting..." );
+      }
    }
 
    p_files_processed->insert( hash );
@@ -2867,7 +2877,9 @@ void crypt_file( const string& repository, const string& tag_or_hash,
       {
          *p_dtm = now;
 
-         if( !p_total )
+         if( !p_total
+          || ( operation == e_crypt_operation_decrypt )
+          || ( operation == e_crypt_operation_encrypt ) )
             p_progress->output_progress( "." );
          else
             // FUTURE: This message should be handled as a server string message.

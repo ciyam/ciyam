@@ -8,12 +8,15 @@ USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
 BACKUP_TIME=.backup.time
+BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
 
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
 BACKUP_TIME_FILE=$BACKUP_PATH/$BACKUP_TIME
+BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
+
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
 
 if mountpoint -q $BACKUP_PATH; then
@@ -23,9 +26,7 @@ if mountpoint -q $BACKUP_PATH; then
   NEW_CHANGE=`find $BACKUP_PATH -path lost+found -prune -o -newermm $IMPORTED_TIME_FILE -name "*" -type d -print | head -n 1`
  fi
 
- if [ "$NEW_CHANGE" = "" ]; then
-  ./system_variable set @backup_needed ""
- else
+ if [ ! "$NEW_CHANGE" = "" ]; then
   ./system_variable set @backup_needed "1"
  fi
 fi
@@ -78,9 +79,12 @@ elif [ -f $BACKUP_TIME ]; then
 
     ./system_variable set @backup_needed ""
 
+    BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
+
     if [ -f $BACKUP_IMAGE ]; then
      sudo mount $BACKUP_IMAGE $BACKUP_PATH
      echo `date +%s` > $IMPORTED_TIME_FILE
+     echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
     fi
 
     rm ~backup_import
