@@ -6,9 +6,15 @@
 # NOTE: Session variables (apart from @none and @storage) must not be used here.
 <sio/>
 # <script/>
-#  <name>backup_import
+#  <name>backup_export
 #  <time>00:00-23:59
-#  <cycle>2s
+#  <cycle>1m
+#  <filename>backup_export
+# </script>
+# <script/>
+#  <name>backup_import
+#  <time>00:00:05-23:59:55
+#  <cycle>10s
 #  <filename>backup_import
 # </script>
 ### [<start generated>]
