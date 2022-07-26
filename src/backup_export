@@ -8,32 +8,35 @@ USER_PATH=/home/$USER
 IMAGE_NAME=backup.img
 
 RESTORE_NOW=.restore.now
-
+BACKUP_HEIGHT=.backup.height
 IMPORTED_TIME=.imported.time
-EXPORTED_HEIGHT=.exported.height
 
 BACKUP_PATH=$USER_PATH/backup
 BACKUP_IMAGE=$USER_PATH/$IMAGE_NAME
 
 BLOCKCHAIN_HEIGHT=`./system_variable get @blockchain_height`
 
+RESTORE_NOW_FILE=$BACKUP_PATH/$RESTORE_NOW
+BACKUP_HEIGHT_FILE=$BACKUP_PATH/$BACKUP_HEIGHT
+
 IMPORTED_TIME_FILE=$BACKUP_PATH/$IMPORTED_TIME
-EXPORTED_HEIGHT_FILE=$BACKUP_PATH/$EXPORTED_HEIGHT
 
 if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
  if [ ! -f $IMPORTED_TIME_FILE ]; then
-  if [ ! -f $EXPORTED_HEIGHT_FILE ]; then
-   HEIGHT=0
+  if [ ! -f $BACKUP_HEIGHT_FILE ]; then
+   CURRENT_HEIGHT=0
   else
-   HEIGHT=`cat $EXPORTED_HEIGHT_FILE`
+   CURRENT_HEIGHT=`cat $BACKUP_HEIGHT_FILE`
   fi
 
-  if [ $HEIGHT -ge $BLOCKCHAIN_HEIGHT ]; then
-   ./system_variable set @restore_needed ""
-  else
+  if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
    ./system_variable set @restore_needed "1"
   fi
  fi
+fi
+
+if [ -f $RESTORE_NOW_FILE ]; then
+ mv $RESTORE_NOW_FILE .
 fi
 
 if [ -f $RESTORE_NOW ]; then
@@ -71,7 +74,7 @@ if [ -f $RESTORE_NOW ]; then
    sudo mount $BACKUP_IMAGE $BACKUP_PATH
 
    echo `date +%s` > $IMPORTED_TIME_FILE
-   echo $BLOCKCHAIN_HEIGHT > $EXPORTED_HEIGHT_FILE
+   echo $BLOCKCHAIN_HEIGHT > $BACKUP_HEIGHT_FILE
 
    ./tree_crypt -repo_encrypt $BLOCKCHAIN ciyam @sid >>Backup.txt
 
