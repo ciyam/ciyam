@@ -7,8 +7,8 @@
 <sio/>
 # <script/>
 #  <name>backup_export
-#  <time>00:00-23:59
-#  <cycle>1m
+#  <time>00:00:00-23:59:00
+#  <cycle>10s
 #  <filename>backup_export
 # </script>
 # <script/>
