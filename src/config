@@ -44,6 +44,14 @@ else
   rm ~config.sh
  fi
 
+ if [ ! -f ciyamd ]; then
+  ./xrep @ciyamd.xrep uid=$USER >ciyamd
+ fi
+
+ if [ ! -f ciyamd.service ]; then
+  ./xrep @ciyamd.service.xrep uid=$USER >ciyamd.service
+ fi
+
  ./xrep @config.h.xrep >config.h.new
  ./update config.h config.h.new
 

@@ -123,14 +123,13 @@ Next follow these instructions:
 Installing the CIYAM "systemd" Service
 --------------------------------------
 
-NOTE: Do this *only after* the CIYAM application server has been built and
-the Meta DB has been created.
+NOTE: Do this *only after* the CIYAM application server has been built and the
+Meta DB has been created.
 
 sudo cp ciyamd.service /etc/systemd/system
 
 sudo vi /etc/systemd/system/ciyamd.service
-(edit "ciyamd.service" file to change "tux" to the appropriate user and to
-ensure that the "Environment" value matches the WEBDIR export value above)
+(ensure that the "Environment" value matches the WEBDIR export value above)
 
 sudo systemctl daemon-reload
 sudo systemctl enable ciyamd
