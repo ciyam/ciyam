@@ -2581,7 +2581,7 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
 
                if( !str.empty( ) )
                {
-                  pos = str.find_first_of( "+-*/:" );
+                  pos = str.find_first_of( "+-*/#:" );
 
                   int64_t val = 0;
                   int64_t rval = 0;
@@ -2960,7 +2960,11 @@ void console_command_handler::preprocess_command_and_args( string& str, const st
                            break;
 
                            case '/':
-                           val /= rval == 0 ? 1 : rval;
+                           val /= ( rval == 0 ) ? 1 : rval;
+                           break;
+
+                           case '#':
+                           val = ( val % rval );
                            break;
                         }
 
