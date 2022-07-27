@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# ciyam_server startup/shutdown
+# ciyamd startup/shutdown
 #
 
 ### BEGIN INIT INFO
@@ -9,7 +9,7 @@
 # Required-Stop:
 # Default-Start:     3 5
 # Default-Stop:      0 1 2 6
-# Short-Description: ciyam_server daemon
+# Short-Description: ciyamd
 # Description:       CIYAM Service
 ### END INIT INFO
 
@@ -19,10 +19,14 @@
 # Reset status of this service
 rc_reset
 
-CIYAMD_BIN=/usr/bin/ciyam_server
+CIYAM_UID=`{`$uid`}
+CIYAM_PATH=/home/$CIYAM_UID/ciyam/src
+
+CIYAMD_BIN=$CIYAM_PATH/ciyam_server
+
 test -x $CIYAMD_BIN ||
 {
- echo "$CIYAMD_BIN not installed";
+ echo "$CIYAMD_BIN not found";
  if [ "$1" = "stop" ]; then
   exit 0;
  else
@@ -32,13 +36,13 @@ test -x $CIYAMD_BIN ||
 
 case "$1" in
  start)
-  echo -n "Starting ciyam_server "
-  /sbin/startproc -u tux -g www $CIYAMD_BIN -daemon -chdir=/home/tux/ciyam/src
+  echo -n "Starting ciyamd "
+  /sbin/startproc -u $CIYAM_UID -g www $CIYAMD_BIN -daemon -chdir=$CIYAM_PATH
   rc_status -v
   ;;
 
  stop)
-  echo -n "Shutting down ciyam_server "
+  echo -n "Stopping ciyamd "
   killproc -TERM $CIYAMD_BIN
   rc_status -v
   ;;
@@ -50,7 +54,7 @@ case "$1" in
   ;;
 
  status)
-  echo -n "Checking for service ciyam_server "
+  echo -n "Checking for service ciyamd "
   # Return value is slightly different for the status command:
   # 0 - service up and running
   # 1 - service dead, but /var/run/  pid  file exists
@@ -75,4 +79,3 @@ case "$1" in
 esac
 
 rc_exit
-

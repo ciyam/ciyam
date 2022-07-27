@@ -9,13 +9,12 @@ RestartSec=10
 User=tux
 Environment="MYSQL_EXEC=sudo mysql"
 Environment="WEBDIR=/srv/www/htdocs"
-Environment="CIYAM_USER=tux"
+Environment="CIYAM_USER=`{`$uid`}"
 ExecStartPre=
-ExecStart=/home/tux/ciyam/src/ciyam_server -daemon -chdir=/home/tux/ciyam/src
+ExecStart=/home/`{`$uid`}/ciyam/src/ciyam_server -daemon -chdir=/home/`{`$uid`}/ciyam/src
 ExecStartPost=
 ExecStop=
 ExecReload=
 
 [Install]
 WantedBy=multi-user.target
-
