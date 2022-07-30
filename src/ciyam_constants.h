@@ -12,6 +12,9 @@ const int c_tx_id_standard = 5;
 
 const size_t c_bc_identity_length = 9;
 
+const size_t c_bc_scaling_value = 100;
+const size_t c_bc_scaling_demo_value = 10;
+
 const char* const c_none = "none";
 const char* const c_okay = "okay";
 
@@ -32,8 +35,9 @@ const char* const c_txs_file_ext = ".txs";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
+const char* const c_demo_identity = "bc139fc15";
+
 const char* const c_variables_branch = "Variables";
-const char* const c_web_files_branch = "Web_Files";
 
 const char* const c_meta_model_name = "Meta";
 
@@ -151,7 +155,8 @@ const char* const c_file_type_core_data_header_version_number_prefix = "v=";
 
 const char* const c_file_type_core_data_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_data_detail_last_hash_prefix = "l:";
-const char* const c_file_type_core_data_detail_pubkey_hash_prefix = "p:";
+const char* const c_file_type_core_data_detail_primary_hash_prefix = "p:";
+const char* const c_file_type_core_data_detail_secondary_hash_prefix = "s:";
 const char* const c_file_type_core_data_detail_tree_root_hash_prefix = "t:";
 const char* const c_file_type_core_data_detail_unix_data_time_value_prefix = "u:";
 
