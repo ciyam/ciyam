@@ -21,6 +21,7 @@ HEIGHT=$2
 TREE=$3
 ;
 @ifneq "$IDENT" "bc139fc15"
+MULTIPLE=100
 UTIME=@unix:
 @else
 HRS_01=3600
@@ -28,6 +29,7 @@ HRS_24=@$HRS_01*24
 ;
 HRS_HEIGHT=@$HRS_24*$HEIGHT
 ;
+MULTIPLE=10
 UTIME=@1635400000+$HRS_HEIGHT
 @endif
 ;
@@ -43,6 +45,33 @@ TREE=ciyam
 @endif
 @endif
 ;
+MODULUS=@$HEIGHT#$MULTIPLE
+;
+NEED_SECONDARY=
+SEC_PUB_KEY_HASH_ENC=
+;
+@ifeq "$MODULUS" "0"
+.file_hash bc.$IDENT.s$HEIGHT.pub
+.encode $OUTPUT
+SEC_PUB_KEY_HASH_ENC=$OUTPUT
+@endif
+;
+@ifeq "$HEIGHT" "$MULTIPLE"
+NEED_SECONDARY=1
+@else
+SQUARED=@$MULTIPLE*$MULTIPLE
+MODULUS=@$HEIGHT#$SQUARED
+@ifeq "$MODULUS" "0"
+NEED_SECONDARY=1
+@endif
+@endif
+;
+@ifdef $NEED_SECONDARY
+.file_hash bc.$IDENT.t$HEIGHT.pub
+.encode $OUTPUT
+SEC_PUB_KEY_HASH_ENC=$SEC_PUB_KEY_HASH_ENC,$OUTPUT
+@endif
+;
 LAST=@$HEIGHT-1
 ;
 .file_hash bc.$IDENT.p$HEIGHT.pub
@@ -56,7 +85,7 @@ HIND_HASH_ENC=%OUTPUT:1440%
 ;
 @ifeq "$LAST" "0"
 @ifndef $TREE
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=1\n\
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
@@ -82,11 +111,20 @@ u:$UTIME bc.$IDENT.$HEIGHT.dat
 LAST_HASH_ENC=$OUTPUT
 ;
 @ifndef $TREE
-.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,v=1\n\
+@ifndef $SEC_PUB_KEY_HASH_ENC
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
+@else
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
+s:$SEC_PUB_KEY_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
+@endif
 @else
 .file_hash $TREE
 @ifndef $ERROR
@@ -95,12 +133,22 @@ TREE_ROOT_HASH_ENC=$OUTPUT
 .file_info -total_items $TREE
 NUM_TREE_ITEMS=$OUTPUT
 ;
+@ifndef $SEC_PUB_KEY_HASH_ENC
 .file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 t:$TREE_ROOT_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.dat
+@else
+.file_raw -core blob dat:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
+s:$SEC_PUB_KEY_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.dat
+@endif
 @endif
 @endif
 @endif

@@ -30,6 +30,7 @@ if [ ! "$BLOCKCHAIN_HEIGHT" = "" ]; then
   fi
 
   if [ $CURRENT_HEIGHT -lt $BLOCKCHAIN_HEIGHT ]; then
+   ./system_variable set @backup_needed ""
    ./system_variable set @restore_needed "1"
   fi
  fi

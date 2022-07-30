@@ -19,6 +19,7 @@ IDENT=$1
 HEIGHT=$2
 ;
 @ifneq "$IDENT" "bc139fc15"
+MULTIPLE=100
 UTIME=@unix:
 @else
 HRS_01=3600
@@ -26,6 +27,7 @@ HRS_24=@$HRS_01*24
 ;
 HRS_HEIGHT=@$HRS_24*$HEIGHT
 ;
+MULTIPLE=10
 UTIME=@1635400000+$HRS_HEIGHT
 @endif
 ;
@@ -81,7 +83,121 @@ p:$PUB_KEY_HASH_ENC\n\
 s:$SIG_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 ;
-.file_tag $OUTPUT bc.$IDENT.zenith
+BLOCK_HASH=$OUTPUT
+;
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+~shred ~$UUID.key
+@endif
+~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+;
+MODULUS=@$HEIGHT#$MULTIPLE
+;
+@ifeq "$MODULUS" "0"
+LAST_SECONDARY=@$HEIGHT-$MULTIPLE
+@ifeq "$LAST_SECONDARY" "0"
+.file_hash bc.$IDENT.0.blk
+@else
+.file_hash bc.$IDENT.s$LAST_SECONDARY.blk
+@endif
+;
+@ifndef $ERROR
+LAST_HASH=$OUTPUT
+.encode $LAST_HASH
+LAST_HASH_ENC=$OUTPUT
+;
+.file_hash bc.$IDENT.s$HEIGHT.pub
+@ifndef $ERROR
+.encode $OUTPUT
+SPUB_KEY_HASH_ENC=$OUTPUT
+;
+.file_crypt bc.$IDENT.s$LAST_SECONDARY.key @sid
+.file_get bc.$IDENT.s$LAST_SECONDARY.key ~$UUID.key
+.file_crypt bc.$IDENT.s$LAST_SECONDARY.key @sid
+;
+.file_get bc.$IDENT.s$LAST_SECONDARY.pub ~$UUID.pub
+;
+.crypto_lamport -sign ~$UUID:$DATA_HASH
+.file_put ~$UUID.sig bc.$IDENT.s$LAST_SECONDARY.sig
+.file_hash bc.$IDENT.s$LAST_SECONDARY.sig
+SIG_HASH=$OUTPUT
+.encode $SIG_HASH
+SIG_HASH_ENC=$OUTPUT
+;
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=s1\n\
+l:$LAST_HASH_ENC\n\
+p:$SPUB_KEY_HASH_ENC\n\
+s:$SIG_HASH_ENC\n\
+u:$UTIME bc.$IDENT.s$HEIGHT.blk
+;
+.file_tag -unlink bc.$IDENT.s$LAST_SECONDARY.key
+;
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+~shred ~$UUID.key
+@endif
+~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+;
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
+SQUARED=@$MULTIPLE*$MULTIPLE
+MODULUS=@$HEIGHT#$SQUARED
+;
+@ifeq "$MODULUS" "0"
+LAST_TERTIARY=@$HEIGHT-$SQUARED
+@ifeq "$LAST_TERTIARY" "0"
+LAST_TERTIARY=$MULTIPLE
+.file_hash bc.$IDENT.0.blk
+@else
+.file_hash bc.$IDENT.t$LAST_TERTIARY.blk
+@endif
+;
+@ifndef $ERROR
+LAST_HASH=$OUTPUT
+.encode $LAST_HASH
+LAST_HASH_ENC=$OUTPUT
+;
+.file_hash bc.$IDENT.t$HEIGHT.pub
+@ifndef $ERROR
+.encode $OUTPUT
+TPUB_KEY_HASH_ENC=$OUTPUT
+;
+.file_crypt bc.$IDENT.t$LAST_TERTIARY.key @sid
+.file_get bc.$IDENT.t$LAST_TERTIARY.key ~$UUID.key
+.file_crypt bc.$IDENT.t$LAST_TERTIARY.key @sid
+;
+.file_get bc.$IDENT.t$LAST_TERTIARY.pub ~$UUID.pub
+;
+.crypto_lamport -sign ~$UUID:$DATA_HASH
+.file_put ~$UUID.sig bc.$IDENT.t$LAST_TERTIARY.sig
+.file_hash bc.$IDENT.t$LAST_TERTIARY.sig
+SIG_HASH=$OUTPUT
+.encode $SIG_HASH
+SIG_HASH_ENC=$OUTPUT
+;
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=t1\n\
+l:$LAST_HASH_ENC\n\
+p:$TPUB_KEY_HASH_ENC\n\
+s:$SIG_HASH_ENC\n\
+u:$UTIME bc.$IDENT.t$HEIGHT.blk
+;
+.file_tag -unlink bc.$IDENT.t$LAST_TERTIARY.key
+;
+.system_variable @os
+@ifeq "$OUTPUT" "Linux"
+~shred ~$UUID.key
+@endif
+~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+;
+@endif
+@endif
+@endif
+;
+@ifndef $ERROR
+.file_tag $BLOCK_HASH bc.$IDENT.zenith
 ;
 .file_tag -unlink bc.$IDENT.p$LAST.key
 ;
@@ -89,12 +205,9 @@ u:$UTIME bc.$IDENT.$HEIGHT.blk
 @ifeq "$OUTPUT" "$IDENT"
 .system_variable >@blockchain_height $HEIGHT
 @endif
-;
-.system_variable @os
-@ifeq "$OUTPUT" "Linux"
-~shred ~$UUID.key
 @endif
-~rm ~$UUID.key ~$UUID.pub ~$UUID.sig
+;
+@endif
 @endif
 @endif
 @endif
