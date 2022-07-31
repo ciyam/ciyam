@@ -10,6 +10,9 @@ const int c_tx_id_module = 1;
 const int c_tx_id_initial = 2;
 const int c_tx_id_standard = 5;
 
+const char c_tertiary = 't';
+const char c_secondary = 's';
+
 const size_t c_bc_identity_length = 9;
 
 const size_t c_bc_scaling_value = 100;
@@ -28,6 +31,19 @@ const char* const c_dummy = "dummy";
 
 const char* const c_ciyam_tag = "ciyam";
 const char* const c_ciyam_logs_tag = "ciyam.logs";
+
+const char* const c_bc_prefix = "bc.";
+
+const char* const c_tertiary_prefix = ".t";
+const char* const c_secondary_prefix = ".s";
+
+const char* const c_blk_suffix = ".blk";
+const char* const c_dat_suffix = ".dat";
+const char* const c_key_suffix = ".key";
+const char* const c_pub_suffix = ".pub";
+const char* const c_sig_suffix = ".sig";
+
+const char* const c_zenith_suffix = ".zenith";
 
 const char* const c_log_file_ext = ".log";
 const char* const c_txs_file_ext = ".txs";

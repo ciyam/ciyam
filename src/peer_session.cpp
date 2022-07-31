@@ -78,13 +78,6 @@ const char c_ignore_all_puts_prefix = '$';
 const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
-const char* const c_bc_prefix = "bc.";
-const char* const c_blk_suffix = ".blk";
-const char* const c_dat_suffix = ".dat";
-const char* const c_key_suffix = ".key";
-const char* const c_pub_suffix = ".pub";
-const char* const c_sig_suffix = ".sig";
-const char* const c_zenith_suffix = ".zenith";
 
 const char* const c_dummy_peer_tag = "peer";
 const char* const c_dummy_support_tag = "support";
@@ -93,7 +86,6 @@ const int c_accept_timeout = 250;
 const int c_max_line_length = 500;
 
 const int c_max_num_for_support = 11;
-const int c_min_block_wait_passes = 8;
 
 const size_t c_max_pubkey_size = 256;
 const size_t c_max_greeting_size = 256;
