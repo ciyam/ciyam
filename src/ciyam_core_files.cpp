@@ -97,7 +97,7 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty data content" );
 
-   string identity, hind_hash, last_data_hash, primary_hash, tree_root_hash;
+   string identity, hind_hash, last_data_hash, primary_hash, secondary_hash, tertiary_hash, tree_root_hash;
 
    vector< string > secondary_hashes;
 
@@ -195,6 +195,13 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
 
    data_info info;
 
+   size_t scaling_value = c_bc_scaling_value;
+
+   if( identity == string( c_demo_identity ) )
+      scaling_value = c_bc_scaling_demo_value;
+
+   size_t tertiary_scaling_value = ( scaling_value * scaling_value );
+
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -272,12 +279,7 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
          found = true;
       }
 
-      size_t scaling_value = c_bc_scaling_value;
-
-      if( identity == string( c_demo_identity ) )
-         scaling_value = c_bc_scaling_demo_value;
-
-      if( !found && secondary_hashes.empty( )
+      if( !found && secondary_hash.empty( )
        && ( data_height % scaling_value == 0 ) )
       {
          size_t len = strlen( c_file_type_core_data_detail_secondary_hash_prefix );
@@ -297,7 +299,7 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
 
                if( check_sigs && !has_file( next_hash ) )
                {
-                  if( !secondary_hashes.empty( ) )
+                  if( !secondary_hash.empty( ) )
                      throw runtime_error( "tertiary public key file '" + next_hash + "' not found" );
                   else
                      throw runtime_error( "secondary public key file '" + next_hash + "' not found" );
@@ -305,13 +307,16 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
 
                if( p_data_info )
                {
-                  if( !secondary_hashes.empty( ) )
+                  if( !secondary_hash.empty( ) )
                      p_data_info->tertiary_key_hash = next_hash;
                   else
                      p_data_info->secondary_key_hash = next_hash;
                }
 
-               secondary_hashes.push_back( next_hash );
+               if( secondary_hash.empty( ) )
+                  secondary_hash = next_hash;
+               else
+                  tertiary_hash = next_hash;
             }
 
             found = true;
@@ -320,11 +325,9 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
          if( data_height == scaling_value
           || ( data_height % ( scaling_value * scaling_value ) == 0 ) )
          {
-            if( secondary_hashes.size( ) != 2 )
-               throw runtime_error( "missing expected extra scaling level public key hash" );
+            if( tertiary_hash.empty( ) )
+               throw runtime_error( "missing expected tertiary public key hash" );
          }
-         else if( secondary_hashes.size( ) != 1 )
-            throw runtime_error( "unexpected extraneous scaling level public key hashes" );
       }
 
       if( !found && tree_root_hash.empty( ) )
@@ -395,6 +398,68 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
 
    if( !unix_time_value )
       throw runtime_error( "unexpected missing unix data time value attribute" );
+
+   vector< string > block_tags;
+
+   string primary_block_tag( c_bc_prefix + identity + "." + to_string( data_height ) + c_blk_suffix );
+
+   block_tags.push_back( primary_block_tag );
+
+   if( data_height && ( data_height % scaling_value == 0 ) )
+   {
+      string secondary_block_tag( c_bc_prefix + identity
+       + c_secondary_prefix + to_string( data_height ) + c_blk_suffix );
+
+      block_tags.push_back( secondary_block_tag );
+   }
+
+   if( data_height && ( data_height % tertiary_scaling_value == 0 ) )
+   {
+      string tertiary_block_tag( c_bc_prefix + identity
+       + c_tertiary_prefix + to_string( data_height ) + c_blk_suffix );
+
+      block_tags.push_back( tertiary_block_tag );
+   }
+
+   for( size_t i = 0; i < block_tags.size( ); i++ )
+   {
+      string next_tag( block_tags[ i ] );
+
+      if( has_tag( next_tag ) )
+      {
+         string next_block_hash( tag_file_hash( next_tag ) );
+         string next_block_info( extract_file( next_block_hash, "", c_file_type_char_core_blob ) );
+
+         string::size_type pos = next_block_info.find( ':' );
+
+         if( pos == string::npos )
+            throw runtime_error( "unexpected invalid block info in verify_data" );
+
+         block_info info;
+         verify_block( next_block_info.substr( pos + 1 ), false, &info );
+
+         switch( i )
+         {
+            case 0:
+            if( primary_hash != info.public_key_hash )
+               throw runtime_error( "unexpected data primary public key does not match block public key hash" );
+            break;
+
+            case 1:
+            if( secondary_hash != info.public_key_hash )
+               throw runtime_error( "unexpected data secondary public key does not match block public key hash" );
+            break;
+
+            case 2:
+            if( tertiary_hash != info.public_key_hash )
+               throw runtime_error( "unexpected data tertiary public key does not match block public key hash" );
+            break;
+
+            default:
+            throw runtime_error( "unexpected extrameous block tags in verify_data" );
+         }
+      }
+   }
 }
 
 void verify_block( const string& content, bool check_sigs, block_info* p_block_info )
@@ -478,9 +543,9 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
             if( !version_str.empty( ) )
             {
-               if( version_str[ 0 ] == 's' )
+               if( version_str[ 0 ] == c_secondary )
                   is_secondary = true;
-               else if( version_str[ 0 ] == 't' )
+               else if( version_str[ 0 ] == c_tertiary )
                   is_tertiary = true;
 
                if( is_secondary || is_tertiary )
@@ -588,24 +653,26 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             string last_block_tag;
 
             if( !is_secondary && !is_tertiary )
-               last_block_tag = "bc." + identity + "." + to_string( block_height - 1 ) + ".blk";
+               last_block_tag = c_bc_prefix + identity + "." + to_string( block_height - 1 ) + c_blk_suffix;
             else
             {
                if( is_secondary )
                {
                   if( block_height == scaling_value )
-                     last_block_tag = "bc." + identity + ".0.blk";
+                     last_block_tag = c_bc_prefix + identity + ".0" + to_string( c_blk_suffix );
                   else
-                     last_block_tag = "bc." + identity + ".s" + to_string( block_height - scaling_value ) + ".blk";
+                     last_block_tag = c_bc_prefix + identity + c_secondary_prefix
+                      + to_string( block_height - scaling_value ) + c_blk_suffix;
                }
                else
                {
                   size_t tertiary_scaling_value = ( scaling_value * scaling_value );
 
                   if( block_height == tertiary_scaling_value )
-                     last_block_tag = "bc." + identity + ".0.blk";
+                     last_block_tag = c_bc_prefix + identity + ".0" + to_string( c_blk_suffix );
                   else
-                     last_block_tag = "bc." + identity + ".t" + to_string( block_height - tertiary_scaling_value ) + ".blk";
+                     last_block_tag = c_bc_prefix + identity + c_tertiary_prefix
+                      + to_string( block_height - tertiary_scaling_value ) + c_blk_suffix;
                }
             }
 
@@ -667,7 +734,8 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
                   pub_key_hash = info.secondary_key_hash;
 
                if( is_tertiary && ( block_height == ( scaling_value * scaling_value ) ) )
-                  pub_key_hash = tag_file_hash( "bc." + identity + ".t" + to_string( scaling_value ) + ".pub" );
+                  pub_key_hash = tag_file_hash( c_bc_prefix + identity
+                   + c_tertiary_prefix + to_string( scaling_value ) + c_pub_suffix );
 
                string file_hash_info( pub_key_hash + ':' + signature_file_hash );
                string data_file_hash( crypto_lamport( file_hash_info, "", false, true ) );
