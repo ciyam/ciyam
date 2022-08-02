@@ -80,14 +80,17 @@ typedef command_functor* command_functor_creator( const std::string& name, comma
 
 struct command_item
 {
-   command_item( const std::string& dispatch_name, size_t group_num, const std::string& description )
+   command_item( const std::string& short_name,
+    const std::string& dispatch_name, size_t group_num, const std::string& description )
     :
+    short_name( short_name ),
     dispatch_name( dispatch_name ),
     group_num( group_num ),
     description( description )
    {
    }
 
+   std::string short_name;
    std::string dispatch_name;
 
    size_t group_num;

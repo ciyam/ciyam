@@ -1,5 +1,17 @@
-version "display protocol version"
-identity "get/set identity information" [<opt/-md5/md5>][<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
+crypto_addr "output an address for a secret" <val//extkey>[<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>]<val//secret>
+crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<opt/-hex/hex_decode>][<opt/-file/data_from_file>]<oval//data_or_filename>[<val/-s=/data_suffix_text>]
+crypto_keys "output an address and its corresponding key pair" <val//extkey>[<opt/-b64/base64>][<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>][<val//secret>]
+crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
+crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
+crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//secret>]
+crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>
+crypto_lamport "perform lamport key ops" [<opt/-sign/sign>|<opt/-verify/verify>]<val//filename>[<val//mnemonics_or_hex_seed>[<val//additional_entropy_text>]]
+crypto_pub_key "output a public key" [<opt/-uncompressed/uncompressed>]<val//privkey>
+crypto_addr_hash "output an address hash" <val//address>
+crypto_p2sh_addr "output a P2SH address" <val//extkey><val//script>
+crypto_p2sh_redeem "outputs a P2SH redeem raw tx" <val//txid><val//index><val//script><val//address><val//amount><val//wif_privkey>[<list/-e=/extras>][<val//lock_time>]
+crypto_nonce_search "searches for a proof of work nonce for given data" <val//data>[<opt/-faster/faster>][<oval//start>][<oval//range>][<val//difficulty>]
+crypto_nonce_verify "verifies if a proof of work nonce is valid for given data" <val//data><val//nonce>[<val//difficulty>]
 file_chk "check if a file exists in the files area" <val//tag_or_hash>
 file_get "fetch a file from the files area" <val//tag_or_hash>[<val//filename>]
 file_put "stores a file to the files area" <val//filename>[<val//tag>]
@@ -21,49 +33,35 @@ file_relegate "relegate one or more files from the files area to the archives" <
 file_retrieve "retrieve a relegated file from the archives into the files area" <val//hash>[<val/-d=/days_ahead>|<val//tag>]
 file_repo_entry "view/remove global repository entry" [<opt/-remove/remove>]<val//repository><val//entry_hash>
 file_repo_entries "count/remove obsolete repository entries" <opt/-total/total>|<opt/-remove_obsolete/remove_obsolete><val//repository>
-peer_listen "add/remove peer blockchain listeners" <opt/-remove/remove>|<val//port><val//blockchains>
-peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
-peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain><val//host_and_or_port>
-peer_persist_file "create/decrypt a peer repository file request/response" [<val/-dh=/dest_hash>][<val/-k=/pubkey>]<val//tag_or_hash><val//password>
-crypto_addr "output an address for a secret" <val//extkey>[<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>]<val//secret>
-crypto_hash "output hash digest for data or file content" [<opt/-512/sha512>][<opt/-hex/hex_decode>][<opt/-file/data_from_file>]<oval//data_or_filename>[<val/-s=/data_suffix_text>]
-crypto_keys "output an address and its corresponding key pair" <val//extkey>[<opt/-b64/base64>][<opt/-decrypt/decrypt>][<opt/-uncompressed/uncompressed>][<val//secret>]
-crypto_seed "output seed mnemonics or a hex seed value" [<val//mnemonics_or_hex_seed>]
-crypto_sign "sign a message" <val//privkey>[<opt/-hex/hex_decode>]<val//message>
-crypto_chain "output a hash chain" <val//length>[<opt/-b64/base64>][<val//secret>]
-crypto_verify "verify a signed message" <val//pubkey>[<opt/-hex/hex_decode>]<val//message><val//signature>
-crypto_lamport "perform lamport key ops" [<opt/-sign/sign>|<opt/-verify/verify>]<val//filename>[<val//mnemonics_or_hex_seed>[<val//additional_entropy_text>]]
-crypto_pub_key "output a public key" [<opt/-uncompressed/uncompressed>]<val//privkey>
-crypto_addr_hash "output an address hash" <val//address>
-crypto_p2sh_addr "output a P2SH address" <val//extkey><val//script>
-crypto_p2sh_redeem "outputs a P2SH redeem raw tx" <val//txid><val//index><val//script><val//address><val//amount><val//wif_privkey>[<list/-e=/extras>][<val//lock_time>]
-crypto_nonce_search "searches for a proof of work nonce for given data" <val//data>[<opt/-faster/faster>][<oval//start>][<oval//range>][<val//difficulty>]
-crypto_nonce_verify "verifies if a proof of work nonce is valid for given data" <val//data><val//nonce>[<val//difficulty>]
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>
 module_class_list "list available classes for a loaded module" <val//module>
+module_strings_list "list all module strings" <val//module>
 module_class_field_list "list available fields for a loaded module's class" <val//module><val//class>
 module_class_procedure_list "list available procedures for a loaded module's class" <val//module><val//class>
-module_strings_list "list all module strings" <val//module>
 object_list "list existing object instances"
 object_fetch "fetch a persistent instance" <val//handle>[<val/./context>]<val//key>
 object_create "create an object instance" [<opt/-dynamic/dynamic>]<val//module><val//mclass>[<val//handle>]
 object_destroy "destroy an existing object instance" <val//handle>
 object_execute "execute a method for an existing object instance" <val//handle>[<val/./context>]<val//method>[<val//args>]
+object_op_apply "apply op for a persistent instance" <val//handle>[<val/./context>]
 object_validate "validate an existing object instance" <val//handle>[<val/./context>]
 object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//name_or_expr>[<oval//new_value>]
+object_op_cancel "cancel op for a persistent instance" <val//handle>[<val/./context>]
 object_op_create "begin a create op on a persistent instance" <val//handle>[<val/./context>][<val//key>]
 object_op_update "begin an update op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
 object_op_destroy "begin a destroy op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
-object_op_apply "apply op for a persistent instance" <val//handle>[<val/./context>]
-object_op_cancel "cancel op for a persistent instance" <val//handle>[<val/./context>]
+object_iterate_next "next iteration on a persistent instance" <val//handle>[<val/./context>]
+object_iterate_stop "stop iteration on a persistent instance" <val//handle>[<val/./context>]
 object_review_begin "begin review on a persistent instance" <val//handle>[<val/./context>][<val//key>]
 object_review_finish "finish review on a persistent instance" <val//handle>[<val/./context>]
 object_iterate_forwards "iterate forwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
 object_iterate_backwards "iterate backwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
-object_iterate_next "next iteration on a persistent instance" <val//handle>[<val/./context>]
-object_iterate_stop "stop iteration on a persistent instance" <val//handle>[<val/./context>]
+peer_listen "add/remove peer blockchain listeners" <opt/-remove/remove>|<val//port><val//blockchains>
+peer_reject "add/list/remove peer ip addresses for rejection" <opt/-list/list>|{[<opt/-remove/remove>]<val//ip_addr>}
+peer_connect "add a new peer connection" [<opt/-force/force>][<val/-num=/num_supporters>]<val//blockchain><val//host_and_or_port>
+peer_persist_file "create/decrypt a peer repository file request/response" [<val/-dh=/dest_hash>][<val/-k=/pubkey>]<val//tag_or_hash><val//password>
 perform_fetch|pf "fetch persistent instances" <val//module><val//mclass>[<opt/-rev/reverse>][<val/-u=/uid>][<val/-d=/dtm>][<val/-g=/grp>][<val/-td=/tmp_dir>][<val/-tz=/tz_name>][<list/-f=/filters>][<list/-p=/perms>][<val/-s=/security_info>][<val/-t=/search_text>][<val/-q=/search_query>][<list/-x=/extra_vars>][<oval//key_info>][<val/#/limit>][<list/-v=/set_values>][<list//fields>][{<opt/-min/minimal>[<opt/-ndv/no_default_values>][<val//map_file>]}|{<opt/-pdf/create_pdf><val//format_file><val//output_file>[<val//title_name>]}]
 perform_create|pc "create a new persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-g=/grp>][<val/-tz=/tz_name>]<oval//key>[<olist//field_values>][<val/-x=/method>]
 perform_update|pu "update an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-g=/grp>][<val/-tz=/tz_name>]<val//key>[<val/=/ver_info>]<olist//field_values>[<val/-x=/method>][<list//check_values>]
@@ -73,58 +71,60 @@ perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//mo
 perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-s=/skip_field_info>][<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>|<opt/-for_remove/for_remove>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
 perform_package_update "update an existing meta package" <val//name>
-session_list "list active sessions" [<opt/-min/minimal>]
 session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_term>]{<opt/*/all>|<list//sess_ids>}[<val//seconds>]
+session_list "list active sessions" [<opt/-min/minimal>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
+session_wait|wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_variable "get/set a session variable" <val//name_or_expr>[<oval//new_value>]
+session_terminate|quit "terminate session"
 session_rpc_unlock "unlock full RPC access for a session" <val//password>[<val//seconds>]
+starttls|tls "start TLS session"
 storage_info "name and other information about the currently linked storage"
 storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_term "unlink from the currently linked storage"
-storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_attach "link to an existing storage" [<opt/-admin/admin>]<val//name>
 storage_backup "create a storage backup" [<opt/-trunc/truncate>]<val//name>
+storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-directory=/directory>]<val//name>
 storage_comment "append a comment to the storage log" <val//text>
 storage_restore "perform storage restore" [<val/-trace=/trace_info>][<val/-stop_at_tx=/stop_at_tx>][<opt/-rebuild/rebuild>|<opt/-partial/partial>][<opt/-quicker/quicker>][<val/-directory=/directory>]<val//name>
 storage_web_root "get/set web root path of currently linked storage" [<opt/-expand/expand>][<oval//new_root>]
 storage_log_slice "slice a storage log into individual module logs" <val//name>[<list//modules>]
-storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_dump_cache "dump storage cached records"
 storage_dump_locks "dump storage lock information"
-storage_file_export "export an attached file from the files area" <val//hash><val//module><val//mclass><val//filename>
-storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
+storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
+storage_file_export "export an attached file from the files area" <val//hash><val//module><val//mclass><val//filename>
+storage_file_import "import an attached file into the files area" <val//module><val//mclass><val//filename>[<val//tag>]
 storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"
-system_mutexes "list system mutexes and their session lock ids"
-system_log_tail "view the tail of either the server or script log file" [<val/-n=10/lines>]<opt/script>|<opt/server>
+system_trace|trace "get/set system trace flags" [<val//new_flags>]
+system_mutexes|mutexes "list system mutexes and their session lock ids"
+system_version|version "display protocol version"
+system_identity|identity "get/set system identity information" [<opt/-md5/md5>][<opt/-raw/raw>][<val/-k=/pubkey>][<val//info>][<val//encrypted>]
+system_log_tail|log_tail "view the tail of either the server or script log file" [<val/-n=10/lines>]<opt/script>|<opt/server>
+system_passtotp|passtotp "retrieve a TOTP system password" <val//secret>
+system_password|password "retrieve an encrypted system password" <val//name>
+system_schedule|schedule "display system autoscript schedule"
+system_sendmail|sendmail "send a simple test system email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 system_variable "get/set a system variable" <val//name_or_expr>[<oval//new_value>]
-system_listeners "list system listeners"
-trace "get/set trace flags" [<val//new_flags>]
-trace_flags "view available trace flags"
-decode "decode base64 to hex" [<opt/-url/url>][<opt/-text/text>]<val//data>
-encode "encode hex to base64" [<opt/-url/url>][<opt/-text/text>]<val//data>
-decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
-encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
-password "retrieve an encrypted system password" <val//name>
-passtotp "retrieve a TOTP password" <val//secret>
-sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
-schedule "display autoscript schedule"
-smtpinfo "retrieves the sendmail sender address"
-starttls|tls "start TLS session"
-checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
-externals "display a list of known external services"
-runscript "run an external script or program" <val//script_name>[<list//arg_val_pairs>]
-timezones "display a list of known timezones"
+system_checkmail|checkmail "check for incoming email or process system email script calls" [<opt/-script/create_script>|<list//headers>]
+system_externals|externals "display a list of system external services"
+system_listeners|listeners "display a list of all current system listeners"
+system_runscript|runscript "run an external script or program" <val//script_name>[<list//arg_val_pairs>]
+system_smtp_info|smtp_info "retrieves the system sendmail sender address"
+system_timezones|timezones "display a list of known timezones"
+system_trace_flags|trace_flags "view available system trace flags"
+test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 utc_now "get the current UTC time"
 utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>
 utc_to_local "convert UTC to local for a timezone" <val//tz_name><val//utc_time>
 utc_from_local "convert local to UTC for a timezone" <val//tz_name><val//local_time>
 utc_to_unix_time "convert UTC to unix time" <val//utc_time>
 utc_from_unix_time "convert unix time to UTC" <val//unix_time>
-wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
-test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
-quit "terminate session"
+utils_decode|decode "decode base64 to hex" [<opt/-url/url>][<opt/-text/text>]<val//data>
+utils_encode|encode "encode hex to base64" [<opt/-url/url>][<opt/-text/text>]<val//data>
+utils_decrypt|decrypt "decrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]
+utils_encrypt|encrypt "encrypt key/data/password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>][<opt/-pwd_and_data/pwd_and_data>]<val//data>[<val/-k=/pubkey>]

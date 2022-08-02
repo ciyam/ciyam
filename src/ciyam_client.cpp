@@ -737,7 +737,7 @@ void ciyam_console_command_handler::preprocess_command_and_args( string& str, co
          if( ( str == "tls" || str == "starttls" ) && !socket.is_secure( ) )
             socket.ssl_connect( );
 #endif
-         if( str == "bye" || str == "quit" )
+         if( str == "bye" || str == "quit" || str == "session_terminate" )
          {
             clear_key( str );
 

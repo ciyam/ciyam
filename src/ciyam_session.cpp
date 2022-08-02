@@ -93,6 +93,8 @@ const size_t c_response_reserve_size = 1024;
 
 const size_t c_max_key_append_chars = 7;
 
+const char* const c_passtotp_prefix = "passtotp.";
+
 const char* const c_unexpected_unknown_exception = "unexpected unknown exception caught";
 
 const char* const c_log_transformation_scope_any_change = "any_change";
@@ -1328,7 +1330,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    tcp_socket& socket( socket_handler.get_socket( ) );
 #endif
 
-   if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) )
+   if( !socket_handler.is_restoring( ) && command != c_cmd_ciyam_session_session_terminate )
       socket.set_delay( );
 
    set_dtm( "" );
@@ -1367,11 +1369,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       socket_handler.check_lock_expiry( );
 
       if( socket_handler.is_locked( )
-       && command != c_cmd_ciyam_session_quit
-       && command != c_cmd_ciyam_session_encrypt
-       && command != c_cmd_ciyam_session_identity
        && command != c_cmd_ciyam_session_starttls
        && command != c_cmd_ciyam_session_crypto_seed
+       && command != c_cmd_ciyam_session_utils_encrypt
+       && command != c_cmd_ciyam_session_system_identity
+       && command != c_cmd_ciyam_session_session_terminate
        && command != c_cmd_ciyam_session_session_rpc_unlock )
       {
          if( ( parameters.size( ) == 2 )
@@ -1383,41 +1385,206 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             throw runtime_error( "Session RPC access denied." );
       }
 
-      if( command == c_cmd_ciyam_session_version )
-         response = c_protocol_version;
-      else if( command == c_cmd_ciyam_session_identity )
+      if( command == c_cmd_ciyam_session_crypto_addr )
       {
-         bool is_md5( has_parm_val( parameters, c_cmd_ciyam_session_identity_md5 ) );
-         bool is_raw( has_parm_val( parameters, c_cmd_ciyam_session_identity_raw ) );
-         string info( get_parm_val( parameters, c_cmd_ciyam_session_identity_info ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_identity_pubkey ) );
-         string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_identity_encrypted ) );
+         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_extkey ) );
+         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_decrypt ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_uncompressed ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_secret ) );
 
-         if( !info.empty( ) && !pubkey.empty( ) )
+         string pub_key, priv_key;
+
+         priv_key.reserve( c_secret_reserve_size );
+
+         if( decrypt )
          {
-            info.reserve( c_secret_reserve_size );
-            session_shared_decrypt( info, pubkey, info );
-
-            if( count( info.begin( ), info.end( ), ' ' ) == 11 )
-               get_mnemonics_or_hex_seed( info, info );
+            secret.reserve( c_secret_reserve_size );
+            secret = decrypt_data( secret );
          }
 
-         if( !info.empty( ) )
+         response = create_address_key_pair( extkey, pub_key, priv_key, secret, decrypt, true, !uncompressed );
+
+         clear_key( secret );
+         clear_key( priv_key );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_hash )
+      {
+         bool use_sha512( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode ) );
+         bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
+         string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
+         string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
+
+         string data;
+         data.reserve( c_secret_reserve_size );
+
+         data = data_or_filename;
+
+         if( data_from_file )
+            data = load_file( data, true );
+         else if( data == get_special_var_name( e_special_var_sid ) )
+            get_identity( data, false, true );
+
+         if( data_from_file && data.empty( ) )
+            response = "(file not found)";
+         else
          {
-            bool was_locked = socket_handler.is_locked( );
-
-            set_identity( info, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
-
-            bool is_encrypted = false;
-            bool has_system_id = has_identity( &is_encrypted );
-
-            if( was_locked && !is_encrypted && has_system_id )
-               socket_handler.unlock_identity( );
+            data += data_suffix_text;
+            response = crypto_digest( data, use_sha512, hex_decode );
          }
 
-         clear_key( info );
+         if( !data_from_file )
+            clear_key( data );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_keys )
+      {
+         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_extkey ) );
+         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt ) );
+         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_secret ) );
 
-         get_identity( response, !is_raw, false, is_md5 );
+         string pub_key, priv_key;
+
+         if( secret.empty( ) )
+            response = create_address_key_pair( extkey, pub_key, priv_key, use_base64, !uncompressed );
+         else
+         {
+            if( decrypt )
+               secret = decrypt_data( secret );
+            response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, use_base64, !uncompressed );
+         }
+
+         response += '\n' + pub_key + '\n' + priv_key;
+
+         clear_key( pub_key );
+         clear_key( priv_key );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_seed )
+      {
+         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_seed_mnemonics_or_hex_seed ) );
+
+         get_mnemonics_or_hex_seed( response, mnenomics_or_hex_seed );
+
+         clear_response = true;
+      }
+      else if( command == c_cmd_ciyam_session_crypto_sign )
+      {
+         string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_privkey ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_hex_decode ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_message ) );
+
+         response = crypto_sign( privkey, message, hex_decode );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_chain )
+      {
+         size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_length ) );
+         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_secret ) );
+
+         response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_verify )
+      {
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_pubkey ) );
+         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_hex_decode ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_message ) );
+         string signature( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_signature ) );
+
+         crypto_verify( pubkey, message, signature, hex_decode );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_lamport )
+      {
+         bool is_sign( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_sign ) );
+         bool is_verify( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify ) );
+         string filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_filename ) );
+         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
+         string additional_entropy_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_additional_entropy_text ) );
+
+         const char* p_extra = 0;
+
+         if( !additional_entropy_text.empty( ) )
+            p_extra = additional_entropy_text.c_str( );
+
+         response = crypto_lamport( filename, mnenomics_or_hex_seed, is_sign, is_verify, p_extra );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_pub_key )
+      {
+         string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_privkey ) );
+         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_uncompressed ) );
+
+         response = crypto_public( privkey, !are_hex_nibbles( privkey ), false, !uncompressed );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_addr_hash )
+      {
+         string address( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_hash_address ) );
+
+         response = crypto_address_hash( address );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_p2sh_addr )
+      {
+         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_addr_extkey ) );
+         string script( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_addr_script ) );
+
+         response = crypto_p2sh_address( extkey, script );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_p2sh_redeem )
+      {
+         string txid( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_txid ) );
+         string index( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_index ) );
+         string script( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_script ) );
+         string address( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_address ) );
+         string amount( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_amount ) );
+         string wif_key( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_wif_privkey ) );
+         string extras( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_extras ) );
+         string lock_time( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_lock_time ) );
+
+         response = construct_p2sh_redeem_transaction(
+          txid, from_string< unsigned int >( index ),
+          script, extras, address, crypto_amount( amount ),
+          wif_key, true, lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_nonce_search )
+      {
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_data ) );
+         bool faster( has_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_faster ) );
+         string start( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_start ) );
+         string range( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_range ) );
+         string difficulty( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_difficulty ) );
+
+         uint32_t start_val;
+         uint32_t range_val = 16;
+
+         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
+
+         if( start.empty( ) )
+            start_val = get_random( );
+         else
+            start_val = from_string< uint32_t >( start );
+
+         if( !range.empty( ) )
+            range_val = from_string< uint32_t >( range );
+
+         if( !difficulty.empty( ) )
+            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
+
+         // NOTE: To make sure the console client doesn't time out issue a progress message.
+         handler.output_progress( "(checking for a valid nonce)" );
+
+         response = check_for_proof_of_work( data, start_val, range_val, difficulty_val, !faster );
+      }
+      else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
+      {
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_data ) );
+         string nonce( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_nonce ) );
+         string difficulty( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_difficulty ) );
+
+         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
+
+         if( !difficulty.empty( ) )
+            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
+
+         response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1, difficulty_val );
       }
       else if( command == c_cmd_ciyam_session_file_chk )
       {
@@ -2158,293 +2325,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             response = "Removed " + to_string( remove_obsolete_repository_entries( repository, &dtm, &handler ) ) + " entries.";
       }
-      else if( command == c_cmd_ciyam_session_peer_listen )
-      {
-         string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove ) );
-         string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
-
-         if( port.empty( ) )
-            port = to_string( c_default_ciyam_peer_port );
-
-         vector< string > all_blockchains;
-         split( blockchains, all_blockchains );
-
-         for( size_t i = 0; i < all_blockchains.size( ); i++ )
-         {
-            string next( unprefixed_blockchains( all_blockchains[ i ] ) );
-
-            if( remove )
-            {
-               int port_num = 0;
-
-               if( has_registered_listener_id( next, &port_num ) )
-                  set_system_variable( '@' + to_string( port_num ), '~' + unprefixed_blockchains( next ) );
-
-            }
-            else if( has_registered_listener_id( next ) )
-               throw runtime_error( "blockchain identity '" + next + "' already has a listener" );
-         }
-
-         if( !remove )
-            create_peer_listener( atoi( port.c_str( ) ), unprefixed_blockchains( blockchains ) );
-      }
-      else if( command == c_cmd_ciyam_session_peer_reject )
-      {
-         bool list( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_list ) );
-         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_remove ) );
-         string ip_addr( get_parm_val( parameters, c_cmd_ciyam_session_peer_reject_ip_addr ) );
-
-         if( list )
-            response = list_peer_ip_addrs_for_rejection( );
-         else
-         {
-            if( !remove )
-               add_peer_ip_addr_for_rejection( ip_addr );
-            else
-               remove_peer_ip_addr_from_rejection( ip_addr );
-         }
-      }
-      else if( command == c_cmd_ciyam_session_peer_connect )
-      {
-         bool force( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_force ) );
-         size_t num_supporters( atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_num_supporters ).c_str( ) ) );
-         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_blockchain ) );
-         string host_and_or_port( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_host_and_or_port ) );
-
-         create_peer_initiator( prefixed_blockchains( blockchain ), host_and_or_port, force, num_supporters );
-      }
-      else if( command == c_cmd_ciyam_session_peer_persist_file )
-      {
-         string dest_hash( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_dest_hash ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_pubkey ) );
-         string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_tag_or_hash ) );
-         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_password ) );
-
-         bool is_dummy_for_testing = ( password == string( c_dummy ) );
-
-         if( !pubkey.empty( ) )
-         {
-            password.reserve( c_secret_reserve_size );
-            session_shared_decrypt( password, pubkey, password );
-         }
-
-         if( password == get_special_var_name( e_special_var_sid ) )
-            get_identity( password, false, true );
-
-         string src_hash( tag_or_hash );
-
-         if( has_tag( tag_or_hash ) )
-            src_hash = tag_file_hash( tag_or_hash );
-
-         if( !dest_hash.empty( ) )
-            decrypt_pulled_peer_file( dest_hash, src_hash, password, is_dummy_for_testing );
-         else
-            response = create_peer_repository_entry_push_info( src_hash, password, 0, true, is_dummy_for_testing );
-
-         clear_key( password );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_addr )
-      {
-         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_extkey ) );
-         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_decrypt ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_uncompressed ) );
-         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_secret ) );
-
-         string pub_key, priv_key;
-
-         priv_key.reserve( c_secret_reserve_size );
-
-         if( decrypt )
-         {
-            secret.reserve( c_secret_reserve_size );
-            secret = decrypt_data( secret );
-         }
-
-         response = create_address_key_pair( extkey, pub_key, priv_key, secret, decrypt, true, !uncompressed );
-
-         clear_key( secret );
-         clear_key( priv_key );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_hash )
-      {
-         bool use_sha512( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_sha512 ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_hex_decode ) );
-         bool data_from_file( has_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_from_file ) );
-         string data_or_filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_or_filename ) );
-         string data_suffix_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_hash_data_suffix_text ) );
-
-         string data;
-         data.reserve( c_secret_reserve_size );
-
-         data = data_or_filename;
-
-         if( data_from_file )
-            data = load_file( data, true );
-         else if( data == get_special_var_name( e_special_var_sid ) )
-            get_identity( data, false, true );
-
-         if( data_from_file && data.empty( ) )
-            response = "(file not found)";
-         else
-         {
-            data += data_suffix_text;
-            response = crypto_digest( data, use_sha512, hex_decode );
-         }
-
-         if( !data_from_file )
-            clear_key( data );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_keys )
-      {
-         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_extkey ) );
-         bool decrypt( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_decrypt ) );
-         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_base64 ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_uncompressed ) );
-         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_keys_secret ) );
-
-         string pub_key, priv_key;
-
-         if( secret.empty( ) )
-            response = create_address_key_pair( extkey, pub_key, priv_key, use_base64, !uncompressed );
-         else
-         {
-            if( decrypt )
-               secret = decrypt_data( secret );
-            response = create_address_key_pair( extkey, pub_key, priv_key, secret, true, use_base64, !uncompressed );
-         }
-
-         response += '\n' + pub_key + '\n' + priv_key;
-
-         clear_key( pub_key );
-         clear_key( priv_key );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_seed )
-      {
-         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_seed_mnemonics_or_hex_seed ) );
-
-         get_mnemonics_or_hex_seed( response, mnenomics_or_hex_seed );
-
-         clear_response = true;
-      }
-      else if( command == c_cmd_ciyam_session_crypto_sign )
-      {
-         string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_privkey ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_hex_decode ) );
-         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_sign_message ) );
-
-         response = crypto_sign( privkey, message, hex_decode );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_chain )
-      {
-         size_t length = from_string< size_t >( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_length ) );
-         bool use_base64( has_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_base64 ) );
-         string secret( get_parm_val( parameters, c_cmd_ciyam_session_crypto_chain_secret ) );
-
-         response = generate_hash_chain( length, use_base64, secret.empty( ) ? 0 : secret.c_str( ) );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_verify )
-      {
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_pubkey ) );
-         bool hex_decode( has_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_hex_decode ) );
-         string message( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_message ) );
-         string signature( get_parm_val( parameters, c_cmd_ciyam_session_crypto_verify_signature ) );
-
-         crypto_verify( pubkey, message, signature, hex_decode );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_lamport )
-      {
-         bool is_sign( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_sign ) );
-         bool is_verify( has_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_verify ) );
-         string filename( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_filename ) );
-         string mnenomics_or_hex_seed( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_mnemonics_or_hex_seed ) );
-         string additional_entropy_text( get_parm_val( parameters, c_cmd_ciyam_session_crypto_lamport_additional_entropy_text ) );
-
-         const char* p_extra = 0;
-
-         if( !additional_entropy_text.empty( ) )
-            p_extra = additional_entropy_text.c_str( );
-
-         response = crypto_lamport( filename, mnenomics_or_hex_seed, is_sign, is_verify, p_extra );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_pub_key )
-      {
-         string privkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_privkey ) );
-         bool uncompressed( has_parm_val( parameters, c_cmd_ciyam_session_crypto_pub_key_uncompressed ) );
-
-         response = crypto_public( privkey, !are_hex_nibbles( privkey ), false, !uncompressed );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_addr_hash )
-      {
-         string address( get_parm_val( parameters, c_cmd_ciyam_session_crypto_addr_hash_address ) );
-
-         response = crypto_address_hash( address );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_p2sh_addr )
-      {
-         string extkey( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_addr_extkey ) );
-         string script( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_addr_script ) );
-
-         response = crypto_p2sh_address( extkey, script );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_p2sh_redeem )
-      {
-         string txid( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_txid ) );
-         string index( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_index ) );
-         string script( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_script ) );
-         string address( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_address ) );
-         string amount( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_amount ) );
-         string wif_key( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_wif_privkey ) );
-         string extras( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_extras ) );
-         string lock_time( get_parm_val( parameters, c_cmd_ciyam_session_crypto_p2sh_redeem_lock_time ) );
-
-         response = construct_p2sh_redeem_transaction(
-          txid, from_string< unsigned int >( index ),
-          script, extras, address, crypto_amount( amount ),
-          wif_key, true, lock_time.empty( ) ? 0 : from_string< uint32_t >( lock_time ) );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_nonce_search )
-      {
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_data ) );
-         bool faster( has_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_faster ) );
-         string start( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_start ) );
-         string range( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_range ) );
-         string difficulty( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_search_difficulty ) );
-
-         uint32_t start_val;
-         uint32_t range_val = 16;
-
-         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
-
-         if( start.empty( ) )
-            start_val = get_random( );
-         else
-            start_val = from_string< uint32_t >( start );
-
-         if( !range.empty( ) )
-            range_val = from_string< uint32_t >( range );
-
-         if( !difficulty.empty( ) )
-            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
-
-         // NOTE: To make sure the console client doesn't time out issue a progress message.
-         handler.output_progress( "(checking for a valid nonce)" );
-
-         response = check_for_proof_of_work( data, start_val, range_val, difficulty_val, !faster );
-      }
-      else if( command == c_cmd_ciyam_session_crypto_nonce_verify )
-      {
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_data ) );
-         string nonce( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_nonce ) );
-         string difficulty( get_parm_val( parameters, c_cmd_ciyam_session_crypto_nonce_verify_difficulty ) );
-
-         nonce_difficulty difficulty_val = e_nonce_difficulty_easy;
-
-         if( !difficulty.empty( ) )
-            difficulty_val = ( nonce_difficulty )from_string< int >( difficulty );
-
-         response = check_for_proof_of_work( data, from_string< size_t >( nonce ), 1, difficulty_val );
-      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );
@@ -2535,6 +2415,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = execute_object_command( atoi( handle.c_str( ) ), context, method_and_args );
       }
+      else if( command == c_cmd_ciyam_session_object_op_apply )
+      {
+         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_op_apply_handle ) );
+         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_op_apply_context ) );
+
+         op_instance_apply( atoi( handle.c_str( ) ), context );
+      }
       else if( command == c_cmd_ciyam_session_object_validate )
       {
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_validate_handle ) );
@@ -2570,6 +2457,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             check_not_possible_protocol_response( response );
          }
       }
+      else if( command == c_cmd_ciyam_session_object_op_cancel )
+      {
+         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_op_cancel_handle ) );
+         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_op_cancel_context ) );
+
+         op_instance_cancel( atoi( handle.c_str( ) ), context );
+      }
       else if( command == c_cmd_ciyam_session_object_op_create )
       {
          string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_op_create_handle ) );
@@ -2596,19 +2490,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          op_instance_destroy( atoi( handle.c_str( ) ), context, key, ver_info );
       }
-      else if( command == c_cmd_ciyam_session_object_op_apply )
+      else if( command == c_cmd_ciyam_session_object_iterate_next )
       {
-         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_op_apply_handle ) );
-         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_op_apply_context ) );
+         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_next_handle ) );
+         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_next_context ) );
 
-         op_instance_apply( atoi( handle.c_str( ) ), context );
+         bool rc = instance_iterate_next( atoi( handle.c_str( ) ), context );
+
+         if( !rc )
+         {
+            send_okay_response = false;
+            response = c_response_not_found;
+         }
       }
-      else if( command == c_cmd_ciyam_session_object_op_cancel )
+      else if( command == c_cmd_ciyam_session_object_iterate_stop )
       {
-         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_op_cancel_handle ) );
-         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_op_cancel_context ) );
+         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_stop_handle ) );
+         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_stop_context ) );
 
-         op_instance_cancel( atoi( handle.c_str( ) ), context );
+         instance_iterate_stop( atoi( handle.c_str( ) ), context );
       }
       else if( command == c_cmd_ciyam_session_object_review_begin )
       {
@@ -2659,25 +2559,91 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = c_response_not_found;
          }
       }
-      else if( command == c_cmd_ciyam_session_object_iterate_next )
+      else if( command == c_cmd_ciyam_session_peer_listen )
       {
-         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_next_handle ) );
-         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_next_context ) );
+         string port( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_port ) );
+         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_listen_remove ) );
+         string blockchains( get_parm_val( parameters, c_cmd_ciyam_session_peer_listen_blockchains ) );
 
-         bool rc = instance_iterate_next( atoi( handle.c_str( ) ), context );
+         if( port.empty( ) )
+            port = to_string( c_default_ciyam_peer_port );
 
-         if( !rc )
+         vector< string > all_blockchains;
+         split( blockchains, all_blockchains );
+
+         for( size_t i = 0; i < all_blockchains.size( ); i++ )
          {
-            send_okay_response = false;
-            response = c_response_not_found;
+            string next( unprefixed_blockchains( all_blockchains[ i ] ) );
+
+            if( remove )
+            {
+               int port_num = 0;
+
+               if( has_registered_listener_id( next, &port_num ) )
+                  set_system_variable( '@' + to_string( port_num ), '~' + unprefixed_blockchains( next ) );
+
+            }
+            else if( has_registered_listener_id( next ) )
+               throw runtime_error( "blockchain identity '" + next + "' already has a listener" );
+         }
+
+         if( !remove )
+            create_peer_listener( atoi( port.c_str( ) ), unprefixed_blockchains( blockchains ) );
+      }
+      else if( command == c_cmd_ciyam_session_peer_reject )
+      {
+         bool list( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_list ) );
+         bool remove( has_parm_val( parameters, c_cmd_ciyam_session_peer_reject_remove ) );
+         string ip_addr( get_parm_val( parameters, c_cmd_ciyam_session_peer_reject_ip_addr ) );
+
+         if( list )
+            response = list_peer_ip_addrs_for_rejection( );
+         else
+         {
+            if( !remove )
+               add_peer_ip_addr_for_rejection( ip_addr );
+            else
+               remove_peer_ip_addr_from_rejection( ip_addr );
          }
       }
-      else if( command == c_cmd_ciyam_session_object_iterate_stop )
+      else if( command == c_cmd_ciyam_session_peer_connect )
       {
-         string handle( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_stop_handle ) );
-         string context( get_parm_val( parameters, c_cmd_ciyam_session_object_iterate_stop_context ) );
+         bool force( has_parm_val( parameters, c_cmd_ciyam_session_peer_connect_force ) );
+         size_t num_supporters( atoi( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_num_supporters ).c_str( ) ) );
+         string blockchain( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_blockchain ) );
+         string host_and_or_port( get_parm_val( parameters, c_cmd_ciyam_session_peer_connect_host_and_or_port ) );
 
-         instance_iterate_stop( atoi( handle.c_str( ) ), context );
+         create_peer_initiator( prefixed_blockchains( blockchain ), host_and_or_port, force, num_supporters );
+      }
+      else if( command == c_cmd_ciyam_session_peer_persist_file )
+      {
+         string dest_hash( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_dest_hash ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_pubkey ) );
+         string tag_or_hash( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_tag_or_hash ) );
+         string password( get_parm_val( parameters, c_cmd_ciyam_session_peer_persist_file_password ) );
+
+         bool is_dummy_for_testing = ( password == string( c_dummy ) );
+
+         if( !pubkey.empty( ) )
+         {
+            password.reserve( c_secret_reserve_size );
+            session_shared_decrypt( password, pubkey, password );
+         }
+
+         if( password == get_special_var_name( e_special_var_sid ) )
+            get_identity( password, false, true );
+
+         string src_hash( tag_or_hash );
+
+         if( has_tag( tag_or_hash ) )
+            src_hash = tag_file_hash( tag_or_hash );
+
+         if( !dest_hash.empty( ) )
+            decrypt_pulled_peer_file( dest_hash, src_hash, password, is_dummy_for_testing );
+         else
+            response = create_peer_repository_entry_push_info( src_hash, password, 0, true, is_dummy_for_testing );
+
+         clear_key( password );
       }
       else if( command == c_cmd_ciyam_session_perform_fetch )
       {
@@ -4235,13 +4201,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          update_package( name );
       }
-      else if( command == c_cmd_ciyam_session_session_list )
-      {
-         bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal ) );
-
-         list_sessions( osstr, !minimal, !minimal );
-         output_response_lines( socket, osstr.str( ) );
-      }
       else if( command == c_cmd_ciyam_session_session_kill )
       {
          bool force( has_parm_val( parameters, c_cmd_ciyam_session_session_kill_force ) );
@@ -4264,6 +4223,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             for( size_t i = 0; i < session_ids.size( ); i++ )
                condemn_session( atoi( session_ids[ i ].c_str( ) ), num_seconds, force, at_term );
          }
+      }
+      else if( command == c_cmd_ciyam_session_session_list )
+      {
+         bool minimal( has_parm_val( parameters, c_cmd_ciyam_session_session_list_minimal ) );
+
+         list_sessions( osstr, !minimal, !minimal );
+         output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_session_lock )
       {
@@ -4293,6 +4259,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   release_session( atoi( session_ids[ i ].c_str( ) ), at_term );
             }
          }
+      }
+      else if( command == c_cmd_ciyam_session_session_wait )
+      {
+         string uid( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_uid ) );
+         string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_session_wait_milliseconds ) );
+
+         set_uid( uid );
+         msleep( atoi( milliseconds.c_str( ) ) );
       }
       else if( command == c_cmd_ciyam_session_session_timeout )
       {
@@ -4333,6 +4307,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             check_not_possible_protocol_response( response );
          }
       }
+      else if( command == c_cmd_ciyam_session_session_terminate )
+      {
+         if( !is_captured_session( ) )
+            handler.set_finished( );
+         else if( !is_condemned_session( ) )
+            condemn_this_session( );
+
+         return;
+      }
       else if( command == c_cmd_ciyam_session_session_rpc_unlock )
       {
          string password( get_parm_val( parameters, c_cmd_ciyam_session_session_rpc_unlock_password ) );
@@ -4347,6 +4330,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             val = atoi( seconds.c_str( ) );
             socket_handler.set_lock_expires( val );
          }
+      }
+      else if( command == c_cmd_ciyam_session_starttls )
+      {
+#ifdef SSL_SUPPORT
+         if( socket.is_secure( ) )
+            throw runtime_error( "TLS is already active" );
+
+         if( !get_using_ssl( ) )
+            throw runtime_error( "SSL has not been initialised" );
+
+         socket.ssl_accept( );
+#else
+         throw runtime_error( "SSL support not available" );
+#endif
       }
       else if( command == c_cmd_ciyam_session_storage_info )
       {
@@ -4363,13 +4360,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_storage_term )
          term_storage( handler );
-      else if( command == c_cmd_ciyam_session_storage_create )
-      {
-         string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_create_name ) );
-         string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_create_directory ) );
-
-         create_storage( name, directory, handler, has_parm_val( parameters, c_cmd_ciyam_session_storage_create_admin ) );
-      }
       else if( command == c_cmd_ciyam_session_storage_attach )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_attach_name ) );
@@ -4654,6 +4644,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             remove_file( name + ".log." + osstr.str( ) );
             remove_file( name + ".tlg." + osstr.str( ) );
          }
+      }
+      else if( command == c_cmd_ciyam_session_storage_create )
+      {
+         string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_create_name ) );
+         string directory( get_parm_val( parameters, c_cmd_ciyam_session_storage_create_directory ) );
+
+         create_storage( name, directory, handler, has_parm_val( parameters, c_cmd_ciyam_session_storage_create_admin ) );
       }
       else if( command == c_cmd_ciyam_session_storage_comment )
       {
@@ -5225,6 +5222,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          slice_storage_log( handler, name, module_list );
       }
+      else if( command == c_cmd_ciyam_session_storage_dump_cache )
+      {
+         dump_storage_cache( osstr );
+         output_response_lines( socket, osstr.str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_dump_locks )
+      {
+         dump_storage_locks( osstr );
+         output_response_lines( socket, osstr.str( ) );
+      }
       else if( command == c_cmd_ciyam_session_storage_log_splice )
       {
          string name( get_parm_val( parameters, c_cmd_ciyam_session_storage_log_splice_name ) );
@@ -5236,15 +5243,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          splice_storage_log( handler, name, module_list );
       }
-      else if( command == c_cmd_ciyam_session_storage_dump_cache )
+      else if( command == c_cmd_ciyam_session_storage_cache_clear )
+         storage_cache_clear( );
+      else if( command == c_cmd_ciyam_session_storage_cache_limit )
       {
-         dump_storage_cache( osstr );
-         output_response_lines( socket, osstr.str( ) );
-      }
-      else if( command == c_cmd_ciyam_session_storage_dump_locks )
-      {
-         dump_storage_locks( osstr );
-         output_response_lines( socket, osstr.str( ) );
+         string new_limit( get_parm_val( parameters, c_cmd_ciyam_session_storage_cache_limit_new_limit ) );
+
+         size_t cache_limit;
+         if( new_limit.empty( ) )
+            cache_limit = storage_cache_limit( );
+         else
+            cache_limit = storage_cache_limit( from_string< size_t >( new_limit ) );
+
+         response = to_string( cache_limit );
       }
       else if( command == c_cmd_ciyam_session_storage_file_export )
       {
@@ -5279,26 +5290,68 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = create_raw_file( data, true, tag.empty( ) ? 0 : tag.c_str( ) );
       }
-      else if( command == c_cmd_ciyam_session_storage_cache_clear )
-         storage_cache_clear( );
-      else if( command == c_cmd_ciyam_session_storage_cache_limit )
-      {
-         string new_limit( get_parm_val( parameters, c_cmd_ciyam_session_storage_cache_limit_new_limit ) );
-
-         size_t cache_limit;
-         if( new_limit.empty( ) )
-            cache_limit = storage_cache_limit( );
-         else
-            cache_limit = storage_cache_limit( from_string< size_t >( new_limit ) );
-
-         response = to_string( cache_limit );
-      }
       else if( command == c_cmd_ciyam_session_storage_trans_start )
          transaction_start( );
       else if( command == c_cmd_ciyam_session_storage_trans_commit )
          transaction_commit( );
       else if( command == c_cmd_ciyam_session_storage_trans_rollback )
          transaction_rollback( );
+      else if( command == c_cmd_ciyam_session_system_trace )
+      {
+         string new_flags( get_parm_val( parameters, c_cmd_ciyam_session_system_trace_new_flags ) );
+
+         if( !new_flags.empty( ) )
+         {
+            if( !( get_trace_flags( ) & TRACE_COMMANDS ) )
+               log_trace_message( TRACE_COMMANDS, "trace " + new_flags );
+
+            istringstream isstr( new_flags );
+
+            int trace_flags;
+            isstr >> hex >> trace_flags;
+
+            set_trace_flags( trace_flags );
+         }
+
+         ostringstream osstr;
+         osstr << hex << get_trace_flags( );
+
+         response = osstr.str( );
+      }
+      else if( command == c_cmd_ciyam_session_system_identity )
+      {
+         bool is_md5( has_parm_val( parameters, c_cmd_ciyam_session_system_identity_md5 ) );
+         bool is_raw( has_parm_val( parameters, c_cmd_ciyam_session_system_identity_raw ) );
+         string info( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_info ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_pubkey ) );
+         string encrypted( get_parm_val( parameters, c_cmd_ciyam_session_system_identity_encrypted ) );
+
+         if( !info.empty( ) && !pubkey.empty( ) )
+         {
+            info.reserve( c_secret_reserve_size );
+            session_shared_decrypt( info, pubkey, info );
+
+            if( count( info.begin( ), info.end( ), ' ' ) == 11 )
+               get_mnemonics_or_hex_seed( info, info );
+         }
+
+         if( !info.empty( ) )
+         {
+            bool was_locked = socket_handler.is_locked( );
+
+            set_identity( info, encrypted.empty( ) ? 0 : encrypted.c_str( ) );
+
+            bool is_encrypted = false;
+            bool has_system_id = has_identity( &is_encrypted );
+
+            if( was_locked && !is_encrypted && has_system_id )
+               socket_handler.unlock_identity( );
+         }
+
+         clear_key( info );
+
+         get_identity( response, !is_raw, false, is_md5 );
+      }
       else if( command == c_cmd_ciyam_session_system_mutexes )
       {
          ostringstream osstr;
@@ -5314,6 +5367,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = osstr.str( );
       }
+      else if( command == c_cmd_ciyam_session_system_version )
+         response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_system_log_tail )
       {
          bool is_script( has_parm_val( parameters, c_cmd_ciyam_session_system_log_tail_script ) );
@@ -5340,134 +5395,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response += lines[ i ];
          }
       }
-      else if( command == c_cmd_ciyam_session_system_variable )
+      else if( command == c_cmd_ciyam_session_system_passtotp )
       {
-         string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
-         bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
-         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
+         string secret( get_parm_val( parameters, c_cmd_ciyam_session_system_passtotp_secret ) );
 
-         possibly_expected_error = true;
+         // NOTE: A secret can be stored by encrypting it (i.e. "encrypt") and storing it as a "system variable"
+         // whose name is prefixed by "passtotp.". To identify that the secret has been thus stored use a '*' as
+         // the first character of "secret" followed by the suffix of the "passtotp.*" variable (so for the name
+         // "passtotp.test" you would use a secret "*test".
+         if( !secret.empty( ) && secret[ 0 ] == '*' )
+            secret = decrypt_data( get_system_variable( string( c_passtotp_prefix ) + secret.substr( 1 ) ) );
 
-         if( has_new_val )
-         {
-            check_not_possible_protocol_response( new_value );
-            set_system_variable( name_or_expr, new_value, false, &handler );
-         }
-         else
-         {
-            response = get_system_variable( name_or_expr );
-            check_not_possible_protocol_response( response );
-         }
+         response = get_totp( secret );
+
+         clear_key( secret );
       }
-      else if( command == c_cmd_ciyam_session_system_listeners )
+      else if( command == c_cmd_ciyam_session_system_password )
       {
-         ostringstream osstr;
-
-         list_listeners( osstr );
-
-         response = osstr.str( );
-      }
-      else if( command == c_cmd_ciyam_session_trace )
-      {
-         string new_flags( get_parm_val( parameters, c_cmd_ciyam_session_trace_new_flags ) );
-
-         if( !new_flags.empty( ) )
-         {
-            if( !( get_trace_flags( ) & TRACE_COMMANDS ) )
-               log_trace_message( TRACE_COMMANDS, "trace " + new_flags );
-
-            istringstream isstr( new_flags );
-
-            int trace_flags;
-            isstr >> hex >> trace_flags;
-
-            set_trace_flags( trace_flags );
-         }
-
-         ostringstream osstr;
-         osstr << hex << get_trace_flags( );
-
-         response = osstr.str( );
-      }
-      else if( command == c_cmd_ciyam_session_trace_flags )
-      {
-         vector< string > trace_flag_names;
-
-         list_trace_flags( trace_flag_names );
-
-         int flag = 1;
-         ostringstream osstr;
-
-         for( size_t i = 0; i < trace_flag_names.size( ); i++ )
-         {
-            osstr << hex << setw( 4 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';
-            flag *= 2;
-         }
-
-         response = osstr.str( );
-      }
-      else if( command == c_cmd_ciyam_session_decode )
-      {
-         bool url( has_parm_val( parameters, c_cmd_ciyam_session_decode_url ) );
-         bool text( has_parm_val( parameters, c_cmd_ciyam_session_decode_text ) );
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_decode_data ) );
-
-         if( text )
-            response = base64::decode( data, url );
-         else
-            response = hex_encode( base64::decode( data, url ) );
-      }
-      else if( command == c_cmd_ciyam_session_encode )
-      {
-         bool url( has_parm_val( parameters, c_cmd_ciyam_session_encode_url ) );
-         bool text( has_parm_val( parameters, c_cmd_ciyam_session_encode_text ) );
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_encode_data ) );
-
-         if( text )
-            response = base64::encode( data, url );
-         else
-            response = base64::encode( hex_decode( data ), url );
-      }
-      else if( command == c_cmd_ciyam_session_decrypt )
-      {
-         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_no_ssl ) );
-         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_no_salt ) );
-         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_decrypt_pwd_and_data ) );
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_decrypt_data ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_decrypt_pubkey ) );
-
-         if( !data.empty( ) && !pubkey.empty( ) )
-         {
-            data.reserve( c_secret_reserve_size );
-            session_shared_decrypt( data, pubkey, data );
-         }
-
-         decrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
-
-         clear_key( data );
-         clear_response = true;
-      }
-      else if( command == c_cmd_ciyam_session_encrypt )
-      {
-         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_ssl ) );
-         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_no_salt ) );
-         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_encrypt_pwd_and_data ) );
-         string data( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_data ) );
-         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_encrypt_pubkey ) );
-
-         if( !data.empty( ) && !pubkey.empty( ) )
-         {
-            data.reserve( c_secret_reserve_size );
-            session_shared_decrypt( data, pubkey, data );
-         }
-
-         encrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
-
-         clear_key( data );
-      }
-      else if( command == c_cmd_ciyam_session_password )
-      {
-         string name( get_parm_val( parameters, c_cmd_ciyam_session_password_name ) );
+         string name( get_parm_val( parameters, c_cmd_ciyam_session_system_password_name ) );
 
          if( name == "gpg" )
             response = get_encrypted_gpg_password( );
@@ -5482,31 +5427,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             throw runtime_error( "unknown system password name '" + name + "'" );
       }
-      else if( command == c_cmd_ciyam_session_passtotp )
+      else if( command == c_cmd_ciyam_session_system_schedule )
       {
-         string secret( get_parm_val( parameters, c_cmd_ciyam_session_passtotp_secret ) );
-
-         // NOTE: A secret can be stored by encrypting it (i.e. "encrypt") and storing it as a "system variable"
-         // whose name is prefixed by "passtotp.". To identify that the secret has been thus stored use a '*' as
-         // the first character of "secret" followed by the suffix of the "passtotp.*" variable (so for the name
-         // "passtotp.test" you would use a secret "*test".
-         if( !secret.empty( ) && secret[ 0 ] == '*' )
-            secret = decrypt_data( get_system_variable( string( c_cmd_ciyam_session_passtotp ) + "." + secret.substr( 1 ) ) );
-
-         response = get_totp( secret );
-
-         clear_key( secret );
+         output_schedule( osstr );
+         output_response_lines( socket, osstr.str( ) );
       }
-      else if( command == c_cmd_ciyam_session_sendmail )
+      else if( command == c_cmd_ciyam_session_system_sendmail )
       {
-         string to( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_to ) );
-         string subject( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_subject ) );
-         string message( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_message ) );
-         string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_tz_name ) );
-         string file_names( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_file_names ) );
-         string html_source( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_html_source ) );
-         string image_names( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_image_names ) );
-         string image_prefix( get_parm_val( parameters, c_cmd_ciyam_session_sendmail_image_prefix ) );
+         string to( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_to ) );
+         string subject( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_subject ) );
+         string message( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_message ) );
+         string tz_name( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_tz_name ) );
+         string file_names( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_file_names ) );
+         string html_source( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_html_source ) );
+         string image_names( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_image_names ) );
+         string image_prefix( get_parm_val( parameters, c_cmd_ciyam_session_system_sendmail_image_prefix ) );
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -5528,41 +5463,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          send_email_message( to, subject, message,
           html_source, 0, &all_file_names, &tz_name, &all_image_names, &image_prefix );
       }
-      else if( command == c_cmd_ciyam_session_schedule )
+      else if( command == c_cmd_ciyam_session_system_variable )
       {
-         output_schedule( osstr );
-         output_response_lines( socket, osstr.str( ) );
-      }
-      else if( command == c_cmd_ciyam_session_smtpinfo )
-      {
-         response = get_smtp_username( );
+         string name_or_expr( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_name_or_expr ) );
+         bool has_new_val( has_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
+         string new_value( get_parm_val( parameters, c_cmd_ciyam_session_system_variable_new_value ) );
 
-         if( response.find( '@' ) == string::npos )
+         possibly_expected_error = true;
+
+         if( has_new_val )
          {
-            string suffix_or_domain( get_smtp_suffix_or_domain( ) );
-
-            if( !suffix_or_domain.empty( ) )
-               response += "@" + suffix_or_domain;
+            check_not_possible_protocol_response( new_value );
+            set_system_variable( name_or_expr, new_value, false, &handler );
+         }
+         else
+         {
+            response = get_system_variable( name_or_expr );
+            check_not_possible_protocol_response( response );
          }
       }
-      else if( command == c_cmd_ciyam_session_starttls )
+      else if( command == c_cmd_ciyam_session_system_checkmail )
       {
-#ifdef SSL_SUPPORT
-         if( socket.is_secure( ) )
-            throw runtime_error( "TLS is already active" );
-
-         if( !get_using_ssl( ) )
-            throw runtime_error( "SSL has not been initialised" );
-
-         socket.ssl_accept( );
-#else
-         throw runtime_error( "SSL support not available" );
-#endif
-      }
-      else if( command == c_cmd_ciyam_session_checkmail )
-      {
-         string headers( get_parm_val( parameters, c_cmd_ciyam_session_checkmail_headers ) );
-         bool create_script( has_parm_val( parameters, c_cmd_ciyam_session_checkmail_create_script ) );
+         string headers( get_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_headers ) );
+         bool create_script( has_parm_val( parameters, c_cmd_ciyam_session_system_checkmail_create_script ) );
 
          vector< string > email_headers;
          if( !headers.empty( ) )
@@ -5571,12 +5494,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          handler.output_progress( ";checkmail..." );
          response = check_email_headers( email_headers, create_script );
       }
-      else if( command == c_cmd_ciyam_session_externals )
+      else if( command == c_cmd_ciyam_session_system_externals )
          response = list_externals( );
-      else if( command == c_cmd_ciyam_session_runscript )
+      else if( command == c_cmd_ciyam_session_system_listeners )
       {
-         string script_name( get_parm_val( parameters, c_cmd_ciyam_session_runscript_script_name ) );
-         string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_runscript_arg_val_pairs ) );
+         ostringstream osstr;
+
+         list_listeners( osstr );
+
+         response = osstr.str( );
+      }
+      else if( command == c_cmd_ciyam_session_system_runscript )
+      {
+         string script_name( get_parm_val( parameters, c_cmd_ciyam_session_system_runscript_script_name ) );
+         string arg_val_pairs( get_parm_val( parameters, c_cmd_ciyam_session_system_runscript_arg_val_pairs ) );
 
          bool async = true;
 
@@ -5619,7 +5550,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             response = osstr.str( );
          }
       }
-      else if( command == c_cmd_ciyam_session_timezones )
+      else if( command == c_cmd_ciyam_session_system_smtp_info )
+      {
+         response = get_smtp_username( );
+
+         if( response.find( '@' ) == string::npos )
+         {
+            string suffix_or_domain( get_smtp_suffix_or_domain( ) );
+
+            if( !suffix_or_domain.empty( ) )
+               response += "@" + suffix_or_domain;
+         }
+      }
+      else if( command == c_cmd_ciyam_session_system_timezones )
       {
          string own_tz( get_timezone( ) );
 
@@ -5627,6 +5570,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( response.find( own_tz + ' ' ) != string::npos )
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );
+      }
+      else if( command == c_cmd_ciyam_session_system_trace_flags )
+      {
+         vector< string > trace_flag_names;
+
+         list_trace_flags( trace_flag_names );
+
+         int flag = 1;
+         ostringstream osstr;
+
+         for( size_t i = 0; i < trace_flag_names.size( ); i++ )
+         {
+            osstr << hex << setw( 4 ) << setfill( '0' ) << flag << '=' << trace_flag_names[ i ] << '\n';
+            flag *= 2;
+         }
+
+         response = osstr.str( );
+      }
+      else if( command == c_cmd_ciyam_session_test )
+      {
+         string arg_1( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_1 ) );
+         string arg_2( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_2 ) );
+         string arg_3( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_3 ) );
+
+         // NOTE: Dummy command for testing or prototyping.
+         response = "arg_1 = " + arg_1 + "\narg_2 = " + arg_2 + "\narg_3 = " + arg_3;
       }
       else if( command == c_cmd_ciyam_session_utc_now )
          response = date_time::standard( ).as_string( true, false );
@@ -5674,31 +5643,64 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = utc.as_string( e_time_format_hhmmss, true );
       }
-      else if( command == c_cmd_ciyam_session_wait )
+      else if( command == c_cmd_ciyam_session_utils_decode )
       {
-         string uid( get_parm_val( parameters, c_cmd_ciyam_session_wait_uid ) );
-         string milliseconds( get_parm_val( parameters, c_cmd_ciyam_session_wait_milliseconds ) );
+         bool url( has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_url ) );
+         bool text( has_parm_val( parameters, c_cmd_ciyam_session_utils_decode_text ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decode_data ) );
 
-         set_uid( uid );
-         msleep( atoi( milliseconds.c_str( ) ) );
+         if( text )
+            response = base64::decode( data, url );
+         else
+            response = hex_encode( base64::decode( data, url ) );
       }
-      else if( command == c_cmd_ciyam_session_test )
+      else if( command == c_cmd_ciyam_session_utils_encode )
       {
-         string arg_1( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_1 ) );
-         string arg_2( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_2 ) );
-         string arg_3( get_parm_val( parameters, c_cmd_ciyam_session_test_arg_3 ) );
+         bool url( has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_url ) );
+         bool text( has_parm_val( parameters, c_cmd_ciyam_session_utils_encode_text ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encode_data ) );
 
-         // NOTE: Dummy command for testing or prototyping.
-         response = "arg_1 = " + arg_1 + "\narg_2 = " + arg_2 + "\narg_3 = " + arg_3;
+         if( text )
+            response = base64::encode( data, url );
+         else
+            response = base64::encode( hex_decode( data ), url );
       }
-      else if( command == c_cmd_ciyam_session_quit )
+      else if( command == c_cmd_ciyam_session_utils_decrypt )
       {
-         if( !is_captured_session( ) )
-            handler.set_finished( );
-         else if( !is_condemned_session( ) )
-            condemn_this_session( );
+         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_ssl ) );
+         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_no_salt ) );
+         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pwd_and_data ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_data ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_decrypt_pubkey ) );
 
-         return;
+         if( !data.empty( ) && !pubkey.empty( ) )
+         {
+            data.reserve( c_secret_reserve_size );
+            session_shared_decrypt( data, pubkey, data );
+         }
+
+         decrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
+
+         clear_key( data );
+         clear_response = true;
+      }
+      else if( command == c_cmd_ciyam_session_utils_encrypt )
+      {
+         bool no_ssl( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_ssl ) );
+         bool no_salt( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_no_salt ) );
+         bool pwd_and_data( has_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pwd_and_data ) );
+         string data( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_data ) );
+         string pubkey( get_parm_val( parameters, c_cmd_ciyam_session_utils_encrypt_pubkey ) );
+
+         if( !data.empty( ) && !pubkey.empty( ) )
+         {
+            data.reserve( c_secret_reserve_size );
+            session_shared_decrypt( data, pubkey, data );
+         }
+
+         encrypt_data( response, data, no_ssl, no_salt, false, pwd_and_data );
+
+         clear_key( data );
       }
    }
    catch( exception& x )
@@ -5787,7 +5789,7 @@ void socket_command_processor::get_cmd_and_args( string& cmd_and_args )
          {
             // NOTE: If the session is not captured and it has either been condemned or
             // the server is shutting down, or its socket has died then force a "quit".
-            cmd_and_args = c_cmd_ciyam_session_quit;
+            cmd_and_args = c_cmd_ciyam_session_session_terminate;
             break;
          }
 
