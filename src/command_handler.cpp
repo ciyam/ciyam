@@ -92,13 +92,18 @@ void command_handler::add_command( const string& name, size_t group_num,
    string::size_type pos = name.find( '|' );
    dispatch_name += name.substr( 0, pos );
 
+   string short_name;
    if( pos != string::npos )
-      short_commands.insert( make_pair( name.substr( pos + 1 ), name.substr( 0, pos ) ) );
+   {
+      short_name = name.substr( pos + 1 );
+      short_commands.insert( make_pair( short_name, name.substr( 0, pos ) ) );
+   }
 
    auto_ptr< command_parser > ap_parser( new command_parser );
    ap_parser->parse_syntax( syntax.c_str( ) );
 
-   command_items.push_back( command_item( dispatch_name, group_num, description ) );
+   command_items.push_back( command_item( short_name, dispatch_name, group_num, description ) );
+
    try
    {
       command_dispatchers.insert( make_pair( dispatch_name,
@@ -305,17 +310,40 @@ string command_handler::get_usage_for_command( const string& name ) const
 string command_handler::get_usage_for_all_commands( const string& wildcard_match_expr, char cmd_arg_separator ) const
 {
    ostringstream osstr;
+
+   string last_prefix;
+
    bool is_first = true;
-   size_t last_group_num;
+   bool check_prefix = true;
+
+   size_t last_group_num = 0;
+
    for( vector< command_item >::size_type i = 0; i < command_items.size( ); i++ )
    {
+      string next_dispatch_name( command_items[ i ].dispatch_name );
+
       if( !wildcard_match_expr.empty( ) )
       {
-         if( !wildcard_match( wildcard_match_expr.c_str( ), command_items[ i ].dispatch_name.c_str( ) ) )
+         if( !wildcard_match( wildcard_match_expr.c_str( ), next_dispatch_name.c_str( ) )
+          && !wildcard_match( wildcard_match_expr.c_str( ), command_items[ i ].short_name.c_str( ) ) )
             continue;
       }
 
-      command_dispatcher_const_iterator ci = command_dispatchers.find( command_items[ i ].dispatch_name );
+      if( !last_prefix.empty( ) )
+      {
+         if( next_dispatch_name.find( last_prefix ) == string::npos )
+         {
+            if( i != 1 )
+               osstr << '\n';
+            else
+            {
+               last_prefix.erase( );
+               check_prefix = false;
+            }
+         }
+      }
+
+      command_dispatcher_const_iterator ci = command_dispatchers.find( next_dispatch_name );
 
       string usage( ci->second.p_parser->get_usage( ) );
 
@@ -332,7 +360,22 @@ string command_handler::get_usage_for_all_commands( const string& wildcard_match
       }
 
       osstr << format_usage_output(
-       command_items[ i ].dispatch_name, cmd_arg_separator, usage, command_items[ i ].description ) << '\n';
+       next_dispatch_name, cmd_arg_separator, usage, command_items[ i ].description ) << '\n';
+
+      // NOTE: If not using group number can still separate
+      // commands into groups through the usage of prefixes.
+      if( check_prefix )
+      {
+         string::size_type pos = next_dispatch_name.find( '_' );
+
+         if( pos == string::npos )
+         {
+            if( i == 1 )
+               check_prefix = false;
+         }
+         else
+            last_prefix = next_dispatch_name.substr( 0, pos );
+      }
    }
 
    return osstr.str( );
@@ -421,4 +464,3 @@ string command_handler::format_usage_output( const string& command,
 
    return retval;
 }
-
