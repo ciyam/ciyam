@@ -131,6 +131,13 @@ enum peer_trust_level
    e_peer_trust_level_normal
 };
 
+enum public_key_scale
+{
+   e_public_key_scale_primary,
+   e_public_key_scale_secondary,
+   e_public_key_scale_tertiary
+};
+
 size_t g_num_peers = 0;
 
 bool has_max_peers( )
@@ -263,12 +270,30 @@ void process_core_file( const string& hash, const string& blockchain )
             string primary_pubkey_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
+            string secondary_pubkey_hash( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+            string tertiary_pubkey_hash( get_session_variable(
+             get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
+
             if( !primary_pubkey_hash.empty( ) )
             {
-               if( block_height == "0"
-                && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-                  throw runtime_error( "invalid genesis primary public key hash '"
-                   + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
+               if( block_height == "0" )
+               {
+                  string hash_value( primary_pubkey_hash );
+
+                  if( !tertiary_pubkey_hash.empty( ) )
+                  {
+                     sha256 hash( primary_pubkey_hash
+                      + secondary_pubkey_hash + tertiary_pubkey_hash );
+
+                     hash_value = hash.get_digest_as_string( );
+                  }
+
+                  if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+                     throw runtime_error( "invalid genesis hash value '"
+                      + hash_value + "' for blockchain '" + blockchain + "'" );
+               }
 
                if( !has_file( primary_pubkey_hash ) )
                   add_peer_file_hash_for_get( primary_pubkey_hash );
@@ -281,11 +306,11 @@ void process_core_file( const string& hash, const string& blockchain )
             set_session_variable(
              get_special_var_name( e_special_var_blockchain_height ), "" );
 
-            string secondary_pubkey_hash( get_session_variable(
-             get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
-
             if( !secondary_pubkey_hash.empty( ) && !has_file( secondary_pubkey_hash ) )
                add_peer_file_hash_for_get( secondary_pubkey_hash );
+
+            if( !tertiary_pubkey_hash.empty( ) && !has_file( tertiary_pubkey_hash ) )
+               add_peer_file_hash_for_get( tertiary_pubkey_hash );
 
             string signature_file_hash( get_session_variable(
              get_special_var_name( e_special_var_blockchain_signature_file_hash ) ) );
@@ -1326,16 +1351,24 @@ void process_signature_file( const string& blockchain, const string& hash, size_
    }
 }
 
-void process_public_key_file( const string& blockchain, const string& hash, size_t height, bool is_primary = true )
+void process_public_key_file( const string& blockchain,
+ const string& hash, size_t height, public_key_scale key_scale, bool has_tertiary = false )
 {
    guard g( g_mutex );
 
    string pubkey_tag( blockchain );
 
-   if( is_primary )
-      pubkey_tag += ".p";
+   if( key_scale == e_public_key_scale_primary )
+   {
+      if( has_tertiary )
+         pubkey_tag += ".";
+      else
+         pubkey_tag += ".p";
+   }
+   else if( key_scale != e_public_key_scale_secondary )
+      pubkey_tag += c_tertiary_prefix;
    else
-      pubkey_tag += ".s";
+      pubkey_tag += c_secondary_prefix;
 
    pubkey_tag += to_string( height );
 
@@ -1348,7 +1381,20 @@ void process_public_key_file( const string& blockchain, const string& hash, size
 
    string zenith_height( get_session_variable( zenith_height_name ) );
 
-   if( !height && !is_primary && zenith_height.empty( ) )
+   bool has_all_pub_keys = false;
+
+   if( has_tertiary )
+   {
+      if( key_scale == e_public_key_scale_tertiary )
+         has_all_pub_keys = true;
+   }
+   else
+   {
+      if( key_scale == e_public_key_scale_secondary )
+         has_all_pub_keys = true;
+   }
+
+   if( !height && has_all_pub_keys && zenith_height.empty( ) )
    {
       string block_hash( tag_file_hash(
        blockchain + '.' + to_string( height ) + c_blk_suffix ) );
@@ -1363,12 +1409,15 @@ void process_public_key_file( const string& blockchain, const string& hash, size
       set_session_variable( zenith_height_name, to_string( height ) );
    }
 
-   if( is_primary )
+   if( key_scale == e_public_key_scale_primary )
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
-   else
+   else if( key_scale == e_public_key_scale_secondary )
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+   else
+      set_session_variable(
+       get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), "" );
 }
 
 void validate_signature_file( const string& file_data )
@@ -1500,12 +1549,32 @@ bool process_block_for_height( const string& blockchain,
       string primary_pubkey_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
 
+      string secondary_pubkey_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
+
+      string tertiary_pubkey_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
+
+      bool has_tertiary = !tertiary_pubkey_hash.empty( );
+
       if( !primary_pubkey_hash.empty( ) )
       {
-         if( !height
-          && primary_pubkey_hash.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
-            throw runtime_error( "invalid primary public key hash '"
-             + primary_pubkey_hash + "' for blockchain '" + blockchain + "'" );
+         if( !height )
+         {
+            string hash_value( primary_pubkey_hash );
+
+            if( !tertiary_pubkey_hash.empty( ) )
+            {
+               sha256 hash( primary_pubkey_hash
+                + secondary_pubkey_hash + tertiary_pubkey_hash );
+
+               hash_value = hash.get_digest_as_string( );
+            }
+
+            if( hash_value.find( blockchain.substr( strlen( c_bc_prefix ) ) ) != 0 )
+               throw runtime_error( "invalid genesis hash value '"
+                + hash_value + "' for blockchain '" + blockchain + "'" );
+         }
 
          if( !has_file( primary_pubkey_hash ) )
          {
@@ -1513,18 +1582,26 @@ bool process_block_for_height( const string& blockchain,
             add_peer_file_hash_for_get( primary_pubkey_hash );
          }
          else
-            process_public_key_file( blockchain, primary_pubkey_hash, height );
+            process_public_key_file( blockchain,
+             primary_pubkey_hash, height, e_public_key_scale_primary, has_tertiary );
       }
-
-      string secondary_pubkey_hash( get_session_variable(
-       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
       if( !secondary_pubkey_hash.empty( ) )
       {
          if( !has_file( secondary_pubkey_hash ) )
             add_peer_file_hash_for_get( secondary_pubkey_hash );
          else
-            process_public_key_file( blockchain, secondary_pubkey_hash, height, false );
+            process_public_key_file( blockchain,
+             secondary_pubkey_hash, height, e_public_key_scale_secondary, has_tertiary );
+      }
+
+      if( !tertiary_pubkey_hash.empty( ) )
+      {
+         if( !has_file( tertiary_pubkey_hash ) )
+            add_peer_file_hash_for_get( tertiary_pubkey_hash );
+         else
+            process_public_key_file( blockchain,
+             tertiary_pubkey_hash, height, e_public_key_scale_tertiary, has_tertiary );
       }
 
       string signature_file_hash( get_session_variable(
@@ -1611,13 +1688,13 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler(
-    ssl_socket& socket, peer_state session_state, int64_t time_val,
-    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
+   socket_command_handler( ssl_socket& socket,
+    peer_state session_state, int64_t time_val, bool is_local, bool is_owner,
+    const string& blockchain, bool is_for_support = false, bool is_legacy_chain = false )
 #else
-   socket_command_handler(
-    tcp_socket& socket, peer_state session_state, int64_t time_val,
-    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
+   socket_command_handler( tcp_socket& socket,
+    peer_state session_state, int64_t time_val, bool is_local, bool is_owner,
+    const string& blockchain, bool is_for_support = false, bool is_legacy_chain = false )
 #endif
     :
     socket( socket ),
@@ -1632,6 +1709,7 @@ class socket_command_handler : public command_handler
     is_time_for_check( false ),
     has_identity_archive( false ),
     is_for_support( is_for_support ),
+    is_legacy_chain( is_legacy_chain ),
     session_state( session_state ),
     session_op_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
@@ -1706,6 +1784,9 @@ class socket_command_handler : public command_handler
 
    bool get_is_responder( ) const { return is_responder; }
    bool get_is_for_support( ) const { return is_for_support; }
+
+   bool get_is_legacy_chain( ) const { return is_legacy_chain; }
+   void set_is_legacy_chain( bool val ) { is_legacy_chain = val; }
 
    bool get_last_issued_was_put( ) const { return last_issued_was_put; }
    void set_last_issued_was_put( bool val ) { last_issued_was_put = val; }
@@ -1798,6 +1879,7 @@ class socket_command_handler : public command_handler
 
    bool is_responder;
    bool is_for_support;
+   bool is_legacy_chain;
 
    bool is_time_for_check;
    bool last_issued_was_put;
@@ -2413,6 +2495,11 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
          string secondary_pubkey_hash( get_session_variable(
           get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ) ) );
 
+         string tertiary_pubkey_hash( get_session_variable(
+          get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ) );
+
+         bool has_tertiary = !tertiary_pubkey_hash.empty( );
+
          if( next_hash == data_file_hash )
          {
             verify_core_file( file_data, false );
@@ -2450,7 +2537,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            process_public_key_file( blockchain, primary_pubkey_hash, blockchain_height_pending, true );
+            process_public_key_file( blockchain,
+             primary_pubkey_hash, blockchain_height_pending, e_public_key_scale_primary, has_tertiary );
          }
          else if( next_hash == signature_file_hash )
          {
@@ -2478,7 +2566,17 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
-            process_public_key_file( blockchain, secondary_pubkey_hash, blockchain_height_pending, false );
+            process_public_key_file( blockchain,
+             secondary_pubkey_hash, blockchain_height_pending, e_public_key_scale_secondary, has_tertiary );
+         }
+         else if( next_hash == tertiary_pubkey_hash )
+         {
+            validate_public_key_file( file_data );
+
+            create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
+
+            process_public_key_file( blockchain,
+             tertiary_pubkey_hash, blockchain_height_pending, e_public_key_scale_tertiary, has_tertiary );
          }
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
          {
@@ -2665,6 +2763,7 @@ class peer_session_command_functor : public command_functor
     socket_handler( dynamic_cast< socket_command_handler& >( handler ) )
    {
       blockchain_is_fetching_name = get_special_var_name( e_special_var_blockchain_is_fetching );
+      blockchain_zenith_height_name = get_special_var_name( e_special_var_blockchain_zenith_height );
       blockchain_peer_has_supporters_name = get_special_var_name( e_special_var_blockchain_peer_has_supporters );
    }
 
@@ -2673,6 +2772,7 @@ class peer_session_command_functor : public command_functor
    socket_command_handler& socket_handler;
 
    string blockchain_is_fetching_name;
+   string blockchain_zenith_height_name;
    string blockchain_peer_has_supporters_name;
 };
 
@@ -2714,7 +2814,11 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
    size_t blockchain_height = socket_handler.get_blockchain_height( );
    size_t blockchain_height_other = socket_handler.get_blockchain_height_other( );
 
+   bool had_zenith_hash = false;
    bool check_for_supporters = false;
+
+   if( !get_session_variable( blockchain_zenith_height_name ).empty( ) )
+      had_zenith_hash = true;
 
    if( !get_session_variable( blockchain_peer_has_supporters_name ).empty( ) )
       check_for_supporters = true;
@@ -3107,6 +3211,15 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
    bool has_issued_bye = false;
 
+   if( !had_zenith_hash && !blockchain_height
+    && !get_session_variable( blockchain_zenith_height_name ).empty( ) )
+   {
+      string tag( blockchain + ".0" + string( c_pub_suffix ) );
+
+      if( !has_tag( tag ) )
+         socket_handler.set_is_legacy_chain( true );
+   }
+
    // NOTE: If a disconnect has been actioned for the paired identity then issue
    // a "bye" after condemning this session and (unless still connecting) do the
    // same if the matching identity session is not found.
@@ -3459,6 +3572,7 @@ peer_session::peer_session( int64_t time_val,
  ap_socket( ap_socket ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
+ is_legacy_chain( false ),
  peer_is_owner( false ),
  both_are_owners( false ),
  has_support_sessions( false )
@@ -3493,8 +3607,12 @@ peer_session::peer_session( int64_t time_val,
       is_local = true;
 
    if( !is_responder && !blockchain.empty( )
-    && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
+    && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
       is_owner = true;
+
+   if( !blockchain.empty( )
+    && !list_file_tags( blockchain + string( ".p*" ) + c_pub_suffix ).empty( ) )
+      is_legacy_chain = true;
 
    progress* p_progress = 0;
    trace_progress progress( TRACE_SOCK_OPS );
@@ -3583,7 +3701,7 @@ peer_session::peer_session( int64_t time_val,
       }
 
       if( !blockchain.empty( )
-       && !list_file_tags( blockchain + string( ".p*" ) + c_key_suffix ).empty( ) )
+       && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
          is_owner = true;
 
       if( is_owner && peer_is_owner )
@@ -3627,7 +3745,7 @@ void peer_session::on_start( )
    try
    {
       socket_command_handler cmd_handler( *ap_socket, state,
-       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support );
+       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support, is_legacy_chain );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );

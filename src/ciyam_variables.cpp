@@ -172,6 +172,7 @@ const char* const c_special_variable_blockchain_zenith_tree_hash = "@blockchain_
 const char* const c_special_variable_blockchain_peer_has_supporters = "@blockchain_peer_has_supporters";
 const char* const c_special_variable_blockchain_primary_pubkey_hash = "@blockchain_primary_pubkey_hash";
 const char* const c_special_variable_blockchain_signature_file_hash = "@blockchain_signature_file_hash";
+const char* const c_special_variable_blockchain_tertiary_pubkey_hash = "@blockchain_tertiary_pubkey_hash";
 const char* const c_special_variable_blockchain_secondary_pubkey_hash = "@blockchain_secondary_pubkey_hash";
 
 mutex g_mutex;
@@ -709,6 +710,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_blockchain_signature_file_hash:
       s = string( c_special_variable_blockchain_signature_file_hash );
+      break;
+
+      case e_special_var_blockchain_tertiary_pubkey_hash:
+      s = string( c_special_variable_blockchain_tertiary_pubkey_hash );
       break;
 
       case e_special_var_blockchain_secondary_pubkey_hash:

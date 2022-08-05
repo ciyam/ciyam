@@ -77,6 +77,7 @@ struct block_info
 
    string public_key_hash;
    string secondary_key_hash;
+   string tertiary_key_hash;
 
    uint64_t unix_time_value;
 };
@@ -572,6 +573,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
+   bool has_tertiary_pubkey = false;
 
    size_t scaling_value = c_bc_scaling_value;
 
@@ -630,6 +632,25 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             else
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+         }
+         else if( !has_tertiary_pubkey )
+         {
+            size_t len = strlen( c_file_type_core_block_detail_tertiary_pubkey_prefix );
+
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_tertiary_pubkey_prefix ) )
+               throw runtime_error( "invalid genesis block tertiary pubkey attribute '" + next_attribute + "'" );
+
+            next_attribute.erase( 0, len );
+
+            has_tertiary_pubkey = true;
+
+            string tertiary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
+
+            if( p_block_info )
+               p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
+            else
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
          }
          else
             throw runtime_error( "unexpected extraneous genesis block attribute '" + next_attribute + "'" );
