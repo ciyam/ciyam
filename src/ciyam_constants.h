@@ -183,6 +183,7 @@ const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 const char* const c_file_type_core_block_detail_last_hash_prefix = "l:";
 const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_block_detail_primary_pubkey_prefix = "p:";
+const char* const c_file_type_core_block_detail_tertiary_pubkey_prefix = "t:";
 const char* const c_file_type_core_block_detail_secondary_pubkey_prefix = "s:";
 const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
 const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";
