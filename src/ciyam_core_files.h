@@ -27,6 +27,9 @@ trace_mutex CIYAM_BASE_DECL_SPEC& get_core_files_trace_mutex( );
 
 void CIYAM_BASE_DECL_SPEC verify_core_file( const std::string& content, bool check_sigs = true );
 
+std::string CIYAM_BASE_DECL_SPEC verified_hash_from_signature(
+ const std::string& public_key_hash, const std::string& signature_hash );
+
 bool CIYAM_BASE_DECL_SPEC is_block( const std::string& core_type );
 
 std::string CIYAM_BASE_DECL_SPEC construct_blob_for_block_content( const std::string& block_content );
