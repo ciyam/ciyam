@@ -28,16 +28,34 @@ MULTIPLE=10
 MULTIPLE=100
 @endif
 ;
+IS_TERTIARY=
+;
+.file_info -content bc.$IDENT.0.blk
+@ifndef $ERROR
+TERTIARY_PUB_KEY=%OUTPUT:5%
+;
+@ifdef $TERTIARY_PUB_KEY
+IS_TERTIARY=1
+@endif
+;
 .crypto_hash $SEED -s=-$HEIGHT
 ENTROPY_HASH_PN=$OUTPUT
 ;
 .crypto_lamport new_primary $ENTROPY_HASH_PN
 ;
+@ifdef $TERTIARY
+.file_kill -q bc.$IDENT.$HEIGHT.key
+.file_put new_primary.key bc.$IDENT.$HEIGHT.key
+.file_crypt bc.$IDENT.$HEIGHT.key @sid
+;
+.file_put new_primary.pub bc.$IDENT.$HEIGHT.pub
+@else
 .file_kill -q bc.$IDENT.p$HEIGHT.key
 .file_put new_primary.key bc.$IDENT.p$HEIGHT.key
 .file_crypt bc.$IDENT.p$HEIGHT.key @sid
 ;
 .file_put new_primary.pub bc.$IDENT.p$HEIGHT.pub
+@endif
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -68,14 +86,10 @@ ENTROPY_HASH_SN=$OUTPUT
 ;
 NEED_TERTIARY=
 ;
-@ifeq "$HEIGHT" "$MULTIPLE"
-NEED_TERTIARY=1
-@else
 SQUARED=@$MULTIPLE*$MULTIPLE
 MODULUS=@$HEIGHT#$SQUARED
 @ifeq "$MODULUS" "0"
 NEED_TERTIARY=1
-@endif
 @endif
 ;
 @ifdef $NEED_TERTIARY
@@ -97,6 +111,7 @@ ENTROPY_HASH_TN=$OUTPUT
 ~rm new_primary.key new_primary.pub
 @endif
 ;
+@endif
 @endif
 @endif
 @endif

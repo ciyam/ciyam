@@ -175,6 +175,7 @@ enum special_var
    e_special_var_blockchain_num_tree_items,
    e_special_var_blockchain_skip_blob_puts,
    e_special_var_blockchain_tree_root_hash,
+   e_special_var_blockchain_block_file_hash,
    e_special_var_blockchain_both_are_owners,
    e_special_var_blockchain_height_processed,
    e_special_var_total_child_field_in_parent,

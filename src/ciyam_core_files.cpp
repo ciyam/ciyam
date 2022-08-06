@@ -569,7 +569,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
    data_info data;
    block_info info;
 
-   string last_block_hash, public_key_hash, signature_file_hash;
+   string hind_hash, last_block_hash, public_key_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -657,6 +657,20 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       }
       else
       {
+         if( i == 1 && hind_hash.empty( ) )
+         {
+            size_t len = strlen( c_file_type_core_block_detail_hind_hash_prefix );
+
+            if( next_attribute.substr( 0, len ) == string( c_file_type_core_block_detail_hind_hash_prefix ) )
+            {
+               next_attribute.erase( 0, len );
+
+               hind_hash = hex_encode( base64::decode( next_attribute ) );
+
+               continue;
+            }
+         }
+
          if( last_block_hash.empty( ) )
          {
             size_t len = strlen( c_file_type_core_block_detail_last_hash_prefix );
@@ -720,7 +734,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
          }
-         else if( signature_file_hash.empty( ) )
+         else if( hind_hash.empty( ) && signature_file_hash.empty( ) )
          {
             size_t len = strlen( c_file_type_core_block_detail_signature_file_hash_prefix );
 
@@ -826,7 +840,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       if( last_block_hash.empty( ) )
          throw runtime_error( "unexpected missing block last block hash attribute" );
 
-      if( signature_file_hash.empty( ) )
+      if( hind_hash.empty( ) && signature_file_hash.empty( ) )
          throw runtime_error( "unexpected missing block signature file hash attribute" );
    }
 }
@@ -870,6 +884,14 @@ void verify_core_file( const string& content, bool check_sigs )
       else
          throw runtime_error( "unable to verify non-blob core files" );
    }
+}
+
+string verified_hash_from_signature( const string& public_key_hash, const string& signature_hash )
+{
+   string file_hash_info( public_key_hash + ':' + signature_hash );
+   string verified_file_hash( crypto_lamport( file_hash_info, "", false, true ) );
+
+   return verified_file_hash;
 }
 
 bool is_block( const string& core_type )

@@ -37,6 +37,17 @@ UUID=$OUTPUT
 @ifeq "$HEIGHT" "0"
 #Error: Height must be greater than zero.
 @else
+;
+IS_TERTIARY=
+;
+.file_info -content bc.$IDENT.0.blk
+@ifndef $ERROR
+TERTIARY_PUB_KEY=%OUTPUT:5%
+;
+@ifdef $TERTIARY_PUB_KEY
+IS_TERTIARY=1
+@endif
+;
 LAST=@$HEIGHT-1
 ;
 .file_hash bc.$IDENT.$LAST.blk
@@ -46,24 +57,58 @@ LAST_HASH=$OUTPUT
 .encode $LAST_HASH
 LAST_HASH_ENC=$OUTPUT
 ;
+@ifdef $IS_TERTIARY
+.file_hash bc.$IDENT.$LAST.pub
+@else
 .file_hash bc.$IDENT.p$LAST.pub
+@endif
 @ifndef $ERROR
 ;
+@ifdef $IS_TERTIARY
+.file_hash bc.$IDENT.$HEIGHT.pub
+@else
 .file_hash bc.$IDENT.p$HEIGHT.pub
+@endif
 @ifndef $ERROR
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
 ;
+@ifdef $TERTIARY
+; KLUDGE: Uses pub key hash just to avoid an error.
+.file_hash bc.$IDENT.$HEIGHT.pub
+@else
 .file_hash bc.$IDENT.$HEIGHT.dat
+@endif
 @ifndef $ERROR
 ;
 DATA_HASH=$OUTPUT
 .encode $DATA_HASH
 DATA_HASH_ENC=$OUTPUT
 ;
+@ifdef $IS_TERTIARY
+.file_hash bc.$IDENT.$LAST.key
+@else
 .file_hash bc.$IDENT.p$LAST.key
+@endif
 @ifndef $ERROR
 ;
+@ifdef $IS_TERTIARY
+.crypto_hash @sid -s=#%HEIGHT%
+.crypto_chain 1440 -b64 $OUTPUT
+HIND_HASH_ENC=%OUTPUT:1440%
+;
+.file_crypt bc.$IDENT.$LAST.key @sid
+.file_get bc.$IDENT.$LAST.key ~$UUID.key
+.file_crypt bc.$IDENT.$LAST.key @sid
+;
+.file_get bc.$IDENT.$LAST.pub ~$UUID.pub
+;
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.blk
+@else
 .file_crypt bc.$IDENT.p$LAST.key @sid
 .file_get bc.$IDENT.p$LAST.key ~$UUID.key
 .file_crypt bc.$IDENT.p$LAST.key @sid
@@ -82,8 +127,15 @@ l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 s:$SIG_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
+@endif
 ;
 BLOCK_HASH=$OUTPUT
+;
+@ifdef $IS_TERTIARY
+.crypto_lamport -sign ~$UUID:$BLOCK_HASH
+.file_put ~$UUID.sig bc.$IDENT.$LAST.sig
+.file_hash bc.$IDENT.$LAST.sig
+@endif
 ;
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
@@ -207,6 +259,7 @@ u:$UTIME bc.$IDENT.t$HEIGHT.blk
 @endif
 @endif
 ;
+@endif
 @endif
 @endif
 @endif

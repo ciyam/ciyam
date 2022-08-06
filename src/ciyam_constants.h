@@ -180,6 +180,7 @@ const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
 const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
+const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_block_detail_last_hash_prefix = "l:";
 const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
 const char* const c_file_type_core_block_detail_primary_pubkey_prefix = "p:";
