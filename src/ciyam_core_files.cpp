@@ -98,7 +98,7 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
    if( lines.empty( ) )
       throw runtime_error( "unexpected empty data content" );
 
-   string identity, hind_hash, last_data_hash, primary_hash, secondary_hash, tertiary_hash, tree_root_hash;
+   string identity, hind_hash, last_data_hash, public_key_hash, tree_root_hash;
 
    vector< string > secondary_hashes;
 
@@ -196,13 +196,6 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
 
    data_info info;
 
-   size_t scaling_value = c_bc_scaling_value;
-
-   if( identity == string( c_demo_identity ) )
-      scaling_value = c_bc_scaling_demo_value;
-
-   size_t tertiary_scaling_value = ( scaling_value * scaling_value );
-
    for( size_t i = 1; i < lines.size( ); i++ )
    {
       string next_line( lines[ i ] );
@@ -260,75 +253,24 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
          found = true;
       }
 
-      if( !found && primary_hash.empty( ) )
+      if( !found && public_key_hash.empty( ) )
       {
-         size_t len = strlen( c_file_type_core_data_detail_primary_hash_prefix );
+         size_t len = strlen( c_file_type_core_data_detail_pubkey_hash_prefix );
 
-         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_primary_hash_prefix ) )
+         if( next_attribute.substr( 0, len ) != string( c_file_type_core_data_detail_pubkey_hash_prefix ) )
             throw runtime_error( "invalid data public key hash attribute '" + next_attribute + "'" );
 
          next_attribute.erase( 0, len );
 
-         primary_hash = hex_encode( base64::decode( next_attribute ) );
+         public_key_hash = hex_encode( base64::decode( next_attribute ) );
 
-         if( check_sigs && !has_file( primary_hash ) )
-            throw runtime_error( "primary public key file '" + primary_hash + "' not found" );
+         if( check_sigs && !has_file( public_key_hash ) )
+            throw runtime_error( "public key file '" + public_key_hash + "' not found" );
 
          if( p_data_info )
-            p_data_info->public_key_hash = primary_hash;
+            p_data_info->public_key_hash = public_key_hash;
 
          found = true;
-      }
-
-      if( !found && secondary_hash.empty( )
-       && ( data_height % scaling_value == 0 ) )
-      {
-         size_t len = strlen( c_file_type_core_data_detail_secondary_hash_prefix );
-
-         if( next_attribute.substr( 0, len ) == string( c_file_type_core_data_detail_secondary_hash_prefix ) )
-         {
-            next_attribute.erase( 0, len );
-
-            vector< string > encoded_hashes;
-            split( next_attribute, encoded_hashes );
-
-            for( size_t i = 0; i < encoded_hashes.size( ); i++ )
-            {
-               string next_hash( encoded_hashes[ i ] );
-
-               next_hash = hex_encode( base64::decode( next_hash ) );
-
-               if( check_sigs && !has_file( next_hash ) )
-               {
-                  if( !secondary_hash.empty( ) )
-                     throw runtime_error( "tertiary public key file '" + next_hash + "' not found" );
-                  else
-                     throw runtime_error( "secondary public key file '" + next_hash + "' not found" );
-               }
-
-               if( p_data_info )
-               {
-                  if( !secondary_hash.empty( ) )
-                     p_data_info->tertiary_key_hash = next_hash;
-                  else
-                     p_data_info->secondary_key_hash = next_hash;
-               }
-
-               if( secondary_hash.empty( ) )
-                  secondary_hash = next_hash;
-               else
-                  tertiary_hash = next_hash;
-            }
-
-            found = true;
-         }
-
-         if( data_height == scaling_value
-          || ( data_height % ( scaling_value * scaling_value ) == 0 ) )
-         {
-            if( tertiary_hash.empty( ) )
-               throw runtime_error( "missing expected tertiary public key hash" );
-         }
       }
 
       if( !found && tree_root_hash.empty( ) )
@@ -391,8 +333,8 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
       set_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
 
-   if( primary_hash.empty( ) )
-      throw runtime_error( "unexpected missing primary hash attribute" );
+   if( public_key_hash.empty( ) )
+      throw runtime_error( "unexpected missing public key hash attribute" );
 
    if( data_height > 1 && last_data_hash.empty( ) )
       throw runtime_error( "unexpected missing data last data hash attribute" );
@@ -400,66 +342,23 @@ void verify_data( const string& content, bool check_sigs, data_info* p_data_info
    if( !unix_time_value )
       throw runtime_error( "unexpected missing unix data time value attribute" );
 
-   vector< string > block_tags;
+   string block_tag( c_bc_prefix + identity + "." + to_string( data_height ) + c_blk_suffix );
 
-   string primary_block_tag( c_bc_prefix + identity + "." + to_string( data_height ) + c_blk_suffix );
-
-   block_tags.push_back( primary_block_tag );
-
-   if( data_height && ( data_height % scaling_value == 0 ) )
+   if( has_tag( block_tag ) )
    {
-      string secondary_block_tag( c_bc_prefix + identity
-       + c_secondary_prefix + to_string( data_height ) + c_blk_suffix );
+      string block_hash( tag_file_hash( block_tag ) );
+      string block_data( extract_file( block_hash, "", c_file_type_char_core_blob ) );
 
-      block_tags.push_back( secondary_block_tag );
-   }
+      string::size_type pos = block_data.find( ':' );
 
-   if( data_height && ( data_height % tertiary_scaling_value == 0 ) )
-   {
-      string tertiary_block_tag( c_bc_prefix + identity
-       + c_tertiary_prefix + to_string( data_height ) + c_blk_suffix );
+      if( pos == string::npos )
+         throw runtime_error( "unexpected invalid block data in verify_data" );
 
-      block_tags.push_back( tertiary_block_tag );
-   }
+      block_info info;
+      verify_block( block_data.substr( pos + 1 ), false, &info );
 
-   for( size_t i = 0; i < block_tags.size( ); i++ )
-   {
-      string next_tag( block_tags[ i ] );
-
-      if( has_tag( next_tag ) )
-      {
-         string next_block_hash( tag_file_hash( next_tag ) );
-         string next_block_info( extract_file( next_block_hash, "", c_file_type_char_core_blob ) );
-
-         string::size_type pos = next_block_info.find( ':' );
-
-         if( pos == string::npos )
-            throw runtime_error( "unexpected invalid block info in verify_data" );
-
-         block_info info;
-         verify_block( next_block_info.substr( pos + 1 ), false, &info );
-
-         switch( i )
-         {
-            case 0:
-            if( primary_hash != info.public_key_hash )
-               throw runtime_error( "unexpected data primary public key does not match block public key hash" );
-            break;
-
-            case 1:
-            if( secondary_hash != info.public_key_hash )
-               throw runtime_error( "unexpected data secondary public key does not match block public key hash" );
-            break;
-
-            case 2:
-            if( tertiary_hash != info.public_key_hash )
-               throw runtime_error( "unexpected data tertiary public key does not match block public key hash" );
-            break;
-
-            default:
-            throw runtime_error( "unexpected extrameous block tags in verify_data" );
-         }
-      }
+      if( public_key_hash != info.public_key_hash )
+         throw runtime_error( "unexpected data primary public key does not match block public key hash" );
    }
 }
 
@@ -597,22 +496,56 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       {
          if( !has_primary_pubkey )
          {
-            size_t len = strlen( c_file_type_core_block_detail_primary_pubkey_prefix );
+            size_t len = strlen( c_file_type_core_block_detail_pubkey_hash_prefix );
 
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_primary_pubkey_prefix ) )
-               throw runtime_error( "invalid genesis block primary pubkey attribute '" + next_attribute + "'" );
+            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_pubkey_hash_prefix ) )
+               throw runtime_error( "invalid genesis block public keys attribute '" + next_attribute + "'" );
 
             next_attribute.erase( 0, len );
 
             has_primary_pubkey = true;
 
-            string primary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
+            string::size_type pos = next_attribute.find( ',' );
+
+            string primary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
 
             if( p_block_info )
                p_block_info->public_key_hash = primary_pubkey_hash;
             else
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), primary_pubkey_hash );
+
+            if( pos != string::npos )
+            {
+               next_attribute.erase( 0, pos + 1 );
+
+               has_secondary_pubkey = true;
+
+               pos = next_attribute.find( ',' );
+
+               string secondary_pubkey_hash( hex_encode( base64::decode( next_attribute.substr( 0, pos ) ) ) );
+
+               if( p_block_info )
+                  p_block_info->secondary_key_hash = secondary_pubkey_hash;
+               else
+                  set_session_variable(
+                   get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
+
+               if( pos != string::npos )
+               {
+                  next_attribute.erase( 0, pos + 1 );
+
+                  has_tertiary_pubkey = true;
+
+                  string tertiary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
+
+                  if( p_block_info )
+                     p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
+                  else
+                     set_session_variable(
+                      get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
+               }
+            }
          }
          else if( !has_secondary_pubkey )
          {
@@ -632,25 +565,6 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
             else
                set_session_variable(
                 get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), secondary_pubkey_hash );
-         }
-         else if( !has_tertiary_pubkey )
-         {
-            size_t len = strlen( c_file_type_core_block_detail_tertiary_pubkey_prefix );
-
-            if( next_attribute.substr( 0, len ) != string( c_file_type_core_block_detail_tertiary_pubkey_prefix ) )
-               throw runtime_error( "invalid genesis block tertiary pubkey attribute '" + next_attribute + "'" );
-
-            next_attribute.erase( 0, len );
-
-            has_tertiary_pubkey = true;
-
-            string tertiary_pubkey_hash( hex_encode( base64::decode( next_attribute ) ) );
-
-            if( p_block_info )
-               p_block_info->tertiary_key_hash = tertiary_pubkey_hash;
-            else
-               set_session_variable(
-                get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ), tertiary_pubkey_hash );
          }
          else
             throw runtime_error( "unexpected extraneous genesis block attribute '" + next_attribute + "'" );

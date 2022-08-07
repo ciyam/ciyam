@@ -1705,13 +1705,13 @@ class socket_command_handler : public command_handler
 {
    public:
 #ifdef SSL_SUPPORT
-   socket_command_handler( ssl_socket& socket,
-    peer_state session_state, int64_t time_val, bool is_local, bool is_owner,
-    const string& blockchain, bool is_for_support = false, bool is_legacy_chain = true )
+   socket_command_handler(
+    ssl_socket& socket, peer_state session_state, int64_t time_val,
+    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #else
-   socket_command_handler( tcp_socket& socket,
-    peer_state session_state, int64_t time_val, bool is_local, bool is_owner,
-    const string& blockchain, bool is_for_support = false, bool is_legacy_chain = true )
+   socket_command_handler(
+    tcp_socket& socket, peer_state session_state, int64_t time_val,
+    bool is_local, bool is_owner, const string& blockchain, bool is_for_support = false )
 #endif
     :
     socket( socket ),
@@ -1723,10 +1723,10 @@ class socket_command_handler : public command_handler
     blockchain_height( 0 ),
     blockchain_height_other( 0 ),
     blockchain_height_pending( 0 ),
+    is_for_support( is_for_support ),
+    is_legacy_chain( true ),
     is_time_for_check( false ),
     has_identity_archive( false ),
-    is_for_support( is_for_support ),
-    is_legacy_chain( is_legacy_chain ),
     session_state( session_state ),
     session_op_state( session_state ),
     session_trust_level( e_peer_trust_level_none )
@@ -1748,6 +1748,9 @@ class socket_command_handler : public command_handler
 
          identity = replaced( blockchain, c_bc_prefix, "" );
          has_identity_archive = has_file_archive( identity );
+
+         if( has_tag( blockchain + ".0" + string( c_pub_suffix ) ) )
+            is_legacy_chain = false;
       }
 
       last_issued_was_put = !is_responder;
@@ -3653,7 +3656,6 @@ peer_session::peer_session( int64_t time_val,
  ap_socket( ap_socket ),
  is_responder( is_responder ),
  is_for_support( is_for_support ),
- is_legacy_chain( true ),
  peer_is_owner( false ),
  both_are_owners( false ),
  has_support_sessions( false )
@@ -3690,10 +3692,6 @@ peer_session::peer_session( int64_t time_val,
    if( !is_responder && !blockchain.empty( )
     && !list_file_tags( blockchain + string( ".*" ) + c_key_suffix ).empty( ) )
       is_owner = true;
-
-   if( !blockchain.empty( )
-    && has_tag( blockchain + ".0" + string( c_pub_suffix ) ) )
-      is_legacy_chain = false;
 
    progress* p_progress = 0;
    trace_progress progress( TRACE_SOCK_OPS );
@@ -3826,7 +3824,7 @@ void peer_session::on_start( )
    try
    {
       socket_command_handler cmd_handler( *ap_socket, state,
-       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support, is_legacy_chain );
+       current + ( difference * 2 ), is_local, is_owner, blockchain, is_for_support );
 
       cmd_handler.add_commands( 0,
        peer_session_command_functor_factory, ARRAY_PTR_AND_SIZE( peer_session_command_definitions ) );
