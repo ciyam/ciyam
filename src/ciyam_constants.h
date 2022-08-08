@@ -51,7 +51,7 @@ const char* const c_txs_file_ext = ".txs";
 const char* const c_ciyam_script = "ciyam_script";
 const char* const c_ciyam_server = "ciyam_server";
 
-const char* const c_demo_identity = "bc139fc15";
+const char* const c_demo_identity = "39659983c";
 
 const char* const c_variables_branch = "Variables";
 
@@ -177,11 +177,13 @@ const char* const c_file_type_core_data_detail_unix_data_time_value_prefix = "u:
 
 const char* const c_file_type_core_block_header_height_prefix = "h=";
 const char* const c_file_type_core_block_header_identity_prefix = "i=";
+const char* const c_file_type_core_block_header_num_tree_items_prefix = "n=";
 const char* const c_file_type_core_block_header_version_number_prefix = "v=";
 
 const char* const c_file_type_core_block_detail_hind_hash_prefix = "h:";
 const char* const c_file_type_core_block_detail_last_hash_prefix = "l:";
 const char* const c_file_type_core_block_detail_pubkey_hash_prefix = "p:";
+const char* const c_file_type_core_block_detail_tree_root_hash_prefix = "t:";
 const char* const c_file_type_core_block_detail_secondary_pubkey_prefix = "s:";
 const char* const c_file_type_core_block_detail_signature_file_hash_prefix = "s:";
 const char* const c_file_type_core_block_detail_unix_block_time_value_prefix = "u:";

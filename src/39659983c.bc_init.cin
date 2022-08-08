@@ -7,6 +7,7 @@
 ;de604cee0755a3d81944ea96aed12681
 ENTROPY_P0=%OUTPUT%-0
 ENTROPY_S0=%OUTPUT%!0
+ENTROPY_T0=%OUTPUT%@0
 ;
 .crypto_hash $ENTROPY_P0
 ;ad6da9c58db7187d14bb7cefa51ab9f7f755993189dee7639bab56175aef09bc
@@ -16,33 +17,41 @@ ENTROPY_HASH_P0=$OUTPUT
 ;c11b618e3606eccc4c575b59097fdd5158b3cb6ff5cc7a5d9814b40725e3b7bc
 ENTROPY_HASH_S0=$OUTPUT
 ;
-.session_variable @uuid
-UUID=$OUTPUT
+.crypto_hash $ENTROPY_T0
+;d392d2be8599406a8686da971e317960d25244e414d518e57110e76d223f1c82
+ENTROPY_HASH_T0=$OUTPUT
+;
+UUID=d4e29a4041d28de363315110b335905c
+.session_variable @uuid $UUID
 ;
 .crypto_lamport primary $ENTROPY_HASH_P0
 .crypto_lamport secondary $ENTROPY_HASH_S0
+.crypto_lamport tertiary $ENTROPY_HASH_T0
 ;
-.file_put primary.key bc.$UUID.p0.key
-.file_put primary.pub bc.$UUID.p0.pub
+.file_put primary.key bc.$UUID.0.key
+.file_put primary.pub bc.$UUID.0.pub
 .file_put secondary.key bc.$UUID.s0.key
 .file_put secondary.pub bc.$UUID.s0.pub
+.file_put tertiary.key bc.$UUID.t0.key
+.file_put tertiary.pub bc.$UUID.t0.pub
 ;
-.file_crypt bc.$UUID.p0.key @sid
+.file_crypt bc.$UUID.0.key @sid
 .file_crypt bc.$UUID.s0.key @sid
+.file_crypt bc.$UUID.t0.key @sid
 .system_variable @os
 @ifeq "$OUTPUT" "Linux"
 ~shred primary.key
 ~shred secondary.key
+~shred tertiary.key
 @endif
-~rm primary.key secondary.key primary.pub secondary.pub
+~rm primary.key secondary.key primary.pub secondary.pub tertiary.key tertiary.pub
 ;
-.file_hash bc.$UUID.p0.pub
+.file_hash bc.$UUID.0.pub
 PRIMARY_PUBKEY_HASH=$OUTPUT
-IDENT=@substr:0,9:$PRIMARY_PUBKEY_HASH
 .encode $PRIMARY_PUBKEY_HASH
 PRIMARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
-.file_hash bc.$UUID.p0.key
+.file_hash bc.$UUID.0.key
 PRIMARY_PRIVKEY_HASH=$OUTPUT
 ;
 .file_hash bc.$UUID.s0.pub
@@ -51,11 +60,20 @@ SECONDARY_PUBKEY_HASH=$OUTPUT
 .file_hash bc.$UUID.s0.key
 SECONDARY_PRIVKEY_HASH=$OUTPUT
 ;
-.file_tag -remove bc.$UUID.p0.pub
-.file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.p0.pub
+.file_hash bc.$UUID.t0.pub
+TERTIARY_PUBKEY_HASH=$OUTPUT
 ;
-.file_tag -remove bc.$UUID.p0.key
-.file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.p0.key
+.file_hash bc.$UUID.t0.key
+TERTIARY_PRIVKEY_HASH=$OUTPUT
+;
+.crypto_hash $PRIMARY_PUBKEY_HASH$SECONDARY_PUBKEY_HASH$TERTIARY_PUBKEY_HASH
+IDENT=@substr:0,9:$OUTPUT
+;
+.file_tag -remove bc.$UUID.0.pub
+.file_tag $PRIMARY_PUBKEY_HASH bc.$IDENT.0.pub
+;
+.file_tag -remove bc.$UUID.0.key
+.file_tag $PRIMARY_PRIVKEY_HASH bc.$IDENT.0.key
 ;
 .file_tag -remove bc.$UUID.s0.pub
 .file_tag $SECONDARY_PUBKEY_HASH bc.$IDENT.s0.pub
@@ -63,13 +81,22 @@ SECONDARY_PRIVKEY_HASH=$OUTPUT
 .file_tag -remove bc.$UUID.s0.key
 .file_tag $SECONDARY_PRIVKEY_HASH bc.$IDENT.s0.key
 ;
+.file_tag -remove bc.$UUID.t0.pub
+.file_tag $TERTIARY_PUBKEY_HASH bc.$IDENT.t0.pub
+;
+.file_tag -remove bc.$UUID.t0.key
+.file_tag $TERTIARY_PRIVKEY_HASH bc.$IDENT.t0.key
+;
 .file_hash bc.$IDENT.s0.pub
 .encode $OUTPUT
 SECONDARY_PUBKEY_HASH_ENC=$OUTPUT
 ;
+.file_hash bc.$IDENT.t0.pub
+.encode $OUTPUT
+TERTIARY_PUBKEY_HASH_ENC=$OUTPUT
+;
 .file_raw -core blob blk:h=0,i=$IDENT\n\
-p:$PRIMARY_PUBKEY_HASH_ENC\n\
-s:$SECONDARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
+p:$PRIMARY_PUBKEY_HASH_ENC,$SECONDARY_PUBKEY_HASH_ENC,$TERTIARY_PUBKEY_HASH_ENC bc.$IDENT.0.blk
 ;
 BLOCK_HASH=$OUTPUT
 ;

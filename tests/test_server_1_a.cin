@@ -285,7 +285,7 @@ Y=@substr:1:$Y
 !!@:MAIN_LOOP
 @:END
 ;
-PATHS=@paths:..:^.git,^tmp,^files,^bc.bc139fc15
+PATHS=@paths:..:^.git,^tmp,^files,^bc.39659983c
 #$PATHS
 ;
 FILES=@files::test*.jpg

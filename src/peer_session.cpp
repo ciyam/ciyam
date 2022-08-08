@@ -1541,12 +1541,14 @@ void validate_public_key_file( const string& file_data )
    }
 }
 
-bool process_block_for_height( const string& blockchain,
- const string& hash, size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0 )
+bool process_block_for_height( const string& blockchain, const string& hash,
+ size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0, bool get_tree_items = false )
 {
    bool retval = false;
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
+
+   string identity( replaced( blockchain, c_bc_prefix, "" ) );
 
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
@@ -1619,6 +1621,54 @@ bool process_block_for_height( const string& blockchain,
          else
             process_public_key_file( blockchain,
              tertiary_pubkey_hash, height, e_public_key_scale_tertiary, has_tertiary );
+      }
+
+      string tree_root_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
+
+      string blockchain_height_processed( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_height_processed ) ) );
+
+      bool is_new_height = ( blockchain_height_processed.empty( )
+       || ( from_string< size_t >( blockchain_height_processed ) < height ) );
+
+      if( is_new_height || get_tree_items )
+      {
+         if( !tree_root_hash.empty( ) )
+         {
+            date_time dtm( date_time::local( ) );
+
+            if( !has_file( tree_root_hash ) )
+               add_peer_file_hash_for_get( tree_root_hash );
+            else
+            {
+               if( get_session_variable( get_special_var_name(
+                e_special_var_blockchain_skip_blob_puts ) ).empty( ) )
+                  get_tree_items = has_all_list_items( blockchain, tree_root_hash, true, false, &dtm, p_progress );
+
+               if( get_tree_items )
+               {
+                  string prior_data_tree_hash;
+
+                  if( !last_data_tree_is_identical( blockchain, height - 1, &prior_data_tree_hash ) )
+                  {
+                     set< string > prior_data_tree_blobs;
+
+                     // NOTE: Retrieve all the blob hashes for the prior data tree 
+                     // in order to skip any repeats found in "process_list_items".
+                     if( !prior_data_tree_hash.empty( ) )
+                        has_all_list_items( blockchain, prior_data_tree_hash,
+                         true, false, &dtm, p_progress, 0, &prior_data_tree_blobs );
+
+                     process_list_items( identity, tree_root_hash, true,
+                      0, p_num_items_found, &prior_data_tree_blobs, &dtm, p_progress );
+                  }
+               }
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+            }
+         }
       }
 
       string signature_file_hash( get_session_variable(
@@ -2846,12 +2896,16 @@ class peer_session_command_functor : public command_functor
     : command_functor( handler ),
     socket_handler( dynamic_cast< socket_command_handler& >( handler ) )
    {
+      clear_ignore_count = 0;
+
       blockchain_is_fetching_name = get_special_var_name( e_special_var_blockchain_is_fetching );
       blockchain_zenith_height_name = get_special_var_name( e_special_var_blockchain_zenith_height );
       blockchain_peer_has_supporters_name = get_special_var_name( e_special_var_blockchain_peer_has_supporters );
    }
 
    void operator ( )( const string& command, const parameter_info& parameters );
+
+   size_t clear_ignore_count;
 
    socket_command_handler& socket_handler;
 
@@ -3069,6 +3123,17 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             }
             else if( !socket_handler.get_is_for_support( ) && ( tag_or_hash.find( c_bc_prefix ) == 0 ) )
             {
+               string::size_type pos = tag_or_hash.find( c_sig_suffix );
+
+               if( pos != string::npos )
+               {
+                  string prefix( c_bc_prefix + identity + '.' );
+                  size_t height = from_string< size_t >( tag_or_hash.substr( prefix.length( ), pos - prefix.length( ) ) );
+
+                  string block_tag( c_bc_prefix + identity + '.' + to_string( height + 1 ) + c_blk_suffix );
+                  hash = tag_file_hash( block_tag );
+               }
+
                if( get_block_height_from_tags( blockchain, hash, blockchain_height ) )
                {
                   string first_item_hash;
@@ -3089,13 +3154,13 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
                         socket_handler.set_blockchain_height( blockchain_height );
 
-                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
+                     process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler, true );
                   }
                   else
                   {
                      if( !first_item_hash.empty( )
                       || get_session_variable( blockchain_is_fetching_name ).empty( ) )
-                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler );
+                        process_block_for_height( blockchain, hash, blockchain_height, &num_items_found, &socket_handler, true );
                   }
                }
             }
@@ -3136,7 +3201,24 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
          {
             if( !get_system_variable( c_ignore_all_puts_prefix + identity ).empty( ) )
             {
-               if( get_hash_tags( hash ).find( c_dat_suffix ) != string::npos )
+               bool clear_ignore = false;
+
+               if( socket_handler.get_is_legacy_chain( )
+                && ( get_hash_tags( hash ).find( c_dat_suffix ) != string::npos ) )
+                  clear_ignore = true;
+
+               if( !socket_handler.get_is_legacy_chain( ) )
+               {
+                  if( clear_ignore_count )
+                  {
+                     if( --clear_ignore_count == 0 )
+                        clear_ignore = true;
+                  }
+                  else if( get_hash_tags( hash ).find( c_pub_suffix ) != string::npos )
+                     clear_ignore_count++;
+               }
+
+               if( clear_ignore )
                   set_system_variable( c_ignore_all_puts_prefix + identity, "" );
             }
          }

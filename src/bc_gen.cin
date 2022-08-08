@@ -31,7 +31,7 @@ ENTROPY_HASH_P0=$OUTPUT
 ENTROPY_HASH_S0=$OUTPUT
 ;
 @ifdef $TERTIARY
-.crypto_hash $SEED -s=!!0
+.crypto_hash $SEED -s=@0
 ENTROPY_HASH_T0=$OUTPUT
 @endif
 ;
