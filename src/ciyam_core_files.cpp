@@ -377,6 +377,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
    string identity;
 
    size_t version = 0;
+   size_t num_tree_items = 0;
 
    bool is_secondary = false;
    bool is_tertiary = false;
@@ -398,12 +399,31 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
       bool has_height = false;
       bool has_identity = false;
+      bool has_num_tree_items = false;
 
       for( size_t i = 0; i < attributes.size( ); i++ )
       {
          string next_attribute( attributes[ i ] );
          if( next_attribute.empty( ) )
             throw runtime_error( "unexpected empty attribute in block header '" + header + "'" );
+
+         if( i > 1 && !has_num_tree_items )
+         {
+            if( next_attribute.find( c_file_type_core_block_header_num_tree_items_prefix ) == 0 )
+            {
+               has_num_tree_items = true;
+
+               num_tree_items = from_string< size_t >( next_attribute.substr(
+                strlen( c_file_type_core_block_header_num_tree_items_prefix ) ) );
+
+               // NOTE: The total tree items attribute does not include the tree root itself but in order to match
+               // the number of files being processed in a peer session the value is being incremented by one here.
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_num_tree_items ), to_string( num_tree_items + 1 ) );
+
+               continue;
+            }
+         }
 
          if( !has_height )
          {
@@ -468,7 +488,7 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
    data_info data;
    block_info info;
 
-   string hind_hash, last_block_hash, public_key_hash, signature_file_hash;
+   string hind_hash, last_block_hash, public_key_hash, tree_root_hash, signature_file_hash;
 
    bool has_primary_pubkey = false;
    bool has_secondary_pubkey = false;
@@ -573,13 +593,39 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
       {
          if( i == 1 && hind_hash.empty( ) )
          {
-            size_t len = strlen( c_file_type_core_block_detail_hind_hash_prefix );
+            string prefix( c_file_type_core_block_detail_hind_hash_prefix );
 
-            if( next_attribute.substr( 0, len ) == string( c_file_type_core_block_detail_hind_hash_prefix ) )
+            size_t len = prefix.length( );
+
+            if( ( next_attribute.length( ) > len )
+             && ( prefix == next_attribute.substr( 0, len ) ) )
             {
                next_attribute.erase( 0, len );
 
                hind_hash = hex_encode( base64::decode( next_attribute ) );
+
+               continue;
+            }
+         }
+
+         if( i > 3 && tree_root_hash.empty( ) )
+         {
+            string prefix( c_file_type_core_block_detail_tree_root_hash_prefix );
+
+            size_t len = prefix.length( );
+
+            if( ( next_attribute.length( ) > len )
+             && ( prefix == next_attribute.substr( 0, len ) ) )
+            {
+               next_attribute.erase( 0, len );
+
+               tree_root_hash = hex_encode( base64::decode( next_attribute ) );
+
+               if( check_sigs && !has_file( tree_root_hash ) )
+                  throw runtime_error( "tree root file '" + tree_root_hash + "' not found" );
+
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_tree_root_hash ), tree_root_hash );
 
                continue;
             }

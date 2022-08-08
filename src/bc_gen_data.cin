@@ -20,7 +20,15 @@ HEIGHT=$2
 ;
 TREE=$3
 ;
-@ifneq "$IDENT" "bc139fc15"
+IS_DEMO=
+@ifeq "$IDENT" "bc139fc15"
+IS_DEMO=1
+@endif
+@ifeq "$IDENT" "39659983c"
+IS_DEMO=1
+@endif
+;
+@ifndef $IS_DEMO
 UTIME=@unix:
 @else
 HRS_01=3600

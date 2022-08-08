@@ -12,13 +12,23 @@ ERROR=1
 @endif
 ;
 @ifeq "$ERROR" "1"
-#Usage: bc_gen_block.cin <ident> <height>
+#Usage: bc_gen_block.cin <ident> <height> [<tree>]
 @else
 ;
 IDENT=$1
 HEIGHT=$2
 ;
-@ifneq "$IDENT" "bc139fc15"
+TREE=$3
+;
+IS_DEMO=
+@ifeq "$IDENT" "bc139fc15"
+IS_DEMO=1
+@endif
+@ifeq "$IDENT" "39659983c"
+IS_DEMO=1
+@endif
+;
+@ifndef $IS_DEMO
 MULTIPLE=100
 UTIME=@unix:
 @else
@@ -50,6 +60,14 @@ SECONDARY_PUB_KEY=%OUTPUT:4%
 ;
 @ifndef $SECONDARY_PUB_KEY
 IS_TERTIARY=1
+;
+@ifndef $TREE
+.file_tags -i=ciyam
+@ifdef $OUTPUT
+TREE=ciyam
+@endif
+@endif
+;
 @endif
 ;
 LAST=@$HEIGHT-1
@@ -77,7 +95,7 @@ LAST_HASH_ENC=$OUTPUT
 .encode $OUTPUT
 PUB_KEY_HASH_ENC=$OUTPUT
 ;
-@ifdef $TERTIARY
+@ifdef $IS_TERTIARY
 ; KLUDGE: Uses pub key hash just to avoid an error.
 .file_hash bc.$IDENT.$HEIGHT.pub
 @else
@@ -152,26 +170,67 @@ TERTIARY_PUB_KEY_HASH=$OUTPUT
 TERTIARY_PUB_KEY_HASH_ENC=$OUTPUT
 @endif
 ;
+@ifndef $TREE
+;
 @ifdef $LAST_TERTIARY
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC,$LAST_TERTIARY_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC,$TERTIARY_PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 @else
 @ifdef $LAST_SECONDARY
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 @else
-.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,v=1\n\
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=0,v=1\n\
 h:$HIND_HASH_ENC\n\
 l:$LAST_HASH_ENC\n\
 p:$PUB_KEY_HASH_ENC\n\
 u:$UTIME bc.$IDENT.$HEIGHT.blk
 @endif
+@endif
+;
+@else
+;
+.file_hash $TREE
+@ifdef $ERROR
+@label END
+@endif
+@skip
+.encode $OUTPUT
+TREE_ROOT_HASH_ENC=$OUTPUT
+.file_info -total_items $TREE
+NUM_TREE_ITEMS=$OUTPUT
+;
+@ifdef $LAST_TERTIARY
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC,$LAST_TERTIARY_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC,$TERTIARY_PUB_KEY_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.blk
+@else
+@ifdef $LAST_SECONDARY
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC,$LAST_SECONDARY_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC,$SECONDARY_PUB_KEY_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.blk
+@else
+.file_raw -core blob blk:h=$HEIGHT,i=$IDENT,n=$NUM_TREE_ITEMS,v=1\n\
+h:$HIND_HASH_ENC\n\
+l:$LAST_HASH_ENC\n\
+p:$PUB_KEY_HASH_ENC\n\
+t:$TREE_ROOT_HASH_ENC\n\
+u:$UTIME bc.$IDENT.$HEIGHT.blk
+@endif
+@endif
+;
 @endif
 @endif
 ;
