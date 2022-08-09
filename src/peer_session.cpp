@@ -74,7 +74,6 @@ const char c_repository_suffix = '!';
 const char c_tree_files_suffix = '+';
 
 const char c_error_message_prefix = '#';
-const char c_ignore_all_puts_prefix = '$';
 const char c_progress_output_prefix = '%';
 
 const char* const c_hello = "hello";
@@ -889,21 +888,42 @@ bool last_data_tree_is_identical( const string& blockchain,
       string tree_root_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
 
+      string public_key_hash( get_session_variable(
+       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ) ) );
+
       string data_tag( blockchain + '.' );
+      string block_tag( blockchain + '.' );
 
       data_tag += to_string( previous_height );
+      block_tag += to_string( previous_height );
 
       data_tag += c_dat_suffix;
+      block_tag += c_blk_suffix;
 
-      string prior_data_hash( tag_file_hash( data_tag ) );
+      if( has_tag( data_tag ) )
+      {
+         string prior_data_hash( tag_file_hash( data_tag ) );
 
-      string prior_data_content(
-       construct_blob_for_block_content( extract_file( prior_data_hash, "" ) ) );
+         string prior_data_content(
+          construct_blob_for_block_content( extract_file( prior_data_hash, "" ) ) );
 
-      verify_core_file( prior_data_content, false );
+         verify_core_file( prior_data_content, false );
+      }
+      else
+      {
+         string prior_block_hash( tag_file_hash( block_tag ) );
+
+         string prior_block_content(
+          construct_blob_for_block_content( extract_file( prior_block_hash, "" ) ) );
+
+         verify_core_file( prior_block_content, false );
+      }
 
       set_session_variable( get_special_var_name(
        e_special_var_blockchain_num_tree_items ), num_tree_items );
+
+      set_session_variable( get_special_var_name(
+       e_special_var_blockchain_primary_pubkey_hash ), public_key_hash );
 
       string prior_data_tree_hash( get_session_variable(
        get_special_var_name( e_special_var_blockchain_tree_root_hash ) ) );
@@ -1351,13 +1371,16 @@ void process_signature_file( const string& blockchain, const string& hash, size_
        get_special_var_name( e_special_var_blockchain_height ), "" );
 
       set_session_variable(
-       get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
-
-      set_session_variable(
        get_special_var_name( e_special_var_blockchain_signature_file_hash ), "" );
 
-      set_session_variable(
-       get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+      if( is_legacy_chain )
+      {
+         set_session_variable(
+          get_special_var_name( e_special_var_blockchain_primary_pubkey_hash ), "" );
+
+         set_session_variable(
+          get_special_var_name( e_special_var_blockchain_secondary_pubkey_hash ), "" );
+      }
    }
    catch( ... )
    {
@@ -1545,6 +1568,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
  size_t height, size_t* p_num_items_found = 0, progress* p_progress = 0, bool get_tree_items = false )
 {
    bool retval = false;
+   bool has_hind_hash = false;
 
    TRACE_LOG( TRACE_PEER_OPS, "(process_block_for_height) hash: " + hash + " height: " + to_string( height ) );
 
@@ -1553,7 +1577,17 @@ bool process_block_for_height( const string& blockchain, const string& hash,
    string block_content(
     construct_blob_for_block_content( extract_file( hash, "" ) ) );
 
+   set_session_variable(
+    get_special_var_name( e_special_var_blockchain_tree_root_hash ), "" );
+
    verify_core_file( block_content, false );
+
+   if( !get_session_variable(
+    get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
+   {
+      has_hind_hash = true;
+      set_session_variable( get_special_var_name( e_special_var_blockchain_hind_hash ), "" );
+   }
 
    string block_height( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height ) ) );
@@ -1602,7 +1636,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
          }
          else
             process_public_key_file( blockchain,
-             primary_pubkey_hash, height, e_public_key_scale_primary, has_tertiary );
+             primary_pubkey_hash, height, e_public_key_scale_primary, ( has_tertiary | has_hind_hash ) );
       }
 
       if( !secondary_pubkey_hash.empty( ) )
@@ -1611,7 +1645,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
             add_peer_file_hash_for_get( secondary_pubkey_hash );
          else
             process_public_key_file( blockchain,
-             secondary_pubkey_hash, height, e_public_key_scale_secondary, has_tertiary );
+             secondary_pubkey_hash, height, e_public_key_scale_secondary, ( has_tertiary | has_hind_hash ) );
       }
 
       if( !tertiary_pubkey_hash.empty( ) )
@@ -1620,7 +1654,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
             add_peer_file_hash_for_get( tertiary_pubkey_hash );
          else
             process_public_key_file( blockchain,
-             tertiary_pubkey_hash, height, e_public_key_scale_tertiary, has_tertiary );
+             tertiary_pubkey_hash, height, e_public_key_scale_tertiary, ( has_tertiary | has_hind_hash ) );
       }
 
       string tree_root_hash( get_session_variable(
@@ -1632,7 +1666,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
       bool is_new_height = ( blockchain_height_processed.empty( )
        || ( from_string< size_t >( blockchain_height_processed ) < height ) );
 
-      if( is_new_height || get_tree_items )
+      if( has_hind_hash && ( is_new_height || get_tree_items ) )
       {
          if( !tree_root_hash.empty( ) )
          {
@@ -1703,9 +1737,6 @@ bool process_block_for_height( const string& blockchain, const string& hash,
          else if( !waiting_for_pubkey && !waiting_for_signature )
          {
             retval = true;
-
-            if( !first_hash_to_get.empty( ) )
-               set_system_variable( c_ignore_all_puts_prefix + replaced( blockchain, c_bc_prefix, "" ), "" );
 
             process_data_file( blockchain, data_file_hash, height, p_num_items_found, true, p_progress );
          }
@@ -2293,12 +2324,6 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
    if( !prior_put( ).empty( ) && !has_file( prior_put( ) ) )
       prior_put( ).erase( );
 
-   bool ignore_blockchain_puts = false;
-
-   if( !identity.empty( )
-    && !get_system_variable( c_ignore_all_puts_prefix + identity ).empty( ) )
-      ignore_blockchain_puts = true;
-
    bool any_supporter_has_top_get = false;
    bool any_supporter_has_top_put = false;
 
@@ -2341,9 +2366,8 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
       next_hash_to_get = top_next_peer_file_hash_to_get(
        ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_get : 0 );
 
-      if( !ignore_blockchain_puts )
-         next_hash_to_put = top_next_peer_file_hash_to_put(
-          ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
+      next_hash_to_put = top_next_peer_file_hash_to_put(
+       ( i == 0 && check_for_supporters ) ? &any_supporter_has_top_put : 0 );
 
       if( is_for_support && next_hash_to_get.empty( ) && next_hash_to_put.empty( ) )
          msleep( c_support_session_sleep_time );
@@ -2517,7 +2541,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
 
                   string next_sig_hash;
 
-                  chk_file( next_sig_tag, &next_sig_hash );
+                  has_tree_files = chk_file( next_sig_tag, &next_sig_hash );
 
                   has_issued_chk = true;
 
@@ -3147,8 +3171,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
 
                   temporary_session_variable temp_hash( get_special_var_name( e_special_var_hash ), first_item_hash );
 
-                  set_system_variable( c_ignore_all_puts_prefix + identity, c_true_value );
-
                   if( socket_handler.get_is_responder( ) )
                   {
                      if( blockchain_height > socket_handler.get_blockchain_height( ) )
@@ -3196,32 +3218,6 @@ void peer_session_command_functor::operator ( )( const string& command, const pa
             hash = tag_file_hash( tag_or_hash );
 
          socket.set_delay( );
-
-         if( !identity.empty( ) )
-         {
-            if( !get_system_variable( c_ignore_all_puts_prefix + identity ).empty( ) )
-            {
-               bool clear_ignore = false;
-
-               if( socket_handler.get_is_legacy_chain( )
-                && ( get_hash_tags( hash ).find( c_dat_suffix ) != string::npos ) )
-                  clear_ignore = true;
-
-               if( !socket_handler.get_is_legacy_chain( ) )
-               {
-                  if( clear_ignore_count )
-                  {
-                     if( --clear_ignore_count == 0 )
-                        clear_ignore = true;
-                  }
-                  else if( get_hash_tags( hash ).find( c_pub_suffix ) != string::npos )
-                     clear_ignore_count++;
-               }
-
-               if( clear_ignore )
-                  set_system_variable( c_ignore_all_puts_prefix + identity, "" );
-            }
-         }
 
          fetch_file( hash, socket, p_progress );
 
