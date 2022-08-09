@@ -604,6 +604,9 @@ void verify_block( const string& content, bool check_sigs, block_info* p_block_i
 
                hind_hash = hex_encode( base64::decode( next_attribute ) );
 
+               set_session_variable(
+                get_special_var_name( e_special_var_blockchain_hind_hash ), hind_hash );
+
                continue;
             }
          }
