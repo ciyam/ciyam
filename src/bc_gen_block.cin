@@ -312,7 +312,11 @@ BLOCK_HASH=$OUTPUT
 @ifndef $ERROR
 .file_tag $BLOCK_HASH bc.$IDENT.zenith
 ;
+@ifdef $IS_TERTIARY
+.file_tag -unlink bc.$IDENT.$LAST.key
+@else
 .file_tag -unlink bc.$IDENT.p$LAST.key
+@endif
 ;
 .system_variable @blockchain
 @ifeq "$OUTPUT" "$IDENT"
