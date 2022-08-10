@@ -1584,10 +1584,7 @@ bool process_block_for_height( const string& blockchain, const string& hash,
 
    if( !get_session_variable(
     get_special_var_name( e_special_var_blockchain_hind_hash ) ).empty( ) )
-   {
       has_hind_hash = true;
-      set_session_variable( get_special_var_name( e_special_var_blockchain_hind_hash ), "" );
-   }
 
    string block_height( get_session_variable(
     get_special_var_name( e_special_var_blockchain_height ) ) );
@@ -2725,7 +2722,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
             process_public_key_file( blockchain,
-             secondary_pubkey_hash, blockchain_height_pending, e_public_key_scale_secondary, has_tertiary );
+             secondary_pubkey_hash, blockchain_height_pending, e_public_key_scale_secondary, ( has_tertiary || !is_legacy_chain ) );
          }
          else if( next_hash == tertiary_pubkey_hash )
          {
@@ -2734,7 +2731,7 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
             create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
             process_public_key_file( blockchain,
-             tertiary_pubkey_hash, blockchain_height_pending, e_public_key_scale_tertiary, has_tertiary );
+             tertiary_pubkey_hash, blockchain_height_pending, e_public_key_scale_tertiary, ( has_tertiary || !is_legacy_chain ) );
          }
          else if( next_hash[ next_hash.length( ) - 1 ] != c_repository_suffix )
          {
@@ -2748,6 +2745,10 @@ void socket_command_handler::issue_cmd_for_peer( bool check_for_supporters )
                create_raw_file( file_data, true, 0, 0, next_hash.c_str( ), true, true );
 
                process_core_file( next_hash, blockchain );
+
+               if( !blockchain_height && !get_session_variable(
+                get_special_var_name( e_special_var_blockchain_tertiary_pubkey_hash ) ).empty( ) )
+                  is_legacy_chain = false;
             }
          }
 #ifdef SSL_SUPPORT
