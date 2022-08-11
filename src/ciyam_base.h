@@ -329,6 +329,8 @@ class CIYAM_BASE_DECL_SPEC session_file_buffer_access
    session_file_buffer_access( );
    ~session_file_buffer_access( );
 
+   void copy_string_data( const std::string& data );
+
    unsigned int get_size( ) { return size; }
    unsigned char* get_buffer( ) { return p_buffer; }
 

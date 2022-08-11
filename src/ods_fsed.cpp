@@ -189,7 +189,7 @@ string process_rename_expressions(
       }
 
       if( rename && !renamed_output.empty( ) )
-         output = prefix + renamed_output;
+         output = prefix + renamed_output + suffix;
    }
 
    return output;
