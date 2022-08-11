@@ -5924,6 +5924,19 @@ session_file_buffer_access::~session_file_buffer_access( )
    gtp_session->buffer_is_locked = false;
 }
 
+void session_file_buffer_access::copy_string_data( const string& data )
+{
+   guard g( g_mutex );
+
+   unsigned int bufsize = get_files_area_item_max_size( ) * c_max_file_buffer_expansion;
+
+   if( data.size( ) > bufsize )
+      throw runtime_error( "copy_string_data too large for session_file_buffer_access" );
+
+   size = data.size( );
+   memcpy( p_buffer, data.data( ), size );
+}
+
 void increment_peer_files_uploaded( int64_t bytes )
 {
    guard g( g_mutex );
